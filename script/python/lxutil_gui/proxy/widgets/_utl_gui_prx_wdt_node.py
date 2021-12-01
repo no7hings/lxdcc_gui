@@ -1,0 +1,762 @@
+# coding:utf-8
+import types
+
+from lxobj import obj_abstract
+#
+import lxutil.dcc.dcc_objects as utl_dcc_objects
+
+import lxutil.modifiers as utl_modifiers
+
+from lxutil_gui.qt import utl_gui_qt_core
+
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item
+
+from lxutil_gui.proxy import utl_gui_prx_abstract
+
+from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility
+
+
+class AttrConfig(object):
+    height = 24
+    label_width = 64
+    ENTRY_HEIGHT = 22
+
+
+# label
+class PrxPortLabel(utl_gui_prx_abstract.AbsPrxWidget):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtLabel
+    def __init__(self, *args, **kwargs):
+        super(PrxPortLabel, self).__init__(*args, **kwargs)
+        self.widget.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignRight | utl_gui_qt_core.QtCore.Qt.AlignVCenter)
+        self.widget.setMaximumHeight(AttrConfig.ENTRY_HEIGHT)
+        self.widget.setMinimumHeight(AttrConfig.ENTRY_HEIGHT)
+        self.widget.setWordWrap(True)
+
+    def set_name(self, text):
+        self.widget.setText(text)
+
+
+# entry
+class AbsTypeEntry(utl_gui_prx_abstract.AbsPrxWidget):
+    QT_ENTRY_CLASS = None
+    def __init__(self, *args, **kwargs):
+        super(AbsTypeEntry, self).__init__(*args, **kwargs)
+        self.widget.setMaximumHeight(AttrConfig.ENTRY_HEIGHT)
+        self.widget.setMinimumHeight(AttrConfig.ENTRY_HEIGHT)
+
+    def _set_build_(self):
+        self._qt_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
+        self._qt_layout.setContentsMargins(2, 2, 2, 2)
+        #
+        self._qt_entry = self.QT_ENTRY_CLASS()
+        self._qt_layout.addWidget(self._qt_entry)
+        #
+        self._use_as_storage = False
+
+    def set_button_add(self, widget):
+        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+            self._qt_layout.addWidget(widget)
+        else:
+            self._qt_layout.addWidget(widget.widget)
+    @property
+    def entry(self):
+        return self._qt_entry
+
+    def get(self):
+        raise NotImplementedError()
+
+    def set(self, raw):
+        raise NotImplementedError()
+
+    def set_clear(self):
+        pass
+
+    def set_changed_connect_to(self, method):
+        pass
+
+    def set_use_as_storage(self, boolean=True):
+        if hasattr(self.entry, '_set_use_as_storage_'):
+            self.entry._set_use_as_storage_(boolean)
+
+    def _set_file_show_(self):
+        utl_dcc_objects.OsFile(self.get()).set_open()
+
+    def get_use_as_storage(self):
+        return self._use_as_storage
+
+
+class PrxOpenFilePathEntry(AbsTypeEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtEntryFrame
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_utility._QtConstantEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxOpenFilePathEntry, self).__init__(*args, **kwargs)
+        self.entry.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft | utl_gui_qt_core.QtCore.Qt.AlignVCenter)
+        #
+        self._file_open_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
+        self.set_button_add(self._file_open_button)
+        self._file_open_button.set_name('Open File')
+        self._file_open_button.set_name_icon('Open File')
+        self._file_open_button.set_tool_tip(
+            [
+                'LMB click to open file by "file-dialog"'
+            ]
+        )
+        self._file_open_button.set_press_clicked_connect_to(self._set_file_open_)
+        #
+        self._ext_filter = 'All File(s) (*.*)'
+
+    def set_ext_filter(self, ext_filter):
+        self._ext_filter = ext_filter
+
+    def _set_file_open_(self):
+        f = utl_gui_qt_core.QtWidgets.QFileDialog()
+        s = f.getOpenFileName(
+            self.widget,
+            caption='Open File',
+            dir=self.get(),
+            filter=self._ext_filter
+        )
+        if s:
+            _ = s[0]
+            if _:
+                self.entry.setText(
+                    s[0]
+                )
+
+    def get(self):
+        return self.entry.text()
+
+    def set(self, raw):
+        self.entry.setText(raw)
+
+
+class PrxOpenDirectoryPathEntry(AbsTypeEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtEntryFrame
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_utility._QtConstantEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxOpenDirectoryPathEntry, self).__init__(*args, **kwargs)
+        self.entry.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft | utl_gui_qt_core.QtCore.Qt.AlignVCenter)
+        #
+        self._directory_open_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
+        self.set_button_add(self._directory_open_button)
+        self._directory_open_button.set_name('Open Directory')
+        self._directory_open_button.set_name_icon('Open Directory')
+        self._directory_open_button.set_tool_tip(
+            [
+                'LMB click to open file by "file-dialog"'
+            ]
+        )
+        self._directory_open_button.set_press_clicked_connect_to(self._set_directory_open_)
+        #
+        self._ext_filter = 'All File(s) (*.*)'
+
+    def set_ext_filter(self, ext_filter):
+        self._ext_filter = ext_filter
+
+    def _set_directory_open_(self):
+        f = utl_gui_qt_core.QtWidgets.QFileDialog()
+        s = f.getExistingDirectory(
+            self.widget,
+            caption='Open Directory',
+            dir=self.get(),
+        )
+        if s:
+            _ = s[0]
+            if _:
+                self.entry.setText(
+                    s
+                )
+
+    def get(self):
+        return self.entry.text()
+
+    def set(self, raw):
+        self.entry.setText(raw)
+
+
+class PrxSaveFilePathEntry(AbsTypeEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtEntryFrame
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_utility._QtConstantEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxSaveFilePathEntry, self).__init__(*args, **kwargs)
+        self.entry.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft | utl_gui_qt_core.QtCore.Qt.AlignVCenter)
+        #
+        self._file_save_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
+        self.set_button_add(self._file_save_button)
+        self._file_save_button.set_name('Save File')
+        self._file_save_button.set_name_icon('Save File')
+        self._file_save_button.set_tool_tip(
+            [
+                'LMB click to open file by "file-dialog"'
+            ]
+        )
+        self._file_save_button.set_press_clicked_connect_to(self._set_file_save_)
+        #
+        self._ext_filter = 'All File(s) (*.*)'
+
+    def set_ext_filter(self, ext_filter):
+        self._ext_filter = ext_filter
+
+    def _set_file_save_(self):
+        f = utl_gui_qt_core.QtWidgets.QFileDialog()
+        s = f.getSaveFileName(
+            self.widget,
+            caption='Save File',
+            dir=self.get(),
+            filter=self._ext_filter
+        )
+        if s:
+            _ = s[0]
+            if _:
+                self.entry.setText(
+                    s[0]
+                )
+
+    def get(self):
+        return self.entry.text()
+
+    def set(self, raw):
+        self.entry.setText(raw)
+
+
+class PrxConstantEntry(AbsTypeEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtEntryFrame
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_utility._QtConstantEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxConstantEntry, self).__init__(*args, **kwargs)
+        self.entry.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft | utl_gui_qt_core.QtCore.Qt.AlignVCenter)
+        #
+        self.widget.setFocusProxy(self.entry)
+
+    def set_value_type(self, value_type):
+        self.entry._set_value_type_(value_type)
+
+    def get(self):
+        return self.entry._get_value_()
+
+    def set(self, raw):
+        self.entry.setText(raw.encode("UTF8"))
+
+    def set_maximum(self, value):
+        self.entry._set_value_maximum_(value)
+
+    def get_maximum(self):
+        return self.entry._get_value_maximum_()
+
+    def set_minimum(self, value):
+        self.entry._set_value_minimum_(value)
+
+    def get_minimum(self):
+        return self.entry._get_value_minimum_()
+
+    def set_range(self, maximum, minimum):
+        self.entry._set_value_range_(maximum, minimum)
+
+    def get_range(self):
+        return self.entry._get_value_range_()
+
+
+class PrxTextEntry(PrxConstantEntry):
+    def __init__(self, *args, **kwargs):
+        super(PrxTextEntry, self).__init__(*args, **kwargs)
+        self.set_value_type(None)
+
+
+class PrxStringEntry(PrxConstantEntry):
+    def __init__(self, *args, **kwargs):
+        super(PrxStringEntry, self).__init__(*args, **kwargs)
+        self.set_value_type(str)
+
+
+class PrxIntegerEntry(PrxConstantEntry):
+    def __init__(self, *args, **kwargs):
+        super(PrxIntegerEntry, self).__init__(*args, **kwargs)
+        self.set_value_type(int)
+
+
+class PrxFloatEntry(PrxConstantEntry):
+    def __init__(self, *args, **kwargs):
+        super(PrxFloatEntry, self).__init__(*args, **kwargs)
+        self.set_value_type(float)
+
+
+class BooleanPortEntry(AbsTypeEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtCheckItem
+    def __init__(self, *args, **kwargs):
+        super(BooleanPortEntry, self).__init__(*args, **kwargs)
+
+    def get(self):
+        return self.entry._get_item_is_checked_()
+
+    def set(self, raw):
+        self.entry._set_item_checked_(raw)
+
+
+class PrxEnumerateEntry(AbsTypeEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtEntryFrame
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_utility._QtEnumerateConstantEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxEnumerateEntry, self).__init__(*args, **kwargs)
+        #
+        self.widget.setFocusProxy(self.entry)
+
+    def get(self):
+        return self.entry.currentText()
+
+    def get_current(self):
+        return self.entry.currentText()
+
+    def set(self, raw):
+        self.entry.clear()
+        if isinstance(raw, (tuple, list)):
+            texts = list(raw)
+        elif isinstance(raw, (str, unicode)):
+            texts = [raw]
+        elif isinstance(raw, (int, float)):
+            texts = [str(raw)]
+        else:
+            texts = []
+        #
+        self.entry.addItems(texts)
+        if texts:
+            self.entry.setCurrentText(texts[-1])
+        #
+        self._set_tool_tip_update_()
+
+    def set_current(self, raw):
+        if isinstance(raw, (str, unicode)):
+            self.entry.setCurrentText(raw)
+        elif isinstance(raw, (int, float)):
+            self.entry.setCurrentIndex(int(raw))
+
+    def set_append(self, raw):
+        if isinstance(raw, (tuple, list)):
+            texts = list(raw)
+        elif isinstance(raw, (str, unicode)):
+            texts = [raw]
+        elif isinstance(raw, (int, float)):
+            texts = [str(raw)]
+        else:
+            texts = []
+        #
+        self.entry.addItems(texts)
+        #
+        self._set_tool_tip_update_()
+
+    def _set_tool_tip_update_(self):
+        tool_tips = []
+        texts = [self.entry.itemText(i) for i in range(self.entry.count())]
+        if self._use_as_storage is True:
+            for i in texts:
+                i_file_obj = utl_dcc_objects.OsFile(i)
+                if i_file_obj.get_is_exists() is True:
+                    i_time = i_file_obj.get_time()
+                    i_user = i_file_obj.get_user()
+                    tool_tips.append(
+                        u'file="{}"; time="{}"; user="{}";'.format(i, i_time, i_user)
+                    )
+                else:
+                    tool_tips.append(
+                        u'file="{}"'.format(i)
+                    )
+        #
+        self.widget.setToolTip(
+            u'\n'.join(tool_tips)
+        )
+
+    def set_clear(self):
+        self.entry.clear()
+
+    def set_changed_connect_to(self, method):
+        self.entry.currentIndexChanged.connect(method)
+
+
+class PrxButtonEntry(AbsTypeEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtPressItem
+    def __init__(self, *args, **kwargs):
+        super(PrxButtonEntry, self).__init__(*args, **kwargs)
+
+    def get(self):
+        return None
+    @utl_modifiers.set_method_exception_catch
+    def _set_fnc_run_(self, fnc):
+        fnc()
+
+    def set(self, raw):
+        if isinstance(raw, (types.MethodType, types.FunctionType)):
+            self.entry.clicked.connect(
+                lambda *args, **kwargs: self._set_fnc_run_(raw)
+            )
+
+    def set_menu_raw(self, raw):
+        self.entry._set_menu_raw_(raw)
+
+
+class PrxProcessEntry(AbsTypeEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtPressItem
+    def __init__(self, *args, **kwargs):
+        super(PrxProcessEntry, self).__init__(*args, **kwargs)
+        self._stop_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
+        self.set_button_add(self._stop_button)
+        self._stop_button.set_name('Stop Process')
+        self._stop_button.set_name_icon('Stop Process')
+        self._stop_button.set_tool_tip('press to stop process')
+
+    def get(self):
+        return None
+    @utl_modifiers.set_method_exception_catch
+    def _set_fnc_run_(self, fnc):
+        fnc()
+
+    def set(self, raw):
+        if isinstance(raw, (types.MethodType, types.FunctionType)):
+            self.entry.clicked.connect(
+                lambda *args, **kwargs: self._set_fnc_run_(raw)
+            )
+
+    def set_menu_raw(self, raw):
+        self.entry._set_menu_raw_(raw)
+
+    def set_stop(self, raw):
+        if isinstance(raw, (types.MethodType, types.FunctionType)):
+            self._stop_button.widget.press_clicked.connect(
+                lambda *args, **kwargs: self._set_fnc_run_(raw)
+            )
+
+
+# port
+class AbsTypePort(object):
+    LABEL_CLASS = None
+    ENTRY_CLASS = None
+    def __init__(self, name, label=None, default_value=None, join_to_next=False):
+        self._name = name
+        self._label = label
+        # gui
+        self._label_gui = self.LABEL_CLASS()
+        self._label_gui.widget.setToolTip(
+            'name: {}'.format(self.name)
+        )
+        self._label_gui.set_name(self.label)
+        #
+        self._entry_gui = self.ENTRY_CLASS()
+        #
+        if default_value is not None:
+            self._entry_gui.set(default_value)
+        #
+        self._is_join_to_next = join_to_next
+    @property
+    def name(self):
+        return self._name
+    @property
+    def label(self):
+        return self._label
+    @property
+    def label_gui(self):
+        return self._label_gui
+    @property
+    def entry_gui(self):
+        return self._entry_gui
+
+    def set_name(self, name):
+        pass
+
+    def set_enable(self, boolean):
+        pass
+
+    def set(self, raw):
+        self.entry_gui.set(raw)
+
+    def set_append(self, raw):
+        if hasattr(self.entry_gui, 'set_append'):
+            self.entry_gui.set_append(raw)
+
+    def set_clear(self):
+        self.entry_gui.set_clear()
+
+    def set_tool_tip(self, text, as_markdown_style=False):
+        if text is not None:
+            if isinstance(text, (tuple, list)):
+                if len(text) > 0:
+                    text_ = '\n'.join(('{}'.format(i) for i in text))
+                elif len(text) == 1:
+                    text_ = text[0]
+                else:
+                    text_ = ''
+            else:
+                text_ = unicode(text)
+            #
+            if as_markdown_style is True:
+                import markdown
+                html = markdown.markdown(text_)
+                self.entry_gui.entry.setToolTip(html)
+            else:
+                html = '<html><body>'
+                html += '<h3>{}</h3>'.format(self._label)
+                for i in text_.split('\n'):
+                    html += '<ul><li>{}</li></ul>'.format(i)
+                html += '</body></html>'
+                self.entry_gui.entry.setToolTip(html)
+
+    def get(self):
+        return self.entry_gui.get()
+
+    def set_changed_connect_to(self, method):
+        pass
+
+    def set_use_as_storage(self, boolean=True):
+        self._entry_gui.set_use_as_storage(boolean)
+
+    def _get_is_join_next_(self):
+        return self._is_join_to_next
+
+    def _set_join_layout_(self, layout):
+        self._join_layout = layout
+
+    def _get_join_layout_(self):
+        return self._join_layout
+
+    def set_menu_raw(self, raw):
+        self.entry_gui.set_menu_raw(raw)
+
+
+class PrxConstantPort(AbsTypePort):
+    LABEL_CLASS = PrxPortLabel
+    ENTRY_CLASS = PrxConstantEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxConstantPort, self).__init__(*args, **kwargs)
+
+
+class PrxTextPort(PrxConstantPort):
+    LABEL_CLASS = PrxPortLabel
+    ENTRY_CLASS = PrxTextEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxTextPort, self).__init__(*args, **kwargs)
+
+
+class PrxStringPort(PrxConstantPort):
+    LABEL_CLASS = PrxPortLabel
+    ENTRY_CLASS = PrxStringEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxStringPort, self).__init__(*args, **kwargs)
+
+
+class PrxIntegerPort(PrxConstantPort):
+    LABEL_CLASS = PrxPortLabel
+    ENTRY_CLASS = PrxIntegerEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxIntegerPort, self).__init__(*args, **kwargs)
+
+
+class PrxFloatPort(PrxConstantPort):
+    LABEL_CLASS = PrxPortLabel
+    ENTRY_CLASS = PrxFloatEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxFloatPort, self).__init__(*args, **kwargs)
+
+
+class PrxOpenFilePathPort(PrxConstantPort):
+    LABEL_CLASS = PrxPortLabel
+    ENTRY_CLASS = PrxOpenFilePathEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxOpenFilePathPort, self).__init__(*args, **kwargs)
+
+    def set_ext_filter(self, ext_filter):
+        self.entry_gui.set_ext_filter(ext_filter)
+
+
+class PrxOpenDirectoryPort(PrxConstantPort):
+    LABEL_CLASS = PrxPortLabel
+    ENTRY_CLASS = PrxOpenDirectoryPathEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxOpenDirectoryPort, self).__init__(*args, **kwargs)
+
+    def set_ext_filter(self, ext_filter):
+        self.entry_gui.set_ext_filter(ext_filter)
+
+
+class PrxSaveFilePathPort(PrxConstantPort):
+    LABEL_CLASS = PrxPortLabel
+    ENTRY_CLASS = PrxSaveFilePathEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxSaveFilePathPort, self).__init__(*args, **kwargs)
+
+    def set_ext_filter(self, ext_filter):
+        self.entry_gui.set_ext_filter(ext_filter)
+
+
+class PrxBooleanPort(AbsTypePort):
+    LABEL_CLASS = PrxPortLabel
+    ENTRY_CLASS = BooleanPortEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxBooleanPort, self).__init__(*args, **kwargs)
+        self.label_gui.widget.setText('')
+        self.entry_gui.entry._set_name_text_(self.label)
+
+
+class PrxEnumeratePort(AbsTypePort):
+    LABEL_CLASS = PrxPortLabel
+    ENTRY_CLASS = PrxEnumerateEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxEnumeratePort, self).__init__(*args, **kwargs)
+
+    def set_current(self, raw):
+        self.entry_gui.set_current(raw)
+
+    def get_current(self):
+        return self.entry_gui.get_current()
+
+    def set_changed_connect_to(self, method):
+        self.entry_gui.set_changed_connect_to(method)
+
+
+class PrxButtonPort(AbsTypePort):
+    LABEL_CLASS = PrxPortLabel
+    ENTRY_CLASS = PrxButtonEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxButtonPort, self).__init__(*args, **kwargs)
+        self.label_gui.widget.setText('')
+        self.entry_gui.entry._set_name_text_(self.label)
+
+    def set_name(self, text):
+        self.entry_gui.entry._set_name_text_(text)
+
+    def set_status(self, status):
+        self.entry_gui.entry._set_status_(status)
+
+
+class PrxStatusPort(AbsTypePort):
+    LABEL_CLASS = PrxPortLabel
+    ENTRY_CLASS = PrxProcessEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxStatusPort, self).__init__(*args, **kwargs)
+        self.label_gui.widget.setText('')
+        self.entry_gui.entry._set_name_text_(self.label)
+
+    def set_name(self, text):
+        self.entry_gui.entry._set_name_text_(text)
+
+    def set_status(self, status):
+        self.entry_gui.entry._set_status_(status)
+
+    def set_element_statuses(self, element_statuses):
+        self.entry_gui.entry._set_element_statuses_(element_statuses)
+
+
+class PortStack(obj_abstract.AbsObjStack):
+    def __init__(self):
+        super(PortStack, self).__init__()
+
+    def get_key(self, obj):
+        return obj.name
+
+
+class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
+    PORT_STACK_CLASS = PortStack
+    LABEL_WIDTH = 160
+    PORT_CLASS_DICT = dict(
+        string=PrxStringPort,
+        interge=PrxIntegerPort,
+        float=PrxFloatPort,
+        button=PrxButtonPort,
+        enumerate=PrxEnumeratePort
+    )
+    @classmethod
+    def get_port_cls(cls, type_name):
+        return cls.PORT_CLASS_DICT[type_name]
+
+    def __init__(self, *args, **kwargs):
+        super(PrxNode, self).__init__(*args, **kwargs)
+        qt_layout_0 = _utl_gui_qt_wgt_utility.QtHBoxLayout(self.widget)
+        qt_layout_0.setContentsMargins(*[0]*4)
+        #
+        qt_splitter_0 = _utl_gui_qt_wgt_utility.QtHSplitter()
+        qt_layout_0.addWidget(qt_splitter_0)
+        #
+        qt_label_widget = _utl_gui_qt_wgt_utility.QtWidget()
+        # qt_label_widget.setMaximumWidth(self.LABEL_WIDTH)
+        qt_label_widget.setFixedWidth(self.LABEL_WIDTH)
+        qt_splitter_0.addWidget(qt_label_widget)
+        self._qt_label_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_label_widget)
+        self._qt_label_layout.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignTop)
+        self._qt_label_layout.setContentsMargins(2, 0, 2, 0)
+        #
+        qt_entry_widget = _utl_gui_qt_wgt_utility.QtWidget()
+        qt_splitter_0.addWidget(qt_entry_widget)
+        self._qt_entry_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_entry_widget)
+        self._qt_entry_layout.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignTop)
+        self._qt_entry_layout.setContentsMargins(2, 0, 2, 0)
+
+        self._port_stack = self.PORT_STACK_CLASS()
+
+    def set_folder_add(self, label):
+        pass
+
+    def _get_pre_port_args_(self):
+        ports = self._port_stack.get_objects()
+        if ports:
+            pre_port = ports[-1]
+            return pre_port._get_is_join_next_(), pre_port
+        return False, None
+
+    def set_port_add(self, port):
+        if isinstance(port, AbsTypePort):
+            cur_port = port
+            pre_port_is_join_next, pre_port = self._get_pre_port_args_()
+            cur_port_is_join_next = cur_port._get_is_join_next_()
+            #
+            condition = pre_port_is_join_next, cur_port_is_join_next
+            if condition == (False, False):
+                self._qt_label_layout.addWidget(
+                    cur_port.label_gui.widget
+                )
+                self._qt_entry_layout.addWidget(
+                    cur_port.entry_gui.widget
+                )
+            elif condition == (False, True):
+                self._qt_label_layout.addWidget(
+                    cur_port.label_gui.widget
+                )
+                #
+                enter_widget = _utl_gui_qt_wgt_utility.QtWidget()
+                self._qt_entry_layout.addWidget(
+                    enter_widget
+                )
+                enter_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(enter_widget)
+                enter_layout.setContentsMargins(0, 0, 0, 0)
+                enter_layout.setSpacing(2)
+                enter_layout.addWidget(
+                    cur_port.entry_gui.widget
+                )
+                cur_port._set_join_layout_(enter_layout)
+            elif condition == (True, True):
+                enter_layout = pre_port._get_join_layout_()
+                enter_layout.addWidget(
+                    cur_port.entry_gui.widget
+                )
+                cur_port._set_join_layout_(enter_layout)
+            elif condition == (True, False):
+                enter_layout = pre_port._get_join_layout_()
+                enter_layout.addWidget(
+                    cur_port.entry_gui.widget
+                )
+            #
+            self._port_stack.set_object_add(cur_port)
+            return port
+        elif isinstance(port, dict):
+            pass
+
+    def get_port(self, port_name):
+        return self._port_stack.get_object(port_name)
+
+    def get_as_kwargs(self):
+        dic = {}
+        ports = self._port_stack.get_objects()
+        for port in ports:
+            key = port.name
+            value = port.get()
+            dic[key] = value
+        return dic
