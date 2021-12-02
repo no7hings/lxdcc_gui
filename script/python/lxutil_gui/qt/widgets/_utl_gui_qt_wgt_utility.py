@@ -3,6 +3,8 @@ import collections
 
 import os
 
+import functools
+
 from lxbasic.objects import bsc_obj_abs
 
 from lxutil_gui.qt import utl_gui_qt_abstract
@@ -916,7 +918,7 @@ class QtMenu(QtWidgets.QMenu):
                 if method_args is None:
                     set_disable_fnc_(qt_widget_action)
                 else:
-                    if isinstance(method_args, (types.FunctionType, types.MethodType)):
+                    if isinstance(method_args, (types.FunctionType, types.MethodType, functools.partial)):
                         fnc = method_args
                         qt_widget_action.triggered.connect(fnc)
                     elif isinstance(method_args, (str, unicode)):
@@ -1403,224 +1405,6 @@ class QtLineEdit(QtWidgets.QLineEdit):
         pass
 
 
-class _QtEntryFrame(QtWidgets.QWidget):
-    def __init__(self, *args, **kwargs):
-        super(_QtEntryFrame, self).__init__(*args, **kwargs)
-        self.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        #
-        self._item_is_hovered = False
-        self._is_focused = False
-
-    def paintEvent(self, event):
-        x, y = 0, 0
-        w, h = self.width(), self.height()
-        #
-        painter = QtPainter(self)
-        bck_rect = QtCore.QRect(
-            x, y, w, h
-        )
-        bkg_color = [Color.ENTRY_BACKGROUND_ENTRY_OFF, Color.ENTRY_BACKGROUND_ENTRY_ON][self._is_focused]
-        bdr_color = [Color.ENTRY_BORDER_ENTRY_OFF, Color.ENTRY_BORDER_ENTRY_ON][self._is_focused]
-        painter._set_frame_draw_by_rect_(
-            bck_rect,
-            border_color=bdr_color,
-            background_color=bkg_color,
-            border_radius=4
-        )
-
-    def _set_focus_(self, boolean):
-        self._is_focused = boolean
-        self.update()
-
-
-class _QtConstantEntry(QtWidgets.QLineEdit):
-    def __init__(self, *args, **kwargs):
-        super(_QtConstantEntry, self).__init__(*args, **kwargs)
-        self.installEventFilter(self)
-        self.setPalette(QtDccMtd.get_qt_palette())
-        self.setFont(Font.NAME)
-        self.setFocusPolicy(QtCore.Qt.ClickFocus)
-        # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setStyleSheet(
-            'QLineEdit{background: rgba(0, 0, 0, 0) ; color: rgba(255, 255, 255, 255)}'
-            'QLineEdit{border: none}'
-            'QLineEdit{selection-color: rgba(255, 255, 255, 255) ; selection-background-color: rgba(0, 127, 127, 255)}'
-        )
-        #
-        self._value_type = str
-        self._is_use_as_storage = False
-        #
-        self._default_value = None
-        #
-        self._maximum = 1
-        self._minimum = 0
-
-    def eventFilter(self, *args):
-        widget, event = args
-        if widget == self:
-            if event.type() == QtCore.QEvent.FocusIn:
-                self._is_focused = True
-                parent = self.parent()
-                if isinstance(parent, _QtEntryFrame):
-                    parent._set_focus_(True)
-            elif event.type() == QtCore.QEvent.FocusOut:
-                self._is_focused = False
-                parent = self.parent()
-                if isinstance(parent, _QtEntryFrame):
-                    parent._set_focus_(False)
-        return False
-
-    def contextMenuEvent(self, event):
-        menu_raw = [
-            ('Basic', ),
-            ('Copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
-            ('Paste', None, (True, self.paste, False), QtGui.QKeySequence.Paste),
-            ('Cut', None, (True, self.cut, False), QtGui.QKeySequence.Cut),
-            ('Extend', ),
-            ('Undo', None, (True, self.undo, False), QtGui.QKeySequence.Undo),
-            ('Redo', None, (True, self.redo, False), QtGui.QKeySequence.Redo),
-            ('Select All', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll),
-        ]
-        if self._is_use_as_storage is True:
-            menu_raw.extend(
-                [
-                    ('System',),
-                    ('Open', None, (True, self._set_open_in_system_, False), QtGui.QKeySequence.Open)
-                ]
-            )
-        #
-        if self.isReadOnly():
-            menu_raw = [
-                ('Basic',),
-                ('Copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
-                ('Extend', ),
-                ('Select All', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll)
-            ]
-        #
-        if menu_raw:
-            self._qt_menu = QtMenu(self)
-            self._qt_menu._set_menu_raw_(menu_raw)
-            self._qt_menu._set_show_()
-
-    def _set_value_type_(self, value_type):
-        self._value_type = value_type
-        if self._value_type is None:
-            pass
-        elif self._value_type is str:
-            pass
-            # self._set_use_as_string_()
-        elif self._value_type is int:
-            self._set_use_as_integer_()
-        elif self._value_type is float:
-            self._set_use_as_float_()
-
-    def _set_open_in_system_(self):
-        _ = self.text()
-        if _:
-            bsc_core.StoragePathOpt(_).set_open_in_system()
-
-    def _set_use_as_storage_(self, boolean):
-        self._is_use_as_storage = boolean
-
-    def _set_use_as_string_(self):
-        reg = QtCore.QRegExp(r'^[a-zA-Z0-9_]+$')
-        validator = QtGui.QRegExpValidator(reg, self)
-        self.setValidator(validator)
-
-    def _set_use_as_integer_(self):
-        self.setValidator(QtGui.QIntValidator())
-
-    def _set_use_as_float_(self):
-        self.setValidator(QtGui.QDoubleValidator())
-
-    def _set_value_maximum_(self, value):
-        self._maximum = value
-
-    def _get_value_maximum_(self):
-        return self._maximum
-
-    def _set_value_minimum_(self, value):
-        self._minimum = value
-
-    def _get_value_minimum_(self):
-        return self._minimum
-
-    def _set_value_range_(self, maximum, minimum):
-        self._set_value_maximum_(maximum), self._set_value_minimum_(minimum)
-
-    def _get_value_range_(self):
-        return self._get_value_maximum_(), self._get_value_minimum_()
-
-    def _get_value_(self):
-        _ = self.text()
-        if self._value_type == str:
-            return _
-        elif self._value_type == int:
-            return int(_)
-        elif self._value_type == float:
-            return float(_)
-        return _
-
-    def _get_default_value_(self):
-        return self._default_value
-
-    def _set_focus_connect_to_(self, widget):
-        pass
-    #
-    def _get_is_selected_(self):
-        boolean = False
-        if self.selectedText():
-            boolean = True
-        return boolean
-
-
-class _QtEnumerateConstantEntry(QtWidgets.QComboBox):
-    def __init__(self, *args, **kwargs):
-        super(_QtEnumerateConstantEntry, self).__init__(*args, **kwargs)
-        self.installEventFilter(self)
-        self.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.setPalette(QtDccMtd.get_qt_palette())
-        # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setItemDelegate(QtStyledItemDelegate())
-        self.view().setAlternatingRowColors(True)
-        self.view().setPalette(QtDccMtd.get_qt_palette())
-        self.setFont(Font.NAME)
-        #
-        self.setLineEdit(_QtConstantEntry())
-        #
-        self.setStyleSheet(
-            (
-                'QComboBox{{background: rgba(0, 0, 0, 0);color: rgba(255, 255, 255, 255)}}'
-                'QComboBox{{border: none}}'
-                # 'QAbstractItemView{{background: rgba(63, 63, 63, 255);color: rgba(255, 255, 255, 255)}}'
-                'QAbstractItemView{{border: 1px rgba(63, 127, 255, 255);border-radius: 3px;border-style: solid}}'
-                'QComboBox::drop-down{{width=16px;height=16p}}'
-                'QComboBox::down-arrow{{border-image: none;image: url({0});width=16px;height=16px}}'
-            ).format(
-                utl_core.Icon.get('arrow_down'),
-            )
-        )
-
-    def _set_use_as_storage_(self, boolean):
-        self.lineEdit()._set_use_as_storage_(boolean)
-
-    def eventFilter(self, *args):
-        widget, event = args
-        if widget == self:
-            if event.type() == QtCore.QEvent.FocusIn:
-                self._is_focused = True
-                parent = self.parent()
-                if isinstance(parent, _QtEntryFrame):
-                    parent._set_focus_(True)
-            elif event.type() == QtCore.QEvent.FocusOut:
-                self._is_focused = True
-                parent = self.parent()
-                if isinstance(parent, _QtEntryFrame):
-                    parent._set_focus_(False)
-        return False
-
-
 class QtCheckBox(QtWidgets.QCheckBox):
     def __init__(self, *args, **kwargs):
         super(QtCheckBox, self).__init__(*args, **kwargs)
@@ -1747,7 +1531,7 @@ class _AbsQtSplitterHandle(QtWidgets.QWidget):
         layout.addWidget(self._contract_l_button)
         self._contract_l_button.clicked.connect(self._set_contract_l_switch_)
         self._contract_l_button.setToolTip(
-            'LMB-click to contact left/top.'
+            '"LMB-click" to contact left/top.'
         )
         #
         self._swap_button = QtIconButton()
@@ -1760,7 +1544,7 @@ class _AbsQtSplitterHandle(QtWidgets.QWidget):
         layout.addWidget(self._swap_button)
         self._swap_button.clicked.connect(self._set_swap_)
         self._swap_button.setToolTip(
-            'LMB-click to swap.'
+            '"LMB-click" to swap.'
         )
         #
         self._contract_r_button = QtIconButton()
@@ -1771,7 +1555,7 @@ class _AbsQtSplitterHandle(QtWidgets.QWidget):
         layout.addWidget(self._contract_r_button)
         self._contract_r_button.clicked.connect(self._set_contract_r_update_)
         self._contract_r_button.setToolTip(
-            'LMB-click to contact right/bottom.'
+            '"LMB-click" to contact right/bottom.'
         )
         #
         self._set_contract_buttons_update_()

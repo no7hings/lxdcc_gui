@@ -1,9 +1,9 @@
 # coding:utf-8
-import copy
-
 import lxutil_gui.proxy.widgets as prx_widgets
 
 from lxbasic import bsc_core
+
+import lxbasic.objects as bsc_objects
 
 from lxutil import utl_core
 
@@ -18,177 +18,6 @@ from lxresolver import rsv_configure, rsv_core
 import lxresolver.commands as rsv_commands
 
 from lxutil_gui.qt import utl_gui_qt_core
-
-
-class AbsTaskUnitActions(object):
-    # [
-    #     'Extend', None,
-    #     [
-    #     ]
-    # ],
-    KEYWORD_PATTERN = None
-    def __init__(self, *args):
-        rsv_task, keyword = args
-        self._rsv_task = rsv_task
-        self._keyword = keyword
-        self._rsv_unit = rsv_task.get_rsv_unit(
-            keyword=keyword
-        )
-        #
-        self._raw = ()
-        self._set_raw_update_()
-
-    def _set_raw_update_(self):
-        raise NotImplementedError()
-
-    def get(self):
-        return self._raw
-    @classmethod
-    def get_current_platform(cls):
-        return utl_core.Platform.get_current()
-    @classmethod
-    def get_current_application(cls):
-        return utl_core.Application.get_current()
-
-
-class TaskWorkSceneSrcUnitActions(AbsTaskUnitActions):
-    KEYWORD_PATTERN = '{branch}-work-{application}-scene-src-file'
-    def __init__(self, rsv_task, application):
-        kwargs = copy.copy(rsv_task.properties.value)
-        kwargs['application'] = application
-        keyword = self.KEYWORD_PATTERN.format(**kwargs)
-        super(TaskWorkSceneSrcUnitActions, self).__init__(rsv_task, keyword)
-
-    def _set_raw_update_(self):
-        def open_file_enable_fnc_():
-            _file_path = self._rsv_unit.get_result(
-                version=rsv_configure.Version.LATEST
-            )
-            if _file_path is not None:
-                _current_application = self.get_current_application()
-                if _current_application is not None:
-                    if _current_application == 'maya':
-                        return True
-                else:
-                    if application == 'maya':
-                        return True
-            return False
-        #
-        def open_file_fnc_():
-            _file_path = self._rsv_unit.get_result(
-                version=rsv_configure.Version.LATEST
-            )
-            if _file_path is not None:
-                _current_application = self.get_current_application()
-                if _current_application is not None:
-                    if _current_application == 'maya':
-                        import lxmaya.dcc.dcc_objects as mya_dcc_objects
-                        mya_dcc_objects.Scene.set_file_open_with_dialog(_file_path)
-                else:
-                    if application == 'maya':
-                        a = utl_core.MayaLauncher(
-                            **dict(project=project)
-                        )
-                        a.set_file_open(_file_path)
-        #
-        def copy_file_path_fnc_():
-            from lxutil_gui.qt import utl_gui_qt_core
-            file_path = self._rsv_unit.get_result(
-                version=rsv_configure.Version.LATEST
-            )
-            utl_gui_qt_core.set_text_copy_to_clipboard(file_path)
-        #
-        def open_folder_fnc_():
-            _file_path = self._rsv_unit.get_result(
-                version=rsv_configure.Version.LATEST
-            )
-            if _file_path is not None:
-                utl_dcc_objects.OsFile(_file_path).set_directory_open()
-        #
-        unit_properties = self._rsv_unit.properties
-        application = unit_properties.get('application')
-        project = unit_properties.get('project')
-        #
-        a = str(application).capitalize()
-        self._raw = [
-            (self._keyword, ),
-            (
-                'Open {} Work-src-file'.format(a),
-                'application/{}'.format(application),
-                (
-                    open_file_enable_fnc_,
-                    open_file_fnc_,
-                    False
-                )
-            ),
-            [
-                'Extend', None,
-                [
-                    (
-                        'Copy File-path',
-                        None,
-                        (
-                            True,
-                            copy_file_path_fnc_,
-                            False
-                        )
-                    ),
-                    (
-                        'Open Folder',
-                        None,
-                        (
-                            True,
-                            open_folder_fnc_,
-                            False
-                        )
-                    ),
-                ]
-            ],
-        ]
-
-
-class AssetBuilderActions(object):
-    def __init__(self, rsv_task):
-        self._rsv_task = rsv_task
-        # self._application = application
-        self._raw = ()
-        self._set_raw_update_()
-    @classmethod
-    def get_current_platform(cls):
-        return utl_core.Platform.get_current()
-    @classmethod
-    def get_current_application(cls):
-        return utl_core.Application.get_current()
-
-    def _set_raw_update_(self):
-        def build_asset_to_maya_fnc_():
-            import lxmaya.fnc.builders as mya_fnc_builders
-            #
-            mya_fnc_builders.AssetBuilder(
-                option=dict(
-                    project=self._rsv_task.properties.get('project'),
-                    asset=self._rsv_task.properties.get('asset'),
-                    with_model_geometry=True,
-                    with_surface_geometry_uv_map=True,
-                    with_groom_geometry=True,
-                    with_surface_look=True
-                )
-            ).set_run()
-        self._raw = []
-        if self.get_current_application() == 'maya':
-            self._raw.extend(
-                [
-                    ('builder', ),
-                    (
-                        'Build Asset to Maya',
-                        'application/maya',
-                        build_asset_to_maya_fnc_
-                    )
-                ]
-            )
-
-    def get(self):
-        return self._raw
 
 
 class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
@@ -536,7 +365,7 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
     def _set_rsv_task_unit_gui_add_(self, rsv_task):
         def set_thread_create_fnc_(rsv_task_, rsv_task_unit_args_lis_, i_rsv_unit_item_prx_):
             i_rsv_unit_item_prx_.set_show_method(
-                lambda *args, **kwargs: self._set_rsv_unit_item_prx_show_(
+                lambda *args, **kwargs: self._set_rsv_unit_gui_show_deferred_(
                     rsv_task_, i_rsv_unit_item_prx_, rsv_task_unit_args_lis_
                 )
             )
@@ -559,7 +388,7 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
                 rsv_task_unit_gui
             )
 
-    def _set_rsv_unit_item_prx_show_(self, rsv_task, rsv_task_unit_gui, rsv_task_unit_show_raw):
+    def _set_rsv_unit_gui_show_deferred_(self, rsv_task, rsv_task_unit_gui, rsv_task_unit_show_raw):
         task_properties = rsv_task.properties
         branch = task_properties.get('branch')
         name = task_properties.get(branch)
@@ -570,12 +399,12 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
         pixmap_icons = []
         for i_enable, i_rsv_unit, i_rsv_unit_file_path in rsv_task_unit_show_raw:
             if i_enable is True:
-                i_result_properties = i_rsv_unit.get_properties_by_result(i_rsv_unit_file_path)
-                version = i_result_properties.get('version')
+                # i_result_properties = i_rsv_unit.get_properties_by_result(i_rsv_unit_file_path)
+                # version = i_result_properties.get('version')
                 #
                 i_rsv_unit_file = utl_dcc_objects.OsFile(i_rsv_unit_file_path)
-                i_user = i_rsv_unit_file.get_user()
-                i_time = i_rsv_unit_file.get_time()
+                # i_user = i_rsv_unit_file.get_user()
+                # i_time = i_rsv_unit_file.get_time()
                 # icon_names.append(icon_name)
                 i_icon_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_ext(i_rsv_unit_file.ext)
                 pixmap_icons.append(i_icon_pixmap)
@@ -591,16 +420,22 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
         )
         #
         review_rsv_unit = rsv_task.get_rsv_unit(keyword='{}-review-file'.format(branch))
-        review_vedio_file_path = review_rsv_unit.get_result(
+        vedio_file_path = review_rsv_unit.get_result(
             version=rsv_configure.Version.LATEST
         )
-        if review_vedio_file_path:
-            thumbnail_file_path = bsc_core.VedioOpt(review_vedio_file_path).get_thumbnail()
-            rsv_task_unit_gui.set_image(thumbnail_file_path)
-            rsv_task_unit_gui.set_image_loading_start()
+        if vedio_file_path:
+            image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(vedio_file_path).get_thumbnail_create_args()
+            rsv_task_unit_gui.set_image(image_file_path)
+            if image_sub_process_cmds is not None:
+                image_sub_process = bsc_objects.SubProcess(image_sub_process_cmds)
+                image_sub_process.set_start()
+                rsv_task_unit_gui.set_image_show_sub_process(image_sub_process)
+                rsv_task_unit_gui.set_image_loading_start()
         else:
-            rsv_task_unit_gui.set_image(utl_core.Icon.get('group'))
-
+            rsv_task_unit_gui.set_image(
+                utl_core.Icon._get_file_path_('@image_loading_failed@')
+            )
+        #
         menu_content = self.get_rsv_task_unit_menu_content(rsv_task)
         if menu_content:
             rsv_task_unit_gui.set_menu_content(menu_content)

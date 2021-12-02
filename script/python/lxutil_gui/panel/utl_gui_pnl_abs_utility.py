@@ -835,7 +835,7 @@ class AbsDatabaseGeometryManagerPanel(
         )
         _port.set_tool_tip(
             [
-                'LMB click to export selected mesh(s) to database'
+                '"LMB-click" to export selected mesh(s) to database'
             ]
         )
         _port.set(self._set_database_uv_map_export_)

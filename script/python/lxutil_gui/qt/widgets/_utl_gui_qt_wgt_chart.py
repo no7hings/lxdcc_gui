@@ -3,7 +3,7 @@ from lxutil_gui.qt.utl_gui_qt_core import *
 
 from lxutil_gui.qt import utl_gui_qt_abstract
 
-from lxbasic import bsc_core
+from lxbasic import bsc_configure, bsc_core
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
 
@@ -25,7 +25,7 @@ class _QtColorChooseChart(QtWidgets.QWidget):
             QtWidgets.QSizePolicy.Expanding
         )
         #
-        self.initUi()
+        self._set_build_()
     #
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
@@ -36,16 +36,16 @@ class _QtColorChooseChart(QtWidgets.QWidget):
         elif event.button() == QtCore.Qt.RightButton:
             # Track
             self._track_start_pos = event.globalPos()
-            self._trackFlag = True
+            self._track_flag = True
             # Zoom
-            self._zoomFlag = False
+            self._zoom_flag = False
         elif event.button() == QtCore.Qt.MidButton:
             # Circle
             point = event.pos()
             self._circleStartAngle = self.getCircleAngle(point)
             self._circleFlag = True
         # Zoom
-        self._zoomFlag = False
+        self._zoom_flag = False
     #
     def mouseReleaseEvent(self, event):
         if event.button() == QtCore.Qt.LeftButton:
@@ -59,13 +59,13 @@ class _QtColorChooseChart(QtWidgets.QWidget):
             # Track
             self._xTempTrackOffset = self._track_offset_x
             self._yTempTrackOffset = self._yTrackOffset
-            self._trackFlag = True
+            self._track_flag = True
         elif event.button() == QtCore.Qt.MidButton:
             # Circle
             self._tempCircleAngle = self._circleAngle
             self._circleFlag = True
         # Zoom
-        self._zoomFlag = True
+        self._zoom_flag = True
     #
     def mouseMoveEvent(self, event):
         if event.buttons() == QtCore.Qt.LeftButton:
@@ -79,8 +79,8 @@ class _QtColorChooseChart(QtWidgets.QWidget):
             self.update()
         elif event.buttons() == QtCore.Qt.RightButton:
             # Track
-            self._trackFlag = True
-            point = event.globalPos() - self._track_start_pos
+            self._track_flag = True
+            point = event.globalPos()-self._track_start_pos
             self.trackAction(point)
         elif event.buttons() == QtCore.Qt.MidButton:
             # Circle
@@ -90,20 +90,20 @@ class _QtColorChooseChart(QtWidgets.QWidget):
             self.circleAction(point)
     #
     def wheelEvent(self, event):
-        if self._zoomFlag is True:
+        if self._zoom_flag is True:
             delta = event.angleDelta().y()
-            self.zoomAction(delta)
+            self.__set_zoom_update_(delta)
         #
         self._pressFlag = False
         self._moveFlag = False
         self._circleFlag = False
-        self._trackFlag = False
+        self._track_flag = False
     #
     def resizeEvent(self, event):
         self._pressFlag = False
         self._moveFlag = False
         self._circleFlag = False
-        self._trackFlag = False
+        self._track_flag = False
     #
     def paintEvent(self, event):
         def setDrawColor():
@@ -123,17 +123,17 @@ class _QtColorChooseChart(QtWidgets.QWidget):
                         angle = gui_core.ChartMethod.get_angle_by_coord(x, y, xPos, yPos)
                         length = gui_core.ChartMethod.get_length_by_coord(x, y, xPos, yPos)
                         #
-                        h = -angle - hOffset
+                        h = -angle-hOffset
                         #
                         r1 = mainRadius
                         a1 = angle
                         d1 = 360.0 / sideCount
                         d2 = 360.0 / sideCount / 2
                         of = -d2
-                        a2 = a1 + of - gui_core.ChartMethod.FNC_FLOOR(a1 / d1) * d1
+                        a2 = a1 + of-gui_core.ChartMethod.FNC_FLOOR(a1 / d1) * d1
                         l = [gui_core.ChartMethod.FNC_SIN(gui_core.ChartMethod.FNC_ANGLE(d1)) / gui_core.ChartMethod.FNC_COS(gui_core.ChartMethod.FNC_ANGLE(a2)) * r1, r1][a1 % 180 == 0]
                         #
-                        s = length / (l - subRadius)
+                        s = length / (l-subRadius)
                         s = float(max(min(s, 1.0), 0.0))
                         v = vMult / 100.0
                         v = float(max(min(v, 1.0), 0.0))
@@ -142,7 +142,7 @@ class _QtColorChooseChart(QtWidgets.QWidget):
                         i_background_rgba = r, g, b, 255
                         i_border_rgba = 0, 0, 0, 255
                         #
-                        if self._pressFlag is True or self._moveFlag is True or self._circleFlag is True or self._trackFlag is True:
+                        if self._pressFlag is True or self._moveFlag is True or self._circleFlag is True or self._track_flag is True:
                             if color_path.contains(pressPoint):
                                 self._rbgColor = r, g, b
                                 self._hsvColor = h, s, v
@@ -169,7 +169,7 @@ class _QtColorChooseChart(QtWidgets.QWidget):
             side = 16
             sideCount = 6
             #
-            mainRadius = min(width, height) / 2 - side
+            mainRadius = min(width, height) / 2-side
             #
             subRadius = float(mainRadius) / count
             #
@@ -186,14 +186,14 @@ class _QtColorChooseChart(QtWidgets.QWidget):
                 for ySeq in range(yCount):
                     xOffset = gui_core.ChartMethod.FNC_SIN(gui_core.ChartMethod.FNC_ANGLE(60)) * subRadius
                     #
-                    xSubR = xOffset * xSeq * 2 - xOffset * (ySeq % 2)
+                    xSubR = xOffset * xSeq * 2-xOffset * (ySeq % 2)
                     ySubR = ySeq * subRadius * 1.5
                     #
                     xSubPos = xSubR + xPos
                     _ySubPos = ySubR + yPos
                     #
-                    _xSubPos = width / 2 - xSubR
-                    ySubPos = height / 2 - ySubR
+                    _xSubPos = width / 2-xSubR
+                    ySubPos = height / 2-ySubR
                     #
                     setDrawBranch(xSubPos, ySubPos)
                     setDrawBranch(_xSubPos, ySubPos)
@@ -268,7 +268,7 @@ class _QtColorChooseChart(QtWidgets.QWidget):
 
         # painter.end()  # for pyside2
     #
-    def zoomAction(self, delta):
+    def __set_zoom_update_(self, delta):
         radix = 3
         #
         self._count = bsc_core.ValueMtd.step_to(
@@ -315,8 +315,8 @@ class _QtColorChooseChart(QtWidgets.QWidget):
         x = point.x()
         y = point.y()
         #
-        x -= (pos0[0] - xPos)
-        y -= (pos0[1] - yPos)
+        x -= (pos0[0]-xPos)
+        y -= (pos0[1]-yPos)
         return QtCore.QPoint(x, y)
     #
     def getCircleAngle(self, point):
@@ -334,7 +334,7 @@ class _QtColorChooseChart(QtWidgets.QWidget):
     def getCurrentRgb(self):
         print self._rbgColor
     #
-    def initUi(self):
+    def _set_build_(self):
         self._rbgColor = None
         self._hsvColor = None
         self._htmlColor = None
@@ -343,7 +343,7 @@ class _QtColorChooseChart(QtWidgets.QWidget):
         #
         self.cls_colorPathDic = {}
         #
-        self._zoomFlag = True
+        self._zoom_flag = True
         #
         self._pressFlag = True
         self._moveFlag = False
@@ -362,13 +362,13 @@ class _QtColorChooseChart(QtWidgets.QWidget):
         self._tempCircleAngle = 0.0
         self._circleAngle = 0.0
         #
-        self._trackFlag = False
+        self._track_flag = False
         self._tmp_track_offset_x = 0
         self._yTempTrackOffset = 0
         self._track_offset_x = 0
         self._yTrackOffset = 0
         #
-        self._zoomFlag = True
+        self._zoom_flag = True
         #
         self._count = 13
         self._countMaximum = 34
@@ -377,10 +377,6 @@ class _QtColorChooseChart(QtWidgets.QWidget):
         self._vMult = 100.0
         self._vMultMaximum = 100.0
         self._vMultMinimum = 0.0
-    #
-    def setUiSize(self):
-        self.setMaximumSize(166667, 166667)
-        self.setMinimumSize(240, 240)
 
 
 class _QtSectorChart(
@@ -587,6 +583,36 @@ class _QtPieChart(
         ).get()
         self._basic_data = self._chart_draw_data
     #
+    def __set_press_update_(self, event):
+        i_enable = False
+        offset_x, offset_y = 8, 8
+        if self._basic_data:
+            for seq, i in enumerate(self._basic_data):
+                i_color, i_name, i_value, i_percent, i_path, i_shadow_path, i_pos, i_is_selected = i
+                x, y = i_pos
+                if i_path.contains(event.pos()) is True:
+                    if i_is_selected is False:
+                        i_is_selected = True
+                        self._current_name_text = i_name
+                        self._current_percent = i_percent
+                        i_path.translate(x, y)
+                        i_shadow_path.translate(x + offset_x, y + offset_y)
+                    #
+                    i_enable = True
+                elif i_path.contains(event.pos()) is False:
+                    if i_is_selected is True:
+                        i_is_selected = False
+                        i_path.translate(-x, -y)
+                        i_shadow_path.translate(-x-offset_x, -y-offset_y)
+                #
+                self._basic_data[seq] = i_color, i_name, i_value, i_percent, i_path, i_shadow_path, i_pos, i_is_selected
+        #
+        if not i_enable:
+            self._current_name_text = None
+            self._current_percent = None
+        #
+        self.update()
+    #
     def __init__(self, *args, **kwargs):
         super(_QtPieChart, self).__init__(*args, **kwargs)
         #
@@ -631,44 +657,14 @@ class _QtPieChart(
                 pass
             elif event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
-                    self._set_press_update_(event)
+                    self.__set_press_update_(event)
             elif event.type() == QtCore.QEvent.MouseMove:
                 if event.buttons() == QtCore.Qt.LeftButton:
-                    self._set_press_update_(event)
+                    self.__set_press_update_(event)
                 else:
                     self._hover_point = event.pos()
                     self.update()
         return False
-    #
-    def _set_press_update_(self, event):
-        i_enable = False
-        offset_x, offset_y = 8, 8
-        if self._basic_data:
-            for seq, i in enumerate(self._basic_data):
-                i_color, i_name, i_value, i_percent, i_path, i_shadow_path, i_pos, i_is_selected = i
-                x, y = i_pos
-                if i_path.contains(event.pos()) is True:
-                    if i_is_selected is False:
-                        i_is_selected = True
-                        self._current_name_text = i_name
-                        self._current_percent = i_percent
-                        i_path.translate(x, y)
-                        i_shadow_path.translate(x + offset_x, y + offset_y)
-                    #
-                    i_enable = True
-                elif i_path.contains(event.pos()) is False:
-                    if i_is_selected is True:
-                        i_is_selected = False
-                        i_path.translate(-x, -y)
-                        i_shadow_path.translate(-x - offset_x, -y - offset_y)
-                #
-                self._basic_data[seq] = i_color, i_name, i_value, i_percent, i_path, i_shadow_path, i_pos, i_is_selected
-        #
-        if not i_enable:
-            self._current_name_text = None
-            self._current_percent = None
-        #
-        self.update()
 
     def paintEvent(self, event):
         width, height = self.width(), self.height()
@@ -682,7 +678,7 @@ class _QtPieChart(
             current_shadow_path = None
             for i in self._basic_data:
                 i_color, i_name, i_value, i_percent, i_path, i_sub_path, i_pos, i_is_selected = i
-                i_shadow_path = i_sub_path - i_path
+                i_shadow_path = i_sub_path-i_path
                 painter._set_background_color_(i_color)
                 if i_is_selected is True:
                     painter._set_border_color_(self._hover_chart_border_color)
@@ -702,7 +698,7 @@ class _QtPieChart(
             # Explain
             rect = QtCore.QRect(
                 side, side,
-                radius - side * 2, radius - side * 2
+                radius-side * 2, radius-side * 2
             )
             if self._current_name_text and self._current_percent:
                 painter.setPen(self._pen)
@@ -736,6 +732,34 @@ class _QtHistogramChart(
 
         self._value_array = self._chart_data
     #
+    def __set_selection_update_(self, event):
+        x = event.pos().x()-self._track_offset_x-self._grid_offset_x
+        self._selectedIndex = int(x / int(self._grid_w / self._grid_scale_w))
+    #
+    def __set_track_update_(self, point):
+        radix = self._grid_w / 2
+        track_offset_x = self._tmp_track_offset_x
+        track_offset_x += point.x()
+        #
+        if self._limitEnabled is True:
+            track_offset_x = [0, track_offset_x][track_offset_x < 0]
+        # Track
+        if self._track_flag is True:
+            self._track_offset_x = int(track_offset_x/radix)*radix
+        #
+        self.update()
+    #
+    def __set_zoom_update_(self, delta):
+        radix = 2.5
+        if radix >= self._grid_scale_h:
+            self._grid_scale_h += [0, radix][delta > 0]
+        elif radix < self._grid_scale_h < self._grid_w:
+            self._grid_scale_h += [-radix, radix][delta > 0]
+        elif self._grid_scale_h >= self._grid_w:
+            self._grid_scale_h += [-radix, 0][delta > 0]
+        #
+        self.update()
+    #
     def __init__(self, *args, **kwargs):
         super(_QtHistogramChart, self).__init__(*args, **kwargs)
         #
@@ -754,9 +778,7 @@ class _QtHistogramChart(
         #
         self.installEventFilter(self)
         #
-        self.initUi()
-        #
-        self.setUiSize()
+        self._set_build_()
         #
         self._set_chart_def_init_()
 
@@ -775,7 +797,7 @@ class _QtHistogramChart(
                 pass
             elif event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
-                    x = event.pos().x() - self._track_offset_x - self._grid_offset_x
+                    x = event.pos().x()-self._track_offset_x-self._grid_offset_x
                     self._selectedIndex = int(x / int(self._grid_w / 2))
                     #
                     self.update()
@@ -787,9 +809,9 @@ class _QtHistogramChart(
                 elif event.button() == QtCore.Qt.MidButton:
                     # Track
                     self._track_start_pos = event.globalPos()
-                    self._trackFlag = True
+                    self._track_flag = True
                     # Zoom
-                    self._zoomFlag = False
+                    self._zoom_flag = False
                 else:
                     event.ignore()
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
@@ -800,31 +822,31 @@ class _QtHistogramChart(
                 elif event.button() == QtCore.Qt.MidButton:
                     # Track
                     self._tmp_track_offset_x = self._track_offset_x
-                    self._trackFlag = False
+                    self._track_flag = False
                     # Zoom
-                    self._zoomFlag = True
+                    self._zoom_flag = True
                 else:
                     event.ignore()
             elif event.type() == QtCore.QEvent.MouseMove:
                 if event.buttons() == QtCore.Qt.LeftButton:
                     if self._moveFlag is True:
-                        self._set_selection_action_update_(event)
+                        self.__set_selection_update_(event)
                         #
                         self.update()
                 elif event.buttons() == QtCore.Qt.RightButton:
                     pass
                 elif event.buttons() == QtCore.Qt.MidButton:
                     # Track
-                    if self._trackFlag is True:
-                        point = event.globalPos() - self._track_start_pos
-                        self._set_track_action_update_(point)
+                    if self._track_flag is True:
+                        point = event.globalPos()-self._track_start_pos
+                        self.__set_track_update_(point)
                 else:
                     event.ignore()
             #
             elif event.type() == QtCore.QEvent.Wheel:
-                if self._zoomFlag is True:
+                if self._zoom_flag is True:
                     delta = event.angleDelta().y()
-                    self.zoomAction(delta)
+                    self.__set_zoom_update_(delta)
         return False
     #
     def paintEvent(self, event):
@@ -873,7 +895,7 @@ class _QtHistogramChart(
             width,
             height,
             (track_offset_x, track_offset_y),
-            (grid_offset_x - 1, grid_offset_y - 1),
+            (grid_offset_x-1, grid_offset_y-1),
             self._axis_border_color
         )
         painter._set_grid_mark_draw_(
@@ -886,52 +908,20 @@ class _QtHistogramChart(
             self._useMode
         )
     #
-    def _set_selection_action_update_(self, event):
-        x = event.pos().x() - self._track_offset_x - self._grid_offset_x
-        self._selectedIndex = int(x / int(self._grid_w / self._grid_scale_w))
-    #
-    def _set_track_action_update_(self, point):
-        radix = self._grid_w / 2
-        track_offset_x = self._tmp_track_offset_x
-        track_offset_x += point.x()
-        #
-        if self._limitEnabled is True:
-            track_offset_x = [0, track_offset_x][track_offset_x < 0]
-        # Track
-        if self._trackFlag is True:
-            self._track_offset_x = int(track_offset_x/radix)*radix
-        #
-        self.update()
-    #
-    def zoomAction(self, delta):
-        radix = 2.5
-        if radix >= self._grid_scale_h:
-            self._grid_scale_h += [0, radix][delta > 0]
-        elif radix < self._grid_scale_h < self._grid_w:
-            self._grid_scale_h += [-radix, radix][delta > 0]
-        elif self._grid_scale_h >= self._grid_w:
-            self._grid_scale_h += [-radix, 0][delta > 0]
-        #
-        self.update()
-    #
-    def setSelected(self, index):
+    def _set_selected_at_(self, index):
         self._selectedIndex = index
     #
-    def setUiSize(self):
-        self.setMaximumSize(166667, 166667)
-        self.setMinimumSize(0, 0)
-    #
-    def initUi(self):
+    def _set_build_(self):
         self._grid_border_color = 71, 71, 71, 255
         self._mark_border_color = 191, 191, 191, 255
         self._axis_border_color = 191, 191, 191, 255
         #
         self._useMode = 1
         #
-        self._zoomFlag = True
+        self._zoom_flag = True
         #
         self._limitEnabled = True
-        self._trackFlag = False
+        self._track_flag = False
         self._track_start_pos = QtCore.QPoint(0, 0)
         self._tmp_track_offset_x = 0
         self._track_offset_x = 0
@@ -954,3 +944,231 @@ class _QtHistogramChart(
         self._yValueExplain = 'Y'
         #
         self._selectedIndex = -1
+
+
+class _QtSequenceChart(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract._QtNameDef,
+    utl_gui_qt_abstract._QtChartDef,
+    utl_gui_qt_abstract._QtStatusDef,
+    #
+    utl_gui_qt_abstract._QtMenuDef,
+):
+    QT_MENU_CLASS = _utl_gui_qt_wgt_utility.QtMenu
+    def _set_chart_data_update_(self):
+        data = self._chart_data
+        if data is not None:
+            index_array, index_range, name_text = data
+            self._chart_index_array = index_array
+            self._chart_index_range = min(index_array), max(index_array)
+            #
+            index_array_0 = range(index_range[0], index_range[1]+1)
+            self._chart_index_array = index_array
+            index_array_1 = bsc_core.ListMtd.get_intersection(
+                index_array_0, index_array
+            )
+            self._chart_index_merge_array = bsc_core.IntegerArrayMtd.set_merge_to(
+                index_array_1
+            )
+            self._chart_index_lost_array = bsc_core.ListMtd.get_addition(
+                index_array_0, index_array_1
+            )
+            self._chart_index_lost_merge_array = bsc_core.IntegerArrayMtd.set_merge_to(
+                self._chart_index_lost_array
+            )
+            self._chart_index_check_range = index_range
+            self._name_text = '{} [{}-{}]'.format(
+                name_text, *self._chart_index_range
+            )
+            #
+            if self._chart_index_lost_array:
+                self._status = bsc_configure.Status.Error
+            else:
+                self._status = bsc_configure.Status.Completed
+            #
+            self.setToolTip(
+                (
+                    'key="{}"\n'
+                    'lost={}'
+                ).format(
+                    name_text,
+                    str(self._chart_index_lost_merge_array)
+                )
+            )
+            #
+            self.update()
+
+    def _set_widget_update_(self):
+        self.update()
+
+    def __init__(self, *args, **kwargs):
+        super(_QtSequenceChart, self).__init__(*args, **kwargs)
+        #
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setMouseTracking(True)
+        #
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Expanding
+        )
+        #
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Expanding
+        )
+        #
+        self.installEventFilter(self)
+        #
+        self._set_build_()
+        #
+        self._set_name_def_init_()
+        self._set_chart_def_init_()
+        self._set_status_def_init_()
+        #
+        self._set_menu_def_init_()
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.Resize:
+                # self._set_chart_data_update_()
+                self.update()
+            elif event.type() == QtCore.QEvent.Enter:
+                self._hover_flag = True
+                self.update()
+            elif event.type() == QtCore.QEvent.Leave:
+                self._hover_flag = False
+                self.update()
+            elif event.type() == QtCore.QEvent.MouseButtonPress:
+                if event.button() == QtCore.Qt.LeftButton:
+                    pass
+                #
+                elif event.button() == QtCore.Qt.RightButton:
+                    self._set_menu_show_()
+                elif event.button() == QtCore.Qt.MidButton:
+                    pass
+                else:
+                    event.ignore()
+            elif event.type() == QtCore.QEvent.MouseMove:
+                self._hover_point = event.pos()
+                self.update()
+        return False
+    #
+    def paintEvent(self, event):
+        pos_x, pos_y = 0, 0
+        width, height = self.width(), self.height()
+        #
+        side = 2
+        spacing = 4
+        name_w = self._name_width
+        #
+        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        #
+        painter.setFont(get_font())
+        #
+        index_minimum, index_maximum = self._chart_index_check_range
+        #
+        count = index_maximum-index_minimum+1
+        #
+        if count > 0:
+            name_rect = QtCore.QRect(
+                pos_x+side, pos_y+side, name_w, height-side * 2
+            )
+            painter._set_font_(get_font(size=10))
+            painter._set_border_color_(self._name_color)
+            if self._hover_flag is True:
+                if name_rect.contains(self._hover_point):
+                    painter._set_border_color_(self._hover_name_color)
+            #
+            text_ = painter.fontMetrics().elidedText(
+                self._name_text, QtCore.Qt.ElideLeft, name_rect.width(), QtCore.Qt.TextShowMnemonic
+            )
+            painter.drawText(
+                name_rect,
+                QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter,
+                text_
+            )
+            painter._set_border_color_(self._chart_border_color)
+            painter._set_background_color_(self._chart_background_color)
+            painter._set_background_style_(QtCore.Qt.FDiagPattern)
+            #
+            x, y = pos_x+name_w+side+spacing, pos_y+side
+            sequence_w = width-name_w-spacing-side*2
+            sequence_rect = QtCore.QRect(
+                x, y, sequence_w, height-side * 2
+            )
+            painter.drawRect(sequence_rect)
+            #
+            c_h, c_s, c_v = 60, .75, .75
+            if isinstance(self._chart_index_merge_array, (tuple, list)):
+                d_w = float(sequence_w) / float(count)
+                i_s = side+2
+                for i_raw in self._chart_index_merge_array:
+                    if isinstance(i_raw, (int, float)):
+                        i_index = i_raw
+                        i_x = x+int((i_index-index_minimum)*d_w)
+                        i_y = i_s-1
+                        i_w = int(d_w)
+                        i_h = height-i_s * 2+2
+                        #
+                        i_percent = float(1) / float(count)
+                        #
+                        i_rect = QtCore.QRect(i_x, i_y, i_w, i_h)
+                        i_c_h = c_h-(1-i_percent)*c_h
+                        i_c_r, i_c_g, i_c_b = bsc_core.ColorMtd.hsv2rgb(i_c_h, c_s, c_v)
+                        if self._hover_flag is True:
+                            if i_rect.contains(self._hover_point):
+                                i_c_r, i_c_g, i_c_b = bsc_core.ColorMtd.hsv2rgb(i_c_h, c_s*.75, c_v)
+                        #
+                        painter._set_border_color_(i_c_r, i_c_g, i_c_b, 255)
+                        painter._set_background_color_(i_c_r, i_c_g, i_c_b, 255)
+                        painter.drawRect(i_rect)
+                        #
+                        painter._set_font_(get_font())
+                        painter._set_border_color_(self._chart_text_color)
+                        painter._set_background_color_(0, 0, 0, 0)
+                        i_point = QtCore.QPoint(i_x, i_y+i_h/2+4)
+                        painter.drawText(
+                            i_point,
+                            str(i_raw)
+                        )
+                    elif isinstance(i_raw, (tuple, list)):
+                        i_start_index, i_end_index = i_raw
+                        i_x = x+int((i_start_index-index_minimum) * d_w)
+                        i_y = i_s-1
+                        i_w = int((i_end_index-i_start_index+1) * d_w)
+                        i_h = height-i_s*2+2
+                        #
+                        i_percent = float(i_end_index-i_start_index+1)/float(count)
+                        #
+                        i_rect = QtCore.QRect(i_x, i_y, i_w, i_h)
+                        i_c_h = c_h-(1-i_percent)*c_h
+                        if i_percent == 1:
+                            i_c_h = 140
+                        i_c_r, i_c_g, i_c_b = bsc_core.ColorMtd.hsv2rgb(i_c_h, c_s, c_v)
+                        if self._hover_flag is True:
+                            if i_rect.contains(self._hover_point):
+                                i_c_r, i_c_g, i_c_b = bsc_core.ColorMtd.hsv2rgb(i_c_h, c_s*.75, c_v)
+                        #
+                        painter._set_border_color_(i_c_r, i_c_g, i_c_b, 255)
+                        painter._set_background_color_(i_c_r, i_c_g, i_c_b, 255)
+                        painter.drawRect(i_rect)
+                        #
+                        painter._set_font_(get_font())
+                        painter._set_border_color_(self._chart_text_color)
+                        painter._set_background_color_(0, 0, 0, 0)
+                        i_point = QtCore.QPoint(i_x, i_y+i_h/2+4)
+                        painter.drawText(
+                            i_point,
+                            '{}-{}'.format(i_start_index, i_end_index)
+                        )
+    #
+    def _set_build_(self):
+        self._chart_index_array = []
+        self._chart_index_range = 0, 0
+        #
+        self._chart_index_merge_array = []
+        self._chart_index_check_range = 0, 0
+
+    def _get_index_range_(self):
+        return self._chart_index_range

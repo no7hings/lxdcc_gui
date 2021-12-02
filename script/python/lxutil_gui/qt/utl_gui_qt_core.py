@@ -259,7 +259,7 @@ def set_qt_window_show(qt_window, pos=None, size=None, use_exec=False):
         p_w, p_h = p.width(), p.height()
         o_x, o_y = p.pos().x(), p.pos().y()
     else:
-        desktop_rect = get_qt_desktop_primary_rect()
+        desktop_rect = get_qt_desktop_rect()
         p_w, p_h = desktop_rect.width(), desktop_rect.height()
         o_x, o_y = 0, 0
 
@@ -331,6 +331,7 @@ class Font(object):
     SEPARATOR = get_font(italic=True)
     CONTENT = get_font(size=8)
     LOADING = get_font(size=10, weight=75, italic=True)
+    DESCRIPTION = get_font(size=10)
     #
     GROUP = get_font(weight=75, italic=True)
     #
@@ -433,6 +434,9 @@ class Color(object):
     ITEM_BORDER_NORMAL = QtGui.QColor(255, 255, 255, 255)
     ITEM_BACKGROUND_NORMAL = QtGui.QColor(255, 255, 255, 31)
     ITEM_BORDER_HOVER = QtGui.QColor(255, 127, 63, 255)
+    #
+    DESCRIPTION_TEXT = QtGui.QColor(0, 0, 0, 255)
+    DESCRIPTION_BACKGROUND = QtGui.QColor(255, 255, 191, 255)
     @classmethod
     def _get_qt_color_(cls, *args):
         if len(args) == 1:
@@ -542,10 +546,10 @@ class QtUtilMtd(object):
         # tool-tip
         if tool_tip is True:
             p = QtWidgets.QToolTip.palette()
-            p.setColor(p.ToolTipBase, Color.BACKGROUND_NORMAL)
-            p.setColor(palette.ToolTipText, Color.TEXT_NORMAL)
+            p.setColor(p.ToolTipBase, Color.DESCRIPTION_BACKGROUND)
+            p.setColor(palette.ToolTipText, Color.DESCRIPTION_TEXT)
             QtWidgets.QToolTip.setPalette(p)
-            QtWidgets.QToolTip.setFont(Font.NAME)
+            QtWidgets.QToolTip.setFont(Font.DESCRIPTION)
         #
         return palette
     @classmethod
@@ -1567,6 +1571,27 @@ def set_qt_progress_create(maximum, label=None):
 
 def set_qt_progress_connect_create():
     utl_core.__dict__['QT_PROGRESS_CREATE_METHOD'] = set_qt_progress_create
+
+
+def set_qt_layout_clear(layout):
+    def rcs_fnc_(layout_):
+        c = layout_.count()
+        for i in range(c):
+            i_item = layout_.takeAt(0)
+            if i_item is not None:
+                i_widget = i_item.widget()
+                if i_widget:
+                    i_widget.deleteLater()
+                else:
+                    _i_layout = i_item.layout()
+                    if _i_layout:
+                        rcs_fnc_(_i_layout)
+                    else:
+                        spacer = i_item.spacerItem()
+                        if spacer:
+                            spacer.deleteLater()
+    #
+    rcs_fnc_(layout)
 
 
 class AsbQtMenuSetup(object):

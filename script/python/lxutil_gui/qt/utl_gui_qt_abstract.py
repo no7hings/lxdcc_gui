@@ -126,18 +126,13 @@ class _QtStatusDef(object):
 
     def _set_status_def_init_(self):
         self._is_status_enable = False
-        self._is_element_status_enable = False
         #
         self._status = bsc_configure.Status.Stopped
-        self._element_statuses = []
         #
         self._status_color = Color.TRANSPARENT
         self._hover_status_color = Color.TRANSPARENT
-        self._element_status_colors = []
-        self._hover_element_status_colors = []
         #
         self._status_rect = QtCore.QRect()
-        self._element_status_rect = QtCore.QRect()
 
     def _set_widget_update_(self):
         raise NotImplementedError()
@@ -158,21 +153,46 @@ class _QtStatusDef(object):
         )
         self._set_widget_update_()
 
-    def _set_element_statuses_(self, element_statuses):
-        self._is_element_status_enable = True
-        self._element_statuses = element_statuses
-        self._element_status_colors = []
-        self._hover_element_status_colors = []
-        for i_element_status in element_statuses:
-            color, hover_color = self._get_status_color_(i_element_status)
-            self._element_status_colors.append(color)
-            self._hover_element_status_colors.append(hover_color)
-        self._set_widget_update_()
+    def _get_status_(self):
+        return self._status
 
     def _get_is_status_enable_(self):
         return self._is_status_enable
 
-    def _get_is_element_status_enable_(self):
+
+class _QtStatusesDef(object):
+    def _set_statuses_def_init_(self):
+        self._is_element_status_enable = False
+        #
+        self._element_statuses = []
+        #
+        self._element_status_colors = []
+        self._hover_element_status_colors = []
+        #
+        self._element_status_rect = QtCore.QRect()
+
+    def _set_widget_update_(self):
+        raise NotImplementedError()
+
+    def _set_statuses_(self, element_statuses):
+        if element_statuses:
+            self._is_element_status_enable = True
+            self._element_statuses = element_statuses
+            self._element_status_colors = []
+            self._hover_element_status_colors = []
+            for i_element_status in element_statuses:
+                color, hover_color = _QtStatusDef._get_status_color_(i_element_status)
+                self._element_status_colors.append(color)
+                self._hover_element_status_colors.append(hover_color)
+        else:
+            self._is_element_status_enable = False
+            self._element_statuses = []
+            self._element_status_colors = []
+            self._hover_element_status_colors = []
+        #
+        self._set_widget_update_()
+
+    def _get_is_statuses_enable_(self):
         return self._is_element_status_enable
 
 
@@ -332,10 +352,13 @@ class _QtNameDef(object):
         self._name_text_font = Font.NAME
         self._name_text_option = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
         #
+        self._name_width = 160
+        #
         self._frame_name_rect = QtCore.QRect()
         self._name_rect = QtCore.QRect()
         #
         self._name_color = 223, 223, 223
+        self._hover_name_color = 255, 255, 255
 
     def _set_widget_update_(self):
         raise NotImplementedError()
@@ -348,6 +371,9 @@ class _QtNameDef(object):
 
     def _get_name_text_option_(self):
         return self._name_text_option
+
+    def _set_name_width_(self, w):
+        self._name_width = w
 
     def _get_name_text_(self):
         if self._name_enable is True:
@@ -381,6 +407,7 @@ class _QtNameDef(object):
             if markdown_style is True:
                 import markdown
                 html = markdown.markdown(text)
+                # noinspection PyCallingNonCallable
                 self.setToolTip(html)
             else:
                 html = '<html>\n<body>\n'
@@ -388,6 +415,7 @@ class _QtNameDef(object):
                 for i in text.split('\n'):
                     html += '<ul>\n<li>{}</li>\n</ul>\n'.format(i)
                 html += '</body>\n</html>'
+                # noinspection PyCallingNonCallable
                 self.setToolTip(html)
 
 
@@ -1091,6 +1119,9 @@ class _QtItemShowDef(object):
     def _get_view_(self):
         raise NotImplementedError()
 
+    def _get_item_widget_(self):
+        raise NotImplementedError()
+
     def _set_item_show_def_init_(self, view):
         self._item_show_timer = QtCore.QTimer(view)
         self._item_show_thread = QtThread(view)
@@ -1104,6 +1135,14 @@ class _QtItemShowDef(object):
         self._item_show_image_loading_timer = QtCore.QTimer(view)
         self._item_show_image_loading_is_enable = False
         self._item_show_image_loading_is_finish = True
+        #
+        self._item_show_image_sub_process = None
+
+    def _set_item_show_sub_process_(self, sub_process):
+        self._item_show_image_sub_process = sub_process
+
+    def _get_item_show_sub_process_(self):
+        return self._item_show_image_sub_process
 
     def _get_item_is_viewport_show_able_(self):
         raise NotImplementedError()
@@ -1127,11 +1166,20 @@ class _QtItemShowDef(object):
 
         self._item_show_loading_timer.stop()
 
-    def _get_item_show_image_loading_is_finish_(self):
-        pass
+    def _get_item_show_image_loading_is_termination_(self):
+        sub_process = self._get_item_show_sub_process_()
+        if sub_process is not None:
+            return sub_process.get_is_termination()
+        return True
+
+    def _get_item_show_image_loading_is_abnormal_termination_(self):
+        sub_process = self._get_item_show_sub_process_()
+        if sub_process is not None:
+            return sub_process.get_is_abnormal_termination()
+        return False
 
     def _set_item_show_image_loading_start_(self):
-        if self._get_item_show_image_loading_is_finish_() is False:
+        if self._get_item_show_image_loading_is_termination_() is False:
             self._item_show_image_loading_is_enable = True
             self._item_show_image_loading_is_finish = False
             #
@@ -1141,16 +1189,30 @@ class _QtItemShowDef(object):
             self._item_show_image_loading_timer.start(1000)
 
     def _set_item_show_image_loading_update_(self):
-        if self._get_item_show_image_loading_is_finish_() is True:
+        self._set_item_show_image_sub_process_update_()
+        #
+        if self._get_item_show_image_loading_is_termination_() is True:
             self._set_item_show_image_loading_stop_()
         else:
             self._item_show_loading_index += 1
         #
         self._set_widget_update_()
 
+    def _set_item_show_image_sub_process_update_(self):
+        sub_process = self._get_item_show_sub_process_()
+        if sub_process is not None:
+            sub_process.set_update()
+
     def _set_item_show_image_loading_stop_(self):
         self._item_show_image_loading_is_enable = False
         self._item_show_image_loading_is_finish = True
+        #
+        if self._get_item_show_image_loading_is_abnormal_termination_() is True:
+            item_widget = self._get_item_widget_()
+            if item_widget is not None:
+                item_widget._set_image_file_path_(
+                    utl_core.Icon._get_file_path_('@image_loading_failed_error@')
+                )
         #
         self._item_show_image_loading_timer.stop()
 
@@ -1280,6 +1342,8 @@ class _QtChartDef(object):
         self._chart_data = None
         self._chart_draw_data = None
         self._chart_mode = utl_configure.GuiSectorChartMode.Completion
+        #
+        self._hover_flag = False
         self._hover_point = QtCore.QPoint()
         #
         r, g, b = 143, 143, 143
@@ -1290,6 +1354,8 @@ class _QtChartDef(object):
         self._chart_border_color = color
         self._hover_chart_border_color = hover_color
         self._chart_background_color = 39, 39, 39, 255
+        #
+        self._chart_text_color = 0, 0, 0, 255
 
     def _set_chart_data_(self, data, mode):
         self._chart_data = data
@@ -1304,6 +1370,12 @@ class _QtChartDef(object):
 
     def _set_chart_data_update_(self):
         raise NotImplementedError()
+
+    def _set_height_(self, h):
+        # noinspection PyUnresolvedReferences
+        self.setMaximumHeight(h)
+        # noinspection PyUnresolvedReferences
+        self.setMinimumHeight(h)
 
 
 class _QtAbsListWidget(
@@ -1416,3 +1488,79 @@ class _QtAbsListWidget(
         QtWidgets.QApplication.instance().processEvents(
             QtCore.QEventLoop.ExcludeUserInputEvents
         )
+
+
+class _QtConstantValueEntryDef(object):
+    QT_VALUE_ENTRY_CLASS = None
+    def _set_constant_value_entry_def_init_(self):
+        self._value_type = str
+        #
+        self._default_value = None
+        #
+        self._value_entry_widget = None
+
+    def _set_value_entry_build_(self, value_type):
+        pass
+
+    def _set_value_type_(self, value_type):
+        self._value_type = value_type
+        self._value_entry_widget._set_value_type_(value_type)
+
+    def _get_value_type_(self):
+        return self._value_type
+
+    def _set_default_value(self, value):
+        self._default_value = value
+
+    def _get_default_value_(self):
+        return self._default_value
+
+    def _set_value_(self, value):
+        self._value_entry_widget._set_value_(value)
+
+    def _get_value_(self):
+        return self._value_entry_widget._get_value_()
+
+
+class _QtArrayValueEntryDef(object):
+    QT_VALUE_ENTRY_CLASS = None
+    def _set_array_value_entry_def_init_(self):
+        self._value_type = str
+        #
+        self._default_value = []
+        self._value = []
+        self._value_entry_widgets = []
+
+    def _set_value_entry_build_(self, value_size, value_type):
+        pass
+
+    def _set_value_type_(self, value_type):
+        self._value_type = value_type
+        for i_value_entry_widget in self._value_entry_widgets:
+            i_value_entry_widget._set_value_type_(value_type)
+
+    def _get_value_type_(self):
+        return self._value_type
+
+    def _set_value_size_(self, size):
+        self._set_value_entry_build_(size, self._value_type)
+
+    def _get_value_size_(self):
+        return len(self._value_entry_widgets)
+
+    def _get_default_value_(self):
+        return self._default_value
+
+    def _set_value_(self, value):
+        for i, i_value in enumerate(value):
+            widget = self._value_entry_widgets[i]
+            widget._set_value_(i_value)
+
+    def _get_value_(self):
+        value = []
+        for i in self._value_entry_widgets:
+            i_value = i._get_value_()
+            value.append(
+                i_value
+            )
+        return tuple(value)

@@ -1,6 +1,4 @@
 # coding=utf-8
-import os
-
 from lxutil_gui.qt.utl_gui_qt_core import *
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
@@ -141,6 +139,8 @@ class _QtPressItem(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtFrameDef,
     utl_gui_qt_abstract._QtStatusDef,
+    utl_gui_qt_abstract._QtStatusesDef,
+    #
     utl_gui_qt_abstract._QtIconDef,
     utl_gui_qt_abstract._QtMenuDef,
     utl_gui_qt_abstract._QtNameDef,
@@ -174,6 +174,8 @@ class _QtPressItem(
         #
         self._set_frame_def_init_()
         self._set_status_def_init_()
+        self._set_statuses_def_init_()
+        #
         self._set_icon_def_init_()
         self._set_name_def_init_()
         self._set_menu_def_init_()
@@ -212,7 +214,7 @@ class _QtPressItem(
         check_enable = self._get_item_is_check_enable_()
         option_click_enable = self._get_item_option_click_enable_()
         status_enable = self._get_is_status_enable_()
-        element_status_enable = self._get_is_element_status_enable_()
+        element_status_enable = self._get_is_statuses_enable_()
         progress_enable = self._get_is_progress_enable_()
         #
         f_w, f_h = self._frame_icon_size
@@ -304,10 +306,11 @@ class _QtPressItem(
             #
             if enable is True:
                 if event.type() == QtCore.QEvent.Enter:
-                    if enable is True:
-                        self._item_is_hovered = True
+                    self._item_is_hovered = True
+                    self.update()
                 elif event.type() == QtCore.QEvent.Leave:
                     self._item_is_hovered = False
+                    self.update()
                 # press
                 elif event.type() in [QtCore.QEvent.MouseButtonPress, QtCore.QEvent.MouseButtonDblClick]:
                     self._action_flag = None
@@ -326,7 +329,9 @@ class _QtPressItem(
                                     break
                     elif event.button() == QtCore.Qt.RightButton:
                         self._set_menu_show_()
+                    #
                     self._item_is_hovered = True
+                    self.update()
                 elif event.type() == QtCore.QEvent.MouseButtonRelease:
                     if self._action_flag == gui_configure.ActionFlag.CHECK_CLICK:
                         self._set_item_check_swap_()
@@ -337,6 +342,7 @@ class _QtPressItem(
                         self.option_clicked.emit()
                     #
                     self._action_flag = None
+                    self.update()
         return False
 
     def paintEvent(self, event):
@@ -369,7 +375,7 @@ class _QtPressItem(
                 offset=offset
             )
         #
-        if self._get_is_element_status_enable_() is True:
+        if self._get_is_statuses_enable_() is True:
             status_colors = [self._element_status_colors, self._hover_element_status_colors][self._item_is_hovered]
             painter._set_elements_status_draw_by_rect_(
                 self._element_status_rect,
@@ -552,7 +558,7 @@ class _QtFilterBar(QtWidgets.QWidget):
         qt_layout_0.addWidget(self._result_label)
         self._result_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         #
-        self._qt_entry_frame_0 = _utl_gui_qt_wgt_utility._QtEntryFrame()
+        self._qt_entry_frame_0 = _QtEntryFrame()
         self._qt_entry_frame_0.setMaximumWidth(240)
         qt_layout_0.addWidget(self._qt_entry_frame_0)
         qt_layout_1 = QtHBoxLayout(self._qt_entry_frame_0)
@@ -575,7 +581,7 @@ class _QtFilterBar(QtWidgets.QWidget):
             ]
         )
         #
-        self._qt_entry_0 = _utl_gui_qt_wgt_utility._QtConstantEntry()
+        self._qt_entry_0 = _QtEntry()
         qt_layout_1.addWidget(self._qt_entry_0)
         self._qt_entry_frame_0.setFocusProxy(self._qt_entry_0)
         #
@@ -715,6 +721,364 @@ class _QtFilterBar(QtWidgets.QWidget):
             self._qt_entry_0.setFocus(QtCore.Qt.MouseFocusReason)
         else:
             self._qt_entry_0.clearFocus()
+
+
+class _QtEntryFrame(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract._QtStatusDef,
+):
+    def _set_widget_update_(self):
+        self.update()
+
+    def __init__(self, *args, **kwargs):
+        super(_QtEntryFrame, self).__init__(*args, **kwargs)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        #
+        self._item_is_hovered = False
+        self._is_focused = False
+        self._entry_count = 1
+        #
+        self._set_status_def_init_()
+
+    def paintEvent(self, event):
+        pos_x, pos_y = 0, 0
+        width, height = self.width(), self.height()
+        #
+        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        size = self._entry_count
+        spacing = 2
+        #
+        d = width/size
+        if size == 1:
+            i_rect = QtCore.QRect(
+                pos_x, pos_y, width, height
+            )
+            bkg_color = [Color.ENTRY_BACKGROUND_ENTRY_OFF, Color.ENTRY_BACKGROUND_ENTRY_ON][self._is_focused]
+            bdr_color = [Color.ENTRY_BORDER_ENTRY_OFF, Color.ENTRY_BORDER_ENTRY_ON][self._is_focused]
+            painter._set_frame_draw_by_rect_(
+                i_rect,
+                border_color=bdr_color,
+                background_color=bkg_color,
+                border_radius=4
+            )
+        elif size > 1:
+            for i in range(size):
+                if i == 0:
+                    i_rect = QtCore.QRect(
+                        i*d, pos_y, d-spacing, height
+                    )
+                elif (i+1) == size:
+                    i_rect = QtCore.QRect(
+                        i*d+(spacing*i), pos_y, d-spacing, height
+                    )
+                else:
+                    i_rect = QtCore.QRect(
+                        i*d+(spacing*i), pos_y, d-spacing, height
+                    )
+                bkg_color = [Color.ENTRY_BACKGROUND_ENTRY_OFF, Color.ENTRY_BACKGROUND_ENTRY_ON][self._is_focused]
+                bdr_color = [Color.ENTRY_BORDER_ENTRY_OFF, Color.ENTRY_BORDER_ENTRY_ON][self._is_focused]
+                painter._set_frame_draw_by_rect_(
+                    i_rect,
+                    border_color=bdr_color,
+                    background_color=bkg_color,
+                    border_radius=4
+                )
+
+    def _set_focus_(self, boolean):
+        self._is_focused = boolean
+        self.update()
+
+    def _set_entry_count_(self, size):
+        self._entry_count = size
+
+
+class _QtEntry(QtWidgets.QLineEdit):
+    entry_changed = qt_signal()
+    def __init__(self, *args, **kwargs):
+        super(_QtEntry, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setPalette(QtDccMtd.get_qt_palette())
+        self.setFont(Font.NAME)
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setStyleSheet(
+            'QLineEdit{background: rgba(0, 0, 0, 0) ; color: rgba(255, 255, 255, 255)}'
+            'QLineEdit{border: none}'
+            'QLineEdit{selection-color: rgba(255, 255, 255, 255) ; selection-background-color: rgba(0, 127, 127, 255)}'
+        )
+        #
+        self._value_type = str
+        self._is_use_as_storage = False
+        #
+        self._default_value = None
+        #
+        self._maximum = 1
+        self._minimum = 0
+        #
+        self.textChanged.connect(self._set_enter_changed_emit_send_)
+        #
+        self.setToolTip(
+            (
+                '"LMB-click" to entry\n'
+                '"MMB-wheel" to modify "int" or "float" value'
+            )
+        )
+
+    def __set_wheel_update_(self, event):
+        if self._value_type in [int, float]:
+            delta = event.angleDelta().y()
+            pre_value = self._get_value_()
+            if delta > 0:
+                self._set_value_(pre_value+1)
+            else:
+                self._set_value_(pre_value-1)
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.FocusIn:
+                self._is_focused = True
+                parent = self.parent()
+                if isinstance(parent, _QtEntryFrame):
+                    parent._set_focus_(True)
+            elif event.type() == QtCore.QEvent.FocusOut:
+                self._is_focused = False
+                parent = self.parent()
+                if isinstance(parent, _QtEntryFrame):
+                    parent._set_focus_(False)
+                #
+                self._set_value_completion_()
+            elif event.type() == QtCore.QEvent.Wheel:
+                self.__set_wheel_update_(event)
+        return False
+
+    def contextMenuEvent(self, event):
+        menu_raw = [
+            ('Basic', ),
+            ('Copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
+            ('Paste', None, (True, self.paste, False), QtGui.QKeySequence.Paste),
+            ('Cut', None, (True, self.cut, False), QtGui.QKeySequence.Cut),
+            ('Extend', ),
+            ('Undo', None, (True, self.undo, False), QtGui.QKeySequence.Undo),
+            ('Redo', None, (True, self.redo, False), QtGui.QKeySequence.Redo),
+            ('Select All', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll),
+        ]
+        if self._is_use_as_storage is True:
+            menu_raw.extend(
+                [
+                    ('System',),
+                    ('Open', None, (True, self._set_open_in_system_, False), QtGui.QKeySequence.Open)
+                ]
+            )
+        #
+        if self.isReadOnly():
+            menu_raw = [
+                ('Basic',),
+                ('Copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
+                ('Extend', ),
+                ('Select All', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll)
+            ]
+        #
+        if menu_raw:
+            self._qt_menu = _utl_gui_qt_wgt_utility.QtMenu(self)
+            self._qt_menu._set_menu_raw_(menu_raw)
+            self._qt_menu._set_show_()
+
+    def _set_enter_changed_emit_send_(self):
+        # noinspection PyUnresolvedReferences
+        self.entry_changed.emit()
+
+    def _set_value_completion_(self):
+        if self._value_type in [int, float]:
+            if not self.text():
+                self._set_value_(0)
+
+    def _set_value_type_(self, value_type):
+        self._value_type = value_type
+        if self._value_type is None:
+            pass
+        elif self._value_type is str:
+            pass
+            # self._set_use_as_string_()
+        elif self._value_type is int:
+            self._set_use_as_integer_()
+        elif self._value_type is float:
+            self._set_use_as_float_()
+
+    def _get_value_type_(self):
+        return self._value_type
+
+    def _set_open_in_system_(self):
+        _ = self.text()
+        if _:
+            bsc_core.StoragePathOpt(_).set_open_in_system()
+
+    def _set_use_as_storage_(self, boolean):
+        self._is_use_as_storage = boolean
+
+    def _set_use_as_string_(self):
+        reg = QtCore.QRegExp(r'^[a-zA-Z0-9_]+$')
+        validator = QtGui.QRegExpValidator(reg, self)
+        self.setValidator(validator)
+
+    def _set_use_as_integer_(self):
+        self.setValidator(QtGui.QIntValidator())
+        self._set_value_completion_()
+
+    def _set_use_as_float_(self):
+        self.setValidator(QtGui.QDoubleValidator())
+        self._set_value_completion_()
+
+    def _set_value_maximum_(self, value):
+        self._maximum = value
+
+    def _get_value_maximum_(self):
+        return self._maximum
+
+    def _set_value_minimum_(self, value):
+        self._minimum = value
+
+    def _get_value_minimum_(self):
+        return self._minimum
+
+    def _set_value_range_(self, maximum, minimum):
+        self._set_value_maximum_(maximum), self._set_value_minimum_(minimum)
+
+    def _get_value_range_(self):
+        return self._get_value_maximum_(), self._get_value_minimum_()
+
+    def _get_value_(self):
+        _ = self.text()
+        if self._value_type == str:
+            return _
+        elif self._value_type == int:
+            return int(_)
+        elif self._value_type == float:
+            return float(_)
+        return _
+
+    def _set_value_(self, value):
+        self.setText(
+            str(self._value_type(value)).encode("UTF8")
+        )
+
+    def _get_default_value_(self):
+        return self._default_value
+
+    def _set_focus_connect_to_(self, widget):
+        pass
+    #
+    def _get_is_selected_(self):
+        boolean = False
+        if self.selectedText():
+            boolean = True
+        return boolean
+
+
+class _QtEnumerateConstantEntry(QtWidgets.QComboBox):
+    def __init__(self, *args, **kwargs):
+        super(_QtEnumerateConstantEntry, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.setPalette(QtDccMtd.get_qt_palette())
+        # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setItemDelegate(_utl_gui_qt_wgt_utility.QtStyledItemDelegate())
+        self.view().setAlternatingRowColors(True)
+        self.view().setPalette(QtDccMtd.get_qt_palette())
+        self.setFont(Font.NAME)
+        #
+        self.setLineEdit(_QtEntry())
+        #
+        self.setStyleSheet(
+            (
+                'QComboBox{{background: rgba(0, 0, 0, 0);color: rgba(255, 255, 255, 255)}}'
+                'QComboBox{{border: none}}'
+                # 'QAbstractItemView{{background: rgba(63, 63, 63, 255);color: rgba(255, 255, 255, 255)}}'
+                'QAbstractItemView{{border: 1px rgba(63, 127, 255, 255);border-radius: 3px;border-style: solid}}'
+                'QComboBox::drop-down{{width=16px;height=16p}}'
+                'QComboBox::down-arrow{{border-image: none;image: url({0});width=16px;height=16px}}'
+            ).format(
+                utl_core.Icon.get('arrow_down'),
+            )
+        )
+
+    def _set_use_as_storage_(self, boolean):
+        self.lineEdit()._set_use_as_storage_(boolean)
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.FocusIn:
+                self._is_focused = True
+                parent = self.parent()
+                if isinstance(parent, _QtEntryFrame):
+                    parent._set_focus_(True)
+            elif event.type() == QtCore.QEvent.FocusOut:
+                self._is_focused = True
+                parent = self.parent()
+                if isinstance(parent, _QtEntryFrame):
+                    parent._set_focus_(False)
+        return False
+
+
+class _QtConstantValueEntryItem(
+    _QtEntryFrame,
+    utl_gui_qt_abstract._QtConstantValueEntryDef
+):
+    QT_VALUE_ENTRY_CLASS = _QtEntry
+    #
+    entry_changed = qt_signal()
+    def __init__(self, *args, **kwargs):
+        super(_QtConstantValueEntryItem, self).__init__(*args, **kwargs)
+        #
+        self._set_constant_value_entry_def_init_()
+        #
+        self._layout = QtHBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(4)
+        #
+        self._set_value_entry_build_(self._value_type)
+
+    def _set_value_entry_build_(self, value_type):
+        self._value_type = value_type
+        #
+        self._value_entry_widget = _QtEntry()
+        self._layout.addWidget(self._value_entry_widget)
+        self._value_entry_widget._set_value_type_(self._value_type)
+
+
+class _QtArrayValueEntryItem(
+    _QtEntryFrame,
+    utl_gui_qt_abstract._QtArrayValueEntryDef
+):
+    QT_VALUE_ENTRY_CLASS = _QtEntry
+    #
+    entry_changed = qt_signal()
+    def __init__(self, *args, **kwargs):
+        super(_QtArrayValueEntryItem, self).__init__(*args, **kwargs)
+        #
+        self._set_array_value_entry_def_init_()
+        #
+        self._layout = QtHBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(4)
+        #
+        self._set_value_entry_build_(2, self._value_type)
+
+    def _set_value_entry_build_(self, value_size, value_type):
+        self._value_type = value_type
+        #
+        self._value_entry_widgets = []
+        set_qt_layout_clear(self._layout)
+        #
+        self._set_entry_count_(value_size)
+        if value_size:
+            for i in range(value_size):
+                _i_value_entry_widget = _QtEntry()
+                _i_value_entry_widget._set_value_type_(self._value_type)
+                self._layout.addWidget(_i_value_entry_widget)
+                self._value_entry_widgets.append(_i_value_entry_widget)
 
 
 class _QtHExpandItem0(
@@ -1208,9 +1572,6 @@ class QtTreeWidgetItem(
     def _get_view_(self):
         return self.treeWidget()
 
-    def _get_item_show_image_loading_is_finish_(self):
-        return True
-
     def _get_item_is_viewport_show_able_(self):
         _ = self.parent()
         if self.parent() is None:
@@ -1231,6 +1592,9 @@ class QtTreeWidgetItem(
             self._set_name_(
                 'loading .{}'.format('.'*(self._item_show_loading_index % 3))
             )
+
+    def _get_item_widget_(self):
+        pass
 
     def __str__(self):
         return '{}(names="{}")'.format(
@@ -1284,12 +1648,6 @@ class QtListWidgetItem(
 
     def _get_view_(self):
         return self.listWidget()
-    #
-    def _get_item_show_image_loading_is_finish_(self):
-        file_path = self._get_item_widget_()._get_image_file_path_()
-        if file_path is not None:
-            return os.path.isfile(file_path)
-        return True
 
     def _get_item_is_viewport_show_able_(self):
         item = self
@@ -1776,7 +2134,7 @@ class _AbsQtSplitterHandle(
         layout.addWidget(self._contract_l_button)
         self._contract_l_button.clicked.connect(self._set_contract_l_switch_)
         self._contract_l_button.setToolTip(
-            'LMB-click to contact left/top.'
+            '"LMB-click" to contact left/top.'
         )
         #
         self._swap_button = _QtIconPressItem()
@@ -1789,7 +2147,7 @@ class _AbsQtSplitterHandle(
         layout.addWidget(self._swap_button)
         self._swap_button.clicked.connect(self._set_swap_)
         self._swap_button.setToolTip(
-            'LMB-click to swap.'
+            '"LMB-click" to swap.'
         )
         #
         self._contract_r_button = _QtIconPressItem()
@@ -1800,7 +2158,7 @@ class _AbsQtSplitterHandle(
         layout.addWidget(self._contract_r_button)
         self._contract_r_button.clicked.connect(self._set_contract_r_switch_)
         self._contract_r_button.setToolTip(
-            'LMB-click to contact right/bottom.'
+            '"LMB-click" to contact right/bottom.'
         )
         #
         self._set_contract_buttons_update_()

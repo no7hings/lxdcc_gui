@@ -759,6 +759,9 @@ class PrxListItem(
     def set_image(self, file_path):
         self.widget._set_image_file_path_(file_path)
 
+    def set_image_show_sub_process(self, sub_process):
+        self.widget._get_item_()._set_item_show_sub_process_(sub_process)
+
     def set_visible_tgt_key(self, key):
         self.set_gui_attribute(
             'visible_tgt_key',

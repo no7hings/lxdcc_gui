@@ -11,14 +11,21 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
     def _test_(self):
         n = utl_prx_widgets.PrxNode()
         self.set_widget_add(n)
-        p = n.set_port_add(utl_prx_widgets.PrxEnumeratePort('test_0', 'Test-0', default_value=['a', 'b', 'c']))
-        p.set_use_as_storage(True)
-        #
-        p = n.set_port_add(utl_prx_widgets.PrxStringPort('test_1', 'Test-1'))
-        p.set('a')
-        p.set_use_as_storage(True)
+        p = n.set_port_add(
+            utl_prx_widgets.PrxIntegerArrayPort(
+                'test_0',
+                'Test-0'
+            )
+        )
+        # p.set_value_type(float)
+        p.set_value_size(2)
+        p.set([1, 2])
 
-        p = n.set_port_add(utl_prx_widgets.PrxOpenFilePathPort('test_1', 'Test-1'))
+        print p.get()
+
+        p = n.set_port_add(
+            utl_prx_widgets.PrxOpenFilePathPort('test_1', 'Test-1')
+        )
         p.set('a')
         p.set_use_as_storage(True)
 

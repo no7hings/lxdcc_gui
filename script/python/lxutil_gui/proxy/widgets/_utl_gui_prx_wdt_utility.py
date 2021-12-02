@@ -31,7 +31,7 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         self._head.setMaximumHeight(20)
         self._head.setMinimumHeight(20)
         self._head.expand_toggled.connect(self.set_expanded)
-        self._head.setToolTip('LMB-click to expand "on" / "off"')
+        self._head.setToolTip('"LMB-click" to expand "on" / "off"')
         #
         qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
         qt_layout_0.addWidget(qt_widget_1)
@@ -65,6 +65,11 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         else:
             self._layout.addWidget(widget.widget)
 
+    def set_layout_alignment_to_top(self):
+        self._layout.setAlignment(
+            utl_gui_qt_core.QtCore.Qt.AlignTop
+        )
+
     def set_size_mode(self, mode):
         if mode == 0:
             self._view.setSizePolicy(
@@ -76,6 +81,59 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
                 utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
                 utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum
             )
+
+    def set_clear(self):
+        def rcs_fnc_(layout_):
+            c = layout_.count()
+            for i in range(c):
+                i_item = self._layout.takeAt(0)
+                if i_item is not None:
+                    i_widget = i_item.widget()
+                    if i_widget:
+                        i_widget.deleteLater()
+                    else:
+                        _i_layout = i_item.layout()
+                        if _i_layout:
+                            rcs_fnc_(_i_layout)
+                        else:
+                            spacer = i_item.spacerItem()
+                            if spacer:
+                                spacer.deleteLater()
+        #
+        rcs_fnc_(self._layout)
+
+
+class PrxScrollArea(utl_gui_prx_abstract.AbsPrxWidget):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtScrollArea
+    def __init__(self, *args, **kwargs):
+        super(PrxScrollArea, self).__init__(*args, **kwargs)
+        self._layout = self.widget._layout
+
+    def set_widget_add(self, widget):
+        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+            self._layout.addWidget(widget)
+        else:
+            self._layout.addWidget(widget.widget)
+
+    def set_clear(self):
+        def rcs_fnc_(layout_):
+            c = layout_.count()
+            for i in range(c):
+                i_item = self._layout.takeAt(0)
+                if i_item is not None:
+                    i_widget = i_item.widget()
+                    if i_widget:
+                        i_widget.deleteLater()
+                    else:
+                        _i_layout = i_item.layout()
+                        if _i_layout:
+                            rcs_fnc_(_i_layout)
+                        else:
+                            spacer = i_item.spacerItem()
+                            if spacer:
+                                spacer.deleteLater()
+        #
+        rcs_fnc_(self._layout)
 
 
 class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
@@ -452,7 +510,7 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget._set_status_(status)
 
     def set_element_statuses(self, element_statuses):
-        self.widget._set_element_statuses_(element_statuses)
+        self.widget._set_statuses_(element_statuses)
 
 
 class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):
