@@ -712,6 +712,7 @@ class PrxRsvObjTreeViewAddOpt(object):
                     **create_kwargs
                 )
             #
+            item_prx.set_checked(True)
             item_prx.set_keyword_filter_contexts([obj_path, obj_type])
             obj.set_obj_gui(item_prx)
             item_prx.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
@@ -746,8 +747,6 @@ class PrxRsvObjTreeViewAddOpt(object):
         #
         item_prx.set_name(obj_name)
         item_prx.set_tool_tips((obj_path,))
-        #
-        item_prx.set_checked(True)
         #
         menu_raw.extend(
             [

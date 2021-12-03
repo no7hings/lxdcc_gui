@@ -1,6 +1,8 @@
 # coding:utf-8
 import fnmatch
 
+from lxbasic import bsc_configure
+
 from lxutil_gui import gui_configure
 
 from lxutil_gui.qt import utl_gui_qt_core
@@ -133,6 +135,8 @@ class AbsPrxWindow(AbsGuiProxy):
         self._window_title = None
 
         self._close_methods = []
+        #
+        self._status = bsc_configure.GuiStatus.Normal
 
         self._set_build_()
 
@@ -181,6 +185,9 @@ class AbsPrxWindow(AbsGuiProxy):
 
     def set_window_name_icon(self, text):
         self.widget._set_name_icon_text_(text)
+
+    def set_status(self, status):
+        self._status = status
 
 
 class AbsWidgetContentDef(object):

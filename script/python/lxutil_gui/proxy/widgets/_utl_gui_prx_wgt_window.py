@@ -205,6 +205,9 @@ class PrxDialogWindow1(utl_gui_prx_abstract.AbsPrxWindow):
         # show unique
         utl_gui_qt_core.set_qt_window_show(self.widget, pos, size, use_exec=True)
 
+    def set_status(self, status):
+        self._text_browser.set_status(status)
+
 
 class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtMainWindow

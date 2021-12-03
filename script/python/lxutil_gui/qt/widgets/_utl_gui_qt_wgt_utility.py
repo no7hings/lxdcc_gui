@@ -5,6 +5,8 @@ import os
 
 import functools
 
+from lxbasic import bsc_configure
+
 from lxbasic.objects import bsc_obj_abs
 
 from lxutil_gui.qt import utl_gui_qt_abstract
@@ -21,7 +23,10 @@ class QtItemDelegate(QtWidgets.QItemDelegate):
         return size
 
 
-class QtWidget(QtWidgets.QWidget):
+class QtWidget(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract._QtStatusDef
+):
     def __init__(self, *args, **kwargs):
         super(QtWidget, self).__init__(*args, **kwargs)
         # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -30,6 +35,48 @@ class QtWidget(QtWidgets.QWidget):
         self.setPalette(qt_palette)
         #
         self.setAutoFillBackground(True)
+        #
+        self._set_status_def_init_()
+
+    def _set_widget_update_(self):
+        self.update()
+
+    def paintEvent(self, event):
+        if self._get_is_status_enable_() is True:
+            painter = QtPainter(self)
+            #
+            if self._status in [
+                bsc_configure.GuiStatus.Error
+            ]:
+                pox_x, pos_y = 0, 0
+                width, height = self.width(), self.height()
+                frame_rect = QtCore.QRect(
+                    pox_x, pos_y, width, height
+                )
+                #
+                painter._set_frame_draw_by_rect_(
+                    frame_rect,
+                    border_color=(255, 0, 63, 255),
+                    background_color=(0, 0, 0, 0),
+                    border_width=2,
+                    border_radius=2
+                )
+            elif self._status in [
+                bsc_configure.GuiStatus.Warning
+            ]:
+                pox_x, pos_y = 0, 0
+                width, height = self.width(), self.height()
+                frame_rect = QtCore.QRect(
+                    pox_x, pos_y, width, height
+                )
+                #
+                painter._set_frame_draw_by_rect_(
+                    frame_rect,
+                    border_color=(255, 255, 63, 255),
+                    background_color=(0, 0, 0, 0),
+                    border_width=2,
+                    border_radius=2
+                )
 
 
 class QtFrame(QtWidgets.QFrame):
@@ -228,18 +275,31 @@ class QtPainter(QtGui.QPainter):
         self.drawRect(rect)
 
     def _set_loading_draw_by_rect_(self, rect, loading_index):
+        self.setRenderHint(self.Antialiasing)
         self._set_border_color_(
             Color.LOADING
         )
         self._set_border_color_(Color.LOADING)
         self._set_background_color_(Color.LOADING)
         # self._set_background_style_(QtCore.Qt.FDiagPattern)
+        x, y = rect.x(), rect.y()
+        w, h = rect.width(), rect.height()
         self.drawRect(rect)
+        process_frame = QtCore.QRect(
+            x+8, h/2-10, w-16, 20
+        )
+        # self._set_border_color_(255, 255, 255)
+        # self._set_background_color_(255, 255, 255, 63)
+        # self.drawRoundedRect(
+        #     process_frame,
+        #     10, 10,
+        #     QtCore.Qt.AbsoluteSize
+        # )
         #
         self._set_font_(Font.LOADING)
         self._set_border_color_(Color.TEXT_NORMAL)
         self.drawText(
-            rect,
+            process_frame,
             QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
             'loading .{}'.format('.'*(loading_index % 3))
         )
@@ -347,6 +407,7 @@ class QtPainter(QtGui.QPainter):
         )
 
     def _set_frame_draw_by_rect_(self, rect, border_color, background_color, background_style=None, offset=0, border_radius=0, border_width=1):
+        self.setRenderHint(self.Antialiasing)
         self._set_border_color_(border_color)
         self._set_border_width_(border_width)
         self._set_background_color_(background_color)
@@ -1200,7 +1261,8 @@ class QtMainWindow(
 
 
 class QtDialog(
-    QtWidgets.QDialog
+    QtWidgets.QDialog,
+    utl_gui_qt_abstract._QtStatusDef
 ):
     def __init__(self, *args, **kwargs):
         super(QtDialog, self).__init__(*args, **kwargs)
@@ -1220,6 +1282,8 @@ class QtDialog(
         #
         set_shadow(self, radius=2)
         self.installEventFilter(self)
+        #
+        self._set_status_def_init_()
     #
     def _set_widget_update_(self):
         self.update()

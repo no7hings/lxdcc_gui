@@ -113,10 +113,14 @@ class W(prx_widgets.PrxToolWindow):
     def _set_gui_build_(self, frame_range):
         def show_in_explorer_fnc_(file_path_):
             bsc_core.StorageFileOpt(file_path_).set_open_in_system()
+
+        def set_frame_range_fnc_(frame_range_):
+            self._frame_range_port.set(frame_range_)
+            self._set_gui_update_(frame_range_)
         #
         self._sequence_scroll_area.set_clear()
         #
-        self._sequence_charts = []
+        self._sequence_chart_dict = {}
         #
         self._check_button.set_status(bsc_configure.Status.Stopped)
         self._check_button.set_element_statuses([])
@@ -131,7 +135,7 @@ class W(prx_widgets.PrxToolWindow):
             for k, i_frame_array in self._array_dict.items():
                 g_p.set_update()
                 if i_frame_array:
-                    i = (i_frame_array, frame_range, k)
+                    i_chart_data = (i_frame_array, frame_range, k)
                     i_s_c = prx_widgets.PrxSequenceChart()
                     i_s_c.set_name_width(self._name_width)
                     i_s_c.set_height(20)
@@ -140,7 +144,7 @@ class W(prx_widgets.PrxToolWindow):
                         i_s_c
                     )
                     i_s_c.set_chart_data(
-                        i
+                        i_chart_data
                     )
                     #
                     i_file_path = self._file_dict[k][0]
@@ -153,22 +157,32 @@ class W(prx_widgets.PrxToolWindow):
                                 None,
                                 functools.partial(show_in_explorer_fnc_, i_file_path)
                             ),
+                            (
+                                'Show in RV',
+                                None,
+                                functools.partial(utl_core.RvLauncher().set_file_open, i_file_path)
+                            ),
                             ('Extend',),
                             (
                                 'Use Start-frame',
                                 None,
-                                functools.partial(self._set_gui_build_, (i_start_frame, end_frame)),
+                                functools.partial(set_frame_range_fnc_, (i_start_frame, end_frame)),
                             ),
                             (
                                 'Use End-frame',
                                 None,
-                                functools.partial(self._set_gui_build_, (i_start_frame, end_frame))
+                                functools.partial(set_frame_range_fnc_, (i_start_frame, end_frame))
                             )
                         ]
                     )
                     #
-                    status = i_s_c.get_status()
-                    element_statuses.append(status)
+                    i_status = i_s_c.get_status()
+                    if i_status is bsc_configure.Status.Error:
+                        status = i_status
+                    #
+                    element_statuses.append(i_status)
+                    #
+                    self._sequence_chart_dict[k] = i_s_c
                 #
                 g_p.set_stop()
         #
@@ -180,8 +194,9 @@ class W(prx_widgets.PrxToolWindow):
                 element_statuses
             )
 
-    def _set_gui_update_(self, frame):
-        pass
+    def _set_gui_update_(self, frame_range):
+        if self._array_dict:
+            pass
 
     def _set_check_run_(self):
         frame_range = self._frame_range_port.get()
