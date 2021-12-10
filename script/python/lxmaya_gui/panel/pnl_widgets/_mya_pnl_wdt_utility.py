@@ -304,13 +304,17 @@ class DatabaseGeometryManagerPanel(utl_gui_pnl_abs_utility.AbsDatabaseGeometryMa
                 )
             ).set_run()
             #
-            r = ddl_methods.DdlMethodRunner(
-                method_option=ddl_core.DdlMethodOption.get_geometry_unify(),
-                script_option='file={}'.format(self._geometry_unify_file_path)
+            method_query = ddl_objects.DdlMethodQuery(key='geometry-unify')
+
+            method = ddl_methods.DdlMethodRunner(
+                method_option=method_query.get_method_option(),
+                script_option=method_query.get_script_option(
+                    file=self._geometry_unify_file_path
+                )
             )
             #
-            r.set_run_with_deadline()
-            job_id = r.get_ddl_job_id()
+            method.set_run_with_deadline()
+            job_id = method.get_ddl_job_id()
             self._geometry_unify_ddl_job_process = ddl_objects.DdlJobProcess(job_id)
             if self._geometry_unify_ddl_job_process is not None:
                 self._geometry_unify_ddl_job_process.processing.set_connect_to(
@@ -412,13 +416,17 @@ class DatabaseGeometryManagerPanel(utl_gui_pnl_abs_utility.AbsDatabaseGeometryMa
                 )
             ).set_run()
             #
-            r = ddl_methods.DdlMethodRunner(
-                method_option=ddl_core.DdlMethodOption.get_geometry_uv_assign(),
-                script_option='file={}'.format(self._geometry_uv_map_assign_file_path)
+
+            method_query = ddl_objects.DdlMethodQuery(key='geometry-uv-assign')
+            method = ddl_methods.DdlMethodRunner(
+                method_option=method_query.get_method_option(),
+                script_option=method_query.get_script_option(
+                    file=self._geometry_uv_map_assign_file_path
+                )
             )
             #
-            r.set_run_with_deadline()
-            job_id = r.get_ddl_job_id()
+            method.set_run_with_deadline()
+            job_id = method.get_ddl_job_id()
             self._geometry_uv_assign_ddl_job_process = ddl_objects.DdlJobProcess(job_id)
             if self._geometry_uv_assign_ddl_job_process is not None:
                 self._geometry_uv_assign_ddl_job_process.processing.set_connect_to(

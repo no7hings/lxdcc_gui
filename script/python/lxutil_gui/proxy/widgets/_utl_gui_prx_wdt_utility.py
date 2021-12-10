@@ -299,7 +299,6 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
 
     def _set_build_(self):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
-        qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_text_browser_0 = _utl_gui_qt_wgt_utility.QtTextBrowser()
         qt_layout_0.addWidget(self._qt_text_browser_0)
 
@@ -346,7 +345,7 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
                 text
             )
 
-    def set_text_size(self, size):
+    def set_font_size(self, size):
         font = self.widget.font()
         font.setPointSize(size)
         self._qt_text_browser_0.setFont(font)

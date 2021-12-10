@@ -756,6 +756,12 @@ class PrxListItem(
     def get_names(self):
         return self.widget._get_name_texts_()
 
+    def set_name_frame_border_color(self, color):
+        return self.widget._set_name_frame_border_color_(color)
+
+    def set_name_frame_background_color(self, color):
+        return self.widget._set_name_frame_background_color_(color)
+
     def set_image(self, file_path):
         self.widget._set_image_file_path_(file_path)
 

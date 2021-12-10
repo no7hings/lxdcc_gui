@@ -71,6 +71,9 @@ class AbsGuiProxy(object):
     def get_is_exists(self):
         pass
 
+    def set_visible(self, boolean, **kwargs):
+        self.widget.setHidden(not boolean)
+
     def __str__(self):
         return '{}(widget="{}")'.format(
             self.__class__.__name__,
@@ -123,9 +126,11 @@ class AbsPrxViewDef(object):
 class AbsPrxWindow(AbsGuiProxy):
     def __init__(self, *args, **kwargs):
         super(AbsPrxWindow, self).__init__(*args, **kwargs)
-        self.widget.setParent(
-            utl_gui_qt_core.QtDccMtd.get_qt_main_window(), utl_gui_qt_core.QtCore.Qt.Window
-        )
+        main_window = utl_gui_qt_core.QtDccMtd.get_qt_main_window()
+        if main_window != self.widget:
+            self.widget.setParent(
+                main_window, utl_gui_qt_core.QtCore.Qt.Window
+            )
         self._definition_window_size = 480, 320
         #
         self.widget.setBaseSize(

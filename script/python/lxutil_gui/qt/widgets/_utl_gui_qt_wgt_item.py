@@ -8,6 +8,59 @@ from lxutil_gui.qt import utl_gui_qt_abstract
 from lxutil_gui.qt import utl_gui_qt_core
 
 
+class _QtTextItem(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract._QtNameDef,
+    utl_gui_qt_abstract._QtItemDef,
+    utl_gui_qt_abstract._QtItemActionDef,
+    utl_gui_qt_abstract._QtItemPressActionDef,
+):
+    def _set_widget_update_(self):
+        self.update()
+
+    def __init__(self, *args, **kwargs):
+        super(_QtTextItem, self).__init__(*args, **kwargs)
+        #
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setFont(Font.NAME)
+        self.installEventFilter(self)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        #
+        self._set_name_def_init_()
+        #
+        self._set_item_def_init_()
+        self._set_item_action_def_init_()
+        self._set_item_press_action_def_init_()
+
+    def _set_widget_geometry_update_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        self._name_rect.setRect(
+            x, y, w, h
+        )
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            self._set_item_event_filter_(event)
+        return False
+
+    def paintEvent(self, event):
+        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        self._set_widget_geometry_update_()
+        # name
+        if self._name_text is not None:
+            text_color = [Color.TEXT_NORMAL, Color.TEXT_HOVERED][self._item_is_hovered]
+            #
+            painter._set_text_draw_by_rect_(
+                self._name_rect,
+                self._name_text,
+                text_color,
+                font=Font.NAME,
+                text_option=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+            )
+
+
 class _QtIconPressItem(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtIconDef,
@@ -80,10 +133,9 @@ class _QtIconPressItem(
         f_x, f_y = (w-i_w) / 2, (h-i_h) / 2
         offset = [0, 2][self._get_item_action_flag_() is not None]
         #
-        bkg_rect = QtCore.QRect(1, 1, w-1, h-1)
         bkg_color = [Color.TRANSPARENT, Color.ITEM_BACKGROUND_HOVER][self._item_is_hovered]
         painter._set_frame_draw_by_rect_(
-            bkg_rect,
+            self._icon_frame_rect,
             border_color=bkg_color,
             background_color=bkg_color,
             border_radius=4,
@@ -113,7 +165,7 @@ class _QtIconPressItem(
         x, y = 0, 0
         w, h = self.width(), self.height()
         #
-        f_w, f_h = self._frame_icon_size
+        f_w, f_h = self._icon_frame_size
         #
         i_f_w, i_f_h = self._file_icon_size
         i_c_w, i_c_h = self._color_icon_size
@@ -122,6 +174,10 @@ class _QtIconPressItem(
         _w, _h = w, h
         _x, _y = x, y
         if self._icon_enable is True:
+            _x, _y = _x + (w - f_w) / 2, _y + (h - f_h) / 2
+            self._icon_frame_rect.setRect(
+                _x, _y, f_w, f_h
+            )
             self._file_icon_rect.setRect(
                 _x + (f_w - i_f_w) / 2, _y + (f_h - i_f_h) / 2, i_f_w, i_f_h
             )
@@ -217,7 +273,7 @@ class _QtPressItem(
         element_status_enable = self._get_is_statuses_enable_()
         progress_enable = self._get_is_progress_enable_()
         #
-        f_w, f_h = self._frame_icon_size
+        f_w, f_h = self._icon_frame_size
         #
         i_f_w, i_f_h = self._file_icon_size
         i_c_w, i_c_h = self._color_icon_size
@@ -420,7 +476,7 @@ class _QtPressItem(
         # name
         if self._name_text is not None:
             if self._item_is_enable is True:
-                text_color = [Color.TEXT_NORMAL, Color.TEXT_HIGHLIGHT][self._item_is_hovered]
+                text_color = [Color.TEXT_NORMAL, Color.TEXT_HOVERED][self._item_is_hovered]
             else:
                 text_color = Color.TEXT_DISABLE
             #
@@ -473,7 +529,7 @@ class _QtCheckItem(
         x, y = 0, 0
         w, h = self.width(), self.height()
         spacing = 2
-        f_w, f_h = self._frame_icon_size
+        f_w, f_h = self._icon_frame_size
         i_w, i_h = self._file_icon_size
         #
         self._set_frame_rect_(
@@ -581,7 +637,7 @@ class _QtFilterBar(QtWidgets.QWidget):
             ]
         )
         #
-        self._qt_entry_0 = _QtEntry()
+        self._qt_entry_0 = _QtEntryItem()
         qt_layout_1.addWidget(self._qt_entry_0)
         self._qt_entry_frame_0.setFocusProxy(self._qt_entry_0)
         #
@@ -793,10 +849,10 @@ class _QtEntryFrame(
         self._entry_count = size
 
 
-class _QtEntry(QtWidgets.QLineEdit):
+class _QtEntryItem(QtWidgets.QLineEdit):
     entry_changed = qt_signal()
     def __init__(self, *args, **kwargs):
-        super(_QtEntry, self).__init__(*args, **kwargs)
+        super(_QtEntryItem, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
         self.setPalette(QtDccMtd.get_qt_palette())
         self.setFont(Font.NAME)
@@ -825,7 +881,7 @@ class _QtEntry(QtWidgets.QLineEdit):
             )
         )
 
-    def __set_wheel_update_(self, event):
+    def _set_wheel_update_(self, event):
         if self._value_type in [int, float]:
             delta = event.angleDelta().y()
             pre_value = self._get_value_()
@@ -850,7 +906,7 @@ class _QtEntry(QtWidgets.QLineEdit):
                 #
                 self._set_value_completion_()
             elif event.type() == QtCore.QEvent.Wheel:
-                self.__set_wheel_update_(event)
+                self._set_wheel_update_(event)
         return False
 
     def contextMenuEvent(self, event):
@@ -959,9 +1015,12 @@ class _QtEntry(QtWidgets.QLineEdit):
         return _
 
     def _set_value_(self, value):
-        self.setText(
-            str(self._value_type(value)).encode("UTF8")
-        )
+        if value is not None:
+            self.setText(
+                str(self._value_type(value)).encode("UTF8")
+            )
+        else:
+            self.setText('')
 
     def _get_default_value_(self):
         return self._default_value
@@ -974,6 +1033,15 @@ class _QtEntry(QtWidgets.QLineEdit):
         if self.selectedText():
             boolean = True
         return boolean
+
+    def _set_value_clear_(self):
+        self._set_value_('')
+
+    def _set_completer_values_(self, values):
+        pass
+
+    def _set_enter_enable_(self, boolean):
+        self.setReadOnly(not boolean)
 
 
 class _QtEnumerateConstantEntry(QtWidgets.QComboBox):
@@ -988,7 +1056,7 @@ class _QtEnumerateConstantEntry(QtWidgets.QComboBox):
         self.view().setPalette(QtDccMtd.get_qt_palette())
         self.setFont(Font.NAME)
         #
-        self.setLineEdit(_QtEntry())
+        self.setLineEdit(_QtEntryItem())
         #
         self.setStyleSheet(
             (
@@ -1022,11 +1090,476 @@ class _QtEnumerateConstantEntry(QtWidgets.QComboBox):
         return False
 
 
+class _QtChooseDropView(utl_gui_qt_abstract._QtAbsListWidget):
+    def __init__(self, *args, **kwargs):
+        super(_QtChooseDropView, self).__init__(*args, **kwargs)
+        self.setDragDropMode(QtWidgets.QListWidget.DragOnly)
+        self.setDragEnabled(False)
+        self.setSelectionMode(QtWidgets.QListWidget.SingleSelection)
+        self.setResizeMode(QtWidgets.QListWidget.Adjust)
+        self.setViewMode(QtWidgets.QListWidget.ListMode)
+        self.setPalette(QtDccMtd.get_qt_palette())
+
+    def paintEvent(self, event):
+        pass
+
+
+class _QtChooseDropWidget(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract._QtFrameDef,
+):
+    def __init__(self, *args, **kwargs):
+        super(_QtChooseDropWidget, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        #
+        self.setPalette(QtDccMtd.get_qt_palette())
+        #
+        self._set_frame_def_init_()
+        #
+        self.installEventFilter(self)
+        self.setFocusProxy(self.parent())
+        #
+        self._view_rect = QtCore.QRect()
+        #
+        self._list_widget = _QtChooseDropView(self)
+        #
+        self._item_count_maximum = 20
+        self._item_width, self._item_height = 20, 20
+        self._list_widget.setGridSize(QtCore.QSize(self._item_width, self._item_height))
+        self._list_widget.setSpacing(2)
+        self._list_widget.setUniformItemSizes(True)
+        #
+        self._region = 0
+        #
+        self._choose_index = None
+        #
+        self._side = 2
+        self._margin = 8
+        self._shadow_radius = 4
+
+    def paintEvent(self, event):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        #
+        bck_rect = QtCore.QRect(
+            x, y, w-1, h-1
+        )
+        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        #
+        painter._set_popup_frame_draw_(
+            bck_rect,
+            margin=self._margin,
+            side=self._side,
+            shadow_radius=self._shadow_radius,
+            region=self._region,
+            border_color=Color.ENTRY_BORDER_ENTRY_ON,
+            background_color=Color.ENTRY_BACKGROUND_ENTRY_ON,
+        )
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self.parent():
+            if event.type() == QtCore.QEvent.MouseButtonPress:
+                self._set_close_()
+            elif event.type() == QtCore.QEvent.WindowDeactivate:
+                self._set_close_()
+        elif widget == self:
+            if event.type() == QtCore.QEvent.Close:
+                self._set_drop_end_()
+        return False
+
+    def _set_widget_update_(self):
+        self.update()
+
+    def _set_widget_geometry_update_(self):
+        side = self._side
+        margin = self._margin
+        shadow_radius = self._shadow_radius
+        #
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        v_x, v_y = x+margin+side+1, y+margin+side+1
+        v_w, v_h = w-margin*2-side*2-shadow_radius-2, h-margin*2-side*2-shadow_radius - 2
+        #
+        self._list_widget.setGeometry(
+            v_x, v_y, v_w, v_h
+        )
+        self._list_widget.updateGeometries()
+
+    def _get_choose_point_(self, widget):
+        rect = widget.rect()
+        # p = QtCore.QPoint(rect.right(), rect.center().y())
+        p = widget.mapToGlobal(rect.bottomLeft())
+        return p.x(), p.y()
+
+    def _get_choose_size_(self, widget):
+        rect = widget.rect()
+        return rect.width(), rect.height()
+
+    def _set_drop_start_at_(self, index):
+        parent = self.parent()
+        content_name_texts = parent._get_choose_item_content_name_texts_at_(index)
+        if isinstance(content_name_texts, (tuple, list)):
+            desktop_rect = get_qt_desktop_rect()
+            #
+            press_pos = parent._get_choose_pos_at_(index)
+            press_size = parent._get_choose_size_at_(index)
+            #
+            current_name_text = parent._get_guide_item_name_text_at_(index)
+            #
+            for seq, i_name_text in enumerate(content_name_texts):
+                item_widget = _QtHItem()
+                item = QtListWidgetItem()
+                item.setSizeHint(QtCore.QSize(self._item_width, self._item_height))
+                #
+                self._list_widget.addItem(item)
+                self._list_widget.setItemWidget(item, item_widget)
+                item._set_item_show_connect_()
+                #
+                item_widget._set_name_text_(i_name_text)
+                item_widget._set_index_(seq)
+                if current_name_text == i_name_text:
+                    item.setSelected(True)
+            #
+            self.setFocus(QtCore.Qt.PopupFocusReason)
+            #
+            self._drop_fnc_(
+                press_pos, press_size,
+                desktop_rect,
+                self._get_maximum_width_(content_name_texts),
+                self._get_maximum_height_()
+            )
+            self._choose_index = index
+            parent._set_choose_item_expand_at_(index)
+            #
+            self._list_widget._set_scroll_to_selected_item_top_()
+            #
+            self._list_widget.itemClicked.connect(
+                self._set_close_
+            )
+
+    def _set_drop_start_(self):
+        parent = self.parent()
+        content_name_texts = ['A', 'B']
+        if isinstance(content_name_texts, (tuple, list)):
+            desktop_rect = get_qt_desktop_rect()
+            #
+            press_pos = self._get_choose_point_(parent)
+            press_size = self._get_choose_size_(parent)
+            #
+            current_name_text = 'B'
+            #
+            for seq, i_name_text in enumerate(content_name_texts):
+                item_widget = _QtHItem()
+                item = QtListWidgetItem()
+                item.setSizeHint(QtCore.QSize(self._item_width, self._item_height))
+                #
+                self._list_widget.addItem(item)
+                self._list_widget.setItemWidget(item, item_widget)
+                item._set_item_show_connect_()
+                #
+                item_widget._set_name_text_(i_name_text)
+                item_widget._set_index_(seq)
+                if current_name_text == i_name_text:
+                    item.setSelected(True)
+            #
+            self.setFocus(QtCore.Qt.PopupFocusReason)
+            #
+            self._set_drop_(
+                press_pos, press_size
+            )
+            # self._drop_fnc_(
+            #     press_pos, press_size,
+            #     desktop_rect,
+            #     press_size[0],
+            #     self._get_maximum_height_()
+            # )
+            #
+            self._list_widget._set_scroll_to_selected_item_top_()
+            #
+            self._list_widget.itemClicked.connect(
+                self._set_close_
+            )
+
+    def _set_drop_end_(self):
+        if self._choose_index is not None:
+            parent = self.parent()
+            selected_item_widget = self._list_widget._get_selected_item_widget_()
+            if selected_item_widget:
+                name_text = selected_item_widget._get_name_text_()
+                path_text = parent._get_guide_item_path_text_at_(
+                    self._choose_index
+                )
+                path_opt = bsc_core.DccPathDagOpt(path_text)
+                path_opt.set_name(name_text)
+                #
+                parent._set_guide_item_name_text_at_(
+                    name_text,
+                    self._choose_index
+                )
+                parent._set_guide_item_path_text_at_(
+                    str(path_opt),
+                    self._choose_index
+                )
+                parent._set_item_geometries_update_()
+            #
+            parent._set_choose_item_collapse_at_(self._choose_index)
+            parent._set_guide_current_(self._choose_index)
+            parent._set_guide_item_clicked_emit_send_()
+            parent._set_guide_current_clear_()
+
+    def _get_maximum_width_(self, texts):
+        count = len(texts)
+        texts.append(str(count))
+        _ = max([self.fontMetrics().width(i) for i in texts]) + 16
+        if count > self._item_count_maximum:
+            return _ + 24
+        return _
+
+    def _get_maximum_height_(self):
+        rects = [self._list_widget.visualItemRect(self._list_widget.item(i)) for i in range(self._list_widget.count())[:self._item_count_maximum]]
+        rect = rects[-1]
+        y = rect.y()
+        h = rect.height()
+        return y+h+1+4
+
+    def _drop_fnc_(self, press_pos, press_size, desktop_rect, view_width, view_height):
+        press_x, press_y = press_pos.x(), press_pos.y()
+        press_w, press_h = press_size
+        #
+        maxWidth = desktop_rect.width()
+        maxHeight = desktop_rect.height()
+        #
+        side = self._side
+        margin = self._margin
+        shadow_radius = self._shadow_radius
+        #
+        o_x = 0
+        o_y = 0
+        #
+        width_ = view_width+margin*2+side*2+shadow_radius
+        height_ = view_height+margin*2+side*2+shadow_radius
+        #
+        r_x, r_y, region = bsc_core.CoordMtd.set_region_to(
+            position=(press_x, press_y),
+            size=(width_, height_),
+            maximum_size=(maxWidth, maxHeight),
+            offset=(o_x, o_y)
+        )
+        self._region = region
+        #
+        if region in [0, 1]:
+            y_ = r_y-side+press_h/2
+        else:
+            y_ = r_y+side+shadow_radius-press_h/2
+        #
+        if region in [0, 2]:
+            x_ = r_x-margin*3
+        else:
+            x_ = r_x+margin*3+side+shadow_radius
+        #
+        self.setGeometry(
+            x_, y_,
+            width_, height_
+        )
+        #
+        self._set_widget_geometry_update_()
+        #
+        self.show()
+        #
+        self.update()
+
+    def _set_drop_(self, pos, size):
+        x, y = pos
+        w, h = size
+        # desktop_rect = get_qt_desktop_rect()
+        self.setGeometry(
+            x, y,
+            w, h
+        )
+        self._set_widget_geometry_update_()
+        #
+        self.show()
+        #
+        self.update()
+
+    def _set_close_(self):
+        self.close()
+        self.deleteLater()
+
+
+class _QtChooseDropWidget1(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract._QtFrameDef,
+):
+    def __init__(self, *args, **kwargs):
+        super(_QtChooseDropWidget1, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        #
+        self.setPalette(QtDccMtd.get_qt_palette())
+        #
+        self._set_frame_def_init_()
+        #
+        self.installEventFilter(self)
+        self.setFocusProxy(self.parent())
+        #
+        self._list_widget = _QtChooseDropView(self)
+        #
+        self._item_count_maximum = 20
+        self._item_width, self._item_height = 20, 20
+        self._list_widget.setGridSize(QtCore.QSize(self._item_width, self._item_height))
+        self._list_widget.setSpacing(2)
+        self._list_widget.setUniformItemSizes(True)
+        #
+        self._region = 0
+        #
+        self._choose_index = None
+        #
+        self._side = 2
+        self._margin = 8
+        self._shadow_radius = 4
+
+    def paintEvent(self, event):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        #
+        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        #
+        painter._set_frame_draw_by_rect_(
+            self._frame_rect,
+            border_color=Color.ENTRY_BORDER_ENTRY_ON,
+            background_color=Color.ENTRY_BACKGROUND_ENTRY_ON,
+            border_radius=4
+        )
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self.parent():
+            if event.type() == QtCore.QEvent.MouseButtonPress:
+                self._set_close_()
+            elif event.type() == QtCore.QEvent.WindowDeactivate:
+                self._set_close_()
+        elif widget == self:
+            if event.type() == QtCore.QEvent.Close:
+                self._set_drop_end_()
+        return False
+
+    def _set_widget_update_(self):
+        self.update()
+
+    def _set_widget_geometry_update_(self):
+        side = self._side
+        margin = self._margin
+        shadow_radius = self._shadow_radius
+        #
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        v_x, v_y = x+margin+side+1, y+margin+side+1
+        v_w, v_h = w-margin*2-side*2-shadow_radius-2, h-margin*2-side*2-shadow_radius - 2
+        #
+        self._frame_rect.setRect(
+            x, y, w, h
+        )
+        self._list_widget.setGeometry(
+            x+1, y+1, w-2, h-2
+        )
+        self._list_widget.updateGeometries()
+    @classmethod
+    def _get_choose_point_(cls, widget):
+        rect = widget.rect()
+        # p = QtCore.QPoint(rect.right(), rect.center().y())
+        p = widget.mapToGlobal(rect.bottomLeft())
+        return p.x(), p.y()
+    @classmethod
+    def _get_choose_size_(cls, widget):
+        rect = widget.rect()
+        return rect.width(), rect.height()
+
+    def _set_drop_start_(self):
+        parent = self.parent()
+        content_name_texts = parent._get_values_()
+        if isinstance(content_name_texts, (tuple, list)):
+            press_pos = self._get_choose_point_(parent)
+            width, height = self._get_choose_size_(parent)
+            #
+            current_name_text = parent._get_value_()
+            #
+            for seq, i_name_text in enumerate(content_name_texts):
+                item_widget = _QtHItem()
+                item = QtListWidgetItem()
+                item.setSizeHint(QtCore.QSize(self._item_width, self._item_height))
+                #
+                self._list_widget.addItem(item)
+                self._list_widget.setItemWidget(item, item_widget)
+                item._set_item_show_connect_()
+                #
+                item_widget._set_name_text_(i_name_text)
+                item_widget._set_index_(seq)
+                if current_name_text == i_name_text:
+                    item.setSelected(True)
+            #
+            self.setFocus(QtCore.Qt.PopupFocusReason)
+            #
+            self._set_drop_(
+                press_pos,
+                (width, self._get_maximum_height_())
+            )
+            #
+            self._list_widget._set_scroll_to_selected_item_top_()
+            #
+            self._list_widget.itemClicked.connect(
+                self._set_close_
+            )
+            parent._set_focus_(True)
+
+    def _set_drop_end_(self):
+        parent = self.parent()
+        selected_item_widget = self._list_widget._get_selected_item_widget_()
+        if selected_item_widget:
+            name_text = selected_item_widget._get_name_text_()
+            parent._set_value_(name_text)
+        #
+        parent._set_focus_(False)
+
+    def _get_maximum_height_(self):
+        rects = [self._list_widget.visualItemRect(self._list_widget.item(i)) for i in range(self._list_widget.count())[:self._item_count_maximum]]
+        if rects:
+            rect = rects[-1]
+            y = rect.y()
+            h = rect.height()
+            return y+h+1+4
+        return 20
+
+    def _set_drop_(self, pos, size):
+        x, y = pos
+        w, h = size
+        # desktop_rect = get_qt_desktop_rect()
+        self.setGeometry(
+            x, y,
+            w, h
+        )
+        self._set_widget_geometry_update_()
+        #
+        self.show()
+        #
+        self.update()
+
+    def _set_close_(self):
+        self.close()
+        self.deleteLater()
+
+
 class _QtConstantValueEntryItem(
     _QtEntryFrame,
     utl_gui_qt_abstract._QtConstantValueEntryDef
 ):
-    QT_VALUE_ENTRY_CLASS = _QtEntry
+    QT_VALUE_ENTRY_CLASS = _QtEntryItem
     #
     entry_changed = qt_signal()
     def __init__(self, *args, **kwargs):
@@ -1043,16 +1576,57 @@ class _QtConstantValueEntryItem(
     def _set_value_entry_build_(self, value_type):
         self._value_type = value_type
         #
-        self._value_entry_widget = _QtEntry()
+        self._value_entry_widget = _QtEntryItem()
         self._layout.addWidget(self._value_entry_widget)
         self._value_entry_widget._set_value_type_(self._value_type)
 
 
+class _QtEnumerateValueEntryItem(
+    _QtEntryFrame,
+    utl_gui_qt_abstract._QtEnumerateValueEntryDef,
+    utl_gui_qt_abstract._QtItemChooseActionDef,
+):
+    QT_VALUE_ENTRY_CLASS = _QtEntryItem
+    CHOOSE_DROP_WIDGET_CLS = _QtChooseDropWidget1
+    def __init__(self, *args, **kwargs):
+        super(_QtEnumerateValueEntryItem, self).__init__(*args, **kwargs)
+        #
+        self._set_enumerate_value_entry_def_init_()
+        self._set_item_choose_def_init_()
+        #
+        self._layout = QtHBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(4)
+        #
+        self._set_value_entry_build_(self._value_type)
+        self._value_entry_widget._set_enter_enable_(False)
+        #
+        self._drop_button = _QtIconPressItem()
+        self._layout.addWidget(self._drop_button)
+        self._drop_button._set_file_icon_path_(
+            utl_core.Icon.get('down')
+        )
+        self._drop_button._set_icon_frame_size_(16, 16)
+        self._drop_button._set_file_icon_size_(12, 12)
+        self._drop_button.press_clicked.connect(self._set_item_choose_drop_)
+
+    def _set_value_entry_build_(self, value_type):
+        self._value_type = value_type
+        #
+        self._value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
+        self._layout.addWidget(self._value_entry_widget)
+        self._value_entry_widget._set_value_type_(self._value_type)
+
+    def _set_item_choose_drop_(self):
+        widget = self.CHOOSE_DROP_WIDGET_CLS(self)
+        widget._set_drop_start_()
+
+
 class _QtArrayValueEntryItem(
     _QtEntryFrame,
-    utl_gui_qt_abstract._QtArrayValueEntryDef
+    utl_gui_qt_abstract._QtArrayValueEntryDef,
 ):
-    QT_VALUE_ENTRY_CLASS = _QtEntry
+    QT_VALUE_ENTRY_CLASS = _QtEntryItem
     #
     entry_changed = qt_signal()
     def __init__(self, *args, **kwargs):
@@ -1075,7 +1649,7 @@ class _QtArrayValueEntryItem(
         self._set_entry_count_(value_size)
         if value_size:
             for i in range(value_size):
-                _i_value_entry_widget = _QtEntry()
+                _i_value_entry_widget = _QtEntryItem()
                 _i_value_entry_widget._set_value_type_(self._value_type)
                 self._layout.addWidget(_i_value_entry_widget)
                 self._value_entry_widgets.append(_i_value_entry_widget)
@@ -1130,7 +1704,7 @@ class _QtHExpandItem0(
         self._set_frame_rect_(
             x, y, w-1, h-1
         )
-        f_w, f_h = self._frame_icon_size
+        f_w, f_h = self._icon_frame_size
         i_w, i_h = self._file_icon_size
         self._set_file_icon_rect_(
             x+(f_w-i_w)/2, y+(f_h-i_h)/2, i_w, i_h
@@ -1769,10 +2343,12 @@ class _QtListItemWidget(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtFrameDef,
     utl_gui_qt_abstract._QtIndexDef,
-    utl_gui_qt_abstract._QtIconsDef,
     utl_gui_qt_abstract._QtImageDef,
-    utl_gui_qt_abstract._QtNamesDef,
+    #
     utl_gui_qt_abstract._QtMenuDef,
+    #
+    utl_gui_qt_abstract._QtIconsDef,
+    utl_gui_qt_abstract._QtNamesDef,
     #
     utl_gui_qt_abstract._QtItemDef,
     utl_gui_qt_abstract._QtItemActionDef,
@@ -1802,7 +2378,7 @@ class _QtListItemWidget(
         self._set_item_select_action_def_init_()
         #
         self._icons_frame_rect = QtCore.QRect()
-        self._frame_image_rect = QtCore.QRect()
+        self._image_frame_rect = QtCore.QRect()
         self._names_frame_rect = QtCore.QRect()
         #
         self._file_type_icon = None
@@ -1868,14 +2444,14 @@ class _QtListItemWidget(
                 )
             #
             painter._set_frame_draw_by_rect_(
-                self._frame_image_rect,
+                self._image_frame_rect,
                 border_color=Color.TRANSPARENT,
                 background_color=Color.ITEM_BACKGROUND_NORMAL,
             )
             painter._set_frame_draw_by_rect_(
                 self._names_frame_rect,
-                border_color=Color.TRANSPARENT,
-                background_color=Color.ITEM_BACKGROUND_NORMAL,
+                border_color=self._get_name_frame_border_color_(),
+                background_color=self._get_name_frame_background_color_(),
             )
             #
             icon_indices = self._get_icon_indices_()
@@ -1927,7 +2503,7 @@ class _QtListItemWidget(
             #
             if self._get_item_()._item_show_image_loading_is_enable is True:
                 painter._set_loading_draw_by_rect_(
-                    self._frame_image_rect,
+                    self._image_frame_rect,
                     self._get_item_()._item_show_loading_index
                 )
 
@@ -1984,7 +2560,7 @@ class _QtListItemWidget(
                     x_ += w_0+spacing
                     w_1, h_1 = self._frame_image_width, self._frame_image_height
                 #
-                self._frame_image_rect.setRect(
+                self._image_frame_rect.setRect(
                     x_, y, w_1, h_1
                 )
                 #
@@ -2001,7 +2577,7 @@ class _QtListItemWidget(
                 #
                 x += w_0+spacing
                 w_1, h_1 = self._frame_image_width, h
-                self._frame_image_rect.setRect(
+                self._image_frame_rect.setRect(
                     x, y, w_1, h_1
                 )
                 #
@@ -2026,7 +2602,7 @@ class _QtListItemWidget(
             )
 
     def _set_sub_image_geometry_update_(self):
-        rect = self._frame_image_rect
+        rect = self._image_frame_rect
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
         #
@@ -2127,7 +2703,7 @@ class _AbsQtSplitterHandle(
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         self._contract_l_button = _QtIconPressItem()
-        self._contract_l_button._set_frame_icon_size_(*self._contract_frame_size)
+        self._contract_l_button._set_icon_frame_size_(*self._contract_frame_size)
         self._contract_l_button._set_file_icon_size_(*self._contract_icon_size)
         self._contract_l_button.setMaximumSize(*self._contract_frame_size)
         self._contract_l_button.setMinimumSize(*self._contract_frame_size)
@@ -2140,7 +2716,7 @@ class _AbsQtSplitterHandle(
         self._swap_button = _QtIconPressItem()
         #
         self._swap_button._set_file_icon_path_(utl_core.Icon.get(self._swap_icon_name))
-        self._swap_button._set_frame_icon_size_(*self._contract_frame_size)
+        self._swap_button._set_icon_frame_size_(*self._contract_frame_size)
         self._swap_button._set_file_icon_size_(*self._contract_icon_size)
         self._swap_button.setMaximumSize(*self._contract_frame_size)
         self._swap_button.setMinimumSize(*self._contract_frame_size)
@@ -2151,7 +2727,7 @@ class _AbsQtSplitterHandle(
         )
         #
         self._contract_r_button = _QtIconPressItem()
-        self._contract_r_button._set_frame_icon_size_(*self._contract_frame_size)
+        self._contract_r_button._set_icon_frame_size_(*self._contract_frame_size)
         self._contract_r_button._set_file_icon_size_(*self._contract_icon_size)
         self._contract_r_button.setMaximumSize(*self._contract_frame_size)
         self._contract_r_button.setMinimumSize(*self._contract_frame_size)
@@ -2334,4 +2910,3 @@ class _QtVSplitterHandle(_AbsQtSplitterHandle):
     QT_ORIENTATION = QtCore.Qt.Vertical
     def __init__(self, *args, **kwargs):
         super(_QtVSplitterHandle, self).__init__(*args, **kwargs)
-

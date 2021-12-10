@@ -843,240 +843,6 @@ class QtListWidget(utl_gui_qt_abstract._QtAbsListWidget):
         self.clear()
 
 
-class _QtChooseDropView(utl_gui_qt_abstract._QtAbsListWidget):
-    def __init__(self, *args, **kwargs):
-        super(_QtChooseDropView, self).__init__(*args, **kwargs)
-        self.setDragDropMode(QtWidgets.QListWidget.DragOnly)
-        self.setDragEnabled(False)
-        self.setSelectionMode(QtWidgets.QListWidget.SingleSelection)
-        self.setResizeMode(QtWidgets.QListWidget.Adjust)
-        self.setViewMode(QtWidgets.QListWidget.ListMode)
-        self.setPalette(QtDccMtd.get_qt_palette())
-
-    def paintEvent(self, event):
-        pass
-
-
-class _QtChooseDropWidget(
-    QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtFrameDef,
-):
-    def __init__(self, *args, **kwargs):
-        super(_QtChooseDropWidget, self).__init__(*args, **kwargs)
-        self.installEventFilter(self)
-        self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setFocusPolicy(QtCore.Qt.ClickFocus)
-        #
-        self.setPalette(QtDccMtd.get_qt_palette())
-        #
-        self._set_frame_def_init_()
-        #
-        self.installEventFilter(self)
-        self.setFocusProxy(self.parent())
-        #
-        self._view_rect = QtCore.QRect()
-        #
-        self._list_widget = _QtChooseDropView(self)
-        #
-        self._item_count_maximum = 20
-        self._item_width, self._item_height = 20, 20
-        self._list_widget.setGridSize(QtCore.QSize(self._item_width, self._item_height))
-        self._list_widget.setSpacing(2)
-        self._list_widget.setUniformItemSizes(True)
-        #
-        self._region = 0
-        #
-        self._choose_index = None
-        #
-        self._side = 2
-        self._margin = 8
-        self._shadow_radius = 4
-
-    def paintEvent(self, event):
-        x, y = 0, 0
-        w, h = self.width(), self.height()
-        #
-        bck_rect = QtCore.QRect(
-            x, y, w-1, h-1
-        )
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
-        #
-        painter._set_popup_frame_draw_(
-            bck_rect,
-            margin=self._margin,
-            side=self._side,
-            shadow_radius=self._shadow_radius,
-            region=self._region, 
-            border_color=Color.ENTRY_BORDER_ENTRY_ON,
-            background_color=Color.ENTRY_BACKGROUND_ENTRY_ON,
-        )
-
-    def eventFilter(self, *args):
-        widget, event = args
-        if widget == self.parent():
-            if event.type() == QtCore.QEvent.MouseButtonPress:
-                self._set_close_()
-            elif event.type() == QtCore.QEvent.WindowDeactivate:
-                self._set_close_()
-        elif widget == self:
-            if event.type() == QtCore.QEvent.Close:
-                self._set_drop_end_()
-        return False
-
-    def _set_widget_update_(self):
-        self.update()
-
-    def _set_widget_geometry_update_(self):
-        side = self._side
-        margin = self._margin
-        shadow_radius = self._shadow_radius
-        #
-        x, y = 0, 0
-        w, h = self.width(), self.height()
-        v_x, v_y = x+margin+side+1, y+margin+side+1
-        v_w, v_h = w-margin*2-side*2-shadow_radius-2, h-margin*2-side*2-shadow_radius - 2
-        #
-        self._list_widget.setGeometry(
-            v_x, v_y, v_w, v_h
-        )
-        self._list_widget.updateGeometries()
-
-    def _set_drop_start_at_(self, index):
-        parent = self.parent()
-        content_name_texts = parent._get_choose_item_content_name_texts_at_(index)
-        if isinstance(content_name_texts, (tuple, list)):
-            desktop_rect = get_qt_desktop_rect()
-            #
-            press_pos = parent._get_choose_pos_at_(index)
-            press_size = parent._get_choose_size_at_(index)
-            #
-            current_name_text = parent._get_guide_item_name_text_at_(index)
-            #
-            for seq, i_name_text in enumerate(content_name_texts):
-                item_widget = _utl_gui_qt_wgt_item._QtHItem()
-                item = _utl_gui_qt_wgt_item.QtListWidgetItem()
-                item.setSizeHint(QtCore.QSize(self._item_width, self._item_height))
-                #
-                self._list_widget.addItem(item)
-                self._list_widget.setItemWidget(item, item_widget)
-                item._set_item_show_connect_()
-                #
-                item_widget._set_name_text_(i_name_text)
-                item_widget._set_index_(seq)
-                if current_name_text == i_name_text:
-                    item.setSelected(True)
-            #
-            self.setFocus(QtCore.Qt.PopupFocusReason)
-            #
-            self._drop_fnc_(
-                press_pos, press_size,
-                desktop_rect,
-                self._get_maximum_width_(content_name_texts),
-                self._get_maximum_height_()
-            )
-            self._choose_index = index
-            parent._set_choose_item_expand_at_(index)
-            #
-            self._list_widget._set_scroll_to_selected_item_top_()
-            #
-            self._list_widget.itemClicked.connect(
-                self._set_close_
-            )
-
-    def _set_drop_end_(self):
-        if self._choose_index is not None:
-            parent = self.parent()
-            selected_item_widget = self._list_widget._get_selected_item_widget_()
-            if selected_item_widget:
-                name_text = selected_item_widget._get_name_text_()
-                path_text = parent._get_guide_item_path_text_at_(
-                    self._choose_index
-                )
-                path_opt = bsc_core.DccPathDagOpt(path_text)
-                path_opt.set_name(name_text)
-                #
-                parent._set_guide_item_name_text_at_(
-                    name_text,
-                    self._choose_index
-                )
-                parent._set_guide_item_path_text_at_(
-                    str(path_opt),
-                    self._choose_index
-                )
-                parent._set_item_geometries_update_()
-            #
-            parent._set_choose_item_collapse_at_(self._choose_index)
-            parent._set_guide_current_(self._choose_index)
-            parent._set_guide_item_clicked_emit_send_()
-            parent._set_guide_current_clear_()
-
-    def _get_maximum_width_(self, texts):
-        count = len(texts)
-        texts.append(str(count))
-        _ = max([self.fontMetrics().width(i) for i in texts]) + 16
-        if count > self._item_count_maximum:
-            return _ + 24
-        return _
-
-    def _get_maximum_height_(self):
-        rects = [self._list_widget.visualItemRect(self._list_widget.item(i)) for i in range(self._list_widget.count())[:self._item_count_maximum]]
-        rect = rects[-1]
-        y = rect.y()
-        h = rect.height()
-        return y+h+1+4
-
-    def _drop_fnc_(self, press_pos, press_size, desktop_rect, view_width, view_height):
-        press_x, press_y = press_pos.x(), press_pos.y()
-        press_w, press_h = press_size
-        #
-        maxWidth = desktop_rect.width()
-        maxHeight = desktop_rect.height()
-        #
-        side = self._side
-        margin = self._margin
-        shadow_radius = self._shadow_radius
-        #
-        o_x = 0
-        o_y = 0
-        #
-        width_ = view_width+margin*2+side*2+shadow_radius
-        height_ = view_height+margin*2+side*2+shadow_radius
-        #
-        r_x, r_y, region = bsc_core.CoordMtd.set_region_to(
-            position=(press_x, press_y),
-            size=(width_, height_),
-            maximum_size=(maxWidth, maxHeight),
-            offset=(o_x, o_y)
-        )
-        self._region = region
-        #
-        if region in [0, 1]:
-            y_ = r_y-side+press_h/2
-        else:
-            y_ = r_y+side+shadow_radius-press_h/2
-        #
-        if region in [0, 2]:
-            x_ = r_x-margin*3
-        else:
-            x_ = r_x+margin*3+side+shadow_radius
-        #
-        self.setGeometry(
-            x_, y_,
-            width_, height_
-        )
-        #
-        self._set_widget_geometry_update_()
-        #
-        self.show()
-        #
-        self.update()
-
-    def _set_close_(self):
-        self.close()
-        self.deleteLater()
-
-
 class _QtGuideRect(
     utl_gui_qt_abstract._QtIconDef,
     utl_gui_qt_abstract._QtTypeDef,
@@ -1104,7 +870,7 @@ class _QtGuideRect(
         return [
             self._choose_collapse_icon_file_path,
             self._choose_expand_icon_file_path
-        ][self._get_is_dropped_()]
+        ][self._get_is_choose_dropped_()]
 
 
 class _QtGuideBar(
@@ -1122,7 +888,7 @@ class _QtGuideBar(
 ):
     CHOOSE_RECT_CLS = _QtGuideRect
     #
-    CHOOSE_DROP_VIEW_CLS = _QtChooseDropWidget
+    CHOOSE_DROP_WIDGET_CLS = _utl_gui_qt_wgt_item._QtChooseDropWidget
     def __init__(self, *args, **kwargs):
         super(_QtGuideBar, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -1238,7 +1004,7 @@ class _QtGuideBar(
                 if index == self._view_choose_current_index:
                     icon_offset = [0, 2][self._get_item_action_flag_() is not None]
                     painter._set_frame_draw_by_rect_(
-                        item._frame_icon_rect,
+                        item._icon_frame_rect,
                         border_color=Color.TRANSPARENT,
                         background_color=Color.ITEM_BACKGROUND_HOVER,
                         border_radius=4,
@@ -1289,7 +1055,7 @@ class _QtGuideBar(
         self._set_guide_current_clear_()
         for index in self._get_choose_item_indices_():
             item = self._get_choose_item_at_(index)
-            if item._frame_icon_rect.contains(p) is True:
+            if item._icon_frame_rect.contains(p) is True:
                 self._set_choose_current_(index)
                 break
             elif item._frame_name_rect.contains(p) is True:
@@ -1368,12 +1134,12 @@ class _QtGuideBar(
     def _get_guide_items_(self):
         return self._get_choose_items_()
 
-    def _get_choose_pos_at_(self, index):
+    def _get_choose_pos_at_(self, index=0):
         item = self._get_choose_item_at_(index)
-        rect = item._frame_icon_rect
+        rect = item._icon_frame_rect
         return self.mapToGlobal(rect.center())
 
-    def _get_choose_size_at_(self, index):
+    def _get_choose_size_at_(self, index=0):
         item = self._get_choose_item_at_(index)
-        rect = item._frame_icon_rect
+        rect = item._icon_frame_rect
         return rect.width(), rect.height()

@@ -240,10 +240,10 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
             #
             branch = rsv_entity.properties.get('branch')
             if branch == 'asset':
-                menu_content = self.get_rsv_entity_menu_content(rsv_entity)
-                if menu_content:
+                asset_menu_content = self.get_rsv_asset_menu_content(rsv_entity)
+                if asset_menu_content:
                     rsv_entity.set_gui_menu_content(
-                        menu_content
+                        asset_menu_content
                     )
             #
             self._rsv_obj_tree_view_0.set_item_expand_connect_to(
@@ -271,10 +271,10 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
             step = rsv_task.properties.get('step')
             task = rsv_task.properties.get('task')
             #
-            menu_content = self.get_rsv_task_menu_content(rsv_task)
-            if menu_content:
+            task_menu_content = self.get_rsv_task_menu_content(rsv_task)
+            if task_menu_content:
                 rsv_task.set_gui_menu_content(
-                    menu_content
+                    task_menu_content
                 )
             #
             self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
@@ -282,7 +282,7 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
             )
         return show_threads
 
-    def get_rsv_entity_menu_content(self, rsv_entity):
+    def get_rsv_asset_menu_content(self, rsv_entity):
         raise NotImplementedError()
 
     def get_rsv_task_menu_content(self, rsv_task):
@@ -390,10 +390,11 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
 
     def _set_rsv_unit_gui_show_deferred_(self, rsv_task, rsv_task_unit_gui, rsv_task_unit_show_raw):
         task_properties = rsv_task.properties
-        branch = task_properties.get('branch')
-        name = task_properties.get(branch)
-        step = task_properties.get('step')
-        task = task_properties.get('task')
+        project = rsv_task.get('project')
+        branch = rsv_task.get('branch')
+        name = rsv_task.get(branch)
+        step = rsv_task.get('step')
+        task = rsv_task.get('task')
         #
         name_texts = [name, step, task]
         pixmap_icons = []
@@ -414,31 +415,55 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
                 pixmap_icons.append(i_icon_pixmap)
         #
         rsv_task_unit_gui.set_names(name_texts)
+        r, g, b = bsc_core.TextOpt(task).to_rgb()
+        rsv_task_unit_gui.set_name_frame_background_color((r, g, b, 127))
         rsv_task_unit_gui.set_pixmap_icons(pixmap_icons)
         rsv_task_unit_gui.set_tool_tip(
             task_properties.get_str_as_yaml_style()
         )
         #
-        review_rsv_unit = rsv_task.get_rsv_unit(keyword='{}-review-file'.format(branch))
-        vedio_file_path = review_rsv_unit.get_result(
-            version=rsv_configure.Version.LATEST
-        )
-        if vedio_file_path:
-            image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(vedio_file_path).get_thumbnail_create_args()
-            rsv_task_unit_gui.set_image(image_file_path)
-            if image_sub_process_cmds is not None:
-                image_sub_process = bsc_objects.SubProcess(image_sub_process_cmds)
-                image_sub_process.set_start()
-                rsv_task_unit_gui.set_image_show_sub_process(image_sub_process)
-                rsv_task_unit_gui.set_image_loading_start()
-        else:
-            rsv_task_unit_gui.set_image(
-                utl_core.Icon._get_file_path_('@image_loading_failed@')
+        if project in ['lib'] and task in ['surfacing']:
+            review_rsv_unit = rsv_task.get_rsv_unit(
+                keyword='asset-render-mov-sub-file'
             )
+            vedio_file_path = review_rsv_unit.get_result(
+                version=rsv_configure.Version.LATEST, extend_variants=dict(
+                    look_pass='default'
+                )
+            )
+            if vedio_file_path:
+                image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(vedio_file_path).get_thumbnail_create_args()
+                rsv_task_unit_gui.set_image(image_file_path)
+                if image_sub_process_cmds is not None:
+                    image_sub_process = bsc_objects.SubProcess(image_sub_process_cmds)
+                    image_sub_process.set_start()
+                    rsv_task_unit_gui.set_image_show_sub_process(image_sub_process)
+                    rsv_task_unit_gui.set_image_loading_start()
+            else:
+                rsv_task_unit_gui.set_image(
+                    utl_core.Icon._get_file_path_('@image_loading_failed@')
+                )
+        else:
+            review_rsv_unit = rsv_task.get_rsv_unit(keyword='{}-review-file'.format(branch))
+            vedio_file_path = review_rsv_unit.get_result(
+                version=rsv_configure.Version.LATEST
+            )
+            if vedio_file_path:
+                image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(vedio_file_path).get_thumbnail_create_args()
+                rsv_task_unit_gui.set_image(image_file_path)
+                if image_sub_process_cmds is not None:
+                    image_sub_process = bsc_objects.SubProcess(image_sub_process_cmds)
+                    image_sub_process.set_start()
+                    rsv_task_unit_gui.set_image_show_sub_process(image_sub_process)
+                    rsv_task_unit_gui.set_image_loading_start()
+            else:
+                rsv_task_unit_gui.set_image(
+                    utl_core.Icon._get_file_path_('@image_loading_failed@')
+                )
         #
-        menu_content = self.get_rsv_task_unit_menu_content(rsv_task)
-        if menu_content:
-            rsv_task_unit_gui.set_menu_content(menu_content)
+        unit_menu_content = self.get_rsv_task_unit_menu_content(rsv_task)
+        if unit_menu_content:
+            rsv_task_unit_gui.set_menu_content(unit_menu_content)
 
         self._rsv_uint_list_view_0.set_loading_update()
 

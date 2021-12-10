@@ -77,6 +77,22 @@ class QtWidget(
                     border_width=2,
                     border_radius=2
                 )
+            elif self._status in [
+                bsc_configure.GuiStatus.Correct
+            ]:
+                pox_x, pos_y = 0, 0
+                width, height = self.width(), self.height()
+                frame_rect = QtCore.QRect(
+                    pox_x, pos_y, width, height
+                )
+                #
+                painter._set_frame_draw_by_rect_(
+                    frame_rect,
+                    border_color=(63, 255, 127, 255),
+                    background_color=(0, 0, 0, 0),
+                    border_width=2,
+                    border_radius=2
+                )
 
 
 class QtFrame(QtWidgets.QFrame):
@@ -969,11 +985,11 @@ class QtMenu(QtWidgets.QMenu):
                             qt_widget_action.setIcon(QtUtilMtd.get_qt_icon(icon_name))
                         else:
                             qt_widget_action.setIcon(
-                                QtUtilMtd.get_name_text_icon(name, background_color=(64, 64, 64))
+                                QtUtilMtd.get_name_text_icon_(name, background_color=(64, 64, 64))
                             )
                 else:
                     qt_widget_action.setIcon(
-                        QtUtilMtd.get_name_text_icon(name, background_color=(64, 64, 64))
+                        QtUtilMtd.get_name_text_icon_(name, background_color=(64, 64, 64))
                     )
                 #
                 if method_args is None:
@@ -1076,7 +1092,7 @@ class QtMenu(QtWidgets.QMenu):
                         if isinstance(i_icon_name, (str, unicode)):
                             qt_action_item.setIcon(QtUtilMtd.get_qt_icon(i_icon_name))
                     else:
-                        qt_action_item.setIcon(QtUtilMtd.get_name_text_icon(i_name, background_color=(64, 64, 64)))
+                        qt_action_item.setIcon(QtUtilMtd.get_name_text_icon_(i_name, background_color=(64, 64, 64)))
                     #
                     sub_menu = self.__class__(self.parent())
                     qt_action_item.setMenu(sub_menu)
@@ -1133,7 +1149,7 @@ class QtMenu(QtWidgets.QMenu):
             )
         else:
             widget_action.setIcon(
-                QtUtilMtd.get_name_text_icon(name, background_color=(64, 64, 64))
+                QtUtilMtd.get_name_text_icon_(name, background_color=(64, 64, 64))
             )
         #
         if isinstance(executable_fnc, (bool, int)):
@@ -1234,7 +1250,7 @@ class QtMainWindow(
         self.update()
     #
     def _set_name_icon_text_(self, text):
-        self.setWindowIcon(QtUtilMtd.get_name_text_icon(text))
+        self.setWindowIcon(QtUtilMtd.get_name_text_icon_(text, background_color=(64, 64, 64)))
     @property
     def lynxi_window(self):
         return True
@@ -1289,7 +1305,7 @@ class QtDialog(
         self.update()
     #
     def _set_name_icon_text_(self, text):
-        self.setWindowIcon(QtUtilMtd.get_name_text_icon(text))
+        self.setWindowIcon(QtUtilMtd.get_name_text_icon_(text, background_color=(64, 64, 64)))
 
     def _set_yes_run_(self):
         print 'you choose yes'

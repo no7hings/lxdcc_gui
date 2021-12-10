@@ -239,7 +239,7 @@ class AbsSceneMethodRunnerPanel(
         qt_layout_0.addWidget(self._configure_gui.widget)
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxTextPort('work_scene_src_file_path', 'Work-Scene-src-file')
+            prx_widgets.PrxStringPort('work_scene_src_file_path', 'Work-Scene-src-file')
         )
         _port.set_use_as_storage()
         _port = self._configure_gui.set_port_add(

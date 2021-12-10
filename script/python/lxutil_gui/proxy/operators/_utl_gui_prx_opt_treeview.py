@@ -786,3 +786,53 @@ class PrxRsvObjTreeViewAddOpt(object):
         if thread is not None:
             show_threads.append(thread)
         return is_create, item_prx, show_threads
+
+
+class PrxObjTreeViewAddOpt(object):
+    def __init__(self, prx_tree_view, prx_tree_item_cls, dcc_namespace):
+        self._prx_tree_view = prx_tree_view
+        self._prx_tree_item_cls = prx_tree_item_cls
+        #
+        self._dcc_namespace = dcc_namespace
+        #
+        self._obj_add_dict = self._prx_tree_view._item_dict
+
+    def _set_item_add_(self, path_dag_opt, parent_path_dag_opt=None):
+        if parent_path_dag_opt is not None:
+            parent_item = self._obj_add_dict[parent_path_dag_opt.path]
+            tree_item = parent_item.set_child_add(
+                name=path_dag_opt.name,
+                item_class=self._prx_tree_item_cls,
+            )
+        else:
+            tree_item = self._prx_tree_view.set_item_add(
+                name=path_dag_opt.name,
+                item_class=self._prx_tree_item_cls,
+            )
+        #
+        tree_item.set_checked(True)
+        tree_item.set_gui_dcc_obj(path_dag_opt, namespace=self._dcc_namespace)
+        #
+        self._obj_add_dict[path_dag_opt.path] = tree_item
+
+    def set_item_add(self, path):
+        path_dag_opt = bsc_core.DccPathDagOpt(path)
+
+        components = path_dag_opt.get_components()
+        components.reverse()
+        if components:
+            parent_path_dag_opt = None
+            for i_path_dag_opt in components:
+                if i_path_dag_opt.path not in self._obj_add_dict:
+                    self._set_item_add_(i_path_dag_opt, parent_path_dag_opt)
+                #
+                parent_path_dag_opt = i_path_dag_opt
+
+    def get_checked_names(self):
+        lis = []
+        for k, v in self._obj_add_dict.items():
+            if v.get_is_checked() is True:
+                lis.append(
+                    v.get_gui_dcc_obj(namespace=self._dcc_namespace).name
+                )
+        return lis

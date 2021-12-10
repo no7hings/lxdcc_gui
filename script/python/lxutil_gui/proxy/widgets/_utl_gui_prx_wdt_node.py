@@ -3,6 +3,8 @@ import types
 
 from lxobj import obj_abstract
 #
+from lxutil import utl_core
+#
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
 import lxutil.modifiers as utl_modifiers
@@ -24,20 +26,35 @@ class AttrConfig(object):
 
 # label
 class PrxPortLabel(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtLabel
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item._QtTextItem
     def __init__(self, *args, **kwargs):
         super(PrxPortLabel, self).__init__(*args, **kwargs)
-        self.widget.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignRight | utl_gui_qt_core.QtCore.Qt.AlignVCenter)
+        # self.widget.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignRight | utl_gui_qt_core.QtCore.Qt.AlignVCenter)
+        layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(self.widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        # self._info_item = _utl_gui_qt_wgt_item._QtIconPressItem()
+        # self._info_item._set_file_icon_path_(
+        #     utl_core.Icon.get('info')
+        # )
+        # layout.addWidget(self._info_item)
+        self._name_item = _utl_gui_qt_wgt_item._QtTextItem()
+        layout.addWidget(self._name_item)
         self.widget.setMaximumHeight(AttrConfig.ENTRY_HEIGHT)
         self.widget.setMinimumHeight(AttrConfig.ENTRY_HEIGHT)
-        self.widget.setWordWrap(True)
+        # self.widget.setWordWrap(True)
 
     def set_name(self, text):
-        self.widget.setText(text)
+        self._name_item._set_name_text_(text)
 
     def set_width(self, w):
         self.widget.setMaximumWidth(w)
         self.widget.setMinimumWidth(w)
+
+    def set_info_tool_tip(self, text):
+        pass
+
+    def set_name_tool_tip(self, text):
+        self._name_item.setToolTip(text)
 
 
 # entry
@@ -70,7 +87,7 @@ class AbsTypeEntry(utl_gui_prx_abstract.AbsPrxWidget):
     def get(self):
         raise NotImplementedError()
 
-    def set(self, raw):
+    def set(self, raw=None, **kwargs):
         raise NotImplementedError()
 
     def set_clear(self):
@@ -131,7 +148,7 @@ class PrxOpenFilePathEntry(AbsTypeEntry):
     def get(self):
         return self.entry._get_value_()
 
-    def set(self, raw):
+    def set(self, raw=None, **kwargs):
         self.entry._set_value_(raw)
 
 
@@ -175,7 +192,7 @@ class PrxOpenDirectoryPathEntry(AbsTypeEntry):
     def get(self):
         return self.entry._get_value_()
 
-    def set(self, raw):
+    def set(self, raw=None, **kwargs):
         self.entry._set_value_(raw)
 
     def set_changed_connect_to(self, method):
@@ -223,7 +240,7 @@ class PrxSaveFilePathEntry(AbsTypeEntry):
     def get(self):
         return self.entry._get_value_()
 
-    def set(self, raw):
+    def set(self, raw=None, **kwargs):
         self.entry._set_value_(raw)
 
 
@@ -242,8 +259,8 @@ class PrxConstantEntry(AbsTypeEntry):
     def get(self):
         return self.entry._get_value_()
 
-    def set(self, value):
-        self.entry._set_value_(value)
+    def set(self, raw=None, **kwargs):
+        self.entry._set_value_(raw)
 
     def set_maximum(self, value):
         self.entry._set_value_maximum_(value)
@@ -264,10 +281,34 @@ class PrxConstantEntry(AbsTypeEntry):
         return self.entry._get_value_range_()
 
 
+class PrxChooseEntry(AbsTypeEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtEnumerateValueEntryItem
+    def __init__(self, *args, **kwargs):
+        super(PrxChooseEntry, self).__init__(*args, **kwargs)
+        #
+        self.widget.setFocusProxy(self.entry)
+
+    def get(self):
+        return self._qt_entry._get_value_()
+
+    def set(self, raw=None, **kwargs):
+        values = None
+        if 'values' in kwargs:
+            values = kwargs['values']
+            self._qt_entry._set_values_(values)
+        #
+        if raw is not None:
+            self._qt_entry._set_value_(raw)
+        else:
+            if values:
+                self._qt_entry._set_value_(values[-1])
+
+
 class PrxTextEntry(PrxConstantEntry):
     def __init__(self, *args, **kwargs):
         super(PrxTextEntry, self).__init__(*args, **kwargs)
-        self.set_value_type(None)
+        self.set_value_type(str)
 
 
 class PrxStringEntry(PrxConstantEntry):
@@ -303,7 +344,7 @@ class PrxArrayEntry(AbsTypeEntry):
     def get(self):
         return self.entry._get_value_()
 
-    def set(self, raw):
+    def set(self, raw=None, **kwargs):
         self.entry._set_value_(
             raw
         )
@@ -326,7 +367,7 @@ class PrxBooleanEntry(AbsTypeEntry):
     def get(self):
         return self.entry._get_item_is_checked_()
 
-    def set(self, raw):
+    def set(self, raw=None, **kwargs):
         self.entry._set_item_checked_(raw)
 
 
@@ -344,7 +385,7 @@ class PrxEnumerateEntry(AbsTypeEntry):
     def get_current(self):
         return self.entry.currentText()
 
-    def set(self, raw):
+    def set(self, raw=None, **kwargs):
         self.entry.clear()
         if isinstance(raw, (tuple, list)):
             texts = list(raw)
@@ -421,7 +462,7 @@ class PrxButtonEntry(AbsTypeEntry):
     def _set_fnc_run_(self, fnc):
         fnc()
 
-    def set(self, raw):
+    def set(self, raw=None, **kwargs):
         if isinstance(raw, (types.MethodType, types.FunctionType)):
             self.entry.clicked.connect(
                 lambda *args, **kwargs: self._set_fnc_run_(raw)
@@ -448,7 +489,7 @@ class PrxProcessEntry(AbsTypeEntry):
     def _set_fnc_run_(self, fnc):
         fnc()
 
-    def set(self, raw):
+    def set(self, raw=None, **kwargs):
         if isinstance(raw, (types.MethodType, types.FunctionType)):
             self.entry.clicked.connect(
                 lambda *args, **kwargs: self._set_fnc_run_(raw)
@@ -472,20 +513,21 @@ class AbsTypePort(object):
         self._name = name
         self._label = label
         # gui
-        self._label_gui = self.LABEL_CLASS()
-        self._label_gui.widget.setToolTip(
+        self._port_label = self.LABEL_CLASS()
+        self._port_label.set_name_tool_tip(
             'name: {}'.format(self.name)
         )
-        self._label_gui.set_name(self.label)
         #
-        self._entry_gui = self.ENTRY_CLASS()
+        self._port_entry = self.ENTRY_CLASS()
         #
         if default_value is not None:
-            self._entry_gui.set(default_value)
+            self._port_entry.set(default_value)
         #
         self._is_join_to_next = join_to_next
         #
         self._custom_widget = None
+        #
+        self.set_name(self.label)
     @property
     def name(self):
         return self._name
@@ -494,13 +536,13 @@ class AbsTypePort(object):
         return self._label
     @property
     def label_gui(self):
-        return self._label_gui
+        return self._port_label
     @property
-    def entry_gui(self):
-        return self._entry_gui
+    def port_entry(self):
+        return self._port_entry
 
     def set_name(self, name):
-        pass
+        self.label_gui.set_name(name)
 
     def set_enable(self, boolean):
         pass
@@ -508,15 +550,15 @@ class AbsTypePort(object):
     def set_name_width(self, w):
         self.label_gui.set_width(w)
 
-    def set(self, raw):
-        self.entry_gui.set(raw)
+    def set(self, raw=None, **kwargs):
+        self.port_entry.set(raw, **kwargs)
 
     def set_append(self, raw):
-        if hasattr(self.entry_gui, 'set_append'):
-            self.entry_gui.set_append(raw)
+        if hasattr(self.port_entry, 'set_append'):
+            self.port_entry.set_append(raw)
 
     def set_clear(self):
-        self.entry_gui.set_clear()
+        self.port_entry.set_clear()
 
     def set_tool_tip(self, text, as_markdown_style=False):
         if text is not None:
@@ -533,23 +575,23 @@ class AbsTypePort(object):
             if as_markdown_style is True:
                 import markdown
                 html = markdown.markdown(text_)
-                self.entry_gui.entry.setToolTip(html)
+                self.port_entry.entry.setToolTip(html)
             else:
                 html = '<html><body>'
                 html += '<h3>{}</h3>'.format(self._label)
                 for i in text_.split('\n'):
                     html += '<ul><li>{}</li></ul>'.format(i)
                 html += '</body></html>'
-                self.entry_gui.entry.setToolTip(html)
+                self.port_entry.entry.setToolTip(html)
 
     def get(self):
-        return self.entry_gui.get()
+        return self.port_entry.get()
 
     def set_changed_connect_to(self, method):
         pass
 
     def set_use_as_storage(self, boolean=True):
-        self._entry_gui.set_use_as_storage(boolean)
+        self._port_entry.set_use_as_storage(boolean)
 
     def _get_is_join_next_(self):
         return self._is_join_to_next
@@ -561,7 +603,7 @@ class AbsTypePort(object):
         return self._join_layout
 
     def set_menu_raw(self, raw):
-        self.entry_gui.set_menu_raw(raw)
+        self.port_entry.set_menu_raw(raw)
 
     def to_custom_widget(self):
         if self._custom_widget is not None:
@@ -570,7 +612,7 @@ class AbsTypePort(object):
             widget = _utl_gui_qt_wgt_utility.QtWidget()
             layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(widget)
             layout.addWidget(self.label_gui.widget)
-            layout.addWidget(self.entry_gui.widget)
+            layout.addWidget(self.port_entry.widget)
             self._custom_widget = widget
             return self._custom_widget
 
@@ -617,7 +659,7 @@ class PrxOpenFilePathPort(PrxConstantPort):
         super(PrxOpenFilePathPort, self).__init__(*args, **kwargs)
 
     def set_ext_filter(self, ext_filter):
-        self.entry_gui.set_ext_filter(ext_filter)
+        self.port_entry.set_ext_filter(ext_filter)
 
 
 class PrxOpenDirectoryPort(PrxConstantPort):
@@ -627,10 +669,10 @@ class PrxOpenDirectoryPort(PrxConstantPort):
         super(PrxOpenDirectoryPort, self).__init__(*args, **kwargs)
 
     def set_ext_filter(self, ext_filter):
-        self.entry_gui.set_ext_filter(ext_filter)
+        self.port_entry.set_ext_filter(ext_filter)
 
     def set_changed_connect_to(self, method):
-        self.entry_gui.set_changed_connect_to(method)
+        self.port_entry.set_changed_connect_to(method)
 
 
 class PrxSaveFilePathPort(PrxConstantPort):
@@ -640,7 +682,7 @@ class PrxSaveFilePathPort(PrxConstantPort):
         super(PrxSaveFilePathPort, self).__init__(*args, **kwargs)
 
     def set_ext_filter(self, ext_filter):
-        self.entry_gui.set_ext_filter(ext_filter)
+        self.port_entry.set_ext_filter(ext_filter)
 
 
 class PrxBooleanPort(AbsTypePort):
@@ -648,8 +690,9 @@ class PrxBooleanPort(AbsTypePort):
     ENTRY_CLASS = PrxBooleanEntry
     def __init__(self, *args, **kwargs):
         super(PrxBooleanPort, self).__init__(*args, **kwargs)
-        self.label_gui.widget.setText('')
-        self.entry_gui.entry._set_name_text_(self.label)
+
+    def set_name(self, text):
+        self.port_entry.entry._set_name_text_(self.label)
 
 
 class PrxEnumeratePort(AbsTypePort):
@@ -659,13 +702,20 @@ class PrxEnumeratePort(AbsTypePort):
         super(PrxEnumeratePort, self).__init__(*args, **kwargs)
 
     def set_current(self, raw):
-        self.entry_gui.set_current(raw)
+        self.port_entry.set_current(raw)
 
     def get_current(self):
-        return self.entry_gui.get_current()
+        return self.port_entry.get_current()
 
     def set_changed_connect_to(self, method):
-        self.entry_gui.set_changed_connect_to(method)
+        self.port_entry.set_changed_connect_to(method)
+
+
+class PrxChoosePort(AbsTypePort):
+    LABEL_CLASS = PrxPortLabel
+    ENTRY_CLASS = PrxChooseEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxChoosePort, self).__init__(*args, **kwargs)
 
 
 class PrxArrayPort(AbsTypePort):
@@ -675,13 +725,13 @@ class PrxArrayPort(AbsTypePort):
         super(PrxArrayPort, self).__init__(*args, **kwargs)
 
     def set_value_type(self, value_type):
-        self.entry_gui.set_value_type(value_type)
+        self.port_entry.set_value_type(value_type)
 
     def set_value_size(self, size):
-        self.entry_gui.set_value_size(size)
+        self.port_entry.set_value_size(size)
 
     def set_changed_connect_to(self, method):
-        self.entry_gui.set_changed_connect_to(method)
+        self.port_entry.set_changed_connect_to(method)
 
 
 class PrxIntegerArrayPort(PrxArrayPort):
@@ -696,14 +746,12 @@ class PrxButtonPort(AbsTypePort):
     ENTRY_CLASS = PrxButtonEntry
     def __init__(self, *args, **kwargs):
         super(PrxButtonPort, self).__init__(*args, **kwargs)
-        self.label_gui.widget.setText('')
-        self.entry_gui.entry._set_name_text_(self.label)
 
     def set_name(self, text):
-        self.entry_gui.entry._set_name_text_(text)
+        self.port_entry.entry._set_name_text_(text)
 
     def set_status(self, status):
-        self.entry_gui.entry._set_status_(status)
+        self.port_entry.entry._set_status_(status)
 
 
 class PrxStatusPort(AbsTypePort):
@@ -711,17 +759,17 @@ class PrxStatusPort(AbsTypePort):
     ENTRY_CLASS = PrxProcessEntry
     def __init__(self, *args, **kwargs):
         super(PrxStatusPort, self).__init__(*args, **kwargs)
-        self.label_gui.widget.setText('')
-        self.entry_gui.entry._set_name_text_(self.label)
+        self.label_gui.widget._set_name_text_('')
+        self.port_entry.entry._set_name_text_(self.label)
 
     def set_name(self, text):
-        self.entry_gui.entry._set_name_text_(text)
+        self.port_entry.entry._set_name_text_(text)
 
     def set_status(self, status):
-        self.entry_gui.entry._set_status_(status)
+        self.port_entry.entry._set_status_(status)
 
     def set_element_statuses(self, element_statuses):
-        self.entry_gui.entry._set_statuses_(element_statuses)
+        self.port_entry.entry._set_statuses_(element_statuses)
 
 
 class PortStack(obj_abstract.AbsObjStack):
@@ -794,7 +842,7 @@ class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
                     cur_port.label_gui.widget
                 )
                 self._qt_entry_layout.addWidget(
-                    cur_port.entry_gui.widget
+                    cur_port.port_entry.widget
                 )
             elif condition == (False, True):
                 self._qt_label_layout.addWidget(
@@ -809,19 +857,19 @@ class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
                 enter_layout.setContentsMargins(0, 0, 0, 0)
                 enter_layout.setSpacing(2)
                 enter_layout.addWidget(
-                    cur_port.entry_gui.widget
+                    cur_port.port_entry.widget
                 )
                 cur_port._set_join_layout_(enter_layout)
             elif condition == (True, True):
                 enter_layout = pre_port._get_join_layout_()
                 enter_layout.addWidget(
-                    cur_port.entry_gui.widget
+                    cur_port.port_entry.widget
                 )
                 cur_port._set_join_layout_(enter_layout)
             elif condition == (True, False):
                 enter_layout = pre_port._get_join_layout_()
                 enter_layout.addWidget(
-                    cur_port.entry_gui.widget
+                    cur_port.port_entry.widget
                 )
             #
             self._port_stack.set_object_add(cur_port)

@@ -22,12 +22,12 @@ _pyqt5 = utl_objects.PyModule('PyQt5')
 if _pyqt5.get_is_exists() is True:
     LOAD_INDEX = 0
     # noinspection PyUnresolvedReferences
-    from PyQt5 import QtGui, QtCore, QtWidgets, QtSvg, QtWebEngineWidgets, QtWebChannel, QtMultimedia
+    from PyQt5 import QtGui, QtCore, QtWidgets, QtSvg
 else:
     LOAD_INDEX = 1
     _pyside2 = utl_objects.PyModule('PySide2')
     if _pyside2.get_is_exists() is True:
-        from PySide2 import QtGui, QtCore, QtWidgets, QtSvg, QtWebEngineWidgets, QtWebChannel, QtMultimedia
+        from PySide2 import QtGui, QtCore, QtWidgets, QtSvg
     else:
         raise ImportError()
 
@@ -358,7 +358,7 @@ class Color(object):
     black = QtGui.QColor(0, 0, 0, 255)
     #
     TEXT_NORMAL = QtGui.QColor(223, 223, 223, 255)
-    TEXT_HIGHLIGHT = QtGui.QColor(255, 255, 255, 255)
+    TEXT_HOVERED = QtGui.QColor(255, 255, 255, 255)
     TEXT_DISABLE = QtGui.QColor(127, 127, 127, 255)
     NAME_TEXT = QtGui.QColor(223, 223, 223, 255)
     INDEX_TEXT = QtGui.QColor(127, 127, 127, 255)
@@ -432,7 +432,7 @@ class Color(object):
     ITEM_BACKGROUND_HOVER = QtGui.QColor(255, 127, 63, 127)
     #
     ITEM_BORDER_NORMAL = QtGui.QColor(255, 255, 255, 255)
-    ITEM_BACKGROUND_NORMAL = QtGui.QColor(255, 255, 255, 31)
+    ITEM_BACKGROUND_NORMAL = QtGui.QColor(95, 95, 95, 127)
     ITEM_BORDER_HOVER = QtGui.QColor(255, 127, 63, 255)
     #
     DESCRIPTION_TEXT = QtGui.QColor(0, 0, 0, 255)
@@ -537,7 +537,7 @@ class QtUtilMtd(object):
         palette.setColor(palette.WindowText, Color.TEXT_NORMAL)
         #
         palette.setColor(palette.Text, Color.TEXT_NORMAL)
-        palette.setColor(palette.Current, palette.Text, Color.TEXT_HIGHLIGHT)
+        palette.setColor(palette.Current, palette.Text, Color.TEXT_HOVERED)
         #
         palette.setColor(palette.AlternateBase, Color.alternate_base)
         palette.setColor(palette.Button, Color.BUTTON_NORMAL)
@@ -585,10 +585,11 @@ class QtUtilMtd(object):
     @classmethod
     def get_name_text_icon(cls, text, rounded=False, background_color=None):
         icon = QtGui.QIcon()
-        f_w, f_h = 14, 14
-        c_w, c_h = 13, 13
+        f_w, f_h = 16, 16
+        c_w, c_h = 14, 14
         pixmap = QtGui.QPixmap(f_w, f_h)
         painter = QtGui.QPainter(pixmap)
+        painter.setRenderHint(painter.Antialiasing)
         rect = pixmap.rect()
         pixmap.fill(
             Color.ICON_BORDER_NORMAL
@@ -607,6 +608,49 @@ class QtUtilMtd(object):
                 r, g, b = background_color
             painter.setBrush(QtGui.QBrush(QtGui.QColor(r, g, b, 255)))
             painter.drawRect(icon_rect)
+            # t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(r, g, b)
+            painter.setPen(Color.TEXT_NORMAL)
+            painter.setFont(get_font(italic=True))
+            painter.drawText(
+                rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(name[0]).capitalize()
+            )
+        #
+        painter.end()
+        # painter.device()
+        icon.addPixmap(
+            pixmap,
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.On
+        )
+        return icon
+    @classmethod
+    def get_name_text_icon_(cls, text, background_color=None):
+        icon = QtGui.QIcon()
+        f_w, f_h = 16, 16
+        c_w, c_h = 14, 14
+        pixmap = QtGui.QPixmap(f_w, f_h)
+        painter = QtGui.QPainter(pixmap)
+        painter.setRenderHint(painter.Antialiasing)
+        rect = pixmap.rect()
+        pixmap.fill(
+            Color.ICON_BORDER_NORMAL
+        )
+        x, y = rect.x(), rect.y()
+        w, h = rect.width(), rect.height()
+        icon_rect = QtCore.QRect(
+            x + (w - c_w)/2, y + (h - c_h)/2,
+            c_w, c_h
+        )
+        if text is not None:
+            name = text.split('/')[-1] or ' '
+            painter.setPen(Color.ICON_BORDER_NORMAL)
+            r, g, b = bsc_core.TextOpt(name).to_rgb()
+            if background_color is not None:
+                r, g, b = background_color
+            painter.setBrush(QtGui.QBrush(QtGui.QColor(r, g, b, 255)))
+            painter.drawRect(
+                icon_rect,
+            )
             # painter.drawRoundedRect(icon_rect, f_w/2, f_w/2, QtCore.Qt.AbsoluteSize)
             #
             # t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(r, g, b)
@@ -855,6 +899,7 @@ class QtKatanaMtd(object):
 
 
 class QtDccMtd(utl_abstract.AbsDccMtd):
+    MAIN_WINDOW = None
     @classmethod
     def get_qt_main_window(cls):
         if cls.get_is_maya():
@@ -863,6 +908,13 @@ class QtDccMtd(utl_abstract.AbsDccMtd):
             return QtHoudiniMtd.get_main_window()
         elif cls.get_is_katana():
             return QtKatanaMtd.get_main_window()
+        #
+        if cls.MAIN_WINDOW is not None:
+            return cls.MAIN_WINDOW
+        #
+        _ = QtWidgets.QApplication.topLevelWidgets()
+        if _:
+            cls.MAIN_WINDOW = _[0]
         return QtWidgets.QApplication.activeWindow()
     @classmethod
     def get_qt_icon(cls, icon_name):

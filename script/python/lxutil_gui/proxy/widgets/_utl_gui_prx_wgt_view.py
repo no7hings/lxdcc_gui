@@ -21,7 +21,6 @@ class PrxHSplitter(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_widget_add(self, widget):
         if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
-            self.widget.addWidget(widget)
             qt_widget = widget
         else:
             qt_widget = widget.widget
@@ -135,6 +134,9 @@ class PrxTreeView(
     def set_filter_start(self):
         self._prx_tool_bar_0.set_expanded(True)
         self._prx_filer_bar_0.set_entry_focus(True)
+
+    def get_tool_bar(self):
+        return self._prx_filer_bar_0
 
     def set_scroll_to_select_item(self):
         selection_items = self.view.selectedItems()

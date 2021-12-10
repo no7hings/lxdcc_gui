@@ -241,12 +241,12 @@ class _QtIconDef(object):
         self._color_icon_rgb = None
         self._name_icon_text = None
         #
-        self._frame_icon_rect = QtCore.QRect()
+        self._icon_frame_rect = QtCore.QRect()
         self._file_icon_rect = QtCore.QRect()
         self._color_icon_rect = QtCore.QRect()
         self._name_icon_rect = QtCore.QRect()
         #
-        self._frame_icon_size = 20, 20
+        self._icon_frame_size = 20, 20
         self._file_icon_size = 16, 16
         self._color_icon_size = 12, 12
         self._name_icon_size = 14, 14
@@ -257,7 +257,10 @@ class _QtIconDef(object):
         self._set_widget_update_()
 
     def _set_frame_icon_size_(self, w, h):
-        self._frame_icon_size = w, h
+        self._icon_frame_size = w, h
+
+    def _set_icon_frame_size_(self, w, h):
+        self._icon_frame_size = w, h
 
     def _set_file_icon_size_(self, w, h):
         self._file_icon_size = w, h
@@ -286,7 +289,7 @@ class _QtIconDef(object):
             return self._name_icon_text
 
     def _set_frame_icon_rect_(self, x, y, w, h):
-        self._frame_icon_rect.setRect(
+        self._icon_frame_rect.setRect(
             x, y, w, h
         )
 
@@ -543,6 +546,9 @@ class _QtNamesDef(object):
         self._names_enable = False
         self._name_texts = []
         self._name_rects = []
+        #
+        self._name_frame_border_color = 0, 0, 0, 0
+        self._name_frame_background_color = 95, 95, 95, 127
 
     def _set_widget_update_(self):
         raise NotImplementedError()
@@ -571,6 +577,18 @@ class _QtNamesDef(object):
 
     def _get_name_texts_(self):
         return self._name_texts
+
+    def _set_name_frame_border_color_(self, color):
+        self._name_frame_border_color = color
+
+    def _get_name_frame_border_color_(self):
+        return self._name_frame_border_color
+
+    def _set_name_frame_background_color_(self, color):
+        self._name_frame_background_color = color
+
+    def _get_name_frame_background_color_(self):
+        return self._name_frame_background_color
 
     def _get_name_rect_at_(self, index=0):
         return self._name_rects[index]
@@ -911,10 +929,10 @@ class _QtItemChooseActionDef(object):
         self._choose_name_texts = []
         self._choose_path_texts = []
 
-    def _get_is_dropped_(self):
+    def _get_is_choose_dropped_(self):
         return self._is_dropped
 
-    def _set_dropped_(self, boolean):
+    def _set_choose_dropped_(self, boolean):
         self._is_dropped = boolean
 
     def _set_dropped_update_(self):
@@ -924,7 +942,7 @@ class _QtItemChooseActionDef(object):
         return [
             self._choose_collapse_icon_file_path,
             self._choose_expand_icon_file_path
-        ][self._get_is_dropped_()]
+        ][self._get_is_choose_dropped_()]
 
     def _set_choose_content_raw_(self, raw):
         self._content_raw = raw
@@ -940,7 +958,7 @@ class _QtItemChooseActionDef(object):
 
 class _QtViewChooseActionDef(object):
     CHOOSE_RECT_CLS = None
-    CHOOSE_DROP_VIEW_CLS = None
+    CHOOSE_DROP_WIDGET_CLS = None
     #
     choose_item_changed = qt_signal()
     choose_item_clicked = qt_signal()
@@ -969,10 +987,10 @@ class _QtViewChooseActionDef(object):
     def _get_choose_item_at_(self, index=0):
         return self._get_choose_items_()[index]
 
-    def _get_choose_pos_at_(self, index):
+    def _get_choose_pos_at_(self, index=0):
         raise NotImplementedError()
 
-    def _get_choose_size_at_(self, index):
+    def _get_choose_size_at_(self, index=0):
         raise NotImplementedError()
 
     def _set_choose_item_current_at_(self, text, index=0):
@@ -991,18 +1009,18 @@ class _QtViewChooseActionDef(object):
         return self._get_choose_item_at_(index)._get_choose_content_name_texts_()
 
     def _set_choose_item_drop_at_(self, index=0):
-        widget = self.CHOOSE_DROP_VIEW_CLS(self)
+        widget = self.CHOOSE_DROP_WIDGET_CLS(self)
         widget._set_drop_start_at_(
             index
         )
 
     def _set_choose_item_expanded_at_(self, boolean, index=0):
         item = self._get_choose_item_at_(index)
-        item._set_dropped_(boolean)
+        item._set_choose_dropped_(boolean)
 
     def _get_choose_item_is_expanded_at_(self, index=0):
         item = self._get_choose_item_at_(index)
-        return item._get_is_dropped_()
+        return item._get_is_choose_dropped_()
 
     def _set_choose_item_expand_at_(self, index=0):
         self._set_choose_item_expanded_at_(True, index)
@@ -1520,6 +1538,51 @@ class _QtConstantValueEntryDef(object):
 
     def _get_value_(self):
         return self._value_entry_widget._get_value_()
+
+
+class _QtEnumerateValueEntryDef(object):
+    QT_VALUE_ENTRY_CLASS = None
+    def _set_enumerate_value_entry_def_init_(self):
+        self._value_type = str
+        #
+        self._default_value = None
+        #
+        self._values = []
+        #
+        self._value_entry_widget = None
+
+    def _set_value_entry_build_(self, value_type):
+        pass
+
+    def _set_value_type_(self, value_type):
+        self._value_type = value_type
+        self._value_entry_widget._set_value_type_(value_type)
+
+    def _get_value_type_(self):
+        return self._value_type
+
+    def _set_default_value(self, value):
+        self._default_value = value
+
+    def _get_default_value_(self):
+        return self._default_value
+
+    def _set_values_(self, values):
+        self._values = values
+        self._value_entry_widget._set_completer_values_(values)
+
+    def _get_values_(self):
+        return self._values
+
+    def _set_value_(self, value):
+        self._value_entry_widget._set_value_(value)
+
+    def _get_value_(self):
+        return self._value_entry_widget._get_value_()
+
+    def _set_value_clear_(self):
+        self._values = []
+        self._value_entry_widget._set_value_clear_()
 
 
 class _QtArrayValueEntryDef(object):
