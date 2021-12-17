@@ -137,7 +137,7 @@ class PrxDccObjTreeViewTagFilterOpt(object):
             item_prx.set_expanded(True)
         #
         item_prx.set_checked(True)
-        item_prx.set_name_icon(key, 0)
+        item_prx.set_icon_by_name(key, 0)
         item_prx.set_emit_send_enable(True)
         return item_prx
 
@@ -265,7 +265,7 @@ class PrxDccObjTreeViewAddOpt(object):
             item_prx.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
             item_prx.set_expanded(True)
             item_prx.set_checked(True)
-            item_prx.set_name_icon(obj.type_name, 1)
+            item_prx.set_icon_by_name(obj.type_name, 1)
             self._obj_add_dict[obj_path] = item_prx
             return item_prx
 
@@ -297,7 +297,7 @@ class PrxDccObjTreeViewAddOpt(object):
         item_prx.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
         item_prx.set_expanded(True)
         item_prx.set_checked(True)
-        item_prx.set_name_icon(obj.type_name, 1)
+        item_prx.set_icon_by_name(obj.type_name, 1)
         self._obj_add_dict[obj.path] = item_prx
         return item_prx
 
@@ -395,9 +395,10 @@ class PrxStgObjTreeViewAddOpt(object):
         tool_tip = [
             u'path="{}"'.format(obj.path)
         ]
+        obj_name = obj.name
         type_name = 'directory'
         if obj.get_is_file():
-            type_name = 'file[{}]'.format(obj.ext)
+            type_name = 'file({})'.format(obj.ext)
             file_tiles = obj.get_exists_files()
             if file_tiles:
                 tool_tip_ = []
@@ -417,17 +418,19 @@ class PrxStgObjTreeViewAddOpt(object):
         #
         if name_use_path_prettify is True:
             kwargs = dict(
-                name=(obj.get_path_prettify_(), type_name),
+                name=obj.get_path_prettify_(),
                 item_class=self._prx_tree_item_cls,
-                icon=obj.icon,
+                # icon=obj.icon,
+                name_icon=type_name,
                 tool_tip=tool_tip,
                 menu=obj.get_gui_menu_raw()
             )
         else:
             kwargs = dict(
-                name=(obj.name, type_name),
+                name=obj_name,
                 item_class=self._prx_tree_item_cls,
-                icon=obj.icon,
+                # icon=obj.icon,
+                name_icon=type_name,
                 tool_tip=tool_tip,
                 menu=obj.get_gui_menu_raw()
             )
@@ -463,8 +466,8 @@ class PrxStgObjTreeViewAddOpt(object):
                     **kwargs
                 )
             #
+            # item_prx.set_icon_by_name(obj.type_name, 0)
             item_prx.set_checked(True)
-            item_prx.set_name_icon(obj.type_name, 1)
             self._obj_add_dict[obj_key] = item_prx
             #
             if obj.get_is_exists() is False:
@@ -584,7 +587,7 @@ class PrxDccObjTreeViewAddOpt1(object):
         item_prx.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
         item_prx.set_expanded(True)
         item_prx.set_checked(True)
-        item_prx.set_name_icon(obj.type_name, 1)
+        item_prx.set_icon_by_name(obj.type_name, 1)
         self._obj_add_dict[obj.path] = item_prx
         return item_prx
 

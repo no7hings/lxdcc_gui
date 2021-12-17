@@ -67,7 +67,7 @@ class AbsToolkitPanel(prx_widgets.PrxToolWindow):
             item_prx_cls = self._prx_widgets_module.get_method(prx_type)
             item_prx = item_prx_cls()
             item_prx.set_name(name)
-            item_prx.set_name_icon(name)
+            item_prx.set_icon_by_name(name)
             item_prx.set_tool_tip(description)
             item_prx.widget._set_progress_value_(5)
             self.set_button_add(item_prx)
@@ -113,7 +113,7 @@ class AbsToolkitPanel(prx_widgets.PrxToolWindow):
             item_prx.set_checked(checked)
         #
         item_prx.set_name(name)
-        item_prx.set_name_icon(name)
+        item_prx.set_icon_by_name(name)
         item_prx.set_tool_tip(description)
         if click_method:
             if hasattr(self, click_method) is True:
@@ -177,7 +177,7 @@ class AbsToolkitPanel(prx_widgets.PrxToolWindow):
         apply_button = prx_widgets.PrxPressItem()
         layout.addWidget(apply_button.widget)
         apply_button.set_name('Apply')
-        apply_button.set_name_icon('Apply')
+        apply_button.set_icon_by_name('Apply')
         #
         apply_button.set_press_clicked_connect_to(
             lambda: method(**prx_node.get_as_kwargs())
@@ -185,7 +185,7 @@ class AbsToolkitPanel(prx_widgets.PrxToolWindow):
         apply_and_close_button = prx_widgets.PrxPressItem()
         layout.addWidget(apply_and_close_button.widget)
         apply_and_close_button.set_name('Apply and Close')
-        apply_and_close_button.set_name_icon('Apply and Close')
+        apply_and_close_button.set_icon_by_name('Apply and Close')
         apply_and_close_button.set_press_clicked_connect_to(
             lambda: method(**prx_node.get_as_kwargs())
         )
@@ -196,7 +196,7 @@ class AbsToolkitPanel(prx_widgets.PrxToolWindow):
         close_button = prx_widgets.PrxPressItem()
         layout.addWidget(close_button.widget)
         close_button.set_name('Close')
-        close_button.set_name_icon('Close')
+        close_button.set_icon_by_name('Close')
         close_button.set_press_clicked_connect_to(
             self.set_option_unit_hide
         )

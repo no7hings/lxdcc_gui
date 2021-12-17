@@ -3,7 +3,7 @@ from lxutil import utl_configure, utl_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_window
 
 from lxutil_gui.proxy import utl_gui_prx_configure, utl_gui_prx_core, utl_gui_prx_abstract
 
@@ -61,9 +61,14 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_widget_add(self, widget):
         if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+            qt_widget = widget
             self._layout.addWidget(widget)
         else:
-            self._layout.addWidget(widget.widget)
+            qt_widget = widget.widget
+        #
+        if qt_widget != self.widget:
+            #
+            self._layout.addWidget(qt_widget)
 
     def set_layout_alignment_to_top(self):
         self._layout.setAlignment(
@@ -332,8 +337,11 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
             gui_core.HtmlText.get_text(text, font_color=utl_gui_prx_configure.Html.YELLOW)
         )
 
-    def set_print_add(self, text, as_html=False):
-        self._qt_text_browser_0.set_print_add(text, as_html=as_html)
+    def set_print_add(self, text):
+        self._qt_text_browser_0._set_print_add_(text)
+
+    def set_print_add_use_thread(self, text):
+        self._qt_text_browser_0._set_print_add_use_thread_(text)
 
     def set_content(self, text, as_html=False):
         if as_html is True:
@@ -424,9 +432,9 @@ class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget._set_name_text_(*args, **kwargs)
 
     def set_icon_name(self, icon_name):
-        self.widget._set_file_icon_path_(utl_core.Icon.get(icon_name))
+        self.widget._set_icon_file_path_(utl_core.Icon.get(icon_name))
 
-    def set_name_icon(self, text):
+    def set_icon_by_name(self, text):
         self.widget._set_name_icon_text_(text)
 
     def set_icon_size(self, w, h):
@@ -467,7 +475,7 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget.update()
 
     def set_icon_name(self, icon_name):
-        self.widget._file_icon_path = utl_core.Icon.get(icon_name)
+        self.widget._icon_file_path = utl_core.Icon.get(icon_name)
         self.widget._icon_enable = True
         self.widget.update()
 
@@ -476,7 +484,7 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget._icon_enable = True
         self.widget.update()
 
-    def set_name_icon(self, text):
+    def set_icon_by_name(self, text):
         self.widget._set_name_icon_text_(text)
 
     def set_icon_color_by_name(self):
@@ -874,6 +882,28 @@ class PrxToolWindow(
                 self.widget, pos, size=self.get_definition_window_size()
             )
 
-    def set_print_add(self, text, as_html=False):
+    def set_print_add(self, text):
         text_browser = self.get_log_text_browser()
-        text_browser.set_print_add(text, as_html=as_html)
+        text_browser.set_print_add(text)
+
+    def set_print_add_use_thread(self, text):
+        text_browser = self.get_log_text_browser()
+        text_browser.set_print_add_use_thread(text)
+
+
+class PrxFramelessWindow(
+    utl_gui_prx_abstract.AbsPrxWindow,
+):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_window._QtFramelessWindow
+    def __init__(self, *args, **kwargs):
+        super(PrxFramelessWindow, self).__init__(*args, **kwargs)
+        self.widget.setWindowFlags(utl_gui_qt_core.QtCore.Qt.Window | utl_gui_qt_core.QtCore.Qt.FramelessWindowHint)
+
+
+class PrxWindow(
+    utl_gui_prx_abstract.AbsPrxWindow,
+):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_window._QtWindow
+    def __init__(self, *args, **kwargs):
+        super(PrxWindow, self).__init__(*args, **kwargs)
+

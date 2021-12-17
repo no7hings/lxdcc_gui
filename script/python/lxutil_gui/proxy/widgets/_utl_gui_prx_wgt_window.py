@@ -65,21 +65,21 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._yes_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         self._button_layout.addWidget(self._yes_button.widget)
         self._yes_button.set_name('Yes')
-        self._yes_button.set_name_icon('Yes')
+        self._yes_button.set_icon_by_name('Yes')
         self._yes_button.set_width(self.BUTTON_WIDTH)
         self._yes_button.set_press_clicked_connect_to(self.set_yes_run)
         #
         self._no_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         self._button_layout.addWidget(self._no_button.widget)
         self._no_button.set_name('No')
-        self._no_button.set_name_icon('No')
+        self._no_button.set_icon_by_name('No')
         self._no_button.set_width(self.BUTTON_WIDTH)
         self._no_button.set_press_clicked_connect_to(self.set_no_run)
         #
         self._cancel_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         self._button_layout.addWidget(self._cancel_button.widget)
         self._cancel_button.set_name('Cancel')
-        self._cancel_button.set_name_icon('Cancel')
+        self._cancel_button.set_icon_by_name('Cancel')
         self._cancel_button.set_width(self.BUTTON_WIDTH)
         self._cancel_button.set_press_clicked_connect_to(self.set_cancel_run)
         #
@@ -112,21 +112,21 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
 
     def set_yes_label(self, text):
         self._yes_button.set_name(text)
-        self._yes_button.set_name_icon(text)
+        self._yes_button.set_icon_by_name(text)
 
     def set_yes_method_add(self, method, args=None):
         self._yes_methods.append(method)
 
     def set_no_label(self, text):
         self._no_button.set_name(text)
-        self._no_button.set_name_icon(text)
+        self._no_button.set_icon_by_name(text)
 
     def set_no_method_add(self, method, args=None):
         self._no_methods.append(method)
 
     def set_cancel_label(self, text):
         self._cancel_button.set_name(text)
-        self._cancel_button.set_name_icon(text)
+        self._cancel_button.set_icon_by_name(text)
 
     def set_cancel_method_add(self, method, args=None):
         self._cancel_methods.append(method)
@@ -164,6 +164,9 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
 
     def get_option_node(self):
         return self._option_node
+
+    def set_print_add_use_thread(self, text):
+        self._tip_text_browser.set_print_add_use_thread(text)
 
 
 class PrxTipWindow(AbsPrxDialogWindow):
@@ -265,7 +268,7 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._stop_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         self._button_layout.addWidget(self._stop_button.widget)
         self._stop_button.set_name('Stop')
-        self._stop_button.set_name_icon('Stop')
+        self._stop_button.set_icon_by_name('Stop')
         self._stop_button.set_width(80)
         self._stop_button.set_press_clicked_connect_to(self.set_process_stop)
         #
@@ -386,6 +389,9 @@ class PrxWaitWindow(utl_gui_prx_abstract.AbsPrxWindow):
     def __init__(self, *args, **kwargs):
         super(PrxWaitWindow, self).__init__(*args, **kwargs)
 
+        self._t = utl_gui_qt_core.QtPrintThread()
+        self._t.printed.connect(self.set_content_add)
+
     def _set_build_(self):
         self._central_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
         #
@@ -403,7 +409,7 @@ class PrxWaitWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._wait_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         self._button_layout.addWidget(self._wait_button.widget)
         self._wait_button.set_name('Waiting ...')
-        self._wait_button.set_name_icon('Waiting')
+        self._wait_button.set_icon_by_name('Waiting')
         self._wait_button.set_width(320)
         self._wait_button.set_press_clicked_connect_to(self._set_run_)
         #
@@ -533,7 +539,7 @@ class PrxWaitWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._wait_button.set_name(
             'Next'
         )
-        self._wait_button.set_name_icon('Next')
+        self._wait_button.set_icon_by_name('Next')
         self._wait_button.set_status(
             self._status
         )
@@ -554,9 +560,12 @@ class PrxWaitWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._wait_button.set_name(
             'Close'
         )
-        self._wait_button.set_name_icon('Close')
+        self._wait_button.set_icon_by_name('Close')
         self._wait_button.set_status(
             self._status
         )
         #
         self._wait_running_timer.stop()
+
+    def set_print_add_use_thread(self, text):
+        self._tip_text_browser.set_print_add_use_thread(text)

@@ -25,6 +25,7 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
     DCC_NAMESPACE = 'resolver'
     RESOLVER_FILTER = None
     #
+    ITEM_FRAME_SIZE = 128, 128
     ITEM_FRAME_ICON_SIZE = 40, 128
     ITEM_FRAME_IMAGE_SIZE = 128, 128
     ITEM_FRAME_NAME_SIZE = 128, 40
@@ -165,9 +166,10 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
             self._set_rsv_unit_viewer_refresh_
         )
         #
-        self._rsv_uint_list_view_0.set_item_frame_icon_size(*self.ITEM_FRAME_ICON_SIZE)
-        self._rsv_uint_list_view_0.set_item_frame_image_size(*self.ITEM_FRAME_IMAGE_SIZE)
-        self._rsv_uint_list_view_0.set_item_frame_name_size(*self.ITEM_FRAME_NAME_SIZE)
+        self._rsv_uint_list_view_0.set_item_frame_size(*self.ITEM_FRAME_SIZE)
+        self._rsv_uint_list_view_0.set_item_icon_frame_draw_enable(True)
+        self._rsv_uint_list_view_0.set_item_name_frame_draw_enable(True)
+        self._rsv_uint_list_view_0.set_item_image_frame_draw_enable(True)
         #
         self._rsv_uint_list_view_0.set_item_select_changed_connect_to(
             self._set_guide_bar_update_

@@ -18,7 +18,7 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
             item_prx.set_image('/data/f/vedio_test/laohu_da.rig.layout_rigging.v002.thumbnail.jpg')
             item_prx.set_file_icon('application/maya')
             item_prx.set_name(str(i).zfill(9))
-            # item_prx.set_text_icon('asset')
+            # item_prx.set_icon_by_name('asset')
             item_prx.set_gui_menu_raw(
                 [
                     ('Open folder', None, None),

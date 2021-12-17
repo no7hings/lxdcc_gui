@@ -114,11 +114,11 @@ class AbsSceneTextureManagerPanel(
     DCC_SELECTION_CLS = None
     DCC_NAMESPACE = 'dcc'
     #
-    ITEM_FRAME_IMAGE_SIZE = 128, 128
-    ITEM_FRAME_NAME_SIZE = 128, 40
+    ITEM_FRAME_SIZE = 96, 144
+    ITEM_NAME_FRAME_SIZE = 48, 48
     #
-    DSC_IDX_USED_COLORS_SPACE = 2
-    DSC_IDX_COLORS_SPACE = 3
+    DSC_IDX_USED_COLORS_SPACE = 1
+    DSC_IDX_COLORS_SPACE = 2
     def __init__(self, *args, **kwargs):
         super(AbsSceneTextureManagerPanel, self).__init__(*args, **kwargs)
         self._window_configure = utl_configure.MainData.get_as_configure(
@@ -178,8 +178,13 @@ class AbsSceneTextureManagerPanel(
         h_splitter_0.set_widget_add(self._obj_tree_viewer_0)
         self._obj_list_viewer_0 = prx_widgets.PrxListView()
         h_splitter_0.set_widget_add(self._obj_list_viewer_0)
-        self._obj_list_viewer_0.set_item_frame_image_size(*self.ITEM_FRAME_IMAGE_SIZE)
-        self._obj_list_viewer_0.set_item_frame_name_size(*self.ITEM_FRAME_NAME_SIZE)
+        #
+        self._obj_list_viewer_0.set_item_frame_size(*self.ITEM_FRAME_SIZE)
+        self._obj_list_viewer_0.set_item_name_frame_size(*self.ITEM_NAME_FRAME_SIZE)
+        #
+        self._obj_list_viewer_0.set_item_icon_frame_draw_enable(True)
+        self._obj_list_viewer_0.set_item_name_frame_draw_enable(True)
+        self._obj_list_viewer_0.set_item_image_frame_draw_enable(True)
         #
         h_splitter_0.set_stretches([2, 4, 4])
         #
@@ -343,7 +348,7 @@ class AbsSceneTextureManagerPanel(
         )
         #
         self._obj_tree_viewer_0.set_header_view_create(
-            [('Name(s)', 2), ('Type(s)', 1), ('Used-Color-space(s)', 1), ('Color-space(s)', 1)],
+            [('Name(s)', 2), ('Used-Color-space(s)', 1), ('Color-space(s)', 1)],
             self.get_definition_window_size()[0] * (3.0 / 4.0) - 40
         )
         #
@@ -399,7 +404,7 @@ class AbsSceneTextureManagerPanel(
                                     stg_file_item_prx.set_name(
                                         texture_color_space, self.DSC_IDX_COLORS_SPACE
                                     )
-                                    stg_file_item_prx.set_name_icon(
+                                    stg_file_item_prx.set_icon_by_name(
                                         texture_color_space, self.DSC_IDX_COLORS_SPACE
                                     )
                                     #
@@ -407,7 +412,7 @@ class AbsSceneTextureManagerPanel(
                                     stg_file_item_prx.set_name(
                                         texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
                                     )
-                                    stg_file_item_prx.set_name_icon(
+                                    stg_file_item_prx.set_icon_by_name(
                                         texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
                                     )
                             #
@@ -434,7 +439,7 @@ class AbsSceneTextureManagerPanel(
                             i_dcc_obj_item_prx.set_name(
                                 node_color_space, self.DSC_IDX_USED_COLORS_SPACE
                             )
-                            i_dcc_obj_item_prx.set_name_icon(
+                            i_dcc_obj_item_prx.set_icon_by_name(
                                 node_color_space, self.DSC_IDX_USED_COLORS_SPACE
                             )
                 #

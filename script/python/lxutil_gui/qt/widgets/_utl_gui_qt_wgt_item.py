@@ -143,17 +143,24 @@ class _QtIconPressItem(
         )
         # icon
         if self._icon_enable is True:
-            if self._file_icon_path is not None:
+            if self._icon_file_path is not None:
+                icon_file_path = self._icon_file_path
+                if self._item_is_hovered is True:
+                    if self._hover_icon_file_path is not None:
+                        icon_file_path = self._hover_icon_file_path
+                #
                 painter._set_svg_image_draw_by_rect_(
-                    self._file_icon_rect, self._file_icon_path, offset=offset
+                    self._file_icon_rect,
+                    icon_file_path,
+                    offset=offset
                 )
             elif self._color_icon_rgb is not None:
                 painter._set_color_icon_draw_(
                     self._color_icon_rect, self._color_icon_rgb, offset=offset
                 )
-            elif self._name_icon_text is not None:
+            elif self._icon_name_text is not None:
                 painter._set_name_icon_draw_by_rect_(
-                    self._name_icon_rect, self._name_icon_text, offset=offset, border_radius=2,
+                    self._name_icon_rect, self._icon_name_text, offset=offset, border_radius=2,
                     is_hovered=self._item_is_hovered
                 )
 
@@ -457,18 +464,18 @@ class _QtPressItem(
             )
         # icon
         if self._icon_enable is True:
-            if self._file_icon_path is not None:
+            if self._icon_file_path is not None:
                 painter._set_svg_image_draw_by_rect_(
-                    self._file_icon_rect, self._file_icon_path, offset=offset
+                    self._file_icon_rect, self._icon_file_path, offset=offset
                 )
             elif self._color_icon_rgb is not None:
                 painter._set_color_icon_draw_(
                     self._color_icon_rect, self._color_icon_rgb, offset=offset
                 )
-            elif self._name_icon_text is not None:
+            elif self._icon_name_text is not None:
                 painter._set_name_icon_draw_by_rect_(
                     self._name_icon_rect,
-                    self._name_icon_text,
+                    self._icon_name_text,
                     offset=offset,
                     border_radius=2,
                     is_hovered=self._item_is_hovered
@@ -623,7 +630,7 @@ class _QtFilterBar(QtWidgets.QWidget):
         #
         self._header_button = _QtIconPressItem()
         qt_layout_1.addWidget(self._header_button)
-        self._header_button._set_file_icon_path_(
+        self._header_button._set_icon_file_path_(
             utl_core.Icon.get(
                 'search'
             )
@@ -649,7 +656,7 @@ class _QtFilterBar(QtWidgets.QWidget):
         self._entry_clear_button = _QtIconPressItem()
         qt_layout_1.addWidget(self._entry_clear_button)
         self._entry_clear_button.hide()
-        self._entry_clear_button._set_file_icon_path_(
+        self._entry_clear_button._set_icon_file_path_(
             utl_core.Icon.get(
                 'entry_clear'
             )
@@ -674,7 +681,7 @@ class _QtFilterBar(QtWidgets.QWidget):
         #
         self._pre_occurrence_button = _QtIconPressItem()
         qt_layout_0.addWidget(self._pre_occurrence_button)
-        self._pre_occurrence_button._set_file_icon_path_(
+        self._pre_occurrence_button._set_icon_file_path_(
             utl_core.Icon.get(
                 'pre_occurrence'
             )
@@ -683,7 +690,7 @@ class _QtFilterBar(QtWidgets.QWidget):
         #
         self._next_occurrence_button = _QtIconPressItem()
         qt_layout_0.addWidget(self._next_occurrence_button)
-        self._next_occurrence_button._set_file_icon_path_(
+        self._next_occurrence_button._set_icon_file_path_(
             utl_core.Icon.get(
                 'next_occurrence'
             )
@@ -696,11 +703,11 @@ class _QtFilterBar(QtWidgets.QWidget):
         self._set_update_()
     #
     def _set_update_(self):
-        self._match_case_button._set_file_icon_path_(
+        self._match_case_button._set_icon_file_path_(
             utl_core.Icon.get(self._match_case_icon_names[self._is_match_case])
         )
         #
-        self._match_word_button._set_file_icon_path_(
+        self._match_word_button._set_icon_file_path_(
             utl_core.Icon.get(self._match_word_icon_names[self._is_match_word])
         )
         #
@@ -881,7 +888,7 @@ class _QtEntryItem(QtWidgets.QLineEdit):
             )
         )
 
-    def _set_wheel_update_(self, event):
+    def _set_action_wheel_update_(self, event):
         if self._value_type in [int, float]:
             delta = event.angleDelta().y()
             pre_value = self._get_value_()
@@ -906,7 +913,7 @@ class _QtEntryItem(QtWidgets.QLineEdit):
                 #
                 self._set_value_completion_()
             elif event.type() == QtCore.QEvent.Wheel:
-                self._set_wheel_update_(event)
+                self._set_action_wheel_update_(event)
         return False
 
     def contextMenuEvent(self, event):
@@ -1603,7 +1610,7 @@ class _QtEnumerateValueEntryItem(
         #
         self._drop_button = _QtIconPressItem()
         self._layout.addWidget(self._drop_button)
-        self._drop_button._set_file_icon_path_(
+        self._drop_button._set_icon_file_path_(
             utl_core.Icon.get('down')
         )
         self._drop_button._set_icon_frame_size_(16, 16)
@@ -1712,7 +1719,7 @@ class _QtHExpandItem0(
         #
         x += f_w+spacing
         #
-        if self._name_icon_text is not None:
+        if self._icon_name_text is not None:
             i_w, i_h = self._name_icon_size
             self._set_name_icon_rect_(
                 x+(f_w-i_w) / 2, y+(f_h-i_h) / 2, i_w, i_h
@@ -1745,14 +1752,14 @@ class _QtHExpandItem0(
         # file-icon
         painter._set_file_icon_draw_by_rect_(
             self._file_icon_rect,
-            self._file_icon_path,
+            self._icon_file_path,
             offset=offset
         )
         # name-icon
-        if self._name_icon_text is not None:
+        if self._icon_name_text is not None:
             painter._set_name_icon_draw_by_rect_(
                 self._name_icon_rect,
-                self._name_icon_text,
+                self._icon_name_text,
                 background_color=bkg_color,
                 offset=offset,
                 border_radius=8,
@@ -1788,7 +1795,7 @@ class _QtHExpandItem0(
         self._item_is_expanded = boolean
 
     def _set_item_expand_update_(self):
-        self._set_file_icon_path_(
+        self._set_icon_file_path_(
             [self._item_expand_icon_file_path_1, self._item_expand_icon_file_path_0][self._item_is_expanded]
         )
         #
@@ -1858,7 +1865,7 @@ class _QtHExpandItem1(
         # icon
         painter._set_file_icon_draw_by_rect_(
             rect=self._file_icon_rect,
-            file_path=self._file_icon_path,
+            file_path=self._icon_file_path,
             offset=offset
         )
 
@@ -1889,11 +1896,11 @@ class _QtHExpandItem1(
             )
         #
         if self._item_expand_direction == self.EXPAND_TOP_TO_BOTTOM:
-            self._set_file_icon_path_(
+            self._set_icon_file_path_(
                 [self._item_expand_icon_file_path_1, self._item_expand_icon_file_path_0][self._item_is_expanded]
             )
         elif self._item_expand_direction == self.EXPAND_BOTTOM_TO_TOP:
-            self._set_file_icon_path_(
+            self._set_icon_file_path_(
                 [self._item_expand_icon_file_path_0, self._item_expand_icon_file_path_1][self._item_is_expanded]
             )
         #
@@ -1973,8 +1980,8 @@ class QtTreeWidgetItem(
             tree_widget._set_item_check_action_run_(self, column)
             tree_widget._set_item_toggle_emit_send_(self, column, checked)
 
-    def _set_file_icon_path_(self, file_path, column=0):
-        self._file_icon_path = file_path
+    def _set_icon_file_path_(self, file_path, column=0):
+        self._icon_file_path = file_path
         #
         icon = QtGui.QIcon()
         icon.addPixmap(
@@ -1991,50 +1998,57 @@ class QtTreeWidgetItem(
         )
 
     def _set_name_icon_text_(self, text, column=0):
+        self._icon_name_text = text
         self.setIcon(
             column,
             utl_gui_qt_core.QtUtilMtd.get_name_text_icon(text)
         )
 
-    def _set_icon_state_update_(self, column):
+    def _set_icon_state_update_(self, column=0):
         icon = QtGui.QIcon()
-        pixmap = QtGui.QPixmap(self._file_icon_path)
-        if self._icon_state in [gui_core.State.ENABLE, gui_core.State.DISABLE, gui_core.State.WARNING, gui_core.State.ERROR]:
-            if self._icon_state == gui_core.State.ENABLE:
-                background_color = Color.ENABLE
-            elif self._icon_state == gui_core.State.DISABLE:
-                background_color = Color.DISABLE
-            elif self._icon_state == gui_core.State.WARNING:
-                background_color = Color.WARNING
-            elif self._icon_state == gui_core.State.ERROR:
-                background_color = Color.ERROR
-            else:
-                raise TypeError()
-            #
-            painter = _utl_gui_qt_wgt_utility.QtPainter(pixmap)
-            rect = pixmap.rect()
-            x, y = rect.x(), rect.y()
-            w, h = rect.width(), rect.height()
-            #
-            border_color = Color.ICON_BORDER_NORMAL
-            #
-            state_rect = QtCore.QRect(
-                x, y+h/2, w/2, h/2
-            )
-            painter._set_frame_draw_by_rect_(
-                state_rect,
-                border_color=border_color,
-                background_color=background_color,
-                border_radius=w/2
-            )
-            painter.end()
+        pixmap = None
+        if self._icon_file_path is not None:
+            pixmap = QtGui.QPixmap(self._icon_file_path)
+        elif self._icon_name_text is not None:
+            pixmap = QtIconMtd.get_pixmap(self._icon_name_text)
         #
-        icon.addPixmap(
-            pixmap,
-            QtGui.QIcon.Normal,
-            QtGui.QIcon.On
-        )
-        self.setIcon(column, icon)
+        if pixmap:
+            if self._icon_state in [gui_core.State.ENABLE, gui_core.State.DISABLE, gui_core.State.WARNING, gui_core.State.ERROR]:
+                if self._icon_state == gui_core.State.ENABLE:
+                    background_color = Color.ENABLE
+                elif self._icon_state == gui_core.State.DISABLE:
+                    background_color = Color.DISABLE
+                elif self._icon_state == gui_core.State.WARNING:
+                    background_color = Color.WARNING
+                elif self._icon_state == gui_core.State.ERROR:
+                    background_color = Color.ERROR
+                else:
+                    raise TypeError()
+                #
+                painter = _utl_gui_qt_wgt_utility.QtPainter(pixmap)
+                rect = pixmap.rect()
+                x, y = rect.x(), rect.y()
+                w, h = rect.width(), rect.height()
+                #
+                border_color = Color.ICON_BORDER_NORMAL
+                #
+                state_rect = QtCore.QRect(
+                    x, y+h/2, w/2, h/2
+                )
+                painter._set_frame_draw_by_rect_(
+                    state_rect,
+                    border_color=border_color,
+                    background_color=background_color,
+                    border_radius=w/2
+                )
+                painter.end()
+            #
+            icon.addPixmap(
+                pixmap,
+                QtGui.QIcon.Normal,
+                QtGui.QIcon.On
+            )
+            self.setIcon(column, icon)
 
     def _set_state_(self, state, column):
         self._icon_state = state
@@ -2356,6 +2370,8 @@ class _QtListItemWidget(
     utl_gui_qt_abstract._QtItemSelectActionDef,
 ):
     clicked = qt_signal()
+    press_clicked = qt_signal()
+    #
     viewport_show = qt_signal()
     viewport_hide = qt_signal()
     #
@@ -2377,10 +2393,6 @@ class _QtListItemWidget(
         self._set_item_press_action_def_init_()
         self._set_item_select_action_def_init_()
         #
-        self._icons_frame_rect = QtCore.QRect()
-        self._image_frame_rect = QtCore.QRect()
-        self._names_frame_rect = QtCore.QRect()
-        #
         self._file_type_icon = None
         #
         self._list_widget = None
@@ -2389,6 +2401,11 @@ class _QtListItemWidget(
         self._frame_icon_width, self._frame_icon_height = 40, 128
         self._frame_image_width, self._frame_image_height = 128, 128
         self._frame_name_width, self._frame_name_height = 128, 40
+        #
+        self._frame_side = 4
+        self._frame_spacing = 2
+        #
+        self._frame_size = 128, 128
         #
         self._is_viewport_show_enable = True
 
@@ -2399,14 +2416,24 @@ class _QtListItemWidget(
             #
             if event.type() == QtCore.QEvent.Resize:
                 self.update()
+            #
             elif event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.RightButton:
                     self._set_menu_show_()
                 elif event.button() == QtCore.Qt.LeftButton:
-                    self.clicked.emit()
+                    self._set_item_action_flag_(self.PRESS_CLICK_FLAG)
+            #
+            elif event.type() == QtCore.QEvent.MouseButtonDblClick:
+                if event.button() == QtCore.Qt.LeftButton:
+                    self._set_item_action_flag_(self.PRESS_DB_CLICK_FLAG)
+            #
+            elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                if self._get_item_action_flag_is_match_(self.PRESS_CLICK_FLAG):
+                    self.press_clicked.emit()
+                elif self._get_item_action_flag_is_match_(self.PRESS_DB_CLICK_FLAG):
+                    self.press_db_clicked.emit()
                 #
-                self._item_is_hovered = True
-                self.update()
+                self._set_item_action_flag_clear_()
         return False
 
     def paintEvent(self, event):
@@ -2416,11 +2443,13 @@ class _QtListItemWidget(
         #
         w, h = self.width(), self.height()
         #
-        bkg_rect = QtCore.QRect(1, 1, w-1, h-1)
+        offset = [0, 2][self._get_item_action_flag_() is not None]
+        #
+        bkg_rect = QtCore.QRect(1, 1, w-2, h-2)
         bkg_color = painter._get_item_background_color_(
             bkg_rect,
             is_hover=self._item_is_hovered,
-            is_select=self._is_selected
+            is_select=self._is_selected,
         )
         #
         if self._get_item_()._item_show_loading_is_enable is True:
@@ -2433,73 +2462,96 @@ class _QtListItemWidget(
                 bkg_rect,
                 border_color=Color.TRANSPARENT,
                 background_color=bkg_color,
-                border_radius=1
+                border_radius=1,
+                offset=offset
             )
-            #
-            if self._get_has_icons_():
-                painter._set_frame_draw_by_rect_(
-                    self._icons_frame_rect,
-                    border_color=Color.TRANSPARENT,
-                    background_color=Color.ITEM_BACKGROUND_NORMAL,
-                )
-            #
-            painter._set_frame_draw_by_rect_(
-                self._image_frame_rect,
-                border_color=Color.TRANSPARENT,
-                background_color=Color.ITEM_BACKGROUND_NORMAL,
-            )
-            painter._set_frame_draw_by_rect_(
-                self._names_frame_rect,
-                border_color=self._get_name_frame_border_color_(),
-                background_color=self._get_name_frame_background_color_(),
-            )
-            #
-            icon_indices = self._get_icon_indices_()
-            if icon_indices:
-                icons = self._get_pixmap_icons_()
-                if icons:
-                    for icon_index in icon_indices:
-                        painter._set_pixmap_draw_by_rect_(
-                            self._get_icon_rect_at_(icon_index),
-                            self._get_pixmap_icon_at_(icon_index)
-                        )
-                else:
-                    icon_file_paths = self._get_icon_file_paths_()
-                    if icon_file_paths:
-                        for icon_index in icon_indices:
-                            painter._set_file_icon_draw_by_rect_(
-                                self._get_icon_rect_at_(icon_index),
-                                self._get_icon_file_path_at_(icon_index)
-                            )
-            #
-            image_file_path = self._get_image_file_path_()
-            if image_file_path:
-                painter._set_any_image_draw_by_rect_(
-                    self._get_image_rect_(), image_file_path
-                )
-            #
-            painter._set_text_draw_by_rect_(
-                self._get_index_rect_(),
-                text=str(self._get_index_()),
-                text_option=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter,
-                color=Color.TEXT_DISABLE
-            )
-            #
-            name_indices = self._get_name_indices_()
-            if name_indices:
-                if self._list_widget._get_is_grid_mode_():
-                    name_indices_ = name_indices[:3]
-                    qt_text_option = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
-                else:
-                    name_indices_ = name_indices
-                    qt_text_option = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
-                #
-                for name_index in name_indices_:
-                    painter._set_text_draw_by_rect_(
-                        self._get_name_rect_at_(name_index),
-                        text=self._get_name_text_at_(name_index),
-                        text_option=qt_text_option
+            # icon frame
+            if self._icon_frame_draw_enable is True:
+                if self._get_has_icon_():
+                    painter._set_frame_draw_by_rect_(
+                        self._icon_frame_rect,
+                        border_color=Color.TRANSPARENT,
+                        background_color=Color.ITEM_BACKGROUND_NORMAL,
+                        offset=offset
                     )
+            #
+            if self._name_frame_draw_enable is True:
+                if self._get_has_name_():
+                    painter._set_frame_draw_by_rect_(
+                        self._name_frame_rect,
+                        border_color=self._get_name_frame_border_color_(),
+                        background_color=self._get_name_frame_background_color_(),
+                        offset=offset
+                    )
+            #
+            if self._image_frame_draw_enable is True:
+                if self._get_has_image_():
+                    painter._set_frame_draw_by_rect_(
+                        self._image_frame_rect,
+                        border_color=Color.TRANSPARENT,
+                        background_color=Color.ITEM_BACKGROUND_NORMAL,
+                        offset=offset
+                    )
+            # icon
+            if self._get_has_icon_() is True:
+                icon_indices = self._get_icon_indices_()
+                if icon_indices:
+                    icons = self._get_pixmap_icons_()
+                    if icons:
+                        for icon_index in icon_indices:
+                            painter._set_pixmap_draw_by_rect_(
+                                self._get_icon_rect_at_(icon_index),
+                                self._get_pixmap_icon_at_(icon_index),
+                                offset=offset
+                            )
+                    else:
+                        icon_file_paths = self._get_icon_file_paths_()
+                        if icon_file_paths:
+                            for icon_index in icon_indices:
+                                painter._set_file_icon_draw_by_rect_(
+                                    self._get_icon_rect_at_(icon_index),
+                                    self._get_icon_file_path_at_(icon_index),
+                                    offset=offset
+                                )
+            # name
+            if self._get_has_name_() is True:
+                name_indices = self._get_name_indices_()
+                if name_indices:
+                    text_option = QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop
+                    #
+                    for i_name_index in name_indices:
+                        painter._set_text_draw_by_rect_(
+                            self._get_name_rect_at_(i_name_index),
+                            text=self._get_name_text_at_(i_name_index),
+                            text_option=text_option,
+                            word_warp=self._name_word_warp,
+                            offset=offset
+                        )
+            # image
+            if self._get_has_image_() is True:
+                image_file_path = self._image_file_path
+                if image_file_path:
+                    painter._set_any_image_draw_by_rect_(
+                        self._get_image_rect_(),
+                        image_file_path,
+                        offset=offset
+                    )
+                else:
+                    image_name_text = self._image_name_text
+                    if image_name_text:
+                        painter._set_name_icon_draw_by_rect_(
+                            self._get_image_rect_(),
+                            image_name_text,
+                            border_radius=4,
+                            offset=offset
+                        )
+            #
+            # painter._set_text_draw_by_rect_(
+            #     self._get_index_rect_(),
+            #     text=str(self._get_index_()),
+            #     text_option=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter,
+            #     color=Color.TEXT_DISABLE
+            # )
             #
             if self._get_item_()._item_show_image_loading_is_enable is True:
                 painter._set_loading_draw_by_rect_(
@@ -2535,110 +2587,171 @@ class _QtListItemWidget(
         return self._list_widget
 
     def _set_widget_geometry_update_(self):
-        self._set_frame_geometry_update_()
-        self._set_sub_icon_geometry_update_()
-        self._set_sub_image_geometry_update_()
-        self._set_sub_name_geometry_update_()
+        self._set_widget_frame_geometries_update_()
+        self._set_widget_icon_sub_geometries_update_()
+        self._set_widget_image_sub_geometries_update_()
+        self._set_widget_name_sub_geometries_update_()
 
-    def _set_frame_geometry_update_(self):
+    def _set_widget_frame_geometries_update_(self):
         if self._list_widget is not None:
             side = 4
             spacing = 2
             x, y = side, side
-            w, h = self.width()-side*2, self.height()-side*2
+            w, h = self._frame_size
             self._set_frame_rect_(x, y, w, h)
             if self._list_widget._get_is_grid_mode_():
-                x_ = x
-                w_0, h_0 = self._frame_icon_width, self._frame_image_height
-                w_1, h_1 = w, self._frame_image_height
-                #
-                if self._get_has_icons_() is True:
-                    self._icons_frame_rect.setRect(
-                        x_, y, w_0, h_0
-                    )
-                    #
-                    x_ += w_0+spacing
-                    w_1, h_1 = self._frame_image_width, self._frame_image_height
-                #
-                self._image_frame_rect.setRect(
-                    x_, y, w_1, h_1
-                )
-                #
-                w_2, h_2 = w, self._frame_name_height
-                y += h_1+spacing
-                self._names_frame_rect.setRect(
-                    x, y, w_2, h_2
+                self._set_widget_frame_geometry_update_as_grid_mode_(
+                    (x, y), (w, h)
                 )
             else:
-                w_0, h_0 = self._frame_icon_width, h
-                self._icons_frame_rect.setRect(
-                    x, y, w_0, h_0
-                )
-                #
-                x += w_0+spacing
-                w_1, h_1 = self._frame_image_width, h
-                self._image_frame_rect.setRect(
-                    x, y, w_1, h_1
-                )
-                #
-                w_2, h_2 = w-h_1, h
-                x += w_1+spacing
-                self._names_frame_rect.setRect(
-                    x, y, w_2, h_2
+                self._set_widget_frame_geometry_update_as_list_mode_(
+                    (x, y), (w, h)
                 )
 
-    def _set_sub_icon_geometry_update_(self):
-        rect = self._icons_frame_rect
-        spacing = 2
-        x, y = rect.x(), rect.y()
-        w, h = rect.width(), rect.height()
-        f_w, f_h = 20, 20
-        i_f_w, i_f_h = 16, 16
-        icon_indices = self._get_icon_indices_()
-        for icon_index in icon_indices:
-            self._set_icon_rect_at_(
-                x+(f_w-i_f_w)/2, y+(f_h-i_f_h)/2+icon_index*(f_h+spacing), i_f_w, i_f_h,
-                icon_index
+    def _set_widget_frame_geometry_update_as_grid_mode_(self, pos, size):
+        x, y = pos
+        w, h = size
+        f_spacing = self._frame_spacing
+        if self._get_has_name_() is True:
+            name_f_w, name_f_h = self._name_frame_size
+            n_c = len(self._get_name_indices_())
+            #
+            name_w_, name_h_ = w, n_c*name_f_h
+            name_x_, name_y_ = x, y+h-name_h_
+            #
+            self._name_frame_rect.setRect(
+                name_x_, name_y_,
+                name_w_, name_h_
+            )
+        else:
+            name_w_, name_h_ = 0, -f_spacing
+        #
+        if self._get_has_icon_() is True:
+            icon_f_w, icon_f_h = self._icon_frame_size
+            icon_x_, icon_y_ = x, y
+            icon_w_, icon_h_ = icon_f_w, h-name_h_-f_spacing
+            #
+            self._icon_frame_rect.setRect(
+                icon_x_, icon_y_,
+                icon_w_, icon_h_
+            )
+        else:
+            icon_w_, icon_h_ = -f_spacing, 0
+        #
+        if self._get_has_image_() is True:
+            image_x_, image_y_ = x+icon_w_+f_spacing, y
+            image_w_, image_h_ = w-(icon_w_+f_spacing), h-(name_h_+f_spacing)
+            self._image_frame_rect.setRect(
+                image_x_, image_y_, image_w_, image_h_
             )
 
-    def _set_sub_image_geometry_update_(self):
-        rect = self._image_frame_rect
-        x, y = rect.x(), rect.y()
-        w, h = rect.width(), rect.height()
-        #
-        image_file_path = self._get_image_file_path_()
-        if image_file_path:
-            x += 2
-            y += 2
-            w -= 4+1
-            h -= 4+1
-            i_w_0, i_h_0 = self._get_image_size_()
-            if (i_w_0, i_h_0) != (0, 0):
-                i_x, i_y, i_w, i_h = gui_core.SizeMethod.set_fit_to(
-                    (i_w_0, i_h_0), (w, h)
-                )
-                self._set_image_rect_(
-                    x+i_x, y+i_y, i_w, i_h
-                )
-
-    def _set_sub_name_geometry_update_(self):
-        rect = self._names_frame_rect
-        spacing = 2
-        x, y = rect.x(), rect.y()
-        w, h = rect.width(), rect.height()
-        #
-        t_w, t_h = 12, 12
-        #
-        self._set_index_rect_(
-            x+2, y+h-t_h, w-4, t_h
-        )
-        #
-        name_indices = self._get_name_indices_()
-        for name_index in name_indices:
-            self._set_name_rect_at_(
-                x+2, y+2+name_index*t_h, w, t_h,
-                name_index
+    def _set_widget_frame_geometry_update_as_list_mode_(self, pos, size):
+        x, y = pos
+        w, h = size
+        width, height = self.width(), self.height()
+        f_side = self._frame_side
+        f_spacing = self._frame_spacing
+        if self._get_has_icon_() is True:
+            icon_f_w, icon_f_h = self._icon_frame_size
+            icon_x_, icon_y_ = x, y
+            icon_w_, icon_h_ = icon_f_w, h
+            #
+            self._icon_frame_rect.setRect(
+                icon_x_, icon_y_,
+                icon_w_, icon_h_
             )
+        else:
+            icon_w_, icon_h_ = -f_spacing, 0
+        #
+        if self._get_has_image_() is True:
+            image_x_, image_y_ = x+(icon_w_+f_spacing), y
+            image_w_, image_h_ = w-(icon_w_+f_spacing), h
+            self._image_frame_rect.setRect(
+                image_x_, image_y_, image_w_, image_h_
+            )
+        else:
+            image_w_, image_h_ = -f_spacing, 0
+        #
+        if self._get_has_name_() is True:
+            name_x_, name_y_ = x+(icon_w_+f_spacing)+(image_w_+f_spacing), y
+            name_w_, name_h_ = width-(icon_w_+f_spacing)-(image_w_+f_spacing)-f_side*2, h
+            #
+            self._name_frame_rect.setRect(
+                name_x_, name_y_,
+                name_w_, name_h_
+            )
+
+    def _set_widget_icon_sub_geometries_update_(self):
+        if self._get_has_icon_() is True:
+            icon_indices = self._get_icon_indices_()
+            if icon_indices:
+                rect = self._icon_frame_rect
+                x, y = rect.x(), rect.y()
+                w, h = rect.width(), rect.height()
+                #
+                side = 2
+                spacing = 0
+                #
+                f_w, f_h = self._icon_frame_size
+                i_w, i_h = self._icon_size
+                for i_icon_index in icon_indices:
+                    self._set_icon_rect_at_(
+                        x+(f_w-i_w)/2, y+(f_h-i_h)/2+i_icon_index*(f_h+spacing), i_w, i_h,
+                        i_icon_index
+                    )
+
+    def _set_widget_image_sub_geometries_update_(self):
+        if self._get_has_image_() is True:
+            image_file_path = self._get_image_file_path_()
+            if image_file_path is not None:
+                rect = self._image_frame_rect
+                x, y = rect.x(), rect.y()
+                w, h = rect.width(), rect.height()
+                x += 2
+                y += 2
+                w -= 4+1
+                h -= 4+1
+                i_w_0, i_h_0 = self._get_image_size_()
+                if (i_w_0, i_h_0) != (0, 0):
+                    i_x, i_y, i_w, i_h = gui_core.SizeMethod.set_fit_to(
+                        (i_w_0, i_h_0), (w, h)
+                    )
+                    self._set_image_rect_(
+                        x+i_x, y+i_y, i_w, i_h
+                    )
+            else:
+                image_name_text = self._image_name_text
+                if image_name_text is not None:
+                    rect = self._image_frame_rect
+                    x, y = rect.x(), rect.y()
+                    w, h = rect.width(), rect.height()
+                    self._set_image_rect_(
+                        x+2, y+2, w-4, h-4
+                    )
+
+    def _set_widget_name_sub_geometries_update_(self):
+        if self._get_has_name_():
+            name_indices = self._get_name_indices_()
+            #
+            rect = self._name_frame_rect
+            x, y = rect.x(), rect.y()
+            w, h = rect.width(), rect.height()
+            #
+            side = 2
+            spacing = 0
+            #
+            f_w, f_h = self._name_frame_size
+            i_w, i_h = self._name_size
+            #
+            self._set_index_rect_(
+                x + 2, y + h - i_h, w - 4, i_h
+            )
+            for i_name_index in name_indices:
+                i_x, i_y = x+(f_w-i_w)/2+side, y+(f_h-i_h)/2+i_name_index*(f_h+spacing)
+                self._set_name_rect_at_(
+                    i_x, i_y, w-(i_x-x)-side, i_h,
+                    i_name_index
+                )
 
     def _set_widget_update_(self):
         # noinspection PyUnresolvedReferences
@@ -2715,7 +2828,7 @@ class _AbsQtSplitterHandle(
         #
         self._swap_button = _QtIconPressItem()
         #
-        self._swap_button._set_file_icon_path_(utl_core.Icon.get(self._swap_icon_name))
+        self._swap_button._set_icon_file_path_(utl_core.Icon.get(self._swap_icon_name))
         self._swap_button._set_icon_frame_size_(*self._contract_frame_size)
         self._swap_button._set_file_icon_size_(*self._contract_icon_size)
         self._swap_button.setMaximumSize(*self._contract_frame_size)
@@ -2858,10 +2971,10 @@ class _AbsQtSplitterHandle(
 
     def _set_contract_buttons_update_(self):
         icon_name_l = [self._contract_icon_name_l, self._contract_icon_name_r][self._is_contract_l]
-        self._contract_l_button._set_file_icon_path_(utl_core.Icon.get(icon_name_l))
+        self._contract_l_button._set_icon_file_path_(utl_core.Icon.get(icon_name_l))
         self._contract_l_button.update()
         icon_name_r = [self._contract_icon_name_r, self._contract_icon_name_l][self._is_contract_r]
-        self._contract_r_button._set_file_icon_path_(utl_core.Icon.get(icon_name_r))
+        self._contract_r_button._set_icon_file_path_(utl_core.Icon.get(icon_name_r))
         self._contract_r_button.update()
 
     def _set_update_(self):
@@ -2910,3 +3023,66 @@ class _QtVSplitterHandle(_AbsQtSplitterHandle):
     QT_ORIENTATION = QtCore.Qt.Vertical
     def __init__(self, *args, **kwargs):
         super(_QtVSplitterHandle, self).__init__(*args, **kwargs)
+
+
+class _QtWindowHead(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract._QtFrameDef,
+):
+    def _set_widget_update_(self):
+        self.update()
+
+    def __init__(self, *args, **kwargs):
+        super(_QtWindowHead, self).__init__(*args, **kwargs)
+        #
+        self.setMinimumHeight(24)
+        self.setMaximumHeight(24)
+        #
+        self._set_frame_def_init_()
+        #
+        self._frame_background_color = 71, 71, 71, 255
+        self._frame_border_color = 95, 95, 95, 255
+        #
+        self._close_button = _QtIconPressItem(self)
+        self._close_button._set_icon_file_path_(
+            utl_core.Icon.get('close')
+        )
+        self._close_button._set_hover_icon_file_path_(
+            utl_core.Icon.get('close_hover')
+        )
+        #
+        self._close_button.press_clicked.connect(
+            self._set_window_close_
+        )
+        #
+        self._orientation = QtCore.Qt.Horizontal
+
+    def paintEvent(self, event):
+        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        #
+        self._set_widget_geometries_update_()
+        #
+        painter._set_frame_draw_by_rect_(
+            self._frame_rect,
+            background_color=self._frame_background_color,
+            border_color=self._frame_border_color
+        )
+
+    def _set_window_close_(self):
+        self.parent().close()
+        self.parent().deleteLater()
+
+    def _set_widget_geometries_update_(self):
+        pos_x, pos_y = 0, 0
+        width, height = self.width(), self.height()
+        self._set_frame_rect_(
+            pos_x, pos_y, width, height
+        )
+        #
+        side = 2
+        i_x, i_y = width-side, pos_y+side
+        i_w, i_h = 20, 20
+        if self._orientation == QtCore.Qt.Horizontal:
+            self._close_button.setGeometry(
+                i_x-i_w, i_y, i_w, i_h
+            )

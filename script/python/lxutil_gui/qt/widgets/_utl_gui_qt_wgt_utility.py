@@ -258,18 +258,26 @@ class QtPainter(QtGui.QPainter):
                 #
                 self.device()
 
-    def _set_any_image_draw_by_rect_(self, rect, file_path):
+    def _set_any_image_draw_by_rect_(self, rect, file_path, offset=0):
         if file_path:
             if os.path.isfile(file_path):
                 if file_path.endswith('.svg'):
-                    self._set_svg_image_draw_by_rect_(rect, file_path)
+                    self._set_svg_image_draw_by_rect_(rect, file_path, offset)
                 elif file_path.endswith('.exr'):
-                    self._set_exr_image_draw_by_rect_(rect, file_path)
+                    self._set_exr_image_draw_by_rect_(rect, file_path, offset)
                 else:
-                    self._set_image_draw_by_rect_(rect, file_path)
+                    self._set_image_draw_by_rect_(rect, file_path, offset)
 
-    def _set_image_draw_by_rect_(self, rect, file_path):
-        rect_size = rect.size()
+    def _set_image_draw_by_rect_(self, rect, file_path, offset):
+        if offset != 0:
+            rect_ = QtCore.QRect(
+                rect.x() + offset, rect.y() + offset,
+                rect.width() - offset, rect.height() - offset
+            )
+        else:
+            rect_ = rect
+        #
+        rect_size = rect_.size()
         image = QtGui.QImage(file_path)
         new_image = image.scaled(
             rect_size,
@@ -278,17 +286,11 @@ class QtPainter(QtGui.QPainter):
         )
         pixmap = QtGui.QPixmap(new_image)
         self.drawPixmap(
-            rect,
+            rect_,
             pixmap
         )
         #
         self.device()
-        #
-        self.setRenderHint(self.Antialiasing, False)
-        #
-        self._set_border_color_(Color.ICON_BORDER_NORMAL)
-        self._set_background_color_(Color.TRANSPARENT)
-        self.drawRect(rect)
 
     def _set_loading_draw_by_rect_(self, rect, loading_index):
         self.setRenderHint(self.Antialiasing)
@@ -346,12 +348,6 @@ class QtPainter(QtGui.QPainter):
         )
         #
         self.device()
-        #
-        self.setRenderHint(self.Antialiasing, False)
-        #
-        self._set_border_color_(Color.ICON_BORDER_NORMAL)
-        self._set_background_color_(Color.TRANSPARENT)
-        self.drawRect(rect)
 
     def _set_color_icon_draw_(self, rect, color, offset=0):
         r, g, b = color
@@ -370,10 +366,12 @@ class QtPainter(QtGui.QPainter):
     def _set_name_icon_draw_by_rect_(self, rect, text, border_color=None, background_color=None, offset=0, border_radius=0, is_hovered=False, is_enable=True):
         self.setRenderHint(self.Antialiasing)
         #
-        w, h = rect.width()-offset, rect.height()
+        x, y = rect.x()+offset, rect.y()+offset
+        w, h = rect.width()-offset, rect.height()-offset
+        #
         frame_rect = QtCore.QRect(
-            rect.x()+offset, rect.y()+offset,
-            rect.width()-offset, rect.height()-offset
+            x, y,
+            w, h
         )
         #
         if is_hovered is True:
@@ -400,11 +398,14 @@ class QtPainter(QtGui.QPainter):
         self._set_border_width_(1)
         #
         text_rect = QtCore.QRect(
-            rect.x()+offset, rect.y()+offset,
-            rect.width()-offset, rect.height()-offset
+            x, y,
+            w, h
         )
         #
-        self._set_font_(get_font(italic=True))
+        r = min(w, h)
+        font_size = r-4
+        #
+        self._set_font_(get_font(size=font_size, italic=True))
         self.drawText(
             text_rect,
             QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
@@ -506,7 +507,7 @@ class QtPainter(QtGui.QPainter):
             else:
                 self.drawRect(rect_)
 
-    def _set_text_draw_by_rect_(self, rect, text, color=None, font=None, offset=0, text_option=None):
+    def _set_text_draw_by_rect_(self, rect, text, color=None, font=None, offset=0, text_option=None, word_warp=False):
         if color is not None:
             self._set_border_color_(color)
         else:
@@ -521,21 +522,35 @@ class QtPainter(QtGui.QPainter):
             rect_ = rect
         #
         if text_option is not None:
-            qt_text_option = text_option
+            text_option_ = text_option
         else:
-            qt_text_option = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
+            text_option_ = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
         #
         if font is not None:
             self._set_font_(font)
         #
-        text_ = self.fontMetrics().elidedText(
-            text, QtCore.Qt.ElideRight, rect.width(), QtCore.Qt.TextShowMnemonic
+        text_option__ = QtGui.QTextOption(
+            text_option_
         )
+        if word_warp is True:
+            text_ = text
+            text_option__.setWrapMode(
+                text_option__.WrapAtWordBoundaryOrAnywhere
+            )
+        else:
+            text_option__.setUseDesignMetrics(True)
+            text_ = self.fontMetrics().elidedText(
+                text, QtCore.Qt.ElideRight, rect.width(), QtCore.Qt.TextShowMnemonic
+            )
         #
+        rect_f_ = QtCore.QRectF(
+            rect_.x(), rect_.y(),
+            rect_.width(), rect_.height()
+        )
         self.drawText(
-            rect_,
-            qt_text_option,
+            rect_f_,
             text_,
+            text_option__,
         )
 
     def set_button_draw(self, rect, background_color, border_color, border_radius=4, border_width=1, border_style='solid'):
@@ -857,7 +872,7 @@ class QtIconButton(QtWidgets.QPushButton):
         self.setMaximumSize(20, 20)
         self.setMinimumSize(20, 20)
         #
-        self._file_icon_path = None
+        self._icon_file_path = None
         self._color_icon_rgb = None
         #
         self._file_icon_size = 16, 16
@@ -915,9 +930,9 @@ class QtIconButton(QtWidgets.QPushButton):
             background_color=bkg_color,
             border_radius=4
         )
-        if self._file_icon_path is not None:
+        if self._icon_file_path is not None:
             icn = QtCore.QRect(f_x, f_y, i_w, i_h)
-            painter._set_svg_image_draw_by_rect_(icn, self._file_icon_path)
+            painter._set_svg_image_draw_by_rect_(icn, self._icon_file_path)
         elif self._color_icon_rgb is not None:
             pass
 
@@ -1353,6 +1368,7 @@ class QtCommonStyle(QtWidgets.QCommonStyle):
 
 
 class QtTextBrowser(QtWidgets.QTextBrowser):
+
     def __init__(self, *args, **kwargs):
         super(QtTextBrowser, self).__init__(*args, **kwargs)
         self.setWordWrapMode(QtGui.QTextOption.WordWrap)
@@ -1363,15 +1379,14 @@ class QtTextBrowser(QtWidgets.QTextBrowser):
         self.setPalette(qt_palette)
         self.setAutoFillBackground(True)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        #
+        self._print_thread = QtPrintThread(self)
+        self._print_thread.printed.connect(self._set_print_add_)
 
-    def set_print_add(self, text, as_html=False):
+    def _set_print_add_(self, text):
         def add_fnc_(text_):
             self.moveCursor(QtGui.QTextCursor.End)
-            if as_html is True:
-                self.insertHtml(text_+'<br>')
-            else:
-                self.insertPlainText(text_+'\n')
-            # self.moveCursor(QtGui.QTextCursor.End)
+            self.insertPlainText(text_ + '\n')
         #
         if isinstance(text, (tuple, list)):
             [add_fnc_(i) for i in text]
@@ -1379,6 +1394,9 @@ class QtTextBrowser(QtWidgets.QTextBrowser):
             add_fnc_(text)
         #
         self.update()
+
+    def _set_print_add_use_thread_(self, text):
+        self._print_thread.printed.emit(text)
 
     def contextMenuEvent(self, event):
         menu_raw = [
@@ -1616,7 +1634,7 @@ class _AbsQtSplitterHandle(QtWidgets.QWidget):
         #
         self._swap_button = QtIconButton()
         #
-        self._swap_button._file_icon_path = utl_core.Icon.get(self._swap_icon_name)
+        self._swap_button._icon_file_path = utl_core.Icon.get(self._swap_icon_name)
         self._swap_button._frame_size = self._contract_frame_size
         self._swap_button._file_icon_size = self._contract_icon_size
         self._swap_button.setMaximumSize(*self._contract_frame_size)
@@ -1715,10 +1733,10 @@ class _AbsQtSplitterHandle(QtWidgets.QWidget):
 
     def _set_contract_buttons_update_(self):
         icon_name_l = [self._contract_icon_name_l, self._contract_icon_name_r][self._is_contract_l]
-        self._contract_l_button._file_icon_path = utl_core.Icon.get(icon_name_l)
+        self._contract_l_button._icon_file_path = utl_core.Icon.get(icon_name_l)
         self._contract_l_button.update()
         icon_name_r = [self._contract_icon_name_r, self._contract_icon_name_l][self._is_contract_r]
-        self._contract_r_button._file_icon_path = utl_core.Icon.get(icon_name_r)
+        self._contract_r_button._icon_file_path = utl_core.Icon.get(icon_name_r)
         self._contract_r_button.update()
 
     def _set_update_(self):

@@ -203,7 +203,10 @@ class _QtFrameDef(object):
         #
         self._frame_background_color = Color.TRANSPARENT
         self._hover_frame_background_color = Color.TRANSPARENT
+        #
         self._frame_rect = QtCore.QRect()
+        self._frame_size = 20, 20
+        self._frame_draw_enable = False
 
     def _set_widget_update_(self):
         raise NotImplementedError()
@@ -230,6 +233,12 @@ class _QtFrameDef(object):
     def _get_frame_rect_(self):
         return self._frame_rect
 
+    def _set_frame_size_(self, w, h):
+        self._frame_size = w, h
+
+    def _set_frame_draw_enable_(self, boolean):
+        self._frame_draw_enable = boolean
+
 
 class _QtIconDef(object):
     def _set_widget_update_(self):
@@ -237,9 +246,12 @@ class _QtIconDef(object):
 
     def _set_icon_def_init_(self):
         self._icon_enable = False
-        self._file_icon_path = None
+        #
+        self._icon_file_path = None
+        self._hover_icon_file_path = None
+        #
         self._color_icon_rgb = None
-        self._name_icon_text = None
+        self._icon_name_text = None
         #
         self._icon_frame_rect = QtCore.QRect()
         self._file_icon_rect = QtCore.QRect()
@@ -251,10 +263,13 @@ class _QtIconDef(object):
         self._color_icon_size = 12, 12
         self._name_icon_size = 14, 14
 
-    def _set_file_icon_path_(self, file_path):
+    def _set_icon_file_path_(self, file_path):
         self._icon_enable = True
-        self._file_icon_path = file_path
+        self._icon_file_path = file_path
         self._set_widget_update_()
+
+    def _set_hover_icon_file_path_(self, file_path):
+        self._hover_icon_file_path = file_path
 
     def _set_frame_icon_size_(self, w, h):
         self._icon_frame_size = w, h
@@ -267,7 +282,7 @@ class _QtIconDef(object):
 
     def _get_icon_file_path_(self):
         if self._icon_enable is True:
-            return self._file_icon_path
+            return self._icon_file_path
 
     def _set_color_icon_rgb_(self, rgb):
         self._icon_enable = True
@@ -276,7 +291,7 @@ class _QtIconDef(object):
 
     def _set_name_icon_text_(self, text):
         self._icon_enable = True
-        self._name_icon_text = text
+        self._icon_name_text = text
         self._set_widget_update_()
 
     def _set_name_icon_rect_(self, x, y, w, h):
@@ -286,7 +301,7 @@ class _QtIconDef(object):
 
     def _get_name_icon_text_(self):
         if self._icon_enable is True:
-            return self._name_icon_text
+            return self._icon_name_text
 
     def _set_frame_icon_rect_(self, x, y, w, h):
         self._icon_frame_rect.setRect(
@@ -302,6 +317,105 @@ class _QtIconDef(object):
         return self._file_icon_rect
 
 
+class _QtIconsDef(object):
+    def _set_icons_def_init_(self):
+        self._icons_enable = False
+        self._pixmap_icons = []
+        self._icon_file_paths = []
+        self._icon_name_texts = []
+        self._icon_indices = []
+        self._icon_rects = []
+        #
+        self._icon_frame_size = 20, 20
+        self._icon_size = 16, 16
+        self._icon_frame_draw_enable = False
+        #
+        self._icon_frame_rect = QtCore.QRect()
+
+    def _set_icon_file_path_at_(self, file_path, index=0):
+        self._icon_file_paths[index] = file_path
+
+    def _get_icon_file_path_at_(self, index=0):
+        if index in self._get_icon_indices_():
+            return self._icon_file_paths[index]
+
+    def _set_icon_rect_at_(self, x, y, w, h, index=0):
+        self._icon_rects[index].setRect(
+            x, y, w, h
+        )
+
+    def _get_icon_rect_at_(self, index=0):
+        if index in self._get_icon_indices_():
+            return self._icon_rects[index]
+
+    def _set_pixmap_icons_(self, icons):
+        self._pixmap_icons = icons
+        self._icon_indices = range(len(icons))
+        self._icon_rects = []
+        for _ in self._get_icon_indices_():
+            self._icon_rects.append(
+                QtCore.QRect()
+            )
+
+    def _get_pixmap_icon_at_(self, index):
+        if index in self._get_icon_indices_():
+            return self._pixmap_icons[index]
+
+    def _get_pixmap_icons_(self):
+        return self._pixmap_icons
+
+    def _set_icon_file_path_(self, file_path):
+        self._set_icon_file_paths_(
+            [file_path]
+        )
+
+    def _set_icon_file_paths_(self, file_paths):
+        self._icon_file_paths = file_paths
+        self._icon_indices = range(len(self._icon_file_paths))
+        self._icon_rects = []
+        for _ in self._get_icon_indices_():
+            self._icon_rects.append(
+                QtCore.QRect()
+            )
+
+    def _set_icon_name_texts_(self, texts):
+        self._icon_name_texts = texts
+        self._icon_indices = range(len(self._icon_name_texts))
+        self._icon_rects = []
+        for _ in self._get_icon_indices_():
+            self._icon_rects.append(
+                QtCore.QRect()
+            )
+
+    def _get_icon_name_text_at_(self, index=0):
+        return self._icon_name_texts[index]
+
+    def _set_icon_name_rect_at_(self, index, name_text):
+        self._icon_name_texts[index] = name_text
+
+    def _set_icon_file_path_add_(self, file_path):
+        self._icon_file_paths.append(file_path)
+        self._icon_rects.append(QtCore.QRect())
+
+    def _get_icon_file_paths_(self):
+        return self._icon_file_paths
+
+    def _get_icon_indices_(self):
+        return self._icon_indices
+
+    def _get_has_icon_(self):
+        return self._icon_indices != []
+
+    def _set_icon_frame_size_(self, w, h):
+        self._icon_frame_size = w, h
+
+    def _set_icon_size_(self, w, h):
+        self._icon_size = w, h
+
+    def _set_icon_frame_draw_enable_(self, boolean):
+        self._icon_frame_draw_enable = boolean
+
+
 class _QtIndexDef(object):
     def _set_index_def_init_(self):
         self._index_enable = False
@@ -313,6 +427,9 @@ class _QtIndexDef(object):
         #
         self._index_frame_rect = QtCore.QRect()
         self._index_rect = QtCore.QRect()
+        #
+        self._index_frame_draw_enable = False
+        self._index_draw_enable = False
 
     def _set_index_(self, index):
         self._index = index
@@ -504,8 +621,15 @@ class _QtProgressDef(object):
 class _QtImageDef(object):
     def _set_image_def_init_(self):
         self._image_enable = False
+        #
         self._image_file_path = None
-        self._image_size = 32, 32
+        self._image_name_text = None
+        #
+        self._image_frame_size = 32, 32
+        self._image_size = 30, 30
+        self._image_frame_draw_enable = False
+        #
+        self._image_frame_rect = QtCore.QRect(0, 0, 0, 0)
         self._image_rect = QtCore.QRect(0, 0, 0, 0)
 
     def _set_widget_update_(self):
@@ -516,6 +640,9 @@ class _QtImageDef(object):
         self._image_file_path = file_path
         self._set_widget_update_()
 
+    def _set_image_name_text_(self, text):
+        self._image_name_text = text
+
     def _set_image_size_(self, size):
         self._image_size = size
 
@@ -524,8 +651,11 @@ class _QtImageDef(object):
             if os.path.isfile(self._image_file_path):
                 ext = os.path.splitext(self._image_file_path)[-1]
                 if ext in ['.jpg', '.png']:
-                    s = QtGui.QImage(self._image_file_path).size()
-                    return s.width(), s.height()
+                    image = QtGui.QImage(self._image_file_path)
+                    if image.isNull() is False:
+                        # image.save(self._image_file_path, 'PNG')
+                        s = image.size()
+                        return s.width(), s.height()
         return self._image_size
 
     def _get_image_file_path_(self):
@@ -540,18 +670,39 @@ class _QtImageDef(object):
     def _get_image_rect_(self):
         return self._image_rect
 
+    def _get_has_image_(self):
+        return (
+            self._image_file_path is not None or
+            self._image_name_text is not None
+        )
+
+    def _set_image_frame_draw_enable_(self, boolean):
+        self._image_frame_draw_enable = boolean
+
+    def _get_image_frame_rect_(self):
+        return self._image_frame_rect
+
 
 class _QtNamesDef(object):
+    def _set_widget_update_(self):
+        raise NotImplementedError()
+
     def _set_names_def_init_(self):
         self._names_enable = False
         self._name_texts = []
+        self._name_indices = []
         self._name_rects = []
+        #
+        self._name_frame_size = 20, 20
+        self._name_size = 16, 16
+        self._name_frame_draw_enable = False
+        #
+        self._name_word_warp = True
         #
         self._name_frame_border_color = 0, 0, 0, 0
         self._name_frame_background_color = 95, 95, 95, 127
-
-    def _set_widget_update_(self):
-        raise NotImplementedError()
+        #
+        self._name_frame_rect = QtCore.QRect(0, 0, 0, 0)
 
     def _set_name_text_at_(self, name_text, index=0):
         self._name_texts[index] = name_text
@@ -565,8 +716,16 @@ class _QtNamesDef(object):
             x, y, w, h
         )
 
-    def _set_name_texts_(self, name_texts):
-        self._name_texts = name_texts
+    def _set_name_text_(self, text):
+        self._set_name_texts_([text])
+
+    def _get_name_text_(self):
+        if self._name_texts:
+            return u'+'.join(self._name_texts)
+
+    def _set_name_texts_(self, texts):
+        self._name_texts = texts
+        self._name_indices = range(len(texts))
         self._name_rects = []
         for _ in self._get_name_indices_():
             self._name_rects.append(
@@ -594,86 +753,90 @@ class _QtNamesDef(object):
         return self._name_rects[index]
 
     def _get_name_indices_(self):
-        return range(len(self._name_texts))
+        return self._name_indices
+
+    def _get_has_name_(self):
+        return self._name_indices != []
+
+    def _set_name_frame_size_(self, w, h):
+        self._name_frame_size = w, h
+
+    def _set_name_size_(self, w, h):
+        self._name_size = w, h
+
+    def _set_name_frame_draw_enable_(self, boolean):
+        self._name_frame_draw_enable = boolean
+
+    def _set_tool_tip_(self, raw, as_markdown_style=False):
+        if raw is not None:
+            if isinstance(raw, (tuple, list)):
+                _ = u'\n'.join(raw)
+            elif isinstance(raw, (str, unicode)):
+                _ = raw
+            else:
+                raise TypeError()
+            #
+            self._set_tool_tip_text_(_, as_markdown_style)
+
+    def _set_tool_tip_text_(self, text, markdown_style=False):
+        if hasattr(self, 'setToolTip'):
+            if markdown_style is True:
+                import markdown
+                html = markdown.markdown(text)
+                # noinspection PyCallingNonCallable
+                self.setToolTip(html)
+            else:
+                html = '<html>\n<body>\n'
+                html += '<h3>{}</h3>\n'.format(self._get_name_text_())
+                for i in text.split('\n'):
+                    html += '<ul>\n<li>{}</li>\n</ul>\n'.format(i)
+                html += '</body>\n</html>'
+                # noinspection PyCallingNonCallable
+                self.setToolTip(html)
 
 
-class _QtIconsDef(object):
-    def _set_icons_def_init_(self):
-        self._icons_enable = False
-        self._pixmap_icons = []
-        self._icon_file_paths = []
-        self._icon_name_texts = []
-        self._icon_indices = []
-        self._icon_rects = []
+class _QtChartDef(object):
+    def _set_widget_update_(self):
+        raise NotImplementedError()
+    #
+    def _set_chart_def_init_(self):
+        self._chart_data = None
+        self._chart_draw_data = None
+        self._chart_mode = utl_configure.GuiSectorChartMode.Completion
+        #
+        self._hover_flag = False
+        self._hover_point = QtCore.QPoint()
+        #
+        r, g, b = 143, 143, 143
+        h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
+        color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
+        hover_color = r, g, b
+        #
+        self._chart_border_color = color
+        self._hover_chart_border_color = hover_color
+        self._chart_background_color = 39, 39, 39, 255
+        #
+        self._chart_text_color = 0, 0, 0, 255
 
-    def _set_icon_file_path_at_(self, file_path, index=0):
-        self._icon_file_paths[index] = file_path
+    def _set_chart_data_(self, data, mode):
+        self._chart_data = data
+        self._chart_mode = mode
+        #
+        self._set_chart_data_update_()
+        self._set_chart_data_post_run_()
+        self._set_widget_update_()
 
-    def _get_icon_file_path_at_(self, index=0):
-        if index in self._get_icon_indices_():
-            return self._icon_file_paths[index]
+    def _set_chart_data_post_run_(self):
+        pass
 
-    def _set_icon_rect_at_(self, x, y, w, h, index=0):
-        self._icon_rects[index].setRect(
-            x, y, w, h
-        )
+    def _set_chart_data_update_(self):
+        raise NotImplementedError()
 
-    def _get_icon_rect_at_(self, index=0):
-        if index in self._get_icon_indices_():
-            return self._icon_rects[index]
-
-    def _set_pixmap_icons_(self, icons):
-        self._pixmap_icons = icons
-        self._icon_indices = range(len(icons))
-        self._icon_rects = []
-        for _ in self._get_icon_indices_():
-            self._icon_rects.append(
-                QtCore.QRect()
-            )
-
-    def _get_pixmap_icon_at_(self, index):
-        if index in self._get_icon_indices_():
-            return self._pixmap_icons[index]
-
-    def _get_pixmap_icons_(self):
-        return self._pixmap_icons
-
-    def _set_icon_file_paths_(self, file_paths):
-        self._icon_file_paths = file_paths
-        self._icon_indices = range(len(self._icon_file_paths))
-        self._icon_rects = []
-        for _ in self._get_icon_indices_():
-            self._icon_rects.append(
-                QtCore.QRect()
-            )
-
-    def _set_icon_name_texts_(self, name_texts):
-        self._icon_name_texts = name_texts
-        self._icon_indices = range(len(self._icon_name_texts))
-        self._icon_rects = []
-        for _ in self._get_icon_indices_():
-            self._icon_rects.append(
-                QtCore.QRect()
-            )
-
-    def _get_icon_name_text_at_(self, index=0):
-        return self._icon_name_texts[index]
-
-    def _set_icon_name_rect_at_(self, index, name_text):
-        self._icon_name_texts[index] = name_text
-
-    def _set_icon_file_path_add_(self, file_path):
-        self._icon_file_paths.append(file_path)
-        self._icon_rects.append(QtCore.QRect())
-
-    def _get_icon_file_paths_(self):
-        return self._icon_file_paths
-
-    def _get_icon_indices_(self):
-        return self._icon_indices
-
-    def _get_has_icons_(self):
-        return self._icon_indices != []
+    def _set_height_(self, h):
+        # noinspection PyUnresolvedReferences
+        self.setMaximumHeight(h)
+        # noinspection PyUnresolvedReferences
+        self.setMinimumHeight(h)
 
 
 # item
@@ -734,12 +897,14 @@ class _QtItemActionDef(object):
 
 class _QtItemPressActionDef(object):
     press_clicked = qt_signal()
+    press_db_clicked = qt_signal()
     press_toggled = qt_signal(bool)
     #
     clicked = qt_signal()
     db_clicked = qt_signal()
     #
     PRESS_CLICK_FLAG = gui_configure.ActionFlag.PRESS_CLICK
+    PRESS_DB_CLICK_FLAG = gui_configure.ActionFlag.PRESS_DB_CLICK
     PRESS_MOVE_FLAG = gui_configure.ActionFlag.PRESS_MOVE
     def _set_widget_update_(self):
         raise NotImplementedError()
@@ -956,6 +1121,10 @@ class _QtItemChooseActionDef(object):
         return self._choose_name_texts
 
 
+class _QtViewBarDef(object):
+    pass
+
+
 class _QtViewChooseActionDef(object):
     CHOOSE_RECT_CLS = None
     CHOOSE_DROP_WIDGET_CLS = None
@@ -1142,7 +1311,7 @@ class _QtItemShowDef(object):
 
     def _set_item_show_def_init_(self, view):
         self._item_show_timer = QtCore.QTimer(view)
-        self._item_show_thread = QtThread(view)
+        self._item_show_thread = QtShowThread(view)
         #
         self._item_show_loading_index = 0
         #
@@ -1350,50 +1519,6 @@ class _QtViewScrollActionDef(object):
         if v_max > 0:
             return float(v)/float(v_max)
         return 0
-
-
-class _QtChartDef(object):
-    def _set_widget_update_(self):
-        raise NotImplementedError()
-    #
-    def _set_chart_def_init_(self):
-        self._chart_data = None
-        self._chart_draw_data = None
-        self._chart_mode = utl_configure.GuiSectorChartMode.Completion
-        #
-        self._hover_flag = False
-        self._hover_point = QtCore.QPoint()
-        #
-        r, g, b = 143, 143, 143
-        h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-        color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
-        hover_color = r, g, b
-        #
-        self._chart_border_color = color
-        self._hover_chart_border_color = hover_color
-        self._chart_background_color = 39, 39, 39, 255
-        #
-        self._chart_text_color = 0, 0, 0, 255
-
-    def _set_chart_data_(self, data, mode):
-        self._chart_data = data
-        self._chart_mode = mode
-        #
-        self._set_chart_data_update_()
-        self._set_chart_data_post_run_()
-        self._set_widget_update_()
-
-    def _set_chart_data_post_run_(self):
-        pass
-
-    def _set_chart_data_update_(self):
-        raise NotImplementedError()
-
-    def _set_height_(self, h):
-        # noinspection PyUnresolvedReferences
-        self.setMaximumHeight(h)
-        # noinspection PyUnresolvedReferences
-        self.setMinimumHeight(h)
 
 
 class _QtAbsListWidget(

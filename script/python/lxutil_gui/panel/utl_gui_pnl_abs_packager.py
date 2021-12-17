@@ -30,7 +30,8 @@ class AbsScenePackagerPanel(
     #
     DCC_SELECTION_CLS = None
     DCC_NAMESPACE = 'dcc'
-    DSC_IDX_PORT = 2
+    #
+    DSC_IDX_PORT = 1
     def __init__(self, *args, **kwargs):
         super(AbsScenePackagerPanel, self).__init__(*args, **kwargs)
         self._window_configure = gui_core.PanelsConfigure().get_window(
@@ -107,7 +108,7 @@ class AbsScenePackagerPanel(
 
     def _set_obj_tree_view_build_(self):
         self._obj_tree_viewer_0.set_header_view_create(
-            [('Name(s)', 4), ('Type(s)', 1), ('Port(s)', 1)],
+            [('Name(s)', 4), ('Port(s)', 1)],
             self.get_definition_window_size()[0] * (3.0 / 4.0) - 16
         )
         self._obj_tree_viewer_0.set_gui_menu_raw(

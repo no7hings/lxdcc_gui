@@ -248,7 +248,7 @@ def set_qt_window_show(qt_window, pos=None, size=None, use_exec=False):
     else:
         q_size = qt_window.baseSize()
         w_0, h_0 = q_size.width(), q_size.height()
-
+    #
     q_margin = qt_window.contentsMargins()
     wl, wt, wr, wb = q_margin.left(), q_margin.top(), q_margin.right(), q_margin.bottom()
     vl, vt, vr, vb = 0, 0, 0, 0
@@ -259,7 +259,7 @@ def set_qt_window_show(qt_window, pos=None, size=None, use_exec=False):
         p_w, p_h = p.width(), p.height()
         o_x, o_y = p.pos().x(), p.pos().y()
     else:
-        desktop_rect = get_qt_desktop_rect()
+        desktop_rect = get_qt_desktop_primary_rect()
         p_w, p_h = desktop_rect.width(), desktop_rect.height()
         o_x, o_y = 0, 0
 
@@ -267,10 +267,11 @@ def set_qt_window_show(qt_window, pos=None, size=None, use_exec=False):
         x, y = pos[0] + o_x, pos[1] + o_y
     else:
         x, y = (p_w - w_1) / 2 + o_x, (p_h - h_1) / 2 + o_y
-
+    #
     qt_window.setGeometry(
         max(x, 0), max(y, 0), w_1, h_1
     )
+    #
     if use_exec is True:
         qt_window.exec_()
     else:
@@ -668,41 +669,6 @@ class QtUtilMtd(object):
             QtGui.QIcon.On
         )
         return icon
-    @classmethod
-    def get_pixmap(cls, text, rounded=False, background_color=None):
-        f_w, f_h = 14, 14
-        c_w, c_h = 13, 13
-        pixmap = QtGui.QPixmap(f_w, f_h)
-        painter = QtGui.QPainter(pixmap)
-        rect = pixmap.rect()
-        pixmap.fill(
-            Color.ICON_BORDER_NORMAL
-        )
-        x, y = rect.x(), rect.y()
-        w, h = rect.width(), rect.height()
-        icon_rect = QtCore.QRect(
-            x + (w - c_w) / 2, y + (h - c_h) / 2,
-            c_w, c_h
-        )
-        if text is not None:
-            name = text.split('/')[-1] or ' '
-            painter.setPen(Color.ICON_BORDER_NORMAL)
-            r, g, b = bsc_core.TextOpt(name).to_rgb()
-            if background_color is not None:
-                r, g, b = background_color
-            painter.setBrush(QtGui.QBrush(QtGui.QColor(r, g, b, 255)))
-            painter.drawRect(icon_rect)
-            # painter.drawRoundedRect(icon_rect, f_w/2, f_w/2, QtCore.Qt.AbsoluteSize)
-            #
-            # t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(r, g, b)
-            painter.setPen(Color.TEXT_NORMAL)
-            painter.setFont(get_font(italic=True))
-            painter.drawText(
-                rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(name[0]).capitalize()
-            )
-        #
-        painter.end()
-        return pixmap
 
 
 class QtIconMtd(object):
@@ -759,6 +725,41 @@ class QtIconMtd(object):
             QtGui.QIcon.On
         )
         return icon
+    @classmethod
+    def get_pixmap(cls, text, rounded=False, background_color=None):
+        f_w, f_h = 14, 14
+        c_w, c_h = 13, 13
+        pixmap = QtGui.QPixmap(f_w, f_h)
+        painter = QtGui.QPainter(pixmap)
+        rect = pixmap.rect()
+        pixmap.fill(
+            Color.ICON_BORDER_NORMAL
+        )
+        x, y = rect.x(), rect.y()
+        w, h = rect.width(), rect.height()
+        icon_rect = QtCore.QRect(
+            x + (w - c_w) / 2, y + (h - c_h) / 2,
+            c_w, c_h
+        )
+        if text is not None:
+            name = text.split('/')[-1] or ' '
+            painter.setPen(Color.ICON_BORDER_NORMAL)
+            r, g, b = bsc_core.TextOpt(name).to_rgb()
+            if background_color is not None:
+                r, g, b = background_color
+            painter.setBrush(QtGui.QBrush(QtGui.QColor(r, g, b, 255)))
+            painter.drawRect(icon_rect)
+            # painter.drawRoundedRect(icon_rect, f_w/2, f_w/2, QtCore.Qt.AbsoluteSize)
+            #
+            # t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(r, g, b)
+            painter.setPen(Color.TEXT_NORMAL)
+            painter.setFont(get_font(italic=True))
+            painter.drawText(
+                rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(name[0]).capitalize()
+            )
+        #
+        painter.end()
+        return pixmap
 
 
 class QtMayaMtd(object):
@@ -977,7 +978,7 @@ class QtPixmapMtd(object):
             if gray is True:
                 return cls._to_gray_(pixmap)
             return pixmap
-        return QtUtilMtd.get_pixmap(
+        return QtIconMtd.get_pixmap(
             ext[1:]
         )
 
@@ -1037,10 +1038,10 @@ class QtTimer(QtCore.QTimer):
         super(QtTimer, self).__init__(*args, **kwargs)
 
 
-class QtThread(QtCore.QThread):
+class QtShowThread(QtCore.QThread):
     started = qt_signal()
     def __init__(self, *args, **kwargs):
-        super(QtThread, self).__init__(*args, **kwargs)
+        super(QtShowThread, self).__init__(*args, **kwargs)
         #
         self._thread_index = 0
         self._is_started = False
@@ -1066,9 +1067,18 @@ class QtThread(QtCore.QThread):
         if self._is_enable is True:
             self.started.emit()
             #
-            # QtWidgets.QApplication.instance().processEvents(
-            #     QtCore.QEventLoop.ExcludeUserInputEvents
-            # )
+            QtWidgets.QApplication.instance().processEvents(
+                QtCore.QEventLoop.ExcludeUserInputEvents
+            )
+
+
+class QtPrintThread(QtCore.QThread):
+    printed = qt_signal(str)
+    def __init__(self, *args, **kwargs):
+        super(QtPrintThread, self).__init__(*args, **kwargs)
+
+    def run(self):
+        pass
 
 
 class QtHBoxLayout(QtWidgets.QHBoxLayout):
@@ -1541,13 +1551,9 @@ class QtHistogramChartDrawData(object):
         return self._draw_data
 
 
-def set_gui_proxy_set_print(gui_proxy, text, font_color=gui_configure.Html.WHITE, as_html=False):
-    if hasattr(gui_proxy, 'set_print_add'):
-        if as_html is True:
-            html_text = gui_core.HtmlText.get_text(text=text, font_color=font_color)
-            gui_proxy.set_print_add(html_text, as_html=as_html)
-        else:
-            gui_proxy.set_print_add(text, as_html=as_html)
+def set_gui_proxy_set_print(gui_proxy, text):
+    if hasattr(gui_proxy, 'set_print_add_use_thread'):
+        gui_proxy.set_print_add_use_thread(text)
 
 
 # log

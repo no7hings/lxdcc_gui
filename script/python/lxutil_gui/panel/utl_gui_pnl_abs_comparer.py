@@ -54,7 +54,7 @@ class AbsAssetComparerPanel(
         #
         self._update_geometry_from_model_item = prx_widgets.PrxPressItem()
         self._update_geometry_from_model_item.set_name('Update Geometry(s) from model')
-        self._update_geometry_from_model_item.set_name_icon('Update Geometry(s) from model')
+        self._update_geometry_from_model_item.set_icon_by_name('Update Geometry(s) from model')
         self._update_geometry_from_model_item.set_tool_tip(
             [
                 'press to update geometry(s) form model task'
@@ -65,14 +65,14 @@ class AbsAssetComparerPanel(
         #
         self._update_geometry_from_surface_item = prx_widgets.PrxPressItem()
         self._update_geometry_from_surface_item.set_name('Update Geometry(s) from surface')
-        self._update_geometry_from_surface_item.set_name_icon('Update Geometry(s) from surface')
+        self._update_geometry_from_surface_item.set_icon_by_name('Update Geometry(s) from surface')
         self.set_button_add(self._update_geometry_from_surface_item)
         self._update_geometry_from_surface_item.set_enable(False)
         # self._update_geometry_from_surface_item.set_press_clicked_connect_to(self._set_checked_geometry_import_)
         #
         self._update_look_from_surface_item = prx_widgets.PrxPressItem()
         self._update_look_from_surface_item.set_name('Update Look(s) from surface')
-        self._update_look_from_surface_item.set_name_icon('Update Look(s) from surface')
+        self._update_look_from_surface_item.set_icon_by_name('Update Look(s) from surface')
         self.set_button_add(self._update_look_from_surface_item)
         self._update_look_from_surface_item.set_enable(False)
         self._update_look_from_surface_item.set_press_clicked_connect_to(self._set_checked_look_import_from_surface_)

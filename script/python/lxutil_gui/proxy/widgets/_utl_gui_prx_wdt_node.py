@@ -33,7 +33,7 @@ class PrxPortLabel(utl_gui_prx_abstract.AbsPrxWidget):
         layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(self.widget)
         layout.setContentsMargins(0, 0, 0, 0)
         # self._info_item = _utl_gui_qt_wgt_item._QtIconPressItem()
-        # self._info_item._set_file_icon_path_(
+        # self._info_item._set_icon_file_path_(
         #     utl_core.Icon.get('info')
         # )
         # layout.addWidget(self._info_item)
@@ -117,7 +117,7 @@ class PrxOpenFilePathEntry(AbsTypeEntry):
         self._file_open_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self.set_button_add(self._file_open_button)
         self._file_open_button.set_name('Open File')
-        self._file_open_button.set_name_icon('File')
+        self._file_open_button.set_icon_by_name('File')
         self._file_open_button.set_tool_tip(
             [
                 '"LMB-click" to open file by "file-dialog"'
@@ -162,7 +162,7 @@ class PrxOpenDirectoryPathEntry(AbsTypeEntry):
         self._directory_open_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self.set_button_add(self._directory_open_button)
         self._directory_open_button.set_name('Open Directory')
-        self._directory_open_button.set_name_icon('Directory')
+        self._directory_open_button.set_icon_by_name('Directory')
         self._directory_open_button.set_tool_tip(
             [
                 '"LMB-click" to open file by "file-dialog"'
@@ -209,7 +209,7 @@ class PrxSaveFilePathEntry(AbsTypeEntry):
         self._file_save_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self.set_button_add(self._file_save_button)
         self._file_save_button.set_name('Save File')
-        self._file_save_button.set_name_icon('File')
+        self._file_save_button.set_icon_by_name('File')
         self._file_save_button.set_tool_tip(
             [
                 '"LMB-click" to open file by "file-dialog"'
@@ -480,7 +480,7 @@ class PrxProcessEntry(AbsTypeEntry):
         self._stop_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self.set_button_add(self._stop_button)
         self._stop_button.set_name('Stop Process')
-        self._stop_button.set_name_icon('Stop Process')
+        self._stop_button.set_icon_by_name('Stop Process')
         self._stop_button.set_tool_tip('press to stop process')
 
     def get(self):

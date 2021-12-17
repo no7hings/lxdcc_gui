@@ -20,6 +20,7 @@ class Data(object):
 
 class ActionFlag(object):
     PRESS_CLICK = 'press-click'
+    PRESS_DB_CLICK = 'press-db-click'
     PRESS_MOVE = 'press-move'
     #
     CHECK_CLICK = 'check-click'

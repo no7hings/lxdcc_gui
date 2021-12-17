@@ -14,7 +14,7 @@ class W(prx_widgets.PrxToolWindow):
         b = [('geometry', 41, 400), ('shell', 41, 41), ('area', 324.800048828125, 324.800048828125),
              ('face', 53489.937469401586, 16456), ('edge', 106979.87493880317, 33328),
              ('vertex', 53768.530893721385, 16842)]
-
+        #
         s = prx_widgets.PrxVSplitter()
         self.set_widget_add(s)
         s_c = prx_widgets.PrxSectorChart()

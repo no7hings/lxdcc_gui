@@ -714,7 +714,6 @@ class QtStyledItemDelegate(QtWidgets.QStyledItemDelegate):
 class QtListWidget(utl_gui_qt_abstract._QtAbsListWidget):
     def __init__(self, *args, **kwargs):
         super(QtListWidget, self).__init__(*args, **kwargs)
-        # self.setViewMode(self.IconMode)
         qt_palette = QtDccMtd.get_qt_palette()
         self.setPalette(qt_palette)
         self.setDragDropMode(self.DragOnly)
@@ -724,38 +723,102 @@ class QtListWidget(utl_gui_qt_abstract._QtAbsListWidget):
         self.setResizeMode(self.Adjust)
         self.setItemDelegate(QtStyledItemDelegate())
         #
-        self._item_side = 4
-        self._item_spacing = 2
         self._item_frame_icon_width, self._item_frame_icon_height = 40, 128
         self._item_frame_image_width, self._item_frame_image_height = 128, 128
         self._item_frame_name_width, self._item_frame_name_height = 128, 40
         #
-        self._item_width, self._item_height = self._get_item_frame_size_()
+        self._grid_size = 128, 128
+        #
+        self._item_side = 4
+        self._item_spacing = 2
+        #
+        self._item_frame_size = 128, 128
+        self._item_frame_draw_enable = False
+        #
+        self._item_icon_frame_size = 20, 20
+        self._item_icon_size = 16, 16
+        self._item_icon_frame_draw_enable = False
+        #
+        self._item_name_frame_size = 16, 16
+        self._item_name_size = 12, 12
+        self._item_name_frame_draw_enable = False
+        #
+        self._item_image_frame_draw_enable = False
         #
         self._set_grid_mode_()
+        #
+        self._action_control_flag = False
 
     def eventFilter(self, *args):
         widget, event = args
-        # if widget == self:
-        #     if event.type() == QtCore.QEvent.Resize:
-        #         self._set_items_show_update_()
+        if widget == self:
+            if event.type() == QtCore.QEvent.KeyPress:
+                if event.key() == QtCore.Qt.Key_Control:
+                    self._action_control_flag = True
+            elif event.type() == QtCore.QEvent.KeyRelease:
+                if event.key() == QtCore.Qt.Key_Control:
+                    self._action_control_flag = False
+            elif event.type() == QtCore.QEvent.Wheel:
+                self._set_action_wheel_update_(event)
         if widget == self.verticalScrollBar():
             if event.type() == QtCore.QEvent.Resize:
                 self._set_items_show_update_()
         return False
 
+    def _set_action_wheel_update_(self, event):
+        if self._action_control_flag is True:
+            delta = event.angleDelta().y()
+            step = 4
+            pre_item_frame_w, pre_item_frame_h = self._item_frame_size
+            if delta > 0:
+                item_frame_w = pre_item_frame_w+step
+            else:
+                item_frame_w = pre_item_frame_w-step
+            #
+            item_frame_w = max(min(item_frame_w, 480), 28)
+            if item_frame_w != pre_item_frame_w:
+                item_frame_h = int(float(pre_item_frame_h)/float(pre_item_frame_w)*item_frame_w)
+                self._set_item_frame_size_(item_frame_w, item_frame_h)
+                self._set_all_item_widgets_update_()
+
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self.viewport())
+        # painter = _utl_gui_qt_wgt_utility.QtPainter(self.viewport())
         # for i in self._item_rects:
         #     painter._set_frame_draw_by_rect_(
         #         i, border_color=(255, 0, 0), background_color=Color.TRANSPARENT
         #     )
+        pass
+
+    def _set_grid_size_(self, w, h):
+        self._grid_size = w, h
+        self._set_grid_size_update_()
+
+    def _set_grid_size_update_(self):
+        w, h = self._get_grid_size_()
+        self.setGridSize(QtCore.QSize(w, h))
+        [i.setSizeHint(QtCore.QSize(w, h)) for i in self._get_all_items_()]
+        self.verticalScrollBar().setSingleStep(h)
+
+    def _set_grid_size_change_update_(self):
+        w, h = self._get_grid_size_()
+        self.verticalScrollBar().setSingleStep(h)
+
+    def _set_grid_size_update_by_view_mode_(self):
+        item = self.item(0)
+        if item is not None:
+            item_widget = self.itemWidget(item)
+            if item_widget:
+                if item_widget._get_has_image_():
+                    print item_widget._get_image_frame_rect_()
+
+    def _get_grid_size_(self):
+        return self._grid_size
 
     def _get_item_frame_size_(self):
         if self._get_is_grid_mode_():
             w, h = (
                 self._item_frame_icon_width + self._item_spacing + self._item_frame_image_width + self._item_side*2,
-                self._item_frame_image_height + self._item_side*2 + self._item_spacing + self._item_frame_name_height
+                self._item_frame_image_height + self._item_spacing + self._item_frame_name_height + self._item_side*2
             )
             return w, h
         else:
@@ -764,42 +827,58 @@ class QtListWidget(utl_gui_qt_abstract._QtAbsListWidget):
                 self._item_frame_image_height + self._item_side*2
             )
             return w, h
+    #
+    def _set_item_frame_size_(self, w, h):
+        self._item_frame_size = w, h
+        _w, _h = w+self._item_side*2, h+self._item_side*2
+        #
+        self._set_grid_size_(_w, _h)
 
-    def _set_item_size_update_(self):
-        w, h = self._get_item_frame_size_()
-        self.setGridSize(QtCore.QSize(w, h))
-        [i.setSizeHint(QtCore.QSize(w, h)) for i in self._get_all_items_()]
-        self.verticalScrollBar().setSingleStep(h)
+    def _set_item_frame_draw_enable_(self, boolean):
+        self._item_frame_draw_enable = boolean
 
-    def _set_item_size_(self, w, h):
-        self._item_width, self._item_height = w, h
-        self._set_item_size_update_()
+    def _set_item_icon_frame_size_(self, w, h):
+        self._item_icon_frame_size = w, h
 
-    def _set_item_frame_icon_size_(self, w, h):
-        self._item_frame_icon_width, self._item_frame_icon_height = w, h
-        self._set_item_size_update_()
+    def _set_item_icon_size_(self, w, h):
+        self._item_icon_size = w, h
 
-    def _set_item_frame_image_size_(self, w, h):
-        self._item_frame_image_width, self._item_frame_image_height = w, h
-        self._set_item_size_update_()
+    def _set_item_icon_frame_draw_enable_(self, boolean):
+        self._item_icon_frame_draw_enable = boolean
 
-    def _set_item_frame_name_size_(self, w, h):
-        self._item_frame_name_width, self._item_frame_name_height = w, h
-        self._set_item_size_update_()
+    def _set_item_name_frame_size_(self, w, h):
+        self._item_name_frame_size = w, h
 
+    def _set_item_name_size_(self, w, h):
+        self._item_name_size = w, h
+
+    def _set_item_name_frame_draw_enable_(self, boolean):
+        self._item_name_frame_draw_enable = boolean
+
+    def _set_item_image_frame_draw_enable_(self, boolean):
+        self._item_image_frame_draw_enable = boolean
+    #
     def _set_grid_mode_(self):
         self.setViewMode(self.IconMode)
-        self._set_item_size_update_()
+        # self._set_grid_size_update_by_view_mode_()
+        self._set_grid_size_change_update_()
 
     def _set_list_mode_(self):
         self.setViewMode(self.ListMode)
-        self._set_item_size_update_()
+        # self._set_grid_size_update_by_view_mode_()
+        self._set_grid_size_change_update_()
 
     def _get_item_count_(self):
         return self.count()
 
     def _get_all_items_(self):
         return [self.item(i) for i in range(self.count())]
+
+    def _get_all_item_widgets_(self):
+        return [self.itemWidget(self.item(i)) for i in range(self.count())]
+
+    def _set_all_item_widgets_update_(self):
+        [(i._set_frame_size_(*self._item_frame_size), i._set_widget_geometry_update_()) for i in self._get_all_item_widgets_()]
 
     def _set_view_mode_swap_(self):
         if self._get_is_grid_mode_() is True:
@@ -814,8 +893,7 @@ class QtListWidget(utl_gui_qt_abstract._QtAbsListWidget):
         view = self
         #
         item = _utl_gui_qt_wgt_item.QtListWidgetItem('', view)
-        w, h = self._get_item_frame_size_()
-        item.setSizeHint(QtCore.QSize(w, h))
+        item.setSizeHint(QtCore.QSize(*self._grid_size))
         item.gui_proxy = item_widget.gui_proxy
         #
         view.addItem(item)
@@ -825,14 +903,35 @@ class QtListWidget(utl_gui_qt_abstract._QtAbsListWidget):
         item_widget._set_list_widget_item_(item)
         item_widget._set_index_(view._get_item_count_())
         #
-        item_widget._set_frame_icon_size_(
-            self._item_frame_icon_width, self._item_frame_icon_height
+        item_widget._set_frame_size_(
+            *self._item_frame_size
         )
-        item_widget._set_frame_image_size_(
-            self._item_frame_image_width, self._item_frame_image_height
+        item_widget._set_frame_draw_enable_(
+            self._item_frame_draw_enable
         )
-        item_widget._set_frame_name_size_(
-            self._item_frame_name_width, self._item_frame_name_height
+        #
+        item_widget._set_icon_frame_size_(
+            *self._item_icon_frame_size
+        )
+        item_widget._set_icon_size_(
+            *self._item_icon_size
+        )
+        item_widget._set_icon_frame_draw_enable_(
+            self._item_icon_frame_draw_enable
+        )
+        #
+        item_widget._set_name_frame_size_(
+            *self._item_name_frame_size
+        )
+        item_widget._set_name_size_(
+            *self._item_name_size
+        )
+        item_widget._set_name_frame_draw_enable_(
+            self._item_name_frame_draw_enable
+        )
+        #
+        item_widget._set_image_frame_draw_enable_(
+            self._item_image_frame_draw_enable
         )
 
     def _set_clear_(self):
@@ -840,6 +939,7 @@ class QtListWidget(utl_gui_qt_abstract._QtAbsListWidget):
             i._set_item_show_stop_()
         #
         self._pre_selected_item = None
+        #
         self.clear()
 
 
@@ -862,7 +962,7 @@ class _QtGuideRect(
         self._set_frame_def_init_()
         self._set_item_choose_def_init_()
         #
-        self._set_file_icon_path_(
+        self._set_icon_file_path_(
             self._choose_collapse_icon_file_path
         )
 
@@ -1143,3 +1243,13 @@ class _QtGuideBar(
         item = self._get_choose_item_at_(index)
         rect = item._icon_frame_rect
         return rect.width(), rect.height()
+
+
+class _QtMenuBar(
+    QtWidgets.QWidget
+):
+    def __init__(self, *args, **kwargs):
+        super(_QtMenuBar, self).__init__(*args, **kwargs)
+        #
+        self.setMinimumHeight(24)
+        self.setMaximumHeight(24)

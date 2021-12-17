@@ -444,7 +444,7 @@ class PrxListView(
         self._prx_tool_bar_0 = _utl_gui_prx_wdt_utility.PrxHToolBar()
         self._qt_layout_0.addWidget(self._prx_tool_bar_0.widget)
         self._view_mode_swap_button = _utl_gui_qt_wgt_item._QtIconPressItem()
-        self._view_mode_swap_button._set_file_icon_path_(utl_core.Icon.get('grid_mode'))
+        self._view_mode_swap_button._set_icon_file_path_(utl_core.Icon.get('grid_mode'))
         self._view_mode_swap_button.clicked.connect(self.set_view_mode_swap)
         self._prx_tool_bar_0.set_widget_add(self._view_mode_swap_button)
         #
@@ -457,7 +457,7 @@ class PrxListView(
 
     def set_view_mode_swap(self):
         self.view._set_view_mode_swap_()
-        self._view_mode_swap_button._set_file_icon_path_(
+        self._view_mode_swap_button._set_icon_file_path_(
             utl_core.Icon.get(['list_mode', 'grid_mode'][self.view._get_is_grid_mode_()])
         )
 
@@ -466,19 +466,36 @@ class PrxListView(
 
     def set_grid_mode(self):
         self.view._set_grid_mode_()
+    #
+    def set_item_frame_size(self, w, h):
+        self.view._set_item_frame_size_(w, h)
 
-    def set_item_size(self, w, h):
-        self.view._set_item_size_(w, h)
+    def set_item_frame_draw_enable(self, boolean):
+        self.view._set_item_frame_draw_enable_(boolean)
 
-    def set_item_frame_icon_size(self, w, h):
-        self.view._set_item_frame_icon_size_(w, h)
+    def set_item_icon_frame_size(self, w, h):
+        self.view._set_item_icon_frame_size_(w, h)
+        self.view._set_item_icon_size_(w-4, h-4)
 
-    def set_item_frame_image_size(self, w, h):
-        self.view._set_item_frame_image_size_(w, h)
+    def set_item_icon_size(self, w, h):
+        self.view._set_item_icon_size_(w, h)
 
-    def set_item_frame_name_size(self, w, h):
-        self.view._set_item_frame_name_size_(w, h)
+    def set_item_icon_frame_draw_enable(self, boolean):
+        self.view._set_item_icon_frame_draw_enable_(boolean)
 
+    def set_item_name_frame_size(self, w, h):
+        self.view._set_item_name_frame_size_(w, h)
+        self.view._set_item_name_size_(w-4, h-4)
+
+    def set_item_name_size(self, w, h):
+        self.view._set_item_name_size_(w, h)
+
+    def set_item_name_frame_draw_enable(self, boolean):
+        self.view._set_item_name_frame_draw_enable_(boolean)
+
+    def set_item_image_frame_draw_enable(self, boolean):
+        self.view._set_item_image_frame_draw_enable_(boolean)
+    #
     def set_item_add(self, *args, **kwargs):
         item_widget_prx = _utl_gui_prx_wgt_item.PrxListItem()
         item_widget_prx.set_view(self)

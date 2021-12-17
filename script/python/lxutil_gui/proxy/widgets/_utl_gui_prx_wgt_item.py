@@ -88,7 +88,7 @@ class AbsPrxTreeDef(object):
         if name_icons is not None:
             for column, i_name_icon in enumerate(name_icons):
                 if i_name_icon is not None:
-                    item_prx.set_name_icon(i_name_icon, column)
+                    item_prx.set_icon_by_name(i_name_icon, column)
         #
         if name is not None:
             pass
@@ -201,7 +201,7 @@ class PrxTreeItem(
 
     def set_file_icon(self, icon, column=0):
         if isinstance(icon, (str, unicode)):
-            self.widget._set_file_icon_path_(icon, column)
+            self.widget._set_icon_file_path_(icon, column)
         elif isinstance(icon, utl_gui_qt_core.QtGui.QIcon):
             qt_icon = icon
             self.widget.setIcon(column, qt_icon)
@@ -209,7 +209,7 @@ class PrxTreeItem(
     def set_color_icon(self, color, column=0):
         self.widget._set_color_icon_rgb_(color, column)
 
-    def set_name_icon(self, text, column=0):
+    def set_icon_by_name(self, text, column=0):
         self.widget._set_name_icon_text_(text, column)
 
     def get_parent(self):
@@ -698,7 +698,7 @@ class PrxDccObjTreeItem(PrxObjTreeItem):
 class PrxStgObjTreeItem(PrxObjTreeItem):
     def __init__(self, *args, **kwargs):
         super(PrxStgObjTreeItem, self).__init__(*args, **kwargs)
-        self.widget.setForeground(0, utl_gui_qt_core.Brush.default_text)
+        # self.widget.setForeground(0, utl_gui_qt_core.Brush.default_text)
 
 
 class PrxListItem(
@@ -721,11 +721,11 @@ class PrxListItem(
 
     def set_file_icon(self, icon_name=None, icon_file_path=None):
         if icon_file_path is not None:
-            self.widget._set_file_icon_path_(
+            self.widget._set_icon_file_path_(
                 icon_file_path
             )
         elif icon_name is not None:
-            self.widget._set_file_icon_path_(
+            self.widget._set_name_icon_text_(
                 utl_core.Icon.get(icon_name)
             )
 
@@ -742,13 +742,19 @@ class PrxListItem(
             utl_core.Icon.get(icon_name)
         )
 
-    def set_text_icon(self, text):
+    def set_icon_by_name(self, text):
         self.widget._set_name_icon_text_(
             text
         )
 
-    def set_name(self, name_text, index=0):
-        self.widget._set_name_text_at_(name_text, index)
+    def set_icon_frame_size(self, w, h):
+        self.widget._set_icon_frame_size_(w, h)
+
+    def set_icon_size(self, w, h):
+        self.widget._set_icon_size_(w, h)
+
+    def set_name(self, name_text):
+        self.widget._set_name_text_(name_text)
 
     def set_names(self, name_texts):
         self.widget._set_name_texts_(name_texts)
@@ -764,6 +770,9 @@ class PrxListItem(
 
     def set_image(self, file_path):
         self.widget._set_image_file_path_(file_path)
+
+    def set_image_by_name(self, text):
+        self.widget._set_image_name_text_(text)
 
     def set_image_show_sub_process(self, sub_process):
         self.widget._get_item_()._set_item_show_sub_process_(sub_process)
@@ -797,7 +806,7 @@ class PrxListItem(
         self.set_hidden(boolean)
 
     def set_tool_tip(self, text):
-        self.widget.setToolTip(text)
+        self.widget._set_tool_tip_(text)
 
     def set_border_color(self, color):
         self.widget._set_border_color_(color)
@@ -807,6 +816,12 @@ class PrxListItem(
 
     def set_image_loading_start(self):
         self.widget._get_item_()._set_item_show_image_loading_start_()
+
+    def set_press_clicked_connect_to(self, fnc):
+        self.widget.press_clicked.connect(fnc)
+
+    def set_press_db_clicked_connect_to(self, fnc):
+        self.widget.press_db_clicked.connect(fnc)
 
     def __str__(self):
         return '{}(names={})'.format(
