@@ -22,7 +22,7 @@ class W(prx_widgets.PrxToolWindow):
         self._configure_group.set_widget_add(self._configure_node)
         self._configure_node.set_name_width(self._name_width)
         self._directory_port = self._configure_node.set_port_add(
-            prx_widgets.PrxOpenDirectoryPort(
+            prx_widgets.PrxDirectoryOpenPort(
                 'directory', 'directory'
             )
         )

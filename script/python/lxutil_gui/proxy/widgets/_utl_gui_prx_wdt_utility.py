@@ -7,7 +7,7 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item,
 
 from lxutil_gui.proxy import utl_gui_prx_configure, utl_gui_prx_core, utl_gui_prx_abstract
 
-from lxutil_gui import gui_core
+from lxutil_gui import utl_gui_core
 
 import lxutil.modifiers as utl_modifiers
 
@@ -324,17 +324,17 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_result_add(self, text):
         self._qt_text_browser_0.append(
-            gui_core.HtmlText.get_text(text)
+            utl_gui_core.HtmlText.get_text(text)
         )
 
     def set_error_add(self, text):
         self._qt_text_browser_0.append(
-            gui_core.HtmlText.get_text(text, font_color=utl_gui_prx_configure.Html.RED)
+            utl_gui_core.HtmlText.get_text(text, font_color=utl_gui_prx_configure.Html.RED)
         )
 
     def set_warning_add(self, text):
         self._qt_text_browser_0.append(
-            gui_core.HtmlText.get_text(text, font_color=utl_gui_prx_configure.Html.YELLOW)
+            utl_gui_core.HtmlText.get_text(text, font_color=utl_gui_prx_configure.Html.YELLOW)
         )
 
     def set_print_add(self, text):

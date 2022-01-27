@@ -1,4 +1,6 @@
 # coding=utf-8
+from lxutil_gui import utl_gui_core
+
 from lxutil_gui.qt.utl_gui_qt_core import *
 
 from lxutil_gui.qt import utl_gui_qt_abstract
@@ -114,14 +116,14 @@ class _QtColorChooseChart(QtWidgets.QWidget):
                     colorPoint = QtCore.QPoint(x, y)
                     if mainColorPath.contains(colorPoint):
                         #
-                        subPoints = gui_core.ChartMethod.get_regular_polygon_points(
+                        subPoints = utl_gui_core.ChartMethod.get_regular_polygon_points(
                             x, y, sideCount, subRadius, side=0
                         )
                         color_path = _utl_gui_qt_wgt_utility.QtPainterPath()
                         color_path._set_points_add_(subPoints)
                         #
-                        angle = gui_core.ChartMethod.get_angle_by_coord(x, y, xPos, yPos)
-                        length = gui_core.ChartMethod.get_length_by_coord(x, y, xPos, yPos)
+                        angle = utl_gui_core.ChartMethod.get_angle_by_coord(x, y, xPos, yPos)
+                        length = utl_gui_core.ChartMethod.get_length_by_coord(x, y, xPos, yPos)
                         #
                         h = -angle-hOffset
                         #
@@ -130,8 +132,8 @@ class _QtColorChooseChart(QtWidgets.QWidget):
                         d1 = 360.0 / sideCount
                         d2 = 360.0 / sideCount / 2
                         of = -d2
-                        a2 = a1 + of-gui_core.ChartMethod.FNC_FLOOR(a1 / d1) * d1
-                        l = [gui_core.ChartMethod.FNC_SIN(gui_core.ChartMethod.FNC_ANGLE(d1)) / gui_core.ChartMethod.FNC_COS(gui_core.ChartMethod.FNC_ANGLE(a2)) * r1, r1][a1 % 180 == 0]
+                        a2 = a1 + of-utl_gui_core.ChartMethod.FNC_FLOOR(a1 / d1) * d1
+                        l = [utl_gui_core.ChartMethod.FNC_SIN(utl_gui_core.ChartMethod.FNC_ANGLE(d1)) / utl_gui_core.ChartMethod.FNC_COS(utl_gui_core.ChartMethod.FNC_ANGLE(a2)) * r1, r1][a1 % 180 == 0]
                         #
                         s = length / (l-subRadius)
                         s = float(max(min(s, 1.0), 0.0))
@@ -173,7 +175,7 @@ class _QtColorChooseChart(QtWidgets.QWidget):
             #
             subRadius = float(mainRadius) / count
             #
-            mainPoints = gui_core.ChartMethod.get_regular_polygon_points(
+            mainPoints = utl_gui_core.ChartMethod.get_regular_polygon_points(
                 xPos, yPos, sideCount, mainRadius, subRadius / 2
             )
             mainColorPath = _utl_gui_qt_wgt_utility.QtPainterPath()
@@ -184,7 +186,7 @@ class _QtColorChooseChart(QtWidgets.QWidget):
             #
             for xSeq in range(xCount):
                 for ySeq in range(yCount):
-                    xOffset = gui_core.ChartMethod.FNC_SIN(gui_core.ChartMethod.FNC_ANGLE(60)) * subRadius
+                    xOffset = utl_gui_core.ChartMethod.FNC_SIN(utl_gui_core.ChartMethod.FNC_ANGLE(60)) * subRadius
                     #
                     xSubR = xOffset * xSeq * 2-xOffset * (ySeq % 2)
                     ySubR = ySeq * subRadius * 1.5
@@ -329,7 +331,7 @@ class _QtColorChooseChart(QtWidgets.QWidget):
         x = point.x()
         y = point.y()
         #
-        return gui_core.ChartMethod.get_angle_by_coord(x, y, xPos, yPos)
+        return utl_gui_core.ChartMethod.get_angle_by_coord(x, y, xPos, yPos)
     #
     def getCurrentRgb(self):
         print self._rbgColor

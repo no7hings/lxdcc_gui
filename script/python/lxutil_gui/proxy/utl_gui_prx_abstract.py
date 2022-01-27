@@ -3,7 +3,7 @@ import fnmatch
 
 from lxbasic import bsc_configure
 
-from lxutil_gui import gui_configure
+from lxutil_gui import utl_gui_configure
 
 from lxutil_gui.qt import utl_gui_qt_core
 
@@ -11,11 +11,11 @@ from lxutil_gui.proxy import utl_gui_prx_core
 
 
 class _PrxStateDef(object):
-    NORMAL_STATE = gui_configure.State.NORMAL
-    ENABLE_STATE = gui_configure.State.ENABLE
-    DISABLE_STATE = gui_configure.State.DISABLE
-    WARNING_STATE = gui_configure.State.WARNING
-    ERROR_STATE = gui_configure.State.ERROR
+    NORMAL_STATE = utl_gui_configure.State.NORMAL
+    ENABLE_STATE = utl_gui_configure.State.ENABLE
+    DISABLE_STATE = utl_gui_configure.State.DISABLE
+    WARNING_STATE = utl_gui_configure.State.WARNING
+    ERROR_STATE = utl_gui_configure.State.ERROR
 
 
 class AbsGuiProxy(object):

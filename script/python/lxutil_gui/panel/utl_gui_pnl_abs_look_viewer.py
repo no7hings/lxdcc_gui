@@ -3,7 +3,7 @@ import lxutil_gui.qt.widgets as qt_widgets
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
-from lxutil_gui import gui_core
+from lxutil_gui import utl_gui_core
 
 import lxutil_gui.proxy.operators as utl_prx_operators
 
@@ -34,7 +34,7 @@ class AbsAssetLookViewerPanel(
     DESCRIPTION_INDEX = 2
     def __init__(self, *args, **kwargs):
         super(AbsAssetLookViewerPanel, self).__init__(*args, **kwargs)
-        self._window_configure = gui_core.PanelsConfigure().get_window(
+        self._window_configure = utl_gui_core.PanelsConfigure().get_window(
             self.PANEL_KEY
         )
         self.set_window_title(

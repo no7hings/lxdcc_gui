@@ -253,6 +253,7 @@ class AttributeConstantTool(utl_gui_pnl_abstract.AbsUtilToolPanel):
                 for i in hou.ui.currentPaneTabs():
                     if isinstance(i, hou.NetworkEditor):
                         network_editor = i
+                #
                 if network_editor:
                     network_editor.setCurrentNode(hou_node)
 

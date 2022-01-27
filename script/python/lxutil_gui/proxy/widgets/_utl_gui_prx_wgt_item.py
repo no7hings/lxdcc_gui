@@ -774,6 +774,12 @@ class PrxListItem(
     def set_image_by_name(self, text):
         self.widget._set_image_name_text_(text)
 
+    def set_image_by_file(self, file_path):
+        self.widget._set_image_file_path_(file_path)
+
+    def set_image_size(self, size):
+        pass
+
     def set_image_show_sub_process(self, sub_process):
         self.widget._get_item_()._set_item_show_sub_process_(sub_process)
 

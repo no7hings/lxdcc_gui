@@ -367,7 +367,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
         rsv_task = self._resolver.get_rsv_task(
             **work_task_properties.value
         )
-        rsv_unit = rsv_task.get_rsv_unit(keyword='asset-task-version-dir')
+        rsv_unit = rsv_task.get_rsv_unit(keyword='asset-version-dir')
         scheme = kwargs['scheme']
         if scheme == 'latest':
             version = rsv_unit.get_latest_version()

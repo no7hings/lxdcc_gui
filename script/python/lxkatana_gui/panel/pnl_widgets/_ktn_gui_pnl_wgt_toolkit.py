@@ -106,7 +106,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
     def set_work_look_ass_export(self):
         import lxkatana_fnc.scripts as ktn_fnc_scripts
         task_properties = self._task_properties
-        ktn_fnc_scripts.set_asset_look_ass_export(task_properties, force=True)
+        ktn_fnc_scripts.set_asset_work_look_ass_export(task_properties, force=True)
 
     def set_work_look_ass_import(self, **kwargs):
         def pst_method_fnc_():
@@ -203,7 +203,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
             katana_look_export_query = ddl_objects.DdlRsvTaskQuery(
                 'katana-look-export', rsv_task_properties
             )
-            katana_look_export = ddl_methods.DdlRsvTaskMethodRunner(
+            katana_look_export = ddl_methods.RsvTaskHookExecutor(
                 method_option=katana_look_export_query.get_method_option(),
                 script_option=katana_look_export_query.get_script_option(
                     file=katana_scene_src_file_path,

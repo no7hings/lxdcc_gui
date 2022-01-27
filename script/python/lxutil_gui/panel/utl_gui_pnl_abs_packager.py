@@ -17,7 +17,7 @@ from lxutil_gui.proxy import utl_gui_prx_core
 
 from lxutil_gui.panel import utl_gui_pnl_abstract
 
-from lxutil_gui import gui_core
+from lxutil_gui import utl_gui_core
 
 import lxutil_gui.proxy.operators as utl_prx_operators
 
@@ -34,7 +34,7 @@ class AbsScenePackagerPanel(
     DSC_IDX_PORT = 1
     def __init__(self, *args, **kwargs):
         super(AbsScenePackagerPanel, self).__init__(*args, **kwargs)
-        self._window_configure = gui_core.PanelsConfigure().get_window(
+        self._window_configure = utl_gui_core.PanelsConfigure().get_window(
             self.PANEL_KEY
         )
         self.set_window_title(

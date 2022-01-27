@@ -54,7 +54,7 @@ if __name__ == '__main__':
     w = _utl_gui_prx_wgt_window.PrxWaitWindow()
     w.set_window_show(size=(480, 160))
     d = utl_dcc_objets.OsDirectory_(
-        '/data/f/texture-tx-test/v002'
+        '/l/prod/xkt/publish/assets/chr/jiguang/srf/srf_anishading/jiguang.srf.srf_anishading.v005/texture.bck'
     )
     fs = d.get_all_file_paths()
     for i_f_p in fs:

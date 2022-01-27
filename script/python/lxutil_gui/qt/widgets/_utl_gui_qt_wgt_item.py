@@ -1,4 +1,6 @@
 # coding=utf-8
+from lxutil_gui import utl_gui_core, utl_gui_configure
+#
 from lxutil_gui.qt.utl_gui_qt_core import *
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
@@ -379,9 +381,9 @@ class _QtPressItem(
                     self._action_flag = None
                     #
                     flag_raw = [
-                        (check_enable, self._item_check_frame_rect, gui_configure.ActionFlag.CHECK_CLICK),
-                        (click_enable, self._frame_rect, gui_configure.ActionFlag.PRESS_CLICK),
-                        (option_click_enable, self._option_click_rect, gui_configure.ActionFlag.OPTION_CLICK),
+                        (check_enable, self._item_check_frame_rect, utl_gui_configure.ActionFlag.CHECK_CLICK),
+                        (click_enable, self._frame_rect, utl_gui_configure.ActionFlag.PRESS_CLICK),
+                        (option_click_enable, self._option_click_rect, utl_gui_configure.ActionFlag.OPTION_CLICK),
                     ]
                     if event.button() == QtCore.Qt.LeftButton:
                         pos = event.pos()
@@ -396,12 +398,12 @@ class _QtPressItem(
                     self._item_is_hovered = True
                     self.update()
                 elif event.type() == QtCore.QEvent.MouseButtonRelease:
-                    if self._action_flag == gui_configure.ActionFlag.CHECK_CLICK:
+                    if self._action_flag == utl_gui_configure.ActionFlag.CHECK_CLICK:
                         self._set_item_check_swap_()
                         self.checked.emit()
-                    elif self._action_flag == gui_configure.ActionFlag.PRESS_CLICK:
+                    elif self._action_flag == utl_gui_configure.ActionFlag.PRESS_CLICK:
                         self.clicked.emit()
-                    elif self._action_flag == gui_configure.ActionFlag.OPTION_CLICK:
+                    elif self._action_flag == utl_gui_configure.ActionFlag.OPTION_CLICK:
                         self.option_clicked.emit()
                     #
                     self._action_flag = None
@@ -858,6 +860,7 @@ class _QtEntryFrame(
 
 class _QtEntryItem(QtWidgets.QLineEdit):
     entry_changed = qt_signal()
+    entry_finished = qt_signal()
     def __init__(self, *args, **kwargs):
         super(_QtEntryItem, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -865,11 +868,6 @@ class _QtEntryItem(QtWidgets.QLineEdit):
         self.setFont(Font.NAME)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setStyleSheet(
-            'QLineEdit{background: rgba(0, 0, 0, 0) ; color: rgba(255, 255, 255, 255)}'
-            'QLineEdit{border: none}'
-            'QLineEdit{selection-color: rgba(255, 255, 255, 255) ; selection-background-color: rgba(0, 127, 127, 255)}'
-        )
         #
         self._value_type = str
         self._is_use_as_storage = False
@@ -879,6 +877,7 @@ class _QtEntryItem(QtWidgets.QLineEdit):
         self._maximum = 1
         self._minimum = 0
         #
+        self.returnPressed.connect(self._set_enter_finished_emit_send_)
         self.textChanged.connect(self._set_enter_changed_emit_send_)
         #
         self.setToolTip(
@@ -886,6 +885,9 @@ class _QtEntryItem(QtWidgets.QLineEdit):
                 '"LMB-click" to entry\n'
                 '"MMB-wheel" to modify "int" or "float" value'
             )
+        )
+        self.setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QLineEdit')
         )
 
     def _set_action_wheel_update_(self, event):
@@ -947,6 +949,10 @@ class _QtEntryItem(QtWidgets.QLineEdit):
             self._qt_menu = _utl_gui_qt_wgt_utility.QtMenu(self)
             self._qt_menu._set_menu_raw_(menu_raw)
             self._qt_menu._set_show_()
+
+    def _set_enter_finished_emit_send_(self):
+        # noinspection PyUnresolvedReferences
+        self.entry_finished.emit()
 
     def _set_enter_changed_emit_send_(self):
         # noinspection PyUnresolvedReferences
@@ -1531,6 +1537,7 @@ class _QtChooseDropWidget1(
         if selected_item_widget:
             name_text = selected_item_widget._get_name_text_()
             parent._set_value_(name_text)
+            parent._set_choose_changed_emit_send_()
         #
         parent._set_focus_(False)
 
@@ -1592,6 +1599,7 @@ class _QtEnumerateValueEntryItem(
     _QtEntryFrame,
     utl_gui_qt_abstract._QtEnumerateValueEntryDef,
     utl_gui_qt_abstract._QtItemChooseActionDef,
+    utl_gui_qt_abstract._QtItemEntryActionDef,
 ):
     QT_VALUE_ENTRY_CLASS = _QtEntryItem
     CHOOSE_DROP_WIDGET_CLS = _QtChooseDropWidget1
@@ -1627,6 +1635,15 @@ class _QtEnumerateValueEntryItem(
     def _set_item_choose_drop_(self):
         widget = self.CHOOSE_DROP_WIDGET_CLS(self)
         widget._set_drop_start_()
+
+    def _set_item_entry_enable_(self, boolean):
+        self._value_entry_widget._set_enter_enable_(boolean)
+
+    def _set_item_entry_finished_connect_to_(self, fnc):
+        self._value_entry_widget.entry_finished.connect(fnc)
+
+    def _set_item_entry_changed_connect_to_(self, fnc):
+        self._value_entry_widget.entry_changed.connect(fnc)
 
 
 class _QtArrayValueEntryItem(
@@ -1760,9 +1777,9 @@ class _QtHExpandItem0(
             painter._set_name_icon_draw_by_rect_(
                 self._name_icon_rect,
                 self._icon_name_text,
-                background_color=bkg_color,
+                # background_color=bkg_color,
                 offset=offset,
-                border_radius=8,
+                border_radius=2,
             )
         # text
         if self._name_text is not None:
@@ -2013,14 +2030,14 @@ class QtTreeWidgetItem(
             pixmap = QtIconMtd.get_pixmap(self._icon_name_text)
         #
         if pixmap:
-            if self._icon_state in [gui_core.State.ENABLE, gui_core.State.DISABLE, gui_core.State.WARNING, gui_core.State.ERROR]:
-                if self._icon_state == gui_core.State.ENABLE:
+            if self._icon_state in [utl_gui_core.State.ENABLE, utl_gui_core.State.DISABLE, utl_gui_core.State.WARNING, utl_gui_core.State.ERROR]:
+                if self._icon_state == utl_gui_core.State.ENABLE:
                     background_color = Color.ENABLE
-                elif self._icon_state == gui_core.State.DISABLE:
+                elif self._icon_state == utl_gui_core.State.DISABLE:
                     background_color = Color.DISABLE
-                elif self._icon_state == gui_core.State.WARNING:
+                elif self._icon_state == utl_gui_core.State.WARNING:
                     background_color = Color.WARNING
-                elif self._icon_state == gui_core.State.ERROR:
+                elif self._icon_state == utl_gui_core.State.ERROR:
                     background_color = Color.ERROR
                 else:
                     raise TypeError()
@@ -2055,15 +2072,15 @@ class QtTreeWidgetItem(
         #
         self._set_icon_state_update_(column)
         #
-        if state == gui_core.State.NORMAL:
+        if state == utl_gui_core.State.NORMAL:
             self.setForeground(column, QtGui.QBrush(Color.NORMAL))
-        elif state == gui_core.State.ENABLE:
+        elif state == utl_gui_core.State.ENABLE:
             self.setForeground(column, QtGui.QBrush(Color.ENABLE))
-        elif state == gui_core.State.DISABLE:
+        elif state == utl_gui_core.State.DISABLE:
             self.setForeground(column, QtGui.QBrush(Color.DISABLE))
-        elif state == gui_core.State.WARNING:
+        elif state == utl_gui_core.State.WARNING:
             self.setForeground(column, QtGui.QBrush(Color.WARNING))
-        elif state == gui_core.State.ERROR:
+        elif state == utl_gui_core.State.ERROR:
             self.setForeground(column, QtGui.QBrush(Color.ERROR))
 
     def _set_update_(self):
@@ -2345,7 +2362,7 @@ class _QtHItem(
         )
         #
         self._set_name_rect_(
-            i_x, i_y, i_w, i_h
+            i_x, i_y, i_w-24, i_h
         )
         #
         self._set_index_rect_(
@@ -2408,6 +2425,8 @@ class _QtListItemWidget(
         self._frame_size = 128, 128
         #
         self._is_viewport_show_enable = True
+        #
+        self.setFont(get_font())
 
     def eventFilter(self, *args):
         widget, event = args
@@ -2523,6 +2542,7 @@ class _QtListItemWidget(
                         painter._set_text_draw_by_rect_(
                             self._get_name_rect_at_(i_name_index),
                             text=self._get_name_text_at_(i_name_index),
+                            font=get_font(),
                             text_option=text_option,
                             word_warp=self._name_word_warp,
                             offset=offset
@@ -2530,6 +2550,7 @@ class _QtListItemWidget(
             # image
             if self._get_has_image_() is True:
                 image_file_path = self._image_file_path
+                # draw by image file
                 if image_file_path:
                     painter._set_any_image_draw_by_rect_(
                         self._get_image_rect_(),
@@ -2538,6 +2559,7 @@ class _QtListItemWidget(
                     )
                 else:
                     image_name_text = self._image_name_text
+                    # draw by text
                     if image_name_text:
                         painter._set_name_icon_draw_by_rect_(
                             self._get_image_rect_(),
@@ -2713,7 +2735,7 @@ class _QtListItemWidget(
                 h -= 4+1
                 i_w_0, i_h_0 = self._get_image_size_()
                 if (i_w_0, i_h_0) != (0, 0):
-                    i_x, i_y, i_w, i_h = gui_core.SizeMethod.set_fit_to(
+                    i_x, i_y, i_w, i_h = utl_gui_core.SizeMethod.set_fit_to(
                         (i_w_0, i_h_0), (w, h)
                     )
                     self._set_image_rect_(
@@ -2725,9 +2747,14 @@ class _QtListItemWidget(
                     rect = self._image_frame_rect
                     x, y = rect.x(), rect.y()
                     w, h = rect.width(), rect.height()
-                    self._set_image_rect_(
-                        x+2, y+2, w-4, h-4
-                    )
+                    i_w_0, i_h_0 = self._get_image_size_()
+                    if (i_w_0, i_h_0) != (0, 0):
+                        i_x, i_y, i_w, i_h = utl_gui_core.SizeMethod.set_fit_to(
+                            (i_w_0, i_h_0), (w, h)
+                        )
+                        self._set_image_rect_(
+                            x + i_x, y + i_y, i_w, i_h
+                        )
 
     def _set_widget_name_sub_geometries_update_(self):
         if self._get_has_name_():

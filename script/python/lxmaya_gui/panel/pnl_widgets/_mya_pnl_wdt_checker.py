@@ -5,14 +5,14 @@ from lxutil_gui.panel import utl_gui_pnl_abs_checker
 
 import lxmaya.dcc.dcc_objects as mya_objects
 
-from lxmaya.dcc.dcc_objects import _ma_dcc_obj_utility
+from lxmaya.dcc.dcc_objects import _mya_dcc_obj_utility
 
 from lxmaya_fnc import ma_fnc_core
 
 
 class SceneCheckerToolPanel(utl_gui_pnl_abs_checker.AbsSceneCheckerToolPanel):
     HELP_FILE_PATH = '{}/maya/validation_tool.md'.format(utl_configure.Root.DATA)
-    DCC_SELECTION_CLS = _ma_dcc_obj_utility.Selection
+    DCC_SELECTION_CLS = _mya_dcc_obj_utility.Selection
     #
     STEP_LOADER_CLASS = ma_fnc_core.StpLoader
     METHOD_CREATOR_CLASS = ma_fnc_core.CheckerCreator

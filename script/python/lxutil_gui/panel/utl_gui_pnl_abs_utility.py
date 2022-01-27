@@ -7,7 +7,7 @@ from lxutil import utl_configure, utl_core
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
-from lxutil_gui import gui_core
+from lxutil_gui import utl_gui_core
 
 import lxutil_gui.proxy.operators as utl_prx_operators
 
@@ -294,7 +294,7 @@ class AbsSceneTextureManagerPanel(
         qt_layout_0.addWidget(self._search_node_gui.widget)
         #
         _port = self._search_node_gui.set_port_add(
-            prx_widgets.PrxOpenDirectoryPort('target_directory', 'Target-directory')
+            prx_widgets.PrxDirectoryOpenPort('target_directory', 'Target-directory')
         )
         _port = self._search_node_gui.set_port_add(
             prx_widgets.PrxBooleanPort('ignore_source_resolved', 'Ignore Source-resolved')
@@ -323,7 +323,7 @@ class AbsSceneTextureManagerPanel(
         qt_layout_0.addWidget(self._copy_and_repath_node_gui.widget)
         #
         _port = self._copy_and_repath_node_gui.set_port_add(
-            prx_widgets.PrxOpenDirectoryPort('target_directory', 'Target-directory')
+            prx_widgets.PrxDirectoryOpenPort('target_directory', 'Target-directory')
         )
         _port = self._copy_and_repath_node_gui.set_port_add(
             prx_widgets.PrxButtonPort('copy_and_repath', 'Copy & Repath to target')
@@ -396,9 +396,9 @@ class AbsSceneTextureManagerPanel(
                                 if stg_file.get_is_exists() is True:
                                     tx_is_exists = stg_file.get_tx_is_exists()
                                     if tx_is_exists is True:
-                                        stg_file_item_prx.set_state(gui_core.State.NORMAL)
+                                        stg_file_item_prx.set_state(utl_gui_core.State.NORMAL)
                                     else:
-                                        stg_file_item_prx.set_state(gui_core.State.WARNING)
+                                        stg_file_item_prx.set_state(utl_gui_core.State.WARNING)
                                     #
                                     texture_color_space = stg_file.get_color_space()
                                     stg_file_item_prx.set_name(
@@ -774,7 +774,7 @@ class AbsDatabaseGeometryManagerPanel(
         qt_layout_0.addWidget(self._utility_node_prx.widget)
         #
         _port = self._utility_node_prx.set_port_add(
-            prx_widgets.PrxSaveFilePathPort('save_usd_file', 'Save USD-file')
+            prx_widgets.PrxFileSavePort('save_usd_file', 'Save USD-file')
         )
         _port.set_ext_filter('All USD File(s) (*.usd *.usda)')
         # _port.set(bsc_core.SystemMtd.get_temporary_directory_path(create=True))
@@ -795,7 +795,7 @@ class AbsDatabaseGeometryManagerPanel(
         _port.set(self._set_usd_file_export_)
         #
         _port = self._utility_node_prx.set_port_add(
-            prx_widgets.PrxOpenFilePathPort('open_usd_file', 'Open USD-file')
+            prx_widgets.PrxFileOpenPort('open_usd_file', 'Open USD-file')
         )
         _port.set_ext_filter('All USD File(s) (*.usd *.usda)')
         # _port.set(bsc_core.SystemMtd.get_temporary_directory_path(create=True))

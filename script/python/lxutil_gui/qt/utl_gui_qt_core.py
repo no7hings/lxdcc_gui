@@ -1,4 +1,5 @@
 # coding:utf-8
+import glob
 import sys
 #
 import cgitb
@@ -7,13 +8,11 @@ import math
 #
 import types
 #
-import re
-#
 from lxbasic import bsc_core
 #
 from lxutil import utl_configure, utl_core, utl_abstract, methods
 
-from lxutil_gui import gui_configure, gui_core
+from lxutil_gui import utl_gui_core
 
 import lxutil.objects as utl_objects
 
@@ -27,12 +26,14 @@ else:
     LOAD_INDEX = 1
     _pyside2 = utl_objects.PyModule('PySide2')
     if _pyside2.get_is_exists() is True:
+        # noinspection PyUnresolvedReferences
         from PySide2 import QtGui, QtCore, QtWidgets, QtSvg
     else:
         raise ImportError()
 
+
 cgitb.enable(
-    logdir='/data/qt-debug',
+    logdir=bsc_core.SystemMtd.get_debug_directory_path(tag='qt', create=True),
     format='text'
 )
 
@@ -81,10 +82,6 @@ misplaced_dic = {
 }
 
 
-def DpiScale(*args):
-    return args[0]
-
-
 def qt_signal(*args):
     # noinspection PyUnresolvedReferences
     key = sys._getframe().f_code.co_name
@@ -112,6 +109,10 @@ def qt_is_deleted(*args):
     return method(*args)
 
 
+def DpiScale(*args):
+    return args[0]
+
+
 def get_font(size=8, weight=50, italic=False, underline=False, strike_out=False, family='Arial'):
     font = QtGui.QFont()
     font.setPointSize(size)
@@ -130,15 +131,10 @@ def set_qt_header_view_style(qt_header_view):
     qt_header_view.setHighlightSections(True)
     qt_header_view.setSortIndicatorShown(True)
     qt_header_view.setCascadingSectionResizes(True)
-    style = '''
-        QHeaderView::up-arrow{{image: url({})}}
-        QHeaderView::down-arrow{{image: url({})}}
-    '''.format(
-        utl_core.Icon.get('up'),
-        utl_core.Icon.get('down')
-    )
-    qt_header_view.setStyleSheet(style)
     qt_header_view.setPalette(QtDccMtd.get_qt_palette())
+    qt_header_view.setStyleSheet(
+        utl_gui_core.QtStyleMtd.get('QHeaderView')
+    )
     qt_header_view.setFont(Font.NAME)
     qt_header_view.setAutoFillBackground(True)
 
@@ -174,6 +170,71 @@ def set_qt_tree_widget_style(tree_widget):
         utl_core.Icon.get('expandclose')
     )
     tree_widget.setStyleSheet(style)
+
+
+def set_qt_scroll_bar_style(widget):
+    style = '''
+        QScrollBar:vertical{{
+            background: rgba(56, 56, 56, 255);
+            width: {2}px; margin: 0px, 0px, 0px, 0px; padding: {3}px 1px {3}px 1px;
+            border: 1px  rgba(71, 71, 71, 255); border-radius: {1}px; border-style: solid
+        }}
+        QScrollBar::handle:vertical{{
+            background: rgba(71, 71, 71, 255); width: 5px; min-height: 5px;
+            border: 1px rgba(95, 95, 95, 255); border-radius: 0px; border-style: solid none solid none
+        }}
+        QScrollBar::handle:vertical:hover{{
+            background:rgba(95, 95, 95, 255); min-height: 5px;
+            border: 1px  rgba(127, 127, 127, 255); border-radius: 0px; border-style: solid none solid none
+        }}
+        QScrollBar::add-line:vertical{{
+            image: url({0}/qt-style/v_scroll_add.svg)
+        }}
+        QScrollBar::add-line:vertical:hover{{
+            image: url({0}/qt-style/v_scroll_add_hover.svg)
+        }}
+        QScrollBar::sub-line:vertical{{
+            image: url({0}/qt-style/v_scroll_sub.svg)
+        }}
+        QScrollBar::sub-line:vertical:hover{{
+            image: url({0}/qt-style/v_scroll_sub_hover.svg)
+        }}
+        QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
+            background: none
+        }}
+        QScrollBar:horizontal{{
+            background: rgba(56, 56, 56, 255);
+            height: {2}px; margin: 0px, 0px, 0px, 0px; padding: 1px {3}px 1px {3}px;
+            border: 1px  rgba(71, 71, 71, 255); border-radius: {1}px; border-style: solid
+        }}
+        QScrollBar::handle:horizontal{{
+            background: rgba(71, 71, 71, 255); height: 5px; min-height: 5px;
+            border: 1px  rgba(95, 95, 95, 255); border-radius: 0px; border-style: none solid none solid
+        }}
+        QScrollBar::handle:horizontal:hover{{
+            background: rgba(95, 95, 95, 255); min-width: 5px;
+            border: 1px  rgba(127, 127, 127, 255); border-radius: 0px; border-style: none solid none solid
+        }}
+        QScrollBar::add-line:horizontal{{
+            image: url({0}/qt-style/h_scroll_add.svg)
+        }}
+        QScrollBar::add-line:horizontal:hover{{
+            image: url({0}/qt-style/h_scroll_add_horver.svg)
+        }}
+        QScrollBar::sub-line:horizontal{{
+            image: url({0}/qt-style/h_scroll_sub.svg)
+        }}
+        QScrollBar::sub-line:horizontal:hover{{
+            image: url({0}/qt-style/h_scroll_sub_hover.svg)
+        }}
+        QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{
+            background: none
+        }}
+    '''.format(
+        utl_core.Icon.ROOT_PATH, 0, 20, 20
+    )
+    widget.verticalScrollBar().setStyleSheet(style)
+    widget.horizontalScrollBar().setStyleSheet(style)
 
 
 def get_qt_widget_by_class(widget_class):
@@ -328,7 +389,7 @@ class CSSRgba(object):
 
 class Font(object):
     INDEX = get_font()
-    NAME = get_font()
+    NAME = get_font(size=8)
     SEPARATOR = get_font(italic=True)
     CONTENT = get_font(size=8)
     LOADING = get_font(size=10, weight=75, italic=True)
@@ -525,30 +586,31 @@ class QtUtilMtd(object):
     @classmethod
     def get_qt_palette(cls, tool_tip=False):
         palette = QtGui.QPalette()
-        palette.setColor(palette.NoRole, Color.base)
-        palette.setColor(palette.Base, Color.base)
-        palette.setColor(palette.Background, Color.BACKGROUND_NORMAL)
-        palette.setColor(palette.Shadow, Color.SHADOW_NORMAL)
-        palette.setColor(palette.Dark, Color.dark)
-        palette.setColor(palette.Light, Color.light)
-        palette.setColor(palette.Highlight, Color.highlight)
-        palette.setColor(palette.HighlightedText, Color.highlight_text)
+        palette.setColor(palette.All, palette.NoRole, Color.base)
+        palette.setColor(palette.All, palette.Base, Color.base)
+        palette.setColor(palette.All, palette.Background, Color.BACKGROUND_NORMAL)
+        palette.setColor(palette.All, palette.Shadow, Color.SHADOW_NORMAL)
+        palette.setColor(palette.All, palette.Dark, Color.dark)
+        palette.setColor(palette.All, palette.Light, Color.light)
+        palette.setColor(palette.All, palette.Highlight, Color.highlight)
+        palette.setColor(palette.All, palette.HighlightedText, Color.highlight_text)
         #
-        palette.setColor(palette.Window, Color.BACKGROUND_NORMAL)
-        palette.setColor(palette.WindowText, Color.TEXT_NORMAL)
+        palette.setColor(palette.All, palette.Window, Color.BACKGROUND_NORMAL)
         #
-        palette.setColor(palette.Text, Color.TEXT_NORMAL)
-        palette.setColor(palette.Current, palette.Text, Color.TEXT_HOVERED)
+        palette.setColor(palette.All, palette.Text, Color.TEXT_NORMAL)
+        palette.setColor(palette.All, palette.BrightText, Color.TEXT_HOVERED)
+        palette.setColor(palette.All, palette.WindowText, Color.TEXT_NORMAL)
         #
-        palette.setColor(palette.AlternateBase, Color.alternate_base)
-        palette.setColor(palette.Button, Color.BUTTON_NORMAL)
-        palette.setColor(palette.Active, palette.Button, Color.BUTTON_ACTIVE)
-        palette.setColor(palette.ButtonText, Color.TEXT_NORMAL)
+        palette.setColor(palette.All, palette.Button, Color.BUTTON_NORMAL)
+        palette.setColor(palette.All, palette.ButtonText, Color.TEXT_NORMAL)
+        #
+        palette.setColor(palette.All, palette.AlternateBase, Color.alternate_base)
         # tool-tip
         if tool_tip is True:
             p = QtWidgets.QToolTip.palette()
-            p.setColor(p.ToolTipBase, Color.DESCRIPTION_BACKGROUND)
-            p.setColor(palette.ToolTipText, Color.DESCRIPTION_TEXT)
+            p.setColor(palette.All, p.ToolTipBase, Color.DESCRIPTION_BACKGROUND)
+            p.setColor(palette.All, palette.ToolTipText, Color.DESCRIPTION_TEXT)
+            #
             QtWidgets.QToolTip.setPalette(p)
             QtWidgets.QToolTip.setFont(Font.DESCRIPTION)
         #
@@ -669,6 +731,16 @@ class QtUtilMtd(object):
             QtGui.QIcon.On
         )
         return icon
+    @classmethod
+    def set_fonts_add(cls, directory_path):
+        for i in ['*.tff']:
+            results = glob.glob(
+                '{}/{}'.format(directory_path, i)
+            )
+            for j in results:
+                QtGui.QFontDatabase.addApplicationFont(
+                    j
+                )
 
 
 class QtIconMtd(object):
@@ -790,6 +862,7 @@ class QtMayaMtd(object):
     def get_qt_main_window(cls):
         # noinspection PyUnresolvedReferences
         from maya import OpenMayaUI
+        #
         main_window = OpenMayaUI.MQtUtil.mainWindow()
         if main_window:
             return cls.get_qt_object(

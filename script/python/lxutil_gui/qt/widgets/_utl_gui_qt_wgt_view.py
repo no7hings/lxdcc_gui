@@ -7,6 +7,8 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item
 
 from lxutil_gui.qt import utl_gui_qt_core, utl_gui_qt_abstract
 
+from lxutil_gui import utl_gui_core
+
 
 class _AbsQtSplitter(QtWidgets.QWidget):
     QT_HANDLE_CLASS = None
@@ -269,9 +271,22 @@ class QtTreeWidget(
         self.setWordWrap(True)
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.setItemDelegate(_utl_gui_qt_wgt_utility.QtStyledItemDelegate())
+        #
+        self.setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QTreeView')
+        )
         # header view
-        # set stylesheet
-        set_qt_header_view_style(self.header())
+        self.header().setFixedHeight(20)
+        # self.header().setStretchLastSection(False)
+        self.header().setHighlightSections(True)
+        self.header().setSortIndicatorShown(True)
+        self.header().setCascadingSectionResizes(True)
+        self.header().setPalette(QtDccMtd.get_qt_palette())
+        self.header().setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QHeaderView')
+        )
+        self.header().setFont(Font.NAME)
+        self.header().setAutoFillBackground(True)
         # self.setAlternatingRowColors(True)
         qt_palette = QtDccMtd.get_qt_palette()
         self.setPalette(qt_palette)
@@ -295,6 +310,13 @@ class QtTreeWidget(
         self._item_expand_method_dic = {}
         #
         self._set_menu_def_init_()
+        #
+        self.verticalScrollBar().setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QScrollBar')
+        )
+        self.horizontalScrollBar().setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QScrollBar')
+        )
 
     def _get_item_visible_children_by_index_(self, index):
         lis = []
@@ -748,6 +770,17 @@ class QtListWidget(utl_gui_qt_abstract._QtAbsListWidget):
         self._set_grid_mode_()
         #
         self._action_control_flag = False
+        #
+        self.setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QListView')
+        )
+        #
+        self.verticalScrollBar().setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QScrollBar')
+        )
+        self.horizontalScrollBar().setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QScrollBar')
+        )
 
     def eventFilter(self, *args):
         widget, event = args

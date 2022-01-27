@@ -1,6 +1,8 @@
 # coding:utf-8
 import types
 
+from lxbasic import bsc_core
+
 from lxobj import obj_abstract
 #
 from lxutil import utl_core
@@ -70,8 +72,8 @@ class AbsTypeEntry(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_layout.setContentsMargins(0, 0, 0, 0)
         self._qt_layout.setSpacing(2)
         #
-        self._qt_entry = self.QT_ENTRY_CLASS()
-        self._qt_layout.addWidget(self._qt_entry)
+        self._entry_widget = self.QT_ENTRY_CLASS()
+        self._qt_layout.addWidget(self._entry_widget)
         #
         self._use_as_storage = False
 
@@ -82,7 +84,7 @@ class AbsTypeEntry(utl_gui_prx_abstract.AbsPrxWidget):
             self._qt_layout.addWidget(widget.widget)
     @property
     def entry(self):
-        return self._qt_entry
+        return self._entry_widget
 
     def get(self):
         raise NotImplementedError()
@@ -93,7 +95,7 @@ class AbsTypeEntry(utl_gui_prx_abstract.AbsPrxWidget):
     def set_clear(self):
         pass
 
-    def set_changed_connect_to(self, method):
+    def set_changed_connect_to(self, fnc):
         pass
 
     def set_use_as_storage(self, boolean=True):
@@ -107,12 +109,15 @@ class AbsTypeEntry(utl_gui_prx_abstract.AbsPrxWidget):
         return self._use_as_storage
 
 
-class PrxOpenFilePathEntry(AbsTypeEntry):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtConstantValueEntryItem
+class PrxFileOpenEntry(AbsTypeEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtEnumerateValueEntryItem
+    #
+    HISTORY_KEY = 'gui.file-paths'
     def __init__(self, *args, **kwargs):
-        super(PrxOpenFilePathEntry, self).__init__(*args, **kwargs)
-        # self.entry.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft | utl_gui_qt_core.QtCore.Qt.AlignVCenter)
+        super(PrxFileOpenEntry, self).__init__(*args, **kwargs)
+        #
+        self.entry._set_item_entry_enable_(True)
         #
         self._file_open_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self.set_button_add(self._file_open_button)
@@ -126,6 +131,10 @@ class PrxOpenFilePathEntry(AbsTypeEntry):
         self._file_open_button.set_press_clicked_connect_to(self._set_file_open_)
         #
         self._ext_filter = 'All File(s) (*.*)'
+        #
+        self.set_history_update()
+        #
+        self._entry_widget._set_choose_changed_connect_to_(self.set_history_update)
 
     def set_ext_filter(self, ext_filter):
         self._ext_filter = ext_filter
@@ -144,6 +153,7 @@ class PrxOpenFilePathEntry(AbsTypeEntry):
                 self.set(
                     s[0]
                 )
+                self.set_history_update()
 
     def get(self):
         return self.entry._get_value_()
@@ -151,13 +161,42 @@ class PrxOpenFilePathEntry(AbsTypeEntry):
     def set(self, raw=None, **kwargs):
         self.entry._set_value_(raw)
 
+    def set_changed_connect_to(self, fnc):
+        self.entry._set_item_entry_changed_connect_to_(fnc)
+    #
+    def set_history_update(self):
+        path = self._entry_widget._get_value_()
+        if bsc_core.StoragePathOpt(path).get_is_exists() is True:
+            utl_core.History.set_append(
+                self.HISTORY_KEY,
+                path
+            )
+        #
+        histories = utl_core.History.get(
+            self.HISTORY_KEY
+        )
+        if histories:
+            histories.reverse()
+            #
+            self._entry_widget._set_values_(
+                histories
+            )
 
-class PrxOpenDirectoryPathEntry(AbsTypeEntry):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtConstantValueEntryItem
+    def set_history_show_latest(self):
+        _ = utl_core.History.get_latest(self.HISTORY_KEY)
+        if _:
+            self._entry_widget._set_value_(_)
+
+
+class PrxDirectoryOpenEntry(AbsTypeEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtEnumerateValueEntryItem
+    #
+    HISTORY_KEY = 'gui.directory-paths'
     def __init__(self, *args, **kwargs):
-        super(PrxOpenDirectoryPathEntry, self).__init__(*args, **kwargs)
-        # self.entry.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft | utl_gui_qt_core.QtCore.Qt.AlignVCenter)
+        super(PrxDirectoryOpenEntry, self).__init__(*args, **kwargs)
+        #
+        self.entry._set_item_entry_enable_(True)
         #
         self._directory_open_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self.set_button_add(self._directory_open_button)
@@ -171,6 +210,10 @@ class PrxOpenDirectoryPathEntry(AbsTypeEntry):
         self._directory_open_button.set_press_clicked_connect_to(self._set_directory_open_)
         #
         self._ext_filter = 'All File(s) (*.*)'
+        #
+        self.set_history_update()
+        #
+        self._entry_widget._set_choose_changed_connect_to_(self.set_history_update)
 
     def set_ext_filter(self, ext_filter):
         self._ext_filter = ext_filter
@@ -183,11 +226,10 @@ class PrxOpenDirectoryPathEntry(AbsTypeEntry):
             dir=self.get(),
         )
         if s:
-            _ = s[0]
-            if _:
-                self.set(
-                    s
-                )
+            self.set(
+                s
+            )
+            self.set_history_update()
 
     def get(self):
         return self.entry._get_value_()
@@ -195,16 +237,42 @@ class PrxOpenDirectoryPathEntry(AbsTypeEntry):
     def set(self, raw=None, **kwargs):
         self.entry._set_value_(raw)
 
-    def set_changed_connect_to(self, method):
-        self.entry.entry_changed.connect(method)
+    def set_changed_connect_to(self, fnc):
+        self.entry._set_item_entry_changed_connect_to_(fnc)
+    #
+    def set_history_update(self):
+        path = self._entry_widget._get_value_()
+        if bsc_core.StoragePathOpt(path).get_is_exists() is True:
+            utl_core.History.set_append(
+                self.HISTORY_KEY,
+                path
+            )
+        #
+        histories = utl_core.History.get(
+            self.HISTORY_KEY
+        )
+        if histories:
+            histories.reverse()
+            #
+            self._entry_widget._set_values_(
+                histories
+            )
+
+    def set_history_show_latest(self):
+        _ = utl_core.History.get_latest(self.HISTORY_KEY)
+        if _:
+            self._entry_widget._set_value_(_)
 
 
-class PrxSaveFilePathEntry(AbsTypeEntry):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtConstantValueEntryItem
+class PrxFileSaveEntry(AbsTypeEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtEnumerateValueEntryItem
+    #
+    HISTORY_KEY = 'gui.file-paths'
     def __init__(self, *args, **kwargs):
-        super(PrxSaveFilePathEntry, self).__init__(*args, **kwargs)
-        # self.entry.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft | utl_gui_qt_core.QtCore.Qt.AlignVCenter)
+        super(PrxFileSaveEntry, self).__init__(*args, **kwargs)
+        #
+        self.entry._set_item_entry_enable_(True)
         #
         self._file_save_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self.set_button_add(self._file_save_button)
@@ -218,6 +286,10 @@ class PrxSaveFilePathEntry(AbsTypeEntry):
         self._file_save_button.set_press_clicked_connect_to(self._set_file_save_)
         #
         self._ext_filter = 'All File(s) (*.*)'
+        #
+        self.set_history_update()
+        #
+        self._entry_widget._set_choose_changed_connect_to_(self.set_history_update)
 
     def set_ext_filter(self, ext_filter):
         self._ext_filter = ext_filter
@@ -236,6 +308,7 @@ class PrxSaveFilePathEntry(AbsTypeEntry):
                 self.set(
                     s[0]
                 )
+                self.set_history_update()
 
     def get(self):
         return self.entry._get_value_()
@@ -243,9 +316,92 @@ class PrxSaveFilePathEntry(AbsTypeEntry):
     def set(self, raw=None, **kwargs):
         self.entry._set_value_(raw)
 
+    def set_changed_connect_to(self, fnc):
+        self.entry._set_item_entry_changed_connect_to_(fnc)
+    #
+    def set_history_update(self):
+        path = self._entry_widget._get_value_()
+        if bsc_core.StoragePathOpt(path).get_is_exists() is True:
+            utl_core.History.set_append(
+                self.HISTORY_KEY,
+                path
+            )
+        #
+        histories = utl_core.History.get(
+            self.HISTORY_KEY
+        )
+        if histories:
+            histories.reverse()
+            #
+            self._entry_widget._set_values_(
+                histories
+            )
+
+    def set_history_show_latest(self):
+        _ = utl_core.History.get_latest(self.HISTORY_KEY)
+        if _:
+            self._entry_widget._set_value_(_)
+
+
+class PrxRsvProjectChooseEntry(AbsTypeEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtEnumerateValueEntryItem
+    #
+    HISTORY_KEY = 'gui.projects'
+
+    def __init__(self, *args, **kwargs):
+        super(PrxRsvProjectChooseEntry, self).__init__(*args, **kwargs)
+        #
+        self.entry._set_item_entry_enable_(True)
+        #
+        self.set_history_update()
+        #
+        self._entry_widget._set_item_entry_finished_connect_to_(self.set_history_update)
+        self._entry_widget._set_choose_changed_connect_to_(self.set_history_update)
+
+    def get(self):
+        return self.entry._get_value_()
+
+    def set(self, raw=None, **kwargs):
+        self.entry._set_value_(raw)
+
+    def set_changed_connect_to(self, fnc):
+        self.entry._set_item_entry_changed_connect_to_(fnc)
+    #
+    def set_history_update(self):
+        project = self._entry_widget._get_value_()
+        if project:
+            import lxresolver.commands as rsv_commands
+            resolver = rsv_commands.get_resolver()
+            #
+            rsv_project = resolver.get_rsv_project(project=project)
+            project_directory_path = rsv_project.get_directory_path()
+            work_directory_path = '{}/work'.format(project_directory_path)
+            if bsc_core.StoragePathOpt(work_directory_path).get_is_exists() is True:
+                utl_core.History.set_append(
+                    self.HISTORY_KEY,
+                    project
+                )
+        #
+        histories = utl_core.History.get(
+            self.HISTORY_KEY
+        )
+        if histories:
+            histories = [i for i in histories if i]
+            histories.reverse()
+            #
+            self._entry_widget._set_values_(
+                histories
+            )
+
+    def set_history_show_latest(self):
+        _ = utl_core.History.get_latest(self.HISTORY_KEY)
+        if _:
+            self._entry_widget._set_value_(_)
+
 
 class PrxConstantEntry(AbsTypeEntry):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
     QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtConstantValueEntryItem
     def __init__(self, *args, **kwargs):
         super(PrxConstantEntry, self).__init__(*args, **kwargs)
@@ -282,7 +438,7 @@ class PrxConstantEntry(AbsTypeEntry):
 
 
 class PrxChooseEntry(AbsTypeEntry):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
     QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtEnumerateValueEntryItem
     def __init__(self, *args, **kwargs):
         super(PrxChooseEntry, self).__init__(*args, **kwargs)
@@ -290,19 +446,19 @@ class PrxChooseEntry(AbsTypeEntry):
         self.widget.setFocusProxy(self.entry)
 
     def get(self):
-        return self._qt_entry._get_value_()
+        return self._entry_widget._get_value_()
 
     def set(self, raw=None, **kwargs):
         values = None
         if 'values' in kwargs:
             values = kwargs['values']
-            self._qt_entry._set_values_(values)
+            self._entry_widget._set_values_(values)
         #
         if raw is not None:
-            self._qt_entry._set_value_(raw)
+            self._entry_widget._set_value_(raw)
         else:
             if values:
-                self._qt_entry._set_value_(values[-1])
+                self._entry_widget._set_value_(values[-1])
 
 
 class PrxTextEntry(PrxConstantEntry):
@@ -330,7 +486,7 @@ class PrxFloatEntry(PrxConstantEntry):
 
 
 class PrxArrayEntry(AbsTypeEntry):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
     QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtArrayValueEntryItem
     def __init__(self, *args, **kwargs):
         super(PrxArrayEntry, self).__init__(*args, **kwargs)
@@ -351,7 +507,7 @@ class PrxArrayEntry(AbsTypeEntry):
 
 
 class PrxIntegerArrayEntry(PrxArrayEntry):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
     QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtArrayValueEntryItem
     def __init__(self, *args, **kwargs):
         super(PrxArrayEntry, self).__init__(*args, **kwargs)
@@ -359,7 +515,7 @@ class PrxIntegerArrayEntry(PrxArrayEntry):
 
 
 class PrxBooleanEntry(AbsTypeEntry):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
     QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtCheckItem
     def __init__(self, *args, **kwargs):
         super(PrxBooleanEntry, self).__init__(*args, **kwargs)
@@ -369,6 +525,9 @@ class PrxBooleanEntry(AbsTypeEntry):
 
     def set(self, raw=None, **kwargs):
         self.entry._set_item_checked_(raw)
+
+    def set_changed_connect_to(self, fnc):
+        self.entry._set_item_check_changed_connect_to_(fnc)
 
 
 class PrxEnumerateEntry(AbsTypeEntry):
@@ -446,12 +605,12 @@ class PrxEnumerateEntry(AbsTypeEntry):
     def set_clear(self):
         self.entry.clear()
 
-    def set_changed_connect_to(self, method):
-        self.entry.currentIndexChanged.connect(method)
+    def set_changed_connect_to(self, fnc):
+        self.entry.currentIndexChanged.connect(fnc)
 
 
 class PrxButtonEntry(AbsTypeEntry):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
     QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtPressItem
     def __init__(self, *args, **kwargs):
         super(PrxButtonEntry, self).__init__(*args, **kwargs)
@@ -473,7 +632,7 @@ class PrxButtonEntry(AbsTypeEntry):
 
 
 class PrxProcessEntry(AbsTypeEntry):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
     QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtPressItem
     def __init__(self, *args, **kwargs):
         super(PrxProcessEntry, self).__init__(*args, **kwargs)
@@ -535,20 +694,20 @@ class AbsTypePort(object):
     def label(self):
         return self._label
     @property
-    def label_gui(self):
+    def port_label(self):
         return self._port_label
     @property
     def port_entry(self):
         return self._port_entry
 
     def set_name(self, name):
-        self.label_gui.set_name(name)
+        self.port_label.set_name(name)
 
     def set_enable(self, boolean):
         pass
 
     def set_name_width(self, w):
-        self.label_gui.set_width(w)
+        self.port_label.set_width(w)
 
     def set(self, raw=None, **kwargs):
         self.port_entry.set(raw, **kwargs)
@@ -587,7 +746,7 @@ class AbsTypePort(object):
     def get(self):
         return self.port_entry.get()
 
-    def set_changed_connect_to(self, method):
+    def set_changed_connect_to(self, fnc):
         pass
 
     def set_use_as_storage(self, boolean=True):
@@ -605,14 +764,17 @@ class AbsTypePort(object):
     def set_menu_raw(self, raw):
         self.port_entry.set_menu_raw(raw)
 
-    def to_custom_widget(self):
+    def to_custom_widget(self, label_width=80):
         if self._custom_widget is not None:
             return self._custom_widget
         else:
-            widget = _utl_gui_qt_wgt_utility.QtWidget()
+            widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
             layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(widget)
-            layout.addWidget(self.label_gui.widget)
-            layout.addWidget(self.port_entry.widget)
+            label = self.port_label
+            label.set_width(label_width)
+            layout.addWidget(label.widget)
+            entry = self.port_entry
+            layout.addWidget(entry.widget)
             self._custom_widget = widget
             return self._custom_widget
 
@@ -652,37 +814,50 @@ class PrxFloatPort(PrxConstantPort):
         super(PrxFloatPort, self).__init__(*args, **kwargs)
 
 
-class PrxOpenFilePathPort(PrxConstantPort):
+class PrxFileOpenPort(PrxConstantPort):
     LABEL_CLASS = PrxPortLabel
-    ENTRY_CLASS = PrxOpenFilePathEntry
+    ENTRY_CLASS = PrxFileOpenEntry
     def __init__(self, *args, **kwargs):
-        super(PrxOpenFilePathPort, self).__init__(*args, **kwargs)
+        super(PrxFileOpenPort, self).__init__(*args, **kwargs)
 
     def set_ext_filter(self, ext_filter):
         self.port_entry.set_ext_filter(ext_filter)
 
 
-class PrxOpenDirectoryPort(PrxConstantPort):
+class PrxDirectoryOpenPort(PrxConstantPort):
     LABEL_CLASS = PrxPortLabel
-    ENTRY_CLASS = PrxOpenDirectoryPathEntry
+    ENTRY_CLASS = PrxDirectoryOpenEntry
     def __init__(self, *args, **kwargs):
-        super(PrxOpenDirectoryPort, self).__init__(*args, **kwargs)
+        super(PrxDirectoryOpenPort, self).__init__(*args, **kwargs)
 
     def set_ext_filter(self, ext_filter):
         self.port_entry.set_ext_filter(ext_filter)
 
-    def set_changed_connect_to(self, method):
-        self.port_entry.set_changed_connect_to(method)
+    def set_changed_connect_to(self, fnc):
+        self.port_entry.set_changed_connect_to(fnc)
 
 
-class PrxSaveFilePathPort(PrxConstantPort):
+class PrxFileSavePort(PrxConstantPort):
     LABEL_CLASS = PrxPortLabel
-    ENTRY_CLASS = PrxSaveFilePathEntry
+    ENTRY_CLASS = PrxFileSaveEntry
     def __init__(self, *args, **kwargs):
-        super(PrxSaveFilePathPort, self).__init__(*args, **kwargs)
+        super(PrxFileSavePort, self).__init__(*args, **kwargs)
 
     def set_ext_filter(self, ext_filter):
         self.port_entry.set_ext_filter(ext_filter)
+
+    def set_changed_connect_to(self, fnc):
+        self.port_entry.set_changed_connect_to(fnc)
+
+
+class PrxRsvProjectChoosePort(PrxConstantPort):
+    LABEL_CLASS = PrxPortLabel
+    ENTRY_CLASS = PrxRsvProjectChooseEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxRsvProjectChoosePort, self).__init__(*args, **kwargs)
+
+    def set_changed_connect_to(self, fnc):
+        self.port_entry.set_changed_connect_to(fnc)
 
 
 class PrxBooleanPort(AbsTypePort):
@@ -707,8 +882,8 @@ class PrxEnumeratePort(AbsTypePort):
     def get_current(self):
         return self.port_entry.get_current()
 
-    def set_changed_connect_to(self, method):
-        self.port_entry.set_changed_connect_to(method)
+    def set_changed_connect_to(self, fnc):
+        self.port_entry.set_changed_connect_to(fnc)
 
 
 class PrxChoosePort(AbsTypePort):
@@ -730,8 +905,8 @@ class PrxArrayPort(AbsTypePort):
     def set_value_size(self, size):
         self.port_entry.set_value_size(size)
 
-    def set_changed_connect_to(self, method):
-        self.port_entry.set_changed_connect_to(method)
+    def set_changed_connect_to(self, fnc):
+        self.port_entry.set_changed_connect_to(fnc)
 
 
 class PrxIntegerArrayPort(PrxArrayPort):
@@ -759,7 +934,7 @@ class PrxStatusPort(AbsTypePort):
     ENTRY_CLASS = PrxProcessEntry
     def __init__(self, *args, **kwargs):
         super(PrxStatusPort, self).__init__(*args, **kwargs)
-        self.label_gui.widget._set_name_text_('')
+        self.port_label.widget._set_name_text_('')
         self.port_entry.entry._set_name_text_(self.label)
 
     def set_name(self, text):
@@ -781,7 +956,7 @@ class PortStack(obj_abstract.AbsObjStack):
 
 
 class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
     PORT_STACK_CLASS = PortStack
     LABEL_WIDTH = 160
     PORT_CLASS_DICT = dict(
@@ -803,7 +978,7 @@ class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
         qt_splitter_0 = _utl_gui_qt_wgt_utility.QtHSplitter()
         qt_layout_0.addWidget(qt_splitter_0)
         #
-        self._label_widget = _utl_gui_qt_wgt_utility.QtWidget()
+        self._label_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
         # self._label_widget.setMaximumWidth(self.LABEL_WIDTH)
         self._name_width = 160
         self._label_widget.setFixedWidth(self._name_width)
@@ -812,7 +987,7 @@ class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_label_layout.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignTop)
         self._qt_label_layout.setContentsMargins(2, 0, 2, 0)
         #
-        qt_entry_widget = _utl_gui_qt_wgt_utility.QtWidget()
+        qt_entry_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
         qt_splitter_0.addWidget(qt_entry_widget)
         self._qt_entry_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_entry_widget)
         self._qt_entry_layout.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignTop)
@@ -839,17 +1014,17 @@ class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
             condition = pre_port_is_join_next, cur_port_is_join_next
             if condition == (False, False):
                 self._qt_label_layout.addWidget(
-                    cur_port.label_gui.widget
+                    cur_port.port_label.widget
                 )
                 self._qt_entry_layout.addWidget(
                     cur_port.port_entry.widget
                 )
             elif condition == (False, True):
                 self._qt_label_layout.addWidget(
-                    cur_port.label_gui.widget
+                    cur_port.port_label.widget
                 )
                 #
-                enter_widget = _utl_gui_qt_wgt_utility.QtWidget()
+                enter_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
                 self._qt_entry_layout.addWidget(
                     enter_widget
                 )

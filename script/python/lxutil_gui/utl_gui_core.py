@@ -3,11 +3,11 @@ import math
 
 import enum
 
-from PIL import Image
+from lxutil import utl_configure, utl_core
 
-from lxutil import utl_configure
+from lxutil_gui import utl_gui_configure
 
-from lxutil_gui import gui_configure
+import lxbasic.objects as bsc_objects
 
 
 class HtmlText(object):
@@ -15,12 +15,12 @@ class HtmlText(object):
     def get_color(cls, *args):
         arg = args[0]
         if isinstance(arg, (float, int)):
-            return gui_configure.Html.COLORS[int(arg)]
+            return utl_gui_configure.Html.COLORS[int(arg)]
         elif isinstance(arg, (str, unicode)):
-            return gui_configure.Html.COLOR_DICT.get(arg, '#dfdfdf')
+            return utl_gui_configure.Html.COLOR_DICT.get(arg, '#dfdfdf')
         return '#dfdfdf'
     @classmethod
-    def get_text(cls, text, font_color=gui_configure.Html.WHITE, font_family='Arial', font_size=8):
+    def get_text(cls, text, font_color=utl_gui_configure.Html.WHITE, font_family='Arial', font_size=8):
         html_color = cls.get_color(font_color)
         #
         text = text.replace(' ', '&nbsp;')
@@ -113,20 +113,6 @@ class ChartMethod(object):
         return math.sqrt(((x1 - x2) ** 2) + ((y1 - y2) ** 2))
 
 
-class ImageMethod(object):
-    @classmethod
-    def get_size(cls, file_path):
-        size = 0, 0
-        # noinspection PyBroadException
-        try:
-            _ = Image.open(file_path)
-            if _ is not None:
-                return _.size
-        except:
-            pass
-        return size
-
-
 class SizeMethod(object):
     @classmethod
     def set_remap_to(cls, width, height, maximum):
@@ -177,6 +163,21 @@ class State(object):
     DISABLE = 'disable'
     WARNING = 'warning'
     ERROR = 'error'
+
+
+class QtStyleMtd(object):
+    CONFIGURE = bsc_objects.Configure(
+        value='{}/qt-style.yml'.format(utl_gui_configure.Data.DATA_ROOT)
+    )
+    CONFIGURE.set(
+        'option.icon-dir', utl_core.Icon.ROOT_PATH
+    )
+    CONFIGURE.set_flatten()
+    @classmethod
+    def get(cls, key):
+        return cls.CONFIGURE.get(
+            'widget.{}'.format(key)
+        )
 
 
 if __name__ == '__main__':

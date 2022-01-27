@@ -1,11 +1,9 @@
 # coding:utf-8
-from lxutil import utl_configure, utl_core
+from lxutil import utl_core
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
-import lxgui_fnc.scripts as gui_fnc_scripts
-
-import lxgui.commands as gui_commands
+import lxsession.commands as ssn_commands
 
 utl_core.Environ.set_add(
     utl_core.Resources.ENVIRON_KEY, '/data/e/myworkspace/td/lynxi/script/python/.resources'
@@ -28,13 +26,13 @@ class AppKit(prx_widgets.PrxToolWindow):
             'rsv-panels/shot-loader',
             'tool-panels/texture-tx-converter'
         ]:
-            i_hook_args = gui_commands.get_hook_args(
+            i_hook_args = ssn_commands.get_hook_args(
                 i_key
             )
             if i_hook_args is not None:
                 i_session, i_execute_fnc = i_hook_args
                 if i_session.get_is_loadable() is True:
-                    i_gui_option = i_session.gui_configure
+                    i_gui_option = i_session.utl_gui_configure
                     #
                     i_group_name = i_gui_option.get('group_name')
                     if i_group_name in self._list_view_dict:
@@ -66,8 +64,8 @@ class AppKit(prx_widgets.PrxToolWindow):
 
                     i_list_item.set_menu_raw(
                         [
-                            ('open python-file', None, i_session.set_hook_python_file_open),
-                            ('open yaml-file', None, i_session.set_hook_yaml_file_open),
+                            ('edit python-file', None, i_session.set_hook_python_file_open),
+                            ('edit yaml-file', None, i_session.set_hook_yaml_file_open),
                         ]
                     )
 

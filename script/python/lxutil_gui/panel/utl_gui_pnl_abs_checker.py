@@ -9,7 +9,7 @@ from lxutil import utl_core
 
 from lxutil_gui.panel import utl_gui_pnl_abstract
 
-from lxutil_gui import gui_core
+from lxutil_gui import utl_gui_core
 
 
 class AbsSceneCheckerToolPanel(
@@ -28,7 +28,7 @@ class AbsSceneCheckerToolPanel(
     def __init__(self, properties, *args, **kwargs):
         super(AbsSceneCheckerToolPanel, self).__init__(*args, **kwargs)
         #
-        self._window_configure = gui_core.PanelsConfigure().get_window(
+        self._window_configure = utl_gui_core.PanelsConfigure().get_window(
             self.PANEL_KEY
         )
         self.set_window_title(
@@ -121,7 +121,7 @@ class AbsSceneCheckerToolPanel(
         qt_layout_0.addWidget(self._configure_gui.widget)
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxOpenFilePathPort('file_path', 'File-path')
+            prx_widgets.PrxFileOpenPort('file_path', 'File-path')
         )
 
     def set_ignore_show_hide_switch(self):

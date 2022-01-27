@@ -18,7 +18,7 @@ import lxmaya.dcc.dcc_objects as mya_dcc_objects
 
 from lxmaya.commands import _mya_cmd_utility
 
-from lxutil_gui import gui_core
+from lxutil_gui import utl_gui_core
 
 
 class SceneImporterToolPanel(utl_gui_pnl_abstract.AbsUtilToolPanel):
@@ -88,7 +88,7 @@ class SceneCleanerToolPanel(prx_widgets.PrxToolWindow):
     PANEL_KEY = 'scene_cleaner'
     def __init__(self, *args, **kwargs):
         super(SceneCleanerToolPanel, self).__init__(*args, **kwargs)
-        self._window_configure = gui_core.PanelsConfigure().get_window(
+        self._window_configure = utl_gui_core.PanelsConfigure().get_window(
             self.PANEL_KEY
         )
         self.set_window_title(
@@ -169,7 +169,7 @@ class SceneCleanerToolPanel(prx_widgets.PrxToolWindow):
                 (
                     u'delete unused-window(s)'
                 ),
-                mya_dcc_objects.Scene.set_unused_window_clear, (2, 0, 1, 1)
+                mya_dcc_objects.Scene.set_unused_windows_clear, (2, 0, 1, 1)
             ),
             (
                 'Unloaded-reference(s)',
@@ -306,7 +306,7 @@ class DatabaseGeometryManagerPanel(utl_gui_pnl_abs_utility.AbsDatabaseGeometryMa
             #
             method_query = ddl_objects.DdlMethodQuery(key='geometry-unify')
 
-            method = ddl_methods.DdlMethodRunner(
+            method = ddl_methods.HookExecutor(
                 method_option=method_query.get_method_option(),
                 script_option=method_query.get_script_option(
                     file=self._geometry_unify_file_path
@@ -418,7 +418,7 @@ class DatabaseGeometryManagerPanel(utl_gui_pnl_abs_utility.AbsDatabaseGeometryMa
             #
 
             method_query = ddl_objects.DdlMethodQuery(key='geometry-uv-assign')
-            method = ddl_methods.DdlMethodRunner(
+            method = ddl_methods.HookExecutor(
                 method_option=method_query.get_method_option(),
                 script_option=method_query.get_script_option(
                     file=self._geometry_uv_map_assign_file_path

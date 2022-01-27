@@ -3,7 +3,7 @@ import os
 
 from lxbasic import bsc_configure
 
-from lxutil import utl_configure
+from lxutil_gui import utl_gui_configure
 
 from lxutil_gui.qt.utl_gui_qt_core import *
 
@@ -903,9 +903,9 @@ class _QtItemPressActionDef(object):
     clicked = qt_signal()
     db_clicked = qt_signal()
     #
-    PRESS_CLICK_FLAG = gui_configure.ActionFlag.PRESS_CLICK
-    PRESS_DB_CLICK_FLAG = gui_configure.ActionFlag.PRESS_DB_CLICK
-    PRESS_MOVE_FLAG = gui_configure.ActionFlag.PRESS_MOVE
+    PRESS_CLICK_FLAG = utl_gui_configure.ActionFlag.PRESS_CLICK
+    PRESS_DB_CLICK_FLAG = utl_gui_configure.ActionFlag.PRESS_DB_CLICK
+    PRESS_MOVE_FLAG = utl_gui_configure.ActionFlag.PRESS_MOVE
     def _set_widget_update_(self):
         raise NotImplementedError()
 
@@ -940,7 +940,7 @@ class _QtItemCheckActionDef(object):
     check_clicked = qt_signal()
     check_toggled = qt_signal(bool)
     #
-    CHECK_CLICK_FLAG = gui_configure.ActionFlag.CHECK_CLICK
+    CHECK_CLICK_FLAG = utl_gui_configure.ActionFlag.CHECK_CLICK
     def _set_widget_update_(self):
         raise NotImplementedError()
 
@@ -1000,12 +1000,15 @@ class _QtItemCheckActionDef(object):
         self.check_clicked.emit()
         self.check_toggled.emit(self._item_is_checked)
 
+    def _set_item_check_changed_connect_to_(self, fnc):
+        self.check_clicked.connect(fnc)
+
 
 class _QtItemExpandActionDef(object):
     expand_clicked = qt_signal()
     expand_toggled = qt_signal(bool)
     #
-    EXPAND_CLICKED_FLAG = gui_configure.ActionFlag.EXPAND_CLICK
+    EXPAND_CLICKED_FLAG = utl_gui_configure.ActionFlag.EXPAND_CLICK
     #
     EXPAND_TOP_TO_BOTTOM = 0
     EXPAND_BOTTOM_TO_TOP = 1
@@ -1056,7 +1059,7 @@ class _QtItemExpandActionDef(object):
 class _QtItemOptionPressActionDef(object):
     checked = qt_signal()
     #
-    OPTION_CLICK_FLAG = gui_configure.ActionFlag.OPTION_CLICK
+    OPTION_CLICK_FLAG = utl_gui_configure.ActionFlag.OPTION_CLICK
     def _set_widget_update_(self):
         raise NotImplementedError()
 
@@ -1080,6 +1083,7 @@ class _QtItemOptionPressActionDef(object):
 
 
 class _QtItemChooseActionDef(object):
+    choose_changed = qt_signal()
     def _set_item_choose_def_init_(self):
         self._choose_expand_icon_file_path = utl_core.Icon.get('choose_expand')
         self._choose_collapse_icon_file_path = utl_core.Icon.get('choose_collapse')
@@ -1120,6 +1124,26 @@ class _QtItemChooseActionDef(object):
     def _get_choose_content_name_texts_(self):
         return self._choose_name_texts
 
+    def _set_choose_changed_emit_send_(self):
+        self.choose_changed.emit()
+
+    def _set_choose_changed_connect_to_(self, fnc):
+        self.choose_changed.connect(fnc)
+
+
+class _QtItemEntryActionDef(object):
+    def _set_item_entry_def_init_(self):
+        self._entry_enable = False
+
+    def _set_item_entry_enable_(self, boolean):
+        self._entry_enable = boolean
+
+    def _set_item_entry_finished_connect_to_(self, fnc):
+        pass
+
+    def _set_item_entry_changed_connect_to_(self, fnc):
+        pass
+
 
 class _QtViewBarDef(object):
     pass
@@ -1133,7 +1157,7 @@ class _QtViewChooseActionDef(object):
     choose_item_clicked = qt_signal()
     choose_item_double_clicked = qt_signal()
     #
-    CHOOSE_FLAG = gui_configure.ActionFlag.CHOOSE
+    CHOOSE_FLAG = utl_gui_configure.ActionFlag.CHOOSE
     def _set_widget_update_(self):
         raise NotImplementedError()
 
@@ -1698,6 +1722,9 @@ class _QtEnumerateValueEntryDef(object):
 
     def _get_values_(self):
         return self._values
+
+    def _set_value_append_(self, value):
+        self._values.append(value)
 
     def _set_value_(self, value):
         self._value_entry_widget._set_value_(value)

@@ -15,6 +15,8 @@ from lxutil_gui.qt.utl_gui_qt_core import *
 
 import lxutil.methods as utl_methods
 
+from lxutil_gui import utl_gui_core
+
 
 class QtItemDelegate(QtWidgets.QItemDelegate):
     def sizeHint(self, option, index):
@@ -93,6 +95,12 @@ class QtWidget(
                     border_width=2,
                     border_radius=2
                 )
+
+
+class _QtTranslucentWidget(QtWidgets.QWidget):
+    def __init__(self, *args, **kwargs):
+        super(_QtTranslucentWidget, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
 
 class QtFrame(QtWidgets.QFrame):
@@ -403,7 +411,7 @@ class QtPainter(QtGui.QPainter):
         )
         #
         r = min(w, h)
-        font_size = r-4
+        font_size = int(r*.8)
         #
         self._set_font_(get_font(size=font_size, italic=True))
         self.drawText(
@@ -528,6 +536,8 @@ class QtPainter(QtGui.QPainter):
         #
         if font is not None:
             self._set_font_(font)
+        else:
+            self._set_font_(get_font())
         #
         text_option__ = QtGui.QTextOption(
             text_option_
@@ -540,7 +550,10 @@ class QtPainter(QtGui.QPainter):
         else:
             text_option__.setUseDesignMetrics(True)
             text_ = self.fontMetrics().elidedText(
-                text, QtCore.Qt.ElideRight, rect.width(), QtCore.Qt.TextShowMnemonic
+                text,
+                QtCore.Qt.ElideLeft,
+                rect.width(),
+                QtCore.Qt.TextShowMnemonic
             )
         #
         rect_f_ = QtCore.QRectF(
@@ -865,8 +878,7 @@ class QtIconButton(QtWidgets.QPushButton):
     def __init__(self, *args, **kwargs):
         super(QtIconButton, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        qt_palette = QtDccMtd.get_qt_palette()
-        self.setPalette(qt_palette)
+        self.setPalette(QtDccMtd.get_qt_palette())
         #
         self.setFont(Font.NAME)
         self.setMaximumSize(20, 20)
@@ -941,8 +953,7 @@ class QtPressButton(QtWidgets.QPushButton):
     def __init__(self, *args, **kwargs):
         super(QtPressButton, self).__init__(*args, **kwargs)
         self.setFont(Font.NAME)
-        qt_palette = QtDccMtd.get_qt_palette()
-        self.setPalette(qt_palette)
+        self.setPalette(QtDccMtd.get_qt_palette())
         self.setAutoFillBackground(True)
         #
         self.setMaximumHeight(20)
@@ -955,14 +966,17 @@ class QtMenuBar(QtWidgets.QMenuBar):
     def __init__(self, *args, **kwargs):
         super(QtMenuBar, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        qt_palette = QtDccMtd.get_qt_palette()
-        self.setPalette(qt_palette)
-        # self.setAutoFillBackground(True)
+        self.setPalette(QtDccMtd.get_qt_palette())
+        self.setAutoFillBackground(True)
         #
         self.setFont(Font.NAME)
         #
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
+        )
+        #
+        self.setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QMenuBar')
         )
 
 
@@ -970,9 +984,13 @@ class QtMenu(QtWidgets.QMenu):
     def __init__(self, *args, **kwargs):
         super(QtMenu, self).__init__(*args, **kwargs)
         self.setPalette(QtDccMtd.get_qt_palette())
-        # self.setAutoFillBackground(True)
+        self.setAutoFillBackground(True)
         #
         self.setFont(Font.NAME)
+        #
+        self.setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QMenu')
+        )
     @classmethod
     def _set_cmd_run_(cls, cmd_str):
         exec cmd_str
@@ -1235,6 +1253,17 @@ class QtScrollArea(QtWidgets.QScrollArea):
         #
         qt_palette = QtDccMtd.get_qt_palette()
         self.setPalette(qt_palette)
+        #
+        self.setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QScrollArea')
+        )
+        #
+        self.verticalScrollBar().setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QScrollBar')
+        )
+        self.horizontalScrollBar().setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QScrollBar')
+        )
 
 
 class QtMainWindow(
@@ -1248,8 +1277,7 @@ class QtMainWindow(
         self.setWindowFlags(QtCore.Qt.Window)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         #
-        qt_palette = QtDccMtd.get_qt_palette()
-        self.setPalette(qt_palette)
+        self.setPalette(QtDccMtd.get_qt_palette())
         self.setAutoFillBackground(True)
         # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
@@ -1265,7 +1293,7 @@ class QtMainWindow(
         self.update()
     #
     def _set_name_icon_text_(self, text):
-        self.setWindowIcon(QtUtilMtd.get_name_text_icon_(text, background_color=(64, 64, 64)))
+        self.setWindowIcon(QtUtilMtd.get_name_text_icon_(text))
     @property
     def lynxi_window(self):
         return True
@@ -1368,7 +1396,6 @@ class QtCommonStyle(QtWidgets.QCommonStyle):
 
 
 class QtTextBrowser(QtWidgets.QTextBrowser):
-
     def __init__(self, *args, **kwargs):
         super(QtTextBrowser, self).__init__(*args, **kwargs)
         self.setWordWrapMode(QtGui.QTextOption.WordWrap)
@@ -1382,6 +1409,17 @@ class QtTextBrowser(QtWidgets.QTextBrowser):
         #
         self._print_thread = QtPrintThread(self)
         self._print_thread.printed.connect(self._set_print_add_)
+        #
+        self.setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QTextBrowser')
+        )
+        #
+        self.verticalScrollBar().setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QScrollBar')
+        )
+        self.horizontalScrollBar().setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QScrollBar')
+        )
 
     def _set_print_add_(self, text):
         def add_fnc_(text_):

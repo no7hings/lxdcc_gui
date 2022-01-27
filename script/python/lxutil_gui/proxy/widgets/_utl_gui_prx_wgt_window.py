@@ -63,6 +63,7 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._button_layout.addWidget(qt_spacer_0)
         #
         self._yes_button = _utl_gui_prx_wdt_utility.PrxPressItem()
+        # self._yes_button.set_visible(False)
         self._button_layout.addWidget(self._yes_button.widget)
         self._yes_button.set_name('Yes')
         self._yes_button.set_icon_by_name('Yes')
@@ -70,6 +71,7 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._yes_button.set_press_clicked_connect_to(self.set_yes_run)
         #
         self._no_button = _utl_gui_prx_wdt_utility.PrxPressItem()
+        # self._no_button.set_visible(False)
         self._button_layout.addWidget(self._no_button.widget)
         self._no_button.set_name('No')
         self._no_button.set_icon_by_name('No')
@@ -77,6 +79,7 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._no_button.set_press_clicked_connect_to(self.set_no_run)
         #
         self._cancel_button = _utl_gui_prx_wdt_utility.PrxPressItem()
+        # self._cancel_button.set_visible(False)
         self._button_layout.addWidget(self._cancel_button.widget)
         self._cancel_button.set_name('Cancel')
         self._cancel_button.set_icon_by_name('Cancel')
@@ -110,6 +113,9 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
     def get_result(self):
         return self._result
 
+    def set_yes_visible(self, boolean):
+        self._yes_button.set_visible(boolean)
+
     def set_yes_label(self, text):
         self._yes_button.set_name(text)
         self._yes_button.set_icon_by_name(text)
@@ -117,12 +123,18 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
     def set_yes_method_add(self, method, args=None):
         self._yes_methods.append(method)
 
+    def set_no_visible(self, boolean):
+        self._no_button.set_visible(boolean)
+
     def set_no_label(self, text):
         self._no_button.set_name(text)
         self._no_button.set_icon_by_name(text)
 
     def set_no_method_add(self, method, args=None):
         self._no_methods.append(method)
+
+    def set_cancel_visible(self, boolean):
+        self._cancel_button.set_visible(boolean)
 
     def set_cancel_label(self, text):
         self._cancel_button.set_name(text)

@@ -108,15 +108,13 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
         self._configure_gui = prx_widgets.PrxNode()
         qt_layout_0.addWidget(self._configure_gui.widget)
         #
-        if self._filter_project is not None:
-            projects = [self._filter_project]
-        else:
-            projects = [
-                'shl',
-                'cg7',
-                'cjd',
-                'lib',
-            ]
+        projects = [
+            'shl',
+            'cg7',
+            'cjd',
+            'lib',
+        ]
+        #
         current_project = self._get_current_project_()
         if current_project:
             if current_project in projects:
@@ -124,10 +122,21 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
             #
             projects.append(current_project)
         #
-        _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxEnumeratePort('project', 'Project-name')
+        utl_core.History.set_extend(
+            'gui.projects',
+            projects
         )
-        _port.set(projects)
+        histories = utl_core.History.get(
+            'gui.projects'
+        )
+        #
+        _port = self._configure_gui.set_port_add(
+            prx_widgets.PrxRsvProjectChoosePort('project', 'Project')
+        )
+        if self._filter_project is not None:
+            _port.set(self._filter_project)
+        else:
+            _port.set(histories[-1])
         #
         _port = self._configure_gui.set_port_add(
             prx_widgets.PrxButtonPort('refresh', 'Refresh')
@@ -180,12 +189,10 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
     @utl_gui_qt_core.set_window_prx_loading_modifier
     def _set_rsv_obj_viewer_refresh_(self):
         self._resolver = rsv_commands.get_resolver()
-        if self._filter_project is not None:
-            project = self._filter_project
-        else:
-            project = self._configure_gui.get_port(
-                'project'
-            ).get()
+        #
+        project = self._configure_gui.get_port(
+            'project'
+        ).get()
         #
         self._rsv_project = self._resolver.get_rsv_project(project=project)
         #
@@ -206,14 +213,14 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
 
     def _set_rsv_entity_guis_refresh_(self, rsv_objs):
         if rsv_objs:
-            gp = utl_core.GuiProgressesRunner(maximum=len(rsv_objs))
-            for rsv_obj in rsv_objs:
-                gp.set_update()
-                rsv_entities = rsv_obj.get_rsv_entities()
-                self._set_rsv_obj_guis_add_use_thread_(
-                    rsv_entities, self._set_rsv_entity_gui_add_
-                )
-            gp.set_stop()
+            with utl_core.gui_progress(maximum=len(rsv_objs)) as g_p:
+                for rsv_obj in rsv_objs:
+                    g_p.set_update()
+                    #
+                    rsv_entities = rsv_obj.get_rsv_entities()
+                    self._set_rsv_obj_guis_add_use_thread_(
+                        rsv_entities, self._set_rsv_entity_gui_add_
+                    )
     #
     def _set_rsv_obj_guis_add_use_thread_(self, rsv_objs, add_fnc):
         for rsv_obj in rsv_objs:

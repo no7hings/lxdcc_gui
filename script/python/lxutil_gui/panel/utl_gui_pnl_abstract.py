@@ -1,7 +1,7 @@
 # coding:utf-8
 import collections
 
-from lxutil_gui import gui_configure
+from lxutil_gui import utl_gui_configure
 
 from lxbasic import bsc_core
 
@@ -332,7 +332,7 @@ class AbsShotBuildToolPanel(
     TOOL_PANEL_KEY = None
     TOOL_CONFIGURE = None
     #
-    HELP_FILE_PATH = '{}/UPDATE.md'.format(gui_configure.Root.doc)
+    HELP_FILE_PATH = '{}/UPDATE.md'.format(utl_gui_configure.Root.doc)
     DCC_SELECTION_CLS = None
     #
     OBJ_OPT_CLASS = None

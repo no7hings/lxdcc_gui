@@ -5,7 +5,7 @@ from lxbasic import bsc_core
 
 from lxutil import utl_core
 
-from lxutil_gui import gui_core
+from lxutil_gui import utl_gui_core
 
 import lxutil_gui.proxy.operators as utl_prx_operators
 
@@ -23,7 +23,7 @@ class AbsSceneShaderViewerPanel(
     def __init__(self, *args, **kwargs):
         super(AbsSceneShaderViewerPanel, self).__init__(*args, **kwargs)
 
-        self._window_configure = gui_core.PanelsConfigure().get_window(
+        self._window_configure = utl_gui_core.PanelsConfigure().get_window(
             self.PANEL_KEY
         )
         self.set_window_title(
