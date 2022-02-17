@@ -74,7 +74,7 @@ class UtilityToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
             mya_dcc_objects.TextureReferences(
                 option=dict(with_reference=True)
             )
-        ).set_tx_create_and_repath()
+        ).set_color_space_auto_switch()
     @classmethod
     def set_texture_tiles_preview_generate(cls):
         # noinspection PyUnresolvedReferences

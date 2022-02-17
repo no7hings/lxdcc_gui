@@ -594,6 +594,7 @@ class _QtCheckItem(
                 file_path=self._item_check_icon_file_path,
                 offset=offset
             )
+        #
         if self._name_text is not None:
             painter._set_text_draw_by_rect_(
                 self._name_rect,
