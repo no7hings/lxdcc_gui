@@ -256,7 +256,7 @@ class _QtPressItem(
         #
         r, g, b = 143, 143, 143
         h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-        color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
+        color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
         hover_color = r, g, b
         #
         self._frame_border_color = color
@@ -264,7 +264,7 @@ class _QtPressItem(
         #
         r, g, b = 127, 127, 127
         h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-        color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
+        color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
         hover_color = r, g, b
         self._frame_background_color = color
         self._hover_frame_background_color = hover_color
