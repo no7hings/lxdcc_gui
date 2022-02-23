@@ -1666,8 +1666,9 @@ def set_log_write(text):
     for window in windows:
         if hasattr(window, 'gui_proxy'):
             window_gui_proxy = window.gui_proxy
-            if window_gui_proxy.PRX_TYPE == 'tool_window':
-                lis.append(window_gui_proxy)
+            if hasattr(window_gui_proxy, 'PRX_TYPE'):
+                if window_gui_proxy.PRX_TYPE == 'tool_window':
+                    lis.append(window_gui_proxy)
     if lis:
         lis[0].set_log_write(text)
 
@@ -1678,8 +1679,9 @@ def get_all_tool_windows():
     for window in windows:
         if hasattr(window, 'gui_proxy'):
             window_gui_proxy = window.gui_proxy
-            if window_gui_proxy.PRX_TYPE == 'tool_window':
-                lis.append(window_gui_proxy)
+            if hasattr(window_gui_proxy, 'PRX_TYPE'):
+                if window_gui_proxy.PRX_TYPE == 'tool_window':
+                    lis.append(window_gui_proxy)
     return lis
 
 

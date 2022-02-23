@@ -180,5 +180,16 @@ class QtStyleMtd(object):
         )
 
 
+class Icons(object):
+    BRANCH = 'icons'
+    @classmethod
+    def get(cls, key):
+        return utl_core.Resources.get(
+            '{}/{}.*'.format(cls.BRANCH, key)
+        )
+
+
 if __name__ == '__main__':
-    pass
+    import os
+    os.environ['LYNXI_RESOURCES'] = '/data/e/myworkspace/td/lynxi/script/python/.resources'
+    print Icons.get('application/maya')

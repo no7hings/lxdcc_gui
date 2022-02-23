@@ -165,11 +165,11 @@ class AbsAssetLookViewerPanel(
         self._scene_obj_scene = self.DCC_SCENE_CLASS()
         ktn_obj_path = '{}__property_assigns_merge'.format(look_pass)
         self._scene_obj_scene.set_load_by_root(
-            ktn_obj='look_switch',
+            ktn_obj='look_pass_switch',
             root=self.DCC_GEOMETRY_ROOT
         )
         self._scene_obj_scene.set_load_by_root(
-            ktn_obj='look_switch',
+            ktn_obj='look_pass_switch',
             root=self.DCC_MATERIAL_ROOT
         )
         self._scene_obj_universe = self._scene_obj_scene.universe
