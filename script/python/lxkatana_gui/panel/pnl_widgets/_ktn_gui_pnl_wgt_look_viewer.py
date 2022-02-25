@@ -46,7 +46,7 @@ class AssetLookViewerPanel(utl_gui_pnl_abs_look_viewer.AbsAssetLookViewerPanel):
             self.DCC_MATERIAL_ROOT
         )
         self._configure_gui.get_port('look_pass').set(
-            ktn_fnc_builders.AssetWorkspaceBuilder().get_pass_names()
+            ktn_fnc_builders.AssetWorkspaceBuilder().get_look_pass_names()
         )
 
     def _set_dcc_obj_guis_build_(self):
