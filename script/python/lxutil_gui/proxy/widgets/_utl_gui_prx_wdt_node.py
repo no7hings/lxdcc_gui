@@ -1254,6 +1254,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
 
         group_port = current_group_port
         #
+        self._port_stack.set_object_add(port)
         return group_port.set_child_add(port)
 
     def get_port(self, port_path):
@@ -1283,6 +1284,10 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
 
         if widget_ in ['string']:
             port = PrxStringPort(port_path)
+        elif widget_ in ['integer']:
+            port = PrxIntegerPort(port_path)
+        elif widget_ in ['boolean']:
+            port = PrxBooleanPort(port_path)
         else:
             raise TypeError()
 

@@ -32,6 +32,7 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
                 'Test-0',
             )
         )
+        print n.get_port('main.test.test_0')
 
 
 if __name__ == '__main__':
