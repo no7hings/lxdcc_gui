@@ -1284,16 +1284,22 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
 
         if widget_ in ['string']:
             port = PrxStringPort(port_path)
+            port.set(value_)
         elif widget_ in ['integer']:
             port = PrxIntegerPort(port_path)
+            port.set(value_)
         elif widget_ in ['boolean']:
             port = PrxBooleanPort(port_path)
+            port.set(value_)
         elif widget_ in ['button']:
             port = PrxButtonPort(port_path)
+            port.set(value_)
+        elif widget_ in ['enumerate']:
+            port = PrxEnumeratePort(port_path)
+            port.set(value_)
         else:
             raise TypeError()
 
-        port.set_value(value_)
         port.set_tool_tip(tool_tip_)
 
         self.set_port_add(port)
