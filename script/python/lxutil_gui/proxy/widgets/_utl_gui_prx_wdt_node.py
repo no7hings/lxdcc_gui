@@ -17,7 +17,7 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
-from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility
+from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wgt_view
 
 
 class AttrConfig(object):
@@ -348,7 +348,6 @@ class PrxRsvProjectChooseEntry(AbsTypeEntry):
     QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtEnumerateValueEntryItem
     #
     HISTORY_KEY = 'gui.projects'
-
     def __init__(self, *args, **kwargs):
         super(PrxRsvProjectChooseEntry, self).__init__(*args, **kwargs)
         #
@@ -669,12 +668,19 @@ class AbsTypePort(object):
     LABEL_CLASS = None
     ENTRY_CLASS = None
     def __init__(self, name, label=None, default_value=None, join_to_next=False):
-        self._name = name
-        self._label = label
+        self._path = name
+        self._name = self._path.split('.')[-1]
+        if label is not None:
+            self._label = label
+        else:
+            self._label = bsc_core.StrUnderlineOpt(self._name).to_prettify(capitalize=False)
         # gui
         self._port_label = self.LABEL_CLASS()
         self._port_label.set_name_tool_tip(
-            'name: {}'.format(self.name)
+            'path: {}\nname: {}'.format(
+                self._path,
+                self._name
+            )
         )
         #
         self._port_entry = self.ENTRY_CLASS()
@@ -690,6 +696,10 @@ class AbsTypePort(object):
     @property
     def name(self):
         return self._name
+
+    def get_path(self):
+        return self._path
+    path = property(get_path)
     @property
     def label(self):
         return self._label
@@ -711,6 +721,9 @@ class AbsTypePort(object):
 
     def set(self, raw=None, **kwargs):
         self.port_entry.set(raw, **kwargs)
+
+    def set_value(self, *args, **kwargs):
+        self.set(*args, **kwargs)
 
     def set_append(self, raw):
         if hasattr(self.port_entry, 'set_append'):
@@ -947,9 +960,9 @@ class PrxStatusPort(AbsTypePort):
         self.port_entry.entry._set_statuses_(element_statuses)
 
 
-class PortStack(obj_abstract.AbsObjStack):
+class PrxPortStack(obj_abstract.AbsObjStack):
     def __init__(self):
-        super(PortStack, self).__init__()
+        super(PrxPortStack, self).__init__()
 
     def get_key(self, obj):
         return obj.name
@@ -957,7 +970,7 @@ class PortStack(obj_abstract.AbsObjStack):
 
 class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    PORT_STACK_CLASS = PortStack
+    PORT_STACK_CLASS = PrxPortStack
     LABEL_WIDTH = 160
     PORT_CLASS_DICT = dict(
         string=PrxStringPort,
@@ -1067,3 +1080,215 @@ class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
     def set_name_width(self, w):
         self._name_width = w
         self._label_widget.setFixedWidth(self._name_width)
+
+
+class PrxGroupPort(utl_gui_prx_abstract.AbsPrxWidget):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    PORT_STACK_CLASS = PrxPortStack
+    #
+    def __init__(self, *args, **kwargs):
+        super(PrxGroupPort, self).__init__(*args, **kwargs)
+        self._path = None
+
+        layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
+        layout_0.setContentsMargins(*[0]*4)
+        self._prx_expanded_group = _utl_gui_prx_wdt_utility.PrxExpandedGroup()
+        layout_0.addWidget(self._prx_expanded_group.widget)
+        self._prx_expanded_group.set_expanded(True)
+        #
+        self._main_splitter = _utl_gui_qt_wgt_utility.QtHSplitter()
+        self._prx_expanded_group.set_widget_add(self._main_splitter)
+        self._main_splitter.hide()
+        #
+        self._label_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+        # self._label_widget.setMaximumWidth(self.LABEL_WIDTH)
+        self._name_width = 160
+        self._label_widget.setFixedWidth(self._name_width)
+        self._main_splitter.addWidget(self._label_widget)
+        self._qt_label_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._label_widget)
+        self._qt_label_layout.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignTop)
+        self._qt_label_layout.setContentsMargins(2, 0, 2, 0)
+        #
+        qt_entry_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+        self._main_splitter.addWidget(qt_entry_widget)
+        self._qt_entry_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_entry_widget)
+        self._qt_entry_layout.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignTop)
+        self._qt_entry_layout.setContentsMargins(2, 0, 2, 0)
+
+        self._port_stack = self.PORT_STACK_CLASS()
+
+    def _set_group_port_init_(self, name, label=None):
+        self._path = name
+        self._name = self._path.split('.')[-1]
+        if label is not None:
+            self._label = label
+        else:
+            self._label = bsc_core.StrUnderlineOpt(name).to_prettify(capitalize=False)
+        #
+        self._prx_expanded_group.set_name(self._label)
+
+    def set_use_as_root(self):
+        self._prx_expanded_group.set_head_visible(False)
+
+    def set_label(self, text):
+        self._prx_expanded_group.set_name(text)
+
+    def set_child_group_create(self, name):
+        label = bsc_core.StrUnderlineOpt(name).to_prettify(capitalize=False)
+        group_port = self.__class__()
+        group_port._set_group_port_init_('{}.{}'.format(self._path, name))
+        group_port.set_label(label)
+        self._prx_expanded_group.set_widget_add(group_port.widget)
+        return group_port
+
+    def set_child_string_create(self, name):
+        label = bsc_core.StrUnderlineOpt(name).to_prettify(capitalize=False)
+        port = PrxStringPort(
+            name, label, path='{}/{}'.format(self._path, name)
+        )
+        return self.set_child_add(port)
+
+    def set_child_add(self, port):
+        self._main_splitter.show()
+        cur_port = port
+        pre_port_is_join_next, pre_port = self._get_pre_child_args_()
+        cur_port_is_join_next = cur_port._get_is_join_next_()
+        #
+        condition = pre_port_is_join_next, cur_port_is_join_next
+        if condition == (False, False):
+            self._qt_label_layout.addWidget(
+                cur_port.port_label.widget
+            )
+            self._qt_entry_layout.addWidget(
+                cur_port.port_entry.widget
+            )
+        elif condition == (False, True):
+            self._qt_label_layout.addWidget(
+                cur_port.port_label.widget
+            )
+            #
+            enter_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+            self._qt_entry_layout.addWidget(
+                enter_widget
+            )
+            enter_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(enter_widget)
+            enter_layout.setContentsMargins(0, 0, 0, 0)
+            enter_layout.setSpacing(2)
+            enter_layout.addWidget(
+                cur_port.port_entry.widget
+            )
+            cur_port._set_join_layout_(enter_layout)
+        elif condition == (True, True):
+            enter_layout = pre_port._get_join_layout_()
+            enter_layout.addWidget(
+                cur_port.port_entry.widget
+            )
+            cur_port._set_join_layout_(enter_layout)
+        elif condition == (True, False):
+            enter_layout = pre_port._get_join_layout_()
+            enter_layout.addWidget(
+                cur_port.port_entry.widget
+            )
+        #
+        self._port_stack.set_object_add(cur_port)
+        return port
+
+    def _get_pre_child_args_(self):
+        ports = self._port_stack.get_objects()
+        if ports:
+            pre_port = ports[-1]
+            return pre_port._get_is_join_next_(), pre_port
+        return False, None
+
+    def get_child(self, name):
+        return self._port_stack.get_object(name)
+
+
+class PrxNodePortStack(obj_abstract.AbsObjStack):
+    def __init__(self):
+        super(PrxNodePortStack, self).__init__()
+
+    def get_key(self, obj):
+        return obj.path
+
+
+class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    PORT_STACK_CLASS = PrxNodePortStack
+    LABEL_WIDTH = 160
+    PORT_CLASS_DICT = dict(
+        string=PrxStringPort,
+        interge=PrxIntegerPort,
+        float=PrxFloatPort,
+        button=PrxButtonPort,
+        enumerate=PrxEnumeratePort
+    )
+    def __init__(self, *args, **kwargs):
+        super(PrxNode_, self).__init__(*args, **kwargs)
+        qt_layout_0 = _utl_gui_qt_wgt_utility.QtHBoxLayout(self.widget)
+        qt_layout_0.setContentsMargins(*[0]*4)
+        self._prx_port_root = PrxGroupPort()
+        self._prx_port_root._set_group_port_init_('root')
+        self._prx_port_root.set_use_as_root()
+        qt_layout_0.addWidget(self._prx_port_root.widget)
+
+        self._port_stack = self.PORT_STACK_CLASS()
+
+    def get_port_root(self):
+        return self._prx_port_root
+
+    def set_port_add(self, port):
+        root_port = self.get_port_root()
+
+        port_path = port.get_path()
+        _ = port_path.split('.')
+        group_names = _[:-1]
+
+        current_group_port = root_port
+        for i_group_name in group_names:
+            i_group_port = current_group_port.get_child(i_group_name)
+            if i_group_port is None:
+                i_group_port = current_group_port.set_child_group_create(i_group_name)
+
+            current_group_port = i_group_port
+
+        group_port = current_group_port
+        #
+        return group_port.set_child_add(port)
+
+    def get_port(self, port_path):
+        return self._port_stack.get_object(port_path)
+
+    def get_as_kwargs(self):
+        dic = {}
+        ports = self._port_stack.get_objects()
+        for port in ports:
+            key = port.name
+            value = port.get()
+            dic[key] = value
+        return dic
+
+    def set_name_width(self, w):
+        self._name_width = w
+        self._prx_port_root._label_widget.setFixedWidth(self._name_width)
+
+    def set_ports_create_by_configure(self, options):
+        for k, v in options.items():
+            self.set_port_create_by_option(k.replace('/', '.'), v)
+
+    def set_port_create_by_option(self, port_path, option):
+        widget_ = option['widget']
+        value_ = option['value']
+        tool_tip_ = option['tool_tip']
+
+        if widget_ in ['string']:
+            port = PrxStringPort(port_path)
+        else:
+            raise TypeError()
+
+        port.set_value(value_)
+        port.set_tool_tip(tool_tip_)
+
+        self.set_port_add(port)
+
+

@@ -1696,9 +1696,10 @@ def set_qt_progress_create(maximum, label=None):
     for window in windows:
         if hasattr(window, 'gui_proxy'):
             window_gui_proxy = window.gui_proxy
-            if window_gui_proxy.PRX_TYPE == 'tool_window':
-                p = window_gui_proxy.set_progress_create(maximum, label=label)
-                lis.append(p)
+            if hasattr(window_gui_proxy, 'PRX_TYPE'):
+                if window_gui_proxy.PRX_TYPE == 'tool_window':
+                    p = window_gui_proxy.set_progress_create(maximum, label=label)
+                    lis.append(p)
     return lis
 
 

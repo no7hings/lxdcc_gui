@@ -48,20 +48,26 @@ class AbsTaskMethodObjGuiDef(object):
         return obj_gui
     @classmethod
     def _set_method_unit_obj_gui_add_(cls, method_obj, root_dcc_obj_gui):
-        group_dcc_obj = method_obj.get_parent()
-        group_dcc_obj_gui = cls._set_method_group_obj_gui_add_(group_dcc_obj, obj_gui_parent=root_dcc_obj_gui)
-        group_dcc_obj_gui.set_expanded(True)
-        group_dcc_obj_gui.set_checked(True)
-        #
-        method_obj_gui = cls._set_method_obj_gui_add_(method_obj, obj_gui_parent=group_dcc_obj_gui)
-        method_obj_gui.set_checked(True)
-        return method_obj_gui
+        key = method_obj.path
+        tree_view = root_dcc_obj_gui.get_view()
+        if key in tree_view._item_dict:
+            return tree_view._item_dict[key]
+        else:
+            group_dcc_obj = method_obj.get_parent()
+            group_dcc_obj_gui = cls._set_method_group_obj_gui_add_(group_dcc_obj, obj_gui_parent=root_dcc_obj_gui)
+            group_dcc_obj_gui.set_expanded(True)
+            group_dcc_obj_gui.set_checked(True)
+            #
+            method_obj_gui = cls._set_method_obj_gui_add_(method_obj, obj_gui_parent=group_dcc_obj_gui)
+            method_obj_gui.set_checked(True)
+            tree_view._item_dict[key] = method_obj_gui
+            return method_obj_gui
     @classmethod
     def _set_method_obj_gui_add_(cls, obj, obj_gui_parent=None, tree_viewer=None):
         kwargs = dict(
             name=(obj.label, obj.type.name),
             item_class=prx_widgets.PrxObjTreeItem,
-            tool_tip=obj.properties.get_str_as_yaml_style()
+            # tool_tip=obj.properties.get_str_as_yaml_style()
         )
         if obj_gui_parent is not None:
             obj_gui = obj_gui_parent.set_child_add(
@@ -459,18 +465,18 @@ class AbsSceneMethodRunnerPanel(
             self._root_obj_gui = self._set_method_group_obj_gui_add_(root_obj, tree_viewer=tree_viewer)
             self._root_obj_gui.set_checked(True)
             self._root_obj_gui.set_expanded(True)
-            p_0 = self.set_progress_create(len(self._method_obj_paths))
-            for method_path in method_obj_paths:
+            p_0 = self.set_progress_create(len(method_obj_paths))
+            for i_method_path in method_obj_paths:
                 p_0.set_update()
-                method_obj = self._methods_loader.get_obj(method_path)
-                if method_obj is not None:
-                    method_obj_gui = self._set_method_unit_obj_gui_add_(method_obj, self._root_obj_gui)
+                i_method = self._methods_loader.get_obj(i_method_path)
+                if i_method is not None:
+                    method_obj_gui = self._set_method_unit_obj_gui_add_(i_method, self._root_obj_gui)
                     method_obj_gui.set_checked(True)
                     method_obj_gui.set_expanded(True)
                 else:
                     utl_core.Log.set_module_warning_trace(
                         'method-gui-build',
-                        'method-obj="{}" is Non-exists'.format(method_path)
+                        'method-obj="{}" is Non-exists'.format(i_method_path)
                     )
             #
             p_0.set_stop()

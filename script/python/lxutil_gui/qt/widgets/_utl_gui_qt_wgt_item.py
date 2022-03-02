@@ -1710,8 +1710,8 @@ class _QtHExpandItem0(
         self._set_item_expand_action_def_init_()
         #
         self._item_is_expanded = False
-        self._item_expand_icon_file_path_0 = utl_core.Icon.get('arrow_up')
-        self._item_expand_icon_file_path_1 = utl_core.Icon.get('arrow_down')
+        self._item_expand_icon_file_path_0 = utl_gui_core.Icons.get('expandopen')
+        self._item_expand_icon_file_path_1 = utl_gui_core.Icons.get('expandclose')
         self._item_is_hovered = False
         #
         self._set_item_expand_update_()
@@ -1852,8 +1852,8 @@ class _QtHExpandItem1(
         #
         self._item_is_expand_enable = True
         self._item_is_expanded = False
-        self._item_expand_icon_file_path_0 = utl_core.Icon.get('arrow_up')
-        self._item_expand_icon_file_path_1 = utl_core.Icon.get('arrow_down')
+        self._item_expand_icon_file_path_0 = utl_gui_core.Icons.get('expandopen')
+        self._item_expand_icon_file_path_1 = utl_gui_core.Icons.get('expandclose')
         #
         self._set_item_expand_update_()
         # font

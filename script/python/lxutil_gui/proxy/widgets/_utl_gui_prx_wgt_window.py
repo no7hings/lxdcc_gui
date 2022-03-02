@@ -37,6 +37,7 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
             utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding
         )
         self._customize_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._customize_widget)
+        self._customize_layout.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignTop)
         # tip
         self._tip_group = _utl_gui_prx_wdt_utility.PrxExpandedGroup()
         self._tip_group.set_visible(False)
@@ -48,8 +49,9 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._option_group = _utl_gui_prx_wdt_utility.PrxExpandedGroup()
         self._option_group.set_visible(False)
         self._option_group.set_name('Option(s)')
+        self._option_group.set_size_mode(0)
         self._customize_layout.addWidget(self._option_group.widget)
-        self._option_node = _utl_gui_prx_wdt_node.PrxNode()
+        self._option_node = _utl_gui_prx_wdt_node.PrxNode_()
         self._option_group.set_widget_add(self._option_node)
         #
         self._button_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
@@ -174,7 +176,7 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
     def get_option_as_kwargs(self):
         return self._option_node.get_as_kwargs()
 
-    def get_option_node(self):
+    def get_options_node(self):
         return self._option_node
 
     def set_print_add_use_thread(self, text):

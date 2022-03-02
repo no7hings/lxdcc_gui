@@ -36,7 +36,7 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
         qt_layout_0.addWidget(qt_widget_1)
         qt_layout_1 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_1)
-        qt_layout_1.setContentsMargins(2, 2, 2, 2)
+        qt_layout_1.setContentsMargins(4, 0, 0, 0)
         qt_layout_1.setSpacing(2)
         #
         self._layout = qt_layout_1
@@ -55,6 +55,9 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
     def set_expanded(self, boolean):
         self._head._set_item_expanded_(boolean)
         self._set_item_expand_update_()
+
+    def set_head_visible(self, boolean):
+        self._head.setHidden(not boolean)
 
     def get_is_expanded(self):
         return self._head._get_item_is_expanded_()

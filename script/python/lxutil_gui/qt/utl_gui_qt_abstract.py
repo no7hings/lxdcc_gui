@@ -271,9 +271,6 @@ class _QtIconDef(object):
     def _set_hover_icon_file_path_(self, file_path):
         self._hover_icon_file_path = file_path
 
-    def _set_frame_icon_size_(self, w, h):
-        self._icon_frame_size = w, h
-
     def _set_icon_frame_size_(self, w, h):
         self._icon_frame_size = w, h
 
