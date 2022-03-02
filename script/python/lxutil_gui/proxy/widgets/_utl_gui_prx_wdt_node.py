@@ -1288,6 +1288,8 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             port = PrxIntegerPort(port_path)
         elif widget_ in ['boolean']:
             port = PrxBooleanPort(port_path)
+        elif widget_ in ['button']:
+            port = PrxButtonPort(port_path)
         else:
             raise TypeError()
 
