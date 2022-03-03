@@ -26,12 +26,23 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
         # )
         # p.port_entry.set_history_show_latest()
         # p.set_use_as_storage(True)
-        p = n.set_port_add(
+        n.set_port_add(
             utl_prx_widgets.PrxStringPort(
-                'main.test.test_0',
-                'Test-0',
+                'main.test.test_0'
             )
         )
+        n.set_port_add(
+            utl_prx_widgets.PrxStringPort(
+                'main.test.test_1'
+            )
+        )
+
+        n.set_port_add(
+            utl_prx_widgets.PrxStringPort(
+                'test.test_2'
+            )
+        )
+
         print n.get_port('main.test.test_0')
 
 

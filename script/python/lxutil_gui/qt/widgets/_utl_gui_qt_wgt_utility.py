@@ -97,6 +97,34 @@ class QtWidget(
                 )
 
 
+class _QtFrame(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract._QtFrameDef
+):
+    def __init__(self, *args, **kwargs):
+        super(_QtFrame, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self._set_frame_def_init_()
+
+        self._frame_border_color = 95, 95, 95, 255
+        self._frame_background_color = 0, 0, 0, 0
+
+    def _set_widget_update_(self):
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QtPainter(self)
+
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        rect = QtCore.QRect(x, y, w, h)
+        painter._set_frame_draw_by_rect_(
+            rect,
+            self._frame_border_color,
+            self._frame_background_color
+        )
+
+
 class _QtTranslucentWidget(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super(_QtTranslucentWidget, self).__init__(*args, **kwargs)

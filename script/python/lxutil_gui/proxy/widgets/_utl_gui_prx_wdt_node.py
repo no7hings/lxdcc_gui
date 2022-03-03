@@ -1089,7 +1089,6 @@ class PrxGroupPort(utl_gui_prx_abstract.AbsPrxWidget):
     def __init__(self, *args, **kwargs):
         super(PrxGroupPort, self).__init__(*args, **kwargs)
         self._path = None
-
         layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
         layout_0.setContentsMargins(*[0]*4)
         self._prx_expanded_group = _utl_gui_prx_wdt_utility.PrxExpandedGroup()
@@ -1127,6 +1126,14 @@ class PrxGroupPort(utl_gui_prx_abstract.AbsPrxWidget):
         #
         self._prx_expanded_group.set_name(self._label)
 
+    def get_name(self):
+        return self._name
+    name = property(get_name)
+
+    def get_path(self):
+        return self._path
+    path = property(get_path)
+
     def set_use_as_root(self):
         self._prx_expanded_group.set_head_visible(False)
 
@@ -1139,6 +1146,7 @@ class PrxGroupPort(utl_gui_prx_abstract.AbsPrxWidget):
         group_port._set_group_port_init_('{}.{}'.format(self._path, name))
         group_port.set_label(label)
         self._prx_expanded_group.set_widget_add(group_port.widget)
+        self._port_stack.set_object_add(group_port)
         return group_port
 
     def set_child_string_create(self, name):
@@ -1288,6 +1296,12 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         elif widget_ in ['integer']:
             port = PrxIntegerPort(port_path)
             port.set(value_)
+        elif widget_ in ['float']:
+            port = PrxFloatPort(port_path)
+            port.set(value_)
+        elif widget_ in ['file']:
+            port = PrxFileOpenPort(port_path)
+            port.set(value_)
         elif widget_ in ['boolean']:
             port = PrxBooleanPort(port_path)
             port.set(value_)
@@ -1296,6 +1310,9 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             port.set(value_)
         elif widget_ in ['enumerate']:
             port = PrxEnumeratePort(port_path)
+            port.set(value_)
+        elif widget_ in ['project']:
+            port = PrxRsvProjectChoosePort(port_path)
             port.set(value_)
         else:
             raise TypeError()

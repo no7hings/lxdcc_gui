@@ -5,7 +5,7 @@ from lxutil import utl_core
 
 from lxutil_prd import utl_prd_objects
 
-from lxutil_gui.panel import utl_gui_pnl_abstract, utl_gui_pnl_abs_utility
+from lxutil_gui.panel import utl_gui_pnl_abstract, utl_gui_pnl_abs_utility, utl_gui_pnl_abs_render_manager
 
 
 class SceneBuildToolPanel(utl_gui_pnl_abstract.AbsShotBuildToolPanel):
@@ -32,3 +32,8 @@ class SceneBuildToolPanel(utl_gui_pnl_abstract.AbsShotBuildToolPanel):
 class FncPanel(utl_gui_pnl_abs_utility.AbsFncPanel):
     def __init__(self, file_path=None, *args, **kwargs):
         super(FncPanel, self).__init__(file_path, *args, **kwargs)
+
+
+class AssetRenderManager(utl_gui_pnl_abs_render_manager.AbsRenderManager):
+    def __init__(self, file_path=None, *args, **kwargs):
+        super(AssetRenderManager, self).__init__(file_path, *args, **kwargs)

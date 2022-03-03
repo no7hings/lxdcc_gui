@@ -1827,3 +1827,10 @@ class AsbQtMenuSetup(object):
         if menu is not None:
             menu.clear()
             cls.set_menu_setup(menu, menu_raw)
+
+
+def set_window_show_standalone(window_class):
+    app = QtWidgets.QApplication(sys.argv)
+    w = window_class()
+    w.set_window_show()
+    sys.exit(app.exec_())
