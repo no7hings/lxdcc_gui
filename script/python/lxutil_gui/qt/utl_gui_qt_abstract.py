@@ -479,10 +479,15 @@ class _QtNameDef(object):
 
     def _set_widget_update_(self):
         raise NotImplementedError()
+    # noinspection PyUnresolvedReferences
+    def _get_name_draw_width_(self, text=None):
+        if text is None:
+            text = self._name_text
+        return self.fontMetrics().width(text)
 
-    def _set_name_text_(self, name_text):
+    def _set_name_text_(self, text):
         self._name_enable = True
-        self._name_text = name_text
+        self._name_text = text
         # noinspection PyUnresolvedReferences
         self._set_widget_update_()
 
@@ -701,8 +706,8 @@ class _QtNamesDef(object):
         #
         self._name_frame_rect = QtCore.QRect(0, 0, 0, 0)
 
-    def _set_name_text_at_(self, name_text, index=0):
-        self._name_texts[index] = name_text
+    def _set_name_text_at_(self, text, index=0):
+        self._name_texts[index] = text
 
     def _get_name_text_at_(self, index=0):
         if index in self._get_name_indices_():

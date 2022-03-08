@@ -8,8 +8,10 @@ option:
         color-basic: '63, 63, 63, 255'
         color-light: '71, 71, 71, 255'
         color-light-hover: '103, 103, 103, 255'
+        color-light-pressed: '103, 103, 255, 255'
         #
         color-selected: '55, 119, 247, 255'
+        color-pressed: '55, 119, 247, 255'
     #
     border:
         color-transparent: '0, 0, 0, 0'
@@ -18,7 +20,9 @@ option:
         color-basic: '71, 71, 71, 255'
         color-light: '79, 79, 79, 255'
         color-light-hover: '111, 111, 111, 255'
+        #
         color-selected: '63, 127, 255, 255'
+        color-pressed: '63, 127, 255, 255'
         #
         border-radius: 1
         border-style: solid
@@ -229,4 +233,19 @@ widget:
             color: rgba(<option.font.color-basic>);
             border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
             selection-color: rgba(<option.font.color-basic>) ; selection-background-color: rgba(0, 127, 127, 255)
+        }
+    QSplitter:
+        |-
+        QSplitter{
+            background: rgba(<option.background.color-transparent>); 
+            color: rgba(<option.font.color-basic>);
+            border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
+        }
+        QSplitter::handle{
+            background: rgba(<option.background.color-light>);
+            border: 1px rgba(<option.border.color-light>); border-radius: 0px; border-style: solid none none none
+        }
+        QSplitter::handle:pressed{
+            background: rgba(<option.background.color-pressed>);
+            border: 1px rgba(<option.border.color-pressed>); border-radius: 0px; border-style: solid none none none
         }

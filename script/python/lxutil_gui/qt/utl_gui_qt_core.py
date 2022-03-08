@@ -377,7 +377,7 @@ def set_window_prx_loading_modifier(method):
 
 class Util(object):
     LAYOUT_MARGINS = 2, 2, 2, 2
-    LAYOUT_SPACING = 4
+    LAYOUT_SPACING = 2
     STYLE_TEXT_RGBA = '223, 223, 223, 255'
 
 

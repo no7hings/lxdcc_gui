@@ -25,6 +25,7 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
         qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignTop)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
+        qt_layout_0.setSpacing(2)
         # header
         self._head = _utl_gui_qt_wgt_item._QtHExpandItem0()
         qt_layout_0.addWidget(self._head)
@@ -36,7 +37,7 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
         qt_layout_0.addWidget(qt_widget_1)
         qt_layout_1 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_1)
-        qt_layout_1.setContentsMargins(4, 0, 0, 0)
+        qt_layout_1.setContentsMargins(0, 0, 0, 0)
         qt_layout_1.setSpacing(2)
         #
         self._layout = qt_layout_1

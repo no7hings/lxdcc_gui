@@ -24,11 +24,11 @@ class _QtTextItem(
         super(_QtTextItem, self).__init__(*args, **kwargs)
         #
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setFont(Font.NAME)
         self.installEventFilter(self)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         #
         self._set_name_def_init_()
+        self.setFont(self._name_text_font)
         #
         self._set_item_def_init_()
         self._set_item_action_def_init_()
@@ -150,6 +150,8 @@ class _QtIconPressItem(
                 if self._item_is_hovered is True:
                     if self._hover_icon_file_path is not None:
                         icon_file_path = self._hover_icon_file_path
+                    else:
+                        pass
                 #
                 painter._set_svg_image_draw_by_rect_(
                     self._file_icon_rect,
@@ -604,6 +606,18 @@ class _QtCheckItem(
                 text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                 offset=offset
             )
+
+
+class _QtEnableItem(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract._QtIconDef,
+):
+    def __init__(self, *args, **kwargs):
+        super(_QtEnableItem, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+
+    def _set_widget_update_(self):
+        self.update()
 
 
 class _QtFilterBar(QtWidgets.QWidget):
@@ -1778,7 +1792,7 @@ class _QtHExpandItem0(
             painter._set_name_icon_draw_by_rect_(
                 self._name_icon_rect,
                 self._icon_name_text,
-                # background_color=bkg_color,
+                background_color=bkg_color,
                 offset=offset,
                 border_radius=2,
             )

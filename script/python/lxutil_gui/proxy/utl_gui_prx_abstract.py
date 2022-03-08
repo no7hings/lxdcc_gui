@@ -18,7 +18,7 @@ class _PrxStateDef(object):
     ERROR_STATE = utl_gui_configure.State.ERROR
 
 
-class AbsGuiProxy(object):
+class AbsPrx(object):
     QT_WIDGET_CLASS = None
     MODEL_CLASS = None
     DCC_OBJ_KEY = 'dcc_obj'
@@ -81,7 +81,7 @@ class AbsGuiProxy(object):
         )
 
 
-class AbsPrxWidget(AbsGuiProxy):
+class AbsPrxWidget(AbsPrx):
     def __init__(self, *args, **kwargs):
         super(AbsPrxWidget, self).__init__(*args, **kwargs)
         self._set_build_()
@@ -123,7 +123,7 @@ class AbsPrxViewDef(object):
         return [i.gui_proxy for i in self._get_selected_items_()]
 
 
-class AbsPrxWindow(AbsGuiProxy):
+class AbsPrxWindow(AbsPrx):
     def __init__(self, *args, **kwargs):
         super(AbsPrxWindow, self).__init__(*args, **kwargs)
         main_window = utl_gui_qt_core.QtDccMtd.get_qt_main_window()

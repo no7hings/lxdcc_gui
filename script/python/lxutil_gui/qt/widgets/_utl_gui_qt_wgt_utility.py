@@ -97,12 +97,12 @@ class QtWidget(
                 )
 
 
-class _QtFrame(
+class _QtLine(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtFrameDef
 ):
     def __init__(self, *args, **kwargs):
-        super(_QtFrame, self).__init__(*args, **kwargs)
+        super(_QtLine, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self._set_frame_def_init_()
 
@@ -118,7 +118,7 @@ class _QtFrame(
         x, y = 0, 0
         w, h = self.width(), self.height()
         rect = QtCore.QRect(x, y, w, h)
-        painter._set_frame_draw_by_rect_(
+        painter._set_line_draw_by_rect_(
             rect,
             self._frame_border_color,
             self._frame_background_color
@@ -487,6 +487,16 @@ class QtPainter(QtGui.QPainter):
             )
         else:
             self.drawRect(rect_)
+
+    def _set_line_draw_by_rect_(self, rect, border_color, background_color, border_width=1):
+        self._set_border_color_(border_color)
+        self._set_border_width_(border_width)
+        self._set_background_color_(background_color)
+        #
+        line = QtCore.QLine(
+            rect.topLeft(), rect.bottomLeft()
+        )
+        self.drawLine(line)
 
     def _set_status_draw_by_rect_(self, rect, color, offset=0, border_radius=0):
         self._set_border_color_(Color.TRANSPARENT)
@@ -2062,6 +2072,9 @@ class QtHSplitter(QtWidgets.QSplitter):
         super(QtHSplitter, self).__init__(*args, **kwargs)
         self.setHandleWidth(2)
         self.setContentsMargins(0, 0, 0, 0)
+        self.setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QSplitter')
+        )
 
 
 class QtFileDialog(QtWidgets.QFileDialog):
