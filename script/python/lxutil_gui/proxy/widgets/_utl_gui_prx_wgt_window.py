@@ -46,13 +46,9 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._tip_text_browser = _utl_gui_prx_wdt_utility.PrxTextBrowser()
         self._tip_group.set_widget_add(self._tip_text_browser)
         # option
-        self._option_group = _utl_gui_prx_wdt_utility.PrxExpandedGroup()
-        self._option_group.set_visible(False)
-        self._option_group.set_name('Option(s)')
-        self._option_group.set_size_mode(0)
-        self._customize_layout.addWidget(self._option_group.widget)
-        self._option_node = _utl_gui_prx_wdt_node.PrxNode_()
-        self._option_group.set_widget_add(self._option_node)
+        self._prx_options_node = _utl_gui_prx_wdt_node.PrxNode_('options')
+        self._prx_options_node.set_hide()
+        self._customize_layout.addWidget(self._prx_options_node.widget)
         #
         self._button_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
         self._button_tool_bar.set_expanded(True)
@@ -170,14 +166,14 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._tip_group.set_expanded(True)
 
     def set_option_group_enable(self):
-        self._option_group.set_visible(True)
-        self._option_group.set_expanded(True)
+        self._prx_options_node.set_visible(True)
+        self._prx_options_node.set_expanded(True)
 
     def get_option_as_kwargs(self):
-        return self._option_node.get_as_kwargs()
+        return self._prx_options_node.get_as_kwargs()
 
     def get_options_node(self):
-        return self._option_node
+        return self._prx_options_node
 
     def set_print_add_use_thread(self, text):
         self._tip_text_browser.set_print_add_use_thread(text)

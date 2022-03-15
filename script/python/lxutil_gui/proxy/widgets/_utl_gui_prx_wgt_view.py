@@ -1,4 +1,6 @@
 # coding:utf-8
+import collections
+
 from lxutil_gui.qt import utl_gui_qt_core
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_view, _utl_gui_qt_wgt_item
@@ -68,7 +70,11 @@ class AbsPrxViewDef(object):
 class PrxTreeView(
     utl_gui_prx_abstract.AbsPrxWidget,
     utl_gui_prx_abstract.AbsPrxViewDef,
+    #
+    utl_gui_prx_abstract.AbsPrxViewFilterTagDef,
     _utl_gui_prx_wgt_item.AbsPrxTreeDef,
+    #
+    utl_gui_prx_abstract.AbsPrxViewVisibleConnectionDef,
 ):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
     QT_VIEW_CLASS = _utl_gui_qt_wgt_view.QtTreeWidget
@@ -101,14 +107,18 @@ class PrxTreeView(
         )
         self._prx_filer_bar_0.set_filter_connect_to(self)
         self._gui_menu_raw = []
-        self._item_dict = {}
+        self._item_dict = collections.OrderedDict()
         self._loading_item_prxes = []
         self._match_occurrence_index = 0
         #
+        self._prx_filter_bar = self._prx_filer_bar_0
         self._keyword_filter_item_prxes = []
     @property
     def view(self):
         return self._qt_view
+    @property
+    def filter_bar(self):
+        return self._prx_filter_bar
 
     def set_loading_item_add(self, item_prx):
         if not item_prx in self._loading_item_prxes:
@@ -178,11 +188,11 @@ class PrxTreeView(
     def get_gui_menu_raw(self):
         return self._gui_menu_raw
 
-    def _get_all_items_(self):
-        return self.view._get_all_items_()
+    def _get_view_items_(self):
+        return self.view._get_view_items_()
 
     def get_all_items(self):
-        return [i.gui_proxy for i in self.view._get_all_items_()]
+        return [i.gui_proxy for i in self.view._get_view_items_()]
 
     def get_all_leaf_items(self):
         return [i.gui_proxy for i in self.view._get_all_leaf_items_()]
@@ -200,7 +210,12 @@ class PrxTreeView(
     def get_selected_items(self):
         return [i.gui_proxy for i in self._get_selected_items_()]
 
-    def set_item_select(self, item_prx, exclusive=False):
+    def get_current_item(self):
+        _ = self._qt_view.currentItem()
+        if _:
+            return _.gui_proxy
+
+    def set_item_selected(self, item_prx, exclusive=False):
         if exclusive is True:
             self.view.setCurrentItem(item_prx.widget)
         else:
@@ -221,7 +236,7 @@ class PrxTreeView(
         self.view.itemSelectionChanged.connect(fnc)
 
     def set_item_check_changed_connect_to(self, fnc):
-        self.view.itemChecked.connect(fnc)
+        self.view.item_checked.connect(fnc)
 
     def set_item_changed_connect_to(self, fnc):
         self.view.itemChanged.connect(fnc)
@@ -241,30 +256,17 @@ class PrxTreeView(
         self.view.collapseAll()
 
     def set_header_view_create(self, data, max_width):
-        tree_widget = self.view
-        #
-        texts, widths = zip(*data)
-        count = len(texts)
-        max_division = sum(widths)
-        w = int(max_width / max_division)
-        #
-        tree_widget.setColumnCount(count)
-        tree_widget.setHeaderLabels(texts)
-        for index in range(0, count):
-            tree_widget.setColumnWidth(index, w*(widths[index]))
-            tree_widget.headerItem().setBackground(index, utl_gui_qt_core.Brush.BACKGROUND_NORMAL)
-            tree_widget.headerItem().setForeground(index, utl_gui_qt_core.Brush.default_text)
-            tree_widget.headerItem().setFont(index, utl_gui_qt_core.Font.NAME)
+        self.view._set_view_header_(data, max_width)
 
-    def set_source_filter_tags(self, tag_filter_src_all_keys):
-        self.set_gui_attribute(
-            'tag_filter_src_all_keys', tag_filter_src_all_keys
+    def set_tag_filter_tgt_keys(self, keys):
+        utl_gui_prx_abstract.AbsPrxViewFilterTagDef.set_tag_filter_tgt_keys(
+            self, keys
         )
-        self._set_items_hidden_by_any_filter_()
+        # self._set_items_hidden_by_any_filter_()
     @classmethod
-    def _get_item_tag_filter_match_args_(cls, tgt_item_prx, tag_filter_src_all_keys):
-        tag_filter_tgt_keys = tgt_item_prx.get_tag_filter_tgt_keys()
-        tag_filter_tgt_mode = tgt_item_prx.get_tag_filter_tgt_mode()
+    def _get_item_tag_filter_tgt_match_args_(cls, prx_item_tgt, tag_filter_src_all_keys):
+        tag_filter_tgt_keys = prx_item_tgt.get_tag_filter_tgt_keys()
+        tag_filter_tgt_mode = prx_item_tgt.get_tag_filter_tgt_mode()
         if tag_filter_tgt_keys:
             if tag_filter_tgt_mode == 'A+B':
                 for tag_filter_tgt_key in tag_filter_tgt_keys:
@@ -280,7 +282,7 @@ class PrxTreeView(
     def _get_item_keyword_filter_match_args_(cls, item_prx, keyword):
         if keyword:
             keyword = keyword.lower()
-            keyword_filter_contexts = item_prx.get_keyword_filter_contexts() or []
+            keyword_filter_contexts = item_prx.get_keyword_filter_tgt_contexts() or []
             if keyword_filter_contexts:
                 context = u'+'.join(keyword_filter_contexts)
             else:
@@ -299,26 +301,24 @@ class PrxTreeView(
         return False, False
 
     def _set_items_hidden_by_any_filter_(self):
-        tag_filter_src_all_keys = self.get_gui_attribute(
-            'tag_filter_src_all_keys', default=[]
-        )
-        filter_keyword = self._filter_bar.get_keyword()
+        tag_filter_src_all_keys = self.view._get_view_tag_filter_tgt_keys_()
+        filter_keyword = self._prx_filter_bar.get_keyword()
         self._keyword_filter_item_prxes = []
         #
         item_prxes = self.get_all_items()
-        for tgt_item_prx in item_prxes:
+        for prx_item_tgt in item_prxes:
             i_tag_filter_hidden_ = False
             i_keyword_filter_hidden_ = False
             if tag_filter_src_all_keys:
-                i_tag_filter_is_enable, i_tag_filter_hidden = self._get_item_tag_filter_match_args_(
-                    tgt_item_prx, tag_filter_src_all_keys
+                i_tag_filter_is_enable, i_tag_filter_hidden = self._get_item_tag_filter_tgt_match_args_(
+                    prx_item_tgt, tag_filter_src_all_keys
                 )
                 if i_tag_filter_is_enable is True:
                     i_tag_filter_hidden_ = i_tag_filter_hidden
             #
             if filter_keyword:
                 i_keyword_filter_enable, i_keyword_filter_hidden = self._get_item_keyword_filter_match_args_(
-                    tgt_item_prx, filter_keyword
+                    prx_item_tgt, filter_keyword
                 )
                 if i_keyword_filter_enable is True:
                     i_keyword_filter_hidden_ = i_keyword_filter_hidden
@@ -328,28 +328,10 @@ class PrxTreeView(
             else:
                 is_hidden = False
             #
-            tgt_item_prx.set_hidden(is_hidden)
-            for i in tgt_item_prx.get_ancestors():
+            prx_item_tgt.set_hidden(is_hidden)
+            for i in prx_item_tgt.get_ancestors():
                 if is_hidden is False:
                     i.set_hidden(False)
-
-    def get_tag_filter_tgt_statistic_raw(self):
-        dic = {}
-        item_prxes = self.get_all_items()
-        for tgt_item_prx in item_prxes:
-            enable = tgt_item_prx.get_tag_filter_statistic_enable()
-            if enable is True:
-                tag_filter_tgt_keys = tgt_item_prx.get_tag_filter_tgt_keys()
-                for tag_filter_tgt_key in tag_filter_tgt_keys:
-                    dic.setdefault(tag_filter_tgt_key, []).append(tgt_item_prx)
-        return dic
-    @classmethod
-    def get_item_foregrounds(cls, item_prxes, column=0):
-        lis = []
-        for item_prx in item_prxes:
-            item = item_prx.widget
-            lis.append(item.foreground(column))
-        return lis
     @classmethod
     def _get_item_name_colors_(cls, item_prxes, column=0):
         lis = []
@@ -357,15 +339,9 @@ class PrxTreeView(
             item = item_prx.widget
             lis.append(item.textColor(column))
         return lis
-    @classmethod
-    def get_item_states(cls, item_prxes, column=0):
-        lis = []
-        for item_prx in item_prxes:
-            lis.append(item_prx.get_state(column))
-        return lis
 
     def _set_filter_bar_(self, filter_bar):
-        self._filter_bar = filter_bar
+        self._prx_filter_bar = filter_bar
 
     def _set_scroll_to_pre_occurrence_match_item_(self):
         item_prxes = self._keyword_filter_item_prxes
@@ -388,7 +364,7 @@ class PrxTreeView(
         else:
             self._match_occurrence_index = None
         #
-        self._filter_bar.set_result_index(self._match_occurrence_index)
+        self._prx_filter_bar.set_result_index(self._match_occurrence_index)
 
     def _set_scroll_to_pst_occurrence_match_item_(self):
         item_prxes = self._keyword_filter_item_prxes
@@ -411,7 +387,7 @@ class PrxTreeView(
         else:
             self._match_occurrence_index = None
         #
-        self._filter_bar.set_result_index(self._match_occurrence_index)
+        self._prx_filter_bar.set_result_index(self._match_occurrence_index)
 
     def get_item_by_filter_key(self, filter_key):
         return self._item_dict.get(filter_key)
@@ -420,7 +396,7 @@ class PrxTreeView(
         item_prx = self.get_item_by_filter_key(filter_key)
         #
         if item_prx is not None:
-            self.set_item_select(item_prx, exclusive=exclusive)
+            self.set_item_selected(item_prx, exclusive=exclusive)
             self.set_scroll_to_select_item()
             # item_prx.set_select()
         #
@@ -433,6 +409,10 @@ class PrxTreeView(
 class PrxListView(
     utl_gui_prx_abstract.AbsPrxWidget,
     utl_gui_prx_abstract.AbsPrxViewDef,
+    #
+    utl_gui_prx_abstract.AbsPrxViewFilterTagDef,
+    #
+    utl_gui_prx_abstract.AbsPrxViewVisibleConnectionDef,
 ):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
     QT_VIEW_CLASS = _utl_gui_qt_wgt_view.QtListWidget
@@ -454,6 +434,14 @@ class PrxListView(
         self._qt_view = self.QT_VIEW_CLASS()
         self._qt_layout_0.addWidget(self._qt_view)
         self._set_prx_view_def_init_(self._qt_view)
+        #
+        self._prx_filter_bar = self._prx_filer_bar_0
+    @property
+    def view(self):
+        return self._qt_view
+    @property
+    def filter_bar(self):
+        return self._prx_filter_bar
 
     def set_view_mode_swap(self):
         self.view._set_view_mode_swap_()
@@ -529,11 +517,11 @@ class PrxListView(
     def set_clear(self):
         self.view._set_clear_()
 
-    def _get_all_items_(self):
-        return self.view._get_all_items_()
+    def _get_view_items_(self):
+        return self.view._get_view_items_()
 
     def get_all_items(self):
-        return [i._get_item_widget_().gui_proxy for i in self.view._get_all_items_()]
+        return [i._get_item_widget_().gui_proxy for i in self.view._get_view_items_()]
 
     def set_loading_update(self):
         self.view._set_loading_update_()

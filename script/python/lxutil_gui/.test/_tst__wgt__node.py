@@ -2,6 +2,8 @@
 
 import lxutil_gui.proxy.widgets as utl_prx_widgets
 
+import lxresolver.commands as rsv_commands
+
 
 class TestWindow(utl_prx_widgets.PrxToolWindow):
     def __init__(self, *args, **kwargs):
@@ -9,41 +11,19 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
         self._test_()
 
     def _test_(self):
-        n = utl_prx_widgets.PrxNode_()
+        n = utl_prx_widgets.PrxNode_('root')
         self.set_widget_add(n)
-        # p = n.set_port_add(
-        #     utl_prx_widgets.PrxIntegerArrayPort(
-        #         'test_0',
-        #         'Test-0'
-        #     )
-        # )
-        # # p.set_value_type(float)
-        # p.set_value_size(4)
-        # p.set([1, 2, 3, 4])
-        #
-        # p = n.set_port_add(
-        #     utl_prx_widgets.PrxDirectoryOpenPort('test_1', 'Test-1')
-        # )
-        # p.port_entry.set_history_show_latest()
-        # p.set_use_as_storage(True)
-        n.set_port_add(
-            utl_prx_widgets.PrxStringPort(
-                'main.test.test_0'
+        p = n.set_port_add(
+            utl_prx_widgets.PrxRsvObjChoosePort(
+                'test'
             )
         )
-        n.set_port_add(
-            utl_prx_widgets.PrxStringPort(
-                'main.test.test_1'
-            )
+        r = rsv_commands.get_resolver()
+        rsv_tasks = r.get_rsv_tasks(
+            project='cgm', asset='nn_14y_test'
         )
 
-        n.set_port_add(
-            utl_prx_widgets.PrxStringPort(
-                'test.test_2'
-            )
-        )
-
-        print n.get_port('main.test.test_0')
+        p.set(rsv_tasks)
 
 
 if __name__ == '__main__':

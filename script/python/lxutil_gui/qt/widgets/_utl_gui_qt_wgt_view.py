@@ -231,24 +231,17 @@ class _QtVSplitter(_AbsQtSplitter):
 
 
 class QtTreeWidget(
-    QtWidgets.QTreeWidget,
-    utl_gui_qt_abstract._QtMenuDef
+    utl_gui_qt_abstract.AbsQtTreeWidget
 ):
-    COLOR_BACKGROUND = QtGui.QColor(54, 54, 54)
     PEN_BRANCH = QtGui.QPen(Brush.tree_branch, DpiScale(1))
     PEN_BRANCH_HIGHLIGHT = QtGui.QPen(Brush.tree_branch_highlight, DpiScale(1))
-    headerView = None
-    iconDelegate = None
-    textDelegate = None
     cachedAncestors = None
     _is_expand_descendants = False
-    mimeType = None
-    dropIndicatorRect = QtCore.QRect()
     #
-    itemChecked = qt_signal()
-    itemToggled = qt_signal(bool)
+    item_checked = qt_signal()
+    item_toggled = qt_signal(bool)
     #
-    filterChanged = qt_signal()
+    filter_changed = qt_signal()
     #
     ctrl_f_key_pressed = qt_signal()
     f_key_pressed = qt_signal()
@@ -281,7 +274,9 @@ class QtTreeWidget(
         self.header().setHighlightSections(True)
         self.header().setSortIndicatorShown(True)
         self.header().setCascadingSectionResizes(True)
+        # self.header().setResizeContentsPrecision(True)
         self.header().setPalette(QtDccMtd.get_qt_palette())
+        # self.header().setSectionResizeMode(self.header().ResizeToContents)
         self.header().setStyleSheet(
             utl_gui_core.QtStyleMtd.get('QHeaderView')
         )
@@ -305,11 +300,8 @@ class QtTreeWidget(
         # self.itemChanged.connect(self._set_item_changed_update_)
         #
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self.installEventFilter(self)
         #
         self._item_expand_method_dic = {}
-        #
-        self._set_menu_def_init_()
         #
         self.verticalScrollBar().setStyleSheet(
             utl_gui_core.QtStyleMtd.get('QScrollBar')
@@ -633,36 +625,15 @@ class QtTreeWidget(
     def _set_item_check_action_run_(self, item, column):
         if item._get_emit_send_enable_() is True:
             # noinspection PyUnresolvedReferences
-            self.itemChecked.emit()
+            self.item_checked.emit()
 
     def _set_item_toggle_emit_send_(self, item, column, boolean):
         if item._get_emit_send_enable_() is True:
             # noinspection PyUnresolvedReferences
-            self.itemToggled.emit(boolean)
+            self.item_toggled.emit(boolean)
 
     def _set_filter_emit_send_(self):
-        self.filterChanged.emit()
-
-    def _get_all_items_(self, column=0):
-        def _rcs_fnc(index_):
-            if index_ is None:
-                row_count = model.rowCount()
-            else:
-                row_count = model.rowCount(index_)
-                lis.append(self.itemFromIndex(index_))
-            #
-            for row in range(row_count):
-                if index_ is None:
-                    _index = model.index(row, column)
-                else:
-                    _index = index_.child(row, index_.column())
-                if _index.isValid():
-                    _rcs_fnc(_index)
-        lis = []
-        model = self.model()
-
-        _rcs_fnc(None)
-        return lis
+        self.filter_changed.emit()
 
     def _get_all_leaf_items_(self, column=0):
         def _rcs_fnc(index_):
@@ -718,7 +689,7 @@ class QtTreeWidget(
         pass
 
     def _set_clear_(self):
-        for i in self._get_all_items_():
+        for i in self._get_view_items_():
             i._set_item_show_stop_()
         #
         self.clear()
@@ -733,7 +704,9 @@ class QtStyledItemDelegate(QtWidgets.QStyledItemDelegate):
         editor.setGeometry(option.rect)
 
 
-class QtListWidget(utl_gui_qt_abstract._QtAbsListWidget):
+class QtListWidget(
+    utl_gui_qt_abstract.AbsQtListWidget
+):
     def __init__(self, *args, **kwargs):
         super(QtListWidget, self).__init__(*args, **kwargs)
         qt_palette = QtDccMtd.get_qt_palette()
@@ -793,9 +766,10 @@ class QtListWidget(utl_gui_qt_abstract._QtAbsListWidget):
                     self._action_control_flag = False
             elif event.type() == QtCore.QEvent.Wheel:
                 self._set_action_wheel_update_(event)
+            elif event.type() == QtCore.QEvent.Resize:
+                self._set_view_items_show_update_()
         if widget == self.verticalScrollBar():
-            if event.type() == QtCore.QEvent.Resize:
-                self._set_items_show_update_()
+            pass
         return False
 
     def _set_action_wheel_update_(self, event):
@@ -829,7 +803,7 @@ class QtListWidget(utl_gui_qt_abstract._QtAbsListWidget):
     def _set_grid_size_update_(self):
         w, h = self._get_grid_size_()
         self.setGridSize(QtCore.QSize(w, h))
-        [i.setSizeHint(QtCore.QSize(w, h)) for i in self._get_all_items_()]
+        [i.setSizeHint(QtCore.QSize(w, h)) for i in self._get_view_items_()]
         self.verticalScrollBar().setSingleStep(h)
 
     def _set_grid_size_change_update_(self):
@@ -904,7 +878,7 @@ class QtListWidget(utl_gui_qt_abstract._QtAbsListWidget):
     def _get_item_count_(self):
         return self.count()
 
-    def _get_all_items_(self):
+    def _get_view_items_(self):
         return [self.item(i) for i in range(self.count())]
 
     def _get_all_item_widgets_(self):
@@ -968,7 +942,7 @@ class QtListWidget(utl_gui_qt_abstract._QtAbsListWidget):
         )
 
     def _set_clear_(self):
-        for i in self._get_all_items_():
+        for i in self._get_view_items_():
             i._set_item_show_stop_()
         #
         self._pre_selected_item = None
@@ -1009,7 +983,7 @@ class _QtGuideRect(
 class _QtGuideBar(
     QtWidgets.QWidget,
     #
-    utl_gui_qt_abstract._QtMenuDef,
+    utl_gui_qt_abstract.AbsQtMenuDef,
     #
     utl_gui_qt_abstract._QtItemDef,
     utl_gui_qt_abstract._QtItemActionDef,

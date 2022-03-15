@@ -422,3 +422,118 @@ class AbsPrxMenuDef(object):
 
     def set_menu_content(self, content):
         self.widget._set_menu_content_(content)
+
+
+class AbsPrxItemFilterTgtDef(object):
+    @property
+    def item(self):
+        raise NotImplementedError()
+
+    def set_tag_filter_tgt_mode(self, *args, **kwargs):
+        self.item._set_item_tag_filter_tgt_mode_(*args, **kwargs)
+
+    def get_tag_filter_tgt_mode(self):
+        return self.item._get_item_tag_filter_tgt_mode_()
+
+    def set_tag_filter_tgt_key_add(self, *args, **kwargs):
+        self.item._set_item_tag_filter_tgt_key_add_(*args, **kwargs)
+
+    def get_tag_filter_tgt_keys(self):
+        return self.item._get_item_tag_filter_tgt_keys_()
+
+    def set_tag_filter_tgt_statistic_enable(self, *args, **kwargs):
+        self.item._set_item_tag_filter_tgt_statistic_enable_(*args, **kwargs)
+
+    def get_tag_filter_tgt_statistic_enable(self):
+        return self.item._get_item_tag_filter_tgt_statistic_enable_()
+
+    def get_states(self):
+        return self.item._get_item_state_()
+
+    def set_states(self, *args, **kwargs):
+        self.item._set_item_state_(*args, **kwargs)
+
+    def set_keyword_filter_tgt_contexts(self, contexts):
+        self.item._set_item_keyword_filter_tgt_contexts_(contexts)
+
+    def get_keyword_filter_tgt_contexts(self):
+        return self.item._get_item_keyword_filter_tgt_contexts_()
+
+
+class AbsPrxViewFilterTagDef(object):
+    @property
+    def view(self):
+        raise NotImplementedError()
+    @property
+    def filter_bar(self):
+        raise NotImplementedError()
+
+    def get_tag_filter_tgt_statistic_raw(self):
+        return self.view._get_view_tag_filter_tgt_statistic_raw_()
+
+    def set_tag_filter_tgt_keys(self, *args, **kwargs):
+        self.view._set_view_tag_filter_tgt_keys_(*args, **kwargs)
+        #
+        self.set_items_visible_by_any_filter()
+        #
+        self.view._set_view_items_show_update_()
+
+    def get_item_states(self, items):
+        return self.view._get_view_item_states_(items)
+
+    def get_item_state_colors(self, items):
+        return self.view._get_view_item_state_colors_(items)
+
+    def set_items_visible_by_any_filter(self):
+        keyword = self.filter_bar.get_keyword()
+        self.view._set_view_items_visible_by_any_filter_(
+            keyword
+        )
+
+
+class AbsPrxItemVisibleConnectionDef(object):
+    @property
+    def item(self):
+        raise NotImplementedError()
+
+    def set_visible_connect_to(self, key, prx_item_tgt):
+        self.item._set_item_visible_connect_to_(key, prx_item_tgt.item)
+
+    def set_visible_src_key(self, key):
+        self.item._set_item_visible_src_key_(key)
+
+    def get_visible_src_key(self):
+        return self.item._get_item_visible_src_key_()
+
+    def set_visible_tgt_key(self, key):
+        self.item._set_item_visible_tgt_key_(key)
+
+    def get_visible_tgt_key(self):
+        return self.item._get_item_visible_tgt_key_()
+
+    def set_visible_tgt_view(self, prx_view):
+        self.item._set_item_visible_tgt_view_(prx_view.view)
+
+    def get_visible_tgt_view(self):
+        return self.item._get_item_visible_tgt_view_()
+
+    def set_visible_connection_refresh(self):
+        self.item._set_item_visible_connection_refresh_()
+
+
+class AbsPrxViewVisibleConnectionDef(object):
+    @property
+    def view(self):
+        raise NotImplementedError()
+
+    def set_visible_tgt_raw(self, raw):
+        self.view._set_view_visible_tgt_raw_(raw)
+
+    def get_visible_tgt_raw(self):
+        return self.view._get_view_visible_tgt_raw_()
+
+    def set_visible_tgt_raw_clear(self):
+        self.view._set_view_visible_tgt_raw_clear_()
+
+    def set_visible_tgt_raw_update(self):
+        self.view._set_view_visible_tgt_raw_update_()

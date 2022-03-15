@@ -1,4 +1,6 @@
 # coding:utf-8
+import collections
+
 from lxbasic import bsc_core
 
 import lxbasic.objects as bsc_objects
@@ -91,15 +93,15 @@ class PrxDccObjTreeViewTagFilterOpt(object):
     def _to_filter_key_path_(self, key):
         return self._filter_content._to_key_path_(key)
 
-    def set_tgt_item_tag_update(self, key, tgt_item_prx, dcc_obj=None):
+    def set_tgt_item_tag_update(self, key, prx_item_tgt, dcc_obj=None):
         tag_filter_key = self._to_filter_key_path_(key)
         #
-        tgt_item_prx.set_tag_filter_tgt_mode('A+B')
-        tgt_item_prx.set_tag_filter_tgt_key_add(
+        prx_item_tgt.set_tag_filter_tgt_mode('A+B')
+        prx_item_tgt.set_tag_filter_tgt_key_add(
             tag_filter_key, ancestors=True
         )
-        tgt_item_prx.set_tag_filter_statistic_enable(True)
-        self._filter_content.set_element_add(key, tgt_item_prx)
+        prx_item_tgt.set_tag_filter_tgt_statistic_enable(True)
+        self._filter_content.set_element_add(key, prx_item_tgt)
         #
         if dcc_obj is not None:
             self._dcc_obj_dict[tag_filter_key] = dcc_obj
@@ -149,15 +151,15 @@ class PrxDccObjTreeViewTagFilterOpt(object):
         all_paths.sort()
         all_paths = bsc_core.TextsOpt(all_paths).set_sort_to()
         for path in all_paths:
-            src_item_prx = self.set_src_item_add(path)
+            i_prx_item_src = self.set_src_item_add(path)
             if path in leaf_paths:
                 tag_filter_key = path
-                src_item_prx.set_tag_filter_src_key_add(tag_filter_key)
+                i_prx_item_src.set_tag_filter_src_key_add(tag_filter_key)
             #
             if path in self._dcc_obj_dict:
                 dcc_obj = self._dcc_obj_dict[path]
                 if self._dcc_namespace is not None:
-                    src_item_prx.set_gui_dcc_obj(dcc_obj, namespace=self._dcc_namespace)
+                    i_prx_item_src.set_gui_dcc_obj(dcc_obj, namespace=self._dcc_namespace)
         #
         if isinstance(expand_depth, int):
             self._prx_tree_view_src.set_items_expand_by_depth(expand_depth)
@@ -170,58 +172,75 @@ class PrxDccObjTreeViewTagFilterOpt(object):
         all_paths.sort()
         all_paths = bsc_core.TextsOpt(all_paths).set_sort_to()
         for path in all_paths:
-            src_item_prx = self.set_src_item_add(path)
+            i_prx_item_src = self.set_src_item_add(path)
             if path in leaf_paths:
                 tag_filter_key = path
-                src_item_prx.set_tag_filter_src_key_add(tag_filter_key)
+                i_prx_item_src.set_tag_filter_src_key_add(tag_filter_key)
 
     def set_filter_statistic(self):
         target_filter_tag_item_prx_dict = self._prx_tree_view_tgt.get_tag_filter_tgt_statistic_raw()
-        for src_item_prx in self._prx_tree_view_src._item_dict.values():
-            tag_filter_src_keys = src_item_prx.get_tag_filter_src_keys()
+        for i_prx_item_src in self._prx_tree_view_src._item_dict.values():
+            tag_filter_src_keys = i_prx_item_src.get_tag_filter_src_keys()
             if tag_filter_src_keys:
                 for tag_filter_src_key in tag_filter_src_keys:
                     if tag_filter_src_key in target_filter_tag_item_prx_dict:
                         tgt_item_prxes = target_filter_tag_item_prx_dict[tag_filter_src_key]
                         if tgt_item_prxes:
                             states = self._prx_tree_view_tgt.get_item_states(tgt_item_prxes)
-                            if src_item_prx.get_check_enable() is True:
+                            if i_prx_item_src.get_check_enable() is True:
                                 if utl_gui_prx_core.State.ERROR in states:
-                                    src_item_prx.set_error_state()
+                                    i_prx_item_src.set_error_state()
                                 elif utl_gui_prx_core.State.WARNING in states:
-                                    src_item_prx.set_warning_state()
+                                    i_prx_item_src.set_warning_state()
                                 # else:
-                                #     src_item_prx.set_adopt_state()
+                                #     i_prx_item_src.set_adopt_state()
                                 #
-                                src_item_prx.set_name(str(len(tgt_item_prxes)), self.COUNT_COLUMN)
+                                i_prx_item_src.set_name(str(len(tgt_item_prxes)), self.COUNT_COLUMN)
                                 #
-                                brushes = self._prx_tree_view_tgt.get_item_foregrounds(tgt_item_prxes)
-                                src_item_prx.set_foregrounds_raw(brushes)
+                                brushes = self._prx_tree_view_tgt.get_item_state_colors(tgt_item_prxes)
+                                i_prx_item_src.set_foregrounds_raw(brushes)
                                 #
-                                src_item_prx.set_states_raw(states)
+                                i_prx_item_src.set_states_raw(states)
                             else:
-                                src_item_prx.set_name('N/a', self.COUNT_COLUMN)
+                                i_prx_item_src.set_name('N/a', self.COUNT_COLUMN)
                                 #
-                                src_item_prx.set_foregrounds_raw([])
+                                i_prx_item_src.set_foregrounds_raw([])
                                 #
-                                src_item_prx.set_states_raw([])
+                                i_prx_item_src.set_states_raw([])
                             #
-                            src_item_prx.set_hidden(boolean=False, ancestors=True)
+                            i_prx_item_src.set_hidden(boolean=False, ancestors=True)
                         else:
-                            src_item_prx.set_hidden(boolean=True, ancestors=True)
+                            i_prx_item_src.set_hidden(boolean=True, ancestors=True)
                     else:
-                        src_item_prx.set_hidden(boolean=True, ancestors=True)
+                        i_prx_item_src.set_hidden(boolean=True, ancestors=True)
 
     def set_filter(self):
         tag_filter_src_all_keys = []
-        for src_item_prx in self._prx_tree_view_src._item_dict.values():
-            tag_filter_src_keys = src_item_prx.get_tag_filter_src_keys()
+        for i_prx_item_src in self._prx_tree_view_src._item_dict.values():
+            tag_filter_src_keys = i_prx_item_src.get_tag_filter_src_keys()
             for tag_filter_src_key in tag_filter_src_keys:
-                if src_item_prx.get_is_checked() is True:
+                if i_prx_item_src.get_is_checked() is True:
                     if tag_filter_src_key not in tag_filter_src_all_keys:
                         tag_filter_src_all_keys.append(tag_filter_src_key)
         #
-        self._prx_tree_view_tgt.set_source_filter_tags(tag_filter_src_all_keys)
+        self._prx_tree_view_tgt.set_tag_filter_tgt_keys(tag_filter_src_all_keys)
+
+    def get_filter_dict(self):
+        dic = collections.OrderedDict()
+        for i_prx_item_src in self._prx_tree_view_src._item_dict.values():
+            i_key = i_prx_item_src.get_path()
+            i_value = i_prx_item_src.get_is_checked()
+            dic[i_key] = i_value
+        return dic
+
+    def set_filter_by_dict(self, dic):
+        item_dict = self._prx_tree_view_src._item_dict
+        for k, v in dic.items():
+            if k in item_dict:
+                prx_item = item_dict[k]
+                prx_item.set_checked(v)
+
+        self.set_filter()
 
 
 class PrxDccObjKeywordFilterOpt(object):
@@ -716,7 +735,7 @@ class PrxRsvObjTreeViewAddOpt(object):
                 )
             #
             item_prx.set_checked(True)
-            item_prx.set_keyword_filter_contexts([obj_path, obj_type])
+            item_prx.set_keyword_filter_tgt_contexts([obj_path, obj_type])
             obj.set_obj_gui(item_prx)
             item_prx.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
             self._obj_add_dict[obj_path] = item_prx

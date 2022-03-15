@@ -37,6 +37,7 @@ class _QtTextItem(
     def _set_widget_geometry_update_(self):
         x, y = 0, 0
         w, h = self.width(), self.height()
+        # print w, h
         self._name_rect.setRect(
             x, y, w, h
         )
@@ -44,7 +45,7 @@ class _QtTextItem(
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            self._set_item_event_filter_(event)
+            self._set_item_hover_event_filter_(event)
         return False
 
     def paintEvent(self, event):
@@ -67,7 +68,7 @@ class _QtIconPressItem(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtIconDef,
     utl_gui_qt_abstract._QtNameDef,
-    utl_gui_qt_abstract._QtMenuDef,
+    utl_gui_qt_abstract.AbsQtMenuDef,
     utl_gui_qt_abstract._QtItemDef,
     utl_gui_qt_abstract._QtItemActionDef,
     utl_gui_qt_abstract._QtItemPressActionDef,
@@ -96,7 +97,7 @@ class _QtIconPressItem(
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            self._set_item_event_filter_(event)
+            self._set_item_hover_event_filter_(event)
             #
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
@@ -144,7 +145,7 @@ class _QtIconPressItem(
             offset=offset
         )
         # icon
-        if self._icon_enable is True:
+        if self._icon_is_enable is True:
             if self._icon_file_path is not None:
                 icon_file_path = self._icon_file_path
                 if self._item_is_hovered is True:
@@ -184,7 +185,7 @@ class _QtIconPressItem(
         # check
         _w, _h = w, h
         _x, _y = x, y
-        if self._icon_enable is True:
+        if self._icon_is_enable is True:
             _x, _y = _x + (w - f_w) / 2, _y + (h - f_h) / 2
             self._icon_frame_rect.setRect(
                 _x, _y, f_w, f_h
@@ -209,7 +210,7 @@ class _QtPressItem(
     utl_gui_qt_abstract._QtStatusesDef,
     #
     utl_gui_qt_abstract._QtIconDef,
-    utl_gui_qt_abstract._QtMenuDef,
+    utl_gui_qt_abstract.AbsQtMenuDef,
     utl_gui_qt_abstract._QtNameDef,
     utl_gui_qt_abstract._QtProgressDef,
     #
@@ -256,7 +257,7 @@ class _QtPressItem(
         #
         self._set_item_check_update_()
         #
-        r, g, b = 143, 143, 143
+        r, g, b = 167, 167, 167
         h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
         color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
         hover_color = r, g, b
@@ -264,7 +265,7 @@ class _QtPressItem(
         self._frame_border_color = color
         self._hover_frame_border_color = hover_color
         #
-        r, g, b = 127, 127, 127
+        r, g, b = 151, 151, 151
         h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
         color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
         hover_color = r, g, b
@@ -307,7 +308,7 @@ class _QtPressItem(
             c_x += f_h
             c_w -= f_w
         #
-        if self._icon_enable is True:
+        if self._icon_is_enable is True:
             self._file_icon_rect.setRect(
                 _x + (f_w - i_f_w) / 2, _y + (f_h - i_f_h) / 2, i_f_w, i_f_h
             )
@@ -467,7 +468,7 @@ class _QtPressItem(
                 offset=offset
             )
         # icon
-        if self._icon_enable is True:
+        if self._icon_is_enable is True:
             if self._icon_file_path is not None:
                 painter._set_svg_image_draw_by_rect_(
                     self._file_icon_rect, self._icon_file_path, offset=offset
@@ -561,7 +562,7 @@ class _QtCheckItem(
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            self._set_item_event_filter_(event)
+            self._set_item_hover_event_filter_(event)
             #
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
@@ -608,16 +609,86 @@ class _QtCheckItem(
             )
 
 
-class _QtEnableItem(
+class _QtStatusItem(
     QtWidgets.QWidget,
+    utl_gui_qt_abstract._QtFrameDef,
     utl_gui_qt_abstract._QtIconDef,
+    #
+    utl_gui_qt_abstract._QtItemDef,
+    utl_gui_qt_abstract._QtItemActionDef,
+    utl_gui_qt_abstract._QtItemCheckActionDef,
 ):
     def __init__(self, *args, **kwargs):
-        super(_QtEnableItem, self).__init__(*args, **kwargs)
+        super(_QtStatusItem, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        #
+        self.setMaximumHeight(20)
+        self.setMinimumHeight(20)
+        #
+        self.installEventFilter(self)
+        #
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        #
+        self._set_frame_def_init_()
+        self._set_icon_def_init_()
+        #
+        self._set_item_def_init_()
+        self._set_item_action_def_init_()
+        self._set_item_check_action_def_init_()
+        #
+        self._set_item_check_update_()
 
     def _set_widget_update_(self):
         self.update()
+
+    def _set_widget_geometry_update_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        i_w, i_h = self._color_icon_size
+        self._set_color_icon_rect_(
+            x + (w - i_w) / 2, y + (h - i_h) / 2, i_w, i_h
+        )
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            self._set_item_hover_event_filter_(event)
+            #
+            if event.type() == QtCore.QEvent.MouseButtonPress:
+                if event.button() == QtCore.Qt.LeftButton:
+                    self._set_item_action_flag_(self.CHECK_CLICK_FLAG)
+            elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                if event.button() == QtCore.Qt.LeftButton:
+                    if self._get_item_action_flag_() == self.CHECK_CLICK_FLAG:
+                        self._set_item_check_action_run_()
+                        #
+                        self._set_item_action_flag_clear_()
+        return False
+
+    def paintEvent(self, event):
+        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        #
+        self._set_widget_geometry_update_()
+        #
+        offset = self._get_item_action_offset_()
+        is_hovered = self._get_item_is_hovered_()
+        #
+        if self._get_item_is_checked_():
+            painter._set_name_icon_draw_by_rect_(
+                rect=self._color_icon_rect,
+                text='l',
+                background_color=(255, 255, 63),
+                offset=offset,
+                is_hovered=is_hovered
+            )
+        else:
+            painter._set_name_icon_draw_by_rect_(
+                rect=self._color_icon_rect,
+                text='d',
+                background_color=(71, 71, 71),
+                offset=offset,
+                is_hovered=is_hovered
+            )
 
 
 class _QtFilterBar(QtWidgets.QWidget):
@@ -913,6 +984,8 @@ class _QtEntryItem(QtWidgets.QLineEdit):
                 self._set_value_(pre_value+1)
             else:
                 self._set_value_(pre_value-1)
+            #
+            self._set_enter_changed_emit_send_()
 
     def eventFilter(self, *args):
         widget, event = args
@@ -1050,7 +1123,7 @@ class _QtEntryItem(QtWidgets.QLineEdit):
         else:
             self.setText('')
 
-    def _get_default_value_(self):
+    def _get_value_default_(self):
         return self._default_value
 
     def _set_focus_connect_to_(self, widget):
@@ -1118,7 +1191,7 @@ class _QtEnumerateConstantEntry(QtWidgets.QComboBox):
         return False
 
 
-class _QtChooseDropView(utl_gui_qt_abstract._QtAbsListWidget):
+class _QtChooseDropView(utl_gui_qt_abstract.AbsQtListWidget):
     def __init__(self, *args, **kwargs):
         super(_QtChooseDropView, self).__init__(*args, **kwargs)
         self.setDragDropMode(QtWidgets.QListWidget.DragOnly)
@@ -1503,7 +1576,7 @@ class _QtChooseDropWidget1(
         rect = widget.rect()
         # p = QtCore.QPoint(rect.right(), rect.center().y())
         p = widget.mapToGlobal(rect.bottomLeft())
-        return p.x(), p.y()
+        return p.x(), p.y()+1
     @classmethod
     def _get_choose_size_(cls, widget):
         rect = widget.rect()
@@ -1620,6 +1693,7 @@ class _QtEnumerateValueEntryItem(
     CHOOSE_DROP_WIDGET_CLS = _QtChooseDropWidget1
     def __init__(self, *args, **kwargs):
         super(_QtEnumerateValueEntryItem, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
         #
         self._set_enumerate_value_entry_def_init_()
         self._set_item_choose_def_init_()
@@ -1639,6 +1713,27 @@ class _QtEnumerateValueEntryItem(
         self._drop_button._set_icon_frame_size_(16, 16)
         self._drop_button._set_file_icon_size_(12, 12)
         self._drop_button.press_clicked.connect(self._set_item_choose_drop_)
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.Wheel:
+                self._set_action_wheel_update_(event)
+        return False
+
+    def _set_action_wheel_update_(self, event):
+        delta = event.angleDelta().y()
+        values = self._get_values_()
+        pre_value = self._get_value_()
+        maximum = len(values) - 1
+        pre_index = values.index(pre_value)
+        if delta > 0:
+            cur_index = pre_index - 1
+        else:
+            cur_index = pre_index + 1
+
+        cur_index = max(min(cur_index, maximum), 0)
+        self._set_value_(values[cur_index])
 
     def _set_value_entry_build_(self, value_type):
         self._value_type = value_type
@@ -1709,6 +1804,7 @@ class _QtHExpandItem0(
     def __init__(self, *args, **kwargs):
         super(_QtHExpandItem0, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
+        #
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
@@ -1716,7 +1812,10 @@ class _QtHExpandItem0(
         #
         self._set_frame_def_init_()
         self._set_name_def_init_()
+        self._name_text_font = Font.GROUP
+        #
         self._set_icon_def_init_()
+        self._name_icon_is_enable = True
         #
         self._set_item_def_init_()
         self._set_item_action_def_init_()
@@ -1729,6 +1828,29 @@ class _QtHExpandItem0(
         self._item_is_hovered = False
         #
         self._set_item_expand_update_()
+        #
+        r, g, b = 207, 207, 207
+        h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
+        color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
+        hover_color = r, g, b
+        #
+        self._name_text_color = color
+        self._hover_name_text_color = hover_color
+        #
+        r, g, b = 135, 135, 135
+        h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
+        color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+        hover_color = r, g, b
+        #
+        self._frame_border_color = color
+        self._hover_frame_border_color = hover_color
+        #
+        r, g, b = 119, 119, 119
+        h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
+        color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+        hover_color = r, g, b
+        self._frame_background_color = color
+        self._hover_frame_background_color = hover_color
         # font
         self.setFont(Font.NAME)
 
@@ -1746,21 +1868,37 @@ class _QtHExpandItem0(
         f_w, f_h = self._icon_frame_size
         i_w, i_h = self._file_icon_size
         self._set_file_icon_rect_(
-            x+(f_w-i_w)/2, y+(f_h-i_h)/2, i_w, i_h
+            x + (f_w - i_w) / 2, y + (f_h - i_h) / 2, i_w, i_h
         )
         #
-        x += f_w+spacing
-        #
-        if self._icon_name_text is not None:
-            i_w, i_h = self._name_icon_size
-            self._set_name_icon_rect_(
-                x+(f_w-i_w) / 2, y+(f_h-i_h) / 2, i_w, i_h
-            )
-            x += f_w+spacing
+        x += f_w + spacing
+        if self._name_icon_is_enable is True:
+            if self._icon_name_text is not None:
+                i_w, i_h = self._name_icon_size
+                self._set_name_icon_rect_(
+                    x+(f_w-i_w) / 2, y+(f_h-i_h) / 2, i_w, i_h
+                )
+                x += f_w+spacing
         #
         self._set_name_rect_(
             x, y, w-20, h
         )
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            self._set_item_hover_event_filter_(event)
+            #
+            if event.type() == QtCore.QEvent.MouseButtonPress:
+                if event.button() == QtCore.Qt.LeftButton:
+                    self._set_item_action_flag_(self.EXPAND_CLICKED_FLAG)
+            elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                if event.button() == QtCore.Qt.LeftButton:
+                    if self._get_item_action_flag_() == self.EXPAND_CLICKED_FLAG:
+                        self._set_item_expand_action_run_()
+                        #
+                        self._set_item_action_flag_clear_()
+        return False
 
     def paintEvent(self, event):
         painter = _utl_gui_qt_wgt_utility.QtPainter(self)
@@ -1771,8 +1909,8 @@ class _QtHExpandItem0(
         #
         frame_color = Color.BAR_FRAME_NORMAL
         painter._set_border_color_(frame_color)
-        bkg_color = [Color.BAR_NORMAL, Color.BAR_HIGHLIGHT][self._item_is_hovered]
-        painter.setBrush(bkg_color)
+        bkg_color = [self._frame_background_color, self._hover_frame_background_color][self._item_is_hovered]
+        # painter.setBrush(bkg_color)
         #
         painter._set_frame_draw_by_rect_(
             self._frame_rect,
@@ -1788,40 +1926,26 @@ class _QtHExpandItem0(
             offset=offset
         )
         # name-icon
-        if self._icon_name_text is not None:
-            painter._set_name_icon_draw_by_rect_(
-                self._name_icon_rect,
-                self._icon_name_text,
-                background_color=bkg_color,
-                offset=offset,
-                border_radius=2,
-            )
+        if self._name_icon_is_enable is True:
+            if self._icon_name_text is not None:
+                painter._set_name_icon_draw_by_rect_(
+                    self._name_icon_rect,
+                    self._icon_name_text,
+                    # background_color=bkg_color,
+                    offset=offset,
+                    border_radius=2,
+                )
         # text
         if self._name_text is not None:
+            color = [self._name_text_color, self._hover_name_text_color][self._item_is_hovered]
             painter._set_text_draw_by_rect_(
                 self._name_rect,
                 self._name_text,
-                font=Font.GROUP,
-                color=Color.TEXT_NORMAL,
+                font=self._name_text_font,
+                color=color,
                 text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                 offset=offset
             )
-
-    def eventFilter(self, *args):
-        widget, event = args
-        if widget == self:
-            self._set_item_event_filter_(event)
-            #
-            if event.type() == QtCore.QEvent.MouseButtonPress:
-                if event.button() == QtCore.Qt.LeftButton:
-                    self._set_item_action_flag_(self.EXPAND_CLICKED_FLAG)
-            elif event.type() == QtCore.QEvent.MouseButtonRelease:
-                if event.button() == QtCore.Qt.LeftButton:
-                    if self._get_item_action_flag_() == self.EXPAND_CLICKED_FLAG:
-                        self._set_item_expand_action_run_()
-                        #
-                        self._set_item_action_flag_clear_()
-        return False
 
     def set_expanded(self, boolean):
         self._item_is_expanded = boolean
@@ -1868,6 +1992,20 @@ class _QtHExpandItem1(
         self._item_is_expanded = False
         self._item_expand_icon_file_path_0 = utl_gui_core.Icons.get('expandopen')
         self._item_expand_icon_file_path_1 = utl_gui_core.Icons.get('expandclose')
+        r, g, b = 135, 135, 135
+        h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
+        color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+        hover_color = r, g, b
+        #
+        self._frame_border_color = color
+        self._hover_frame_border_color = hover_color
+        #
+        r, g, b = 119, 119, 119
+        h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
+        color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+        hover_color = r, g, b
+        self._frame_background_color = color
+        self._hover_frame_background_color = hover_color
         #
         self._set_item_expand_update_()
         # font
@@ -1885,8 +2023,7 @@ class _QtHExpandItem1(
         #
         frame_color = Color.BAR_FRAME_NORMAL
         painter._set_border_color_(frame_color)
-        bkg_color = [Color.BAR_NORMAL, Color.BAR_HIGHLIGHT][self._item_is_hovered]
-        painter.setBrush(bkg_color)
+        bkg_color = [self._frame_background_color, self._hover_frame_background_color][self._item_is_hovered]
         painter._set_frame_draw_by_rect_(
             rect=self._frame_rect,
             border_color=bkg_color,
@@ -1904,7 +2041,7 @@ class _QtHExpandItem1(
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            self._set_item_event_filter_(event)
+            self._set_item_hover_event_filter_(event)
             #
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
@@ -1965,7 +2102,16 @@ class QtTreeWidgetItem(
     QtWidgets.QTreeWidgetItem,
     utl_gui_qt_abstract._QtIconDef,
     utl_gui_qt_abstract._QtItemShowDef,
-    utl_gui_qt_abstract._QtMenuDef,
+    utl_gui_qt_abstract.AbsQtMenuDef,
+    #
+    utl_gui_qt_abstract.AbsQtItemFilterTgtDef,
+    #
+    utl_gui_qt_abstract.AbsQtItemStateDef,
+    #
+    utl_gui_qt_abstract.AbsQtDagDef,
+    utl_gui_qt_abstract.AbsQtVisibleDef,
+    #
+    utl_gui_qt_abstract.AbsQtItemVisibleConnectionDef,
 ):
     visible = qt_signal(bool)
     expanded = qt_signal()
@@ -1980,6 +2126,18 @@ class QtTreeWidgetItem(
         #
         self._set_icon_def_init_()
         self._set_menu_def_init_()
+        #
+        self._set_item_filter_tgt_def_init_()
+        #
+        self._set_item_state_def_init_()
+        #
+        self._set_dag_def_init_()
+        self._set_visible_def_init_()
+        #
+        self._set_item_visible_connection_def_init_()
+
+    def _get_item_is_hidden_(self):
+        return self.isHidden()
 
     def _set_widget_update_(self):
         pass
@@ -2182,12 +2340,15 @@ class QtTreeWidgetItem(
     def _get_name_texts_(self):
         column_count = self.treeWidget().columnCount()
         return [self.text(i) for i in range(column_count)]
+
+    def _get_item_keyword_filter_tgt_keys_(self):
+        return self._get_name_texts_()
     # show
     def _set_view_(self, widget):
         self._tree_widget = widget
 
     def _set_item_show_connect_(self):
-        self._set_item_show_def_init_(self.treeWidget())
+        self._set_item_show_def_setup_(self.treeWidget())
 
     def _get_view_(self):
         return self.treeWidget()
@@ -2216,6 +2377,18 @@ class QtTreeWidgetItem(
     def _get_item_widget_(self):
         pass
 
+    def _get_item_state_color_(self):
+        return self.foreground(0)
+
+    def _set_hidden_(self, boolean, ancestors=False):
+        self.setHidden(boolean)
+        if ancestors is True:
+            [i.set_visible_by_has_visible_children() for i in self.get_ancestors()]
+        #
+        self._set_item_visible_connection_refresh_()
+        if hasattr(self, 'gui_proxy'):
+            self.gui_proxy.set_visible_connection_refresh()
+
     def __str__(self):
         return '{}(names="{}")'.format(
             self.__class__.__name__, ', '.join(self._get_name_texts_())
@@ -2228,6 +2401,15 @@ class QtTreeWidgetItem(
 class QtListWidgetItem(
     QtWidgets.QListWidgetItem,
     utl_gui_qt_abstract._QtItemShowDef,
+    #
+    utl_gui_qt_abstract.AbsQtItemFilterTgtDef,
+    #
+    utl_gui_qt_abstract.AbsQtItemStateDef,
+    #
+    utl_gui_qt_abstract.AbsQtDagDef,
+    utl_gui_qt_abstract.AbsQtVisibleDef,
+    #
+    utl_gui_qt_abstract.AbsQtItemVisibleConnectionDef,
 ):
     def __init__(self, *args, **kwargs):
         super(QtListWidgetItem, self).__init__(*args, **kwargs)
@@ -2235,6 +2417,17 @@ class QtListWidgetItem(
             QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled
         )
         self._visible_tgt_key = None
+        self._set_item_filter_tgt_def_init_()
+        #
+        self._set_item_state_def_init_()
+        #
+        self._set_dag_def_init_()
+        self._set_visible_def_init_()
+        #
+        self._set_item_visible_connection_def_init_()
+
+    def _get_item_is_hidden_(self):
+        return self.isHidden()
 
     def _set_widget_update_(self):
         item_widget = self._get_item_widget_()
@@ -2264,7 +2457,13 @@ class QtListWidgetItem(
         self._list_widget = widget
 
     def _set_item_show_connect_(self):
-        self._set_item_show_def_init_(self.listWidget())
+        self._set_item_show_def_setup_(self.listWidget())
+
+    def _get_item_keyword_filter_tgt_keys_(self):
+        item_widget = self._get_item_widget_()
+        if item_widget is not None:
+            item_widget._get_name_texts_()
+        return []
 
     def _get_view_(self):
         return self.listWidget()
@@ -2312,7 +2511,7 @@ class _QtHItem(
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            self._set_item_event_filter_(event)
+            self._set_item_hover_event_filter_(event)
             #
             if event.type() == QtCore.QEvent.Resize:
                 self.update()
@@ -2391,15 +2590,17 @@ class _QtListItemWidget(
     utl_gui_qt_abstract._QtIndexDef,
     utl_gui_qt_abstract._QtImageDef,
     #
-    utl_gui_qt_abstract._QtMenuDef,
+    utl_gui_qt_abstract.AbsQtMenuDef,
     #
     utl_gui_qt_abstract._QtIconsDef,
-    utl_gui_qt_abstract._QtNamesDef,
+    utl_gui_qt_abstract.AbsQtNamesDef,
     #
     utl_gui_qt_abstract._QtItemDef,
     utl_gui_qt_abstract._QtItemActionDef,
     utl_gui_qt_abstract._QtItemPressActionDef,
     utl_gui_qt_abstract._QtItemSelectActionDef,
+    #
+    utl_gui_qt_abstract.AbsQtItemStateDef,
 ):
     clicked = qt_signal()
     press_clicked = qt_signal()
@@ -2425,6 +2626,8 @@ class _QtListItemWidget(
         self._set_item_press_action_def_init_()
         self._set_item_select_action_def_init_()
         #
+        self._set_item_state_def_init_()
+        #
         self._file_type_icon = None
         #
         self._list_widget = None
@@ -2446,7 +2649,7 @@ class _QtListItemWidget(
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            self._set_item_event_filter_(event)
+            self._set_item_hover_event_filter_(event)
             #
             if event.type() == QtCore.QEvent.Resize:
                 self.update()
@@ -2814,7 +3017,9 @@ class _AbsQtSplitterHandle(
     utl_gui_qt_abstract._QtFrameDef,
     utl_gui_qt_abstract._QtItemDef,
     utl_gui_qt_abstract._QtItemActionDef,
-    utl_gui_qt_abstract._QtItemPressActionDef
+    utl_gui_qt_abstract._QtItemPressActionDef,
+    #
+    utl_gui_qt_abstract.AbsQtItemStateDef,
 ):
     QT_ORIENTATION = None
     def _set_widget_update_(self):
@@ -2902,8 +3107,13 @@ class _AbsQtSplitterHandle(
         self._set_item_action_def_init_()
         self._set_item_press_action_def_init_()
         #
+        self._set_item_state_def_init_()
+        #
         self._hover_frame_border_color = 95, 95, 95
         self._hover_frame_background_color = 95, 95, 95
+        #
+        self._press_frame_border_color = 63, 127, 255
+        self._press_frame_background_color = 63, 127, 255
 
     def eventFilter(self, *args):
         widget, event = args
@@ -2922,10 +3132,14 @@ class _AbsQtSplitterHandle(
             #
             elif event.type() == QtCore.QEvent.MouseButtonPress:
                 self._set_move_started_(event)
+                self._set_item_pressed_(True)
+                self._set_widget_update_()
             elif event.type() == QtCore.QEvent.MouseMove:
                 self._set_move_running_(event)
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 self._set_move_stopped_(event)
+                self._set_item_pressed_(False)
+                self._set_widget_update_()
         return False
 
     def paintEvent(self, event):
@@ -2936,8 +3150,21 @@ class _AbsQtSplitterHandle(
         offset = self._get_item_action_offset_()
         #
         if self._item_is_enable is True:
-            border_color = [Color.TRANSPARENT, self._hover_frame_border_color][self._item_is_hovered]
-            background_color = [Color.TRANSPARENT, self._hover_frame_background_color][self._item_is_hovered]
+            condition = self._item_is_hovered, self._item_is_pressed
+            if condition == (False, False):
+                border_color = Color.TRANSPARENT
+                background_color = Color.TRANSPARENT
+            elif condition == (False, True):
+                border_color = self._press_frame_border_color
+                background_color = self._press_frame_background_color
+            elif condition == (True, True):
+                border_color = self._press_frame_border_color
+                background_color = self._press_frame_background_color
+            elif condition == (True, False):
+                border_color = self._hover_frame_border_color
+                background_color = self._hover_frame_background_color
+            else:
+                raise SyntaxError()
         else:
             border_color = Color.BUTTON_BORDER_DISABLE
             background_color = Color.BUTTON_BACKGROUND_DISABLE

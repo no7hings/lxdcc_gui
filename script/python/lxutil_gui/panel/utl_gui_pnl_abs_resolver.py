@@ -26,9 +26,6 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
     RESOLVER_FILTER = None
     #
     ITEM_FRAME_SIZE = 128, 128
-    ITEM_FRAME_ICON_SIZE = 40, 128
-    ITEM_FRAME_IMAGE_SIZE = 128, 128
-    ITEM_FRAME_NAME_SIZE = 128, 40
     #
     WINDOW_NAME = 'Entities Loader'
     WINDOW_SIZE = 1280, 960
@@ -131,7 +128,7 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
         )
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxRsvProjectChoosePort('project', 'Project')
+            prx_widgets.PrxRsvProjectChoosePort('project')
         )
         if self._filter_project is not None:
             _port.set(self._filter_project)
@@ -139,7 +136,7 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
             _port.set(histories[-1])
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxButtonPort('refresh', 'Refresh')
+            prx_widgets.PrxButtonPort('refresh')
         )
         _port.set(self._set_refresh_all_)
 
@@ -435,13 +432,13 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
             review_rsv_unit = rsv_task.get_rsv_unit(
                 keyword='asset-render-mov-sub-file'
             )
-            vedio_file_path = review_rsv_unit.get_result(
+            movie_file_path = review_rsv_unit.get_result(
                 version=rsv_configure.Version.LATEST, extend_variants=dict(
                     look_pass='default'
                 )
             )
-            if vedio_file_path:
-                image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(vedio_file_path).get_thumbnail_create_args()
+            if movie_file_path:
+                image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
                 rsv_task_unit_gui.set_image(image_file_path)
                 if image_sub_process_cmds is not None:
                     image_sub_process = bsc_objects.SubProcess(image_sub_process_cmds)
@@ -454,11 +451,11 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
                 )
         else:
             review_rsv_unit = rsv_task.get_rsv_unit(keyword='{}-review-file'.format(branch))
-            vedio_file_path = review_rsv_unit.get_result(
+            movie_file_path = review_rsv_unit.get_result(
                 version=rsv_configure.Version.LATEST
             )
-            if vedio_file_path:
-                image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(vedio_file_path).get_thumbnail_create_args()
+            if movie_file_path:
+                image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
                 rsv_task_unit_gui.set_image(image_file_path)
                 if image_sub_process_cmds is not None:
                     image_sub_process = bsc_objects.SubProcess(image_sub_process_cmds)

@@ -301,6 +301,8 @@ class QtPainter(QtGui.QPainter):
                     self._set_svg_image_draw_by_rect_(rect, file_path, offset)
                 elif file_path.endswith('.exr'):
                     self._set_exr_image_draw_by_rect_(rect, file_path, offset)
+                elif file_path.endswith('.mov'):
+                    self._set_mov_image_draw_by_rect_(rect, file_path, offset)
                 else:
                     self._set_image_draw_by_rect_(rect, file_path, offset)
 
@@ -369,6 +371,11 @@ class QtPainter(QtGui.QPainter):
         self.device()
 
     def _set_exr_image_draw_by_rect_(self, rect, file_path, offset=0):
+        rect_ = QtCore.QRect(
+            rect.x()+offset, rect.y()+offset,
+            rect.width()-offset, rect.height()-offset
+        )
+        #
         thumbnail_file_path = bsc_core.ImageOpt(file_path).get_thumbnail()
         rect_size = rect.size()
         image = QtGui.QImage(thumbnail_file_path)
@@ -379,7 +386,29 @@ class QtPainter(QtGui.QPainter):
         )
         pixmap = QtGui.QPixmap(new_image)
         self.drawPixmap(
-            rect,
+            rect_,
+            pixmap
+        )
+        #
+        self.device()
+
+    def _set_mov_image_draw_by_rect_(self, rect, file_path, offset=0):
+        rect_ = QtCore.QRect(
+            rect.x() + offset, rect.y() + offset,
+            rect.width() - offset, rect.height() - offset
+        )
+        #
+        thumbnail_file_path = bsc_core.VedioOpt(file_path).get_thumbnail()
+        rect_size = rect.size()
+        image = QtGui.QImage(thumbnail_file_path)
+        new_image = image.scaled(
+            rect_size,
+            QtCore.Qt.IgnoreAspectRatio,
+            QtCore.Qt.SmoothTransformation
+        )
+        pixmap = QtGui.QPixmap(new_image)
+        self.drawPixmap(
+            rect_,
             pixmap
         )
         #
@@ -399,7 +428,7 @@ class QtPainter(QtGui.QPainter):
 
         self.drawRect(rect_)
 
-    def _set_name_icon_draw_by_rect_(self, rect, text, border_color=None, background_color=None, offset=0, border_radius=0, is_hovered=False, is_enable=True):
+    def _set_name_icon_draw_by_rect_(self, rect, text, border_color=None, background_color=None, text_color=None, offset=0, border_radius=0, is_hovered=False, is_enable=True):
         self.setRenderHint(self.Antialiasing)
         #
         x, y = rect.x()+offset, rect.y()+offset
@@ -430,7 +459,10 @@ class QtPainter(QtGui.QPainter):
         )
         #
         # t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(r, g, b)
-        self._set_border_color_(Color.TEXT_NORMAL)
+        text_color_ = Color.TEXT_NORMAL
+        if text_color is not None:
+            text_color_ = text_color
+        self._set_border_color_(text_color_)
         self._set_border_width_(1)
         #
         text_rect = QtCore.QRect(
@@ -1026,9 +1058,10 @@ class QtMenu(QtWidgets.QMenu):
         #
         self.setFont(Font.NAME)
         #
-        self.setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QMenu')
-        )
+        if bsc_core.SystemMtd.get_is_windows():
+            self.setStyleSheet(
+                utl_gui_core.QtStyleMtd.get('QMenu')
+            )
     @classmethod
     def _set_cmd_run_(cls, cmd_str):
         exec cmd_str

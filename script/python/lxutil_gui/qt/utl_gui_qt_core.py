@@ -395,7 +395,7 @@ class Font(object):
     LOADING = get_font(size=10, weight=75, italic=True)
     DESCRIPTION = get_font(size=10)
     #
-    GROUP = get_font(weight=75, italic=True)
+    GROUP = get_font(size=10, weight=75, italic=True)
     #
     default = get_font()
     title = get_font(size=12)
@@ -422,6 +422,7 @@ class Color(object):
     TEXT_NORMAL = QtGui.QColor(223, 223, 223, 255)
     TEXT_HOVERED = QtGui.QColor(255, 255, 255, 255)
     TEXT_DISABLE = QtGui.QColor(127, 127, 127, 255)
+    TEXT_DARK = QtGui.QColor(31, 31, 31, 255)
     NAME_TEXT = QtGui.QColor(223, 223, 223, 255)
     INDEX_TEXT = QtGui.QColor(127, 127, 127, 255)
     #
@@ -438,7 +439,7 @@ class Color(object):
     ERROR = QtGui.QColor(255, 0, 63, 255)
     #
     ICON_BORDER_NORMAL = QtGui.QColor(191, 191, 191, 255)
-    ICON_BORDER_HOVER = QtGui.QColor(223, 223, 223, 255)
+    ICON_BORDER_HOVER = QtGui.QColor(225, 255, 255, 255)
     #
     background = QtGui.QColor(63, 63, 63, 255)
     BACKGROUND_NORMAL = QtGui.QColor(63, 63, 63, 255)
@@ -523,6 +524,7 @@ class Color(object):
 
 class Brush(object):
     text = QtGui.QBrush(QtGui.QColor(191, 191, 191, 255))
+    TEXT_NORMAL = QtGui.QBrush(Color.TEXT_NORMAL)
     #
     background = QtGui.QBrush(Color.background)
     BACKGROUND_NORMAL = QtGui.QBrush(QtGui.QColor(63, 63, 63, 255))
@@ -1160,12 +1162,22 @@ class QtHBoxLayout(QtWidgets.QHBoxLayout):
         self.setContentsMargins(*Util.LAYOUT_MARGINS)
         self.setSpacing(Util.LAYOUT_SPACING)
 
+    def _set_align_top_(self):
+        self.setAlignment(
+            QtCore.Qt.AlignTop
+        )
+
 
 class QtVBoxLayout(QtWidgets.QVBoxLayout):
     def __init__(self, *args, **kwargs):
         super(QtVBoxLayout, self).__init__(*args, **kwargs)
         self.setContentsMargins(*Util.LAYOUT_MARGINS)
         self.setSpacing(Util.LAYOUT_SPACING)
+
+    def _set_align_top_(self):
+        self.setAlignment(
+            QtCore.Qt.AlignTop
+        )
 
 
 class QtGridLayout(QtWidgets.QGridLayout):
@@ -1829,8 +1841,8 @@ class AsbQtMenuSetup(object):
             cls.set_menu_setup(menu, menu_raw)
 
 
-def set_window_show_standalone(window_class):
+def set_window_show_standalone(window_class, **kwargs):
     app = QtWidgets.QApplication(sys.argv)
-    w = window_class()
+    w = window_class(**kwargs)
     w.set_window_show()
     sys.exit(app.exec_())

@@ -53,6 +53,12 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         self._head._set_name_text_(name)
         self._head._set_name_icon_text_(name)
 
+    def set_name_icon_enable(self, boolean):
+        self._head._set_name_icon_enable_(boolean)
+
+    def set_name_font_size(self, size):
+        self._head._set_name_text_font_size_(size)
+
     def set_expanded(self, boolean):
         self._head._set_item_expanded_(boolean)
         self._set_item_expand_update_()
@@ -90,6 +96,12 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
                 utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
                 utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum
             )
+
+    def set_height_match_to_minimum(self):
+        self._view.setSizePolicy(
+            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
+            utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum
+        )
 
     def set_clear(self):
         def rcs_fnc_(layout_):
@@ -480,12 +492,12 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_icon_name(self, icon_name):
         self.widget._icon_file_path = utl_core.Icon.get(icon_name)
-        self.widget._icon_enable = True
+        self.widget._icon_is_enable = True
         self.widget.update()
 
     def set_color_icon(self, color):
         self.widget._color_icon_rgb = color
-        self.widget._icon_enable = True
+        self.widget._icon_is_enable = True
         self.widget.update()
 
     def set_icon_by_name(self, text):

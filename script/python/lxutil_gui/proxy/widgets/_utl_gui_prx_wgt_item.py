@@ -161,7 +161,10 @@ class PrxTreeItem(
     utl_gui_prx_abstract.AbsPrxWidget,
     utl_gui_prx_abstract.AbsPrxMenuDef,
     AbsPrxTreeDef,
-    utl_gui_prx_abstract._PrxStateDef
+    utl_gui_prx_abstract._PrxStateDef,
+    #
+    utl_gui_prx_abstract.AbsPrxItemFilterTgtDef,
+    utl_gui_prx_abstract.AbsPrxItemVisibleConnectionDef
 ):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_item.QtTreeWidgetItem
     def __init__(self, *args, **kwargs):
@@ -172,6 +175,9 @@ class PrxTreeItem(
         self._menu_title = None
 
         self._loading_item_prx = None
+    @property
+    def item(self):
+        return self._qt_widget
 
     def set_name(self, text, column=0):
         if text is not None:
@@ -199,6 +205,14 @@ class PrxTreeItem(
         for column, text in enumerate(texts):
             self.set_name(text, column)
 
+    def get_path(self):
+        parent = self.get_parent()
+        if parent:
+            if parent.get_name() != '/':
+                return '{}/{}'.format(parent.get_path(), self.get_name())
+            return '/{}'.format(self.get_name())
+        return '/'
+
     def set_file_icon(self, icon, column=0):
         if isinstance(icon, (str, unicode)):
             self.widget._set_icon_file_path_(icon, column)
@@ -218,7 +232,7 @@ class PrxTreeItem(
             return _.gui_proxy
 
     def get_ancestors(self):
-        return [i.gui_proxy for i in self.widget._get_ancestors_()]
+        return [i.gui_proxy for i in self.item._get_ancestors_()]
 
     def set_child_add(self, *args, **kwargs):
         return self._set_item_add_(
@@ -357,22 +371,11 @@ class PrxTreeItem(
 
     def get_is_force_hidden(self):
         return self.get_gui_attribute('force_hidden') or False
-    # tag-filter
-    def get_tag_filter_tgt_keys(self):
-        return self.get_gui_attribute(
-            'tag_filter_tgt_keys',
-            default=[]
-        )
 
     def set_tag_filter_tgt_key_add(self, key, ancestors=False):
-        lis = self.get_gui_attribute(
-            'tag_filter_tgt_keys',
-            default=[]
+        utl_gui_prx_abstract.AbsPrxItemFilterTgtDef.set_tag_filter_tgt_key_add(
+            self, key
         )
-        if key not in lis:
-            lis.append(key)
-        #
-        self.set_gui_attribute('tag_filter_tgt_keys', lis)
         if ancestors is True:
             self._set_tag_filter_tgt_ancestors_update_()
 
@@ -385,19 +388,7 @@ class PrxTreeItem(
                 parent_item_prx.set_tag_filter_tgt_key_add(tag_filter_tgt_key)
             #
             parent_item_prx.set_tag_filter_tgt_mode(tag_filter_tgt_mode)
-            parent_item_prx.set_tag_filter_statistic_enable(False)
-
-    def set_tag_filter_tgt_mode(self, mode):
-        self.set_gui_attribute('tag_filter_tgt_mode', mode)
-
-    def get_tag_filter_tgt_mode(self):
-        return self.get_gui_attribute('tag_filter_tgt_mode', default='A+B')
-
-    def set_tag_filter_statistic_enable(self, boolean):
-        self.set_gui_attribute('tag_filter_tgt_statistic_enable', boolean)
-
-    def get_tag_filter_statistic_enable(self):
-        return self.get_gui_attribute('tag_filter_tgt_statistic_enable', default=False)
+            parent_item_prx.set_tag_filter_tgt_statistic_enable(False)
 
     def set_tag_filter_src_key_add(self, key):
         lis = self.get_gui_attribute(
@@ -426,16 +417,6 @@ class PrxTreeItem(
 
     def get_keyword_filter_enable(self):
         return self.get_gui_attribute('keyword_filter_enable', default=False)
-
-    def set_keyword_filter_contexts(self, contexts):
-        self.set_gui_attribute(
-            'keyword_filter_contexts', contexts
-        )
-
-    def get_keyword_filter_contexts(self):
-        return self.get_gui_attribute(
-            'keyword_filter_contexts'
-        )
 
     def _set_keyword_filter_hidden_(self, boolean):
         self.set_gui_attribute('keyword_filter_hidden', boolean)
@@ -528,31 +509,22 @@ class PrxTreeItem(
             column, utl_gui_qt_core.QtCore.Qt.UserRole,
             user_data
         )
-
-    def set_visible_connect_to(self, key, tgt_item_prx):
+    #
+    def set_visible_connect_to(self, key, prx_item_tgt):
         self.set_visible_src_key(key)
-        self.set_visible_tgt_view(tgt_item_prx.get_view())
+        self.set_visible_tgt_view(prx_item_tgt.get_view())
         # print self, self.get_visible_src_key(), "AAA"
-        tgt_item_prx.set_visible_tgt_key(key)
-        tgt_item_prx.set_hidden(self.get_is_hidden())
-
-    def set_visible_src_key(self, key):
-        self.set_gui_attribute(
-            'visible_src_key',
-            key
-        )
-
-    def get_visible_src_key(self):
-        return self.get_gui_attribute('visible_src_key')
+        prx_item_tgt.set_visible_tgt_key(key)
+        prx_item_tgt.set_hidden(self.get_is_hidden())
 
     def set_visible_tgt_view(self, view_prx):
         self.set_gui_attribute(
-            'visible_src_view',
+            'visible_tgt_view',
             view_prx
         )
 
     def get_visible_tgt_view(self):
-        return self.get_gui_attribute('visible_src_view')
+        return self.get_gui_attribute('visible_tgt_view')
 
     def set_visible_connection_refresh(self):
         src_item_prx = self
@@ -563,9 +535,9 @@ class PrxTreeItem(
                 tgt_raw = tgt_view_prx.get_visible_tgt_raw()
                 if src_key in tgt_raw:
                     tgt_item_prxes = tgt_raw[src_key]
-                    for tgt_item_prx in tgt_item_prxes:
-                        tgt_item_prx.set_hidden(self.get_is_hidden())
-                        tgt_item_prx.widget._get_list_widget_item_()._set_item_show_update_()
+                    for prx_item_tgt in tgt_item_prxes:
+                        prx_item_tgt.set_hidden(self.get_is_hidden())
+                        prx_item_tgt.widget._get_list_widget_item_()._set_item_show_update_()
 
     def set_loading_start(self):
         view = self.get_view()
@@ -703,12 +675,18 @@ class PrxStgObjTreeItem(PrxObjTreeItem):
 
 class PrxListItem(
     utl_gui_prx_abstract.AbsPrxWidget,
-    utl_gui_prx_abstract.AbsPrxMenuDef
+    utl_gui_prx_abstract.AbsPrxMenuDef,
+    #
+    utl_gui_prx_abstract.AbsPrxItemFilterTgtDef,
+    utl_gui_prx_abstract.AbsPrxItemVisibleConnectionDef
 ):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_item._QtListItemWidget
     def __init__(self, *args, **kwargs):
         super(PrxListItem, self).__init__(*args, **kwargs)
         self._visible_tgt_key = None
+    @property
+    def item(self):
+        return self._qt_widget._get_item_()
 
     def set_gui_menu_raw(self, raw):
         self.widget._set_menu_raw_(raw)

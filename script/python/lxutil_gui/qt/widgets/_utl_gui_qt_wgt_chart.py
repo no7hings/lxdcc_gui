@@ -954,7 +954,7 @@ class _QtSequenceChart(
     utl_gui_qt_abstract._QtChartDef,
     utl_gui_qt_abstract._QtStatusDef,
     #
-    utl_gui_qt_abstract._QtMenuDef,
+    utl_gui_qt_abstract.AbsQtMenuDef,
 ):
     QT_MENU_CLASS = _utl_gui_qt_wgt_utility.QtMenu
     def _set_chart_data_update_(self):

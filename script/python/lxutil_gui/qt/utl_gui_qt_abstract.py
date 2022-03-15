@@ -1,6 +1,8 @@
 # coding=utf-8
 import os
 
+import fnmatch
+
 from lxbasic import bsc_configure
 
 from lxutil_gui import utl_gui_configure
@@ -8,7 +10,7 @@ from lxutil_gui import utl_gui_configure
 from lxutil_gui.qt.utl_gui_qt_core import *
 
 
-class _QtFocusDef(object):
+class AbsQtFocusDef(object):
     def _set_widget_update_(self):
         raise NotImplementedError()
 
@@ -37,7 +39,7 @@ class _QtFocusDef(object):
         return self._focus_rect
 
 
-class _QtMenuDef(object):
+class AbsQtMenuDef(object):
     QT_MENU_CLASS = None
     def _set_menu_def_init_(self):
         self._menu_title_text = None
@@ -200,9 +202,11 @@ class _QtFrameDef(object):
     def _set_frame_def_init_(self):
         self._frame_border_color = Color.TRANSPARENT
         self._hover_frame_border_color = Color.TRANSPARENT
+        self._press_frame_border_color = Color.TRANSPARENT
         #
         self._frame_background_color = Color.TRANSPARENT
         self._hover_frame_background_color = Color.TRANSPARENT
+        self._press_frame_background_color = Color.TRANSPARENT
         #
         self._frame_rect = QtCore.QRect()
         self._frame_size = 20, 20
@@ -245,7 +249,8 @@ class _QtIconDef(object):
         raise NotImplementedError()
 
     def _set_icon_def_init_(self):
-        self._icon_enable = False
+        self._icon_is_enable = False
+        self._name_icon_is_enable = False
         #
         self._icon_file_path = None
         self._hover_icon_file_path = None
@@ -263,8 +268,14 @@ class _QtIconDef(object):
         self._color_icon_size = 12, 12
         self._name_icon_size = 14, 14
 
+    def _set_icon_enable_(self, boolean):
+        self._icon_is_enable = boolean
+
+    def _set_name_icon_enable_(self, boolean):
+        self._name_icon_is_enable = boolean
+
     def _set_icon_file_path_(self, file_path):
-        self._icon_enable = True
+        self._icon_is_enable = True
         self._icon_file_path = file_path
         self._set_widget_update_()
 
@@ -278,18 +289,23 @@ class _QtIconDef(object):
         self._file_icon_size = w, h
 
     def _get_icon_file_path_(self):
-        if self._icon_enable is True:
+        if self._icon_is_enable is True:
             return self._icon_file_path
 
     def _set_color_icon_rgb_(self, rgb):
-        self._icon_enable = True
+        self._icon_is_enable = True
         self._color_icon_rgb = rgb
         self._set_widget_update_()
 
     def _set_name_icon_text_(self, text):
-        self._icon_enable = True
+        self._icon_is_enable = True
         self._icon_name_text = text
         self._set_widget_update_()
+
+    def _set_color_icon_rect_(self, x, y, w, h):
+        self._color_icon_rect.setRect(
+            x, y, w, h
+        )
 
     def _set_name_icon_rect_(self, x, y, w, h):
         self._name_icon_rect.setRect(
@@ -297,7 +313,7 @@ class _QtIconDef(object):
         )
 
     def _get_name_icon_text_(self):
-        if self._icon_enable is True:
+        if self._icon_is_enable is True:
             return self._icon_name_text
 
     def _set_frame_icon_rect_(self, x, y, w, h):
@@ -465,7 +481,8 @@ class _QtNameDef(object):
     def _set_name_def_init_(self):
         self._name_enable = False
         self._name_text = None
-        self._name_text_color = Color.NAME_TEXT
+        self._name_text_color = Color.TEXT_NORMAL
+        self._hover_name_text_color = Color.TEXT_HOVERED
         self._name_text_font = Font.NAME
         self._name_text_option = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
         #
@@ -539,6 +556,11 @@ class _QtNameDef(object):
                 html += '</body>\n</html>'
                 # noinspection PyCallingNonCallable
                 self.setToolTip(html)
+    # noinspection PyUnresolvedReferences
+    def _set_name_text_font_size_(self, size):
+        font = self._name_text_font.__copy__()
+        font.setPointSize(size)
+        self._name_text_font = font
 
 
 class _QtPathDef(object):
@@ -658,6 +680,9 @@ class _QtImageDef(object):
                         # image.save(self._image_file_path, 'PNG')
                         s = image.size()
                         return s.width(), s.height()
+                elif ext in ['.mov']:
+                    pass
+                    # print bsc_core.VedioOpt(self._image_file_path).get_size()
         return self._image_size
 
     def _get_image_file_path_(self):
@@ -685,7 +710,7 @@ class _QtImageDef(object):
         return self._image_frame_rect
 
 
-class _QtNamesDef(object):
+class AbsQtNamesDef(object):
     def _set_widget_update_(self):
         raise NotImplementedError()
 
@@ -863,7 +888,7 @@ class _QtItemDef(object):
     def _get_item_is_hovered_(self):
         return self._item_is_hovered
 
-    def _set_item_event_filter_(self, event):
+    def _set_item_hover_event_filter_(self, event):
         if event.type() == QtCore.QEvent.Enter:
             self._set_item_hovered_(True)
         elif event.type() == QtCore.QEvent.Leave:
@@ -930,6 +955,12 @@ class _QtItemPressActionDef(object):
         if self._get_item_is_enable_() is True:
             return self._item_is_press_enable
         return False
+
+    def _set_item_pressed_(self, boolean):
+        self._item_is_pressed = boolean
+
+    def _get_item_is_pressed_(self):
+        return self._item_is_pressed
 
     def _set_item_click_emit_send_(self):
         self.clicked.emit()
@@ -1335,7 +1366,7 @@ class _QtItemShowDef(object):
     def _get_item_widget_(self):
         raise NotImplementedError()
 
-    def _set_item_show_def_init_(self, view):
+    def _set_item_show_def_setup_(self, view):
         self._item_show_timer = QtCore.QTimer(view)
         self._item_show_thread = QtShowThread(view)
         #
@@ -1492,7 +1523,7 @@ class _QtEntryActionDef(object):
         return self._entry_frame_rect
 
 
-class _QtViewSelectActionDef(object):
+class AbsQtViewSelectActionDef(object):
     def _set_view_select_action_def_init_(self):
         self._pre_selected_item = None
 
@@ -1517,60 +1548,429 @@ class _QtVScrollBar(QtWidgets.QScrollBar):
         pass
 
 
-class _QtViewScrollActionDef(object):
+class AbsQtViewScrollActionDef(object):
     def _set_view_scroll_action_def_init_(self):
         pass
 
-    def _get_h_scroll_bar_(self):
+    def _get_view_h_scroll_bar_(self):
         raise NotImplementedError()
 
-    def _get_v_scroll_bar_(self):
+    def _get_view_v_scroll_bar_(self):
         raise NotImplementedError()
 
-    def _get_v_scroll_value_(self):
-        return self._get_v_scroll_bar_().value()
+    def _get_view_v_scroll_value_(self):
+        return self._get_view_v_scroll_bar_().value()
 
     def _get_v_minimum_scroll_value_(self):
-        return self._get_v_scroll_bar_().minimum()
+        return self._get_view_v_scroll_bar_().minimum()
 
     def _get_v_maximum_scroll_value_(self):
-        return self._get_v_scroll_bar_().maximum()
+        return self._get_view_v_scroll_bar_().maximum()
 
-    def _set_items_show_update_(self):
+    def _set_view_items_show_update_(self):
         pass
 
     def _get_v_scroll_percent_(self):
-        v = self._get_v_scroll_value_()
+        v = self._get_view_v_scroll_value_()
         v_min, v_max = self._get_v_minimum_scroll_value_(), self._get_v_maximum_scroll_value_()
         if v_max > 0:
             return float(v)/float(v_max)
         return 0
 
 
-class _QtAbsListWidget(
+class AbsQtViewTagFilterSrcDef(object):
+    def _set_view_tag_filter_src_def_init_(self):
+        pass
+
+
+class AbsQtItemFilterTgtDef(object):
+    def _set_item_filter_tgt_def_init_(self):
+        self._item_tag_filter_tgt_mode = 'A+B'
+        self._item_tag_filter_tgt_keys = []
+        #
+        self._item_tag_filter_tgt_statistic_enable = False
+        #
+        self._item_keyword_filter_keys = []
+        self._item_keyword_filter_contexts = []
+
+    def _set_item_tag_filter_tgt_mode_(self, mode):
+        self._item_tag_filter_tgt_mode = mode
+
+    def _get_item_tag_filter_tgt_mode_(self):
+        return self._item_tag_filter_tgt_mode
+
+    def _set_item_tag_filter_tgt_key_add_(self, key, ancestors=False):
+        if key not in self._item_tag_filter_tgt_keys:
+            self._item_tag_filter_tgt_keys.append(key)
+        #
+        if ancestors is True:
+            self._set_item_tag_filter_tgt_ancestors_update_()
+
+    def _get_item_tag_filter_tgt_keys_(self):
+        return self._item_tag_filter_tgt_keys
+
+    def _set_item_tag_filter_tgt_ancestors_update_(self):
+        pass
+
+    def _set_item_tag_filter_tgt_statistic_enable_(self, boolean):
+        self._item_tag_filter_tgt_statistic_enable = boolean
+
+    def _get_item_tag_filter_tgt_statistic_enable_(self):
+        return self._item_tag_filter_tgt_statistic_enable
+
+    def _get_item_tag_filter_tgt_match_args_(self, tag_filter_src_all_keys):
+        tag_filter_tgt_keys = self._get_item_tag_filter_tgt_keys_()
+        tag_filter_tgt_mode = self._get_item_tag_filter_tgt_mode_()
+        if tag_filter_tgt_keys:
+            if tag_filter_tgt_mode == 'A+B':
+                for tag_filter_tgt_key in tag_filter_tgt_keys:
+                    if tag_filter_tgt_key not in tag_filter_src_all_keys:
+                        return True, True
+            elif tag_filter_tgt_mode == 'A/B':
+                for tag_filter_tgt_key in tag_filter_tgt_keys:
+                    if tag_filter_tgt_key in tag_filter_src_all_keys:
+                        return True, False
+            return True, False
+        return False, False
+
+    def _get_item_keyword_filter_tgt_keys_(self):
+        return self._item_keyword_filter_keys
+
+    def _set_item_keyword_filter_tgt_contexts_(self, contexts):
+        self._item_keyword_filter_contexts = contexts
+
+    def _get_item_keyword_filter_tgt_contexts_(self):
+        return self._item_keyword_filter_contexts
+
+    def _get_item_keyword_filter_match_args_(self, keyword):
+        if keyword:
+            keyword = keyword.lower()
+            keyword_filter_contexts = self._get_item_keyword_filter_tgt_contexts_() or []
+            if keyword_filter_contexts:
+                context = u'+'.join(keyword_filter_contexts)
+            else:
+                context = u'+'.join([i for i in self._get_item_keyword_filter_tgt_keys_() if i])
+            #
+            context = context.lower()
+            if '*' in keyword:
+                filter_key = u'*{}*'.format(keyword.lstrip('*').rstrip('*'))
+                if fnmatch.filter([context], filter_key):
+                    return True, False
+            else:
+                filter_key = u'*{}*'.format(keyword)
+                if fnmatch.filter([context], filter_key):
+                    return True, False
+            return True, True
+        return False, False
+
+
+class AbsQtViewFilterTgtDef(object):
+    def _get_view_items_(self):
+        raise NotImplementedError()
+
+    def _set_view_filter_tgt_def_init_(self):
+        self._view_tag_filter_tgt_keys = []
+
+    def _get_view_tag_filter_tgt_statistic_raw_(self):
+        dic = {}
+        items = self._get_view_items_()
+        for i_item in items:
+            enable = i_item._get_item_tag_filter_tgt_statistic_enable_()
+            if enable is True:
+                i_keys = i_item._get_item_tag_filter_tgt_keys_()
+                for j_key in i_keys:
+                    dic.setdefault(j_key, []).append(i_item)
+        return dic
+
+    def _set_view_tag_filter_tgt_keys_(self, keys):
+        self._view_tag_filter_tgt_keys = keys
+
+    def _get_view_tag_filter_tgt_keys_(self):
+        return self._view_tag_filter_tgt_keys
+
+    def _set_view_items_visible_by_any_filter_(self, keyword):
+        tag_filter_src_all_keys = self._get_view_tag_filter_tgt_keys_()
+        self._keyword_filter_item_prxes = []
+        #
+        items = self._get_view_items_()
+        for i_item in items:
+            i_tag_filter_hidden_ = False
+            i_keyword_filter_hidden_ = False
+            if tag_filter_src_all_keys:
+                i_tag_filter_is_enable, i_tag_filter_hidden = i_item._get_item_tag_filter_tgt_match_args_(tag_filter_src_all_keys)
+                if i_tag_filter_is_enable is True:
+                    i_tag_filter_hidden_ = i_tag_filter_hidden
+            #
+            if keyword:
+                i_keyword_filter_enable, i_keyword_filter_hidden = i_item._get_item_keyword_filter_match_args_(keyword)
+                if i_keyword_filter_enable is True:
+                    i_keyword_filter_hidden_ = i_keyword_filter_hidden
+            #
+            if True in [i_tag_filter_hidden_, i_keyword_filter_hidden_]:
+                is_hidden = True
+            else:
+                is_hidden = False
+            #
+            i_item._set_hidden_(is_hidden)
+            for i in i_item._get_ancestors_():
+                if is_hidden is False:
+                    i._set_hidden_(False)
+
+
+class AbsQtItemStateDef(object):
+    def _set_item_state_def_init_(self):
+        self._item_state = utl_gui_core.State.NORMAL
+        self._item_state_color = Brush.TEXT_NORMAL
+
+    def _set_item_state_(self, status, *args, **kwargs):
+        self._item_state = status
+
+    def _get_item_state_(self, *args, **kwargs):
+        return self._item_state
+
+    def _get_item_state_color_(self):
+        return self._item_state_color
+
+    def _set_item_state_color_(self, color):
+        self._item_state_color = color
+
+
+class AbsQtDagDef(object):
+    def _set_dag_def_init_(self):
+        pass
+
+    def _get_descendants_(self):
+        return []
+
+    def _get_ancestors_(self):
+        return []
+
+
+class AbsQtVisibleDef(object):
+    def _set_visible_def_init_(self):
+        self._visible_src_key = None
+    # noinspection PyUnresolvedReferences
+    def _set_visible_(self, boolean):
+        self.setHidden(not boolean)
+    # noinspection PyUnresolvedReferences
+    def _set_hidden_(self, boolean, **kwargs):
+        self.setHidden(boolean)
+    # noinspection PyUnresolvedReferences
+    def _get_is_hidden_(self):
+        return self.isHidden()
+
+
+class AbsQtItemVisibleConnectionDef(object):
+    def _get_item_is_hidden_(self):
+        raise NotImplementedError()
+
+    def _set_item_visible_connection_def_init_(self):
+        self._item_visible_src_key = None
+        self._item_visible_tgt_key = None
+        #
+        self._item_visible_tgt_view = None
+        self._item_visible_tgt_raw = None
+
+    def _set_item_visible_connect_to_(self, key, item_tgt):
+        self._set_item_visible_src_key_(key)
+        self._set_item_visible_tgt_view_(item_tgt._get_view_())
+        #
+        item_tgt._set_visible_tgt_key_(key)
+        item_tgt._set_hidden_(self._get_item_is_hidden_())
+
+    def _get_item_visible_src_key_(self):
+        return self._item_visible_src_key
+
+    def _set_item_visible_src_key_(self, key):
+        self._item_visible_src_key = key
+
+    def _get_item_visible_tgt_key_(self):
+        return self._item_visible_tgt_key
+
+    def _set_item_visible_tgt_key_(self, key):
+        self._item_visible_tgt_key = key
+
+    def _get_item_visible_tgt_view_(self):
+        return self._item_visible_tgt_view
+
+    def _set_item_visible_tgt_view_(self, view):
+        self._item_visible_tgt_view = view
+
+    def _get_item_visible_tgt_raw_(self):
+        return self._item_visible_tgt_raw
+
+    def _set_item_visible_tgt_raw_(self, raw):
+        self._item_visible_tgt_raw = raw
+
+    def _set_item_visible_connection_refresh_(self):
+        src_item = self
+        src_key = src_item._get_item_visible_src_key_()
+        if src_key is not None:
+            tgt_view = src_item._get_item_visible_tgt_view_()
+            if tgt_view is not None:
+                tgt_raw = tgt_view._get_view_visible_tgt_raw_()
+                if src_key in tgt_raw:
+                    items_tgt = tgt_raw[src_key]
+                    for i_item_tgt in items_tgt:
+                        i_item_tgt.set_hidden(self._get_item_is_hidden_())
+                        i_item_tgt._set_item_show_update_()
+
+
+class AbsQtViewVisibleConnectionDef(object):
+    def _get_view_items_(self):
+        raise NotImplementedError()
+
+    def _set_view_visible_connection_def_init_(self):
+        self._view_visible_tgt_raw = []
+
+    def _set_view_visible_tgt_raw_(self, raw):
+        self._view_visible_tgt_raw = raw
+
+    def _get_view_visible_tgt_raw_(self):
+        return self._view_visible_tgt_raw
+
+    def _set_view_visible_tgt_raw_clear_(self):
+        self._set_view_visible_tgt_raw_({})
+
+    def _set_view_visible_tgt_raw_update_(self):
+        dic = {}
+        items = self._get_view_items_()
+        for i_item in items:
+            i_tgt_key = i_item._get_item_visible_tgt_key_()
+            if i_tgt_key is not None:
+                dic.setdefault(
+                    i_tgt_key, []
+                ).append(i_item)
+        #
+        self._set_view_visible_tgt_raw_(dic)
+
+
+class AbsQtViewStateDef(object):
+    def _get_view_items_(self):
+        raise NotImplementedError()
+
+    def _set_view_state_def_init_(self):
+        pass
+
+    def _get_view_item_states_(self, items=None):
+        if isinstance(items, (tuple, list)):
+            lis = []
+            for i_item in items:
+                lis.append(i_item._get_item_state_())
+            return lis
+        return []
+
+    def _get_view_item_state_colors_(self, items=None):
+        if isinstance(items, (tuple, list)):
+            lis = []
+            for i_item in items:
+                lis.append(i_item._get_item_state_color_())
+            return lis
+        return []
+
+
+class AbsQtTreeWidget(
+    QtWidgets.QTreeWidget,
+    AbsQtMenuDef,
+    #
+    AbsQtViewFilterTgtDef,
+    #
+    AbsQtViewStateDef,
+    AbsQtViewVisibleConnectionDef,
+    #
+    AbsQtViewScrollActionDef
+):
+    def __init__(self, *args, **kwargs):
+        super(AbsQtTreeWidget, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        #
+        self._set_menu_def_init_()
+        #
+        self._set_view_filter_tgt_def_init_()
+        #
+        self._set_view_state_def_init_()
+        self._set_view_visible_connection_def_init_()
+
+        self._set_view_scroll_action_def_init_()
+        self._get_view_v_scroll_bar_().valueChanged.connect(self._set_view_items_show_update_)
+
+    def _get_view_items_(self, column=0):
+        def _rcs_fnc(index_):
+            if index_ is None:
+                row_count = model.rowCount()
+            else:
+                row_count = model.rowCount(index_)
+                lis.append(self.itemFromIndex(index_))
+            #
+            for row in range(row_count):
+                if index_ is None:
+                    _index = model.index(row, column)
+                else:
+                    _index = index_.child(row, index_.column())
+                if _index.isValid():
+                    _rcs_fnc(_index)
+        lis = []
+        model = self.model()
+
+        _rcs_fnc(None)
+        return lis
+
+    def _set_view_header_(self, raw, max_width):
+        texts, widths = zip(*raw)
+        count = len(texts)
+        max_division = sum(widths)
+        w = int(max_width / max_division)
+        #
+        self.setColumnCount(count)
+        self.setHeaderLabels(texts)
+        set_column_enable = len(raw) > 1
+        for index in range(0, count):
+            if set_column_enable is True:
+                self.setColumnWidth(index, w*(widths[index]))
+            self.headerItem().setBackground(index, Brush.BACKGROUND_NORMAL)
+            self.headerItem().setForeground(index, Brush.default_text)
+            self.headerItem().setFont(index, Font.NAME)
+
+    def _get_view_h_scroll_bar_(self):
+        return self.horizontalScrollBar()
+
+    def _get_view_v_scroll_bar_(self):
+        return self.verticalScrollBar()
+
+
+class AbsQtListWidget(
     QtWidgets.QListWidget,
-    _QtViewSelectActionDef,
-    _QtViewScrollActionDef,
+    AbsQtViewSelectActionDef,
+    AbsQtViewScrollActionDef,
+    #
+    AbsQtViewFilterTgtDef,
+    AbsQtViewStateDef,
+    AbsQtViewVisibleConnectionDef
 ):
     item_show_changed = qt_signal()
     def __init__(self, *args, **kwargs):
-        super(_QtAbsListWidget, self).__init__(*args, **kwargs)
+        super(AbsQtListWidget, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
         #
         self._set_view_select_action_def_init_()
         self._set_view_scroll_action_def_init_()
         #
+        self._set_view_filter_tgt_def_init_()
+        #
+        self._set_view_state_def_init_()
+        self._set_view_visible_connection_def_init_()
+        #
         self.itemSelectionChanged.connect(self._set_item_select_update_)
         self.itemSelectionChanged.connect(self._set_item_widget_selected_update_)
         # noinspection PyUnresolvedReferences
-        self._get_v_scroll_bar_().valueChanged.connect(self._set_items_show_update_)
+        self._get_view_v_scroll_bar_().valueChanged.connect(self._set_view_items_show_update_)
         self._viewport_rect = QtCore.QRect()
         self._item_rects = []
 
-    def _get_h_scroll_bar_(self):
+    def _get_view_h_scroll_bar_(self):
         return self.horizontalScrollBar()
 
-    def _get_v_scroll_bar_(self):
+    def _get_view_v_scroll_bar_(self):
         return self.verticalScrollBar()
 
     def _set_item_selected_(self, item, boolean):
@@ -1620,11 +2020,11 @@ class _QtAbsListWidget(
         self.update()
         self.viewport().update()
 
-    def _set_items_show_update_(self):
+    def _set_view_items_show_update_(self):
         rect = self.rect()
         self._item_rects = []
         p_t_, p_b_ = rect.top(), rect.bottom()
-        for i in self._get_items_():
+        for i in self._get_view_items_():
             if i.isHidden() is False:
                 i._set_item_viewport_visible_(False)
                 i_rect = self.visualItemRect(i)
@@ -1647,11 +2047,11 @@ class _QtAbsListWidget(
     def _get_viewport_size_(self):
         return self.viewport().width(), self.viewport().height()
 
-    def _get_items_(self):
+    def _get_view_items_(self):
         return [self.item(i) for i in range(self.count())]
 
     def _get_visible_items_(self):
-        return [i for i in self._get_items_() if i.isHidden() is False]
+        return [i for i in self._get_view_items_() if i.isHidden() is False]
 
     def _set_loading_update_(self):
         QtWidgets.QApplication.instance().processEvents(
@@ -1678,17 +2078,26 @@ class _QtConstantValueEntryDef(object):
     def _get_value_type_(self):
         return self._value_type
 
-    def _set_default_value(self, value):
+    def _set_value_default_(self, value):
         self._default_value = value
 
-    def _get_default_value_(self):
+    def _get_value_default_(self):
         return self._default_value
+
+    def _get_value_is_default_(self):
+        return self._get_value_() == self._get_value_default_()
 
     def _set_value_(self, value):
         self._value_entry_widget._set_value_(value)
 
     def _get_value_(self):
         return self._value_entry_widget._get_value_()
+
+    def _set_item_entry_finished_connect_to_(self, fnc):
+        self._value_entry_widget.entry_finished.connect(fnc)
+
+    def _set_item_entry_changed_connect_to_(self, fnc):
+        self._value_entry_widget.entry_changed.connect(fnc)
 
 
 class _QtEnumerateValueEntryDef(object):
@@ -1712,10 +2121,10 @@ class _QtEnumerateValueEntryDef(object):
     def _get_value_type_(self):
         return self._value_type
 
-    def _set_default_value(self, value):
+    def _set_value_default_(self, value):
         self._default_value = value
 
-    def _get_default_value_(self):
+    def _get_value_default_(self):
         return self._default_value
 
     def _set_values_(self, values):
@@ -1738,13 +2147,16 @@ class _QtEnumerateValueEntryDef(object):
         self._values = []
         self._value_entry_widget._set_value_clear_()
 
+    def _get_value_is_default_(self):
+        return self._get_value_() == self._get_value_default_()
+
 
 class _QtArrayValueEntryDef(object):
     QT_VALUE_ENTRY_CLASS = None
     def _set_array_value_entry_def_init_(self):
         self._value_type = str
         #
-        self._default_value = []
+        self._default_value = ()
         self._value = []
         self._value_entry_widgets = []
 
@@ -1765,7 +2177,7 @@ class _QtArrayValueEntryDef(object):
     def _get_value_size_(self):
         return len(self._value_entry_widgets)
 
-    def _get_default_value_(self):
+    def _get_value_default_(self):
         return self._default_value
 
     def _set_value_(self, value):
@@ -1781,3 +2193,13 @@ class _QtArrayValueEntryDef(object):
                 i_value
             )
         return tuple(value)
+
+    def _set_value_default_(self, value):
+        self._default_value = value
+
+    def _get_value_is_default_(self):
+        return tuple(self._get_value_()) == tuple(self._get_value_default_())
+
+    def _set_item_entry_changed_connect_to_(self, fnc):
+        for i in self._value_entry_widgets:
+            i.entry_changed.connect(fnc)
