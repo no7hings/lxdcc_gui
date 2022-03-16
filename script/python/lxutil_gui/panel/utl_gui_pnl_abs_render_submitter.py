@@ -52,6 +52,7 @@ class AbsRenderSubmitter(
         self._file_path = file_path
         self._rsv_task = None
         self._rsv_render_output_directory_unit = None
+        self._rsv_render_movie_file_unit = None
         #
         self._set_panel_build_()
         self.get_log_bar().set_expanded(True)
@@ -185,12 +186,13 @@ class AbsRenderSubmitter(
         names = ['{}={}'.format(k, v) for k, v in variants.items()]
         prx_item.set_names(names)
         #
-        key = '.'.join(variants.values())
-        # print key
-        latest_directory_path = self._rsv_render_output_directory_unit.get_result(version='latest')
-        movie_file_path = '{}/main/{}.mov'.format(latest_directory_path, key)
-        movie_file = utl_dcc_objects.OsFile(movie_file_path)
-        if movie_file.get_is_exists() is True:
+        variable_name = '.'.join(variants.values())
+        # print variable_name
+        movie_file_path = self._rsv_render_movie_file_unit.get_result(
+            version='latest',
+            extend_variants=variants
+        )
+        if movie_file_path:
             image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
             prx_item.set_image(image_file_path)
             if image_sub_process_cmds is not None:
@@ -202,7 +204,7 @@ class AbsRenderSubmitter(
             prx_item.set_image(
                 utl_core.Icon._get_file_path_('@image_loading_failed@')
             )
-        r, g, b = bsc_core.TextOpt(key).to_rgb()
+        r, g, b = bsc_core.TextOpt(variable_name).to_rgb()
         prx_item.set_name_frame_background_color((r, g, b, 127))
 
         prx_item.set_tool_tip(
@@ -228,7 +230,6 @@ class AbsRenderSubmitter(
             # print i_seq, i_variants
             i_prx_item = self._rsv_renderer_list_view.set_item_add()
             set_thread_create_fnc_(i_prx_item, i_variants)
-
             for j_key in self.VARIABLE_KEYS:
                 self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
                     '{}.{}'.format(j_key, i_variants[j_key]), i_prx_item
@@ -302,14 +303,34 @@ class AbsRenderSubmitter(
         self.set_filter_load_from_scheme()
 
     def set_settings_refresh(self):
-        if self._rsv_task is not None:
-            self._rsv_render_output_directory_unit = self._rsv_task.get_rsv_unit(
+        rsv_task = self._rsv_task
+        if rsv_task is not None:
+            self._rsv_render_output_directory_unit = rsv_task.get_rsv_unit(
                 keyword='asset-output-katana-render-output-dir'
             )
-            version = self._prx_options_node.get('version')
-            render_output_directory_path = self._rsv_render_output_directory_unit.get_result(version=version)
+            self._rsv_render_movie_file_unit = rsv_task.get_rsv_unit(
+                keyword='asset-output-katana-render-movie-file'
+            )
+
+            # version = self._prx_options_node.get('version')
+            render_output_directory_path = self._rsv_render_output_directory_unit.get_result(version='new')
             self._prx_settings_node.set(
                 'render.output_directory', render_output_directory_path
+            )
+            properties = self._rsv_render_output_directory_unit.get_properties(
+                render_output_directory_path
+            )
+
+            new_version = properties.get('version')
+
+            rsv_output_asset_katana_scene_file_unit = rsv_task.get_rsv_unit(
+                keyword='asset-output-katana-scene-file'
+            )
+            output_asset_katana_scene_file_path = rsv_output_asset_katana_scene_file_unit.get_result(
+                version=new_version
+            )
+            self._prx_settings_node.set(
+                'render.scene_file', output_asset_katana_scene_file_path
             )
 
             rsv_shot = self._prx_options_node.get(
@@ -339,15 +360,7 @@ class AbsRenderSubmitter(
         rsv_task = self._rsv_task
         if rsv_task is not None:
             dic['file'] = self._file_path
-            version = self._prx_options_node.get('version')
-            rsv_output_asset_katana_scene_file_unit = rsv_task.get_rsv_unit(
-                keyword='asset-output-katana-scene-file'
-            )
-            output_asset_katana_scene_file_path = rsv_output_asset_katana_scene_file_unit.get_result(
-                version=version
-            )
             #
-            dic['render_file'] = output_asset_katana_scene_file_path
             dic['shot'] = self._prx_options_node.get('shot').name
             #
             settings_dic = self._get_settings_dic_()
@@ -371,6 +384,7 @@ class AbsRenderSubmitter(
         dic['render_shot_frames'] = bsc_core.FrameMtd.get(
             render_shot_frame_range, render_shot_frame_step
         )
+        dic['render_file'] = self._prx_settings_node.get('render.scene_file')
         dic['render_output_directory'] = self._prx_settings_node.get('render.output_directory')
         dic['rez_beta'] = self._prx_settings_node.get('rez_beta')
         return dic
@@ -397,7 +411,6 @@ class AbsRenderSubmitter(
         for i in self.VARIABLE_KEYS:
             update3_fnc(i)
         return dic
-
     @classmethod
     def _get_frames_(cls, frame_range, frame_step):
         pass
@@ -405,7 +418,8 @@ class AbsRenderSubmitter(
     def set_submit(self):
         hook_option_dic = self._get_hook_option_dic_()
         hook_option_dic['user'] = bsc_core.SystemMtd.get_user_name()
-        hook_option_dic['rez_beta'] = True
+        # hook_option_dic['rez_beta'] = True
+        hook_option_dic['td_enable'] = True
         hook_option_dic['option_hook_key'] = 'rsv-task-batchers/asset/combination-render-submit'
         option_opt = bsc_core.KeywordArgumentsOpt(hook_option_dic)
         #
