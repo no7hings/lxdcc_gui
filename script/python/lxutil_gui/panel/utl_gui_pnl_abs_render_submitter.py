@@ -1,6 +1,4 @@
 # coding:utf-8
-import collections
-
 from lxbasic import bsc_core
 
 import lxutil_gui.qt.widgets as qt_widgets
@@ -422,8 +420,8 @@ class AbsRenderSubmitter(
     def set_submit(self):
         hook_option_dic = self._get_hook_option_dic_()
         hook_option_dic['user'] = bsc_core.SystemMtd.get_user_name()
-        hook_option_dic['rez_beta'] = True
-        # hook_option_dic['td_enable'] = True
+        # hook_option_dic['rez_beta'] = True
+        hook_option_dic['td_enable'] = True
         hook_option_dic['option_hook_key'] = 'rsv-task-batchers/asset/combination-render-submit'
         option_opt = bsc_core.KeywordArgumentsOpt(hook_option_dic)
         #
