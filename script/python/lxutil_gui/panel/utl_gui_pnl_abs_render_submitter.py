@@ -238,20 +238,20 @@ class AbsRenderSubmitter(
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
     def set_nodes_create(self):
-        self._prx_options_node.set_ports_create_by_configure(
-            self._window_configure.get('node.options')
-        )
-
+        #
         self._prx_schemes_node.set_ports_create_by_configure(
             self._window_configure.get('node.schemes')
         )
-
-        self._prx_usd_node.set_ports_create_by_configure(
-            self._window_configure.get('node.usd')
+        self._prx_schemes_node.set(
+            'reload', self.set_filter_scheme_load
         )
 
-        self._prx_settings_node.set_ports_create_by_configure(
-            self._window_configure.get('node.settings')
+        self._prx_schemes_node.set(
+            'save', self.set_scheme_save
+        )
+        #
+        self._prx_options_node.set_ports_create_by_configure(
+            self._window_configure.get('node.options')
         )
 
         self._prx_options_node.set(
@@ -275,9 +275,13 @@ class AbsRenderSubmitter(
         ).set_changed_connect_to(
             self.set_settings_refresh
         )
+        #
+        self._prx_usd_node.set_ports_create_by_configure(
+            self._window_configure.get('node.usd')
+        )
 
-        self._prx_schemes_node.set(
-            'save', self.set_scheme_save
+        self._prx_settings_node.set_ports_create_by_configure(
+            self._window_configure.get('node.settings')
         )
 
         self._prx_settings_node.set(
@@ -300,7 +304,7 @@ class AbsRenderSubmitter(
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()
         # self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
         #
-        self.set_filter_load_from_scheme()
+        self.set_filter_scheme_load()
 
     def set_settings_refresh(self):
         rsv_task = self._rsv_task
@@ -345,7 +349,7 @@ class AbsRenderSubmitter(
                         'render.shot.frame_range', frame_range
                     )
 
-    def set_filter_load_from_scheme(self):
+    def set_filter_scheme_load(self):
         filter_scheme = self._prx_schemes_node.get('variables')
         if filter_scheme == 'asset-default':
             filter_dict = self._window_configure.get(
