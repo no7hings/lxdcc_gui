@@ -321,10 +321,24 @@ class AbsRenderSubmitter(
         ).set_changed_connect_to(
             self.set_settings_refresh
         )
-        #
+        # usd
         self._prx_usd_node.set_ports_create_by_configure(
             self._window_configure.get('node.usd')
         )
+
+        self._prx_usd_node.get_port(
+            'variants.asset_version'
+        ).set_expanded(False)
+        self._prx_usd_node.get_port(
+            'variants.asset_version_override'
+        ).set_expanded(False)
+
+        self._prx_usd_node.get_port(
+            'variants.shot_version'
+        ).set_expanded(False)
+        self._prx_usd_node.get_port(
+            'variants.shot_version_override'
+        ).set_expanded(False)
 
         self._prx_settings_node.set_ports_create_by_configure(
             self._window_configure.get('node.settings')
