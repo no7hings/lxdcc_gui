@@ -62,7 +62,7 @@ class PrxDccObjTreeViewTagFilterOpt(object):
         self._prx_tree_item_cls = prx_tree_item_cls
         #
         self._filter_content = bsc_objects.Content(
-            value=bsc_objects.Content.DEFAULT_VALUE
+            value=collections.OrderedDict()
         )
         #
         self._dcc_obj_dict = {}
@@ -86,7 +86,7 @@ class PrxDccObjTreeViewTagFilterOpt(object):
 
     def set_restore(self):
         self._filter_content = bsc_objects.Content(
-            value=bsc_objects.Content.DEFAULT_VALUE
+            value=collections.OrderedDict()
         )
         self._dcc_obj_dict = {}
 

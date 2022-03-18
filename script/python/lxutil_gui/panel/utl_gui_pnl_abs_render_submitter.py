@@ -182,7 +182,8 @@ class AbsRenderSubmitter(
 
     def __set_rsv_unit_gui_show_deferred_(self, prx_item, variants):
         names = ['{}={}'.format(k, v) for k, v in variants.items()]
-        prx_item.set_names(names)
+        #
+        hook_options = []
         #
         variable_name = '.'.join(variants.values())
         # print variable_name
@@ -191,22 +192,70 @@ class AbsRenderSubmitter(
             extend_variants=variants
         )
         if movie_file_path:
+            rsv_properties = self._rsv_render_movie_file_unit.get_properties(
+                movie_file_path
+            )
+            version = rsv_properties.get('version')
+            names.append('version={}'.format(version))
             image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
             prx_item.set_image(image_file_path)
+            #
+            hook_options.extend(
+                [
+                    bsc_core.KeywordArgumentsOpt(
+                        dict(
+                            option_hook_key='actions/movie-open',
+                            file=movie_file_path,
+                            gui_group_name='movie',
+                            gui_name='open movie'
+                        )
+                    ).to_string(),
+                    bsc_core.KeywordArgumentsOpt(
+                        dict(
+                            option_hook_key='actions/file-directory-open',
+                            file=movie_file_path,
+                            gui_group_name='movie',
+                            gui_name='open movie-directory'
+                        )
+                    ).to_string()
+                ]
+            )
             if image_sub_process_cmds is not None:
-                image_sub_process = bsc_objects.SubProcess(image_sub_process_cmds)
-                image_sub_process.set_start()
-                prx_item.set_image_show_sub_process(image_sub_process)
-                prx_item.set_image_loading_start()
+                if prx_item.get_image_show_sub_process() is None:
+                    image_sub_process = bsc_objects.SubProcess(image_sub_process_cmds)
+                    image_sub_process.set_start()
+                    prx_item.set_image_show_sub_process(image_sub_process)
+                    # prx_item.set_image_loading_start()
         else:
+            names.append('version=null')
             prx_item.set_image(
                 utl_core.Icon._get_file_path_('@image_loading_failed@')
             )
+
+        menu_content = ssn_commands.get_menu_content_by_hook_options(hook_options)
+        prx_item.set_menu_content(menu_content)
+
+        prx_item.set_names(names)
         r, g, b = bsc_core.TextOpt(variable_name).to_rgb()
         prx_item.set_name_frame_background_color((r, g, b, 127))
 
         prx_item.set_tool_tip(
             '\n'.join(names)
+        )
+
+        session, execute_fnc = ssn_commands.get_option_hook_args(
+                bsc_core.KeywordArgumentsOpt(
+                    dict(
+                        option_hook_key='actions/movie-open',
+                        file=movie_file_path,
+                        gui_group_name='movie',
+                        gui_name='open movie'
+                    )
+                ).to_string()
+            )
+        #
+        prx_item.set_press_db_clicked_connect_to(
+            execute_fnc
         )
 
     def set_renderers_refresh(self):
@@ -219,7 +268,6 @@ class AbsRenderSubmitter(
         #
         self._rsv_renderer_list_view.set_clear()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
-        #
         variants_dic = self._window_configure.get('variables.character')
         combinations = bsc_core.VariablesMtd.get_all_combinations(
             variants_dic
@@ -316,9 +364,9 @@ class AbsRenderSubmitter(
 
             # version = self._prx_options_node.get('version')
             render_output_directory_path = self._rsv_render_output_directory_unit.get_result(version='new')
-            self._prx_settings_node.set(
-                'render.output_directory', render_output_directory_path
-            )
+            # self._prx_settings_node.set(
+            #     'render.output_directory', render_output_directory_path
+            # )
             properties = self._rsv_render_output_directory_unit.get_properties(
                 render_output_directory_path
             )
@@ -331,9 +379,9 @@ class AbsRenderSubmitter(
             output_asset_katana_scene_file_path = rsv_output_asset_katana_scene_file_unit.get_result(
                 version=new_version
             )
-            self._prx_settings_node.set(
-                'render.scene_file', output_asset_katana_scene_file_path
-            )
+            # self._prx_settings_node.set(
+            #     'render.scene_file', output_asset_katana_scene_file_path
+            # )
 
             rsv_shot = self._prx_options_node.get(
                 'shot'
@@ -386,8 +434,8 @@ class AbsRenderSubmitter(
         dic['render_shot_frames'] = bsc_core.FrameMtd.get(
             render_shot_frame_range, render_shot_frame_step
         )
-        dic['render_file'] = self._prx_settings_node.get('render.scene_file')
-        dic['render_output_directory'] = self._prx_settings_node.get('render.output_directory')
+        # dic['render_file'] = self._prx_settings_node.get('render.scene_file')
+        # dic['render_output_directory'] = self._prx_settings_node.get('render.output_directory')
         dic['rez_beta'] = self._prx_settings_node.get('rez_beta')
         return dic
 

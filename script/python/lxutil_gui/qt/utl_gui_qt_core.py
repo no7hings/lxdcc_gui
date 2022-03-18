@@ -1119,8 +1119,7 @@ class QtShowThread(QtCore.QThread):
         super(QtShowThread, self).__init__(*args, **kwargs)
         #
         self._thread_index = 0
-        self._is_started = False
-        self._is_enable = True
+        self._is_finished = False
     #
     def _set_thread_index_(self, number):
         self._thread_index = number
@@ -1128,19 +1127,17 @@ class QtShowThread(QtCore.QThread):
     def _get_thread_index_(self):
         return self._thread_index
     #
-    def _set_started_(self, boolean):
-        if not boolean == self._is_started:
-            self._is_started = boolean
+    def _set_is_finished_(self, boolean):
+        if not boolean == self._is_finished:
+            self._is_finished = boolean
     #
-    def _get_started_(self):
-        return self._is_started
-    #
-    def _set_enable_(self, boolean):
-        self._is_enable = boolean
+    def _get_is_finished_(self):
+        return self._is_finished
     #
     def run(self):
-        if self._is_enable is True:
+        if self._is_finished is False:
             self.started.emit()
+            self._is_finished = True
             #
             QtWidgets.QApplication.instance().processEvents(
                 QtCore.QEventLoop.ExcludeUserInputEvents

@@ -444,7 +444,7 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
                     image_sub_process = bsc_objects.SubProcess(image_sub_process_cmds)
                     image_sub_process.set_start()
                     rsv_task_unit_gui.set_image_show_sub_process(image_sub_process)
-                    rsv_task_unit_gui.set_image_loading_start()
+                    # rsv_task_unit_gui.set_image_loading_start()
             else:
                 rsv_task_unit_gui.set_image(
                     utl_core.Icon._get_file_path_('@image_loading_failed@')
@@ -461,7 +461,7 @@ class AbsEntitiesLoaderPanel(prx_widgets.PrxToolWindow):
                     image_sub_process = bsc_objects.SubProcess(image_sub_process_cmds)
                     image_sub_process.set_start()
                     rsv_task_unit_gui.set_image_show_sub_process(image_sub_process)
-                    rsv_task_unit_gui.set_image_loading_start()
+                    # rsv_task_unit_gui.set_image_loading_start()
             else:
                 rsv_task_unit_gui.set_image(
                     utl_core.Icon._get_file_path_('@image_loading_failed@')

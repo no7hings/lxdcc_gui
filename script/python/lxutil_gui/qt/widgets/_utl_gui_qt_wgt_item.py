@@ -2121,6 +2121,8 @@ class QtTreeWidgetItem(
             QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled
         )
         #
+        self._set_item_show_def_init_()
+        #
         self._is_check_enable = True
         self._emit_send_enable = False
         #
@@ -2369,7 +2371,7 @@ class QtTreeWidgetItem(
     def _set_item_show_loading_update_(self):
         self._item_show_loading_index += 1
         #
-        if self._item_show_loading_is_finish is False:
+        if self._item_show_loading_is_finished is False:
             self._set_name_(
                 'loading .{}'.format('.'*(self._item_show_loading_index % 3))
             )
@@ -2416,6 +2418,8 @@ class QtListWidgetItem(
         self.setFlags(
             QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled
         )
+        self._set_item_show_def_init_()
+        #
         self._visible_tgt_key = None
         self._set_item_filter_tgt_def_init_()
         #
@@ -2472,7 +2476,7 @@ class QtListWidgetItem(
         item = self
         list_widget = self.listWidget()
         #
-        self._set_item_show_loading_start_()
+        self._set_item_show_loading_run_()
         return list_widget._get_item_is_viewport_show_able_at_(item)
 
     def _set_item_widget_visible_(self, boolean):
@@ -2689,7 +2693,7 @@ class _QtListItemWidget(
             is_select=self._is_selected,
         )
         #
-        if self._get_item_()._item_show_loading_is_enable is True:
+        if self._get_item_()._item_show_loading_is_started is True:
             painter._set_loading_draw_by_rect_(
                 self._frame_rect,
                 self._get_item_()._item_show_loading_index
@@ -2793,7 +2797,7 @@ class _QtListItemWidget(
             #     color=Color.TEXT_DISABLE
             # )
             #
-            if self._get_item_()._item_show_image_loading_is_enable is True:
+            if self._get_item_()._item_show_image_loading_is_started is True:
                 painter._set_loading_draw_by_rect_(
                     self._image_frame_rect,
                     self._get_item_()._item_show_loading_index

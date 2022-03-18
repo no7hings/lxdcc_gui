@@ -611,7 +611,7 @@ class QtTreeWidget(
     def _set_item_show_update_at_(cls, item):
         children = item._get_children_()
         for i in children:
-            i._set_item_show_start_()
+            i._set_item_show_all_run_()
 
     def _set_item_descendants_expanded_at_(self, index, expanded):
         for i in range(0, index.model().rowCount(index)):
@@ -690,7 +690,7 @@ class QtTreeWidget(
 
     def _set_clear_(self):
         for i in self._get_view_items_():
-            i._set_item_show_stop_()
+            i._set_item_show_all_stop_()
         #
         self.clear()
         self._item_expand_method_dic = {}
@@ -943,7 +943,7 @@ class QtListWidget(
 
     def _set_clear_(self):
         for i in self._get_view_items_():
-            i._set_item_show_stop_()
+            i._set_item_show_all_stop_()
         #
         self._pre_selected_item = None
         #

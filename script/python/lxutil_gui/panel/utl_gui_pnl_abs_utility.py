@@ -453,7 +453,7 @@ class AbsSceneTextureManagerPanel(
                 thumbnail_file_path = stg_file_.get_thumbnail_file_path()
                 if thumbnail_file_path:
                     i_list_item_prx_.set_image(thumbnail_file_path)
-                    i_list_item_prx_.set_image_loading_start()
+                    # i_list_item_prx_.set_image_loading_start()
                     i_list_item_prx_.set_names(
                         [stg_file_.name]
                     )

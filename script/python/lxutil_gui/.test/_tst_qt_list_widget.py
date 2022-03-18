@@ -18,7 +18,7 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
                 ).get_thumbnail()
                 wdt.set_loading_update()
                 item_prx.set_image(thumbnail_file_path)
-                item_prx.set_image_loading_start()
+                # item_prx.set_image_loading_start()
 
             item_prx = wdt.set_item_add()
             item_prx.set_show_method(show_fnc_)

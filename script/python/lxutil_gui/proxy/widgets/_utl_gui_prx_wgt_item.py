@@ -761,6 +761,9 @@ class PrxListItem(
     def set_image_show_sub_process(self, sub_process):
         self.widget._get_item_()._set_item_show_sub_process_(sub_process)
 
+    def get_image_show_sub_process(self):
+        self.widget._get_item_()._get_item_show_sub_process_()
+
     def set_visible_tgt_key(self, key):
         self.set_gui_attribute(
             'visible_tgt_key',
@@ -799,12 +802,13 @@ class PrxListItem(
         self.widget._get_item_()._set_item_show_method_(method)
 
     def set_image_loading_start(self):
-        self.widget._get_item_()._set_item_show_image_loading_start_()
+        self.widget._get_item_()._set_item_show_image_loading_run_()
 
     def set_press_clicked_connect_to(self, fnc):
         self.widget.press_clicked.connect(fnc)
 
     def set_press_db_clicked_connect_to(self, fnc):
+        # print self.get_names(), fnc
         self.widget.press_db_clicked.connect(fnc)
 
     def __str__(self):
