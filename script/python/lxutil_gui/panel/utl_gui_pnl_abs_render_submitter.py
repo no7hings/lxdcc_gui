@@ -11,8 +11,6 @@ import lxbasic.objects as bsc_objects
 
 import lxresolver.commands as rsv_commands
 
-import lxutil.dcc.dcc_objects as utl_dcc_objects
-
 import lxutil_gui.proxy.operators as utl_prx_operators
 
 import lxusd.rsv.objects as usd_rsv_objects
@@ -54,7 +52,6 @@ class AbsRenderSubmitter(
             self._file_path = None
         #
         self._rsv_task = None
-        self._rsv_render_output_directory_unit = None
         self._rsv_render_movie_file_unit = None
         #
         self._set_panel_build_()
@@ -71,8 +68,7 @@ class AbsRenderSubmitter(
     def _set_tool_panel_setup_(self):
         self.set_window_loading_end()
         self._set_prx_node_build_()
-        if self._file_path:
-            self.set_all_refresh()
+        self.set_all_refresh()
 
     def _set_viewer_groups_build_(self):
         h_splitter_0 = prx_widgets.PrxHSplitter()
@@ -204,11 +200,12 @@ class AbsRenderSubmitter(
         )
 
     def set_all_refresh(self):
-        self.set_options_refresh()
-        self.set_settings_refresh()
-        #
-        self.set_renderers_refresh()
-        self.set_filter_refresh()
+        if self._file_path:
+            self.set_options_refresh()
+            self.set_settings_refresh()
+            #
+            self.set_renderers_refresh()
+            self.set_filter_refresh()
 
     def set_scheme_save(self):
         filter_dict = self._prx_dcc_obj_tree_view_tag_filter_opt.get_filter_dict()
@@ -218,29 +215,33 @@ class AbsRenderSubmitter(
     def set_options_refresh(self):
         r = rsv_commands.get_resolver()
         rsv_task = r.get_rsv_task_by_file_path(self._file_path)
+        rsv_scene_properties = r.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
         self._rsv_task = rsv_task
         self._prx_options_node.set(
             'task', rsv_task.path
         )
         rsv_asset = self._rsv_task.get_rsv_entity()
-
-        keyword = ''
         branch = rsv_task.get('branch')
-        for i_application in ['maya', 'katana']:
-            i_keyword = '{}-work-{}-scene-src-file'.format(
-                branch, i_application
+        application = rsv_scene_properties.get('application')
+
+        if application == 'maya':
+            keyword = '{}-work-{}-scene-src-file'.format(
+                branch, application
             )
-            i_rsv_unit = rsv_task.get_rsv_unit(keyword=i_keyword)
-            i_rsv_properties = i_rsv_unit.get_properties(self._file_path)
-            if i_rsv_properties is not None:
-                keyword = i_keyword
-                break
+            self._prx_options_node.set('choice_scheme', 'asset-work-maya')
+        elif application == 'katana':
+            keyword = '{}-work-{}-scene-src-file'.format(
+                branch, application
+            )
+            self._prx_options_node.set('choice_scheme', 'asset-work-katana')
+        else:
+            raise RuntimeError()
 
         versions = []
-        rsv_unit = rsv_task.get_rsv_unit(keyword=keyword)
-        file_paths = rsv_unit.get_result(version='all')
+        any_scene_file_rsv_unit = rsv_task.get_rsv_unit(keyword=keyword)
+        file_paths = any_scene_file_rsv_unit.get_result(version='all')
         for i_file_path in file_paths:
-            i_rsv_properties = i_rsv_unit.get_properties(i_file_path)
+            i_rsv_properties = any_scene_file_rsv_unit.get_properties(i_file_path)
             versions.append(i_rsv_properties.get('version'))
 
         self._prx_options_node.set('version', versions)
@@ -270,6 +271,21 @@ class AbsRenderSubmitter(
             names.append('version={}'.format(version))
             image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
             prx_item.set_image(image_file_path)
+            #
+            session, execute_fnc = ssn_commands.get_option_hook_args(
+                bsc_core.KeywordArgumentsOpt(
+                    dict(
+                        option_hook_key='actions/movie-open',
+                        file=movie_file_path,
+                        gui_group_name='movie',
+                        gui_name='open movie'
+                    )
+                ).to_string()
+            )
+            #
+            prx_item.set_press_db_clicked_connect_to(
+                execute_fnc
+            )
             #
             hook_options.extend(
                 [
@@ -312,21 +328,6 @@ class AbsRenderSubmitter(
 
         prx_item.set_tool_tip(
             '\n'.join(names)
-        )
-
-        session, execute_fnc = ssn_commands.get_option_hook_args(
-                bsc_core.KeywordArgumentsOpt(
-                    dict(
-                        option_hook_key='actions/movie-open',
-                        file=movie_file_path,
-                        gui_group_name='movie',
-                        gui_name='open movie'
-                    )
-                ).to_string()
-            )
-        #
-        prx_item.set_press_db_clicked_connect_to(
-            execute_fnc
         )
 
     def set_renderers_refresh(self):
@@ -375,9 +376,6 @@ class AbsRenderSubmitter(
     def set_settings_refresh(self):
         rsv_task = self._rsv_task
         if rsv_task is not None:
-            self._rsv_render_output_directory_unit = rsv_task.get_rsv_unit(
-                keyword='asset-output-katana-render-output-dir'
-            )
             self._rsv_render_movie_file_unit = rsv_task.get_rsv_unit(
                 keyword='asset-output-katana-render-movie-file'
             )
@@ -411,6 +409,8 @@ class AbsRenderSubmitter(
             dic['file'] = self._file_path
             #
             dic['shot'] = self._prx_options_node.get('shot').name
+
+            dic['choice_scheme'] = self._prx_options_node.get('choice_scheme')
             #
             settings_dic = self._get_settings_dic_()
             dic.update(settings_dic)

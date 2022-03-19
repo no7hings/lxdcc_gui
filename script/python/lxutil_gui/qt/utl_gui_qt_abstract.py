@@ -1,4 +1,5 @@
 # coding=utf-8
+import copy
 import os
 
 import fnmatch
@@ -558,7 +559,8 @@ class _QtNameDef(object):
                 self.setToolTip(html)
     # noinspection PyUnresolvedReferences
     def _set_name_text_font_size_(self, size):
-        font = self._name_text_font.__copy__()
+        self.setFont(self._name_text_font)
+        font = self.font()
         font.setPointSize(size)
         self._name_text_font = font
 
