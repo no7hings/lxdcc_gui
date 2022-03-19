@@ -85,14 +85,10 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
         ktn_fnc_creators.LookWorkspaceCreator().set_run()
 
     def set_work_set_usd_import(self):
-        from lxkatana import commands
-        task_properties = self._task_properties
-        commands.set_asset_work_set_usd_import(task_properties)
+        pass
 
     def set_set_usd_import(self):
-        from lxkatana import commands
-        task_properties = self._task_properties
-        commands.set_asset_set_usd_import_(task_properties)
+        pass
     # look
     def set_material_create(self):
         pass

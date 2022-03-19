@@ -376,32 +376,11 @@ class AbsRenderSubmitter(
                 keyword='asset-output-katana-render-movie-file'
             )
 
-            # version = self._prx_options_node.get('version')
-            render_output_directory_path = self._rsv_render_output_directory_unit.get_result(version='new')
-            # self._prx_settings_node.set(
-            #     'render.output_directory', render_output_directory_path
-            # )
-            properties = self._rsv_render_output_directory_unit.get_properties(
-                render_output_directory_path
-            )
-
-            new_version = properties.get('version')
-
-            rsv_output_asset_katana_scene_file_unit = rsv_task.get_rsv_unit(
-                keyword='asset-output-katana-scene-file'
-            )
-            output_asset_katana_scene_file_path = rsv_output_asset_katana_scene_file_unit.get_result(
-                version=new_version
-            )
-            # self._prx_settings_node.set(
-            #     'render.scene_file', output_asset_katana_scene_file_path
-            # )
-
             rsv_shot = self._prx_options_node.get(
                 'shot'
             )
             if rsv_shot is not None:
-                frame_range = self._rsv_asset_set_usd_creator.get_shot_frame_range(
+                frame_range = self._rsv_asset_set_usd_creator._get_shot_frame_range_(
                     rsv_shot
                 )
                 if frame_range is not None:
