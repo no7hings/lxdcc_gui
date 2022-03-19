@@ -36,7 +36,7 @@ class AbsRenderSubmitter(
         'look_pass',
         'quality'
     ]
-    def __init__(self, file_path=None, *args, **kwargs):
+    def __init__(self, option=None, *args, **kwargs):
         super(AbsRenderSubmitter, self).__init__(*args, **kwargs)
         self._window_configure = utl_configure.MainData.get_as_configure(
             self.CONFIGURE_FILE_PATH
@@ -47,7 +47,12 @@ class AbsRenderSubmitter(
         self.set_definition_window_size(
             self._window_configure.get('window.size')
         )
-        self._file_path = file_path
+        if option is not None:
+            self._option_opt = bsc_core.KeywordArgumentsOpt(option)
+            self._file_path = self._option_opt.get('file')
+        else:
+            self._file_path = None
+        #
         self._rsv_task = None
         self._rsv_render_output_directory_unit = None
         self._rsv_render_movie_file_unit = None
@@ -65,8 +70,9 @@ class AbsRenderSubmitter(
 
     def _set_tool_panel_setup_(self):
         self.set_window_loading_end()
-        self.set_nodes_create()
-        self.set_all_refresh()
+        self._set_prx_node_build_()
+        if self._file_path:
+            self.set_all_refresh()
 
     def _set_viewer_groups_build_(self):
         h_splitter_0 = prx_widgets.PrxHSplitter()
@@ -131,6 +137,71 @@ class AbsRenderSubmitter(
         self._rsv_renderer_list_view.set_item_icon_frame_draw_enable(True)
         self._rsv_renderer_list_view.set_item_name_frame_draw_enable(True)
         self._rsv_renderer_list_view.set_item_image_frame_draw_enable(True)
+
+    def _set_prx_node_build_(self):
+        #
+        self._prx_schemes_node.set_ports_create_by_configure(
+            self._window_configure.get('node.schemes')
+        )
+        self._prx_schemes_node.set(
+            'reload', self.set_filter_scheme_load
+        )
+
+        self._prx_schemes_node.set(
+            'save', self.set_scheme_save
+        )
+        #
+        self._prx_options_node.set_ports_create_by_configure(
+            self._window_configure.get('node.options')
+        )
+
+        self._prx_options_node.set(
+            'refresh', self.set_options_refresh
+        )
+
+        self._prx_options_node.get_port(
+            'version'
+        ).set_changed_connect_to(
+            self.set_settings_refresh
+        )
+
+        self._prx_options_node.get_port(
+            'shot'
+        ).set_changed_connect_to(
+            self.set_usd_refresh
+        )
+
+        self._prx_options_node.get_port(
+            'shot'
+        ).set_changed_connect_to(
+            self.set_settings_refresh
+        )
+        # usd
+        self._prx_usd_node.set_ports_create_by_configure(
+            self._window_configure.get('node.usd')
+        )
+
+        self._prx_usd_node.get_port(
+            'variants.asset_version'
+        ).set_expanded(False)
+        self._prx_usd_node.get_port(
+            'variants.asset_version_override'
+        ).set_expanded(False)
+
+        self._prx_usd_node.get_port(
+            'variants.shot_version'
+        ).set_expanded(False)
+        self._prx_usd_node.get_port(
+            'variants.shot_version_override'
+        ).set_expanded(False)
+
+        self._prx_settings_node.set_ports_create_by_configure(
+            self._window_configure.get('node.settings')
+        )
+
+        self._prx_settings_node.set(
+            'submit', self.set_submit
+        )
 
     def set_all_refresh(self):
         self.set_options_refresh()
@@ -282,71 +353,6 @@ class AbsRenderSubmitter(
                 )
 
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
-
-    def set_nodes_create(self):
-        #
-        self._prx_schemes_node.set_ports_create_by_configure(
-            self._window_configure.get('node.schemes')
-        )
-        self._prx_schemes_node.set(
-            'reload', self.set_filter_scheme_load
-        )
-
-        self._prx_schemes_node.set(
-            'save', self.set_scheme_save
-        )
-        #
-        self._prx_options_node.set_ports_create_by_configure(
-            self._window_configure.get('node.options')
-        )
-
-        self._prx_options_node.set(
-            'refresh', self.set_options_refresh
-        )
-
-        self._prx_options_node.get_port(
-            'version'
-        ).set_changed_connect_to(
-            self.set_settings_refresh
-        )
-
-        self._prx_options_node.get_port(
-            'shot'
-        ).set_changed_connect_to(
-            self.set_usd_refresh
-        )
-
-        self._prx_options_node.get_port(
-            'shot'
-        ).set_changed_connect_to(
-            self.set_settings_refresh
-        )
-        # usd
-        self._prx_usd_node.set_ports_create_by_configure(
-            self._window_configure.get('node.usd')
-        )
-
-        self._prx_usd_node.get_port(
-            'variants.asset_version'
-        ).set_expanded(False)
-        self._prx_usd_node.get_port(
-            'variants.asset_version_override'
-        ).set_expanded(False)
-
-        self._prx_usd_node.get_port(
-            'variants.shot_version'
-        ).set_expanded(False)
-        self._prx_usd_node.get_port(
-            'variants.shot_version_override'
-        ).set_expanded(False)
-
-        self._prx_settings_node.set_ports_create_by_configure(
-            self._window_configure.get('node.settings')
-        )
-
-        self._prx_settings_node.set(
-            'submit', self.set_submit
-        )
 
     def set_usd_refresh(self):
         rsv_asset = self._rsv_task.get_rsv_entity()
