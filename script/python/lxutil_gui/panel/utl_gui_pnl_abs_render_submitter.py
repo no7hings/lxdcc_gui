@@ -42,6 +42,11 @@ class AbsRenderSubmitter(
         self.set_window_title(
             self._window_configure.get('window.name')
         )
+        self._rez_beta = bsc_core.EnvironMtd.get('REZ_BETA')
+        if self._rez_beta:
+            self.set_window_title(
+                '{}[BETA]'.format(self._window_configure.get('window.name'))
+            )
         self.set_definition_window_size(
             self._window_configure.get('window.size')
         )
