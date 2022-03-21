@@ -34,7 +34,7 @@ class AbsRenderSubmitter(
         'look_pass',
         'quality'
     ]
-    def __init__(self, option=None, *args, **kwargs):
+    def __init__(self, hook_option=None, *args, **kwargs):
         super(AbsRenderSubmitter, self).__init__(*args, **kwargs)
         self._window_configure = utl_configure.MainData.get_as_configure(
             self.CONFIGURE_FILE_PATH
@@ -45,13 +45,13 @@ class AbsRenderSubmitter(
         self._rez_beta = bsc_core.EnvironMtd.get('REZ_BETA')
         if self._rez_beta:
             self.set_window_title(
-                '{}[BETA]'.format(self._window_configure.get('window.name'))
+                '{}-[BETA]'.format(self._window_configure.get('window.name'))
             )
         self.set_definition_window_size(
             self._window_configure.get('window.size')
         )
-        if option is not None:
-            self._option_opt = bsc_core.KeywordArgumentsOpt(option)
+        if hook_option is not None:
+            self._option_opt = bsc_core.KeywordArgumentsOpt(hook_option)
             self._file_path = self._option_opt.get('file')
         else:
             self._file_path = None

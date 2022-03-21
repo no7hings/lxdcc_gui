@@ -35,5 +35,5 @@ class FncPanel(utl_gui_pnl_abs_utility.AbsFncPanel):
 
 
 class AssetRenderSubmitter(utl_gui_pnl_abs_render_submitter.AbsRenderSubmitter):
-    def __init__(self, option=None, *args, **kwargs):
-        super(AssetRenderSubmitter, self).__init__(option, *args, **kwargs)
+    def __init__(self, hook_option=None, *args, **kwargs):
+        super(AssetRenderSubmitter, self).__init__(hook_option, *args, **kwargs)
