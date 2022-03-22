@@ -749,6 +749,9 @@ class PrxListItem(
     def set_image(self, file_path):
         self.widget._set_image_file_path_(file_path)
 
+    def set_movie_enable(self, boolean):
+        self.widget._set_movie_enable_(boolean)
+
     def set_image_by_name(self, text):
         self.widget._set_image_name_text_(text)
 

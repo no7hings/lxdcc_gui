@@ -651,7 +651,7 @@ class _QtProgressDef(object):
 
 class _QtImageDef(object):
     def _set_image_def_init_(self):
-        self._image_is_enable = False
+        self._image_enable = False
         #
         self._image_file_path = None
         self._image_name_text = None
@@ -667,7 +667,7 @@ class _QtImageDef(object):
         raise NotImplementedError()
 
     def _set_image_file_path_(self, file_path):
-        self._image_is_enable = True
+        self._image_enable = True
         self._image_file_path = file_path
         self._set_widget_update_()
 
@@ -693,7 +693,7 @@ class _QtImageDef(object):
         return self._image_size
 
     def _get_image_file_path_(self):
-        if self._image_is_enable is True:
+        if self._image_enable is True:
             return self._image_file_path
 
     def _set_image_rect_(self, x, y, w, h):
@@ -722,8 +722,17 @@ class AbsQtMovieDef(object):
         raise NotImplementedError()
     #
     def _set_movie_def_init_(self):
-        self._movie_is_enable = False
+        self._movie_enable = False
         self._movie_rect = QtCore.QRect()
+
+    def _get_movie_enable_(self):
+        return self._movie_enable
+
+    def _set_movie_enable_(self, boolean):
+        self._movie_enable = boolean
+
+    def _set_movie_rect_(self, x, y, w, h):
+        self._movie_rect.setRect(x, y, w, h)
 
 
 class AbsQtNamesDef(object):

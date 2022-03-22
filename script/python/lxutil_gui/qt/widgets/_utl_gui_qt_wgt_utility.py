@@ -136,6 +136,16 @@ class QtFrame(QtWidgets.QFrame):
         super(QtFrame, self).__init__(*args, **kwargs)
 
 
+class QtPainterPath(QtGui.QPainterPath):
+    def __init__(self, *args):
+        super(QtPainterPath, self).__init__(*args)
+        self.setFillRule(QtCore.Qt.WindingFill)
+    #
+    def _set_points_add_(self, points):
+        points_ = [QtCore.QPointF(x, y) for x, y in points]
+        self.addPolygon(QtGui.QPolygonF(points_))
+
+
 class QtPainter(QtGui.QPainter):
     @classmethod
     def _get_qt_color_(cls, *args):
@@ -413,6 +423,41 @@ class QtPainter(QtGui.QPainter):
         )
         #
         self.device()
+
+    def _set_movie_play_button_draw_by_rect_(self, rect, scale=1.0, offset=0):
+        rect_ = QtCore.QRect(
+            rect.x() + offset, rect.y() + offset,
+            rect.width() - offset, rect.height() - offset
+        )
+        #
+        x, y = rect_.x(), rect_.y()
+        width = rect.width()
+        height = rect.height()
+        #
+        r_ = height * scale
+        x_, y_ = (width - r_) / 2 + x, (height - r_) / 2 + y
+        #
+        ellipse_rect = QtCore.QRect(x_ - 1, y_ - 1, r_ + 2, r_ + 2)
+        points = [
+            utl_gui_core.Ellipse2dMtd.get_position_at_angle(center=(x_, y_), radius=r_, angle=90),
+            utl_gui_core.Ellipse2dMtd.get_position_at_angle(center=(x_, y_), radius=r_, angle=210),
+            utl_gui_core.Ellipse2dMtd.get_position_at_angle(center=(x_, y_), radius=r_, angle=330),
+            utl_gui_core.Ellipse2dMtd.get_position_at_angle(center=(x_, y_), radius=r_, angle=90)
+        ]
+        #
+        self._set_background_color_(0, 0, 0, 0)
+        self._set_border_color_(223, 223, 223, 255)
+        #
+        self._set_border_width_(2)
+        self.setRenderHint(self.Antialiasing)
+        self.drawEllipse(ellipse_rect)
+        self._set_path_draw_by_points_(points)
+
+    def _set_path_draw_by_points_(self, points):
+        path = QtPainterPath()
+        path._set_points_add_(points)
+        self.drawPath(path)
+        return path
 
     def _set_color_icon_draw_(self, rect, color, offset=0):
         r, g, b = color
@@ -2113,13 +2158,3 @@ class QtHSplitter(QtWidgets.QSplitter):
 class QtFileDialog(QtWidgets.QFileDialog):
     def __init__(self, *args, **kwargs):
         super(QtFileDialog, self).__init__(*args, **kwargs)
-
-
-class QtPainterPath(QtGui.QPainterPath):
-    def __init__(self, *args):
-        super(QtPainterPath, self).__init__(*args)
-        self.setFillRule(QtCore.Qt.WindingFill)
-    #
-    def _set_points_add_(self, points):
-        points_ = [QtCore.QPointF(x, y) for x, y in points]
-        self.addPolygon(QtGui.QPolygonF(points_))

@@ -276,6 +276,7 @@ class AbsRenderSubmitter(
             names.append('version={}'.format(version))
             image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
             prx_item.set_image(image_file_path)
+            prx_item.set_movie_enable(True)
             #
             session, execute_fnc = ssn_commands.get_option_hook_args(
                 bsc_core.KeywordArgumentsOpt(

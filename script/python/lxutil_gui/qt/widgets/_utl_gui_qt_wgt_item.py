@@ -2816,6 +2816,11 @@ class _QtListItemWidget(
                             offset=offset
                         )
             #
+            if self._get_movie_enable_():
+                painter._set_movie_play_button_draw_by_rect_(
+                    self._movie_rect, offset=offset
+                )
+            #
             # painter._set_text_draw_by_rect_(
             #     self._get_index_rect_(),
             #     text=str(self._get_index_()),
@@ -2973,33 +2978,28 @@ class _QtListItemWidget(
     def _set_widget_image_sub_geometries_update_(self):
         if self._get_has_image_() is True:
             image_file_path = self._get_image_file_path_()
-            if image_file_path is not None:
-                rect = self._image_frame_rect
-                x, y = rect.x(), rect.y()
-                w, h = rect.width(), rect.height()
-                x += 2
-                y += 2
-                w -= 4+1
-                h -= 4+1
-                i_w_0, i_h_0 = self._get_image_size_()
-                if (i_w_0, i_h_0) != (0, 0):
-                    i_x, i_y, i_w, i_h = utl_gui_core.SizeMtd.set_fit_to(
-                        (i_w_0, i_h_0), (w, h)
+            rect = self._image_frame_rect
+            x, y = rect.x(), rect.y()
+            w, h = rect.width(), rect.height()
+            i_w_0, i_h_0 = self._get_image_size_()
+            if (i_w_0, i_h_0) != (0, 0):
+                i_x, i_y, i_w, i_h = utl_gui_core.SizeMtd.set_fit_to(
+                    (i_w_0, i_h_0), (w, h)
+                )
+                if self._get_movie_enable_() is True:
+                    m_f_w, m_f_h = 32, 32
+                    self._set_movie_rect_(
+                        x + i_x + (i_w-m_f_w)/2, y + i_y + (i_h-m_f_h)/2,
+                        m_f_w, m_f_h
                     )
+                #
+                if image_file_path is not None:
                     self._set_image_rect_(
-                        x+i_x, y+i_y, i_w, i_h
+                        x+i_x+2, y+i_y+2, i_w-4, i_h-4
                     )
-            else:
-                image_name_text = self._image_name_text
-                if image_name_text is not None:
-                    rect = self._image_frame_rect
-                    x, y = rect.x(), rect.y()
-                    w, h = rect.width(), rect.height()
-                    i_w_0, i_h_0 = self._get_image_size_()
-                    if (i_w_0, i_h_0) != (0, 0):
-                        i_x, i_y, i_w, i_h = utl_gui_core.SizeMtd.set_fit_to(
-                            (i_w_0, i_h_0), (w, h)
-                        )
+                else:
+                    image_name_text = self._image_name_text
+                    if image_name_text is not None:
                         self._set_image_rect_(
                             x + i_x, y + i_y, i_w, i_h
                         )

@@ -880,7 +880,7 @@ class PrxRsvObjChooseEntry(AbsRsvTypeEntry):
                     **create_kwargs
                 )
             #
-            prx_item.set_checked(True)
+            # prx_item.set_checked(True)
             prx_item.set_keyword_filter_tgt_contexts([obj_path, obj_type])
             obj.set_obj_gui(prx_item)
             prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
@@ -950,7 +950,7 @@ class PrxRsvObjChooseEntry(AbsRsvTypeEntry):
             **create_kwargs
         )
         #
-        prx_item.set_checked(True)
+        # prx_item.set_checked(True)
         prx_item.set_keyword_filter_tgt_contexts([obj_path, obj_type])
         obj.set_obj_gui(prx_item)
         prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
