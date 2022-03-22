@@ -208,6 +208,7 @@ class AbsRenderSubmitter(
 
     def set_all_refresh(self):
         if self._file_path:
+            self._file_path = bsc_core.StoragePathMtd.set_map_to_platform(self._file_path)
             self._resolver = rsv_commands.get_resolver()
             self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
             if self._rsv_scene_properties:
