@@ -17,8 +17,6 @@ import lxusd.rsv.objects as usd_rsv_objects
 
 import lxsession.commands as ssn_commands
 
-from lxsession import ssn_configure
-
 
 class AbsRenderSubmitter(
     prx_widgets.PrxToolWindow
@@ -159,7 +157,7 @@ class AbsRenderSubmitter(
         )
 
         self._prx_options_node.set(
-            'refresh', self.set_options_refresh
+            'refresh', self.__set_options_node_refresh_
         )
 
         # self._prx_options_node.get_port(
@@ -215,7 +213,8 @@ class AbsRenderSubmitter(
                 self._rsv_task = self._resolver.get_rsv_task(
                     **self._rsv_scene_properties.value
                 )
-                self.set_options_refresh()
+                self.__set_options_node_refresh_()
+                self.__set_usd_node_refresh_()
                 self.__set_settings_node_refresh_()
                 #
                 self.set_renderers_refresh()
@@ -226,7 +225,7 @@ class AbsRenderSubmitter(
         # print filter_dict
         bsc_objects.Configure(value=filter_dict).set_print_as_yaml_style()
 
-    def set_options_refresh(self):
+    def __set_options_node_refresh_(self):
         self._prx_options_node.set(
             'task', self._rsv_task.path
         )
@@ -371,7 +370,32 @@ class AbsRenderSubmitter(
             'shot'
         )
         if rsv_asset is not None and rsv_shot is not None:
-            pass
+            asset_usd_variant_dict = self._rsv_asset_set_usd_creator._get_asset_usd_set_dress_variant_dict_(rsv_asset)
+            for k, v in asset_usd_variant_dict.items():
+                i_port_path = v['port_path']
+                i_variant_names = v['variant_names']
+                i_current_variant_name = v['variant_name']
+                self._prx_usd_node.set(
+                    i_port_path, i_variant_names
+                )
+                self._prx_usd_node.set(
+                    i_port_path, i_current_variant_name
+                )
+                self._prx_usd_node.set_default(
+                    i_port_path, i_current_variant_name
+                )
+            #
+            # shot_usd_variant_dict = self._rsv_asset_set_usd_creator._get_shot_usd_set_dress_variant_dict_(rsv_shot)
+            # for k, v in shot_usd_variant_dict.items():
+            #     i_port_path = v['port_path']
+            #     i_variant_names = v['variant_names']
+            #     i_current_variant_name = v['variant_name']
+            #     self._prx_usd_node.set(
+            #         i_port_path, i_variant_names
+            #     )
+            #     self._prx_usd_node.set(
+            #         i_port_path, i_current_variant_name
+            #     )
 
     def set_filter_refresh(self):
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)

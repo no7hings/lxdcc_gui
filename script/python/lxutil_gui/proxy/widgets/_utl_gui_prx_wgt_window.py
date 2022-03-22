@@ -47,8 +47,8 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._tip_group.set_widget_add(self._tip_text_browser)
         # option
         self._prx_options_node = _utl_gui_prx_wdt_node.PrxNode_('options')
-        self._prx_options_node.set_hide()
         self._customize_layout.addWidget(self._prx_options_node.widget)
+        self._prx_options_node.set_hide()
         #
         self._button_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
         self._button_tool_bar.set_expanded(True)

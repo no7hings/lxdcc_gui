@@ -901,7 +901,7 @@ class _QtEntryFrame(
         self._set_status_def_init_()
         self._set_frame_def_init_()
         #
-        self._frame_border_color = BorderColor.get('color-basic')
+        self._frame_border_color = BorderColor.get('color-light')
         self._hovered_frame_border_color = BorderColor.get('color-hovered')
         self._selected_frame_border_color = BorderColor.get('color-selected')
 
@@ -911,18 +911,18 @@ class _QtEntryFrame(
         #
         painter = _utl_gui_qt_wgt_utility.QtPainter(self)
         size = self._entry_count
-        spacing = 2
+        spacing = 4
         #
         d = width/size
         #
         is_hovered = True
         is_selected = self._is_focused
+        bkg_color = [Color.ENTRY_BACKGROUND_ENTRY_OFF, Color.ENTRY_BACKGROUND_ENTRY_ON][is_selected]
+        bdr_color = [self._frame_border_color, self._selected_frame_border_color][is_selected]
         if size == 1:
             i_rect = QtCore.QRect(
                 pos_x, pos_y, width, height
             )
-            bkg_color = [Color.ENTRY_BACKGROUND_ENTRY_OFF, Color.ENTRY_BACKGROUND_ENTRY_ON][is_selected]
-            bdr_color = [self._frame_border_color, self._selected_frame_border_color][is_selected]
             painter._set_frame_draw_by_rect_(
                 i_rect,
                 border_color=bdr_color,
@@ -943,8 +943,6 @@ class _QtEntryFrame(
                     i_rect = QtCore.QRect(
                         i*d+(spacing*i), pos_y, d-spacing, height
                     )
-                bkg_color = [Color.ENTRY_BACKGROUND_ENTRY_OFF, Color.ENTRY_BACKGROUND_ENTRY_ON][is_selected]
-                bdr_color = [Color.ENTRY_BORDER_ENTRY_OFF, Color.ENTRY_BORDER_ENTRY_ON][is_selected]
                 painter._set_frame_draw_by_rect_(
                     i_rect,
                     border_color=bdr_color,
@@ -1748,14 +1746,17 @@ class _QtEnumerateValueEntryItem(
         values = self._get_item_values_()
         pre_value = self._get_item_value_()
         maximum = len(values) - 1
-        pre_index = values.index(pre_value)
-        if delta > 0:
-            cur_index = pre_index - 1
-        else:
-            cur_index = pre_index + 1
-
-        cur_index = max(min(cur_index, maximum), 0)
-        self._set_item_value_(values[cur_index])
+        if pre_value in values:
+            pre_index = values.index(pre_value)
+            if delta > 0:
+                cur_index = pre_index - 1
+            else:
+                cur_index = pre_index + 1
+            cur_index = max(min(cur_index, maximum), 0)
+            if cur_index != pre_index:
+                self._set_item_value_(values[cur_index])
+                # set value before
+                self._set_choose_changed_emit_send_()
 
     def _set_item_value_entry_build_(self, value_type):
         self._item_value_type = value_type
@@ -1792,7 +1793,7 @@ class _QtArrayValueEntryItem(
         #
         self._layout = QtHBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(4)
+        self._layout.setSpacing(8)
         #
         self._set_item_value_entry_build_(2, self._item_value_type)
 

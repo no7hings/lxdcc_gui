@@ -583,6 +583,9 @@ class PrxChooseEntry_(AbsRsvTypeQtEntry):
     def get_is_default(self):
         return self._qt_entry_widget._get_item_value_is_default_()
 
+    def set_changed_connect_to(self, fnc):
+        self._qt_entry_widget._set_choose_changed_connect_to_(fnc)
+
 
 class PrxTextEntry(PrxConstantEntry):
     def __init__(self, *args, **kwargs):
@@ -1064,11 +1067,6 @@ class AbsPrxTypePort(AbsPrxPortDef):
         self._prx_port_enable = self.ENABLE_CLASS()
         # gui
         self._prx_port_label = self.LABEL_CLASS()
-        if self.LABEL_HIDED is False:
-            pass
-        else:
-            self._prx_port_label.set_hide()
-        #
         self._prx_port_label.set_name_tool_tip(
             'path: {}\nname: {}'.format(
                 self._path,
@@ -1578,6 +1576,8 @@ class PrxGroupPort_(
             layout.addWidget(
                 cur_port._prx_port_entry.widget
             )
+            if cur_port.LABEL_HIDED is True:
+                cur_port._prx_port_label.set_hide()
         elif condition == (False, True):
             widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
             self._port_layout.addWidget(widget)
@@ -1590,6 +1590,8 @@ class PrxGroupPort_(
             layout.addWidget(
                 cur_port._prx_port_label.widget
             )
+            if cur_port.LABEL_HIDED is True:
+                cur_port._prx_port_label.set_hide()
             #
             enter_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
             layout.addWidget(
@@ -1615,6 +1617,7 @@ class PrxGroupPort_(
             )
         #
         self._port_stack.set_object_add(cur_port)
+        #
         self.set_label_width_update()
         return port
 
@@ -1796,7 +1799,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         elif widget_ in ['enumerate']:
             port = PrxEnumeratePort_(port_path)
             port.set(value_)
-            port.set_default(value_)
+            port.set_default(value_[-1])
         #
         elif widget_ in ['file']:
             port = PrxFileOpenPort(port_path)
@@ -1839,6 +1842,11 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         port = self.get_port(key)
         if port is not None:
             port.set(value)
+
+    def set_default(self, key, value):
+        port = self.get_port(key)
+        if port is not None:
+            port.set_default(value)
 
     def get(self, key):
         port = self.get_port(key)
