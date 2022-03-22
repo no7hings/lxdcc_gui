@@ -169,16 +169,16 @@ class PrxFileOpenEntry(AbsRsvTypeQtEntry):
                 self.set_history_update()
 
     def get(self):
-        return self._qt_entry_widget._get_value_()
+        return self._qt_entry_widget._get_item_value_()
 
     def set(self, raw=None, **kwargs):
-        self._qt_entry_widget._set_value_(raw)
+        self._qt_entry_widget._set_item_value_(raw)
 
     def set_changed_connect_to(self, fnc):
         self._qt_entry_widget._set_item_entry_changed_connect_to_(fnc)
     #
     def set_history_update(self):
-        path = self._qt_entry_widget._get_value_()
+        path = self._qt_entry_widget._get_item_value_()
         if bsc_core.StoragePathOpt(path).get_is_exists() is True:
             utl_core.History.set_append(
                 self.HISTORY_KEY,
@@ -191,14 +191,14 @@ class PrxFileOpenEntry(AbsRsvTypeQtEntry):
         if histories:
             histories.reverse()
             #
-            self._qt_entry_widget._set_values_(
+            self._qt_entry_widget._set_item_values_(
                 histories
             )
 
     def set_history_show_latest(self):
         _ = utl_core.History.get_latest(self.HISTORY_KEY)
         if _:
-            self._qt_entry_widget._set_value_(_)
+            self._qt_entry_widget._set_item_value_(_)
 
 
 class PrxDirectoryOpenEntry(AbsRsvTypeQtEntry):
@@ -245,22 +245,22 @@ class PrxDirectoryOpenEntry(AbsRsvTypeQtEntry):
             self.set_history_update()
 
     def get(self):
-        return self._qt_entry_widget._get_value_()
+        return self._qt_entry_widget._get_item_value_()
 
     def set(self, raw=None, **kwargs):
-        self._qt_entry_widget._set_value_(raw)
+        self._qt_entry_widget._set_item_value_(raw)
 
     def set_default(self, raw, **kwargs):
-        self._qt_entry_widget._set_value_default_(raw)
+        self._qt_entry_widget._set_item_value_default_(raw)
 
     def get_is_default(self):
-        return self._qt_entry_widget._get_value_is_default_()
+        return self._qt_entry_widget._get_item_value_is_default_()
 
     def set_changed_connect_to(self, fnc):
         self._qt_entry_widget._set_item_entry_changed_connect_to_(fnc)
     #
     def set_history_update(self):
-        path = self._qt_entry_widget._get_value_()
+        path = self._qt_entry_widget._get_item_value_()
         if bsc_core.StoragePathOpt(path).get_is_exists() is True:
             utl_core.History.set_append(
                 self.HISTORY_KEY,
@@ -273,14 +273,14 @@ class PrxDirectoryOpenEntry(AbsRsvTypeQtEntry):
         if histories:
             histories.reverse()
             #
-            self._qt_entry_widget._set_values_(
+            self._qt_entry_widget._set_item_values_(
                 histories
             )
 
     def set_history_show_latest(self):
         _ = utl_core.History.get_latest(self.HISTORY_KEY)
         if _:
-            self._qt_entry_widget._set_value_(_)
+            self._qt_entry_widget._set_item_value_(_)
 
 
 class PrxFileSaveEntry(AbsRsvTypeQtEntry):
@@ -330,22 +330,22 @@ class PrxFileSaveEntry(AbsRsvTypeQtEntry):
                 self.set_history_update()
 
     def get(self):
-        return self._qt_entry_widget._get_value_()
+        return self._qt_entry_widget._get_item_value_()
 
     def set(self, raw=None, **kwargs):
-        self._qt_entry_widget._set_value_(raw)
+        self._qt_entry_widget._set_item_value_(raw)
 
     def set_default(self, raw, **kwargs):
-        self._qt_entry_widget._set_value_default_(raw)
+        self._qt_entry_widget._set_item_value_default_(raw)
 
     def get_is_default(self):
-        return self._qt_entry_widget._get_value_is_default_()
+        return self._qt_entry_widget._get_item_value_is_default_()
 
     def set_changed_connect_to(self, fnc):
         self._qt_entry_widget._set_item_entry_changed_connect_to_(fnc)
     #
     def set_history_update(self):
-        path = self._qt_entry_widget._get_value_()
+        path = self._qt_entry_widget._get_item_value_()
         if bsc_core.StoragePathOpt(path).get_is_exists() is True:
             utl_core.History.set_append(
                 self.HISTORY_KEY,
@@ -358,14 +358,14 @@ class PrxFileSaveEntry(AbsRsvTypeQtEntry):
         if histories:
             histories.reverse()
             #
-            self._qt_entry_widget._set_values_(
+            self._qt_entry_widget._set_item_values_(
                 histories
             )
 
     def set_history_show_latest(self):
         _ = utl_core.History.get_latest(self.HISTORY_KEY)
         if _:
-            self._qt_entry_widget._set_value_(_)
+            self._qt_entry_widget._set_item_value_(_)
 
 
 class PrxRsvProjectChooseEntry(AbsRsvTypeQtEntry):
@@ -384,22 +384,22 @@ class PrxRsvProjectChooseEntry(AbsRsvTypeQtEntry):
         self._qt_entry_widget._set_choose_changed_connect_to_(self.set_history_update)
 
     def get(self):
-        return self._qt_entry_widget._get_value_()
+        return self._qt_entry_widget._get_item_value_()
 
     def set(self, raw=None, **kwargs):
-        self._qt_entry_widget._set_value_(raw)
+        self._qt_entry_widget._set_item_value_(raw)
 
     def set_default(self, raw, **kwargs):
-        self._qt_entry_widget._set_value_default_(raw)
+        self._qt_entry_widget._set_item_value_default_(raw)
 
     def get_is_default(self):
-        return self._qt_entry_widget._get_value_is_default_()
+        return self._qt_entry_widget._get_item_value_is_default_()
 
     def set_changed_connect_to(self, fnc):
         self._qt_entry_widget._set_item_entry_changed_connect_to_(fnc)
     #
     def set_history_update(self):
-        project = self._qt_entry_widget._get_value_()
+        project = self._qt_entry_widget._get_item_value_()
         if project:
             import lxresolver.commands as rsv_commands
             resolver = rsv_commands.get_resolver()
@@ -420,14 +420,14 @@ class PrxRsvProjectChooseEntry(AbsRsvTypeQtEntry):
             histories = [i for i in histories if i]
             histories.reverse()
             #
-            self._qt_entry_widget._set_values_(
+            self._qt_entry_widget._set_item_values_(
                 histories
             )
 
     def set_history_show_latest(self):
         _ = utl_core.History.get_latest(self.HISTORY_KEY)
         if _:
-            self._qt_entry_widget._set_value_(_)
+            self._qt_entry_widget._set_item_value_(_)
 
 
 class PrxSchemeChooseEntry(AbsRsvTypeQtEntry):
@@ -448,7 +448,7 @@ class PrxSchemeChooseEntry(AbsRsvTypeQtEntry):
         self._qt_entry_widget._set_choose_changed_connect_to_(self.set_history_update)
 
     def get(self):
-        return self._qt_entry_widget._get_value_()
+        return self._qt_entry_widget._get_item_value_()
 
     def set(self, raw=None, **kwargs):
         if isinstance(raw, (tuple, list)):
@@ -457,10 +457,10 @@ class PrxSchemeChooseEntry(AbsRsvTypeQtEntry):
             self.set_history_show_latest()
 
     def set_default(self, raw, **kwargs):
-        self._qt_entry_widget._set_value_default_(raw)
+        self._qt_entry_widget._set_item_value_default_(raw)
 
     def get_is_default(self):
-        return self._qt_entry_widget._get_value_is_default_()
+        return self._qt_entry_widget._get_item_value_is_default_()
 
     def set_scheme_key(self, key):
         self._scheme_key = key
@@ -484,7 +484,7 @@ class PrxSchemeChooseEntry(AbsRsvTypeQtEntry):
     #
     def set_history_update(self):
         if self._scheme_key is not None:
-            scheme = self._qt_entry_widget._get_value_()
+            scheme = self._qt_entry_widget._get_item_value_()
             if scheme:
                 utl_core.History.set_append(
                     self._scheme_key,
@@ -498,7 +498,7 @@ class PrxSchemeChooseEntry(AbsRsvTypeQtEntry):
                 histories = [i for i in histories if i]
                 histories.reverse()
                 #
-                self._qt_entry_widget._set_values_(
+                self._qt_entry_widget._set_item_values_(
                     histories
                 )
 
@@ -506,7 +506,7 @@ class PrxSchemeChooseEntry(AbsRsvTypeQtEntry):
         if self._scheme_key is not None:
             _ = utl_core.History.get_latest(self._scheme_key)
             if _:
-                self._qt_entry_widget._set_value_(_)
+                self._qt_entry_widget._set_item_value_(_)
 
 
 class PrxConstantEntry(AbsRsvTypeQtEntry):
@@ -519,19 +519,19 @@ class PrxConstantEntry(AbsRsvTypeQtEntry):
         self.widget.setFocusProxy(self._qt_entry_widget)
 
     def set_value_type(self, value_type):
-        self._qt_entry_widget._set_value_type_(value_type)
+        self._qt_entry_widget._set_item_value_type_(value_type)
 
     def get(self):
-        return self._qt_entry_widget._get_value_()
+        return self._qt_entry_widget._get_item_value_()
 
     def set(self, raw=None, **kwargs):
-        self._qt_entry_widget._set_value_(raw)
+        self._qt_entry_widget._set_item_value_(raw)
 
     def set_default(self, raw, **kwargs):
-        self._qt_entry_widget._set_value_default_(raw)
+        self._qt_entry_widget._set_item_value_default_(raw)
 
     def get_is_default(self):
-        return self._qt_entry_widget._get_value_is_default_()
+        return self._qt_entry_widget._get_item_value_is_default_()
 
     def set_changed_connect_to(self, fnc):
         self._qt_entry_widget._set_item_entry_changed_connect_to_(fnc)
@@ -564,24 +564,24 @@ class PrxChooseEntry_(AbsRsvTypeQtEntry):
         self.widget.setFocusProxy(self._qt_entry_widget)
 
     def get(self):
-        return self._qt_entry_widget._get_value_()
+        return self._qt_entry_widget._get_item_value_()
 
     def get_enumerate_strings(self):
-        return self._qt_entry_widget._get_values_()
+        return self._qt_entry_widget._get_item_values_()
 
     def set(self, raw=None, **kwargs):
         if isinstance(raw, (tuple, list)):
-            self._qt_entry_widget._set_values_(raw)
+            self._qt_entry_widget._set_item_values_(raw)
             if raw:
-                self._qt_entry_widget._set_value_(raw[-1])
+                self._qt_entry_widget._set_item_value_(raw[-1])
         elif isinstance(raw, (str, unicode)):
-            self._qt_entry_widget._set_value_(raw)
+            self._qt_entry_widget._set_item_value_(raw)
 
     def set_default(self, raw, **kwargs):
-        self._qt_entry_widget._set_value_default_(raw)
+        self._qt_entry_widget._set_item_value_default_(raw)
 
     def get_is_default(self):
-        return self._qt_entry_widget._get_value_is_default_()
+        return self._qt_entry_widget._get_item_value_is_default_()
 
 
 class PrxTextEntry(PrxConstantEntry):
@@ -615,24 +615,24 @@ class PrxArrayEntry(AbsRsvTypeQtEntry):
         super(PrxArrayEntry, self).__init__(*args, **kwargs)
 
     def set_value_type(self, value_type):
-        self._qt_entry_widget._set_value_type_(value_type)
+        self._qt_entry_widget._set_item_value_type_(value_type)
 
     def set_value_size(self, size):
         self._qt_entry_widget._set_value_size_(size)
 
     def get(self):
-        return self._qt_entry_widget._get_value_()
+        return self._qt_entry_widget._get_item_value_()
 
     def set(self, raw=None, **kwargs):
-        self._qt_entry_widget._set_value_(
+        self._qt_entry_widget._set_item_value_(
             raw
         )
 
     def set_default(self, raw, **kwargs):
-        self._qt_entry_widget._set_value_default_(raw)
+        self._qt_entry_widget._set_item_value_default_(raw)
 
     def get_is_default(self):
-        return self._qt_entry_widget._get_value_is_default_()
+        return self._qt_entry_widget._get_item_value_is_default_()
     
     def set_changed_connect_to(self, fnc):
         self._qt_entry_widget._set_item_entry_changed_connect_to_(fnc)
@@ -641,13 +641,13 @@ class PrxArrayEntry(AbsRsvTypeQtEntry):
 class PrxIntegerArrayEntry(PrxArrayEntry):
     def __init__(self, *args, **kwargs):
         super(PrxIntegerArrayEntry, self).__init__(*args, **kwargs)
-        self._qt_entry_widget._set_value_entry_build_(2, int)
+        self._qt_entry_widget._set_item_value_entry_build_(2, int)
 
 
 class PrxFloatArrayEntry(PrxArrayEntry):
     def __init__(self, *args, **kwargs):
         super(PrxFloatArrayEntry, self).__init__(*args, **kwargs)
-        self._qt_entry_widget._set_value_entry_build_(2, float)
+        self._qt_entry_widget._set_item_value_entry_build_(2, float)
 
 
 class PrxBooleanEntry(AbsRsvTypeQtEntry):
@@ -661,6 +661,12 @@ class PrxBooleanEntry(AbsRsvTypeQtEntry):
 
     def set(self, raw=None, **kwargs):
         self._qt_entry_widget._set_item_checked_(raw)
+
+    def set_default(self, raw, **kwargs):
+        self._qt_entry_widget._set_item_value_default_(raw)
+
+    def get_is_default(self):
+        return self._qt_entry_widget._get_item_value_is_default_()
 
     def set_changed_connect_to(self, fnc):
         self._qt_entry_widget._set_item_check_changed_connect_to_(fnc)

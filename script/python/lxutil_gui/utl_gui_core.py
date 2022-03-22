@@ -113,7 +113,7 @@ class ChartMethod(object):
         return math.sqrt(((x1 - x2) ** 2) + ((y1 - y2) ** 2))
 
 
-class SizeMethod(object):
+class SizeMtd(object):
     @classmethod
     def set_remap_to(cls, width, height, maximum):
         maxValue = max([width, height])
@@ -177,6 +177,20 @@ class QtStyleMtd(object):
     def get(cls, key):
         return cls.CONFIGURE.get(
             'widget.{}'.format(key)
+        )
+    @classmethod
+    def get_border_color(cls, key):
+        return eval(
+            cls.CONFIGURE.get(
+                'option.border.{}'.format(key)
+            )
+        )
+    @classmethod
+    def get_background_color(cls, key):
+        return eval(
+            cls.CONFIGURE.get(
+                'option.border.{}'.format(key)
+            )
         )
 
 

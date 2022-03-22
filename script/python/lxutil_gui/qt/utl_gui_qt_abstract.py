@@ -202,12 +202,14 @@ class _QtStatusesDef(object):
 class _QtFrameDef(object):
     def _set_frame_def_init_(self):
         self._frame_border_color = Color.TRANSPARENT
-        self._hover_frame_border_color = Color.TRANSPARENT
-        self._press_frame_border_color = Color.TRANSPARENT
+        self._hovered_frame_border_color = Color.TRANSPARENT
+        self._selected_frame_border_color = Color.TRANSPARENT
         #
         self._frame_background_color = Color.TRANSPARENT
-        self._hover_frame_background_color = Color.TRANSPARENT
-        self._press_frame_background_color = Color.TRANSPARENT
+        self._hovered_frame_background_color = Color.TRANSPARENT
+        self._selected_frame_background_color = Color.TRANSPARENT
+        #
+        self._frame_border_radius = 0
         #
         self._frame_rect = QtCore.QRect()
         self._frame_size = 20, 20
@@ -243,6 +245,9 @@ class _QtFrameDef(object):
 
     def _set_frame_draw_enable_(self, boolean):
         self._frame_draw_enable = boolean
+
+    def _set_frame_border_radius_(self, radius):
+        self._frame_border_radius = radius
 
 
 class _QtIconDef(object):
@@ -646,7 +651,7 @@ class _QtProgressDef(object):
 
 class _QtImageDef(object):
     def _set_image_def_init_(self):
-        self._image_enable = False
+        self._image_is_enable = False
         #
         self._image_file_path = None
         self._image_name_text = None
@@ -662,7 +667,7 @@ class _QtImageDef(object):
         raise NotImplementedError()
 
     def _set_image_file_path_(self, file_path):
-        self._image_enable = True
+        self._image_is_enable = True
         self._image_file_path = file_path
         self._set_widget_update_()
 
@@ -688,7 +693,7 @@ class _QtImageDef(object):
         return self._image_size
 
     def _get_image_file_path_(self):
-        if self._image_enable is True:
+        if self._image_is_enable is True:
             return self._image_file_path
 
     def _set_image_rect_(self, x, y, w, h):
@@ -710,6 +715,15 @@ class _QtImageDef(object):
 
     def _get_image_frame_rect_(self):
         return self._image_frame_rect
+
+
+class AbsQtMovieDef(object):
+    def _set_widget_update_(self):
+        raise NotImplementedError()
+    #
+    def _set_movie_def_init_(self):
+        self._movie_is_enable = False
+        self._movie_rect = QtCore.QRect()
 
 
 class AbsQtNamesDef(object):
@@ -1117,9 +1131,9 @@ class _QtItemOptionPressActionDef(object):
         return False
 
 
-class _QtItemChooseActionDef(object):
+class AbsQtItemActionChooseDef(object):
     choose_changed = qt_signal()
-    def _set_item_choose_def_init_(self):
+    def _set_item_action_choose_def_init_(self):
         self._choose_expand_icon_file_path = utl_core.Icon.get('choose_expand')
         self._choose_collapse_icon_file_path = utl_core.Icon.get('choose_collapse')
         #
@@ -1356,6 +1370,21 @@ class _QtItemSelectActionDef(object):
 
     def _get_is_selected_(self):
         return self._is_selected
+
+
+class AbsQtItemMovieActionDef(object):
+    movie_play_press_clicked = qt_signal()
+    def _set_item_movie_action_def_init_(self):
+        self._item_movie_play_rect = QtCore.QRect()
+
+    def _set_item_movie_play_rect_(self, x, y, w, h):
+        self._item_movie_play_rect.setRect(x, y, w, h)
+
+    def _set_item_movie_play_press_clicked_connect_to_(self, fnc):
+        pass
+
+    def _set_item_movie_pay_press_clicked_emit_send_(self):
+        self.movie_play_press_clicked.emit()
 
 
 class _QtItemShowDef(object):
@@ -2090,146 +2119,154 @@ class AbsQtListWidget(
         )
 
 
-class _QtConstantValueEntryDef(object):
-    QT_VALUE_ENTRY_CLASS = None
-    def _set_constant_value_entry_def_init_(self):
-        self._value_type = str
-        #
-        self._default_value = None
-        #
-        self._value_entry_widget = None
+class AbsQtItemValueDefaultDef(object):
+    def _set_item_value_default_def_init_(self):
+        self._item_value_default = None
 
-    def _set_value_entry_build_(self, value_type):
+    def _get_item_value_(self):
+        raise NotImplementedError()
+
+    def _set_item_value_default_(self, value):
+        self._item_value_default = value
+
+    def _get_item_value_default_(self):
+        return self._item_value_default
+
+    def _get_item_value_is_default_(self):
+        return self._get_item_value_() == self._get_item_value_default_()
+
+
+class AbsQtItemValueTypeConstantEntryDef(object):
+    QT_VALUE_ENTRY_CLASS = None
+    def _set_item_value_type_constant_entry_def_init_(self):
+        self._item_value_type = str
+        #
+        self._item_value_default = None
+        #
+        self._item_value_entry_widget = None
+
+    def _set_item_value_entry_build_(self, value_type):
         pass
 
-    def _set_value_type_(self, value_type):
-        self._value_type = value_type
-        self._value_entry_widget._set_value_type_(value_type)
+    def _set_item_value_type_(self, value_type):
+        self._item_value_type = value_type
+        self._item_value_entry_widget._set_item_value_type_(value_type)
 
-    def _get_value_type_(self):
-        return self._value_type
+    def _get_item_value_type_(self):
+        return self._item_value_type
 
-    def _set_value_default_(self, value):
-        self._default_value = value
+    def _set_item_value_(self, value):
+        self._item_value_entry_widget._set_item_value_(value)
 
-    def _get_value_default_(self):
-        return self._default_value
-
-    def _get_value_is_default_(self):
-        return self._get_value_() == self._get_value_default_()
-
-    def _set_value_(self, value):
-        self._value_entry_widget._set_value_(value)
-
-    def _get_value_(self):
-        return self._value_entry_widget._get_value_()
+    def _get_item_value_(self):
+        return self._item_value_entry_widget._get_item_value_()
 
     def _set_item_entry_finished_connect_to_(self, fnc):
-        self._value_entry_widget.entry_finished.connect(fnc)
+        self._item_value_entry_widget.entry_finished.connect(fnc)
 
     def _set_item_entry_changed_connect_to_(self, fnc):
-        self._value_entry_widget.entry_changed.connect(fnc)
+        self._item_value_entry_widget.entry_changed.connect(fnc)
 
 
-class _QtEnumerateValueEntryDef(object):
+class AbsQtItemValueEnumerateEntryDef(object):
     QT_VALUE_ENTRY_CLASS = None
-    def _set_enumerate_value_entry_def_init_(self):
-        self._value_type = str
+    def _set_item_value_enumerate_entry_def_init_(self):
+        self._item_value_type = str
         #
-        self._default_value = None
+        self._item_value_default = None
         #
         self._values = []
         #
-        self._value_entry_widget = None
+        self._item_value_entry_widget = None
 
-    def _set_value_entry_build_(self, value_type):
+    def _set_item_value_entry_build_(self, value_type):
         pass
 
-    def _set_value_type_(self, value_type):
-        self._value_type = value_type
-        self._value_entry_widget._set_value_type_(value_type)
+    def _set_item_value_type_(self, value_type):
+        self._item_value_type = value_type
+        self._item_value_entry_widget._set_item_value_type_(value_type)
 
-    def _get_value_type_(self):
-        return self._value_type
+    def _get_item_value_type_(self):
+        return self._item_value_type
 
-    def _set_value_default_(self, value):
-        self._default_value = value
+    def _set_item_value_default_(self, value):
+        self._item_value_default = value
 
-    def _get_value_default_(self):
-        return self._default_value
+    def _get_item_value_default_(self):
+        return self._item_value_default
 
-    def _set_values_(self, values):
+    def _set_item_values_(self, values):
         self._values = values
-        self._value_entry_widget._set_completer_values_(values)
+        self._item_value_entry_widget._set_completer_values_(values)
 
-    def _get_values_(self):
+    def _get_item_values_(self):
         return self._values
 
-    def _set_value_append_(self, value):
+    def _set_item_value_append_(self, value):
         self._values.append(value)
 
-    def _set_value_(self, value):
-        self._value_entry_widget._set_value_(value)
+    def _set_item_value_(self, value):
+        self._item_value_entry_widget._set_item_value_(value)
 
-    def _get_value_(self):
-        return self._value_entry_widget._get_value_()
+    def _get_item_value_(self):
+        return self._item_value_entry_widget._get_item_value_()
 
-    def _set_value_clear_(self):
+    def _set_item_value_clear_(self):
         self._values = []
-        self._value_entry_widget._set_value_clear_()
+        self._item_value_entry_widget._set_item_value_clear_()
 
-    def _get_value_is_default_(self):
-        return self._get_value_() == self._get_value_default_()
+    def _get_item_value_is_default_(self):
+        return self._get_item_value_() == self._get_item_value_default_()
 
 
 class _QtArrayValueEntryDef(object):
     QT_VALUE_ENTRY_CLASS = None
     def _set_array_value_entry_def_init_(self):
-        self._value_type = str
+        self._item_value_type = str
         #
-        self._default_value = ()
+        self._item_value_default = ()
         self._value = []
         self._value_entry_widgets = []
 
-    def _set_value_entry_build_(self, value_size, value_type):
+    def _set_item_value_entry_build_(self, value_size, value_type):
         pass
 
-    def _set_value_type_(self, value_type):
-        self._value_type = value_type
+    def _set_item_value_type_(self, value_type):
+        self._item_value_type = value_type
         for i_value_entry_widget in self._value_entry_widgets:
-            i_value_entry_widget._set_value_type_(value_type)
+            i_value_entry_widget._set_item_value_type_(value_type)
 
-    def _get_value_type_(self):
-        return self._value_type
+    def _get_item_value_type_(self):
+        return self._item_value_type
 
     def _set_value_size_(self, size):
-        self._set_value_entry_build_(size, self._value_type)
+        self._set_item_value_entry_build_(size, self._item_value_type)
 
     def _get_value_size_(self):
         return len(self._value_entry_widgets)
 
-    def _get_value_default_(self):
-        return self._default_value
+    def _get_item_value_default_(self):
+        return self._item_value_default
 
-    def _set_value_(self, value):
+    def _set_item_value_(self, value):
         for i, i_value in enumerate(value):
             widget = self._value_entry_widgets[i]
-            widget._set_value_(i_value)
+            widget._set_item_value_(i_value)
 
-    def _get_value_(self):
+    def _get_item_value_(self):
         value = []
         for i in self._value_entry_widgets:
-            i_value = i._get_value_()
+            i_value = i._get_item_value_()
             value.append(
                 i_value
             )
         return tuple(value)
 
-    def _set_value_default_(self, value):
-        self._default_value = value
+    def _set_item_value_default_(self, value):
+        self._item_value_default = value
 
-    def _get_value_is_default_(self):
-        return tuple(self._get_value_()) == tuple(self._get_value_default_())
+    def _get_item_value_is_default_(self):
+        return tuple(self._get_item_value_()) == tuple(self._get_item_value_default_())
 
     def _set_item_entry_changed_connect_to_(self, fnc):
         for i in self._value_entry_widgets:

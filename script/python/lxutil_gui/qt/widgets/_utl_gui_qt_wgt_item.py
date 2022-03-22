@@ -263,14 +263,14 @@ class _QtPressItem(
         hover_color = r, g, b
         #
         self._frame_border_color = color
-        self._hover_frame_border_color = hover_color
+        self._hovered_frame_border_color = hover_color
         #
         r, g, b = 151, 151, 151
         h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
         color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
         hover_color = r, g, b
         self._frame_background_color = color
-        self._hover_frame_background_color = hover_color
+        self._hovered_frame_background_color = hover_color
 
     def _set_widget_update_(self):
         self.update()
@@ -420,8 +420,8 @@ class _QtPressItem(
         offset = self._get_item_action_offset_()
         #
         if self._item_is_enable is True:
-            border_color = [self._frame_border_color, self._hover_frame_border_color][self._item_is_hovered]
-            background_color = [self._frame_background_color, self._hover_frame_background_color][self._item_is_hovered]
+            border_color = [self._frame_border_color, self._hovered_frame_border_color][self._item_is_hovered]
+            background_color = [self._frame_background_color, self._hovered_frame_background_color][self._item_is_hovered]
         else:
             border_color = Color.BUTTON_BORDER_DISABLE
             background_color = Color.BUTTON_BACKGROUND_DISABLE
@@ -509,6 +509,8 @@ class _QtCheckItem(
     utl_gui_qt_abstract._QtItemDef,
     utl_gui_qt_abstract._QtItemActionDef,
     utl_gui_qt_abstract._QtItemCheckActionDef,
+    #
+    utl_gui_qt_abstract.AbsQtItemValueDefaultDef,
 ):
     def __init__(self, *args, **kwargs):
         super(_QtCheckItem, self).__init__(*args, **kwargs)
@@ -531,6 +533,8 @@ class _QtCheckItem(
         self._set_item_def_init_()
         self._set_item_action_def_init_()
         self._set_item_check_action_def_init_()
+        #
+        self._set_item_value_default_def_init_()
         #
         self._set_item_check_update_()
 
@@ -558,6 +562,9 @@ class _QtCheckItem(
         self._set_name_rect_(
             x, y, w-x, h
         )
+
+    def _get_item_value_(self):
+        return self._get_item_is_checked_()
 
     def eventFilter(self, *args):
         widget, event = args
@@ -876,6 +883,7 @@ class _QtFilterBar(QtWidgets.QWidget):
 
 class _QtEntryFrame(
     QtWidgets.QWidget,
+    utl_gui_qt_abstract._QtFrameDef,
     utl_gui_qt_abstract._QtStatusDef,
 ):
     def _set_widget_update_(self):
@@ -891,6 +899,11 @@ class _QtEntryFrame(
         self._entry_count = 1
         #
         self._set_status_def_init_()
+        self._set_frame_def_init_()
+        #
+        self._frame_border_color = BorderColor.get('color-basic')
+        self._hovered_frame_border_color = BorderColor.get('color-hovered')
+        self._selected_frame_border_color = BorderColor.get('color-selected')
 
     def paintEvent(self, event):
         pos_x, pos_y = 0, 0
@@ -901,12 +914,15 @@ class _QtEntryFrame(
         spacing = 2
         #
         d = width/size
+        #
+        is_hovered = True
+        is_selected = self._is_focused
         if size == 1:
             i_rect = QtCore.QRect(
                 pos_x, pos_y, width, height
             )
-            bkg_color = [Color.ENTRY_BACKGROUND_ENTRY_OFF, Color.ENTRY_BACKGROUND_ENTRY_ON][self._is_focused]
-            bdr_color = [Color.ENTRY_BORDER_ENTRY_OFF, Color.ENTRY_BORDER_ENTRY_ON][self._is_focused]
+            bkg_color = [Color.ENTRY_BACKGROUND_ENTRY_OFF, Color.ENTRY_BACKGROUND_ENTRY_ON][is_selected]
+            bdr_color = [self._frame_border_color, self._selected_frame_border_color][is_selected]
             painter._set_frame_draw_by_rect_(
                 i_rect,
                 border_color=bdr_color,
@@ -927,8 +943,8 @@ class _QtEntryFrame(
                     i_rect = QtCore.QRect(
                         i*d+(spacing*i), pos_y, d-spacing, height
                     )
-                bkg_color = [Color.ENTRY_BACKGROUND_ENTRY_OFF, Color.ENTRY_BACKGROUND_ENTRY_ON][self._is_focused]
-                bdr_color = [Color.ENTRY_BORDER_ENTRY_OFF, Color.ENTRY_BORDER_ENTRY_ON][self._is_focused]
+                bkg_color = [Color.ENTRY_BACKGROUND_ENTRY_OFF, Color.ENTRY_BACKGROUND_ENTRY_ON][is_selected]
+                bdr_color = [Color.ENTRY_BORDER_ENTRY_OFF, Color.ENTRY_BORDER_ENTRY_ON][is_selected]
                 painter._set_frame_draw_by_rect_(
                     i_rect,
                     border_color=bdr_color,
@@ -955,10 +971,10 @@ class _QtEntryItem(QtWidgets.QLineEdit):
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
-        self._value_type = str
+        self._item_value_type = str
         self._is_use_as_storage = False
         #
-        self._default_value = None
+        self._item_value_default = None
         #
         self._maximum = 1
         self._minimum = 0
@@ -977,13 +993,13 @@ class _QtEntryItem(QtWidgets.QLineEdit):
         )
 
     def _set_action_wheel_update_(self, event):
-        if self._value_type in [int, float]:
+        if self._item_value_type in [int, float]:
             delta = event.angleDelta().y()
-            pre_value = self._get_value_()
+            pre_value = self._get_item_value_()
             if delta > 0:
-                self._set_value_(pre_value+1)
+                self._set_item_value_(pre_value+1)
             else:
-                self._set_value_(pre_value-1)
+                self._set_item_value_(pre_value-1)
             #
             self._set_enter_changed_emit_send_()
 
@@ -1047,24 +1063,24 @@ class _QtEntryItem(QtWidgets.QLineEdit):
         self.entry_changed.emit()
 
     def _set_value_completion_(self):
-        if self._value_type in [int, float]:
+        if self._item_value_type in [int, float]:
             if not self.text():
-                self._set_value_(0)
+                self._set_item_value_(0)
 
-    def _set_value_type_(self, value_type):
-        self._value_type = value_type
-        if self._value_type is None:
+    def _set_item_value_type_(self, value_type):
+        self._item_value_type = value_type
+        if self._item_value_type is None:
             pass
-        elif self._value_type is str:
+        elif self._item_value_type is str:
             pass
             # self._set_use_as_string_()
-        elif self._value_type is int:
+        elif self._item_value_type is int:
             self._set_use_as_integer_()
-        elif self._value_type is float:
+        elif self._item_value_type is float:
             self._set_use_as_float_()
 
-    def _get_value_type_(self):
-        return self._value_type
+    def _get_item_value_type_(self):
+        return self._item_value_type
 
     def _set_open_in_system_(self):
         _ = self.text()
@@ -1105,26 +1121,26 @@ class _QtEntryItem(QtWidgets.QLineEdit):
     def _get_value_range_(self):
         return self._get_value_maximum_(), self._get_value_minimum_()
 
-    def _get_value_(self):
+    def _get_item_value_(self):
         _ = self.text()
-        if self._value_type == str:
+        if self._item_value_type == str:
             return _
-        elif self._value_type == int:
+        elif self._item_value_type == int:
             return int(_)
-        elif self._value_type == float:
+        elif self._item_value_type == float:
             return float(_)
         return _
 
-    def _set_value_(self, value):
+    def _set_item_value_(self, value):
         if value is not None:
             self.setText(
-                str(self._value_type(value)).encode("UTF8")
+                str(self._item_value_type(value)).encode("UTF8")
             )
         else:
             self.setText('')
 
-    def _get_value_default_(self):
-        return self._default_value
+    def _get_item_value_default_(self):
+        return self._item_value_default
 
     def _set_focus_connect_to_(self, widget):
         pass
@@ -1135,8 +1151,8 @@ class _QtEntryItem(QtWidgets.QLineEdit):
             boolean = True
         return boolean
 
-    def _set_value_clear_(self):
-        self._set_value_('')
+    def _set_item_value_clear_(self):
+        self._set_item_value_('')
 
     def _set_completer_values_(self, values):
         pass
@@ -1584,12 +1600,12 @@ class _QtChooseDropWidget1(
 
     def _set_drop_start_(self):
         parent = self.parent()
-        content_name_texts = parent._get_values_()
+        content_name_texts = parent._get_item_values_()
         if isinstance(content_name_texts, (tuple, list)):
             press_pos = self._get_choose_point_(parent)
             width, height = self._get_choose_size_(parent)
             #
-            current_name_text = parent._get_value_()
+            current_name_text = parent._get_item_value_()
             #
             for seq, i_name_text in enumerate(content_name_texts):
                 item_widget = _QtHItem()
@@ -1624,7 +1640,7 @@ class _QtChooseDropWidget1(
         selected_item_widget = self._list_widget._get_selected_item_widget_()
         if selected_item_widget:
             name_text = selected_item_widget._get_name_text_()
-            parent._set_value_(name_text)
+            parent._set_item_value_(name_text)
             parent._set_choose_changed_emit_send_()
         #
         parent._set_focus_(False)
@@ -1659,7 +1675,8 @@ class _QtChooseDropWidget1(
 
 class _QtConstantValueEntryItem(
     _QtEntryFrame,
-    utl_gui_qt_abstract._QtConstantValueEntryDef
+    utl_gui_qt_abstract.AbsQtItemValueTypeConstantEntryDef,
+    utl_gui_qt_abstract.AbsQtItemValueDefaultDef,
 ):
     QT_VALUE_ENTRY_CLASS = _QtEntryItem
     #
@@ -1667,26 +1684,29 @@ class _QtConstantValueEntryItem(
     def __init__(self, *args, **kwargs):
         super(_QtConstantValueEntryItem, self).__init__(*args, **kwargs)
         #
-        self._set_constant_value_entry_def_init_()
+        self._set_item_value_type_constant_entry_def_init_()
+        self._set_item_value_default_def_init_()
         #
         self._layout = QtHBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(4)
         #
-        self._set_value_entry_build_(self._value_type)
+        self._set_item_value_entry_build_(self._item_value_type)
 
-    def _set_value_entry_build_(self, value_type):
-        self._value_type = value_type
+    def _set_item_value_entry_build_(self, value_type):
+        self._item_value_type = value_type
         #
-        self._value_entry_widget = _QtEntryItem()
-        self._layout.addWidget(self._value_entry_widget)
-        self._value_entry_widget._set_value_type_(self._value_type)
+        self._item_value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
+        self._layout.addWidget(self._item_value_entry_widget)
+        self._item_value_entry_widget._set_item_value_type_(self._item_value_type)
 
 
 class _QtEnumerateValueEntryItem(
     _QtEntryFrame,
-    utl_gui_qt_abstract._QtEnumerateValueEntryDef,
-    utl_gui_qt_abstract._QtItemChooseActionDef,
+    utl_gui_qt_abstract.AbsQtItemValueEnumerateEntryDef,
+    utl_gui_qt_abstract.AbsQtItemValueDefaultDef,
+    #
+    utl_gui_qt_abstract.AbsQtItemActionChooseDef,
     utl_gui_qt_abstract._QtItemEntryActionDef,
 ):
     QT_VALUE_ENTRY_CLASS = _QtEntryItem
@@ -1695,15 +1715,17 @@ class _QtEnumerateValueEntryItem(
         super(_QtEnumerateValueEntryItem, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
         #
-        self._set_enumerate_value_entry_def_init_()
-        self._set_item_choose_def_init_()
+        self._set_item_value_enumerate_entry_def_init_()
+        self._set_item_value_default_def_init_()
+        #
+        self._set_item_action_choose_def_init_()
         #
         self._layout = QtHBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(4)
         #
-        self._set_value_entry_build_(self._value_type)
-        self._value_entry_widget._set_enter_enable_(False)
+        self._set_item_value_entry_build_(self._item_value_type)
+        self._item_value_entry_widget._set_enter_enable_(False)
         #
         self._drop_button = _QtIconPressItem()
         self._layout.addWidget(self._drop_button)
@@ -1723,8 +1745,8 @@ class _QtEnumerateValueEntryItem(
 
     def _set_action_wheel_update_(self, event):
         delta = event.angleDelta().y()
-        values = self._get_values_()
-        pre_value = self._get_value_()
+        values = self._get_item_values_()
+        pre_value = self._get_item_value_()
         maximum = len(values) - 1
         pre_index = values.index(pre_value)
         if delta > 0:
@@ -1733,27 +1755,27 @@ class _QtEnumerateValueEntryItem(
             cur_index = pre_index + 1
 
         cur_index = max(min(cur_index, maximum), 0)
-        self._set_value_(values[cur_index])
+        self._set_item_value_(values[cur_index])
 
-    def _set_value_entry_build_(self, value_type):
-        self._value_type = value_type
+    def _set_item_value_entry_build_(self, value_type):
+        self._item_value_type = value_type
         #
-        self._value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
-        self._layout.addWidget(self._value_entry_widget)
-        self._value_entry_widget._set_value_type_(self._value_type)
+        self._item_value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
+        self._layout.addWidget(self._item_value_entry_widget)
+        self._item_value_entry_widget._set_item_value_type_(self._item_value_type)
 
     def _set_item_choose_drop_(self):
         widget = self.CHOOSE_DROP_WIDGET_CLS(self)
         widget._set_drop_start_()
 
     def _set_item_entry_enable_(self, boolean):
-        self._value_entry_widget._set_enter_enable_(boolean)
+        self._item_value_entry_widget._set_enter_enable_(boolean)
 
     def _set_item_entry_finished_connect_to_(self, fnc):
-        self._value_entry_widget.entry_finished.connect(fnc)
+        self._item_value_entry_widget.entry_finished.connect(fnc)
 
     def _set_item_entry_changed_connect_to_(self, fnc):
-        self._value_entry_widget.entry_changed.connect(fnc)
+        self._item_value_entry_widget.entry_changed.connect(fnc)
 
 
 class _QtArrayValueEntryItem(
@@ -1772,10 +1794,10 @@ class _QtArrayValueEntryItem(
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(4)
         #
-        self._set_value_entry_build_(2, self._value_type)
+        self._set_item_value_entry_build_(2, self._item_value_type)
 
-    def _set_value_entry_build_(self, value_size, value_type):
-        self._value_type = value_type
+    def _set_item_value_entry_build_(self, value_size, value_type):
+        self._item_value_type = value_type
         #
         self._value_entry_widgets = []
         set_qt_layout_clear(self._layout)
@@ -1784,7 +1806,7 @@ class _QtArrayValueEntryItem(
         if value_size:
             for i in range(value_size):
                 _i_value_entry_widget = _QtEntryItem()
-                _i_value_entry_widget._set_value_type_(self._value_type)
+                _i_value_entry_widget._set_item_value_type_(self._item_value_type)
                 self._layout.addWidget(_i_value_entry_widget)
                 self._value_entry_widgets.append(_i_value_entry_widget)
 
@@ -1843,14 +1865,14 @@ class _QtHExpandItem0(
         hover_color = r, g, b
         #
         self._frame_border_color = color
-        self._hover_frame_border_color = hover_color
+        self._hovered_frame_border_color = hover_color
         #
         r, g, b = 119, 119, 119
         h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
         color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
         hover_color = r, g, b
         self._frame_background_color = color
-        self._hover_frame_background_color = hover_color
+        self._hovered_frame_background_color = hover_color
         # font
         self.setFont(Font.NAME)
 
@@ -1863,7 +1885,7 @@ class _QtHExpandItem0(
         spacing = 2
         #
         self._set_frame_rect_(
-            x, y, w-1, h-1
+            x+1, y+1, w-1, h-1
         )
         f_w, f_h = self._icon_frame_size
         i_w, i_h = self._file_icon_size
@@ -1909,7 +1931,7 @@ class _QtHExpandItem0(
         #
         frame_color = Color.BAR_FRAME_NORMAL
         painter._set_border_color_(frame_color)
-        bkg_color = [self._frame_background_color, self._hover_frame_background_color][self._item_is_hovered]
+        bkg_color = [self._frame_background_color, self._hovered_frame_background_color][self._item_is_hovered]
         # painter.setBrush(bkg_color)
         #
         painter._set_frame_draw_by_rect_(
@@ -1998,14 +2020,14 @@ class _QtHExpandItem1(
         hover_color = r, g, b
         #
         self._frame_border_color = color
-        self._hover_frame_border_color = hover_color
+        self._hovered_frame_border_color = hover_color
         #
         r, g, b = 119, 119, 119
         h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
         color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
         hover_color = r, g, b
         self._frame_background_color = color
-        self._hover_frame_background_color = hover_color
+        self._hovered_frame_background_color = hover_color
         #
         self._set_item_expand_update_()
         # font
@@ -2023,12 +2045,12 @@ class _QtHExpandItem1(
         #
         frame_color = Color.BAR_FRAME_NORMAL
         painter._set_border_color_(frame_color)
-        bkg_color = [self._frame_background_color, self._hover_frame_background_color][self._item_is_hovered]
+        bkg_color = [self._frame_background_color, self._hovered_frame_background_color][self._item_is_hovered]
         painter._set_frame_draw_by_rect_(
             rect=self._frame_rect,
             border_color=bkg_color,
             background_color=bkg_color,
-            border_radius=1,
+            border_radius=self._frame_border_radius,
             offset=offset
         )
         # icon
@@ -2536,8 +2558,8 @@ class _QtHItem(
         #
         bkg_color = painter._get_item_background_color_(
             self._frame_rect,
-            is_hover=self._item_is_hovered,
-            is_select=self._is_selected
+            is_hovered=self._item_is_hovered,
+            is_selected=self._is_selected
         )
         painter._set_frame_draw_by_rect_(
             self._frame_rect,
@@ -2593,6 +2615,7 @@ class _QtListItemWidget(
     utl_gui_qt_abstract._QtFrameDef,
     utl_gui_qt_abstract._QtIndexDef,
     utl_gui_qt_abstract._QtImageDef,
+    utl_gui_qt_abstract.AbsQtMovieDef,
     #
     utl_gui_qt_abstract.AbsQtMenuDef,
     #
@@ -2605,10 +2628,9 @@ class _QtListItemWidget(
     utl_gui_qt_abstract._QtItemSelectActionDef,
     #
     utl_gui_qt_abstract.AbsQtItemStateDef,
-):
-    clicked = qt_signal()
-    press_clicked = qt_signal()
     #
+    utl_gui_qt_abstract.AbsQtItemMovieActionDef,
+):
     viewport_show = qt_signal()
     viewport_hide = qt_signal()
     #
@@ -2624,11 +2646,14 @@ class _QtListItemWidget(
         self._set_image_def_init_()
         self._set_names_def_init_()
         self._set_menu_def_init_()
+        self._set_movie_def_init_()
         #
         self._set_item_def_init_()
         self._set_item_action_def_init_()
         self._set_item_press_action_def_init_()
         self._set_item_select_action_def_init_()
+        #
+        self._set_item_movie_action_def_init_()
         #
         self._set_item_state_def_init_()
         #
@@ -2689,8 +2714,8 @@ class _QtListItemWidget(
         bkg_rect = QtCore.QRect(1, 1, w-2, h-2)
         bkg_color = painter._get_item_background_color_(
             bkg_rect,
-            is_hover=self._item_is_hovered,
-            is_select=self._is_selected,
+            is_hovered=self._item_is_hovered,
+            is_selected=self._is_selected,
         )
         #
         if self._get_item_()._item_show_loading_is_started is True:
@@ -2957,7 +2982,7 @@ class _QtListItemWidget(
                 h -= 4+1
                 i_w_0, i_h_0 = self._get_image_size_()
                 if (i_w_0, i_h_0) != (0, 0):
-                    i_x, i_y, i_w, i_h = utl_gui_core.SizeMethod.set_fit_to(
+                    i_x, i_y, i_w, i_h = utl_gui_core.SizeMtd.set_fit_to(
                         (i_w_0, i_h_0), (w, h)
                     )
                     self._set_image_rect_(
@@ -2971,7 +2996,7 @@ class _QtListItemWidget(
                     w, h = rect.width(), rect.height()
                     i_w_0, i_h_0 = self._get_image_size_()
                     if (i_w_0, i_h_0) != (0, 0):
-                        i_x, i_y, i_w, i_h = utl_gui_core.SizeMethod.set_fit_to(
+                        i_x, i_y, i_w, i_h = utl_gui_core.SizeMtd.set_fit_to(
                             (i_w_0, i_h_0), (w, h)
                         )
                         self._set_image_rect_(
@@ -3113,11 +3138,11 @@ class _AbsQtSplitterHandle(
         #
         self._set_item_state_def_init_()
         #
-        self._hover_frame_border_color = 95, 95, 95
-        self._hover_frame_background_color = 95, 95, 95
+        self._hovered_frame_border_color = 95, 95, 95
+        self._hovered_frame_background_color = 95, 95, 95
         #
-        self._press_frame_border_color = 63, 127, 255
-        self._press_frame_background_color = 63, 127, 255
+        self._selected_frame_border_color = 63, 127, 255
+        self._selected_frame_background_color = 63, 127, 255
 
     def eventFilter(self, *args):
         widget, event = args
@@ -3159,14 +3184,14 @@ class _AbsQtSplitterHandle(
                 border_color = Color.TRANSPARENT
                 background_color = Color.TRANSPARENT
             elif condition == (False, True):
-                border_color = self._press_frame_border_color
-                background_color = self._press_frame_background_color
+                border_color = self._selected_frame_border_color
+                background_color = self._selected_frame_background_color
             elif condition == (True, True):
-                border_color = self._press_frame_border_color
-                background_color = self._press_frame_background_color
+                border_color = self._selected_frame_border_color
+                background_color = self._selected_frame_background_color
             elif condition == (True, False):
-                border_color = self._hover_frame_border_color
-                background_color = self._hover_frame_background_color
+                border_color = self._hovered_frame_border_color
+                background_color = self._hovered_frame_background_color
             else:
                 raise SyntaxError()
         else:

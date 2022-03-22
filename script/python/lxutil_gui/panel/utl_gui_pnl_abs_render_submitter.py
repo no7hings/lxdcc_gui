@@ -27,37 +27,39 @@ class AbsRenderSubmitter(
     #
     ITEM_FRAME_SIZE = 128, 192
     #
-    VARIABLE_KEYS = [
-        'camera',
-        'layer',
-        'light_pass',
-        'look_pass',
-        'quality'
-    ]
     def __init__(self, hook_option=None, *args, **kwargs):
         super(AbsRenderSubmitter, self).__init__(*args, **kwargs)
-        self._window_configure = utl_configure.MainData.get_as_configure(
-            self.CONFIGURE_FILE_PATH
-        )
-        self.set_window_title(
-            self._window_configure.get('window.name')
-        )
-        self._rez_beta = bsc_core.EnvironMtd.get('REZ_BETA')
-        if self._rez_beta:
-            self.set_window_title(
-                '{}-[BETA]'.format(self._window_configure.get('window.name'))
-            )
-        self.set_definition_window_size(
-            self._window_configure.get('window.size')
-        )
         if hook_option is not None:
-            self._option_opt = bsc_core.KeywordArgumentsOpt(hook_option)
-            self._file_path = self._option_opt.get('file')
+            self._hook_option_opt = bsc_core.KeywordArgumentsOpt(hook_option)
+            self._file_path = self._hook_option_opt.get('file')
+            self._hook_option_opt.set(
+                'option_hook_key', 'tool-panels/asset-render-submitter'
+            )
+            self._option_hook_configure = ssn_commands.get_option_hook_configure(
+                self._hook_option_opt.to_string()
+            )
+            self._option_hook_gui_configure = self._option_hook_configure.get_content('option.gui')
+            self._option_hook_build_configure = self._option_hook_configure.get_content('build')
+            #
+            self.set_window_title(
+                self._option_hook_gui_configure.get('name')
+            )
+            self._rez_beta = bsc_core.EnvironMtd.get('REZ_BETA')
+            if self._rez_beta:
+                self.set_window_title(
+                    '{}-[BETA]'.format(self._option_hook_gui_configure.get('name'))
+                )
+            #
+            self.set_definition_window_size(
+                self._option_hook_gui_configure.get('size')
+            )
         else:
             self._file_path = None
         #
         self._rsv_task = None
         self._rsv_render_movie_file_unit = None
+        #
+        self._variable_keys = []
         #
         self._set_panel_build_()
         self.get_log_bar().set_expanded(True)
@@ -142,7 +144,7 @@ class AbsRenderSubmitter(
     def _set_prx_node_build_(self):
         #
         self._prx_schemes_node.set_ports_create_by_configure(
-            self._window_configure.get('node.schemes')
+            self._option_hook_build_configure.get('node.schemes')
         )
         self._prx_schemes_node.set(
             'reload', self.set_filter_scheme_load
@@ -153,33 +155,33 @@ class AbsRenderSubmitter(
         )
         #
         self._prx_options_node.set_ports_create_by_configure(
-            self._window_configure.get('node.options')
+            self._option_hook_build_configure.get('node.options')
         )
 
         self._prx_options_node.set(
             'refresh', self.set_options_refresh
         )
 
+        # self._prx_options_node.get_port(
+        #     'version'
+        # ).set_changed_connect_to(
+        #     self.__set_settings_node_refresh_
+        # )
+
         self._prx_options_node.get_port(
-            'version'
+            'shot'
         ).set_changed_connect_to(
-            self.set_settings_refresh
+            self.__set_usd_node_refresh_
         )
 
         self._prx_options_node.get_port(
             'shot'
         ).set_changed_connect_to(
-            self.set_usd_refresh
-        )
-
-        self._prx_options_node.get_port(
-            'shot'
-        ).set_changed_connect_to(
-            self.set_settings_refresh
+            self.__set_settings_node_refresh_
         )
         # usd
         self._prx_usd_node.set_ports_create_by_configure(
-            self._window_configure.get('node.usd')
+            self._option_hook_build_configure.get('node.usd')
         )
 
         self._prx_usd_node.get_port(
@@ -197,7 +199,7 @@ class AbsRenderSubmitter(
         ).set_expanded(False)
 
         self._prx_settings_node.set_ports_create_by_configure(
-            self._window_configure.get('node.settings')
+            self._option_hook_build_configure.get('node.settings')
         )
 
         self._prx_settings_node.set(
@@ -206,11 +208,17 @@ class AbsRenderSubmitter(
 
     def set_all_refresh(self):
         if self._file_path:
-            self.set_options_refresh()
-            self.set_settings_refresh()
-            #
-            self.set_renderers_refresh()
-            self.set_filter_refresh()
+            self._resolver = rsv_commands.get_resolver()
+            self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
+            if self._rsv_scene_properties:
+                self._rsv_task = self._resolver.get_rsv_task(
+                    **self._rsv_scene_properties.value
+                )
+                self.set_options_refresh()
+                self.__set_settings_node_refresh_()
+                #
+                self.set_renderers_refresh()
+                self.set_filter_refresh()
 
     def set_scheme_save(self):
         filter_dict = self._prx_dcc_obj_tree_view_tag_filter_opt.get_filter_dict()
@@ -218,16 +226,12 @@ class AbsRenderSubmitter(
         bsc_objects.Configure(value=filter_dict).set_print_as_yaml_style()
 
     def set_options_refresh(self):
-        r = rsv_commands.get_resolver()
-        rsv_task = r.get_rsv_task_by_file_path(self._file_path)
-        rsv_scene_properties = r.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
-        self._rsv_task = rsv_task
         self._prx_options_node.set(
-            'task', rsv_task.path
+            'task', self._rsv_task.path
         )
         rsv_asset = self._rsv_task.get_rsv_entity()
-        branch = rsv_task.get('branch')
-        application = rsv_scene_properties.get('application')
+        branch = self._rsv_task.get('branch')
+        application = self._rsv_scene_properties.get('application')
 
         if application == 'maya':
             keyword = '{}-work-{}-scene-src-file'.format(
@@ -242,14 +246,10 @@ class AbsRenderSubmitter(
         else:
             raise RuntimeError()
 
-        versions = []
-        any_scene_file_rsv_unit = rsv_task.get_rsv_unit(keyword=keyword)
-        file_paths = any_scene_file_rsv_unit.get_result(version='all')
-        for i_file_path in file_paths:
-            i_rsv_properties = any_scene_file_rsv_unit.get_properties(i_file_path)
-            versions.append(i_rsv_properties.get('version'))
+        any_scene_file_rsv_unit = self._rsv_task.get_rsv_unit(keyword=keyword)
+        rsv_versions = any_scene_file_rsv_unit.get_rsv_versions()
 
-        self._prx_options_node.set('version', versions)
+        self._prx_options_node.set('version', rsv_versions)
 
         self._rsv_asset_set_usd_creator = usd_rsv_objects.RsvAssetSetUsdCreator(rsv_asset)
 
@@ -345,31 +345,32 @@ class AbsRenderSubmitter(
         #
         self._rsv_renderer_list_view.set_clear()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
-        variants_dic = self._window_configure.get('variables.character')
+        #
+        self._variable_variants_dic = self._option_hook_build_configure.get('variables.character')
+        self._variable_keys = self._option_hook_build_configure.get_branch_keys(
+            'variables.character'
+        )
         combinations = bsc_core.VariablesMtd.get_all_combinations(
-            variants_dic
+            self._variable_variants_dic
         )
         for i_seq, i_variants in enumerate(combinations):
             # print i_seq, i_variants
             i_prx_item = self._rsv_renderer_list_view.set_item_add()
             set_thread_create_fnc_(i_prx_item, i_variants)
-            for j_key in self.VARIABLE_KEYS:
+            for j_key in self._variable_keys:
                 self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
                     '{}.{}'.format(j_key, i_variants[j_key]), i_prx_item
                 )
 
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
-    def set_usd_refresh(self):
+    def __set_usd_node_refresh_(self):
         rsv_asset = self._rsv_task.get_rsv_entity()
         rsv_shot = self._prx_options_node.get(
             'shot'
         )
         if rsv_asset is not None and rsv_shot is not None:
             pass
-
-    def _set_create_(self):
-        print {}
 
     def set_filter_refresh(self):
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
@@ -378,7 +379,7 @@ class AbsRenderSubmitter(
         #
         self.set_filter_scheme_load()
 
-    def set_settings_refresh(self):
+    def __set_settings_node_refresh_(self):
         rsv_task = self._rsv_task
         if rsv_task is not None:
             self._rsv_render_movie_file_unit = rsv_task.get_rsv_unit(
@@ -400,7 +401,7 @@ class AbsRenderSubmitter(
     def set_filter_scheme_load(self):
         filter_scheme = self._prx_schemes_node.get('variables')
         if filter_scheme == 'asset-default':
-            filter_dict = self._window_configure.get(
+            filter_dict = self._option_hook_build_configure.get(
                 'scheme.variables.asset-default'
             )
             self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_by_dict(
@@ -444,7 +445,7 @@ class AbsRenderSubmitter(
         return dic
 
     def _get_variables_dic_(self):
-        def update3_fnc(key_):
+        def update_fnc(key_):
             _ks = c.get_keys('/{}/*'.format(key_))
             _key = key_mapper[key_]
             for _i_k in _ks:
@@ -462,8 +463,8 @@ class AbsRenderSubmitter(
         dic = {}
         filter_dic = self._prx_dcc_obj_tree_view_tag_filter_opt.get_filter_dict()
         c = bsc_objects.Configure(value=filter_dic)
-        for i in self.VARIABLE_KEYS:
-            update3_fnc(i)
+        for i in self._variable_keys:
+            update_fnc(i)
         return dic
     @classmethod
     def _get_frames_(cls, frame_range, frame_step):

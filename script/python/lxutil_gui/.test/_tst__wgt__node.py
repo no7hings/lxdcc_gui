@@ -22,8 +22,13 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
         rsv_tasks = r.get_rsv_tasks(
             project='cgm', asset='nn_14y_test'
         )
-
         p.set(rsv_tasks)
+
+        p = n.set_port_add(
+            utl_prx_widgets.PrxStringPort(
+                'test_1'
+            )
+        )
 
 
 if __name__ == '__main__':

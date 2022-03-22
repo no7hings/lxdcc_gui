@@ -247,6 +247,9 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
     def set_bottom_direction(self):
         self._head._set_item_expand_direction_(self._head.EXPAND_BOTTOM_TO_TOP)
 
+    def set_border_radius(self, radius):
+        self._head._set_frame_border_radius_(radius)
+
 
 class Window(utl_gui_prx_abstract.AbsPrxWindow):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtMainWindow

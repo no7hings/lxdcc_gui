@@ -248,6 +248,7 @@ class QtTreeWidget(
     def __init__(self, *args, **kwargs):
         super(QtTreeWidget, self).__init__(*args, **kwargs)
         self.setIndentation(20)
+        self.setAutoFillBackground(True)
         self.setSortingEnabled(True)
         self.sortByColumn(1, QtCore.Qt.SortOrder())
         self.setDragEnabled(True)
@@ -561,6 +562,16 @@ class QtTreeWidget(
                 pass
             elif event.type() == QtCore.QEvent.KeyPress:
                 pass
+            elif event.type() == QtCore.QEvent.FocusIn:
+                self._is_focused = True
+                parent = self.parent()
+                if isinstance(parent, _utl_gui_qt_wgt_item._QtEntryFrame):
+                    parent._set_focus_(True)
+            elif event.type() == QtCore.QEvent.FocusOut:
+                self._is_focused = False
+                parent = self.parent()
+                if isinstance(parent, _utl_gui_qt_wgt_item._QtEntryFrame):
+                    parent._set_focus_(False)
         return False
 
     def _set_item_selected_update_(self):
@@ -768,6 +779,16 @@ class QtListWidget(
                 self._set_action_wheel_update_(event)
             elif event.type() == QtCore.QEvent.Resize:
                 self._set_view_items_show_update_()
+            elif event.type() == QtCore.QEvent.FocusIn:
+                self._is_focused = True
+                parent = self.parent()
+                if isinstance(parent, _utl_gui_qt_wgt_item._QtEntryFrame):
+                    parent._set_focus_(True)
+            elif event.type() == QtCore.QEvent.FocusOut:
+                self._is_focused = False
+                parent = self.parent()
+                if isinstance(parent, _utl_gui_qt_wgt_item._QtEntryFrame):
+                    parent._set_focus_(False)
         if widget == self.verticalScrollBar():
             pass
         return False
@@ -956,7 +977,7 @@ class _QtGuideRect(
     utl_gui_qt_abstract._QtNameDef,
     utl_gui_qt_abstract._QtPathDef,
     utl_gui_qt_abstract._QtFrameDef,
-    utl_gui_qt_abstract._QtItemChooseActionDef,
+    utl_gui_qt_abstract.AbsQtItemActionChooseDef,
 ):
     def _set_widget_update_(self):
         pass
@@ -967,7 +988,7 @@ class _QtGuideRect(
         self._set_name_def_init_()
         self._set_path_def_init_()
         self._set_frame_def_init_()
-        self._set_item_choose_def_init_()
+        self._set_item_action_choose_def_init_()
         #
         self._set_icon_file_path_(
             self._choose_collapse_icon_file_path

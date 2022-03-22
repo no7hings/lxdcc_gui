@@ -26,7 +26,7 @@ class _QtWindow(
         self._set_frame_def_init_()
         #
         self._frame_background_color = 63, 63, 63, 255
-        self._hover_frame_background_color = 63, 63, 63, 255
+        self._hovered_frame_background_color = 63, 63, 63, 255
         #
         self._menu_bar = _utl_gui_qt_wgt_view._QtMenuBar()
         self._main_layout.addWidget(self._menu_bar)

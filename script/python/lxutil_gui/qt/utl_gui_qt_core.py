@@ -495,7 +495,7 @@ class Color(object):
     ITEM_BACKGROUND_HOVER = QtGui.QColor(255, 127, 63, 127)
     #
     ITEM_BORDER_NORMAL = QtGui.QColor(255, 255, 255, 255)
-    ITEM_BACKGROUND_NORMAL = QtGui.QColor(95, 95, 95, 127)
+    ITEM_BACKGROUND_NORMAL = QtGui.QColor(71, 71, 71, 255)
     ITEM_BORDER_HOVER = QtGui.QColor(255, 127, 63, 255)
     #
     DESCRIPTION_TEXT = QtGui.QColor(0, 0, 0, 255)
@@ -520,6 +520,22 @@ class Color(object):
         else:
             raise TypeError()
         return QtGui.QColor(r, g, b, a)
+
+
+class BorderColor(object):
+    @classmethod
+    def get(cls, key):
+        return QtGui.QColor(
+            *utl_gui_core.QtStyleMtd.get_border_color(key)
+        )
+
+
+class BackgroundColor(object):
+    @classmethod
+    def get(cls, key):
+        return QtGui.QColor(
+            *utl_gui_core.QtStyleMtd.get_background_color(key)
+        )
 
 
 class Brush(object):

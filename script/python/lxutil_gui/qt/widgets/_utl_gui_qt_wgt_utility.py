@@ -700,8 +700,8 @@ class QtPainter(QtGui.QPainter):
             QtCore.Qt.AbsoluteSize
         )
     @classmethod
-    def _get_item_background_color_(cls, rect, is_hover, is_select):
-        condition = [is_hover, is_select]
+    def _get_item_background_color_(cls, rect, is_hovered, is_selected):
+        condition = [is_hovered, is_selected]
         if condition == [False, False]:
             return Color.BACKGROUND_TRANSPARENT
         elif condition == [False, True]:
