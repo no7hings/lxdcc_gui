@@ -238,15 +238,19 @@ class AbsAssetRenderSubmitter(
         step = self._rsv_task.get('step')
         if step in ['mod']:
             self._prx_schemes_node.set(
-                'variables', 'model-default'
+                'variables', 'model'
             )
         elif step in ['srf']:
             self._prx_schemes_node.set(
-                'variables', 'surface-default'
+                'variables', 'surface'
             )
         elif step in ['grm']:
             self._prx_schemes_node.set(
-                'variables', 'groom-default'
+                'variables', 'groom'
+            )
+        else:
+            self._prx_schemes_node.set(
+                'variables', 'asset'
             )
         #
         application = self._rsv_scene_properties.get('application')
