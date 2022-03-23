@@ -1084,7 +1084,7 @@ class AbsPrxTypePort(AbsPrxPortDef):
     LABEL_CLASS = None
     LABEL_HIDED = False
     ENTRY_CLASS = None
-    def __init__(self, path, label=None, enable=None, default_value=None, join_to_next=False, scheme_key=None):
+    def __init__(self, path, label=None, enable=None, default_value=None, join_to_next=False, scheme_key=None, node_widget=None):
         self._set_prx_port_def_init_('value', path, label)
         #
         self._key = None
@@ -1092,10 +1092,10 @@ class AbsPrxTypePort(AbsPrxPortDef):
         if isinstance(enable, bool):
             self._enable = enable
         #
-        self._prx_port_enable = self.ENABLE_CLASS()
+        self._prx_port_enable = self.ENABLE_CLASS(node_widget)
         self._prx_port_enable.set_hide()
         # gui
-        self._prx_port_label = self.LABEL_CLASS()
+        self._prx_port_label = self.LABEL_CLASS(node_widget)
         self._prx_port_label.set_hide()
         self._prx_port_label.set_name_tool_tip(
             'path: {}\nname: {}'.format(
@@ -1104,7 +1104,7 @@ class AbsPrxTypePort(AbsPrxPortDef):
             )
         )
         #
-        self._prx_port_entry = self.ENTRY_CLASS()
+        self._prx_port_entry = self.ENTRY_CLASS(node_widget)
         self._prx_port_entry.set_hide()
         #
         if default_value is not None:
@@ -1832,7 +1832,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_name_width(self, w):
         self._name_width = w
-        self._prx_port_root._qt_label_widget.setFixedWidth(self._name_width)
+        # self._prx_port_root._qt_label_widget.setFixedWidth(self._name_width)
 
     def set_ports_create_by_configure(self, configure):
         for k, v in configure.items():
@@ -1848,57 +1848,95 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         join_to_next_ = option.get('join_to_next') or False
 
         if widget_ in ['string']:
-            port = PrxStringPort(port_path)
+            port = PrxStringPort(
+                port_path,
+                node_widget=self.widget
+            )
             port.set(value_)
             port.set_default(value_)
         elif widget_ in ['integer']:
-            port = PrxIntegerPort(port_path)
+            port = PrxIntegerPort(
+                port_path,
+                node_widget=self.widget
+            )
             port.set(value_)
             port.set_default(value_)
         elif widget_ in ['float']:
-            port = PrxFloatPort(port_path)
+            port = PrxFloatPort(
+                port_path,
+                node_widget=self.widget
+            )
             port.set(value_)
             port.set_default(value_)
         elif widget_ in ['float2']:
-            port = PrxFloatArrayPort(port_path)
+            port = PrxFloatArrayPort(
+                port_path,
+                node_widget=self.widget
+            )
             port.set(value_)
             port.set_default(value_)
         #
         elif widget_ in ['boolean']:
-            port = PrxBooleanPort(port_path)
+            port = PrxBooleanPort(
+                port_path,
+                node_widget=self.widget
+            )
             port.set(value_)
             port.set_default(value_)
         elif widget_ in ['enumerate']:
-            port = PrxEnumeratePort_(port_path)
+            port = PrxEnumeratePort_(
+                port_path,
+                node_widget=self.widget
+            )
             port.set(value_)
             port.set_default(value_[-1])
         #
         elif widget_ in ['file']:
-            port = PrxFileOpenPort(port_path)
+            port = PrxFileOpenPort(
+                port_path,
+                node_widget=self.widget
+            )
             port.set(value_)
             port.set_default(value_)
         elif widget_ in ['directory']:
-            port = PrxDirectoryOpenPort(port_path)
+            port = PrxDirectoryOpenPort(
+                port_path,
+                node_widget=self.widget
+            )
             port.set(value_)
             port.set_default(value_)
         #
         elif widget_ in ['button']:
-            port = PrxButtonPort(port_path)
+            port = PrxButtonPort(
+                port_path,
+                node_widget=self.widget
+            )
             port.set(value_)
         #
         elif widget_ in ['project']:
-            port = PrxRsvProjectChoosePort(port_path)
+            port = PrxRsvProjectChoosePort(
+                port_path,
+                node_widget=self.widget
+            )
             port.set(value_)
         elif widget_ in ['rsv-obj']:
-            port = PrxRsvObjChoosePort(port_path)
+            port = PrxRsvObjChoosePort(
+                port_path,
+                node_widget=self.widget
+            )
             # port.set(value_)
         elif widget_ in ['scheme']:
             port = PrxSchemChoosePort(
-                port_path, scheme_key=option['scheme_key']
+                port_path,
+                scheme_key=option['scheme_key'],
+                node_widget=self.widget
             )
             port.set(value_)
         elif widget_ in ['script']:
-            port = PrxScriptPort(port_path)
+            port = PrxScriptPort(
+                port_path,
+                node_widget=self.widget
+            )
             port.set(value_)
             port.set_default(value_)
         #
