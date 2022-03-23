@@ -857,7 +857,6 @@ class AbsShotRenderSubmitter(
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
     def set_submit(self):
-        # rez-env python pg_tools -- python /l/packages/pg/prod/pg_production_lib/9.9.9/lib/production/set/auto_set/submit_usd_render_job.py --proj="{project}" --shot="{shot}" --step="{step}" --task="{task}" --shading="{shading}" --user="{user}" --frames={render_shot_frames} --stepby="{render_shot_frame_step}" --motion={render_motion_enable} --publish={user_publish_enable} tech_review={user_tech_review_enable} --instance={render_instance_enable} --playlist="" --description="{user_description}" --chunk={render_chunk} aa=3 --bokeh=0 --bg=0
         cmd_pattern = self._option_hook_configure.get('command')
         if self._rsv_task:
             c = bsc_objects.Configure(value={})
@@ -870,7 +869,7 @@ class AbsShotRenderSubmitter(
 
             c.set('user', bsc_core.SystemMtd.get_user_name())
 
-            c.set('render_shot_frames', '1001, 1002')
+            c.set('render_shot_frames', '1001,1002')
             c.set('render_shot_frame_step', int(self._prx_settings_node.get('render.frame_step')))
             c.set('render_motion_enable', int(self._prx_settings_node.get('render.motion_enable')))
             c.set('render_instance_enable', int(self._prx_settings_node.get('render.instance_enable')))
@@ -888,6 +887,6 @@ class AbsShotRenderSubmitter(
                 **c.value
             )
 
-            utl_core.SubProcessRunner.set_run_with_result_use_thread(
+            utl_core.SubProcessRunner.set_run_with_result(
                 cmd
             )
