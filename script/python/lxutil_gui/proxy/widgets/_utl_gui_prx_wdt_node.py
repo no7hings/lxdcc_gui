@@ -1105,6 +1105,7 @@ class AbsPrxTypePort(AbsPrxPortDef):
         )
         #
         self._prx_port_entry = self.ENTRY_CLASS()
+        self._prx_port_entry.set_hide()
         #
         if default_value is not None:
             self._prx_port_entry.set(default_value)
@@ -1683,6 +1684,8 @@ class PrxGroupPort_(
             enter_layout.addWidget(
                 cur_port._prx_port_entry.widget
             )
+        #
+        cur_port._prx_port_entry.set_show()
         #
         self._port_stack.set_object_add(cur_port)
         #
