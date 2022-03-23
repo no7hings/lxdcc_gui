@@ -18,7 +18,7 @@ class AbsQtFocusDef(object):
     def _set_widget_focus_update_(self):
         raise NotImplementedError()
 
-    def _set_focus_def_init_(self):
+    def _set_focused_def_init_(self):
         self._is_focused = False
         self._focus_rect = QtCore.QRect()
 
@@ -31,7 +31,7 @@ class AbsQtFocusDef(object):
     def _get_is_focused_(self):
         return self._is_focused
 
-    def _set_focus_rect_(self, x, y, w, h):
+    def _set_focused_rect_(self, x, y, w, h):
         self._focus_rect.setRect(
             x, y, w, h
         )
@@ -2035,6 +2035,17 @@ class AbsQtListWidget(
         self._get_view_v_scroll_bar_().valueChanged.connect(self._set_view_items_show_update_)
         self._viewport_rect = QtCore.QRect()
         self._item_rects = []
+        #
+        self.setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QListView')
+        )
+        #
+        self.verticalScrollBar().setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QScrollBar')
+        )
+        self.horizontalScrollBar().setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QScrollBar')
+        )
 
     def _get_view_h_scroll_bar_(self):
         return self.horizontalScrollBar()
@@ -2175,6 +2186,9 @@ class AbsQtItemValueTypeConstantEntryDef(object):
 
     def _set_item_entry_changed_connect_to_(self, fnc):
         self._item_value_entry_widget.entry_changed.connect(fnc)
+
+    def _set_item_value_entry_enable_(self, boolean):
+        pass
 
 
 class AbsQtItemValueEnumerateEntryDef(object):

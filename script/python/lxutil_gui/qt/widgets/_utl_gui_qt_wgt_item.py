@@ -10,6 +10,300 @@ from lxutil_gui.qt import utl_gui_qt_abstract
 from lxutil_gui.qt import utl_gui_qt_core
 
 
+class QtLineEdit_(QtWidgets.QLineEdit):
+    entry_changed = qt_signal()
+    entry_finished = qt_signal()
+    def __init__(self, *args, **kwargs):
+        super(QtLineEdit_, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setPalette(QtDccMtd.get_qt_palette())
+        self.setFont(Font.NAME)
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        #
+        self._item_value_type = str
+        self._is_use_as_storage = False
+        #
+        self._item_value_default = None
+        #
+        self._maximum = 1
+        self._minimum = 0
+        #
+        self.returnPressed.connect(self._set_enter_finished_emit_send_)
+        self.textChanged.connect(self._set_enter_changed_emit_send_)
+        #
+        self.setToolTip(
+            (
+                '"LMB-click" to entry\n'
+                '"MMB-wheel" to modify "int" or "float" value'
+            )
+        )
+        self.setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QLineEdit')
+        )
+
+    def _set_action_wheel_update_(self, event):
+        if self._item_value_type in [int, float]:
+            delta = event.angleDelta().y()
+            pre_value = self._get_item_value_()
+            if delta > 0:
+                self._set_item_value_(pre_value+1)
+            else:
+                self._set_item_value_(pre_value-1)
+            #
+            self._set_enter_changed_emit_send_()
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.FocusIn:
+                self._is_focused = True
+                parent = self.parent()
+                if isinstance(parent, _QtEntryFrame):
+                    parent._set_focused_(True)
+            elif event.type() == QtCore.QEvent.FocusOut:
+                self._is_focused = False
+                parent = self.parent()
+                if isinstance(parent, _QtEntryFrame):
+                    parent._set_focused_(False)
+                #
+                self._set_value_completion_()
+            elif event.type() == QtCore.QEvent.Wheel:
+                self._set_action_wheel_update_(event)
+        return False
+
+    def contextMenuEvent(self, event):
+        menu_raw = [
+            ('Basic', ),
+            ('Copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
+            ('Paste', None, (True, self.paste, False), QtGui.QKeySequence.Paste),
+            ('Cut', None, (True, self.cut, False), QtGui.QKeySequence.Cut),
+            ('Extend', ),
+            ('Undo', None, (True, self.undo, False), QtGui.QKeySequence.Undo),
+            ('Redo', None, (True, self.redo, False), QtGui.QKeySequence.Redo),
+            ('Select All', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll),
+        ]
+        if self._is_use_as_storage is True:
+            menu_raw.extend(
+                [
+                    ('System',),
+                    ('Open', None, (True, self._set_open_in_system_, False), QtGui.QKeySequence.Open)
+                ]
+            )
+        #
+        if self.isReadOnly():
+            menu_raw = [
+                ('Basic',),
+                ('Copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
+                ('Extend', ),
+                ('Select All', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll)
+            ]
+        #
+        if menu_raw:
+            self._qt_menu = _utl_gui_qt_wgt_utility.QtMenu(self)
+            self._qt_menu._set_menu_raw_(menu_raw)
+            self._qt_menu._set_show_()
+
+    def _set_enter_finished_emit_send_(self):
+        # noinspection PyUnresolvedReferences
+        self.entry_finished.emit()
+
+    def _set_enter_changed_emit_send_(self):
+        # noinspection PyUnresolvedReferences
+        self.entry_changed.emit()
+
+    def _set_value_completion_(self):
+        if self._item_value_type in [int, float]:
+            if not self.text():
+                self._set_item_value_(0)
+
+    def _set_item_value_type_(self, value_type):
+        self._item_value_type = value_type
+        if self._item_value_type is None:
+            pass
+        elif self._item_value_type is str:
+            pass
+            # self._set_use_as_string_()
+        elif self._item_value_type is int:
+            self._set_use_as_integer_()
+        elif self._item_value_type is float:
+            self._set_use_as_float_()
+
+    def _get_item_value_type_(self):
+        return self._item_value_type
+
+    def _set_open_in_system_(self):
+        _ = self.text()
+        if _:
+            bsc_core.StoragePathOpt(_).set_open_in_system()
+
+    def _set_use_as_storage_(self, boolean):
+        self._is_use_as_storage = boolean
+
+    def _set_use_as_string_(self):
+        reg = QtCore.QRegExp(r'^[a-zA-Z0-9_]+$')
+        validator = QtGui.QRegExpValidator(reg, self)
+        self.setValidator(validator)
+
+    def _set_use_as_integer_(self):
+        self.setValidator(QtGui.QIntValidator())
+        self._set_value_completion_()
+
+    def _set_use_as_float_(self):
+        self.setValidator(QtGui.QDoubleValidator())
+        self._set_value_completion_()
+
+    def _set_value_maximum_(self, value):
+        self._maximum = value
+
+    def _get_value_maximum_(self):
+        return self._maximum
+
+    def _set_value_minimum_(self, value):
+        self._minimum = value
+
+    def _get_value_minimum_(self):
+        return self._minimum
+
+    def _set_value_range_(self, maximum, minimum):
+        self._set_value_maximum_(maximum), self._set_value_minimum_(minimum)
+
+    def _get_value_range_(self):
+        return self._get_value_maximum_(), self._get_value_minimum_()
+
+    def _get_item_value_(self):
+        _ = self.text()
+        if self._item_value_type == str:
+            return _
+        elif self._item_value_type == int:
+            return int(_)
+        elif self._item_value_type == float:
+            return float(_)
+        return _
+
+    def _set_item_value_(self, value):
+        if value is not None:
+            self.setText(
+                str(self._item_value_type(value)).encode("UTF8")
+            )
+        else:
+            self.setText('')
+
+    def _get_item_value_default_(self):
+        return self._item_value_default
+
+    def _set_focused_connect_to_(self, widget):
+        pass
+    #
+    def _get_is_selected_(self):
+        boolean = False
+        if self.selectedText():
+            boolean = True
+        return boolean
+
+    def _set_item_value_clear_(self):
+        self._set_item_value_('')
+
+    def _set_completer_values_(self, values):
+        pass
+
+    def _set_enter_enable_(self, boolean):
+        self.setReadOnly(not boolean)
+
+
+class QtTextBrowser_(QtWidgets.QTextBrowser):
+    def __init__(self, *args, **kwargs):
+        super(QtTextBrowser_, self).__init__(*args, **kwargs)
+        self.setWordWrapMode(QtGui.QTextOption.WordWrap)
+        self.installEventFilter(self)
+        # self.setWordWrapMode(QtGui.QTextOption.NoWrap)
+        #
+        self.setFont(Font.CONTENT)
+        qt_palette = QtDccMtd.get_qt_palette()
+        self.setPalette(qt_palette)
+        self.setAutoFillBackground(True)
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        #
+        self._print_thread = QtPrintThread(self)
+        self._print_thread.printed.connect(self._set_print_add_)
+        #
+        self.setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QTextBrowser')
+        )
+        #
+        self.verticalScrollBar().setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QScrollBar')
+        )
+        self.horizontalScrollBar().setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QScrollBar')
+        )
+
+    def _set_print_add_(self, text):
+        def add_fnc_(text_):
+            self.moveCursor(QtGui.QTextCursor.End)
+            self.insertPlainText(text_ + '\n')
+        #
+        if isinstance(text, (tuple, list)):
+            [add_fnc_(i) for i in text]
+        else:
+            add_fnc_(text)
+        #
+        self.update()
+
+    def _set_print_add_use_thread_(self, text):
+        self._print_thread.printed.emit(text)
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.FocusIn:
+                self._is_focused = True
+                parent = self.parent()
+                if isinstance(parent, _QtEntryFrame):
+                    parent._set_focused_(True)
+            elif event.type() == QtCore.QEvent.FocusOut:
+                self._is_focused = False
+                parent = self.parent()
+                if isinstance(parent, _QtEntryFrame):
+                    parent._set_focused_(False)
+        return False
+
+    def contextMenuEvent(self, event):
+        menu_raw = [
+            ('Basic', ),
+            ('Copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
+            ('Paste', None, (True, self.paste, False), QtGui.QKeySequence.Paste),
+            ('Cut', None, (True, self.cut, False), QtGui.QKeySequence.Cut),
+            ('Extend', ),
+            ('Undo', None, (True, self.undo, False), QtGui.QKeySequence.Undo),
+            ('Redo', None, (True, self.redo, False), QtGui.QKeySequence.Redo),
+            ('Select All', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll),
+        ]
+        if self.isReadOnly():
+            menu_raw = [
+                ('Basic',),
+                ('Copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
+                ('Extend', ),
+                ('Select All', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll)
+            ]
+        #
+        if menu_raw:
+            self._qt_menu = _utl_gui_qt_wgt_utility.QtMenu(self)
+            self._qt_menu._set_menu_raw_(menu_raw)
+            self._qt_menu._set_show_()
+
+    def _get_item_value_(self):
+        return self.placeholderText()
+
+    def _set_item_value_(self, value):
+        if value is not None:
+            self.setText(
+                str(value).encode("UTF8")
+            )
+        else:
+            self.setText('')
+
+
 class _QtTextItem(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtNameDef,
@@ -739,7 +1033,7 @@ class _QtFilterBar(QtWidgets.QWidget):
             ]
         )
         #
-        self._qt_entry_0 = _QtEntryItem()
+        self._qt_entry_0 = QtLineEdit_()
         qt_layout_1.addWidget(self._qt_entry_0)
         self._qt_entry_frame_0.setFocusProxy(self._qt_entry_0)
         #
@@ -904,6 +1198,8 @@ class _QtEntryFrame(
         self._frame_border_color = BorderColor.get('color-light')
         self._hovered_frame_border_color = BorderColor.get('color-hovered')
         self._selected_frame_border_color = BorderColor.get('color-selected')
+        #
+        self._frame_background_color = BackgroundColor.get('color-entry')
 
     def paintEvent(self, event):
         pos_x, pos_y = 0, 0
@@ -917,7 +1213,7 @@ class _QtEntryFrame(
         #
         is_hovered = True
         is_selected = self._is_focused
-        bkg_color = [Color.ENTRY_BACKGROUND_ENTRY_OFF, Color.ENTRY_BACKGROUND_ENTRY_ON][is_selected]
+        bkg_color = self._frame_background_color
         bdr_color = [self._frame_border_color, self._selected_frame_border_color][is_selected]
         if size == 1:
             i_rect = QtCore.QRect(
@@ -950,213 +1246,12 @@ class _QtEntryFrame(
                     border_radius=4
                 )
 
-    def _set_focus_(self, boolean):
+    def _set_focused_(self, boolean):
         self._is_focused = boolean
         self.update()
 
     def _set_entry_count_(self, size):
         self._entry_count = size
-
-
-class _QtEntryItem(QtWidgets.QLineEdit):
-    entry_changed = qt_signal()
-    entry_finished = qt_signal()
-    def __init__(self, *args, **kwargs):
-        super(_QtEntryItem, self).__init__(*args, **kwargs)
-        self.installEventFilter(self)
-        self.setPalette(QtDccMtd.get_qt_palette())
-        self.setFont(Font.NAME)
-        self.setFocusPolicy(QtCore.Qt.ClickFocus)
-        # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        #
-        self._item_value_type = str
-        self._is_use_as_storage = False
-        #
-        self._item_value_default = None
-        #
-        self._maximum = 1
-        self._minimum = 0
-        #
-        self.returnPressed.connect(self._set_enter_finished_emit_send_)
-        self.textChanged.connect(self._set_enter_changed_emit_send_)
-        #
-        self.setToolTip(
-            (
-                '"LMB-click" to entry\n'
-                '"MMB-wheel" to modify "int" or "float" value'
-            )
-        )
-        self.setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QLineEdit')
-        )
-
-    def _set_action_wheel_update_(self, event):
-        if self._item_value_type in [int, float]:
-            delta = event.angleDelta().y()
-            pre_value = self._get_item_value_()
-            if delta > 0:
-                self._set_item_value_(pre_value+1)
-            else:
-                self._set_item_value_(pre_value-1)
-            #
-            self._set_enter_changed_emit_send_()
-
-    def eventFilter(self, *args):
-        widget, event = args
-        if widget == self:
-            if event.type() == QtCore.QEvent.FocusIn:
-                self._is_focused = True
-                parent = self.parent()
-                if isinstance(parent, _QtEntryFrame):
-                    parent._set_focus_(True)
-            elif event.type() == QtCore.QEvent.FocusOut:
-                self._is_focused = False
-                parent = self.parent()
-                if isinstance(parent, _QtEntryFrame):
-                    parent._set_focus_(False)
-                #
-                self._set_value_completion_()
-            elif event.type() == QtCore.QEvent.Wheel:
-                self._set_action_wheel_update_(event)
-        return False
-
-    def contextMenuEvent(self, event):
-        menu_raw = [
-            ('Basic', ),
-            ('Copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
-            ('Paste', None, (True, self.paste, False), QtGui.QKeySequence.Paste),
-            ('Cut', None, (True, self.cut, False), QtGui.QKeySequence.Cut),
-            ('Extend', ),
-            ('Undo', None, (True, self.undo, False), QtGui.QKeySequence.Undo),
-            ('Redo', None, (True, self.redo, False), QtGui.QKeySequence.Redo),
-            ('Select All', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll),
-        ]
-        if self._is_use_as_storage is True:
-            menu_raw.extend(
-                [
-                    ('System',),
-                    ('Open', None, (True, self._set_open_in_system_, False), QtGui.QKeySequence.Open)
-                ]
-            )
-        #
-        if self.isReadOnly():
-            menu_raw = [
-                ('Basic',),
-                ('Copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
-                ('Extend', ),
-                ('Select All', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll)
-            ]
-        #
-        if menu_raw:
-            self._qt_menu = _utl_gui_qt_wgt_utility.QtMenu(self)
-            self._qt_menu._set_menu_raw_(menu_raw)
-            self._qt_menu._set_show_()
-
-    def _set_enter_finished_emit_send_(self):
-        # noinspection PyUnresolvedReferences
-        self.entry_finished.emit()
-
-    def _set_enter_changed_emit_send_(self):
-        # noinspection PyUnresolvedReferences
-        self.entry_changed.emit()
-
-    def _set_value_completion_(self):
-        if self._item_value_type in [int, float]:
-            if not self.text():
-                self._set_item_value_(0)
-
-    def _set_item_value_type_(self, value_type):
-        self._item_value_type = value_type
-        if self._item_value_type is None:
-            pass
-        elif self._item_value_type is str:
-            pass
-            # self._set_use_as_string_()
-        elif self._item_value_type is int:
-            self._set_use_as_integer_()
-        elif self._item_value_type is float:
-            self._set_use_as_float_()
-
-    def _get_item_value_type_(self):
-        return self._item_value_type
-
-    def _set_open_in_system_(self):
-        _ = self.text()
-        if _:
-            bsc_core.StoragePathOpt(_).set_open_in_system()
-
-    def _set_use_as_storage_(self, boolean):
-        self._is_use_as_storage = boolean
-
-    def _set_use_as_string_(self):
-        reg = QtCore.QRegExp(r'^[a-zA-Z0-9_]+$')
-        validator = QtGui.QRegExpValidator(reg, self)
-        self.setValidator(validator)
-
-    def _set_use_as_integer_(self):
-        self.setValidator(QtGui.QIntValidator())
-        self._set_value_completion_()
-
-    def _set_use_as_float_(self):
-        self.setValidator(QtGui.QDoubleValidator())
-        self._set_value_completion_()
-
-    def _set_value_maximum_(self, value):
-        self._maximum = value
-
-    def _get_value_maximum_(self):
-        return self._maximum
-
-    def _set_value_minimum_(self, value):
-        self._minimum = value
-
-    def _get_value_minimum_(self):
-        return self._minimum
-
-    def _set_value_range_(self, maximum, minimum):
-        self._set_value_maximum_(maximum), self._set_value_minimum_(minimum)
-
-    def _get_value_range_(self):
-        return self._get_value_maximum_(), self._get_value_minimum_()
-
-    def _get_item_value_(self):
-        _ = self.text()
-        if self._item_value_type == str:
-            return _
-        elif self._item_value_type == int:
-            return int(_)
-        elif self._item_value_type == float:
-            return float(_)
-        return _
-
-    def _set_item_value_(self, value):
-        if value is not None:
-            self.setText(
-                str(self._item_value_type(value)).encode("UTF8")
-            )
-        else:
-            self.setText('')
-
-    def _get_item_value_default_(self):
-        return self._item_value_default
-
-    def _set_focus_connect_to_(self, widget):
-        pass
-    #
-    def _get_is_selected_(self):
-        boolean = False
-        if self.selectedText():
-            boolean = True
-        return boolean
-
-    def _set_item_value_clear_(self):
-        self._set_item_value_('')
-
-    def _set_completer_values_(self, values):
-        pass
-
-    def _set_enter_enable_(self, boolean):
-        self.setReadOnly(not boolean)
 
 
 class _QtEnumerateConstantEntry(QtWidgets.QComboBox):
@@ -1171,7 +1266,7 @@ class _QtEnumerateConstantEntry(QtWidgets.QComboBox):
         self.view().setPalette(QtDccMtd.get_qt_palette())
         self.setFont(Font.NAME)
         #
-        self.setLineEdit(_QtEntryItem())
+        self.setLineEdit(QtLineEdit_())
         #
         self.setStyleSheet(
             (
@@ -1196,12 +1291,12 @@ class _QtEnumerateConstantEntry(QtWidgets.QComboBox):
                 self._is_focused = True
                 parent = self.parent()
                 if isinstance(parent, _QtEntryFrame):
-                    parent._set_focus_(True)
+                    parent._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = True
                 parent = self.parent()
                 if isinstance(parent, _QtEntryFrame):
-                    parent._set_focus_(False)
+                    parent._set_focused_(False)
         return False
 
 
@@ -1254,6 +1349,12 @@ class _QtChooseDropWidget(
         self._side = 2
         self._margin = 8
         self._shadow_radius = 4
+        #
+        self._frame_border_color = BorderColor.get('color-light')
+        self._hovered_frame_border_color = BorderColor.get('color-hovered')
+        self._selected_frame_border_color = BorderColor.get('color-selected')
+        #
+        self._frame_background_color = BackgroundColor.get('color-entry')
 
     def paintEvent(self, event):
         x, y = 0, 0
@@ -1270,8 +1371,8 @@ class _QtChooseDropWidget(
             side=self._side,
             shadow_radius=self._shadow_radius,
             region=self._region,
-            border_color=Color.ENTRY_BORDER_ENTRY_ON,
-            background_color=Color.ENTRY_BACKGROUND_ENTRY_ON,
+            border_color=self._selected_frame_border_color,
+            background_color=self._frame_background_color,
         )
 
     def eventFilter(self, *args):
@@ -1429,7 +1530,7 @@ class _QtChooseDropWidget(
     def _get_maximum_width_(self, texts):
         count = len(texts)
         texts.append(str(count))
-        _ = max([self.fontMetrics().width(i) for i in texts]) + 16
+        _ = max([self.fontMetrics().width(i) for i in texts]) + 32
         if count > self._item_count_maximum:
             return _ + 24
         return _
@@ -1539,6 +1640,12 @@ class _QtChooseDropWidget1(
         self._side = 2
         self._margin = 8
         self._shadow_radius = 4
+        #
+        self._frame_border_color = BorderColor.get('color-light')
+        self._hovered_frame_border_color = BorderColor.get('color-hovered')
+        self._selected_frame_border_color = BorderColor.get('color-selected')
+        #
+        self._frame_background_color = BackgroundColor.get('color-entry')
 
     def paintEvent(self, event):
         x, y = 0, 0
@@ -1548,8 +1655,8 @@ class _QtChooseDropWidget1(
         #
         painter._set_frame_draw_by_rect_(
             self._frame_rect,
-            border_color=Color.ENTRY_BORDER_ENTRY_ON,
-            background_color=Color.ENTRY_BACKGROUND_ENTRY_ON,
+            border_color=self._selected_frame_border_color,
+            background_color=self._frame_background_color,
             border_radius=4
         )
 
@@ -1631,7 +1738,7 @@ class _QtChooseDropWidget1(
             self._list_widget.itemClicked.connect(
                 self._set_close_
             )
-            parent._set_focus_(True)
+            parent._set_focused_(True)
 
     def _set_drop_end_(self):
         parent = self.parent()
@@ -1641,7 +1748,7 @@ class _QtChooseDropWidget1(
             parent._set_item_value_(name_text)
             parent._set_choose_changed_emit_send_()
         #
-        parent._set_focus_(False)
+        parent._set_focused_(False)
 
     def _get_maximum_height_(self):
         rects = [self._list_widget.visualItemRect(self._list_widget.item(i)) for i in range(self._list_widget.count())[:self._item_count_maximum]]
@@ -1676,7 +1783,7 @@ class _QtConstantValueEntryItem(
     utl_gui_qt_abstract.AbsQtItemValueTypeConstantEntryDef,
     utl_gui_qt_abstract.AbsQtItemValueDefaultDef,
 ):
-    QT_VALUE_ENTRY_CLASS = _QtEntryItem
+    QT_VALUE_ENTRY_CLASS = QtLineEdit_
     #
     entry_changed = qt_signal()
     def __init__(self, *args, **kwargs):
@@ -1699,6 +1806,43 @@ class _QtConstantValueEntryItem(
         self._item_value_entry_widget._set_item_value_type_(self._item_value_type)
 
 
+class _QtScriptValueEntryItem(
+    _QtEntryFrame,
+    utl_gui_qt_abstract.AbsQtItemValueTypeConstantEntryDef,
+    utl_gui_qt_abstract.AbsQtItemValueDefaultDef,
+):
+    QT_VALUE_ENTRY_CLASS = QtTextBrowser_
+    #
+    entry_changed = qt_signal()
+    def __init__(self, *args, **kwargs):
+        super(_QtScriptValueEntryItem, self).__init__(*args, **kwargs)
+        #
+        self._set_item_value_type_constant_entry_def_init_()
+        self._set_item_value_default_def_init_()
+        #
+        self._layout = QtHBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(4)
+        #
+        self._set_item_value_entry_build_(self._item_value_type)
+
+    def _set_size_policy_height_fixed_mode_(self):
+        self._item_value_entry_widget.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Minimum
+        )
+
+    def _set_item_value_entry_build_(self, value_type):
+        self._item_value_type = value_type
+        #
+        self._item_value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
+        # self._item_value_entry_widget.setReadOnly(False)
+        self._layout.addWidget(self._item_value_entry_widget)
+
+    def _set_item_value_entry_enable_(self, boolean):
+        self._item_value_entry_widget.setReadOnly(not boolean)
+
+
 class _QtEnumerateValueEntryItem(
     _QtEntryFrame,
     utl_gui_qt_abstract.AbsQtItemValueEnumerateEntryDef,
@@ -1707,7 +1851,7 @@ class _QtEnumerateValueEntryItem(
     utl_gui_qt_abstract.AbsQtItemActionChooseDef,
     utl_gui_qt_abstract._QtItemEntryActionDef,
 ):
-    QT_VALUE_ENTRY_CLASS = _QtEntryItem
+    QT_VALUE_ENTRY_CLASS = QtLineEdit_
     CHOOSE_DROP_WIDGET_CLS = _QtChooseDropWidget1
     def __init__(self, *args, **kwargs):
         super(_QtEnumerateValueEntryItem, self).__init__(*args, **kwargs)
@@ -1783,7 +1927,7 @@ class _QtArrayValueEntryItem(
     _QtEntryFrame,
     utl_gui_qt_abstract._QtArrayValueEntryDef,
 ):
-    QT_VALUE_ENTRY_CLASS = _QtEntryItem
+    QT_VALUE_ENTRY_CLASS = QtLineEdit_
     #
     entry_changed = qt_signal()
     def __init__(self, *args, **kwargs):
@@ -1806,7 +1950,7 @@ class _QtArrayValueEntryItem(
         self._set_entry_count_(value_size)
         if value_size:
             for i in range(value_size):
-                _i_value_entry_widget = _QtEntryItem()
+                _i_value_entry_widget = QtLineEdit_()
                 _i_value_entry_widget._set_item_value_type_(self._item_value_type)
                 self._layout.addWidget(_i_value_entry_widget)
                 self._value_entry_widgets.append(_i_value_entry_widget)
@@ -2013,8 +2157,9 @@ class _QtHExpandItem1(
         #
         self._item_is_expand_enable = True
         self._item_is_expanded = False
-        self._item_expand_icon_file_path_0 = utl_gui_core.Icons.get('expandopen')
-        self._item_expand_icon_file_path_1 = utl_gui_core.Icons.get('expandclose')
+        self._item_expand_icon_file_path_0 = utl_gui_core.Icons.get('qt-style/arrow-down')
+        self._item_expand_icon_file_path_1 = utl_gui_core.Icons.get('qt-style/arrow-right')
+        self._item_expand_icon_file_path_2 = utl_gui_core.Icons.get('qt-style/arrow-up')
         r, g, b = 135, 135, 135
         h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
         color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
@@ -2093,7 +2238,7 @@ class _QtHExpandItem1(
             )
         elif self._item_expand_direction == self.EXPAND_BOTTOM_TO_TOP:
             self._set_icon_file_path_(
-                [self._item_expand_icon_file_path_0, self._item_expand_icon_file_path_1][self._item_is_expanded]
+                [self._item_expand_icon_file_path_1, self._item_expand_icon_file_path_2][self._item_is_expanded]
             )
         #
         self._set_widget_update_()

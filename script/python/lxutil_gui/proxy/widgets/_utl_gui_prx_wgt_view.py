@@ -156,6 +156,9 @@ class PrxTreeView(
 
     def set_single_selection(self):
         self.view.setSelectionMode(utl_gui_qt_core.QtWidgets.QAbstractItemView.SingleSelection)
+
+    def set_size_policy_height_fixed_mode(self):
+        self._qt_view._set_size_policy_height_fixed_mode_()
     # noinspection PyUnusedLocal
     def set_menu_show(self, *args):
         indices = self.view.selectedIndexes()

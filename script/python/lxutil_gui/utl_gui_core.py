@@ -198,7 +198,7 @@ class QtStyleMtd(object):
     def get_background_color(cls, key):
         return eval(
             cls.CONFIGURE.get(
-                'option.border.{}'.format(key)
+                'option.background.{}'.format(key)
             )
         )
 

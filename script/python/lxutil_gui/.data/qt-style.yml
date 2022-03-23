@@ -12,6 +12,7 @@ option:
         #
         color-selected: '55, 119, 247, 255'
         color-pressed: '55, 119, 247, 255'
+        color-entry: '55, 55, 55, 255'
     #
     border:
         color-transparent: '0, 0, 0, 0'
@@ -228,9 +229,9 @@ widget:
     QTextBrowser:
         |-
         QTextBrowser{
-            background: rgba(<option.background.color-dark>); 
+            background: rgba(<option.background.color-transparent>); 
             color: rgba(<option.font.color-basic>);
-            border: 1px rgba(<option.border.color-dark>); border-radius: 0px; border-style: solid;
+            border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
             selection-color: rgba(<option.font.color-basic>) ; selection-background-color: rgba(0, 127, 127, 255)
         }
     QLineEdit:

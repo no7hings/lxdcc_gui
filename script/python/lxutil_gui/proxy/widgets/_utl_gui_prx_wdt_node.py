@@ -675,6 +675,29 @@ class PrxBooleanEntry(AbsRsvTypeQtEntry):
         self._qt_entry_widget._set_item_check_changed_connect_to_(fnc)
 
 
+class PrxScriptEntry(AbsRsvTypeQtEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtScriptValueEntryItem
+    def __init__(self, *args, **kwargs):
+        super(PrxScriptEntry, self).__init__(*args, **kwargs)
+        self.widget.setMaximumHeight(80)
+        self.widget.setMinimumHeight(80)
+        self._qt_entry_widget._set_item_value_entry_enable_(True)
+        self._qt_entry_widget._set_size_policy_height_fixed_mode_()
+
+    def get(self):
+        return self._qt_entry_widget._get_item_value_()
+
+    def set(self, raw=None, **kwargs):
+        self._qt_entry_widget._set_item_value_(raw)
+
+    def set_default(self, raw, **kwargs):
+        self._qt_entry_widget._set_item_value_default_(raw)
+
+    def get_is_default(self):
+        return self._qt_entry_widget._get_item_value_is_default_()
+
+
 class PrxEnumerateEntry(AbsRsvTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_item._QtEntryFrame
     QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtEnumerateConstantEntry
@@ -850,11 +873,14 @@ class PrxRsvObjChooseEntry(AbsRsvTypeEntry):
     NAMESPACE = 'resolver'
     def __init__(self, *args, **kwargs):
         super(PrxRsvObjChooseEntry, self).__init__(*args, **kwargs)
+        self.widget.setMaximumHeight(160)
+        self.widget.setMinimumHeight(160)
         self._prx_entry_widget.set_header_view_create(
             [('name', 1)],
             480
         )
         self._prx_entry_widget.set_single_selection()
+        self._prx_entry_widget.set_size_policy_height_fixed_mode()
         self._obj_add_dict = {}
 
     def __set_item_comp_add_as_tree_(self, obj, use_show_thread=False):
@@ -1061,12 +1087,16 @@ class AbsPrxTypePort(AbsPrxPortDef):
     def __init__(self, path, label=None, enable=None, default_value=None, join_to_next=False, scheme_key=None):
         self._set_prx_port_def_init_('value', path, label)
         #
+        self._key = None
+        #
         if isinstance(enable, bool):
             self._enable = enable
         #
         self._prx_port_enable = self.ENABLE_CLASS()
+        self._prx_port_enable.set_hide()
         # gui
         self._prx_port_label = self.LABEL_CLASS()
+        self._prx_port_label.set_hide()
         self._prx_port_label.set_name_tool_tip(
             'path: {}\nname: {}'.format(
                 self._path,
@@ -1101,16 +1131,26 @@ class AbsPrxTypePort(AbsPrxPortDef):
     def port_entry(self):
         return self._prx_port_entry
 
+    def set_key(self, key):
+        self._key = key
+
+    def get_key(self):
+        return self._key
+
     def set_name(self, name):
         self._prx_port_label.set_name(name)
+
+    def set_sub_name_update(self):
+        if hasattr(self._prx_port_entry._qt_entry_widget, '_set_name_text_'):
+            self._prx_port_entry._qt_entry_widget._set_name_text_(self.label)
 
     def set_enable(self, boolean):
         if boolean is not None:
             if isinstance(boolean, bool):
-                self._prx_port_enable.widget.show()
+                self._prx_port_enable.set_show()
                 self._prx_port_enable.set(boolean)
         else:
-            self._prx_port_enable.widget.hide()
+            self._prx_port_enable.set_hide()
 
     def set_name_width(self, w):
         self.port_label.set_width(w)
@@ -1178,7 +1218,7 @@ class AbsPrxTypePort(AbsPrxPortDef):
     def _get_layout_(self):
         return self._layout
     # join to next
-    def set_joint_to_next(self, boolean):
+    def set_join_to_next(self, boolean):
         self._is_join_to_next = boolean
 
     def _get_is_join_next_(self):
@@ -1289,7 +1329,7 @@ class PrxBooleanPort(AbsPrxTypePort):
         super(PrxBooleanPort, self).__init__(*args, **kwargs)
 
     def set_name(self, text):
-        self._prx_port_entry._qt_entry_widget._set_name_text_(self.label)
+        self._prx_port_entry._qt_entry_widget._set_name_text_(text)
 
 
 class PrxEnumeratePort(AbsPrxTypePort):
@@ -1318,6 +1358,15 @@ class PrxEnumeratePort_(AbsPrxTypePort):
 
     def get_enumerate_strings(self):
         return self._prx_port_entry.get_enumerate_strings()
+
+
+class PrxScriptPort(AbsPrxTypePort):
+    ENABLE_CLASS = _PrxPortStatus
+    LABEL_CLASS = _PrxPortLabel
+    LABEL_HIDED = False
+    ENTRY_CLASS = PrxScriptEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxScriptPort, self).__init__(*args, **kwargs)
 
 
 class PrxArrayPort(AbsPrxTypePort):
@@ -1566,7 +1615,7 @@ class PrxGroupPort_(
             self._port_layout.addWidget(widget)
             layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(widget)
             layout._set_align_top_()
-            port._set_layout_(layout)
+            cur_port._set_layout_(layout)
             layout.addWidget(
                 cur_port._prx_port_enable.widget
             )
@@ -1576,22 +1625,14 @@ class PrxGroupPort_(
             layout.addWidget(
                 cur_port._prx_port_entry.widget
             )
-            if cur_port.LABEL_HIDED is True:
-                cur_port._prx_port_label.set_hide()
+            if cur_port.LABEL_HIDED is False:
+                cur_port._prx_port_label.set_show()
         elif condition == (False, True):
             widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
             self._port_layout.addWidget(widget)
             layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(widget)
             layout._set_align_top_()
-            port._set_layout_(layout)
-            layout.addWidget(
-                cur_port._prx_port_enable.widget
-            )
-            layout.addWidget(
-                cur_port._prx_port_label.widget
-            )
-            if cur_port.LABEL_HIDED is True:
-                cur_port._prx_port_label.set_hide()
+            cur_port._set_layout_(layout)
             #
             enter_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
             layout.addWidget(
@@ -1601,17 +1642,44 @@ class PrxGroupPort_(
             enter_layout.setContentsMargins(0, 0, 0, 0)
             enter_layout.setSpacing(2)
             enter_layout.addWidget(
+                cur_port._prx_port_enable.widget
+            )
+            cur_port._prx_port_enable.set_hide()
+            enter_layout.addWidget(
+                cur_port._prx_port_label.widget
+            )
+            cur_port._prx_port_label.set_hide()
+            cur_port.set_sub_name_update()
+            enter_layout.addWidget(
                 cur_port._prx_port_entry.widget
             )
             cur_port._set_join_layout_(enter_layout)
         elif condition == (True, True):
             enter_layout = pre_port._get_join_layout_()
             enter_layout.addWidget(
+                cur_port._prx_port_enable.widget
+            )
+            cur_port._prx_port_enable.set_hide()
+            enter_layout.addWidget(
+                cur_port._prx_port_label.widget
+            )
+            cur_port._prx_port_label.set_hide()
+            cur_port.set_sub_name_update()
+            enter_layout.addWidget(
                 cur_port._prx_port_entry.widget
             )
             cur_port._set_join_layout_(enter_layout)
         elif condition == (True, False):
             enter_layout = pre_port._get_join_layout_()
+            enter_layout.addWidget(
+                cur_port._prx_port_enable.widget
+            )
+            cur_port._prx_port_enable.set_hide()
+            enter_layout.addWidget(
+                cur_port._prx_port_label.widget
+            )
+            cur_port._prx_port_label.set_hide()
+            cur_port.set_sub_name_update()
             enter_layout.addWidget(
                 cur_port._prx_port_entry.widget
             )
@@ -1769,11 +1837,12 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_port_create_by_option(self, port_path, option):
         widget_ = option['widget']
+        key_ = option.get('key')
         value_ = option['value']
         enable_ = option.get('enable')
-        tool_tip_ = option['tool_tip']
+        tool_tip_ = option.get('tool_tip')
         #
-        join_to_next_ = option.get('joint_to_next') or False
+        join_to_next_ = option.get('join_to_next') or False
 
         if widget_ in ['string']:
             port = PrxStringPort(port_path)
@@ -1825,13 +1894,18 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
                 port_path, scheme_key=option['scheme_key']
             )
             port.set(value_)
+        elif widget_ in ['script']:
+            port = PrxScriptPort(port_path)
+            port.set(value_)
+            port.set_default(value_)
         #
         else:
             raise TypeError()
-
+        #
+        port.set_key(key_)
         port.set_enable(enable_)
         port.set_tool_tip(tool_tip_)
-        port.set_joint_to_next(join_to_next_)
+        port.set_join_to_next(join_to_next_)
 
         self.set_port_add(port)
 
@@ -1842,6 +1916,11 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         port = self.get_port(key)
         if port is not None:
             port.set(value)
+
+    def set_changed_connect_to(self, key, value):
+        port = self.get_port(key)
+        if port is not None:
+            port.set_changed_connect_to(value)
 
     def set_default(self, key, value):
         port = self.get_port(key)

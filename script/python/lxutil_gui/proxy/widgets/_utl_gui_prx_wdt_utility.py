@@ -323,8 +323,9 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
 
     def _set_build_(self):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
-        self._qt_text_browser_0 = _utl_gui_qt_wgt_utility.QtTextBrowser()
-        qt_layout_0.addWidget(self._qt_text_browser_0)
+        widget = _utl_gui_qt_wgt_item._QtScriptValueEntryItem()
+        qt_layout_0.addWidget(widget)
+        self._qt_text_browser_0 = widget._item_value_entry_widget
 
     def set_markdown_file_open(self, file_path):
         if file_path:

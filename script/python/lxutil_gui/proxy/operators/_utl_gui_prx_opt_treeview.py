@@ -234,11 +234,13 @@ class PrxDccObjTreeViewTagFilterOpt(object):
         return dic
 
     def set_filter_by_dict(self, dic):
-        item_dict = self._prx_tree_view_src._item_dict
-        for k, v in dic.items():
-            if k in item_dict:
-                prx_item = item_dict[k]
-                prx_item.set_checked(v)
+        prx_items = self._prx_tree_view_src.get_all_leaf_items()
+        for i_prx_item in prx_items:
+            i_path = i_prx_item.get_path()
+            if i_path in dic:
+                i_prx_item.set_checked(dic[i_path])
+            else:
+                i_prx_item.set_checked(False)
 
         self.set_filter()
 

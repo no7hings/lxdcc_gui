@@ -311,6 +311,12 @@ class QtTreeWidget(
             utl_gui_core.QtStyleMtd.get('QScrollBar')
         )
 
+    def _set_size_policy_height_fixed_mode_(self):
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Fixed
+        )
+
     def _get_item_visible_children_by_index_(self, index):
         lis = []
         raw_count = self.model().rowCount(index)
@@ -566,12 +572,12 @@ class QtTreeWidget(
                 self._is_focused = True
                 parent = self.parent()
                 if isinstance(parent, _utl_gui_qt_wgt_item._QtEntryFrame):
-                    parent._set_focus_(True)
+                    parent._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
                 if isinstance(parent, _utl_gui_qt_wgt_item._QtEntryFrame):
-                    parent._set_focus_(False)
+                    parent._set_focused_(False)
         return False
 
     def _set_item_selected_update_(self):
@@ -754,17 +760,6 @@ class QtListWidget(
         self._set_grid_mode_()
         #
         self._action_control_flag = False
-        #
-        self.setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QListView')
-        )
-        #
-        self.verticalScrollBar().setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QScrollBar')
-        )
-        self.horizontalScrollBar().setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QScrollBar')
-        )
 
     def eventFilter(self, *args):
         widget, event = args
@@ -783,12 +778,12 @@ class QtListWidget(
                 self._is_focused = True
                 parent = self.parent()
                 if isinstance(parent, _utl_gui_qt_wgt_item._QtEntryFrame):
-                    parent._set_focus_(True)
+                    parent._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
                 if isinstance(parent, _utl_gui_qt_wgt_item._QtEntryFrame):
-                    parent._set_focus_(False)
+                    parent._set_focused_(False)
         if widget == self.verticalScrollBar():
             pass
         return False

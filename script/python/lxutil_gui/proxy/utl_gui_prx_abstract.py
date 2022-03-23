@@ -90,12 +90,10 @@ class AbsPrxWidget(AbsPrx):
         pass
 
     def set_hide(self, boolean=True):
-        if hasattr(self.widget, 'parent'):
-            if self.widget.parent():
-                if boolean is True:
-                    self.widget.hide()
-                else:
-                    self.widget.show()
+        if boolean is True:
+            self.widget.hide()
+        else:
+            self.widget.show()
 
     def set_show(self, boolean=True):
         if boolean is True:
