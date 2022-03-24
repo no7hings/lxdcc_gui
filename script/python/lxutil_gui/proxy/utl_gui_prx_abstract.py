@@ -191,6 +191,9 @@ class AbsPrxWindow(AbsPrx):
     def set_window_name_icon(self, text):
         self.widget._set_name_icon_text_(text)
 
+    def set_window_icon_name(self, icon_name):
+        self.widget._set_icon_name_(icon_name)
+
     def set_status(self, status):
         self._status = status
 

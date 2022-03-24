@@ -1273,6 +1273,9 @@ class QtMenu(QtWidgets.QMenu):
                 elif type_ == 'action':
                     self._set_action_add__(self, i_content)
     @classmethod
+    def _set_action_create_by_menu_content_(cls, menu):
+        menu.clear()
+    @classmethod
     def _set_separator_add__(cls, menu, content):
         name = content.get('name')
         separator = menu.addSeparator()
@@ -1335,13 +1338,6 @@ class QtAction(QtWidgets.QAction):
         qt_palette = QtDccMtd.get_qt_palette()
         self.setPalette(qt_palette)
         self.setAutoFillBackground(True)
-        #
-        self.setFont(Font.NAME)
-
-
-class QtWidgetAction(QtWidgets.QWidgetAction):
-    def __init__(self, *args, **kwargs):
-        super(QtWidgetAction, self).__init__(*args, **kwargs)
         #
         self.setFont(Font.NAME)
 
@@ -1410,6 +1406,10 @@ class QtMainWindow(
     #
     def _set_name_icon_text_(self, text):
         self.setWindowIcon(QtUtilMtd.get_name_text_icon_(text))
+
+    def _set_icon_name_(self, icon_name):
+        self.setWindowIcon(QtIconMtd.get_by_icon_name(icon_name))
+
     @property
     def lynxi_window(self):
         return True

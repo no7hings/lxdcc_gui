@@ -1,5 +1,6 @@
 # coding:utf-8
 import glob
+
 import sys
 #
 import cgitb
@@ -9,6 +10,8 @@ import math
 import types
 #
 from lxbasic import bsc_core
+
+from lxbasic.objects import bsc_obj_abs
 #
 from lxutil import utl_configure, utl_core, utl_abstract, methods
 
@@ -765,7 +768,7 @@ class QtIconMtd(object):
     @classmethod
     def get_by_icon_name(cls, icon_name):
         icon = QtGui.QIcon()
-        file_path = utl_core.Icon.get(icon_name)
+        file_path = utl_gui_core.Icons.get(icon_name)
         if file_path:
             icon.addPixmap(
                 QtGui.QPixmap(file_path),
@@ -1649,6 +1652,119 @@ class QtHistogramChartDrawData(object):
         return self._draw_data
 
 
+class QtWidgetAction(QtWidgets.QWidgetAction):
+    def __init__(self, *args, **kwargs):
+        super(QtWidgetAction, self).__init__(*args, **kwargs)
+        #
+        self.setFont(Font.NAME)
+
+
+class QtMenuOpt(object):
+    def __init__(self, menu):
+        if isinstance(menu, QtWidgets.QMenu):
+            self._root_menu = menu
+            self._item_dic = {
+                '/': self._root_menu
+            }
+        else:
+            raise RuntimeError()
+    @classmethod
+    def set_cmd_run(cls, cmd_str):
+        exec cmd_str
+
+    def set_create_by_content(self, content):
+        self._root_menu.clear()
+        self._item_dic = {
+            '/': self._root_menu
+        }
+        if isinstance(content, bsc_obj_abs.AbsContent):
+            keys = content.get_keys(regex='*.properties')
+            for i_key in keys:
+                i_atr_path_opt = bsc_core.DccAttrPathOpt(i_key)
+                i_obj_path = i_atr_path_opt.obj_path
+                i_obj_path_opt = bsc_core.DccPathDagOpt(i_obj_path)
+                i_content = content.get_content(i_key)
+                i_type = i_content.get('type')
+                if i_obj_path_opt.get_is_root():
+                    pass
+                else:
+                    menu = self.__get_menu_(i_obj_path_opt.get_parent())
+                    if i_type == 'separator':
+                        self.set_separator_add(menu, i_content)
+                    elif i_type == 'action':
+                        self.set_action_add(menu, i_content)
+
+    def __get_menu_(self, path_opt):
+        cur_menu = self._root_menu
+        components = path_opt.get_components()
+        components.reverse()
+        for i_component in components:
+            cur_menu = self.__get_menu_force_(cur_menu, i_component)
+        return cur_menu
+
+    def __get_menu_force_(self, menu, path_opt):
+        path = path_opt.path
+        if path in self._item_dic:
+            return self._item_dic[path]
+        #
+        name = path_opt.name
+        action = menu.addAction(name)
+        sub_menu = menu.__class__(menu)
+        sub_menu.setTearOffEnabled(True)
+        action.setMenu(sub_menu)
+        self._item_dic[path] = sub_menu
+        return sub_menu
+    #
+    @classmethod
+    def set_separator_add(cls, menu, content):
+        name = content.get('name')
+        separator = menu.addSeparator()
+        separator.setFont(Font.SEPARATOR)
+        separator.setText(name)
+        return separator
+    @classmethod
+    def set_action_add(cls, menu, content):
+        def set_disable_fnc_(widget_action_):
+            widget_action_.setFont(Font.disable)
+            widget_action_.setDisabled(True)
+        #
+        name = content.get('name')
+        icon_name = content.get('icon_name')
+        executable_fnc = content.get('executable_fnc')
+        execute_fnc = content.get('execute_fnc')
+        widget_action = QtWidgetAction(menu)
+        widget_action.setFont(Font.NAME)
+        widget_action.setText(name)
+        menu.addAction(widget_action)
+        if icon_name:
+            widget_action.setIcon(
+                QtIconMtd.get_by_icon_name(icon_name)
+            )
+        else:
+            widget_action.setIcon(
+                QtUtilMtd.get_name_text_icon_(name, background_color=(64, 64, 64))
+            )
+        #
+        if isinstance(executable_fnc, (bool, int)):
+            executable = executable_fnc
+            if executable is False:
+                set_disable_fnc_(widget_action)
+        elif isinstance(executable_fnc, (types.FunctionType, types.MethodType)):
+            executable = executable_fnc()
+            if executable is False:
+                set_disable_fnc_(widget_action)
+        #
+        if isinstance(execute_fnc, (types.FunctionType, types.MethodType)):
+            fnc = execute_fnc
+            widget_action.triggered.connect(fnc)
+        elif isinstance(execute_fnc, (str, unicode)):
+            cmd_str = execute_fnc
+            widget_action.triggered.connect(
+                lambda *args, **kwargs: cls.set_cmd_run(cmd_str)
+            )
+        return widget_action
+
+
 def set_gui_proxy_set_print(gui_proxy, text):
     if hasattr(gui_proxy, 'set_print_add_use_thread'):
         gui_proxy.set_print_add_use_thread(text)
@@ -1852,6 +1968,10 @@ class AsbQtMenuSetup(object):
         if menu is not None:
             menu.clear()
             cls.set_menu_setup(menu, menu_raw)
+    @classmethod
+    def set_menu_build_by_menu_content(cls, menu, menu_content):
+        if menu is not None:
+            menu.clear()
 
 
 def set_window_show_standalone(window_class, **kwargs):

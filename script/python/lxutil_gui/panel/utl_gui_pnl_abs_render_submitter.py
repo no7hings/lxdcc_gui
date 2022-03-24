@@ -44,7 +44,7 @@ class AbsAssetRenderSubmitter(
             self._rez_beta = bsc_core.EnvironMtd.get('REZ_BETA')
             if self._rez_beta:
                 self.set_window_title(
-                    '{}-[BETA]'.format(self._option_hook_gui_configure.get('name'))
+                    '[BETA] {}'.format(self._option_hook_gui_configure.get('name'))
                 )
             #
             self.set_definition_window_size(
@@ -273,10 +273,10 @@ class AbsAssetRenderSubmitter(
         self._prx_options_node.set('version', rsv_versions)
 
         self._rsv_asset_set_usd_creator = usd_rsv_objects.RsvAssetSetUsdCreator(rsv_asset)
-
-        rsv_shots = self._rsv_asset_set_usd_creator.get_rsv_asset_shots()
-
-        self._prx_options_node.set('shot', rsv_shots)
+        if bsc_core.SystemMtd.get_is_linux():
+            if bsc_core.SystemMtd.get_application() not in ['maya']:
+                rsv_shots = self._rsv_asset_set_usd_creator.get_rsv_asset_shots()
+                self._prx_options_node.set('shot', rsv_shots)
 
     def __set_rsv_unit_gui_show_deferred_(self, prx_item, variants):
         names = ['{}={}'.format(k, v) for k, v in variants.items()]
@@ -457,8 +457,12 @@ class AbsAssetRenderSubmitter(
         if rsv_task is not None:
             dic['file'] = self._file_path
             #
-            dic['shot'] = self._prx_options_node.get('shot').name
-
+            rsv_shot = self._prx_options_node.get(
+                'shot'
+            )
+            if rsv_shot:
+                dic['shot'] = rsv_shot.name
+            #
             dic['choice_scheme'] = self._prx_options_node.get('choice_scheme')
             #
             settings_dic = self._get_settings_dic_()
@@ -552,7 +556,7 @@ class AbsShotRenderSubmitter(
             self._rez_beta = bsc_core.EnvironMtd.get('REZ_BETA')
             if self._rez_beta:
                 self.set_window_title(
-                    '{}-[BETA]'.format(self._option_hook_gui_configure.get('name'))
+                    '[BETA] {}'.format(self._option_hook_gui_configure.get('name'))
                 )
             #
             self.set_definition_window_size(
