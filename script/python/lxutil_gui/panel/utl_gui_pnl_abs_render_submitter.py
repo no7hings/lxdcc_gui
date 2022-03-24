@@ -391,21 +391,23 @@ class AbsAssetRenderSubmitter(
         rsv_shot = self._prx_options_node.get(
             'shot'
         )
-        if rsv_asset is not None and rsv_shot is not None:
-            asset_usd_variant_dict = self._rsv_asset_set_usd_creator._get_asset_usd_set_dress_variant_dict_(rsv_asset)
-            for k, v in asset_usd_variant_dict.items():
-                i_port_path = v['port_path']
-                i_variant_names = v['variant_names']
-                i_current_variant_name = v['variant_name']
-                self._prx_usd_node.set(
-                    i_port_path, i_variant_names
-                )
-                self._prx_usd_node.set(
-                    i_port_path, i_current_variant_name
-                )
-                self._prx_usd_node.set_default(
-                    i_port_path, i_current_variant_name
-                )
+        if bsc_core.SystemMtd.get_is_linux():
+            if bsc_core.SystemMtd.get_application() not in ['maya']:
+                if rsv_asset is not None:
+                    asset_usd_variant_dict = self._rsv_asset_set_usd_creator._get_asset_usd_set_dress_variant_dict_(rsv_asset)
+                    for k, v in asset_usd_variant_dict.items():
+                        i_port_path = v['port_path']
+                        i_variant_names = v['variant_names']
+                        i_current_variant_name = v['variant_name']
+                        self._prx_usd_node.set(
+                            i_port_path, i_variant_names
+                        )
+                        self._prx_usd_node.set(
+                            i_port_path, i_current_variant_name
+                        )
+                        self._prx_usd_node.set_default(
+                            i_port_path, i_current_variant_name
+                        )
             #
             # shot_usd_variant_dict = self._rsv_asset_set_usd_creator._get_shot_usd_set_dress_variant_dict_(rsv_shot)
             # for k, v in shot_usd_variant_dict.items():
