@@ -1,4 +1,5 @@
 # coding:utf-8
+import functools
 import glob
 
 import sys
@@ -1669,10 +1670,10 @@ class QtMenuOpt(object):
         else:
             raise RuntimeError()
     @utl_modifiers.set_method_exception_catch
-    def __set_cmd_debug_run(self, cmd_str):
+    def _set_cmd_debug_run_(self, cmd_str):
         exec cmd_str
     @utl_modifiers.set_method_exception_catch
-    def __set_fnc_debug_run_(self, fnc):
+    def _set_fnc_debug_run_(self, fnc):
         fnc()
 
     def set_create_by_content(self, content):
@@ -1766,12 +1767,12 @@ class QtMenuOpt(object):
         if isinstance(execute_fnc, (types.FunctionType, types.MethodType)):
             fnc = execute_fnc
             widget_action.triggered.connect(
-                lambda *args, **kwargs: self.__set_fnc_debug_run_(fnc)
+                fnc
             )
         elif isinstance(execute_fnc, (str, unicode)):
             cmd = execute_fnc
             widget_action.triggered.connect(
-                lambda *args, **kwargs: self.__set_cmd_debug_run(cmd)
+                lambda *args, **kwargs: self._set_cmd_debug_run_(cmd)
             )
         return widget_action
 
