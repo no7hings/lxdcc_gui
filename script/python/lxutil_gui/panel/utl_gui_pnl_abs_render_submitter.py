@@ -871,11 +871,10 @@ class AbsShotRenderSubmitter(
             c.set('step', self._rsv_task.get('step'))
             c.set('task', self._rsv_task.get('task'))
 
-            c.set('shading', 'default')
-
             c.set('user', bsc_core.SystemMtd.get_user_name())
 
-            c.set('render_shot_frames', '1001,1002')
+            c.set('shading', self._prx_settings_node.get('render.look'))
+            c.set('render_shot_frames', self._prx_settings_node.get('render.frames'))
             c.set('render_shot_frame_step', int(self._prx_settings_node.get('render.frame_step')))
             c.set('render_motion_enable', int(self._prx_settings_node.get('render.motion_enable')))
             c.set('render_instance_enable', int(self._prx_settings_node.get('render.instance_enable')))

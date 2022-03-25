@@ -12,6 +12,8 @@ import types
 from lxbasic import bsc_core
 
 from lxbasic.objects import bsc_obj_abs
+
+import lxutil.modifiers as utl_modifiers
 #
 from lxutil import utl_configure, utl_core, utl_abstract, methods
 
@@ -116,10 +118,12 @@ def DpiScale(*args):
     return args[0]
 
 
-def get_font(size=8, weight=50, italic=False, underline=False, strike_out=False, family='Arial Regular'):
+def get_font(size=8, weight=50, italic=False, underline=False, strike_out=False, family='Arial'):
     font = QtGui.QFont()
+    # print font.family()
     font.setPointSize(size)
     font.setFamily(family)
+    # print font.family()
     font.setWeight(weight)
     font.setItalic(italic)
     font.setUnderline(underline)
@@ -1664,9 +1668,12 @@ class QtMenuOpt(object):
             }
         else:
             raise RuntimeError()
-    @classmethod
-    def set_cmd_run(cls, cmd_str):
+    @utl_modifiers.set_method_exception_catch
+    def __set_cmd_debug_run(self, cmd_str):
         exec cmd_str
+    @utl_modifiers.set_method_exception_catch
+    def __set_fnc_debug_run_(self, fnc):
+        fnc()
 
     def set_create_by_content(self, content):
         self._root_menu.clear()
@@ -1724,8 +1731,8 @@ class QtMenuOpt(object):
         separator.setFont(Font.SEPARATOR)
         separator.setText(name)
         return separator
-    @classmethod
-    def set_action_add(cls, menu, content):
+
+    def set_action_add(self, menu, content):
         def set_disable_fnc_(widget_action_):
             widget_action_.setFont(Font.disable)
             widget_action_.setDisabled(True)
@@ -1758,11 +1765,13 @@ class QtMenuOpt(object):
         #
         if isinstance(execute_fnc, (types.FunctionType, types.MethodType)):
             fnc = execute_fnc
-            widget_action.triggered.connect(fnc)
-        elif isinstance(execute_fnc, (str, unicode)):
-            cmd_str = execute_fnc
             widget_action.triggered.connect(
-                lambda *args, **kwargs: cls.set_cmd_run(cmd_str)
+                lambda *args, **kwargs: self.__set_fnc_debug_run_(fnc)
+            )
+        elif isinstance(execute_fnc, (str, unicode)):
+            cmd = execute_fnc
+            widget_action.triggered.connect(
+                lambda *args, **kwargs: self.__set_cmd_debug_run(cmd)
             )
         return widget_action
 

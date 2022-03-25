@@ -789,13 +789,13 @@ class PrxButtonEntry(AbsRsvTypeQtEntry):
     def get(self):
         return None
     @utl_modifiers.set_method_exception_catch
-    def _set_fnc_run_(self, fnc):
+    def _set_fnc_debug_run_(self, fnc):
         fnc()
 
     def set(self, raw=None, **kwargs):
         if isinstance(raw, (types.MethodType, types.FunctionType)):
             self._qt_entry_widget.clicked.connect(
-                lambda *args, **kwargs: self._set_fnc_run_(raw)
+                lambda *args, **kwargs: self._set_fnc_debug_run_(raw)
             )
 
     def set_menu_raw(self, raw):
@@ -816,13 +816,13 @@ class PrxProcessEntry(AbsRsvTypeQtEntry):
     def get(self):
         return None
     @utl_modifiers.set_method_exception_catch
-    def _set_fnc_run_(self, fnc):
+    def _set_fnc_debug_run_(self, fnc):
         fnc()
 
     def set(self, raw=None, **kwargs):
         if isinstance(raw, (types.MethodType, types.FunctionType)):
             self._qt_entry_widget.clicked.connect(
-                lambda *args, **kwargs: self._set_fnc_run_(raw)
+                lambda *args, **kwargs: self._set_fnc_debug_run_(raw)
             )
 
     def set_menu_raw(self, raw):
@@ -831,7 +831,7 @@ class PrxProcessEntry(AbsRsvTypeQtEntry):
     def set_stop(self, raw):
         if isinstance(raw, (types.MethodType, types.FunctionType)):
             self._stop_button.widget.press_clicked.connect(
-                lambda *args, **kwargs: self._set_fnc_run_(raw)
+                lambda *args, **kwargs: self._set_fnc_debug_run_(raw)
             )
 
 
@@ -1195,11 +1195,11 @@ class AbsPrxTypePort(AbsPrxPortDef):
                 import markdown
                 html = markdown.markdown(text_)
             else:
-                html = '<html><body>'
-                html += '<h3>{}</h3>'.format(self._label)
+                html = u'<html><body>'
+                html += u'<h3>{}</h3>'.format(self._label)
                 for i in text_.split('\n'):
-                    html += '<ul><li>{}</li></ul>'.format(i)
-                html += '</body></html>'
+                    html += u'<ul><li>{}</li></ul>'.format(i)
+                html += u'</body></html>'
             #
             if hasattr(self._prx_port_entry, '_qt_entry_widget'):
                 self._prx_port_entry._qt_entry_widget.setToolTip(html)

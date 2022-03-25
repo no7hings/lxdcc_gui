@@ -127,6 +127,7 @@ class AbsPrxWindow(AbsPrx):
     def __init__(self, *args, **kwargs):
         super(AbsPrxWindow, self).__init__(*args, **kwargs)
         main_window = utl_gui_qt_core.QtDccMtd.get_qt_main_window()
+        # print main_window.font()
         if main_window != self.widget:
             self.widget.setParent(
                 main_window, utl_gui_qt_core.QtCore.Qt.Window
