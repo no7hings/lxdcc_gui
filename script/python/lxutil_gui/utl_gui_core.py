@@ -212,7 +212,21 @@ class Icons(object):
         )
 
 
+class Fonts(object):
+    BRANCH = 'fonts'
+    @classmethod
+    def get(cls, key):
+        return utl_core.Resources.get(
+            '{}/{}.*'.format(cls.BRANCH, key)
+        )
+    @classmethod
+    def get_all(cls, sub_key='*'):
+        return utl_core.Resources.get_all(
+            '{}/{}.*'.format(cls.BRANCH, sub_key)
+        )
+
+
 if __name__ == '__main__':
     import os
     os.environ['LYNXI_RESOURCES'] = '/data/e/myworkspace/td/lynxi/script/python/.resources'
-    print Icons.get('application/maya')
+    print Fonts.get_all()

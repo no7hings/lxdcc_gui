@@ -212,7 +212,7 @@ class AbsSceneTextureManagerPanel(
         )
         _port.set_tool_tip(
             [
-                'auto switch color-space for display (only support for maya)',
+                'auto switch color-space for display (only supported for maya)',
                 'more see menu-bar > Show(s) > Help'
             ]
         )

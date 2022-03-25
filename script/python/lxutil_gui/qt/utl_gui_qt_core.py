@@ -586,6 +586,12 @@ class Brush(object):
 class QtUtilMtd(object):
     ICON_KEY_PATTERN = r'[@](.*?)[@]'
     @classmethod
+    def set_fonts_add(cls, fonts):
+        for i in fonts:
+            QtGui.QFontDatabase.addApplicationFont(
+                i
+            )
+    @classmethod
     def get_qt_icon(cls, icon_name):
         os_icon_file = utl_core.Icon.get(icon_name)
         qt_icon = QtGui.QIcon()
@@ -752,16 +758,6 @@ class QtUtilMtd(object):
             QtGui.QIcon.On
         )
         return icon
-    @classmethod
-    def set_fonts_add(cls, directory_path):
-        for i in ['*.tff']:
-            results = glob.glob(
-                '{}/{}'.format(directory_path, i)
-            )
-            for j in results:
-                QtGui.QFontDatabase.addApplicationFont(
-                    j
-                )
 
 
 class QtIconMtd(object):
@@ -1708,10 +1704,16 @@ class QtMenuOpt(object):
             return self._item_dic[path]
         #
         name = path_opt.name
-        action = menu.addAction(name)
+        widget_action = QtWidgetAction(menu)
+        menu.addAction(widget_action)
+        widget_action.setFont(Font.NAME)
+        widget_action.setText(name)
+        widget_action.setIcon(
+            QtIconMtd.get_by_icon_name('file/folder')
+        )
         sub_menu = menu.__class__(menu)
         sub_menu.setTearOffEnabled(True)
-        action.setMenu(sub_menu)
+        widget_action.setMenu(sub_menu)
         self._item_dic[path] = sub_menu
         return sub_menu
     #
@@ -1976,6 +1978,9 @@ class AsbQtMenuSetup(object):
 
 def set_window_show_standalone(window_class, **kwargs):
     app = QtWidgets.QApplication(sys.argv)
+    QtUtilMtd.set_fonts_add(
+        utl_gui_core.Fonts.get_all()
+    )
     w = window_class(**kwargs)
     w.set_window_show()
     sys.exit(app.exec_())
