@@ -116,7 +116,7 @@ def DpiScale(*args):
     return args[0]
 
 
-def get_font(size=8, weight=50, italic=False, underline=False, strike_out=False, family='Arial'):
+def get_font(size=8, weight=50, italic=False, underline=False, strike_out=False, family='Arial Regular'):
     font = QtGui.QFont()
     font.setPointSize(size)
     font.setFamily(family)
