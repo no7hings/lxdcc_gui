@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxbasic import bsc_configure, bsc_core
+from lxbasic import bsc_core
 
 import lxutil_gui.qt.widgets as qt_widgets
 

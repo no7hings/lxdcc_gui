@@ -1986,11 +1986,62 @@ class AsbQtMenuSetup(object):
             menu.clear()
 
 
+class QtSystemTrayIcon(QtWidgets.QSystemTrayIcon):
+    press_clicked = qt_signal()
+    press_db_clicked = qt_signal()
+    press_toggled = qt_signal(bool)
+    def __init__(self, *args, **kwargs):
+        super(QtSystemTrayIcon, self).__init__(*args, **kwargs)
+        menu = QtWidgets.QMenu()
+        self.setContextMenu(
+            menu
+        )
+        #
+        self._window = self.parent()
+
+        self.activated.connect(self._set_window_show_normal_)
+
+        widget_action = QtWidgetAction(menu)
+        widget_action.setFont(Font.NAME)
+        widget_action.setText('quit')
+        menu.addAction(widget_action)
+        widget_action.triggered.connect(
+            self._window.close
+        )
+
+    def _set_window_show_normal_(self, *args):
+        r = args[0]
+        if r == self.Trigger:
+            # print 'AAA'
+            # if self._window.isVisible():
+            #     self._window.hide()
+            # else:
+            #     self._window.show()
+            if self._window.isMinimized():
+                # self._window.setFixedSize(480, 480)
+                self._window.showNormal()
+            else:
+                self._window.showMinimized()
+            # self._window.showMaximized()
+            self._window.showNormal()
+
+
+    def _set_quit_action_add_(self):
+        pass
+
+
 def set_window_show_standalone(window_class, **kwargs):
     app = QtWidgets.QApplication(sys.argv)
+
     QtUtilMtd.set_fonts_add(
         utl_gui_core.Fonts.get_all()
     )
-    w = window_class(**kwargs)
-    w.set_window_show()
+    prx_window = window_class(**kwargs)
+    window = prx_window.widget
+    system_tray_icon = QtSystemTrayIcon(window)
+    # a = utl_gui_qt_core.QtWidgets.QAction('show', triggered=window.widget.show)
+    system_tray_icon.setIcon(window.windowIcon())
+    system_tray_icon.show()
+    window._set_window_system_tray_icon_(system_tray_icon)
+    prx_window.set_window_show()
     sys.exit(app.exec_())

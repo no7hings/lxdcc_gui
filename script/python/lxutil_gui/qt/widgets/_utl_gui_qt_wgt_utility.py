@@ -1400,6 +1400,10 @@ class QtMainWindow(
         self.installEventFilter(self)
         #
         self._set_icon_def_init_()
+
+        # self.showNormal
+
+        self._window_system_tray_icon = None
     #
     def _set_widget_update_(self):
         self.update()
@@ -1409,6 +1413,9 @@ class QtMainWindow(
 
     def _set_icon_name_(self, icon_name):
         self.setWindowIcon(QtIconMtd.get_by_icon_name(icon_name))
+
+    def _set_window_system_tray_icon_(self, widget):
+        self._window_system_tray_icon = widget
 
     @property
     def lynxi_window(self):

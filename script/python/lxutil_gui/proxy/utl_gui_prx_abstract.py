@@ -154,7 +154,9 @@ class AbsPrxWindow(AbsPrx):
 
     def set_definition_window_size(self, size):
         self._definition_window_size = size
-        self.widget.setBaseSize(utl_gui_qt_core.QtCore.QSize(*self._definition_window_size))
+        self.widget.setBaseSize(
+            utl_gui_qt_core.QtCore.QSize(*self._definition_window_size)
+        )
 
     def set_window_show(self, pos=None, size=None, exclusive=True):
         # show unique
@@ -194,6 +196,9 @@ class AbsPrxWindow(AbsPrx):
 
     def set_window_icon_name(self, icon_name):
         self.widget._set_icon_name_(icon_name)
+
+    def set_window_system_tray_icon(self, widget):
+        self.widget._set_window_system_tray_icon_(widget)
 
     def set_status(self, status):
         self._status = status

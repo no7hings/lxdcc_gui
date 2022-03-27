@@ -274,9 +274,9 @@ class AbsAssetRenderSubmitter(
 
         self._rsv_asset_set_usd_creator = usd_rsv_objects.RsvAssetSetUsdCreator(rsv_asset)
         if bsc_core.SystemMtd.get_is_linux():
-            if bsc_core.SystemMtd.get_application() not in ['maya']:
-                rsv_shots = self._rsv_asset_set_usd_creator.get_rsv_asset_shots()
-                self._prx_options_node.set('shot', rsv_shots)
+            # if bsc_core.SystemMtd.get_application() not in ['maya']:
+            rsv_shots = self._rsv_asset_set_usd_creator.get_rsv_asset_shots()
+            self._prx_options_node.set('shot', rsv_shots)
 
     def __set_rsv_unit_gui_show_deferred_(self, prx_item, variants):
         names = ['{}={}'.format(k, v) for k, v in variants.items()]
@@ -392,22 +392,22 @@ class AbsAssetRenderSubmitter(
             'shot'
         )
         if bsc_core.SystemMtd.get_is_linux():
-            if bsc_core.SystemMtd.get_application() not in ['maya']:
-                if rsv_asset is not None:
-                    asset_usd_variant_dict = self._rsv_asset_set_usd_creator._get_asset_usd_set_dress_variant_dict_(rsv_asset)
-                    for k, v in asset_usd_variant_dict.items():
-                        i_port_path = v['port_path']
-                        i_variant_names = v['variant_names']
-                        i_current_variant_name = v['variant_name']
-                        self._prx_usd_node.set(
-                            i_port_path, i_variant_names
-                        )
-                        self._prx_usd_node.set(
-                            i_port_path, i_current_variant_name
-                        )
-                        self._prx_usd_node.set_default(
-                            i_port_path, i_current_variant_name
-                        )
+            # if bsc_core.SystemMtd.get_application() not in ['maya']:
+            if rsv_asset is not None:
+                asset_usd_variant_dict = self._rsv_asset_set_usd_creator._get_asset_usd_set_dress_variant_dict_(rsv_asset)
+                for k, v in asset_usd_variant_dict.items():
+                    i_port_path = v['port_path']
+                    i_variant_names = v['variant_names']
+                    i_current_variant_name = v['variant_name']
+                    self._prx_usd_node.set(
+                        i_port_path, i_variant_names
+                    )
+                    self._prx_usd_node.set(
+                        i_port_path, i_current_variant_name
+                    )
+                    self._prx_usd_node.set_default(
+                        i_port_path, i_current_variant_name
+                    )
             #
             # shot_usd_variant_dict = self._rsv_asset_set_usd_creator._get_shot_usd_set_dress_variant_dict_(rsv_shot)
             # for k, v in shot_usd_variant_dict.items():
