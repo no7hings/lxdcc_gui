@@ -403,6 +403,9 @@ class Font(object):
     LOADING = get_font(size=10, weight=75, italic=True)
     DESCRIPTION = get_font(size=10)
     #
+    NameTextKey = get_font(size=8, italic=True)
+    NameTextValue = get_font(size=8)
+    #
     GROUP = get_font(size=10, weight=75, italic=True)
     #
     default = get_font()

@@ -698,34 +698,33 @@ class QtPainter(QtGui.QPainter):
         x, y = rect.x() + offset, rect.y() + offset
         w, h = rect.width() - offset, rect.height() - offset
         # key
-        key_text_rect_f = QtCore.QRectF(
+        key_text_rect = QtCore.QRect(
             x, y, key_text_width, h
         )
         key_text_option = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+        self._set_font_(Font.NameTextKey)
         self.drawText(
-            key_text_rect_f,
-            key_text,
+            key_text_rect,
             key_text_option,
+            key_text,
         )
         # sep
-        sep_text_rect_f = QtCore.QRectF(
+        sep_text_rect = QtCore.QRect(
             x+key_text_width, y, sep_text_width, h
         )
         sep_text_option = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
         self._set_font_color_(191, 191, 191, 255)
         self.drawText(
-            sep_text_rect_f,
-            sep_text,
+            sep_text_rect,
             sep_text_option,
+            sep_text,
         )
         # value
-        value_text_rect_f = QtCore.QRect(
+        value_text_rect_f = QtCore.QRectF(
             x+key_text_width+sep_text_width, y, w-sep_text_width-key_text_width, h
         )
-        value_text_option = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
-        qt_value_text_option = QtGui.QTextOption(
-            value_text_option
-        )
+        qt_value_text_option = QtGui.QTextOption()
+        qt_value_text_option.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         qt_value_text_option.setUseDesignMetrics(True)
         value_text_ = self.fontMetrics().elidedText(
             value_text,
@@ -734,6 +733,7 @@ class QtPainter(QtGui.QPainter):
             QtCore.Qt.TextShowMnemonic
         )
         self._set_font_color_(255, 255, 255, 255)
+        self._set_font_(Font.NameTextValue)
         self.drawText(
             value_text_rect_f,
             value_text_,
