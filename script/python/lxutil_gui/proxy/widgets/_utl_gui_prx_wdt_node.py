@@ -66,7 +66,7 @@ class _PrxPortLabel(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_widget.setToolTip(text)
 
     def get_name_draw_width(self):
-        return self._qt_widget._get_name_draw_width_()
+        return self._qt_widget._get_name_text_draw_width_()
 
 
 # entry

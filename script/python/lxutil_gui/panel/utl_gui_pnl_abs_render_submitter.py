@@ -13,8 +13,6 @@ import lxresolver.commands as rsv_commands
 
 import lxutil_gui.proxy.operators as utl_prx_operators
 
-import lxusd.rsv.objects as usd_rsv_objects
-
 import lxsession.commands as ssn_commands
 
 
@@ -84,7 +82,7 @@ class AbsAssetRenderSubmitter(
         v_splitter_0.set_widget_add(qt_scroll_area_0)
         qt_layout_0 = qt_scroll_area_0._layout
         #
-        self._prx_schemes_node = prx_widgets.PrxNode_('scheme')
+        self._prx_schemes_node = prx_widgets.PrxNode_('schemes')
         qt_layout_0.addWidget(self._prx_schemes_node.widget)
         #
         self._prx_options_node = prx_widgets.PrxNode_('options')
@@ -156,7 +154,7 @@ class AbsAssetRenderSubmitter(
         )
 
         self._prx_options_node.set(
-            'refresh', self.set_options_node_refresh
+            'refresh', self.set_current_refresh
         )
 
         # self._prx_options_node.get_port(
@@ -230,6 +228,8 @@ class AbsAssetRenderSubmitter(
         bsc_objects.Configure(value=filter_dict).set_print_as_yaml_style()
 
     def set_options_node_refresh(self):
+        import lxusd.rsv.objects as usd_rsv_objects
+
         self._prx_options_node.set(
             'task', self._rsv_task.path
         )
@@ -278,6 +278,12 @@ class AbsAssetRenderSubmitter(
             rsv_shots = self._rsv_asset_set_usd_creator.get_rsv_asset_shots()
             self._prx_options_node.set('shot', rsv_shots)
 
+    def set_current_refresh(self):
+        self.set_options_node_refresh()
+        self.__set_usd_node_refresh_()
+        self.set_renderers_refresh()
+        self.set_filter_refresh()
+
     def __set_rsv_unit_gui_show_deferred_(self, prx_item, variants):
         names = ['{}={}'.format(k, v) for k, v in variants.items()]
         #
@@ -295,6 +301,7 @@ class AbsAssetRenderSubmitter(
             )
             version = rsv_properties.get('version')
             names.append('version={}'.format(version))
+            variants['version'] = version
             image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
             prx_item.set_image(image_file_path)
             prx_item.set_movie_enable(True)
@@ -341,6 +348,7 @@ class AbsAssetRenderSubmitter(
                     prx_item.set_image_show_sub_process(image_sub_process)
                     # prx_item.set_image_loading_start()
         else:
+            variants['version'] = 'None'
             names.append('version=null')
             prx_item.set_image(
                 utl_core.Icon._get_file_path_('@image_loading_failed@')
@@ -349,7 +357,7 @@ class AbsAssetRenderSubmitter(
         menu_content = ssn_commands.get_menu_content_by_hook_options(hook_options)
         prx_item.set_menu_content(menu_content)
 
-        prx_item.set_names(names)
+        prx_item.set_name_dict(variants)
         r, g, b = bsc_core.TextOpt(variable_name).to_rgb()
         prx_item.set_name_frame_background_color((r, g, b, 127))
 
@@ -590,7 +598,7 @@ class AbsShotRenderSubmitter(
         v_splitter_0.set_widget_add(qt_scroll_area_0)
         qt_layout_0 = qt_scroll_area_0._layout
         #
-        self._prx_schemes_node = prx_widgets.PrxNode_('scheme')
+        self._prx_schemes_node = prx_widgets.PrxNode_('schemes')
         qt_layout_0.addWidget(self._prx_schemes_node.widget)
         #
         self._prx_options_node = prx_widgets.PrxNode_('options')
@@ -821,6 +829,8 @@ class AbsShotRenderSubmitter(
         self._prx_options_node.set('version', rsv_versions)
 
     def set_settings_node_refresh(self):
+        import lxusd.rsv.objects as usd_rsv_objects
+
         rsv_task = self._rsv_task
         if rsv_task is not None:
             rsv_shot = self._rsv_entity

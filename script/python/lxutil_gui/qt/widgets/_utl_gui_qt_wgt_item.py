@@ -475,7 +475,7 @@ class _QtIconPressItem(
         #
         i_f_w, i_f_h = self._file_icon_size
         i_c_w, i_c_h = self._color_icon_size
-        i_n_w, i_n_h = self._name_icon_size
+        i_n_w, i_n_h = self._icon_name_size
         # check
         _w, _h = w, h
         _x, _y = x, y
@@ -583,7 +583,7 @@ class _QtPressItem(
         #
         i_f_w, i_f_h = self._file_icon_size
         i_c_w, i_c_h = self._color_icon_size
-        i_n_w, i_n_h = self._name_icon_size
+        i_n_w, i_n_h = self._icon_name_size
         #
         _w, _h = w, h
         _x, _y = x, y
@@ -1435,7 +1435,10 @@ class _QtChooseDropWidget(
                 self._list_widget.setItemWidget(item, item_widget)
                 item._set_item_show_connect_()
                 #
-                item_widget._set_name_text_(i_name_text)
+                if i_name_text:
+                    item_widget._set_name_text_(i_name_text)
+                    item_widget._set_icon_name_text_(i_name_text[0])
+                #
                 item_widget._set_index_(seq)
                 if current_name_text == i_name_text:
                     item.setSelected(True)
@@ -1450,49 +1453,6 @@ class _QtChooseDropWidget(
             )
             self._choose_index = index
             parent._set_choose_item_expand_at_(index)
-            #
-            self._list_widget._set_scroll_to_selected_item_top_()
-            #
-            self._list_widget.itemClicked.connect(
-                self._set_close_
-            )
-
-    def _set_drop_start_(self):
-        parent = self.parent()
-        content_name_texts = ['A', 'B']
-        if isinstance(content_name_texts, (tuple, list)):
-            desktop_rect = get_qt_desktop_rect()
-            #
-            press_pos = self._get_choose_point_(parent)
-            press_size = self._get_choose_size_(parent)
-            #
-            current_name_text = 'B'
-            #
-            for seq, i_name_text in enumerate(content_name_texts):
-                item_widget = _QtHItem()
-                item = QtListWidgetItem()
-                item.setSizeHint(QtCore.QSize(self._item_width, self._item_height))
-                #
-                self._list_widget.addItem(item)
-                self._list_widget.setItemWidget(item, item_widget)
-                item._set_item_show_connect_()
-                #
-                item_widget._set_name_text_(i_name_text)
-                item_widget._set_index_(seq)
-                if current_name_text == i_name_text:
-                    item.setSelected(True)
-            #
-            self.setFocus(QtCore.Qt.PopupFocusReason)
-            #
-            self._set_drop_(
-                press_pos, press_size
-            )
-            # self._drop_fnc_(
-            #     press_pos, press_size,
-            #     desktop_rect,
-            #     press_size[0],
-            #     self._get_maximum_height_()
-            # )
             #
             self._list_widget._set_scroll_to_selected_item_top_()
             #
@@ -1721,7 +1681,10 @@ class _QtChooseDropWidget1(
                 self._list_widget.setItemWidget(item, item_widget)
                 item._set_item_show_connect_()
                 #
-                item_widget._set_name_text_(i_name_text)
+                if i_name_text:
+                    item_widget._set_name_text_(i_name_text)
+                    item_widget._set_icon_name_text_(i_name_text[0])
+                #
                 item_widget._set_index_(seq)
                 if current_name_text == i_name_text:
                     item.setSelected(True)
@@ -1982,7 +1945,7 @@ class _QtHExpandItem0(
         self._name_text_font = Font.GROUP
         #
         self._set_icon_def_init_()
-        self._name_icon_is_enable = True
+        self._icon_name_is_enable = True
         #
         self._set_item_def_init_()
         self._set_item_action_def_init_()
@@ -2039,10 +2002,10 @@ class _QtHExpandItem0(
         )
         #
         x += f_w + spacing
-        if self._name_icon_is_enable is True:
+        if self._icon_name_is_enable is True:
             if self._icon_name_text is not None:
-                i_w, i_h = self._name_icon_size
-                self._set_name_icon_rect_(
+                i_w, i_h = self._icon_name_size
+                self._set_icon_name_rect_(
                     x+(f_w-i_w) / 2, y+(f_h-i_h) / 2, i_w, i_h
                 )
                 x += f_w+spacing
@@ -2093,7 +2056,7 @@ class _QtHExpandItem0(
             offset=offset
         )
         # name-icon
-        if self._name_icon_is_enable is True:
+        if self._icon_name_is_enable is True:
             if self._icon_name_text is not None:
                 painter._set_name_icon_draw_by_rect_(
                     self._name_icon_rect,
@@ -2357,7 +2320,7 @@ class QtTreeWidgetItem(
             utl_gui_qt_core.QtUtilMtd.get_color_icon(rgb)
         )
 
-    def _set_name_icon_text_(self, text, column=0):
+    def _set_icon_name_text_(self, text, column=0):
         self._icon_name_text = text
         self.setIcon(
             column,
@@ -2656,6 +2619,7 @@ class _QtHItem(
     utl_gui_qt_abstract._QtFrameDef,
     utl_gui_qt_abstract._QtIndexDef,
     utl_gui_qt_abstract._QtTypeDef,
+    utl_gui_qt_abstract._QtIconDef,
     utl_gui_qt_abstract._QtNameDef,
     utl_gui_qt_abstract._QtPathDef,
     # action
@@ -2672,6 +2636,8 @@ class _QtHItem(
         self._set_frame_def_init_()
         self._set_index_def_init_()
         self._set_type_def_init_()
+        self._set_icon_def_init_()
+        self._icon_name_is_enable = True
         self._set_name_def_init_()
         self._set_path_def_init_()
         #
@@ -2713,6 +2679,17 @@ class _QtHItem(
             background_color=bkg_color,
             border_radius=1
         )
+        # name-icon
+        if self._icon_name_is_enable is True:
+            if self._icon_name_text is not None:
+                painter._set_name_icon_draw_by_rect_(
+                    self._name_icon_rect,
+                    self._icon_name_text,
+                    background_color=bkg_color,
+                    # offset=0,
+                    border_radius=2,
+                )
+        #
         if self._name_text is not None:
             painter._set_text_draw_by_rect_(
                 self._name_rect,
@@ -2739,6 +2716,9 @@ class _QtHItem(
         w, h = self.width(), self.height()
         #
         side = 2
+        spacing = 2
+        f_w, f_h = self._icon_frame_size
+        i_f_w, i_f_h = self._file_icon_size
         #
         i_x, i_y = x+side, y
         i_w, i_h = w-side*2, h
@@ -2746,6 +2726,13 @@ class _QtHItem(
         self._set_frame_rect_(
             x, y, w, h
         )
+        if self._icon_name_is_enable is True:
+            if self._icon_name_text is not None:
+                i_c_w, i_c_h = self._icon_name_size
+                self._set_icon_name_rect_(
+                    x+(f_w-i_c_w) / 2, y+(f_h-i_c_h) / 2, i_c_w, i_c_h
+                )
+                i_x += f_w+spacing
         #
         self._set_name_rect_(
             i_x, i_y, i_w-24, i_h
@@ -2931,15 +2918,30 @@ class _QtListItemWidget(
                 if name_indices:
                     text_option = QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop
                     #
-                    for i_name_index in name_indices:
-                        painter._set_text_draw_by_rect_(
-                            self._get_name_rect_at_(i_name_index),
-                            text=self._get_name_text_at_(i_name_index),
-                            font=get_font(),
-                            text_option=text_option,
-                            word_warp=self._name_word_warp,
-                            offset=offset
+                    name_text_dict = self._get_name_text_dict_()
+                    if name_text_dict:
+                        painter.setFont(get_font())
+                        key_text_width = utl_gui_qt_core.QtTextMtd.get_draw_width_maximum(
+                            painter, self._name_text_dict.keys()
                         )
+                        for i_name_index, (i_key, i_value) in enumerate(name_text_dict.items()):
+                            painter._set_text_draw_by_rect_use_key_value_(
+                                self._get_name_rect_at_(i_name_index),
+                                key_text=i_key,
+                                value_text=i_value,
+                                key_text_width=key_text_width,
+                                offset=offset
+                            )
+                    else:
+                        for i_name_index in name_indices:
+                            painter._set_text_draw_by_rect_(
+                                self._get_name_rect_at_(i_name_index),
+                                text=self._get_name_text_at_(i_name_index),
+                                font=get_font(),
+                                text_option=text_option,
+                                word_warp=self._name_word_warp,
+                                offset=offset
+                            )
             # image
             if self._get_has_image_() is True:
                 image_file_path = self._image_file_path
@@ -3168,7 +3170,7 @@ class _QtListItemWidget(
             )
             for i_name_index in name_indices:
                 i_x, i_y = x+(f_w-i_w)/2+side, y+(f_h-i_h)/2+i_name_index*(f_h+spacing)
-                self._set_name_rect_at_(
+                self._set_name_text_rect_at_(
                     i_x, i_y, w-(i_x-x)-side, i_h,
                     i_name_index
                 )

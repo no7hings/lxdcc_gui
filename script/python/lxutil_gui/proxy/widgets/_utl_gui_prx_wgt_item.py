@@ -224,7 +224,7 @@ class PrxTreeItem(
         self.widget._set_color_icon_rgb_(color, column)
 
     def set_icon_by_name(self, text, column=0):
-        self.widget._set_name_icon_text_(text, column)
+        self.widget._set_icon_name_text_(text, column)
 
     def get_parent(self):
         _ = self.widget.parent()
@@ -703,7 +703,7 @@ class PrxListItem(
                 icon_file_path
             )
         elif icon_name is not None:
-            self.widget._set_name_icon_text_(
+            self.widget._set_icon_name_text_(
                 utl_core.Icon.get(icon_name)
             )
 
@@ -721,7 +721,7 @@ class PrxListItem(
         )
 
     def set_icon_by_name(self, text):
-        self.widget._set_name_icon_text_(
+        self.widget._set_icon_name_text_(
             text
         )
 
@@ -736,6 +736,9 @@ class PrxListItem(
 
     def set_names(self, name_texts):
         self.widget._set_name_texts_(name_texts)
+
+    def set_name_dict(self, name_dict):
+        self.widget._set_name_text_dict_(name_dict)
 
     def get_names(self):
         return self.widget._get_name_texts_()

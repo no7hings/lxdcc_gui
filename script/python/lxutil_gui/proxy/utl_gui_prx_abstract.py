@@ -186,13 +186,13 @@ class AbsPrxWindow(AbsPrx):
         text = args[0]
         self._window_title = text
         self._qt_widget.setWindowTitle(text)
-        self._qt_widget._set_name_icon_text_(text)
+        self._qt_widget._set_icon_name_text_(text)
 
     def get_window_title(self):
         return self._window_title
 
     def set_window_name_icon(self, text):
-        self.widget._set_name_icon_text_(text)
+        self.widget._set_icon_name_text_(text)
 
     def set_window_icon_name(self, icon_name):
         self.widget._set_icon_name_(icon_name)

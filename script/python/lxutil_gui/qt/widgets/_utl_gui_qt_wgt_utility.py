@@ -217,6 +217,9 @@ class QtPainter(QtGui.QPainter):
         framePath = path1+path2
         self.drawPath(framePath)
 
+    def _set_font_color_(self, *args):
+        self._set_border_color_(*args)
+
     def _set_border_color_(self, *args):
         qt_color = Color._get_qt_color_(*args)
         self.setPen(QtGui.QPen(qt_color))
@@ -510,7 +513,7 @@ class QtPainter(QtGui.QPainter):
         self._set_border_color_(text_color_)
         self._set_border_width_(1)
         #
-        text_rect = QtCore.QRect(
+        text_rect_0 = QtCore.QRect(
             x, y,
             w, h
         )
@@ -518,9 +521,11 @@ class QtPainter(QtGui.QPainter):
         r = min(w, h)
         font_size = int(r*.8)
         #
-        self._set_font_(get_font(size=font_size, italic=True))
+        self._set_font_(
+            get_font(size=font_size, italic=True)
+        )
         self.drawText(
-            text_rect,
+            text_rect_0,
             QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
             str(text[0]).capitalize()
         )
@@ -679,6 +684,60 @@ class QtPainter(QtGui.QPainter):
             rect_f_,
             text_,
             text_option__,
+        )
+
+    def _set_text_draw_by_rect_use_key_value_(self, rect, key_text, value_text, key_text_width, color=None, offset=0):
+        if color is not None:
+            self._set_border_color_(color)
+        else:
+            self._set_border_color_(Color.TEXT_NORMAL)
+        #
+        sep_text = ':'
+        sep_text_width = 8
+        #
+        x, y = rect.x() + offset, rect.y() + offset
+        w, h = rect.width() - offset, rect.height() - offset
+        # key
+        key_text_rect_f = QtCore.QRectF(
+            x, y, key_text_width, h
+        )
+        key_text_option = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+        self.drawText(
+            key_text_rect_f,
+            key_text,
+            key_text_option,
+        )
+        # sep
+        sep_text_rect_f = QtCore.QRectF(
+            x+key_text_width, y, sep_text_width, h
+        )
+        sep_text_option = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
+        self._set_font_color_(191, 191, 191, 255)
+        self.drawText(
+            sep_text_rect_f,
+            sep_text,
+            sep_text_option,
+        )
+        # value
+        value_text_rect_f = QtCore.QRect(
+            x+key_text_width+sep_text_width, y, w-sep_text_width-key_text_width, h
+        )
+        value_text_option = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+        qt_value_text_option = QtGui.QTextOption(
+            value_text_option
+        )
+        qt_value_text_option.setUseDesignMetrics(True)
+        value_text_ = self.fontMetrics().elidedText(
+            value_text,
+            QtCore.Qt.ElideLeft,
+            value_text_rect_f.width(),
+            QtCore.Qt.TextShowMnemonic
+        )
+        self._set_font_color_(255, 255, 255, 255)
+        self.drawText(
+            value_text_rect_f,
+            value_text_,
+            qt_value_text_option,
         )
 
     def set_button_draw(self, rect, background_color, border_color, border_radius=4, border_width=1, border_style='solid'):
@@ -1408,7 +1467,7 @@ class QtMainWindow(
     def _set_widget_update_(self):
         self.update()
     #
-    def _set_name_icon_text_(self, text):
+    def _set_icon_name_text_(self, text):
         self.setWindowIcon(QtUtilMtd.get_name_text_icon_(text))
 
     def _set_icon_name_(self, icon_name):
@@ -1428,6 +1487,7 @@ class QtMainWindow(
                 if event.type() == QtCore.QEvent.Close:
                     if hasattr(self, 'gui_proxy'):
                         self.gui_proxy.set_window_close()
+                        self.hide()
                 elif event.type() == QtCore.QEvent.KeyPress:
                     if event.key() == QtCore.Qt.Key_Escape:
                         self.key_escape_pressed.emit()
@@ -1470,7 +1530,7 @@ class QtDialog(
     def _set_widget_update_(self):
         self.update()
     #
-    def _set_name_icon_text_(self, text):
+    def _set_icon_name_text_(self, text):
         self.setWindowIcon(QtUtilMtd.get_name_text_icon_(text, background_color=(64, 64, 64)))
 
     def _set_yes_run_(self):

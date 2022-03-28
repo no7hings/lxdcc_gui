@@ -5,7 +5,7 @@ from lxutil import utl_core
 
 from lxutil_prd import utl_prd_objects
 
-from lxutil_gui.panel import utl_gui_pnl_abstract, utl_gui_pnl_abs_utility, utl_gui_pnl_abs_render_submitter
+from lxutil_gui.panel import utl_gui_pnl_abstract, utl_gui_pnl_abs_utility, utl_gui_pnl_abs_render_submitter, utl_gui_pnl_abs_loader
 
 
 class SceneBuildToolPanel(utl_gui_pnl_abstract.AbsShotBuildToolPanel):
@@ -32,6 +32,11 @@ class SceneBuildToolPanel(utl_gui_pnl_abstract.AbsShotBuildToolPanel):
 class FncPanel(utl_gui_pnl_abs_utility.AbsFncPanel):
     def __init__(self, file_path=None, *args, **kwargs):
         super(FncPanel, self).__init__(file_path, *args, **kwargs)
+
+
+class RsvEntitiesLoader(utl_gui_pnl_abs_loader.AbsEntitiesLoaderPanel_):
+    def __init__(self, session, *args, **kwargs):
+        super(RsvEntitiesLoader, self).__init__(session, *args, **kwargs)
 
 
 class AssetRenderSubmitter(utl_gui_pnl_abs_render_submitter.AbsAssetRenderSubmitter):

@@ -1121,22 +1121,22 @@ class _QtGuideBar(
                 )
         else:
             for index in self._get_choose_item_indices_():
-                item = self._get_choose_item_at_(index)
-                icon_offset = 0
+                i_item = self._get_choose_item_at_(index)
+                i_icon_offset = 0
                 name_offset = 0
                 if index == self._view_choose_current_index:
-                    icon_offset = [0, 2][self._get_item_action_flag_() is not None]
+                    i_icon_offset = [0, 2][self._get_item_action_flag_() is not None]
                     painter._set_frame_draw_by_rect_(
-                        item._icon_frame_rect,
+                        i_item._icon_frame_rect,
                         border_color=Color.TRANSPARENT,
                         background_color=Color.ITEM_BACKGROUND_HOVER,
                         border_radius=4,
-                        offset=icon_offset
+                        offset=i_icon_offset
                     )
                 elif index == self._view_guide_current_index:
                     name_offset = [0, 2][self._get_item_action_flag_() is not None]
                     painter._set_frame_draw_by_rect_(
-                        item._frame_name_rect,
+                        i_item._frame_name_rect,
                         border_color=Color.TRANSPARENT,
                         background_color=Color.ITEM_BACKGROUND_HOVER,
                         border_radius=4,
@@ -1144,25 +1144,25 @@ class _QtGuideBar(
                     )
                 #
                 painter._set_file_icon_draw_by_rect_(
-                    item._file_icon_rect,
-                    file_path=item._get_icon_file_path_(),
-                    offset=icon_offset
+                    i_item._file_icon_rect,
+                    file_path=i_item._get_icon_file_path_(),
+                    offset=i_icon_offset
                 )
                 #
-                type_text = item._type_text
+                i_type_text = i_item._type_text
                 painter._set_text_draw_by_rect_(
-                    item._type_rect,
-                    text=type_text,
+                    i_item._type_rect,
+                    text=i_type_text,
                     text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
-                    color=bsc_core.TextOpt(type_text).to_rgb(),
+                    color=bsc_core.TextOpt(i_type_text).to_rgb(),
                     font=get_font(size=10, italic=True),
                     offset=name_offset
                 )
                 #
-                name_text = item._name_text
+                i_name_text = i_item._name_text
                 painter._set_text_draw_by_rect_(
-                    item._name_rect,
-                    text=name_text,
+                    i_item._name_rect,
+                    text=i_name_text,
                     text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                     font=get_font(size=12, italic=True),
                     offset=name_offset
@@ -1177,11 +1177,11 @@ class _QtGuideBar(
         self._set_choose_current_clear_()
         self._set_guide_current_clear_()
         for index in self._get_choose_item_indices_():
-            item = self._get_choose_item_at_(index)
-            if item._icon_frame_rect.contains(p) is True:
+            i_item = self._get_choose_item_at_(index)
+            if i_item._icon_frame_rect.contains(p) is True:
                 self._set_choose_current_(index)
                 break
-            elif item._frame_name_rect.contains(p) is True:
+            elif i_item._frame_name_rect.contains(p) is True:
                 self._set_guide_current_(index)
                 break
         #
@@ -1196,12 +1196,12 @@ class _QtGuideBar(
         #
         path_values = path_args.values()
         for index, (k, v) in enumerate(path_args.items()):
-            item = self._set_choose_item_create_()
+            i_item = self._set_choose_item_create_()
             #
             path = '/' + '/'.join(path_values[:index+1])
-            item._set_path_text_(path)
-            item._set_type_text_(k)
-            item._set_name_text_(v)
+            i_item._set_path_text_(path)
+            i_item._set_type_text_(k)
+            i_item._set_name_text_(v)
         #
         self._set_item_geometries_update_()
         self.update()
@@ -1218,34 +1218,34 @@ class _QtGuideBar(
         i_i_w, i_i_h = 16, 16
         #
         for index in self._get_choose_item_indices_():
-            item = self._get_choose_item_at_(index)
-            item._set_frame_icon_rect_(
+            i_item = self._get_choose_item_at_(index)
+            i_item._set_icon_frame_rect_(
                 i_x, i_y, i_f_w, i_f_h
             )
-            item._set_file_icon_rect_(
+            i_item._set_file_icon_rect_(
                 i_x+(i_f_w-i_i_w)/2, i_y+(i_f_h-i_i_h)/2, i_i_w, i_i_h
             )
             i_x += i_f_w + spacing
             #
-            i_path_key = item._type_text
-            i_path_value = item._name_text
+            i_path_key = i_item._type_text
+            i_path_value = i_item._name_text
             #
             # i_path_w = self._get_text_width_(i_path_key + i_path_value) + spacing*4
             i_path_w_0, i_path_h_0 = utl_gui_qt_core.TextMtd.get_size(10, i_path_key)
             i_path_w_1, i_path_h_1 = utl_gui_qt_core.TextMtd.get_size(12, i_path_value)
             i_path_w = i_path_w_0 + i_path_w_1 + spacing*8
-            item._set_frame_name_rect_(
+            i_item._set_frame_name_rect_(
                 i_x-spacing*2, i_y, i_path_w, h
             )
             #
             i_path_key_w = i_path_w_0 + spacing*4
-            item._set_type_rect_(
+            i_item._set_type_rect_(
                 i_x, i_y, i_path_key_w, h
             )
             i_x += i_path_key_w
             #
             i_path_value_w = i_path_w_1 + spacing*4
-            item._set_name_rect_(
+            i_item._set_name_rect_(
                 i_x, i_y, i_path_value_w, h
             )
             #

@@ -856,6 +856,18 @@ class QtIconMtd(object):
         return pixmap
 
 
+class QtTextMtd(object):
+    @classmethod
+    def get_draw_width(cls, widget, text=None):
+        return widget.fontMetrics().width(text)
+    @classmethod
+    def get_draw_width_maximum(cls, widget, texts):
+        lis = []
+        for i_text in texts:
+            lis.append(widget.fontMetrics().width(i_text))
+        return max(lis)
+
+
 class QtMayaMtd(object):
     @classmethod
     def get_qt_object(cls, ptr, base=QtWidgets.QWidget):
@@ -1998,50 +2010,55 @@ class QtSystemTrayIcon(QtWidgets.QSystemTrayIcon):
         )
         #
         self._window = self.parent()
-
+        self._set_quit_action_add_(menu)
         self.activated.connect(self._set_window_show_normal_)
 
+    def _set_window_show_normal_(self, *args):
+        r = args[0]
+        # if r == self.Trigger:
+        #     # print 'AAA'
+        #     # if self._window.isVisible():
+        #     #     self._window.hide()
+        #     # else:
+        #     #     self._window.show()
+        #     if self._window.isMinimized():
+        #         self._window.showNormal()
+        #     else:
+        #         self._window.showMinimized()
+        if r == self.DoubleClick:
+            if self._window.isVisible():
+                self._window.hide()
+            else:
+                self._window.show()
+
+    def _set_quit_action_add_(self, menu):
         widget_action = QtWidgetAction(menu)
         widget_action.setFont(Font.NAME)
         widget_action.setText('quit')
+        widget_action.setIcon(QtIconMtd.get_by_icon_name('window/close'))
         menu.addAction(widget_action)
         widget_action.triggered.connect(
             self._window.close
         )
 
-    def _set_window_show_normal_(self, *args):
-        r = args[0]
-        if r == self.Trigger:
-            # print 'AAA'
-            # if self._window.isVisible():
-            #     self._window.hide()
-            # else:
-            #     self._window.show()
-            if self._window.isMinimized():
-                # self._window.setFixedSize(480, 480)
-                self._window.showNormal()
-            else:
-                self._window.showMinimized()
-            # self._window.showMaximized()
-            self._window.showNormal()
-
-
-    def _set_quit_action_add_(self):
-        pass
-
 
 def set_window_show_standalone(window_class, **kwargs):
-    app = QtWidgets.QApplication(sys.argv)
+    exists_app = QtWidgets.QApplication.instance()
+    if exists_app is None:
+        app = QtWidgets.QApplication(sys.argv)
 
-    QtUtilMtd.set_fonts_add(
-        utl_gui_core.Fonts.get_all()
-    )
-    prx_window = window_class(**kwargs)
-    window = prx_window.widget
-    system_tray_icon = QtSystemTrayIcon(window)
-    # a = utl_gui_qt_core.QtWidgets.QAction('show', triggered=window.widget.show)
-    system_tray_icon.setIcon(window.windowIcon())
-    system_tray_icon.show()
-    window._set_window_system_tray_icon_(system_tray_icon)
-    prx_window.set_window_show()
-    sys.exit(app.exec_())
+        QtUtilMtd.set_fonts_add(
+            utl_gui_core.Fonts.get_all()
+        )
+        prx_window = window_class(**kwargs)
+        window = prx_window.widget
+        system_tray_icon = QtSystemTrayIcon(window)
+        # a = utl_gui_qt_core.QtWidgets.QAction('show', triggered=window.widget.show)
+        system_tray_icon.setIcon(window.windowIcon())
+        system_tray_icon.show()
+        window._set_window_system_tray_icon_(system_tray_icon)
+        prx_window.set_window_show()
+        sys.exit(app.exec_())
+    else:
+        prx_window = window_class(**kwargs)
+        prx_window.set_window_show()

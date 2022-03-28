@@ -1,4 +1,5 @@
 # coding=utf-8
+import collections
 import copy
 import os
 
@@ -256,7 +257,7 @@ class _QtIconDef(object):
 
     def _set_icon_def_init_(self):
         self._icon_is_enable = False
-        self._name_icon_is_enable = False
+        self._icon_name_is_enable = False
         #
         self._icon_file_path = None
         self._hover_icon_file_path = None
@@ -272,13 +273,13 @@ class _QtIconDef(object):
         self._icon_frame_size = 20, 20
         self._file_icon_size = 16, 16
         self._color_icon_size = 12, 12
-        self._name_icon_size = 14, 14
+        self._icon_name_size = 14, 14
 
     def _set_icon_enable_(self, boolean):
         self._icon_is_enable = boolean
 
     def _set_name_icon_enable_(self, boolean):
-        self._name_icon_is_enable = boolean
+        self._icon_name_is_enable = boolean
 
     def _set_icon_file_path_(self, file_path):
         self._icon_is_enable = True
@@ -303,7 +304,7 @@ class _QtIconDef(object):
         self._color_icon_rgb = rgb
         self._set_widget_update_()
 
-    def _set_name_icon_text_(self, text):
+    def _set_icon_name_text_(self, text):
         self._icon_is_enable = True
         self._icon_name_text = text
         self._set_widget_update_()
@@ -313,16 +314,16 @@ class _QtIconDef(object):
             x, y, w, h
         )
 
-    def _set_name_icon_rect_(self, x, y, w, h):
+    def _set_icon_name_rect_(self, x, y, w, h):
         self._name_icon_rect.setRect(
             x, y, w, h
         )
 
-    def _get_name_icon_text_(self):
+    def _get_icon_name_text_(self):
         if self._icon_is_enable is True:
             return self._icon_name_text
 
-    def _set_frame_icon_rect_(self, x, y, w, h):
+    def _set_icon_frame_rect_(self, x, y, w, h):
         self._icon_frame_rect.setRect(
             x, y, w, h
         )
@@ -503,7 +504,7 @@ class _QtNameDef(object):
     def _set_widget_update_(self):
         raise NotImplementedError()
     # noinspection PyUnresolvedReferences
-    def _get_name_draw_width_(self, text=None):
+    def _get_name_text_draw_width_(self, text=None):
         if text is None:
             text = self._name_text
         return self.fontMetrics().width(text)
@@ -743,7 +744,11 @@ class AbsQtNamesDef(object):
         self._names_enable = False
         self._name_texts = []
         self._name_indices = []
-        self._name_rects = []
+        self._name_text_rects = []
+        #
+        self._name_text_dict = collections.OrderedDict()
+        self._name_key_rect = []
+        self._name_value_rect = []
         #
         self._name_frame_size = 20, 20
         self._name_size = 16, 16
@@ -763,8 +768,8 @@ class AbsQtNamesDef(object):
         if index in self._get_name_indices_():
             return self._name_texts[index]
 
-    def _set_name_rect_at_(self, x, y, w, h, index=0):
-        self._name_rects[index].setRect(
+    def _set_name_text_rect_at_(self, x, y, w, h, index=0):
+        self._name_text_rects[index].setRect(
             x, y, w, h
         )
 
@@ -778,9 +783,9 @@ class AbsQtNamesDef(object):
     def _set_name_texts_(self, texts):
         self._name_texts = texts
         self._name_indices = range(len(texts))
-        self._name_rects = []
+        self._name_text_rects = []
         for _ in self._get_name_indices_():
-            self._name_rects.append(
+            self._name_text_rects.append(
                 QtCore.QRect()
             )
         #
@@ -788,6 +793,15 @@ class AbsQtNamesDef(object):
 
     def _get_name_texts_(self):
         return self._name_texts
+
+    def _set_name_text_dict_(self, text_dict):
+        self._name_text_dict = text_dict
+        self._set_name_texts_(
+            self._name_text_dict.values()
+        )
+
+    def _get_name_text_dict_(self):
+        return self._name_text_dict
 
     def _set_name_frame_border_color_(self, color):
         self._name_frame_border_color = color
@@ -802,7 +816,7 @@ class AbsQtNamesDef(object):
         return self._name_frame_background_color
 
     def _get_name_rect_at_(self, index=0):
-        return self._name_rects[index]
+        return self._name_text_rects[index]
 
     def _get_name_indices_(self):
         return self._name_indices
