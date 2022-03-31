@@ -427,7 +427,7 @@ class QtPainter(QtGui.QPainter):
         #
         self.device()
 
-    def _set_movie_play_button_draw_by_rect_(self, rect, scale=1.0, offset=0):
+    def _set_movie_play_button_draw_by_rect_(self, rect, scale=1.0, offset=0, is_hovered=False):
         rect_ = QtCore.QRect(
             rect.x() + offset, rect.y() + offset,
             rect.width() - offset, rect.height() - offset
@@ -437,10 +437,10 @@ class QtPainter(QtGui.QPainter):
         width = rect.width()
         height = rect.height()
         #
-        r_ = height * scale
-        x_, y_ = (width - r_) / 2 + x, (height - r_) / 2 + y
+        r_ = height*scale
+        x_, y_ = (width - r_)/2 + x, (height - r_)/2 + y
         #
-        ellipse_rect = QtCore.QRect(x_ - 1, y_ - 1, r_ + 2, r_ + 2)
+        ellipse_rect = QtCore.QRect(x_-4, y_-4, r_+8, r_+8)
         points = [
             utl_gui_core.Ellipse2dMtd.get_position_at_angle(center=(x_, y_), radius=r_, angle=90),
             utl_gui_core.Ellipse2dMtd.get_position_at_angle(center=(x_, y_), radius=r_, angle=210),
@@ -449,9 +449,9 @@ class QtPainter(QtGui.QPainter):
         ]
         #
         self._set_background_color_(0, 0, 0, 0)
-        self._set_border_color_(223, 223, 223, 255)
+        self._set_border_color_([(255, 255, 255, 63), (255, 255, 255, 127)][is_hovered])
         #
-        self._set_border_width_(2)
+        self._set_border_width_(4)
         self.setRenderHint(self.Antialiasing)
         self.drawEllipse(ellipse_rect)
         self._set_path_draw_by_points_(points)

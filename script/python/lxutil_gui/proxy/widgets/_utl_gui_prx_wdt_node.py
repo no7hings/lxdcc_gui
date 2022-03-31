@@ -1122,6 +1122,16 @@ class AbsPrxTypePort(AbsPrxPortDef):
         self.set_changed_connect_to(
             self.set_changed_update
         )
+    def set_node_widget(self, node_widget):
+        self._prx_port_enable.set_parent_widget(
+            node_widget
+        )
+        self._prx_port_entry.set_parent_widget(
+            node_widget
+        )
+        self._prx_port_entry.set_parent_widget(
+            node_widget
+        )
     @property
     def label(self):
         return self._label
@@ -1502,6 +1512,8 @@ class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
             cur_port = port
             pre_port_is_join_next, pre_port = self._get_pre_port_args_()
             cur_port_is_join_next = cur_port._get_is_join_next_()
+            #
+            cur_port.set_node_widget(self.widget)
             #
             condition = pre_port_is_join_next, cur_port_is_join_next
             if condition == (False, False):

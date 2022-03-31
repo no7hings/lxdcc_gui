@@ -240,32 +240,36 @@ class AbsAssetRenderSubmitter(
             self._prx_schemes_node.set(
                 'variables', 'model'
             )
+            key = 'model'
         elif step in ['srf']:
             self._prx_schemes_node.set(
                 'variables', 'surface'
             )
+            key = 'surface'
         elif step in ['grm']:
             self._prx_schemes_node.set(
                 'variables', 'groom'
             )
+            key = 'groom'
         else:
-            self._prx_schemes_node.set(
-                'variables', 'asset'
-            )
+            raise RuntimeError()
         #
         application = self._rsv_scene_properties.get('application')
         if application == 'maya':
             keyword = '{}-work-{}-scene-src-file'.format(
                 branch, application
             )
-            self._prx_options_node.set('choice_scheme', 'asset-work-maya')
         elif application == 'katana':
             keyword = '{}-work-{}-scene-src-file'.format(
                 branch, application
             )
-            self._prx_options_node.set('choice_scheme', 'asset-work-katana')
         else:
             raise RuntimeError()
+        #
+        choice_scheme = 'asset-{}-{}-output'.format(
+            key, application
+        )
+        self._prx_options_node.set('choice_scheme', choice_scheme)
 
         any_scene_file_rsv_unit = self._rsv_task.get_rsv_unit(keyword=keyword)
         rsv_versions = any_scene_file_rsv_unit.get_rsv_versions()
@@ -480,7 +484,6 @@ class AbsAssetRenderSubmitter(
 
             variable_dic = self._get_variables_dic_()
             dic.update(variable_dic)
-
         return dic
 
     def _get_settings_dic_(self):
@@ -532,7 +535,7 @@ class AbsAssetRenderSubmitter(
         hook_option_dic['user'] = bsc_core.SystemMtd.get_user_name()
         hook_option_dic['rez_beta'] = True
         # hook_option_dic['td_enable'] = True
-        hook_option_dic['option_hook_key'] = 'rsv-task-batchers/asset/combination-render-submit'
+        hook_option_dic['option_hook_key'] = 'rsv-task-batchers/asset/gen-cmb-render-submit'
         option_opt = bsc_core.KeywordArgumentsOpt(hook_option_dic)
         #
         ssn_commands.set_option_hook_execute_by_deadline(
@@ -808,18 +811,18 @@ class AbsShotRenderSubmitter(
         )
         rsv_asset = self._rsv_task.get_rsv_entity()
         branch = self._rsv_task.get('branch')
+        #
         application = self._rsv_scene_properties.get('application')
-
         if application == 'maya':
             keyword = '{}-work-{}-scene-src-file'.format(
                 branch, application
             )
-            self._prx_options_node.set('choice_scheme', 'asset-work-maya')
+            self._prx_options_node.set('choice_scheme', 'asset-maya-output')
         elif application == 'katana':
             keyword = '{}-work-{}-scene-src-file'.format(
                 branch, application
             )
-            self._prx_options_node.set('choice_scheme', 'asset-work-katana')
+            self._prx_options_node.set('choice_scheme', 'asset-katana-output')
         else:
             raise RuntimeError()
 

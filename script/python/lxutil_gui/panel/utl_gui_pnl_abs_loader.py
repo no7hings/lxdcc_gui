@@ -28,6 +28,8 @@ from lxsession import ssn_configure
 
 import lxsession.objects as ssn_objects
 
+import lxsession.commands as ssn_commands
+
 
 class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
     PANEL_KEY = None
@@ -393,24 +395,24 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         #
         enable, rsv_task_unit_show_raw = self.get_rsv_task_unit_show_raw(rsv_task)
         if enable is True:
-            rsv_task_unit_gui = self._rsv_uint_list_view_0.set_item_add()
-            rsv_task_unit_gui.set_gui_dcc_obj(rsv_task, namespace=self.DCC_NAMESPACE)
+            rsv_unit_prx_item = self._rsv_uint_list_view_0.set_item_add()
+            rsv_unit_prx_item.set_gui_dcc_obj(rsv_task, namespace=self.DCC_NAMESPACE)
             #
             key = rsv_task.path
             rsv_task_gui.set_visible_connect_to(
-                key, rsv_task_unit_gui
+                key, rsv_unit_prx_item
             )
             #
             set_thread_create_fnc_(
                 rsv_task,
                 rsv_task_unit_show_raw,
-                rsv_task_unit_gui
+                rsv_unit_prx_item
             )
             rsv_task_gui.set_state(utl_gui_core.State.ENABLE)
         else:
             rsv_task_gui.set_state(utl_gui_core.State.DISABLE)
 
-    def _set_rsv_unit_gui_show_deferred_(self, rsv_task, rsv_task_unit_gui, rsv_task_unit_show_raw):
+    def _set_rsv_unit_gui_show_deferred_(self, rsv_task, rsv_unit_prx_item, rsv_task_unit_show_raw):
         task_properties = rsv_task.properties
         project = rsv_task.get('project')
         branch = rsv_task.get('branch')
@@ -442,11 +444,11 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 i_icon_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_ext(i_rsv_unit_file.ext, gray=not i_enable)
                 pixmap_icons.append(i_icon_pixmap)
         #
-        rsv_task_unit_gui.set_name_dict(name_text_dict)
+        rsv_unit_prx_item.set_name_dict(name_text_dict)
         r, g, b = bsc_core.TextOpt(task).to_rgb()
-        rsv_task_unit_gui.set_name_frame_background_color((r, g, b, 127))
-        rsv_task_unit_gui.set_pixmap_icons(pixmap_icons)
-        rsv_task_unit_gui.set_tool_tip(
+        rsv_unit_prx_item.set_name_frame_background_color((r, g, b, 127))
+        rsv_unit_prx_item.set_pixmap_icons(pixmap_icons)
+        rsv_unit_prx_item.set_tool_tip(
             task_properties.get_str_as_yaml_style()
         )
         #
@@ -461,14 +463,14 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             )
             if movie_file_path:
                 image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
-                rsv_task_unit_gui.set_image(image_file_path)
+                rsv_unit_prx_item.set_image(image_file_path)
                 if image_sub_process_cmds is not None:
                     image_sub_process = bsc_objects.SubProcess(image_sub_process_cmds)
                     image_sub_process.set_start()
-                    rsv_task_unit_gui.set_image_show_sub_process(image_sub_process)
-                    # rsv_task_unit_gui.set_image_loading_start()
+                    rsv_unit_prx_item.set_image_show_sub_process(image_sub_process)
+                    # rsv_unit_prx_item.set_image_loading_start()
             else:
-                rsv_task_unit_gui.set_image(
+                rsv_unit_prx_item.set_image(
                     utl_core.Icon._get_file_path_('@image_loading_failed@')
                 )
         else:
@@ -477,21 +479,36 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 version=rsv_configure.Version.LATEST
             )
             if movie_file_path:
+                session, execute_fnc = ssn_commands.get_option_hook_args(
+                    bsc_core.KeywordArgumentsOpt(
+                        dict(
+                            option_hook_key='actions/movie-open',
+                            file=movie_file_path,
+                            gui_group_name='movie',
+                            gui_name='open movie'
+                        )
+                    ).to_string()
+                )
+                #
+                rsv_unit_prx_item.set_press_db_clicked_connect_to(
+                    execute_fnc
+                )
                 image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
-                rsv_task_unit_gui.set_image(image_file_path)
+                rsv_unit_prx_item.set_image(image_file_path)
+                rsv_unit_prx_item.set_movie_enable(True)
                 if image_sub_process_cmds is not None:
                     image_sub_process = bsc_objects.SubProcess(image_sub_process_cmds)
                     image_sub_process.set_start()
-                    rsv_task_unit_gui.set_image_show_sub_process(image_sub_process)
-                    # rsv_task_unit_gui.set_image_loading_start()
+                    rsv_unit_prx_item.set_image_show_sub_process(image_sub_process)
+                    # rsv_unit_prx_item.set_image_loading_start()
             else:
-                rsv_task_unit_gui.set_image(
+                rsv_unit_prx_item.set_image(
                     utl_core.Icon._get_file_path_('@image_loading_failed@')
                 )
         #
         unit_menu_content = self.get_rsv_task_unit_menu_content(rsv_task)
         if unit_menu_content:
-            rsv_task_unit_gui.set_menu_content(unit_menu_content)
+            rsv_unit_prx_item.set_menu_content(unit_menu_content)
 
         self._rsv_uint_list_view_0.set_loading_update()
 

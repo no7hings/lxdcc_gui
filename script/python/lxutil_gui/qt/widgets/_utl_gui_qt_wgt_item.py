@@ -2965,7 +2965,9 @@ class _QtListItemWidget(
             #
             if self._get_movie_enable_():
                 painter._set_movie_play_button_draw_by_rect_(
-                    self._movie_rect, offset=offset
+                    self._movie_rect,
+                    offset=offset,
+                    is_hovered=self._item_is_hovered,
                 )
             #
             # painter._set_text_draw_by_rect_(

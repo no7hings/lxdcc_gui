@@ -40,6 +40,9 @@ class AbsPrx(object):
     def model(self):
         return self._model
 
+    def set_parent_widget(self, widget):
+        self._qt_widget.setParent(widget)
+
     def set_gui_attribute(self, key, value):
         self._custom_raw[key] = value
 
