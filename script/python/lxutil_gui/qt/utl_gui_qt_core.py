@@ -37,7 +37,6 @@ else:
     else:
         raise ImportError()
 
-
 cgitb.enable(
     logdir=bsc_core.SystemMtd.get_debug_directory_path(tag='qt', create=True),
     format='text'
@@ -131,118 +130,6 @@ def get_font(size=8, weight=50, italic=False, underline=False, strike_out=False,
     font.setWordSpacing(1)
     font.setStrikeOut(strike_out)
     return font
-
-
-def set_qt_header_view_style(qt_header_view):
-    qt_header_view.setFixedHeight(20)
-    # qt_header_view.setStretchLastSection(False)
-    qt_header_view.setHighlightSections(True)
-    qt_header_view.setSortIndicatorShown(True)
-    qt_header_view.setCascadingSectionResizes(True)
-    qt_header_view.setPalette(QtDccMtd.get_qt_palette())
-    qt_header_view.setStyleSheet(
-        utl_gui_core.QtStyleMtd.get('QHeaderView')
-    )
-    qt_header_view.setFont(Font.NAME)
-    qt_header_view.setAutoFillBackground(True)
-
-
-def set_qt_tree_widget_style(tree_widget):
-    style = '''
-        QTreeWidget::branch:open:has-children:has-siblings{{
-        border-image: none ; image: url({0})
-        }}
-        QTreeWidget::branch:open:has-children:has-siblings:hover{{
-        border-image: none ; image: url({0})
-        }}
-        QTreeWidget::branch:open:has-children:!has-siblings{{
-            border-image: none ; image: url({0})
-        }}
-        QTreeWidget::branch:open:has-children:!has-siblings:hover{{
-            border-image: none ; image: url({0})
-        }}
-        QTreeWidget::branch:closed:has-children:has-siblings{{
-            border-image: none ; image: url({1})
-        }}
-        QTreeWidget::branch:closed:has-children:has-siblings:hover{{
-            border-image: none ; image: url({1})
-        }}
-        QTreeWidget::branch:closed:has-children:!has-siblings{{
-            border-image: none ; image: url({1})
-        }}
-        QTreeWidget::branch:closed:has-children:!has-siblings:hover{{
-            border-image: none ; image: url({1})
-        }}
-    '''.format(
-        utl_core.Icon.get('expandopen'),
-        utl_core.Icon.get('expandclose')
-    )
-    tree_widget.setStyleSheet(style)
-
-
-def set_qt_scroll_bar_style(widget):
-    style = '''
-        QScrollBar:vertical{{
-            background: rgba(56, 56, 56, 255);
-            width: {2}px; margin: 0px, 0px, 0px, 0px; padding: {3}px 1px {3}px 1px;
-            border: 1px  rgba(71, 71, 71, 255); border-radius: {1}px; border-style: solid
-        }}
-        QScrollBar::handle:vertical{{
-            background: rgba(71, 71, 71, 255); width: 5px; min-height: 5px;
-            border: 1px rgba(95, 95, 95, 255); border-radius: 0px; border-style: solid none solid none
-        }}
-        QScrollBar::handle:vertical:hover{{
-            background:rgba(95, 95, 95, 255); min-height: 5px;
-            border: 1px  rgba(127, 127, 127, 255); border-radius: 0px; border-style: solid none solid none
-        }}
-        QScrollBar::add-line:vertical{{
-            image: url({0}/qt-style/v_scroll_add.svg)
-        }}
-        QScrollBar::add-line:vertical:hover{{
-            image: url({0}/qt-style/v_scroll_add_hover.svg)
-        }}
-        QScrollBar::sub-line:vertical{{
-            image: url({0}/qt-style/v_scroll_sub.svg)
-        }}
-        QScrollBar::sub-line:vertical:hover{{
-            image: url({0}/qt-style/v_scroll_sub_hover.svg)
-        }}
-        QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{
-            background: none
-        }}
-        QScrollBar:horizontal{{
-            background: rgba(56, 56, 56, 255);
-            height: {2}px; margin: 0px, 0px, 0px, 0px; padding: 1px {3}px 1px {3}px;
-            border: 1px  rgba(71, 71, 71, 255); border-radius: {1}px; border-style: solid
-        }}
-        QScrollBar::handle:horizontal{{
-            background: rgba(71, 71, 71, 255); height: 5px; min-height: 5px;
-            border: 1px  rgba(95, 95, 95, 255); border-radius: 0px; border-style: none solid none solid
-        }}
-        QScrollBar::handle:horizontal:hover{{
-            background: rgba(95, 95, 95, 255); min-width: 5px;
-            border: 1px  rgba(127, 127, 127, 255); border-radius: 0px; border-style: none solid none solid
-        }}
-        QScrollBar::add-line:horizontal{{
-            image: url({0}/qt-style/h_scroll_add.svg)
-        }}
-        QScrollBar::add-line:horizontal:hover{{
-            image: url({0}/qt-style/h_scroll_add_horver.svg)
-        }}
-        QScrollBar::sub-line:horizontal{{
-            image: url({0}/qt-style/h_scroll_sub.svg)
-        }}
-        QScrollBar::sub-line:horizontal:hover{{
-            image: url({0}/qt-style/h_scroll_sub_hover.svg)
-        }}
-        QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {{
-            background: none
-        }}
-    '''.format(
-        utl_core.Icon.ROOT_PATH, 0, 20, 20
-    )
-    widget.verticalScrollBar().setStyleSheet(style)
-    widget.horizontalScrollBar().setStyleSheet(style)
 
 
 def get_qt_widget_by_class(widget_class):
@@ -351,7 +238,7 @@ def set_qt_window_show(qt_window, pos=None, size=None, use_exec=False):
 def set_shadow(qt_widget, radius):
     shadow = QtWidgets.QGraphicsDropShadowEffect()
     shadow.setBlurRadius(radius)
-    shadow.setColor(Color.SHADOW_NORMAL)
+    shadow.setColor(QtBackgroundColor.Black)
     shadow.setOffset(0, 2)
     qt_widget.setGraphicsEffect(shadow)
 
@@ -367,9 +254,15 @@ def set_loading_cursor():
     )
 
 
+def set_action_cursor():
+    QtWidgets.QApplication.setOverrideCursor(
+        QtCore.Qt.PointingHandCursor
+    )
+
+
 def set_normal_cursor():
     QtWidgets.QApplication.setOverrideCursor(
-        QtCore.Qt.ArrowCursor
+        QtCore.Qt.CustomCursor
     )
 
 
@@ -380,6 +273,7 @@ def set_window_prx_loading_modifier(method):
         _method = method(*args, **kwargs)
         window.unsetCursor()
         return _method
+
     return sub_method
 
 
@@ -428,56 +322,15 @@ class TextMtd(object):
 
 
 class Color(object):
-    black = QtGui.QColor(0, 0, 0, 255)
-    #
-    TEXT_NORMAL = QtGui.QColor(223, 223, 223, 255)
-    TEXT_HOVERED = QtGui.QColor(255, 255, 255, 255)
-    TEXT_DISABLE = QtGui.QColor(127, 127, 127, 255)
-    TEXT_DARK = QtGui.QColor(31, 31, 31, 255)
-    NAME_TEXT = QtGui.QColor(223, 223, 223, 255)
-    INDEX_TEXT = QtGui.QColor(127, 127, 127, 255)
-    #
-    LOADING = QtGui.QColor(31, 31, 31, 63)
-    #
-    ICON_NORMAL = QtGui.QColor(223, 223, 223, 255)
-    ICON_HIGHLIGHT = QtGui.QColor(255, 255, 255, 255)
-    ICON_DISABLE = QtGui.QColor(127, 127, 127, 255)
-    #
     NORMAL = QtGui.QColor(223, 223, 223, 255)
     ENABLE = QtGui.QColor(63, 255, 127, 255)
     DISABLE = QtGui.QColor(127, 127, 127, 255)
     WARNING = QtGui.QColor(255, 255, 63, 255)
     ERROR = QtGui.QColor(255, 0, 63, 255)
     #
-    ICON_BORDER_NORMAL = QtGui.QColor(191, 191, 191, 255)
-    ICON_BORDER_HOVER = QtGui.QColor(225, 255, 255, 255)
-    #
-    background = QtGui.QColor(63, 63, 63, 255)
-    BACKGROUND_NORMAL = QtGui.QColor(63, 63, 63, 255)
-    #
-    base = QtGui.QColor(55, 55, 55, 255)
-    #
-    temporary_text = QtGui.QColor(95, 95, 95, 255)
-    #
-    dark = QtGui.QColor(55, 55, 55, 255)
-    light = QtGui.QColor(71, 71, 71, 255)
-    SHADOW_NORMAL = QtGui.QColor(47, 47, 47, 255)
-    #
-    highlight = QtGui.QColor(63, 127, 255, 127)
-    highlight_text = QtGui.QColor(255, 255, 255, 127)
-    alternate_base = QtGui.QColor(63, 63, 63, 127)
-    error_text = QtGui.QColor(255, 0, 63, 255)
-    #
     text_filter = QtGui.QColor(255, 127, 63, 255)
     text_filter_occurrence = QtGui.QColor(255, 63, 63, 255)
     #
-    widget_current = QtGui.QColor(63, 127, 255, 127)
-    #
-    BUTTON_NORMAL = QtGui.QColor(95, 95, 95, 255)
-    BUTTON_ACTIVE = QtGui.QColor(95, 95, 95, 255)
-    #
-    BUTTON_BORDER_NORMAL = QtGui.QColor(111, 111, 111, 255)
-    BUTTON_BORDER_HIGHLIGHT = QtGui.QColor(135, 135, 135, 255)
     BUTTON_BORDER_DISABLE = QtGui.QColor(79, 79, 79, 255)
     #
     BUTTON_BACKGROUND_NORMAL = QtGui.QColor(103, 103, 103, 255)
@@ -501,13 +354,6 @@ class Color(object):
     PROGRESS = QtGui.QColor(63, 255, 127, 255)
     BACKGROUND_TRANSPARENT = QtGui.QColor(0, 0, 0, 0)
     BACKGROUND_HIGHLIGHT = QtGui.QColor(255, 127, 63, 127)
-    #
-    ITEM_BACKGROUND_SELECT = QtGui.QColor(63, 127, 255, 127)
-    ITEM_BACKGROUND_HOVER = QtGui.QColor(255, 127, 63, 127)
-    #
-    ITEM_BORDER_NORMAL = QtGui.QColor(255, 255, 255, 255)
-    ITEM_BACKGROUND_NORMAL = QtGui.QColor(71, 71, 71, 255)
-    ITEM_BORDER_HOVER = QtGui.QColor(255, 127, 63, 255)
     #
     DESCRIPTION_TEXT = QtGui.QColor(0, 0, 0, 255)
     DESCRIPTION_BACKGROUND = QtGui.QColor(255, 255, 191, 255)
@@ -533,27 +379,160 @@ class Color(object):
         return QtGui.QColor(r, g, b, a)
 
 
-class BorderColor(object):
-    @classmethod
-    def get(cls, key):
+class QtBorderColor(object):
+    @staticmethod
+    def get(key):
         return QtGui.QColor(
-            *utl_gui_core.QtStyleMtd.get_border_color(key)
+            *utl_gui_core.QtStyleMtd.get_border(key)
         )
 
+    Transparent = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_border('color-transparent')
+    )
 
-class BackgroundColor(object):
-    @classmethod
-    def get(cls, key):
+    Dark = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_border('color-dark')
+    )
+    Basic = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_border('color-basic')
+    )
+    Light = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_border('color-light')
+    )
+    Selected = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_border('color-selected')
+    )
+    Actioned = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_border('color-actioned')
+    )
+    Hovered = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_border('color-hovered')
+    )
+
+    Icon = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_border('color-icon')
+    )
+    IconHovered = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_border('color-icon-hovered')
+    )
+
+    Button = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_border('color-button')
+    )
+
+
+class QtBackgroundColor(object):
+    @staticmethod
+    def get(key):
         return QtGui.QColor(
-            *utl_gui_core.QtStyleMtd.get_background_color(key)
+            *utl_gui_core.QtStyleMtd.get_background(key)
         )
+
+    Transparent = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-transparent')
+    )
+    Black = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-black')
+    )
+    Dim = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-dim')
+    )
+    Dark = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-dark')
+    )
+    Basic = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-basic')
+    )
+    Light = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-light')
+    )
+    White = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-white')
+    )
+
+    Selected = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-selected')
+    )
+    Actioned = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-actioned')
+    )
+    Hovered = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-hovered')
+    )
+    #
+    Button = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-button')
+    )
+    ButtonHovered = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-button-hovered')
+    )
+    ButtonDisable = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-button-disable')
+    )
+    ToolTip = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-tool-tip')
+    )
+    #
+    ItemSelected = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-item-selected')
+    )
+    ItemSelectedIndirect = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-item-selected-indirect')
+    )
+    ItemLoading = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-item-loading')
+    )
+
+
+class QtFontColor(object):
+    @staticmethod
+    def get(key):
+        return QtGui.QColor(
+            *utl_gui_core.QtStyleMtd.get_font(key)
+        )
+
+    Dark = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_font('color-dark')
+    )
+    Basic = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_font('color-basic')
+    )
+    Light = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_font('color-light')
+    )
+    Hovered = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_font('color-hovered')
+    )
+    Selected = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_font('color-selected')
+    )
+
+    KeyBasic = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_font('color-key-basic')
+    )
+    KeyHovered = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_font('color-key-hovered')
+    )
+    ValueBasic = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_font('color-value-basic')
+    )
+    ValueHovered = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_font('color-value-hovered')
+    )
+
+    Disable = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_font('color-disable')
+    )
+
+    ToolTip = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_font('color-tool-tip')
+    )
 
 
 class Brush(object):
     text = QtGui.QBrush(QtGui.QColor(191, 191, 191, 255))
-    TEXT_NORMAL = QtGui.QBrush(Color.TEXT_NORMAL)
+    TEXT_NORMAL = QtGui.QBrush(QtFontColor.Basic)
     #
-    background = QtGui.QBrush(Color.background)
     BACKGROUND_NORMAL = QtGui.QBrush(QtGui.QColor(63, 63, 63, 255))
     #
     default_text = QtGui.QBrush(QtGui.QColor(255, 255, 255, 255))
@@ -564,31 +543,10 @@ class Brush(object):
     current_text = QtGui.QBrush(QtGui.QColor(63, 127, 255, 255))
     selected_background = QtGui.QBrush(QtGui.QColor(255, 127, 63, 255))
     #
-    BUTTON_NORMAL = QtGui.QBrush(QtGui.QColor(103, 103, 103, 255))
-    BUTTON_HIGHLIGHT = QtGui.QBrush(QtGui.QColor(127, 127, 127, 255))
-    BUTTON_DISABLE = QtGui.QBrush(QtGui.QColor(71, 71, 71, 255))
-    #
-    BACKGROUND_TRANSPARENT = QtGui.QBrush(Color.BACKGROUND_TRANSPARENT)
-    BACKGROUND_HIGHLIGHT = QtGui.QBrush(Color.BACKGROUND_HIGHLIGHT)
-    BAR_NORMAL = QtGui.QBrush(Color.BAR_NORMAL)
-    BAR_HIGHLIGHT = QtGui.QBrush(Color.BAR_HIGHLIGHT)
-    #
-    ENTRY_BORDER_ENTRY_ON = QtGui.QBrush(QtGui.QColor(63, 127, 255, 255))
-    ENTRY_BORDER_ENTRY_OFF = QtGui.QBrush(QtGui.QColor(119, 119, 119, 255))
-    ENTRY_BACKGROUND_ENTRY_ON = QtGui.QBrush(QtGui.QColor(47, 47, 47, 255))
-    ENTRY_BACKGROUND_ENTRY_OFF = QtGui.QBrush(QtGui.QColor(55, 55, 55, 255))
-    #
     disable_text = QtGui.QBrush(QtGui.QColor(127, 0, 255, 255))
     #
     tree_branch = QtGui.QBrush(QtGui.QColor(127, 127, 127, 255))
     tree_branch_highlight = QtGui.QBrush(QtGui.QColor(255, 255, 255, 255))
-    #
-    tree_item_selected = QtGui.QBrush(QtGui.QColor(63, 127, 255, 95))
-    tree_item_selected_indirect = QtGui.QBrush(QtGui.QColor(63, 127, 255, 31))
-    #
-    progress_background = QtGui.QBrush(QtGui.QColor(255, 127, 63, 255))
-    #
-    alternate_base = QtGui.QBrush(Color.alternate_base)
 
 
 class QtUtilMtd(object):
@@ -621,30 +579,29 @@ class QtUtilMtd(object):
     @classmethod
     def get_qt_palette(cls, tool_tip=False):
         palette = QtGui.QPalette()
-        palette.setColor(palette.All, palette.NoRole, Color.base)
-        palette.setColor(palette.All, palette.Base, Color.base)
-        palette.setColor(palette.All, palette.Background, Color.BACKGROUND_NORMAL)
-        palette.setColor(palette.All, palette.Shadow, Color.SHADOW_NORMAL)
-        palette.setColor(palette.All, palette.Dark, Color.dark)
-        palette.setColor(palette.All, palette.Light, Color.light)
-        palette.setColor(palette.All, palette.Highlight, Color.highlight)
-        palette.setColor(palette.All, palette.HighlightedText, Color.highlight_text)
+        palette.setColor(palette.All, palette.Shadow, QtBackgroundColor.Black)
+        palette.setColor(palette.All, palette.Dark, QtBackgroundColor.Dim)
+        palette.setColor(palette.All, palette.Background, QtBackgroundColor.Basic)
+        palette.setColor(palette.All, palette.NoRole, QtBackgroundColor.Dark)
+        palette.setColor(palette.All, palette.Base, QtBackgroundColor.Dark)
+        palette.setColor(palette.All, palette.Light, QtBackgroundColor.Light)
+        palette.setColor(palette.All, palette.Highlight, QtBackgroundColor.Selected)
+        palette.setColor(palette.All, palette.Button, QtBackgroundColor.Button)
         #
-        palette.setColor(palette.All, palette.Window, Color.BACKGROUND_NORMAL)
+        palette.setColor(palette.All, palette.Window, QtBackgroundColor.Basic)
         #
-        palette.setColor(palette.All, palette.Text, Color.TEXT_NORMAL)
-        palette.setColor(palette.All, palette.BrightText, Color.TEXT_HOVERED)
-        palette.setColor(palette.All, palette.WindowText, Color.TEXT_NORMAL)
+        palette.setColor(palette.All, palette.Text, QtFontColor.Basic)
+        palette.setColor(palette.All, palette.BrightText, QtFontColor.Light)
+        palette.setColor(palette.All, palette.WindowText, QtFontColor.Basic)
+        palette.setColor(palette.All, palette.ButtonText, QtFontColor.Basic)
+        palette.setColor(palette.All, palette.HighlightedText, QtFontColor.Light)
         #
-        palette.setColor(palette.All, palette.Button, Color.BUTTON_NORMAL)
-        palette.setColor(palette.All, palette.ButtonText, Color.TEXT_NORMAL)
-        #
-        palette.setColor(palette.All, palette.AlternateBase, Color.alternate_base)
+        palette.setColor(palette.All, palette.AlternateBase, QtBackgroundColor.Basic)
         # tool-tip
         if tool_tip is True:
             p = QtWidgets.QToolTip.palette()
-            p.setColor(palette.All, p.ToolTipBase, Color.DESCRIPTION_BACKGROUND)
-            p.setColor(palette.All, palette.ToolTipText, Color.DESCRIPTION_TEXT)
+            p.setColor(palette.All, p.ToolTipBase, QtBackgroundColor.ToolTip)
+            p.setColor(palette.All, palette.ToolTipText, QtFontColor.ToolTip)
             #
             QtWidgets.QToolTip.setPalette(p)
             QtWidgets.QToolTip.setFont(Font.DESCRIPTION)
@@ -668,51 +625,10 @@ class QtUtilMtd(object):
             c_w, c_h
         )
         r, g, b = rgb
-        painter.setPen(QtGui.QColor(Color.ICON_BORDER_NORMAL))
+        painter.setPen(QtGui.QColor(QtBorderColor.Icon))
         painter.setBrush(QtGui.QBrush(QtGui.QColor(r, g, b, 255)))
         #
         painter.drawRect(icon_rect)
-        painter.end()
-        # painter.device()
-        icon.addPixmap(
-            pixmap,
-            QtGui.QIcon.Normal,
-            QtGui.QIcon.On
-        )
-        return icon
-    @classmethod
-    def get_name_text_icon(cls, text, rounded=False, background_color=None):
-        icon = QtGui.QIcon()
-        f_w, f_h = 16, 16
-        c_w, c_h = 14, 14
-        pixmap = QtGui.QPixmap(f_w, f_h)
-        painter = QtGui.QPainter(pixmap)
-        painter.setRenderHint(painter.Antialiasing)
-        rect = pixmap.rect()
-        pixmap.fill(
-            Color.ICON_BORDER_NORMAL
-        )
-        x, y = rect.x(), rect.y()
-        w, h = rect.width(), rect.height()
-        icon_rect = QtCore.QRect(
-            x + (w - c_w)/2, y + (h - c_h)/2,
-            c_w, c_h
-        )
-        if text is not None:
-            name = text.split('/')[-1] or ' '
-            painter.setPen(Color.ICON_BORDER_NORMAL)
-            r, g, b = bsc_core.TextOpt(name).to_rgb()
-            if background_color is not None:
-                r, g, b = background_color
-            painter.setBrush(QtGui.QBrush(QtGui.QColor(r, g, b, 255)))
-            painter.drawRect(icon_rect)
-            # t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(r, g, b)
-            painter.setPen(Color.TEXT_NORMAL)
-            painter.setFont(get_font(italic=True))
-            painter.drawText(
-                rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(name[0]).capitalize()
-            )
-        #
         painter.end()
         # painter.device()
         icon.addPixmap(
@@ -731,28 +647,36 @@ class QtUtilMtd(object):
         painter.setRenderHint(painter.Antialiasing)
         rect = pixmap.rect()
         pixmap.fill(
-            Color.ICON_BORDER_NORMAL
+            QtBorderColor.Icon
         )
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
         icon_rect = QtCore.QRect(
-            x + (w - c_w)/2, y + (h - c_h)/2,
+            x + (w - c_w) / 2, y + (h - c_h) / 2,
             c_w, c_h
         )
         if text is not None:
             name = text.split('/')[-1] or ' '
-            painter.setPen(Color.ICON_BORDER_NORMAL)
-            r, g, b = bsc_core.TextOpt(name).to_rgb()
+            painter.setPen(QtBorderColor.Icon)
             if background_color is not None:
                 r, g, b = background_color
-            painter.setBrush(QtGui.QBrush(QtGui.QColor(r, g, b, 255)))
-            painter.drawRect(
-                icon_rect,
-            )
-            # painter.drawRoundedRect(icon_rect, f_w/2, f_w/2, QtCore.Qt.AbsoluteSize)
+                text_color_ = QtFontColor.Basic
+            else:
+                r, g, b = bsc_core.TextOpt(name).to_rgb()
+                t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(r, g, b)
+                t_r = QtGui.qGray(t_r, t_g, t_b)
+                if t_r >= 127:
+                    t_r_1 = 223
+                else:
+                    t_r_1 = 63
+                text_color_ = QtGui.QColor(t_r_1, t_r_1, t_r_1)
             #
-            # t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(r, g, b)
-            painter.setPen(Color.TEXT_NORMAL)
+            painter.setBrush(QtGui.QBrush(QtGui.QColor(r, g, b, 255)))
+            # painter.drawRect(
+            #     icon_rect,
+            # )
+            painter.drawRoundedRect(icon_rect, 2, 2, QtCore.Qt.AbsoluteSize)
+            painter.setPen(text_color_)
             painter.setFont(get_font(italic=True))
             painter.drawText(
                 rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(name[0]).capitalize()
@@ -772,7 +696,7 @@ class QtIconMtd(object):
     @classmethod
     def get_by_icon_name(cls, icon_name):
         icon = QtGui.QIcon()
-        file_path = utl_gui_core.Icons.get(icon_name)
+        file_path = utl_gui_core.RscIconFile.get(icon_name)
         if file_path:
             icon.addPixmap(
                 QtGui.QPixmap(file_path),
@@ -789,7 +713,7 @@ class QtIconMtd(object):
         painter = QtGui.QPainter(pixmap)
         rect = pixmap.rect()
         pixmap.fill(
-            Color.ICON_BORDER_NORMAL
+            QtBorderColor.Icon
         )
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
@@ -799,7 +723,7 @@ class QtIconMtd(object):
         )
         if text is not None:
             name = text.split('/')[-1] or ' '
-            painter.setPen(Color.ICON_BORDER_NORMAL)
+            painter.setPen(QtBorderColor.Icon)
             r, g, b = bsc_core.TextOpt(name).to_rgb()
             if background_color is not None:
                 r, g, b = background_color
@@ -808,7 +732,7 @@ class QtIconMtd(object):
             # painter.drawRoundedRect(icon_rect, f_w/2, f_w/2, QtCore.Qt.AbsoluteSize)
             #
             # t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(r, g, b)
-            painter.setPen(Color.TEXT_NORMAL)
+            painter.setPen(QtFontColor.Basic)
             painter.setFont(get_font(italic=True))
             painter.drawText(
                 rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(name[0]).capitalize()
@@ -830,7 +754,7 @@ class QtIconMtd(object):
         painter = QtGui.QPainter(pixmap)
         rect = pixmap.rect()
         pixmap.fill(
-            Color.ICON_BORDER_NORMAL
+            QtBorderColor.Icon
         )
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
@@ -840,7 +764,7 @@ class QtIconMtd(object):
         )
         if text is not None:
             name = text.split('/')[-1] or ' '
-            painter.setPen(Color.ICON_BORDER_NORMAL)
+            painter.setPen(QtBorderColor.Icon)
             r, g, b = bsc_core.TextOpt(name).to_rgb()
             if background_color is not None:
                 r, g, b = background_color
@@ -849,7 +773,7 @@ class QtIconMtd(object):
             # painter.drawRoundedRect(icon_rect, f_w/2, f_w/2, QtCore.Qt.AbsoluteSize)
             #
             # t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(r, g, b)
-            painter.setPen(Color.TEXT_NORMAL)
+            painter.setPen(QtFontColor.Basic)
             painter.setFont(get_font(italic=True))
             painter.drawText(
                 rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(name[0]).capitalize()
@@ -1119,6 +1043,7 @@ class QtTreeMtd(object):
             if _parent.isValid():
                 lis.append(_parent)
                 _rcs_fnc(_parent)
+
         lis = []
         _rcs_fnc(qt_model_index)
         return lis
@@ -1135,7 +1060,7 @@ class QtTreeMtd(object):
                 array_grid = methods.List.set_grid_to(foregrounds, 8)
                 for column, a in enumerate(array_grid):
                     for row, b in enumerate(a):
-                        b_x, b_y = x+(w-b_w*column)-2, y+(h-b_h*row)-4
+                        b_x, b_y = x + (w - b_w * column) - 2, y + (h - b_h * row) - 4
                         box_rect = QtCore.QRect(
                             b_x, b_y,
                             b_w, b_h
@@ -1150,6 +1075,7 @@ class QtTimer(QtCore.QTimer):
 
 class QtShowThread(QtCore.QThread):
     started = qt_signal()
+
     def __init__(self, *args, **kwargs):
         super(QtShowThread, self).__init__(*args, **kwargs)
         #
@@ -1181,6 +1107,7 @@ class QtShowThread(QtCore.QThread):
 
 class QtPrintThread(QtCore.QThread):
     printed = qt_signal(str)
+
     def __init__(self, *args, **kwargs):
         super(QtPrintThread, self).__init__(*args, **kwargs)
 
@@ -1235,13 +1162,14 @@ class QtSectorChartDrawData(object):
         self._draw_data = self._get_data_(
             data, position, size, align, side_w, mode
         )
+
     @classmethod
     def _get_basic_data_at_(cls, index, subDatum, offset, radius, tape_w, spacing, mode):
         eR = 4
         ia = 90
         offset_x, offset_y = offset
         explain, maxValue, value = subDatum
-        percent = float(value)/float(max(maxValue, 1))
+        percent = float(value) / float(max(maxValue, 1))
         #
         text = '{} : {}%'.format(explain, bsc_core.ValueMtd.get_percent_prettify(value=value, maximum=maxValue))
         #
@@ -1260,20 +1188,20 @@ class QtSectorChartDrawData(object):
                     r, g, b = 63, 255, 127
             #
             elif percent > 1:
-                r, g, b = bsc_core.ColorMtd.hsv2rgb(240-min(percent*15, 45), 1, 1)
+                r, g, b = bsc_core.ColorMtd.hsv2rgb(240 - min(percent * 15, 45), 1, 1)
             else:
-                r, g, b = bsc_core.ColorMtd.hsv2rgb(45*color_percent, 1, 1)
+                r, g, b = bsc_core.ColorMtd.hsv2rgb(45 * color_percent, 1, 1)
                 if mode is utl_configure.GuiSectorChartMode.Error:
-                    r, g, b = bsc_core.ColorMtd.hsv2rgb(45-45*color_percent, 1, 1)
+                    r, g, b = bsc_core.ColorMtd.hsv2rgb(45 - 45 * color_percent, 1, 1)
             #
             background_rgba = r, g, b, 255
             border_rgba = r, g, b, 255
         #
-        draw_percent = color_percent*.75
+        draw_percent = color_percent * .75
         #
-        out_x, out_y = offset_x + index*tape_w/2, offset_y + index*tape_w/2
-        in_x, in_y = out_x + (tape_w - spacing)/2, out_y + (tape_w - spacing)/2
-        out_r = radius - index*tape_w
+        out_x, out_y = offset_x + index * tape_w / 2, offset_y + index * tape_w / 2
+        in_x, in_y = out_x + (tape_w - spacing) / 2, out_y + (tape_w - spacing) / 2
+        out_r = radius - index * tape_w
         in_r = out_r - tape_w + spacing
         #
         rim_path = QtGui.QPainterPath()
@@ -1284,31 +1212,32 @@ class QtSectorChartDrawData(object):
             in_x, in_y, in_r, in_r
         )
         #
-        cx, cy = out_x + out_r/2, out_y + out_r/2
+        cx, cy = out_x + out_r / 2, out_y + out_r / 2
         #
         rim_sub_path = QtGui.QPainterPath()
         rim_sub_path.moveTo(cx, cy)
-        sub_angle = -360*.25
+        sub_angle = -360 * .25
         rim_sub_path.arcTo(out_x - 1, out_y - 1, out_r + 2, out_r + 2, ia, sub_angle)
         #
         percent_sub_path = QtGui.QPainterPath()
         percent_sub_path.moveTo(cx, cy)
-        percentSubAngle = -360*(1 - draw_percent)
+        percentSubAngle = -360 * (1 - draw_percent)
         percent_sub_path.arcTo(out_x - 1, out_y - 1, out_r + 2, out_r + 2, ia, percentSubAngle)
         #
         total_path = rim_path - rim_sub_path
         occupy_path = rim_path - percent_sub_path
         #
-        x1, y1 = cx, out_y + (tape_w - spacing)/4
-        x2, y2 = x1 + tape_w/4, y1
-        x3, y3 = x2 + tape_w/4, y2 + tape_w/4
-        x4, y4 = x3 + tape_w/4, y3
+        x1, y1 = cx, out_y + (tape_w - spacing) / 4
+        x2, y2 = x1 + tape_w / 4, y1
+        x3, y3 = x2 + tape_w / 4, y2 + tape_w / 4
+        x4, y4 = x3 + tape_w / 4, y3
         text_line = QtGui.QPolygon(
             [QtCore.QPoint(x1, y1), QtCore.QPoint(x2, y2), QtCore.QPoint(x3, y3), QtCore.QPoint(x4 - eR, y4)]
         )
         text_point = QtCore.QPoint(x4 + eR + 4, y4 + 4)
-        text_ellipse = QtCore.QRect(x4 - eR, y4 - eR, eR*2, eR*2)
+        text_ellipse = QtCore.QRect(x4 - eR, y4 - eR, eR * 2, eR * 2)
         return background_rgba, border_rgba, total_path, occupy_path, text_point, text_line, text_ellipse, text
+
     @classmethod
     def _get_basic_data_(cls, data, offset, radius, tape_w, spacing, mode):
         lis = []
@@ -1319,6 +1248,7 @@ class QtSectorChartDrawData(object):
                 )
                 lis.append(subDrawDatum)
         return lis
+
     @classmethod
     def _get_data_(cls, data, position, size, align, side_w, mode):
         if data:
@@ -1329,7 +1259,7 @@ class QtSectorChartDrawData(object):
             align_h, align_v = align
             #
             radius = int(min(size_w, size_h)) - side_w * 2
-            tape_w = int(radius/count*.75)
+            tape_w = int(radius / count * .75)
             #
             spacing = 8
             #
@@ -1362,6 +1292,7 @@ class QtRadarChartDrawData(object):
     fnc_sin = math.sin
     fnc_cos = math.cos
     fnc_tan = math.tan
+
     def __init__(self, data, position, size, align, side_w, mode):
         self._draw_data = self._get_data_(
             data, position, size, align, side_w, mode
@@ -1417,7 +1348,8 @@ class QtRadarChartDrawData(object):
         lis = []
         for seq in range(count):
             angle = 360 * float(seq) / float(count) + 180
-            x, y = cx + cls.fnc_sin(cls.fnc_angle(angle)) * radius / 2, cy + cls.fnc_cos(cls.fnc_angle(angle)) * radius / 2
+            x, y = cx + cls.fnc_sin(cls.fnc_angle(angle)) * radius / 2, cy + cls.fnc_cos(
+                cls.fnc_angle(angle)) * radius / 2
             lis.append(QtCore.QPoint(x, y))
         #
         return lis + lis[0:1]
@@ -1505,9 +1437,9 @@ class QtRadarChartDrawData(object):
             if percent_sub == 0:
                 r, g, b = 64, 255, 127
             elif percent_sub > 0:
-                r, g, b = bsc_core.ColorMtd.hsv2rgb(45*(1-min(percent_sub, 1)), 1, 1)
+                r, g, b = bsc_core.ColorMtd.hsv2rgb(45 * (1 - min(percent_sub, 1)), 1, 1)
             else:
-                r, g, b = bsc_core.ColorMtd.hsv2rgb(120+45*(1-min(percent_sub, 1)), 1, 1)
+                r, g, b = bsc_core.ColorMtd.hsv2rgb(120 + 45 * (1 - min(percent_sub, 1)), 1, 1)
             #
             background_rgba = r, g, b, 255
             border_rgba = r, g, b, 255
@@ -1524,10 +1456,15 @@ class QtRadarChartDrawData(object):
         angle_end = 360 * (float(index + 1) / float(index_maximum)) + 180
         basic_path.arcTo(x, y, r, r, angle_start + ia, angle_end + ia)
         #
-        text_x_0, text_y_0 = cx + cls.fnc_sin(cls.fnc_angle(angle_start)) * radius / 2, cy + cls.fnc_cos(cls.fnc_angle(angle_start)) * radius / 2
+        text_x_0, text_y_0 = cx + cls.fnc_sin(cls.fnc_angle(angle_start)) * radius / 2, cy + cls.fnc_cos(
+            cls.fnc_angle(angle_start)) * radius / 2
         #
-        map_x_0, map_y_0 = cx + cls.fnc_sin(cls.fnc_angle(angle_start)) * radius / 2 * draw_percent_tgt, cy + cls.fnc_cos(cls.fnc_angle(angle_start))*radius / 2 * draw_percent_tgt
-        map_x_1, map_y_1 = cx + cls.fnc_sin(cls.fnc_angle(angle_start)) * radius / 2 * draw_percent_src, cy + cls.fnc_cos(cls.fnc_angle(angle_start))*radius / 2 * draw_percent_src
+        map_x_0, map_y_0 = cx + cls.fnc_sin(
+            cls.fnc_angle(angle_start)) * radius / 2 * draw_percent_tgt, cy + cls.fnc_cos(
+            cls.fnc_angle(angle_start)) * radius / 2 * draw_percent_tgt
+        map_x_1, map_y_1 = cx + cls.fnc_sin(
+            cls.fnc_angle(angle_start)) * radius / 2 * draw_percent_src, cy + cls.fnc_cos(
+            cls.fnc_angle(angle_start)) * radius / 2 * draw_percent_src
         #
         f = QtGui.QFont()
         f.setPointSize(8)
@@ -1536,9 +1473,9 @@ class QtRadarChartDrawData(object):
         text_w_1 = m.width(text_1)
         text_h = m.height()
         #
-        text_point_0 = QtCore.QPoint(text_x_0-text_w_0 / 2, text_y_0-text_h / 2)
-        text_point_1 = QtCore.QPoint(text_x_0-text_w_1 / 2, text_y_0+text_h / 2)
-        mark_ellipse = QtCore.QRect(map_x_0-eR, map_y_0-eR, eR*2, eR*2)
+        text_point_0 = QtCore.QPoint(text_x_0 - text_w_0 / 2, text_y_0 - text_h / 2)
+        text_point_1 = QtCore.QPoint(text_x_0 - text_w_1 / 2, text_y_0 + text_h / 2)
+        mark_ellipse = QtCore.QRect(map_x_0 - eR, map_y_0 - eR, eR * 2, eR * 2)
         #
         point_tgt = QtCore.QPoint(map_x_0, map_y_0)
         point_src = QtCore.QPoint(map_x_1, map_y_1)
@@ -1572,6 +1509,7 @@ class QtPieChartDrawData(object):
     fnc_sin = math.sin
     fnc_cos = math.cos
     fnc_tan = math.tan
+
     def __init__(self, data, position, size, align, side_w, mode):
         self._draw_data = self._get_data_(
             data, position, size, align, side_w, mode
@@ -1618,6 +1556,7 @@ class QtPieChartDrawData(object):
             ma += _a
             if i_seq_ <= dataCount - 1:
                 rcs_fnc_(i_data_, i_seq_, qa, ma)
+
         #
         pos_x, pos_y = position
         width, height = size
@@ -1660,6 +1599,7 @@ class QtHistogramChartDrawData(object):
             basic_data = self._get_basic_data_(data, position, size, side_w)
             return basic_data
         return
+
     @classmethod
     def _get_basic_data_(cls, data, position, size, side):
         pass
@@ -1752,6 +1692,7 @@ class QtMenuOpt(object):
         def set_disable_fnc_(widget_action_):
             widget_action_.setFont(Font.disable)
             widget_action_.setDisabled(True)
+
         #
         name = content.get('name')
         icon_name = content.get('icon_name')
@@ -1892,6 +1833,7 @@ def set_qt_layout_clear(layout):
                         spacer = i_item.spacerItem()
                         if spacer:
                             spacer.deleteLater()
+
     #
     rcs_fnc_(layout)
 
@@ -1911,7 +1853,7 @@ class AsbQtMenuSetup(object):
         #
         action_item.setText(name)
         #
-        icon = QtUtilMtd.get_name_text_icon(name)
+        icon = QtUtilMtd.get_name_text_icon_(name)
         action_item.setIcon(icon)
         if method is not None:
             if isinstance(method, (types.FunctionType, types.MethodType)):
@@ -1932,7 +1874,7 @@ class AsbQtMenuSetup(object):
                         elif isinstance(i, list):
                             sub_name, sub_icon_name, sub_menu_data = i
                             action_item = menu.addAction(sub_name)
-                            icon = QtUtilMtd.get_name_text_icon(sub_name)
+                            icon = QtUtilMtd.get_name_text_icon_(sub_name)
                             action_item.setIcon(icon)
                             #
                             i_menu = QtWidgets.QMenu()
@@ -2005,6 +1947,7 @@ class QtSystemTrayIcon(QtWidgets.QSystemTrayIcon):
     press_clicked = qt_signal()
     press_db_clicked = qt_signal()
     press_toggled = qt_signal(bool)
+
     def __init__(self, *args, **kwargs):
         super(QtSystemTrayIcon, self).__init__(*args, **kwargs)
         menu = QtWidgets.QMenu()
@@ -2051,7 +1994,7 @@ def set_window_show_standalone(window_class, **kwargs):
         app = QtWidgets.QApplication(sys.argv)
 
         QtUtilMtd.set_fonts_add(
-            utl_gui_core.Fonts.get_all()
+            utl_gui_core.RscFontFile.get_all()
         )
         prx_window = window_class(**kwargs)
         window = prx_window.widget

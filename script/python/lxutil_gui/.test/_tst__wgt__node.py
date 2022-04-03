@@ -14,19 +14,8 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
         n = utl_prx_widgets.PrxNode_('root')
         self.set_widget_add(n)
         p = n.set_port_add(
-            utl_prx_widgets.PrxRsvObjChoosePort(
+            utl_prx_widgets.PrxRgbPort(
                 'test'
-            )
-        )
-        r = rsv_commands.get_resolver()
-        rsv_tasks = r.get_rsv_tasks(
-            project='cgm', asset='nn_14y_test'
-        )
-        p.set(rsv_tasks)
-
-        p = n.set_port_add(
-            utl_prx_widgets.PrxStringPort(
-                'test_1'
             )
         )
 

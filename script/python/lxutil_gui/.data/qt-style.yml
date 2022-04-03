@@ -4,15 +4,27 @@ option:
     background:
         color-transparent: '0, 0, 0, 0'
         #
+        color-black: '31, 31, 31, 255'
+        color-dim: '47, 47, 47, 255'
         color-dark: '55, 55, 55, 255'
         color-basic: '63, 63, 63, 255'
         color-light: '71, 71, 71, 255'
         color-light-hover: '103, 103, 103, 255'
-        color-light-pressed: '103, 103, 255, 255'
+        color-white: '223, 223, 223, 255'
         #
-        color-selected: '55, 119, 247, 255'
-        color-pressed: '55, 119, 247, 255'
-        color-entry: '55, 55, 55, 255'
+        color-hovered: '255, 159, 79, 255'
+        color-selected: '79, 159, 255, 255'
+        color-actioned: '79, 255, 159, 255'
+        #
+        color-item-selected: '79, 159, 255, 255'
+        color-item-selected-indirect: '79, 159, 255, 63'
+        #
+        color-item-loading: '31, 31, 31, 63'
+        #
+        color-button: '113, 113, 113, 255'
+        color-button-hovered: '151, 151, 151'
+        color-button-disable: '79, 79, 79, 255'
+        color-tool-tip: '255, 255, 191, 255'
     #
     border:
         color-transparent: '0, 0, 0, 0'
@@ -22,14 +34,34 @@ option:
         color-light: '79, 79, 79, 255'
         color-light-hover: '111, 111, 111, 255'
         #
-        color-selected: '63, 127, 255, 255'
-        color-pressed: '63, 127, 255, 255'
+        color-button: '95, 95, 95, 255'
+        #
         color-hovered: '255, 127, 63, 255'
+        color-selected: '63, 127, 255, 255'
+        color-actioned: '63, 255, 127, 255'
+        #
+        color-icon: '191, 191, 191, 255'
+        color-icon-hovered: '255, 127, 63, 255'
         #
         border-radius: 1
-        border-style: solid
+        border-style: 'solid'
+    #
     font:
+        color-dark: '127, 127, 127, 255'
         color-basic: '223, 223, 223, 255'
+        color-light: '255, 255, 255, 255'
+        #
+        color-hovered: '31, 31, 31, 255'
+        color-selected: '31, 31, 31, 255'
+        #
+        color-key-basic: '191, 191, 191, 255'
+        color-key-hovered: '63, 63, 63, 255'
+        color-value-basic: '255, 255, 255, 255'
+        color-value-hovered: '31, 31, 31, 255'
+        #
+        color-disable: '127, 127, 127, 255'
+        #
+        color-tool-tip: '31, 31, 31, 255'
     #
     icon-file:
         collapse: '<option.icon-dir>/qt-style/collapse.svg'
@@ -48,19 +80,19 @@ widget:
         QScrollArea{
             background: rgba(<option.background.color-basic>); 
             color: rgba(<option.font.color-basic>);
-            border: 1px  rgba(<option.border.color-basic>); border-radius: 0px; border-style: solid;
+            border: 1px rgba(<option.border.color-basic>); border-radius: 0px; border-style: solid;
         }
     QMenuBar:
         |-
         QMenuBar{
             background: rgba(<option.background.color-basic>); 
             color: rgba(<option.font.color-basic>); 
-            border: 1px  rgba(<option.border.color-basic>); border-radius: 10px; border-style: solid;
+            border: 1px rgba(<option.border.color-basic>); border-radius: 10px; border-style: solid;
         }
         QMenuBar::item{
             background: rgba(<option.background.color-basic>); 
             color: rgba(<option.font.color-basic>); 
-            border: 1px  rgba(<option.border.color-basic>); border-radius: 0px; border-style: solid;
+            border: 1px rgba(<option.border.color-basic>); border-radius: 0px; border-style: solid;
             padding: 2px 2px 2px 2px;
         }
         QMenuBar::item:selected{
@@ -78,7 +110,7 @@ widget:
         QMenu{
             background: rgba(<option.background.color-basic>); 
             color: rgba(<option.font.color-basic>);
-            border: 1px  rgba(<option.border.color-basic>); border-radius: 0px; border-style: solid;
+            border: 1px rgba(<option.border.color-basic>); border-radius: 0px; border-style: solid;
         }
         QMenu::item{
             background: rgba(<option.background.color-basic>); 
@@ -86,7 +118,7 @@ widget:
         }
         QMenu::item:selected{
             background: rgba(<option.background.color-selected>); 
-            color: rgba(<option.font.color-basic>);
+            color: rgba(<option.font.color-selected>);
         }
         QMenu::separator{
             background: rgba(<option.background.color-light>); 
@@ -98,7 +130,17 @@ widget:
         QTreeView{
             background: rgba(<option.background.color-transparent>); 
             color: rgba(<option.font.color-basic>); 
-            border: 1px  rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
+            border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
+        }
+        QTreeView::item:hover{
+            background: rgba(<option.background.color-hovered>); 
+            color: rgba(<option.font.color-hovered>); 
+            border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
+        }
+        QTreeView::item:selected{
+            background: rgba(<option.background.color-selected>); 
+            color: rgba(<option.font.color-selected>); 
+            border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
         }
         QTreeView::branch:open:has-children:has-siblings{
             border-image: none; image: url(<option.icon-file.expand>);
@@ -164,9 +206,9 @@ widget:
     QScrollBar:
         |-
         QScrollBar:vertical{
-            background: rgba(<option.background.color-dark>);
-            border: 1px  rgba(<option.border.color-dark>); border-radius: 1px; border-style: solid;
-            width: 20px; margin: 0px, 0px, 0px, 0px; padding: 20px 1px 20px 1px;
+            background: rgba(<option.background.color-transparent>);
+            border: 1px rgba(<option.border.color-dark>); border-radius: 1px; border-style: solid;
+            width: 16px; margin: 0px, 0px, 0px, 0px; padding: 16px 1px 16px 1px;
         }
         QScrollBar::handle:vertical{
             background: rgba(<option.background.color-light>); width: 5px; min-height: 5px;
@@ -174,7 +216,7 @@ widget:
         }
         QScrollBar::handle:vertical:hover{
             background:rgba(<option.background.color-light-hover>); min-height: 5px;
-            border: 1px  rgba(<option.border.color-light-hover>); border-radius: 1px; border-style: solid;
+            border: 1px rgba(<option.border.color-light-hover>); border-radius: 1px; border-style: solid;
         }
         QScrollBar::add-line:vertical{
             image: url(<option.icon-dir>/qt-style/v_scroll_add.svg);
@@ -189,20 +231,20 @@ widget:
             image: url(<option.icon-dir>/qt-style/v_scroll_sub_hover.svg);
         }
         QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
-            background: none;
+            background: rgba(<option.background.color-transparent>);
         }
         QScrollBar:horizontal{
-            background: rgba(<option.background.color-dark>);
-            border: 1px  rgba(<option.border.color-dark>); border-radius: 1px; border-style: solid;
-            height: 20px; margin: 0px, 0px, 0px, 0px; padding: 1px 20px 1px 20px;
+            background: rgba(<option.background.color-transparent>);
+            border: 1px rgba(<option.border.color-dark>); border-radius: 1px; border-style: solid;
+            height: 16px; margin: 0px, 0px, 0px, 0px; padding: 1px 16px 1px 16px;
         }
         QScrollBar::handle:horizontal{
             background: rgba(<option.background.color-light>); height: 5px; min-height: 5px;
-            border: 1px  rgba(<option.border.color-light>); border-radius: 1px; border-style: solid;
+            border: 1px rgba(<option.border.color-light>); border-radius: 1px; border-style: solid;
         }
         QScrollBar::handle:horizontal:hover{
             background: rgba(<option.background.color-light-hover>); min-width: 5px;
-            border: 1px  rgba(<option.border.color-light-hover>); border-radius: 1px; border-style: solid;
+            border: 1px rgba(<option.border.color-light-hover>); border-radius: 1px; border-style: solid;
         }
         QScrollBar::add-line:horizontal{
             image: url(<option.icon-dir>/qt-style/h_scroll_add.svg);
@@ -217,7 +259,7 @@ widget:
             image: url(<option.icon-dir>/qt-style/h_scroll_sub_hover.svg);
         }
         QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal{
-            background: none;
+            background: rgba(<option.background.color-transparent>);
         }
     QListView:
         |-
@@ -254,6 +296,6 @@ widget:
             border: 1px rgba(<option.border.color-light>); border-radius: 0px; border-style: solid none none none
         }
         QSplitter::handle:pressed{
-            background: rgba(<option.background.color-pressed>);
-            border: 1px rgba(<option.border.color-pressed>); border-radius: 0px; border-style: solid none none none
+            background: rgba(<option.background.color-actioned>);
+            border: 1px rgba(<option.border.color-actioned>); border-radius: 0px; border-style: solid none none none
         }

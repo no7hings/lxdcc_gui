@@ -454,7 +454,7 @@ class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
     def set_icon_name(self, icon_name):
         self.widget._set_icon_file_path_(utl_core.Icon.get(icon_name))
 
-    def set_icon_by_name(self, text):
+    def set_icon_by_text(self, text):
         self.widget._set_icon_name_text_(text)
 
     def set_icon_size(self, w, h):
@@ -504,7 +504,7 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget._icon_is_enable = True
         self.widget.update()
 
-    def set_icon_by_name(self, text):
+    def set_icon_by_text(self, text):
         self.widget._set_icon_name_text_(text)
 
     def set_icon_color_by_name(self):

@@ -8,7 +8,7 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item,
 
 class _QtWindow(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameDef,
 ):
     def _set_widget_update_(self):
         self.update()

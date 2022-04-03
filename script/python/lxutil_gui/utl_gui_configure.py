@@ -18,15 +18,30 @@ class Data(object):
     DATA_ROOT = '{}/.data'.format(ROOT)
 
 
-class ActionFlag(object):
-    PRESS_CLICK = 'press-click'
-    PRESS_DB_CLICK = 'press-db-click'
-    PRESS_MOVE = 'press-move'
+class ActionFlag(enum.IntEnum):
+    PressClick = 0x01
+    PressDbClick = 0x02
+    PressMove = 0x03
     #
-    CHECK_CLICK = 'check-click'
-    EXPAND_CLICK = 'expand-click'
-    OPTION_CLICK = 'option-click'
-    CHOOSE = 'choose'
+    TrackClick = 0x11
+    TrackMove = 0x12
+    TrackCircle = 0x13
+    #
+    ZoomMove = 0x21
+    #
+    CheckClick = 0x31
+    ExpandClick = 0x32
+    OptionClick = 0x33
+    ChooseClick = 0x34
+    #
+    SplitHHover = 0x41
+    SplitVHover = 0x42
+    SplitHClick = 0x43
+    SplitVClick = 0x44
+    SplitHMove = 0x45
+    SplitVMove = 0x46
+    #
+    ZoomWheel = 0x51
 
 
 class State(object):

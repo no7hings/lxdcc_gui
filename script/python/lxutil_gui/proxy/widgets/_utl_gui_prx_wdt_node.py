@@ -135,7 +135,7 @@ class PrxFileOpenEntry(AbsRsvTypeQtEntry):
         self._file_open_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self.set_button_add(self._file_open_button)
         self._file_open_button.set_name('Open File')
-        self._file_open_button.set_icon_by_name('File')
+        self._file_open_button.set_icon_name('file/file')
         self._file_open_button.set_tool_tip(
             [
                 '"LMB-click" to open file by "file-dialog"'
@@ -147,7 +147,7 @@ class PrxFileOpenEntry(AbsRsvTypeQtEntry):
         #
         self.set_history_update()
         #
-        self._qt_entry_widget._set_choose_changed_connect_to_(self.set_history_update)
+        self._qt_entry_widget._set_item_choose_changed_connect_to_(self.set_history_update)
 
     def set_ext_filter(self, ext_filter):
         self._ext_filter = ext_filter
@@ -214,7 +214,7 @@ class PrxDirectoryOpenEntry(AbsRsvTypeQtEntry):
         self._directory_open_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self.set_button_add(self._directory_open_button)
         self._directory_open_button.set_name('Open Directory')
-        self._directory_open_button.set_icon_by_name('Directory')
+        self._directory_open_button.set_icon_name('file/folder')
         self._directory_open_button.set_tool_tip(
             [
                 '"LMB-click" to open file by "file-dialog"'
@@ -226,7 +226,7 @@ class PrxDirectoryOpenEntry(AbsRsvTypeQtEntry):
         #
         self.set_history_update()
         #
-        self._qt_entry_widget._set_choose_changed_connect_to_(self.set_history_update)
+        self._qt_entry_widget._set_item_choose_changed_connect_to_(self.set_history_update)
 
     def set_ext_filter(self, ext_filter):
         self._ext_filter = ext_filter
@@ -296,7 +296,7 @@ class PrxFileSaveEntry(AbsRsvTypeQtEntry):
         self._file_save_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self.set_button_add(self._file_save_button)
         self._file_save_button.set_name('Save File')
-        self._file_save_button.set_icon_by_name('File')
+        self._file_save_button.set_icon_name('file/folder')
         self._file_save_button.set_tool_tip(
             [
                 '"LMB-click" to open file by "file-dialog"'
@@ -308,7 +308,7 @@ class PrxFileSaveEntry(AbsRsvTypeQtEntry):
         #
         self.set_history_update()
         #
-        self._qt_entry_widget._set_choose_changed_connect_to_(self.set_history_update)
+        self._qt_entry_widget._set_item_choose_changed_connect_to_(self.set_history_update)
 
     def set_ext_filter(self, ext_filter):
         self._ext_filter = ext_filter
@@ -381,7 +381,7 @@ class PrxRsvProjectChooseEntry(AbsRsvTypeQtEntry):
         self.set_history_update()
         #
         self._qt_entry_widget._set_item_entry_finished_connect_to_(self.set_history_update)
-        self._qt_entry_widget._set_choose_changed_connect_to_(self.set_history_update)
+        self._qt_entry_widget._set_item_choose_changed_connect_to_(self.set_history_update)
 
     def get(self):
         return self._qt_entry_widget._get_item_value_()
@@ -445,7 +445,7 @@ class PrxSchemeChooseEntry(AbsRsvTypeQtEntry):
         self.set_history_update()
         #
         self._qt_entry_widget._set_item_entry_finished_connect_to_(self.set_history_update)
-        self._qt_entry_widget._set_choose_changed_connect_to_(self.set_history_update)
+        self._qt_entry_widget._set_item_choose_changed_connect_to_(self.set_history_update)
 
     def get(self):
         return self._qt_entry_widget._get_item_value_()
@@ -584,7 +584,7 @@ class PrxChooseEntry_(AbsRsvTypeQtEntry):
         return self._qt_entry_widget._get_item_value_is_default_()
 
     def set_changed_connect_to(self, fnc):
-        self._qt_entry_widget._set_choose_changed_connect_to_(fnc)
+        self._qt_entry_widget._set_item_choose_changed_connect_to_(fnc)
 
 
 class PrxTextEntry(PrxConstantEntry):
@@ -651,6 +651,20 @@ class PrxFloatArrayEntry(PrxArrayEntry):
     def __init__(self, *args, **kwargs):
         super(PrxFloatArrayEntry, self).__init__(*args, **kwargs)
         self._qt_entry_widget._set_item_value_entry_build_(2, float)
+
+
+class PrxRgbEntry(AbsRsvTypeQtEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtRgbaItem
+    def __init__(self, *args, **kwargs):
+        super(PrxRgbEntry, self).__init__(*args, **kwargs)
+        # self._qt_entry_widget._set_item_value_entry_build_(3, float)
+
+    def get(self):
+        pass
+
+    def set(self, raw=None, **kwargs):
+        pass
 
 
 class PrxBooleanEntry(AbsRsvTypeQtEntry):
@@ -810,7 +824,7 @@ class PrxProcessEntry(AbsRsvTypeQtEntry):
         self._stop_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self.set_button_add(self._stop_button)
         self._stop_button.set_name('Stop Process')
-        self._stop_button.set_icon_by_name('Stop Process')
+        self._stop_button.set_icon_by_text('Stop Process')
         self._stop_button.set_tool_tip('press to stop process')
 
     def get(self):
@@ -876,8 +890,8 @@ class PrxRsvObjChooseEntry(AbsRsvTypeEntry):
         self.widget.setMaximumHeight(160)
         self.widget.setMinimumHeight(160)
         self._prx_entry_widget.set_header_view_create(
-            [('name', 1)],
-            480
+            [('name', 2), ('update', 1)],
+            180
         )
         self._prx_entry_widget.set_single_selection()
         self._prx_entry_widget.set_size_policy_height_fixed_mode()
@@ -934,7 +948,6 @@ class PrxRsvObjChooseEntry(AbsRsvTypeEntry):
         )
         #
         if use_as_tree is True:
-            prx_item.set_name(obj_name)
             menu_raw.extend(
                 [
                     ('expanded',),
@@ -942,10 +955,9 @@ class PrxRsvObjChooseEntry(AbsRsvTypeEntry):
                     ('Collapse branch', None, prx_item.set_collapse_branch),
                 ]
             )
-        else:
-            prx_item.set_name(obj_name)
         #
-        prx_item.set_tool_tips((obj_path,))
+        prx_item.set_names([obj_name, obj.get('update')])
+        prx_item.set_tool_tip(obj.description)
         #
         prx_item.set_gui_menu_raw(menu_raw)
         prx_item.set_menu_content(obj.get_gui_menu_content())
@@ -1404,6 +1416,14 @@ class PrxFloatArrayPort(PrxArrayPort):
     ENTRY_CLASS = PrxFloatArrayEntry
     def __init__(self, *args, **kwargs):
         super(PrxFloatArrayPort, self).__init__(*args, **kwargs)
+
+
+class PrxRgbPort(AbsPrxTypePort):
+    ENABLE_CLASS = _PrxPortStatus
+    LABEL_CLASS = _PrxPortLabel
+    ENTRY_CLASS = PrxRgbEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxRgbPort, self).__init__(*args, **kwargs)
 
 
 class PrxButtonPort(AbsPrxTypePort):
@@ -1882,6 +1902,14 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             port.set_default(value_)
         elif widget_ in ['float2']:
             port = PrxFloatArrayPort(
+                port_path,
+                node_widget=self.widget
+            )
+            port.set(value_)
+            port.set_default(value_)
+        #
+        elif widget_ in ['rgb']:
+            port = PrxRgbPort(
                 port_path,
                 node_widget=self.widget
             )

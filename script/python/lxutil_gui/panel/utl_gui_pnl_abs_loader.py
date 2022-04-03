@@ -386,33 +386,33 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
     def _set_rsv_task_unit_gui_add_(self, rsv_task):
         def set_thread_create_fnc_(rsv_task_, rsv_task_unit_args_lis_, i_rsv_unit_item_prx_):
             i_rsv_unit_item_prx_.set_show_method(
-                lambda *args, **kwargs: self._set_rsv_unit_gui_show_deferred_(
+                lambda *args, **kwargs: self.__set_rsv_unit_gui_show_deferred_(
                     rsv_task_, i_rsv_unit_item_prx_, rsv_task_unit_args_lis_
                 )
             )
         #
         rsv_task_gui = rsv_task.get_obj_gui()
-        #
-        enable, rsv_task_unit_show_raw = self.get_rsv_task_unit_show_raw(rsv_task)
-        if enable is True:
-            rsv_unit_prx_item = self._rsv_uint_list_view_0.set_item_add()
-            rsv_unit_prx_item.set_gui_dcc_obj(rsv_task, namespace=self.DCC_NAMESPACE)
-            #
-            key = rsv_task.path
-            rsv_task_gui.set_visible_connect_to(
-                key, rsv_unit_prx_item
-            )
-            #
-            set_thread_create_fnc_(
-                rsv_task,
-                rsv_task_unit_show_raw,
-                rsv_unit_prx_item
-            )
-            rsv_task_gui.set_state(utl_gui_core.State.ENABLE)
-        else:
-            rsv_task_gui.set_state(utl_gui_core.State.DISABLE)
+        if rsv_task_gui is not None:
+            enable, rsv_task_unit_show_raw = self.get_rsv_task_unit_show_raw(rsv_task)
+            if enable is True:
+                rsv_unit_prx_item = self._rsv_uint_list_view_0.set_item_add()
+                rsv_unit_prx_item.set_gui_dcc_obj(rsv_task, namespace=self.DCC_NAMESPACE)
+                #
+                key = rsv_task.path
+                rsv_task_gui.set_visible_connect_to(
+                    key, rsv_unit_prx_item
+                )
+                #
+                set_thread_create_fnc_(
+                    rsv_task,
+                    rsv_task_unit_show_raw,
+                    rsv_unit_prx_item
+                )
+                rsv_task_gui.set_state(utl_gui_core.State.ENABLE)
+            else:
+                rsv_task_gui.set_state(utl_gui_core.State.DISABLE)
 
-    def _set_rsv_unit_gui_show_deferred_(self, rsv_task, rsv_unit_prx_item, rsv_task_unit_show_raw):
+    def __set_rsv_unit_gui_show_deferred_(self, rsv_task, rsv_unit_prx_item, rsv_task_unit_show_raw):
         task_properties = rsv_task.properties
         project = rsv_task.get('project')
         branch = rsv_task.get('branch')
@@ -449,7 +449,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         rsv_unit_prx_item.set_name_frame_background_color((r, g, b, 127))
         rsv_unit_prx_item.set_pixmap_icons(pixmap_icons)
         rsv_unit_prx_item.set_tool_tip(
-            task_properties.get_str_as_yaml_style()
+            rsv_task.description
         )
         #
         if project in ['lib'] and task in ['surfacing']:

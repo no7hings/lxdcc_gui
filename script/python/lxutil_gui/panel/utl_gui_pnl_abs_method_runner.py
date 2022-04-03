@@ -43,8 +43,8 @@ class AbsTaskMethodObjGuiDef(object):
             raise TypeError()
         #
         obj.set_obj_gui(obj_gui)
-        obj_gui.set_icon_by_name(obj.name)
-        obj_gui.set_icon_by_name(obj.type_name, 1)
+        obj_gui.set_icon_by_text(obj.name)
+        obj_gui.set_icon_by_text(obj.type_name, 1)
         return obj_gui
     @classmethod
     def _set_method_unit_obj_gui_add_(cls, method_obj, root_dcc_obj_gui):
@@ -82,8 +82,8 @@ class AbsTaskMethodObjGuiDef(object):
         #
         obj_gui.set_checked(True)
         obj.set_obj_gui(obj_gui)
-        obj_gui.set_icon_by_name(obj.name)
-        obj_gui.set_icon_by_name(obj.type_name, 1)
+        obj_gui.set_icon_by_text(obj.name)
+        obj_gui.set_icon_by_text(obj.type_name, 1)
         obj_gui.set_gui_dcc_obj(obj, namespace='method')
         return obj_gui
     @classmethod
@@ -201,19 +201,19 @@ class AbsSceneMethodRunnerPanel(
         self._set_configure_groups_build_()
         #
         self._check_button = prx_widgets.PrxPressItem()
-        self._check_button.set_icon_by_name('Check')
+        self._check_button.set_icon_by_text('Check')
         self._check_button.set_name('Check')
         self.set_button_add(self._check_button)
         self._check_button.set_press_clicked_connect_to(self._set_checked_methods_check_run_)
         #
         self._repair_button = prx_widgets.PrxPressItem()
-        self._repair_button.set_icon_by_name('Repair')
+        self._repair_button.set_icon_by_text('Repair')
         self._repair_button.set_name('Repair')
         self.set_button_add(self._repair_button)
         self._repair_button.set_press_clicked_connect_to(self._set_checked_methods_repair_run_)
         #
         self._export_button = prx_widgets.PrxPressItem()
-        self._export_button.set_icon_by_name('Export')
+        self._export_button.set_icon_by_text('Export')
         self._export_button.set_name('Export')
         self.set_button_add(self._export_button)
         self._export_button.set_press_clicked_connect_to(self._set_checked_methods_export_run_)

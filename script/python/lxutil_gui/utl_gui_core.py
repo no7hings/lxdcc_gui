@@ -69,12 +69,12 @@ class ChartMethod(object):
     FNC_TAN = math.tan
     FNC_FLOOR = math.floor
     @classmethod
-    def get_regular_polygon_points(cls, xPos, yPos, sideCount, radius, side):
+    def get_regular_polygon_points(cls, pos_x, pos_y, side_count, radius, side):
         lis = []
-        for seq in range(sideCount):
-            a = 360 / sideCount * seq
-            x = math.sin(math.radians(a)) * (radius - side) + xPos
-            y = math.cos(math.radians(a)) * (radius - side) + yPos
+        for seq in range(side_count):
+            a = 360 / side_count * seq
+            x = math.sin(math.radians(a)) * (radius - side) + pos_x
+            y = math.cos(math.radians(a)) * (radius - side) + pos_y
             lis.append((x, y))
         if lis:
             lis.append(lis[0])
@@ -188,22 +188,29 @@ class QtStyleMtd(object):
             'widget.{}'.format(key)
         )
     @classmethod
-    def get_border_color(cls, key):
+    def get_border(cls, key):
         return eval(
             cls.CONFIGURE.get(
                 'option.border.{}'.format(key)
             )
         )
     @classmethod
-    def get_background_color(cls, key):
+    def get_background(cls, key):
         return eval(
             cls.CONFIGURE.get(
                 'option.background.{}'.format(key)
             )
         )
+    @classmethod
+    def get_font(cls, key):
+        return eval(
+            cls.CONFIGURE.get(
+                'option.font.{}'.format(key)
+            )
+        )
 
 
-class Icons(object):
+class RscIconFile(object):
     BRANCH = 'icons'
     @classmethod
     def get(cls, key):
@@ -212,7 +219,7 @@ class Icons(object):
         )
 
 
-class Fonts(object):
+class RscFontFile(object):
     BRANCH = 'fonts'
     @classmethod
     def get(cls, key):
@@ -229,4 +236,4 @@ class Fonts(object):
 if __name__ == '__main__':
     import os
     os.environ['LYNXI_RESOURCES'] = '/data/e/myworkspace/td/lynxi/script/python/.resources'
-    print Fonts.get_all()
+    print RscFontFile.get_all()

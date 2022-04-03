@@ -131,13 +131,14 @@ class AbsAssetRenderSubmitter(
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
         )
 
-        self._rsv_renderer_list_view.set_item_frame_size(*self.ITEM_FRAME_SIZE)
+        self._rsv_renderer_list_view.set_item_frame_size(
+            *self._option_hook_gui_configure.get('item_frame_size')
+        )
         self._rsv_renderer_list_view.set_item_icon_frame_draw_enable(True)
         self._rsv_renderer_list_view.set_item_name_frame_draw_enable(True)
         self._rsv_renderer_list_view.set_item_image_frame_draw_enable(True)
 
     def _set_prx_node_build_(self):
-        #
         self._prx_schemes_node.set_ports_create_by_configure(
             self._option_hook_build_configure.get('node.schemes')
         )
@@ -166,7 +167,7 @@ class AbsAssetRenderSubmitter(
         self._prx_options_node.get_port(
             'shot'
         ).set_changed_connect_to(
-            self.__set_usd_node_refresh_
+            self.set_usd_node_refresh
         )
 
         self._prx_options_node.get_port(
@@ -215,12 +216,9 @@ class AbsAssetRenderSubmitter(
                     keyword='asset-output-katana-render-movie-file'
                 )
                 #
-                self.set_options_node_refresh()
-                self.__set_usd_node_refresh_()
-                self.set_settings_node_refresh()
+                self.set_current_refresh()
                 #
-                self.set_renderers_refresh()
-                self.set_filter_refresh()
+                self.set_settings_node_refresh()
 
     def set_scheme_save(self):
         filter_dict = self._prx_dcc_obj_tree_view_tag_filter_opt.get_filter_dict()
@@ -283,14 +281,18 @@ class AbsAssetRenderSubmitter(
             self._prx_options_node.set('shot', rsv_shots)
 
     def set_current_refresh(self):
-        self.set_options_node_refresh()
-        self.__set_usd_node_refresh_()
-        self.set_renderers_refresh()
-        self.set_filter_refresh()
+        methods = [
+            self.set_options_node_refresh,
+            self.set_usd_node_refresh,
+            self.set_renderers_refresh,
+            self.set_filter_refresh,
+        ]
+        with utl_core.gui_progress(maximum=len(methods)) as g_p:
+            for i in methods:
+                g_p.set_update()
+                i()
 
     def __set_rsv_unit_gui_show_deferred_(self, prx_item, variants):
-        names = ['{}={}'.format(k, v) for k, v in variants.items()]
-        #
         hook_options = []
         #
         variable_name = '.'.join(variants.values())
@@ -304,8 +306,13 @@ class AbsAssetRenderSubmitter(
                 movie_file_path
             )
             version = rsv_properties.get('version')
-            names.append('version={}'.format(version))
             variants['version'] = version
+            variants['update'] = bsc_core.TimeMtd.to_prettify_by_timestamp(
+                bsc_core.StorageFileOpt(
+                    movie_file_path
+                ).get_modify_timestamp(),
+                language=1
+            )
             image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
             prx_item.set_image(image_file_path)
             prx_item.set_movie_enable(True)
@@ -353,7 +360,6 @@ class AbsAssetRenderSubmitter(
                     # prx_item.set_image_loading_start()
         else:
             variants['version'] = 'None'
-            names.append('version=null')
             prx_item.set_image(
                 utl_core.Icon._get_file_path_('@image_loading_failed@')
             )
@@ -366,7 +372,7 @@ class AbsAssetRenderSubmitter(
         prx_item.set_name_frame_background_color((r, g, b, 127))
 
         prx_item.set_tool_tip(
-            '\n'.join(names)
+            '\n'.join(['{} : {}'.format(k, v) for k, v in variants.items()])
         )
 
     def set_renderers_refresh(self):
@@ -398,7 +404,7 @@ class AbsAssetRenderSubmitter(
 
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
-    def __set_usd_node_refresh_(self):
+    def set_usd_node_refresh(self):
         rsv_asset = self._rsv_task.get_rsv_entity()
         rsv_shot = self._prx_options_node.get(
             'shot'
@@ -686,14 +692,14 @@ class AbsShotRenderSubmitter(
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
         )
 
-        self._rsv_renderer_list_view.set_item_frame_size(*self.ITEM_FRAME_SIZE)
+        self._rsv_renderer_list_view.set_item_frame_size(
+            *self._option_hook_gui_configure.get('item_frame_size')
+        )
         self._rsv_renderer_list_view.set_item_icon_frame_draw_enable(True)
         self._rsv_renderer_list_view.set_item_name_frame_draw_enable(True)
         self._rsv_renderer_list_view.set_item_image_frame_draw_enable(True)
 
     def __set_rsv_unit_gui_show_deferred_(self, prx_item, variants):
-        names = ['{}={}'.format(k, v) for k, v in variants.items()]
-
         hook_options = []
         #
         variable_name = '.'.join(variants.values())
@@ -707,7 +713,14 @@ class AbsShotRenderSubmitter(
                 movie_file_path
             )
             version = rsv_properties.get('version')
-            names.append('version={}'.format(version))
+            variants['version'] = version
+            variants['update'] = bsc_core.TimeMtd.to_prettify_by_timestamp(
+                bsc_core.StorageFileOpt(
+                    movie_file_path
+                ).get_modify_timestamp(),
+                language=1
+            )
+            #
             image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
             prx_item.set_image(image_file_path)
             prx_item.set_movie_enable(True)
@@ -754,7 +767,6 @@ class AbsShotRenderSubmitter(
                     prx_item.set_image_show_sub_process(image_sub_process)
                     # prx_item.set_image_loading_start()
         else:
-            names.append('version=null')
             prx_item.set_image(
                 utl_core.Icon._get_file_path_('@image_loading_failed@')
             )
@@ -762,14 +774,13 @@ class AbsShotRenderSubmitter(
         menu_content = ssn_commands.get_menu_content_by_hook_options(hook_options)
         prx_item.set_menu_content(menu_content)
 
-        prx_item.set_names(names)
+        prx_item.set_name_dict(variants)
         r, g, b = bsc_core.TextOpt(variable_name).to_rgb()
         prx_item.set_name_frame_background_color((r, g, b, 127))
 
         prx_item.set_tool_tip(
-            '\n'.join(names)
+            '\n'.join(['{} = {}'.format(k, v) for k, v in variants.items()])
         )
-
     def set_all_refresh(self):
         if self._file_path:
             self._file_path = bsc_core.StoragePathMtd.set_map_to_platform(self._file_path)

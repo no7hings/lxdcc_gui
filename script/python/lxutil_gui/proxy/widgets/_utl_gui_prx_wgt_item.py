@@ -88,7 +88,7 @@ class AbsPrxTreeDef(object):
         if name_icons is not None:
             for column, i_name_icon in enumerate(name_icons):
                 if i_name_icon is not None:
-                    item_prx.set_icon_by_name(i_name_icon, column)
+                    item_prx.set_icon_by_text(i_name_icon, column)
         #
         if name is not None:
             pass
@@ -223,7 +223,7 @@ class PrxTreeItem(
     def set_color_icon(self, color, column=0):
         self.widget._set_color_icon_rgb_(color, column)
 
-    def set_icon_by_name(self, text, column=0):
+    def set_icon_by_text(self, text, column=0):
         self.widget._set_icon_name_text_(text, column)
 
     def get_parent(self):
@@ -268,19 +268,8 @@ class PrxTreeItem(
     def set_gui_menu_raw_extend(self, raw):
         self._gui_menu_raw.extend(raw)
 
-    def set_tool_tip(self, text, column=0):
-        if text is not None:
-            if isinstance(text, (tuple, list)):
-                if len(text) > 0:
-                    _ = u'\n'.join((u'{}'.format(i) for seq, i in enumerate(text)))
-                elif len(text) == 1:
-                    _ = text[0]
-                else:
-                    _ = u''
-            else:
-                _ = unicode(text)
-            #
-            self.widget.setToolTip(column, _)
+    def set_tool_tip(self, raw, column=0, markdown_style=False):
+        self.widget._set_tool_tip_(raw, column, markdown_style)
 
     def set_tool_tips(self, texts):
         for column, text in enumerate(texts):
@@ -720,7 +709,7 @@ class PrxListItem(
             utl_core.Icon.get(icon_name)
         )
 
-    def set_icon_by_name(self, text):
+    def set_icon_by_text(self, text):
         self.widget._set_icon_name_text_(
             text
         )

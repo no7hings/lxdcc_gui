@@ -264,13 +264,15 @@ class QtTreeWidget(
         self.setSelectionMode(self.ExtendedSelection)
         self.setWordWrap(True)
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.setItemDelegate(_utl_gui_qt_wgt_utility.QtStyledItemDelegate())
+        self.setItemDelegate(
+            _utl_gui_qt_wgt_utility.QtStyledItemDelegate()
+        )
         #
         self.setStyleSheet(
             utl_gui_core.QtStyleMtd.get('QTreeView')
         )
         # header view
-        self.header().setFixedHeight(20)
+        self.header().setFixedHeight(16)
         # self.header().setStretchLastSection(False)
         self.header().setHighlightSections(True)
         self.header().setSortIndicatorShown(True)
@@ -535,12 +537,13 @@ class QtTreeWidget(
         painter.setPen(oldPen)
 
     def drawRow(self, painter, option, index):
-        super(QtTreeWidget, self).drawRow(painter, option, index)
         #
         if index in self._selected_indices:
-            painter.fillRect(option.rect, Brush.tree_item_selected)
+            painter.fillRect(option.rect, QtBackgroundColor.ItemSelected)
         elif index in self._selected_indirect_indices:
-            painter.fillRect(option.rect, Brush.tree_item_selected_indirect)
+            painter.fillRect(option.rect, QtBackgroundColor.ItemSelectedIndirect)
+        #
+        super(QtTreeWidget, self).drawRow(painter, option, index)
         #
         QtTreeMtd._set_item_row_draw_(painter, option, index)
 
@@ -808,7 +811,7 @@ class QtListWidget(
         # painter = _utl_gui_qt_wgt_utility.QtPainter(self.viewport())
         # for i in self._item_rects:
         #     painter._set_frame_draw_by_rect_(
-        #         i, border_color=(255, 0, 0), background_color=Color.TRANSPARENT
+        #         i, border_color=(255, 0, 0), background_color=QtBackgroundColor.Transparent
         #     )
         pass
 
@@ -966,52 +969,22 @@ class QtListWidget(
         self.clear()
 
 
-class _QtGuideRect(
-    utl_gui_qt_abstract._QtIconDef,
-    utl_gui_qt_abstract._QtTypeDef,
-    utl_gui_qt_abstract._QtNameDef,
-    utl_gui_qt_abstract._QtPathDef,
-    utl_gui_qt_abstract._QtFrameDef,
-    utl_gui_qt_abstract.AbsQtItemActionChooseDef,
-):
-    def _set_widget_update_(self):
-        pass
-
-    def __init__(self, *args, **kwargs):
-        self._set_icon_def_init_()
-        self._set_type_def_init_()
-        self._set_name_def_init_()
-        self._set_path_def_init_()
-        self._set_frame_def_init_()
-        self._set_item_action_choose_def_init_()
-        #
-        self._set_icon_file_path_(
-            self._choose_collapse_icon_file_path
-        )
-
-    def _get_icon_file_path_(self):
-        return [
-            self._choose_collapse_icon_file_path,
-            self._choose_expand_icon_file_path
-        ][self._get_is_choose_dropped_()]
-
-
 class _QtGuideBar(
     QtWidgets.QWidget,
     #
     utl_gui_qt_abstract.AbsQtMenuDef,
+    utl_gui_qt_abstract.AbsQtActionDef,
     #
     utl_gui_qt_abstract._QtItemDef,
-    utl_gui_qt_abstract._QtItemActionDef,
+    #
     utl_gui_qt_abstract._QtItemPressActionDef,
-    utl_gui_qt_abstract._QtEntryActionDef,
+    utl_gui_qt_abstract.AbsQtItemEntryActionDef,
     #
     utl_gui_qt_abstract._QtViewGuideActionDef,
     utl_gui_qt_abstract._QtViewChooseActionDef,
 ):
-    CHOOSE_RECT_CLS = _QtGuideRect
-    #
-    CHOOSE_DROP_WIDGET_CLS = _utl_gui_qt_wgt_item._QtChooseDropWidget
+    CHOOSE_RECT_CLS = _utl_gui_qt_wgt_item._QtItemGuideRect
+    CHOOSE_DROP_FRAME_CLS = _utl_gui_qt_wgt_item._QtItemGuideChooseDropFrame
     def __init__(self, *args, **kwargs):
         super(_QtGuideBar, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -1033,20 +1006,18 @@ class _QtGuideBar(
         self._set_menu_def_init_()
         #
         self._set_item_def_init_()
-        self._set_item_action_def_init_()
+        self._set_action_def_init_(self)
         self._set_item_press_action_def_init_()
-        self._set_entry_action_def_init_()
+        self._set_item_entry_action_def_init_()
         #
         self._set_view_guide_action_def_init_()
         self._set_view_choose_action_def_init_()
-        #
-        self._view_guide_current_index = None
 
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Resize:
-                self._set_item_geometries_update_()
+                self._set_view_item_geometries_update_()
                 self.update()
             elif event.type() == QtCore.QEvent.Enter:
                 self._item_is_hovered = True
@@ -1054,20 +1025,21 @@ class _QtGuideBar(
             elif event.type() == QtCore.QEvent.Leave:
                 self._item_is_hovered = False
                 self._set_choose_current_clear_()
-                self._set_guide_current_clear_()
+                self._set_view_guide_current_clear_()
                 self.update()
             elif event.type() == QtCore.QEvent.MouseMove:
                 self._set_choose_current_clear_()
-                self._set_guide_current_clear_()
-                if self._is_entered is False:
-                    self._set_current_index_update_(event)
+                self._set_view_guide_current_clear_()
+                if self._item_is_entered is False:
+                    self._set_view_current_index_update_(event)
+            #
             elif event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
-                    self._set_current_index_update_(event)
+                    self._set_view_current_index_update_(event)
                     if self._view_choose_current_index is not None:
-                        self._set_item_action_flag_(self.CHOOSE_FLAG)
+                        self._set_action_flag_(self.CHOOSE_FLAG)
                     elif self._view_guide_current_index is not None:
-                        self._set_item_action_flag_(self.PRESS_CLICK_FLAG)
+                        self._set_action_flag_(self.ActionFlag.PressClick)
                     else:
                         self._set_entered_(True)
                 if event.button() == QtCore.Qt.RightButton:
@@ -1083,13 +1055,13 @@ class _QtGuideBar(
                 if event.button() == QtCore.Qt.LeftButton:
                     if self._get_item_is_click_flag_() is True:
                         self._set_item_click_emit_send_()
-                        self._set_guide_item_clicked_emit_send_()
+                        self._set_view_guide_item_clicked_emit_send_()
                     elif self._get_is_choose_flag_() is True:
-                        self._set_choose_item_drop_at_(self._view_choose_current_index)
+                        self._set_view_choose_item_drop_at_(self._view_choose_current_index)
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
                 #
-                self._set_item_action_flag_clear_()
+                self._set_action_flag_clear_()
                 #
                 self._item_is_hovered = False
                 self.update()
@@ -1102,43 +1074,55 @@ class _QtGuideBar(
 
     def paintEvent(self, event):
         painter = _utl_gui_qt_wgt_utility.QtPainter(self)
-        bdr_color = [Color.ENTRY_BORDER_ENTRY_OFF, Color.ENTRY_BORDER_ENTRY_ON][self._is_entered]
-        bkg_color = [Color.ENTRY_BACKGROUND_ENTRY_OFF, Color.ENTRY_BACKGROUND_ENTRY_ON][self._is_entered]
+        bdr_color = [Color.ENTRY_BORDER_ENTRY_OFF, Color.ENTRY_BORDER_ENTRY_ON][self._item_is_entered]
+        bkg_color = [Color.ENTRY_BACKGROUND_ENTRY_OFF, Color.ENTRY_BACKGROUND_ENTRY_ON][self._item_is_entered]
         painter._set_frame_draw_by_rect_(
             self._entry_frame_rect,
             border_color=bdr_color,
             background_color=bkg_color,
             border_radius=4
         )
-        if self._is_entered is True:
-            if self._get_choose_item_indices_():
+        if self._item_is_entered is True:
+            if self._get_view_choose_item_indices_():
                 painter._set_text_draw_by_rect_(
                     self._entry_frame_rect,
-                    text=self._get_choose_item_at_(-1)._path_text,
+                    text=self._get_view_choose_item_at_(-1)._path_text,
                     text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
-                    color=Color.TEXT_NORMAL,
+                    color=QtFontColor.Basic,
                     font=get_font(size=10)
                 )
         else:
-            for index in self._get_choose_item_indices_():
-                i_item = self._get_choose_item_at_(index)
+            for index in self._get_view_choose_item_indices_():
+                i_item = self._get_view_choose_item_at_(index)
                 i_icon_offset = 0
                 name_offset = 0
+                choose_is_hovered = index == self._view_choose_current_index
+                guide_is_hovered = index == self._view_guide_current_index
                 if index == self._view_choose_current_index:
-                    i_icon_offset = [0, 2][self._get_item_action_flag_() is not None]
+                    i_icon_offset = [0, 2][self._get_action_flag_() is not None]
+                    background_color = painter._get_item_background_color_1_by_rect_(
+                        i_item._icon_frame_rect,
+                        is_hovered=choose_is_hovered,
+                        is_actioned=self._get_is_actioned_(),
+                    )
                     painter._set_frame_draw_by_rect_(
                         i_item._icon_frame_rect,
-                        border_color=Color.TRANSPARENT,
-                        background_color=Color.ITEM_BACKGROUND_HOVER,
+                        border_color=QtBackgroundColor.Transparent,
+                        background_color=background_color,
                         border_radius=4,
                         offset=i_icon_offset
                     )
                 elif index == self._view_guide_current_index:
-                    name_offset = [0, 2][self._get_item_action_flag_() is not None]
+                    background_color = painter._get_item_background_color_1_by_rect_(
+                        i_item._name_frame_rect,
+                        is_hovered=guide_is_hovered,
+                        is_actioned=self._get_is_actioned_(),
+                    )
+                    name_offset = [0, 2][self._get_action_flag_() is not None]
                     painter._set_frame_draw_by_rect_(
-                        i_item._frame_name_rect,
-                        border_color=Color.TRANSPARENT,
-                        background_color=Color.ITEM_BACKGROUND_HOVER,
+                        i_item._name_frame_rect,
+                        border_color=QtBackgroundColor.Transparent,
+                        background_color=background_color,
                         border_radius=4,
                         offset=name_offset
                     )
@@ -1165,60 +1149,59 @@ class _QtGuideBar(
                     text=i_name_text,
                     text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                     font=get_font(size=12, italic=True),
-                    offset=name_offset
+                    offset=name_offset,
+                    is_hovered=guide_is_hovered,
                 )
 
     def _set_widget_update_(self):
         self.update()
 
-    def _set_current_index_update_(self, event):
+    def _set_view_current_index_update_(self, event):
         p = event.pos()
         #
         self._set_choose_current_clear_()
-        self._set_guide_current_clear_()
-        for index in self._get_choose_item_indices_():
-            i_item = self._get_choose_item_at_(index)
+        self._set_view_guide_current_clear_()
+        for index in self._get_view_choose_item_indices_():
+            i_item = self._get_view_choose_item_at_(index)
             if i_item._icon_frame_rect.contains(p) is True:
-                self._set_choose_current_(index)
+                self._set_view_choose_current_index_(index)
                 break
-            elif i_item._frame_name_rect.contains(p) is True:
-                self._set_guide_current_(index)
+            elif i_item._name_frame_rect.contains(p) is True:
+                self._set_view_guide_current_index_(index)
                 break
         #
         self.update()
 
-    def _get_text_width_(self, text):
-        return self.fontMetrics().width(text)
-
-    def _set_path_args_(self, path_args):
-        self._set_choose_clear_()
-        self._set_guide_clear_()
+    def _set_view_path_args_(self, path_args):
+        self._set_view_choose_clear_()
+        self._set_view_guide_clear_()
         #
         path_values = path_args.values()
         for index, (k, v) in enumerate(path_args.items()):
             i_item = self._set_choose_item_create_()
             #
-            path = '/' + '/'.join(path_values[:index+1])
-            i_item._set_path_text_(path)
+            i_path = '/' + '/'.join(path_values[:index+1])
+            i_item._set_path_text_(i_path)
             i_item._set_type_text_(k)
             i_item._set_name_text_(v)
         #
-        self._set_item_geometries_update_()
+        self._set_view_item_geometries_update_()
         self.update()
 
-    def _set_item_geometries_update_(self):
+    def _set_view_item_geometries_update_(self):
         side = 2
         spacing = 2
         x, y = 0, 0
         w, h = self.width()-1, self.height()-1
         self._set_entry_frame_rect_(x, y, w, h)
         #
-        i_x, i_y = x + 1, y + 1
-        i_f_w, i_f_h = h-2, h-2
+        i_f_w, i_f_h = h-4, h-4
         i_i_w, i_i_h = 16, 16
         #
-        for index in self._get_choose_item_indices_():
-            i_item = self._get_choose_item_at_(index)
+        i_x, i_y = x + 1, (h-i_f_h)/2
+        #
+        for index in self._get_view_choose_item_indices_():
+            i_item = self._get_view_choose_item_at_(index)
             i_item._set_icon_frame_rect_(
                 i_x, i_y, i_f_w, i_f_h
             )
@@ -1230,42 +1213,41 @@ class _QtGuideBar(
             i_path_key = i_item._type_text
             i_path_value = i_item._name_text
             #
-            # i_path_w = self._get_text_width_(i_path_key + i_path_value) + spacing*4
             i_path_w_0, i_path_h_0 = utl_gui_qt_core.TextMtd.get_size(10, i_path_key)
             i_path_w_1, i_path_h_1 = utl_gui_qt_core.TextMtd.get_size(12, i_path_value)
             i_path_w = i_path_w_0 + i_path_w_1 + spacing*8
-            i_item._set_frame_name_rect_(
-                i_x-spacing*2, i_y, i_path_w, h
+            i_item._set_name_frame_rect_(
+                i_x-spacing*2, i_y, i_path_w, i_f_h
             )
             #
             i_path_key_w = i_path_w_0 + spacing*4
             i_item._set_type_rect_(
-                i_x, i_y, i_path_key_w, h
+                i_x, i_y, i_path_key_w, i_f_h
             )
             i_x += i_path_key_w
             #
             i_path_value_w = i_path_w_1 + spacing*4
             i_item._set_name_rect_(
-                i_x, i_y, i_path_value_w, h
+                i_x, i_y, i_path_value_w, i_f_h
             )
             #
             i_x += i_path_value_w
 
-    def _set_clear_(self):
-        self._set_path_args_({})
+    def _set_view_guide_and_choose_clear_(self):
+        self._set_view_path_args_({})
 
-    def _get_guide_items_(self):
-        return self._get_choose_items_()
+    def _get_view_guide_items_(self):
+        return self._get_view_choose_items_()
 
-    def _get_choose_pos_at_(self, index=0):
-        item = self._get_choose_item_at_(index)
+    def _get_view_choose_item_point_at_(self, index=0):
+        item = self._get_view_choose_item_at_(index)
         rect = item._icon_frame_rect
         return self.mapToGlobal(rect.center())
 
-    def _get_choose_size_at_(self, index=0):
-        item = self._get_choose_item_at_(index)
+    def _get_view_choose_item_rect_at_(self, index=0):
+        item = self._get_view_choose_item_at_(index)
         rect = item._icon_frame_rect
-        return rect.width(), rect.height()
+        return rect
 
 
 class _QtMenuBar(

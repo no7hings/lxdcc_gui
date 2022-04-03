@@ -124,8 +124,8 @@ class _QtStatusDef(object):
             color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
             hover_color = r, g, b
         else:
-            color = Color.TRANSPARENT
-            hover_color = Color.TRANSPARENT
+            color = QtBackgroundColor.Transparent
+            hover_color = QtBackgroundColor.Transparent
         return color, hover_color
 
     def _set_status_def_init_(self):
@@ -133,8 +133,8 @@ class _QtStatusDef(object):
         #
         self._status = bsc_configure.Status.Stopped
         #
-        self._status_color = Color.TRANSPARENT
-        self._hover_status_color = Color.TRANSPARENT
+        self._status_color = QtBackgroundColor.Transparent
+        self._hover_status_color = QtBackgroundColor.Transparent
         #
         self._status_rect = QtCore.QRect()
 
@@ -200,15 +200,17 @@ class _QtStatusesDef(object):
         return self._is_element_status_enable
 
 
-class _QtFrameDef(object):
+class AbsQtFrameDef(object):
     def _set_frame_def_init_(self):
-        self._frame_border_color = Color.TRANSPARENT
-        self._hovered_frame_border_color = Color.TRANSPARENT
-        self._selected_frame_border_color = Color.TRANSPARENT
+        self._frame_border_color = QtBackgroundColor.Transparent
+        self._hovered_frame_border_color = QtBackgroundColor.Transparent
+        self._selected_frame_border_color = QtBackgroundColor.Transparent
+        self._actioned_frame_border_color = QtBackgroundColor.Transparent
         #
-        self._frame_background_color = Color.TRANSPARENT
-        self._hovered_frame_background_color = Color.TRANSPARENT
-        self._selected_frame_background_color = Color.TRANSPARENT
+        self._frame_background_color = QtBackgroundColor.Transparent
+        self._hovered_frame_background_color = QtBackgroundColor.Transparent
+        self._selected_frame_background_color = QtBackgroundColor.Transparent
+        self._actioned_frame_background_color = QtBackgroundColor.Transparent
         #
         self._frame_border_radius = 0
         #
@@ -249,6 +251,106 @@ class _QtFrameDef(object):
 
     def _set_frame_border_radius_(self, radius):
         self._frame_border_radius = radius
+
+
+class AbsQtDropDef(object):
+    def _set_drop_def_init_(self, widget):
+        self._widget = widget
+        self._drop_region = 0
+        self._drop_side = 2
+        self._drop_margin = 8
+        self._drop_shadow_radius = 4
+    @classmethod
+    def _get_drop_pos_(cls, widget):
+        rect = widget.rect()
+        # p = QtCore.QPoint(rect.right(), rect.center().y())
+        p = widget.mapToGlobal(rect.bottomLeft())
+        return p.x(), p.y()+1
+    @classmethod
+    def _get_drop_press_point_(cls, widget, rect=None):
+        if rect is None:
+            rect = widget.rect()
+        # p = QtCore.QPoint(rect.right(), rect.center().y())
+        return widget.mapToGlobal(rect.center())
+    @classmethod
+    def _get_drop_size_(cls, widget):
+        rect = widget.rect()
+        return rect.width(), rect.height()
+
+    def _set_widget_update_(self):
+        raise NotImplementedError()
+
+    def _set_widget_geometry_update_(self):
+        pass
+
+    def _set_drop_start_(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def _set_drop_close_(self):
+        self._widget.close()
+        self._widget.deleteLater()
+
+    def _set_drop_end_(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def _set_drop_fnc_0_(self, press_point, press_rect, desktop_rect, view_width, view_height):
+        press_x, press_y = press_point.x(), press_point.y()
+        press_w, press_h = press_rect.width(), press_rect.height()
+        #
+        width_maximum = desktop_rect.width()
+        height_maximum = desktop_rect.height()
+        #
+        side = self._drop_side
+        margin = self._drop_margin
+        shadow_radius = self._drop_shadow_radius
+        #
+        o_x = 0
+        o_y = 0
+        #
+        width_ = view_width+margin*2+side*2+shadow_radius
+        height_ = view_height+margin*2+side*2+shadow_radius
+        #
+        r_x, r_y, region = bsc_core.CoordMtd.set_region_to(
+            position=(press_x, press_y),
+            size=(width_, height_),
+            maximum_size=(width_maximum, height_maximum),
+            offset=(o_x, o_y)
+        )
+        self._drop_region = region
+        #
+        if region in [0, 1]:
+            y_ = r_y-side+press_h/2
+        else:
+            y_ = r_y+side+shadow_radius-press_h/2
+        #
+        if region in [0, 2]:
+            x_ = r_x-margin*3
+        else:
+            x_ = r_x+margin*3+side+shadow_radius
+        #
+        self._widget.setGeometry(
+            x_, y_,
+            width_, height_
+        )
+        #
+        self._set_widget_geometry_update_()
+        #
+        self._widget.show()
+        self._set_widget_update_()
+
+    def _set_drop_fnc_(self, pos, size):
+        x, y = pos
+        w, h = size
+        # desktop_rect = get_qt_desktop_rect()
+        self._widget.setGeometry(
+            x, y,
+            w, h
+        )
+        self._set_widget_geometry_update_()
+        #
+        self._widget.show()
+        #
+        self._widget.update()
 
 
 class _QtIconDef(object):
@@ -441,7 +543,7 @@ class _QtIndexDef(object):
         self._index_enable = False
         self._index = 0
         self._index_text = '1'
-        self._index_text_color = Color.INDEX_TEXT
+        self._index_text_color = QtFontColor.Dark
         self._index_text_font = Font.INDEX
         self._index_text_option = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
         #
@@ -488,14 +590,14 @@ class _QtNameDef(object):
     def _set_name_def_init_(self):
         self._name_enable = False
         self._name_text = None
-        self._name_text_color = Color.TEXT_NORMAL
-        self._hover_name_text_color = Color.TEXT_HOVERED
+        self._name_text_color = QtFontColor.Basic
+        self._hover_name_text_color = QtFontColor.Light
         self._name_text_font = Font.NAME
         self._name_text_option = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
         #
         self._name_width = 160
         #
-        self._frame_name_rect = QtCore.QRect()
+        self._name_frame_rect = QtCore.QRect()
         self._name_rect = QtCore.QRect()
         #
         self._name_color = 223, 223, 223
@@ -525,8 +627,8 @@ class _QtNameDef(object):
         if self._name_enable is True:
             return self._name_text
 
-    def _set_frame_name_rect_(self, x, y, w, h):
-        self._frame_name_rect.setRect(
+    def _set_name_frame_rect_(self, x, y, w, h):
+        self._name_frame_rect.setRect(
             x, y, w, h
         )
 
@@ -559,7 +661,7 @@ class _QtNameDef(object):
                 html = '<html>\n<body>\n'
                 html += '<h3>{}</h3>\n'.format(self._name_text)
                 for i in text.split('\n'):
-                    html += '<ul>\n<li>{}</li>\n</ul>\n'.format(i)
+                    html += '<ul>\n<li><i>{}</i></li>\n</ul>\n'.format(i)
                 html += '</body>\n</html>'
                 # noinspection PyCallingNonCallable
                 self.setToolTip(html)
@@ -569,6 +671,28 @@ class _QtNameDef(object):
         font = self.font()
         font.setPointSize(size)
         self._name_text_font = font
+
+
+class AbsQtRgbaDef(object):
+    def _set_widget_update_(self):
+        raise NotImplementedError()
+
+    def _set_color_def_init_(self):
+        self._color_rgba = 1.0, 1.0, 1.0, 1.0
+        self._color_rect = QtCore.QRect()
+
+    def _set_color_rgba_(self, r, g, b, a):
+        self._color_rgba = r, g, b, a
+        self._set_widget_update_()
+
+    def _get_color_rgba_(self):
+        return self._color_rgba
+
+    def _get_color_rgba_255_(self):
+        return tuple(map(lambda x: int(x*255), self._color_rgba))
+
+    def _get_color_rect_(self):
+        return self._color_rect
 
 
 class _QtPathDef(object):
@@ -855,7 +979,7 @@ class AbsQtNamesDef(object):
                 html = '<html>\n<body>\n'
                 html += '<h3>{}</h3>\n'.format(self._get_name_text_())
                 for i in text.split('\n'):
-                    html += '<ul>\n<li>{}</li>\n</ul>\n'.format(i)
+                    html += '<ul>\n<li><i>{}</i></li>\n</ul>\n'.format(i)
                 html += '</body>\n</html>'
                 # noinspection PyCallingNonCallable
                 self.setToolTip(html)
@@ -934,28 +1058,111 @@ class _QtItemDef(object):
             self._set_item_hovered_(False)
 
 
-class _QtItemActionDef(object):
+class AbsQtActionDef(object):
+    ActionFlag = utl_gui_configure.ActionFlag
     def _set_widget_update_(self):
         raise NotImplementedError()
 
-    def _set_item_action_def_init_(self):
+    def _set_action_def_init_(self, widget):
+        self._widget = widget
         self._action_flag = None
 
-    def _set_item_action_flag_(self, flag):
-        self._action_flag = flag
+    def _set_action_flag_(self, flag):
+        if flag is not None:
+            self._action_flag = flag
+            self.__set_action_cursor_update_()
         self._set_widget_update_()
 
-    def _get_item_action_flag_(self):
+    def __set_action_cursor_update_(self):
+        if self._action_flag is not None:
+            if self._action_flag in [
+                self.ActionFlag.PressClick,
+                self.ActionFlag.PressDbClick,
+                #
+                self.ActionFlag.TrackClick,
+                #
+                self.ActionFlag.CheckClick,
+                self.ActionFlag.ExpandClick,
+                self.ActionFlag.OptionClick,
+                self.ActionFlag.ChooseClick,
+            ]:
+                self._widget.setCursor(
+                    QtGui.QCursor(
+                        QtCore.Qt.PointingHandCursor
+                    )
+                )
+            elif self._action_flag in [
+                self.ActionFlag.PressMove,
+            ]:
+                self._widget.setCursor(
+                    QtCore.Qt.OpenHandCursor
+                )
+            elif self._action_flag in [
+                self.ActionFlag.TrackMove,
+                self.ActionFlag.ZoomMove
+            ]:
+                self._widget.setCursor(
+                    QtGui.QCursor(
+                        QtGui.QPixmap(
+                            utl_gui_core.RscIconFile.get('system/track-move')
+                        )
+                    )
+                )
+            elif self._action_flag in [
+                self.ActionFlag.TrackCircle,
+            ]:
+                self._widget.setCursor(
+                    QtGui.QCursor(
+                        QtGui.QPixmap(
+                            utl_gui_core.RscIconFile.get('system/track-circle')
+                        )
+                    )
+                )
+            elif self._action_flag in [
+                self.ActionFlag.SplitHHover,
+                self.ActionFlag.SplitHClick,
+                self.ActionFlag.SplitHMove,
+            ]:
+                self._widget.setCursor(
+                    QtGui.QCursor(
+                        QtGui.QPixmap(
+                            utl_gui_core.RscIconFile.get('system/split-h')
+                        )
+                    )
+                )
+            elif self._action_flag in [
+                self.ActionFlag.SplitVHover,
+                self.ActionFlag.SplitVClick,
+                self.ActionFlag.SplitVMove
+            ]:
+                self._widget.setCursor(
+                    QtGui.QCursor(
+                        QtGui.QPixmap(
+                            utl_gui_core.RscIconFile.get('system/split-v')
+                        )
+                    )
+                )
+        else:
+            self._widget.setCursor(
+                QtCore.Qt.CustomCursor
+            )
+
+    def _get_action_flag_(self):
         return self._action_flag
 
-    def _set_item_action_flag_clear_(self):
+    def _set_action_flag_clear_(self):
         self._action_flag = None
+
+        self.__set_action_cursor_update_()
         self._set_widget_update_()
 
-    def _get_item_action_flag_is_match_(self, flag):
+    def _get_action_flag_is_match_(self, flag):
         return self._action_flag == flag
 
-    def _get_item_action_offset_(self):
+    def _get_is_actioned_(self):
+        return self._action_flag is not None
+
+    def _get_action_offset_(self):
         if self._action_flag is not None:
             return 2
         return 0
@@ -969,9 +1176,7 @@ class _QtItemPressActionDef(object):
     clicked = qt_signal()
     db_clicked = qt_signal()
     #
-    PRESS_CLICK_FLAG = utl_gui_configure.ActionFlag.PRESS_CLICK
-    PRESS_DB_CLICK_FLAG = utl_gui_configure.ActionFlag.PRESS_DB_CLICK
-    PRESS_MOVE_FLAG = utl_gui_configure.ActionFlag.PRESS_MOVE
+    ActionFlag = utl_gui_configure.ActionFlag
     def _set_widget_update_(self):
         raise NotImplementedError()
 
@@ -984,10 +1189,10 @@ class _QtItemPressActionDef(object):
         #
         self._item_press_rect = QtCore.QRect()
 
-    def _get_item_action_flag_(self):
+    def _get_action_flag_(self):
         raise NotImplementedError()
 
-    def _get_item_action_flag_is_match_(self, flag):
+    def _get_action_flag_is_match_(self, flag):
         raise NotImplementedError()
 
     def _get_item_is_press_enable_(self):
@@ -1005,14 +1210,16 @@ class _QtItemPressActionDef(object):
         self.clicked.emit()
 
     def _get_item_is_click_flag_(self):
-        return self._get_item_action_flag_is_match_(self.PRESS_CLICK_FLAG)
+        return self._get_action_flag_is_match_(
+            self.ActionFlag.PressClick
+        )
 
 
 class _QtItemCheckActionDef(object):
     check_clicked = qt_signal()
     check_toggled = qt_signal(bool)
     #
-    CHECK_CLICK_FLAG = utl_gui_configure.ActionFlag.CHECK_CLICK
+    ActionFlag = utl_gui_configure.ActionFlag
     def _set_widget_update_(self):
         raise NotImplementedError()
 
@@ -1080,10 +1287,10 @@ class _QtItemExpandActionDef(object):
     expand_clicked = qt_signal()
     expand_toggled = qt_signal(bool)
     #
-    EXPAND_CLICKED_FLAG = utl_gui_configure.ActionFlag.EXPAND_CLICK
-    #
     EXPAND_TOP_TO_BOTTOM = 0
     EXPAND_BOTTOM_TO_TOP = 1
+    #
+    ActionFlag = utl_gui_configure.ActionFlag
     def _set_widget_update_(self):
         raise NotImplementedError()
 
@@ -1130,8 +1337,6 @@ class _QtItemExpandActionDef(object):
 
 class _QtItemOptionPressActionDef(object):
     checked = qt_signal()
-    #
-    OPTION_CLICK_FLAG = utl_gui_configure.ActionFlag.OPTION_CLICK
     def _set_widget_update_(self):
         raise NotImplementedError()
 
@@ -1164,42 +1369,33 @@ class AbsQtItemActionChooseDef(object):
         #
         self._rect = QtCore.QRect()
         #
-        self._is_dropped = False
+        self._item_choose_is_dropped = False
         #
-        self._content_raw = None
-        self._choose_name_texts = []
-        self._choose_path_texts = []
+        self._item_choose_content_raw = None
+        self._item_choose_name_texts = []
+        self._item_choose_path_texts = []
 
-    def _get_is_choose_dropped_(self):
-        return self._is_dropped
+    def _get_item_choose_is_dropped_(self):
+        return self._item_choose_is_dropped
 
-    def _set_choose_dropped_(self, boolean):
-        self._is_dropped = boolean
+    def _set_item_choose_dropped_(self, boolean):
+        self._item_choose_is_dropped = boolean
 
-    def _set_dropped_update_(self):
-        pass
-
-    def _get_icon_file_path_(self):
-        return [
-            self._choose_collapse_icon_file_path,
-            self._choose_expand_icon_file_path
-        ][self._get_is_choose_dropped_()]
-
-    def _set_choose_content_raw_(self, raw):
-        self._content_raw = raw
+    def _set_item_choose_content_raw_(self, raw):
+        self._item_choose_content_raw = raw
         if isinstance(raw, (tuple, list)):
-            self._choose_name_texts = list(raw)
+            self._item_choose_name_texts = list(raw)
 
-    def _set_choose_content_name_texts_(self, contents):
-        self._choose_name_texts = contents
+    def _set_item_choose_content_name_texts_(self, contents):
+        self._item_choose_name_texts = contents
 
-    def _get_choose_content_name_texts_(self):
-        return self._choose_name_texts
+    def _get_item_choose_content_name_texts_(self):
+        return self._item_choose_name_texts
 
-    def _set_choose_changed_emit_send_(self):
+    def _set_item_choose_changed_emit_send_(self):
         self.choose_changed.emit()
 
-    def _set_choose_changed_connect_to_(self, fnc):
+    def _set_item_choose_changed_connect_to_(self, fnc):
         self.choose_changed.connect(fnc)
 
 
@@ -1223,13 +1419,13 @@ class _QtViewBarDef(object):
 
 class _QtViewChooseActionDef(object):
     CHOOSE_RECT_CLS = None
-    CHOOSE_DROP_WIDGET_CLS = None
+    CHOOSE_DROP_FRAME_CLS = None
     #
     choose_item_changed = qt_signal()
     choose_item_clicked = qt_signal()
     choose_item_double_clicked = qt_signal()
     #
-    CHOOSE_FLAG = utl_gui_configure.ActionFlag.CHOOSE
+    CHOOSE_FLAG = utl_gui_configure.ActionFlag.ChooseClick
     def _set_widget_update_(self):
         raise NotImplementedError()
 
@@ -1237,55 +1433,55 @@ class _QtViewChooseActionDef(object):
         self._choose_items = []
         self._view_choose_current_index = None
 
-    def _get_item_action_flag_(self):
+    def _get_action_flag_(self):
         raise NotImplementedError()
 
-    def _get_item_action_flag_is_match_(self, flag):
+    def _get_action_flag_is_match_(self, flag):
         raise NotImplementedError()
 
-    def _get_choose_items_(self):
+    def _get_view_choose_items_(self):
         return self._choose_items
 
-    def _get_choose_item_indices_(self):
-        return range(len(self._get_choose_items_()))
+    def _get_view_choose_item_indices_(self):
+        return range(len(self._get_view_choose_items_()))
 
-    def _get_choose_item_at_(self, index=0):
-        return self._get_choose_items_()[index]
+    def _get_view_choose_item_at_(self, index=0):
+        return self._get_view_choose_items_()[index]
 
-    def _get_choose_pos_at_(self, index=0):
+    def _get_view_choose_item_point_at_(self, index=0):
         raise NotImplementedError()
 
-    def _get_choose_size_at_(self, index=0):
+    def _get_view_choose_item_rect_at_(self, index=0):
         raise NotImplementedError()
 
     def _set_choose_item_current_at_(self, text, index=0):
-        self._get_choose_item_at_(index)._set_name_text_(text)
+        self._get_view_choose_item_at_(index)._set_name_text_(text)
 
     def _get_choose_item_current_at_(self, index=0):
-        return self._get_choose_item_at_(index)._name_text
+        return self._get_view_choose_item_at_(index)._name_text
     #
     def _set_choose_item_content_at_(self, raw, index=0):
-        self._get_choose_item_at_(index)._set_choose_content_raw_(raw)
+        self._get_view_choose_item_at_(index)._set_item_choose_content_raw_(raw)
     #
-    def _set_choose_item_content_name_texts_at_(self, texts, index=0):
-        self._get_choose_item_at_(index)._set_choose_content_name_texts_(texts)
+    def _set_view_choose_item_content_name_texts_at_(self, texts, index=0):
+        self._get_view_choose_item_at_(index)._set_item_choose_content_name_texts_(texts)
     #
-    def _get_choose_item_content_name_texts_at_(self, index=0):
-        return self._get_choose_item_at_(index)._get_choose_content_name_texts_()
+    def _get_view_choose_item_content_name_texts_at_(self, index=0):
+        return self._get_view_choose_item_at_(index)._get_item_choose_content_name_texts_()
 
-    def _set_choose_item_drop_at_(self, index=0):
-        widget = self.CHOOSE_DROP_WIDGET_CLS(self)
-        widget._set_drop_start_at_(
+    def _set_view_choose_item_drop_at_(self, index=0):
+        widget = self.CHOOSE_DROP_FRAME_CLS(self)
+        widget._set_drop_start_(
             index
         )
 
     def _set_choose_item_expanded_at_(self, boolean, index=0):
-        item = self._get_choose_item_at_(index)
-        item._set_choose_dropped_(boolean)
+        item = self._get_view_choose_item_at_(index)
+        item._set_item_choose_dropped_(boolean)
 
     def _get_choose_item_is_expanded_at_(self, index=0):
-        item = self._get_choose_item_at_(index)
-        return item._get_is_choose_dropped_()
+        item = self._get_view_choose_item_at_(index)
+        return item._get_item_choose_is_dropped_()
 
     def _set_choose_item_expand_at_(self, index=0):
         self._set_choose_item_expanded_at_(True, index)
@@ -1294,9 +1490,9 @@ class _QtViewChooseActionDef(object):
         self._set_choose_item_expanded_at_(False, index)
 
     def _get_is_choose_flag_(self):
-        return self._get_item_action_flag_is_match_(self.CHOOSE_FLAG)
+        return self._get_action_flag_is_match_(self.CHOOSE_FLAG)
 
-    def _set_choose_clear_(self):
+    def _set_view_choose_clear_(self):
         self._view_choose_current_index = None
         #
         self._choose_items = []
@@ -1315,7 +1511,7 @@ class _QtViewChooseActionDef(object):
     def _set_choose_item_changed_emit_send_(self):
         self.choose_item_changed.emit()
 
-    def _set_choose_current_(self, index):
+    def _set_view_choose_current_index_(self, index):
         self._view_choose_current_index = index
 
     def _set_choose_current_clear_(self):
@@ -1329,50 +1525,50 @@ class _QtViewGuideActionDef(object):
         self._guide_items = []
         self._view_guide_current_index = None
 
-    def _get_guide_items_(self):
+    def _get_view_guide_items_(self):
         return self._guide_items
 
-    def _get_guide_item_indices_(self):
-        return range(len(self._get_guide_items_()))
+    def _get_view_guide_item_indices_(self):
+        return range(len(self._get_view_guide_items_()))
 
-    def _get_guide_item_at_(self, index=0):
-        return self._get_guide_items_()[index]
+    def _get_view_guide_item_at_(self, index=0):
+        return self._get_view_guide_items_()[index]
 
-    def _set_guide_clear_(self):
+    def _set_view_guide_clear_(self):
         self._guide_items = []
         self._view_guide_current_index = None
 
-    def _set_guide_current_(self, index):
+    def _set_view_guide_current_index_(self, index):
         self._view_guide_current_index = index
 
-    def _set_guide_current_clear_(self):
+    def _set_view_guide_current_clear_(self):
         self._view_guide_current_index = None
 
-    def _set_guide_item_name_text_at_(self, text, index=0):
-        self._get_guide_item_at_(index)._set_name_text_(text)
+    def _set_view_guide_item_name_text_at_(self, text, index=0):
+        self._get_view_guide_item_at_(index)._set_name_text_(text)
 
-    def _get_guide_item_name_text_at_(self, index=0):
-        return self._get_guide_item_at_(index)._name_text
+    def _get_view_guide_item_name_text_at_(self, index=0):
+        return self._get_view_guide_item_at_(index)._name_text
 
-    def _get_guide_item_path_text_at_(self, index=0):
-        return self._get_guide_item_at_(index)._path_text
+    def _get_view_guide_item_path_text_at_(self, index=0):
+        return self._get_view_guide_item_at_(index)._path_text
     #
-    def _set_guide_item_path_text_at_(self, text, index=0):
-        self._get_guide_item_at_(index)._set_path_text_(text)
+    def _set_view_guide_item_path_text_at_(self, text, index=0):
+        self._get_view_guide_item_at_(index)._set_path_text_(text)
     #
-    def _get_guide_current_path_(self):
+    def _get_view_guide_current_path_(self):
         if self._view_guide_current_index is not None:
-            return self._get_guide_item_path_text_at_(
+            return self._get_view_guide_item_path_text_at_(
                 self._view_guide_current_index
             )
 
-    def _set_guide_current_path_(self, path_text):
+    def _set_view_guide_current_path_(self, path_text):
         pass
     # emit
-    def _set_guide_item_clicked_emit_send_(self):
+    def _set_view_guide_item_clicked_emit_send_(self):
         self.guide_item_clicked.emit()
 
-    def _set_guide_item_double_clicked_emit_send_(self):
+    def _set_view_guide_item_double_clicked_emit_send_(self):
         self.guide_item_double_clicked.emit()
 
 
@@ -1381,18 +1577,17 @@ class _QtItemSelectActionDef(object):
         raise NotImplementedError()
     #
     def _set_item_select_action_def_init_(self):
-        self._is_selected = False
+        self._item_is_selected = False
 
-    def _get_item_action_flag_(self):
+    def _get_action_flag_(self):
         raise NotImplementedError()
 
-    def _set_selected_(self, boolean):
-        self._is_selected = boolean
-        #
+    def _set_item_selected_(self, boolean):
+        self._item_is_selected = boolean
         self._set_widget_update_()
 
-    def _get_is_selected_(self):
-        return self._is_selected
+    def _get_item_is_selected_(self):
+        return self._item_is_selected
 
 
 class AbsQtItemMovieActionDef(object):
@@ -1580,21 +1775,21 @@ class _QtItemShowDef(object):
         self._is_viewport_show_enable = boolean
 
 
-class _QtEntryActionDef(object):
+class AbsQtItemEntryActionDef(object):
     entry_changed = qt_signal()
     def _set_widget_update_(self):
         raise NotImplementedError()
 
-    def _get_item_action_flag_(self):
+    def _get_action_flag_(self):
         raise NotImplementedError()
     #
-    def _set_entry_action_def_init_(self):
-        self._is_entered = False
+    def _set_item_entry_action_def_init_(self):
+        self._item_is_entered = False
         self._entry_frame_rect = QtCore.QRect()
         self._entry_rect = QtCore.QRect()
 
     def _set_entered_(self, boolean):
-        self._is_entered = boolean
+        self._item_is_entered = boolean
         self._set_widget_update_()
 
     def _set_entry_frame_rect_(self, x, y, w, h):
@@ -1610,7 +1805,7 @@ class AbsQtViewSelectActionDef(object):
     def _set_view_select_action_def_init_(self):
         self._pre_selected_item = None
 
-    def _set_item_selected_(self, item, boolean):
+    def _set_view_item_selected_(self, item, boolean):
         raise NotImplementedError()
 
     def _set_item_widget_selected_(self, item, boolean):
@@ -2067,14 +2262,14 @@ class AbsQtListWidget(
     def _get_view_v_scroll_bar_(self):
         return self.verticalScrollBar()
 
-    def _set_item_selected_(self, item, boolean):
+    def _set_view_item_selected_(self, item, boolean):
         self.setItemSelected(item, boolean)
 
     def _get_selected_items_(self):
         return self.selectedItems()
 
     def _set_item_widget_selected_(self, item, boolean):
-        self.itemWidget(item)._set_selected_(boolean)
+        self.itemWidget(item)._set_item_selected_(boolean)
     # select
     def _get_selected_item_widgets_(self):
         return [self.itemWidget(i) for i in self.selectedItems()]

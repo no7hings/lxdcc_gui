@@ -3,7 +3,7 @@ from lxutil_gui import utl_gui_core, utl_gui_configure
 #
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_chart
 
 from lxutil_gui.qt import utl_gui_qt_abstract
 
@@ -308,7 +308,7 @@ class _QtTextItem(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtNameDef,
     utl_gui_qt_abstract._QtItemDef,
-    utl_gui_qt_abstract._QtItemActionDef,
+    utl_gui_qt_abstract.AbsQtActionDef,
     utl_gui_qt_abstract._QtItemPressActionDef,
 ):
     def _set_widget_update_(self):
@@ -325,13 +325,12 @@ class _QtTextItem(
         self.setFont(self._name_text_font)
         #
         self._set_item_def_init_()
-        self._set_item_action_def_init_()
+        self._set_action_def_init_(self)
         self._set_item_press_action_def_init_()
 
     def _set_widget_geometry_update_(self):
         x, y = 0, 0
         w, h = self.width(), self.height()
-        # print w, h
         self._name_rect.setRect(
             x, y, w, h
         )
@@ -347,14 +346,14 @@ class _QtTextItem(
         self._set_widget_geometry_update_()
         # name
         if self._name_text is not None:
-            text_color = [Color.TEXT_NORMAL, Color.TEXT_HOVERED][self._item_is_hovered]
+            text_color = [QtFontColor.Basic, QtFontColor.Light][self._item_is_hovered]
             #
             painter._set_text_draw_by_rect_(
                 self._name_rect,
                 self._name_text,
                 text_color,
                 font=Font.NAME,
-                text_option=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+                text_option=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter,
             )
 
 
@@ -364,7 +363,7 @@ class _QtIconPressItem(
     utl_gui_qt_abstract._QtNameDef,
     utl_gui_qt_abstract.AbsQtMenuDef,
     utl_gui_qt_abstract._QtItemDef,
-    utl_gui_qt_abstract._QtItemActionDef,
+    utl_gui_qt_abstract.AbsQtActionDef,
     utl_gui_qt_abstract._QtItemPressActionDef,
 ):
     clicked = qt_signal()
@@ -385,7 +384,7 @@ class _QtIconPressItem(
         self._set_menu_def_init_()
         #
         self._set_item_def_init_()
-        self._set_item_action_def_init_()
+        self._set_action_def_init_(self)
         self._set_item_press_action_def_init_()
 
     def eventFilter(self, *args):
@@ -395,7 +394,7 @@ class _QtIconPressItem(
             #
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
-                    self._set_item_action_flag_(self.PRESS_CLICK_FLAG)
+                    self._set_action_flag_(self.ActionFlag.PressClick)
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
                 #
@@ -415,7 +414,7 @@ class _QtIconPressItem(
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
                 #
-                self._set_item_action_flag_clear_()
+                self._set_action_flag_clear_()
                 #
                 self._item_is_hovered = False
                 self.update()
@@ -428,13 +427,17 @@ class _QtIconPressItem(
         self._set_widget_geometry_update_()
         #
         f_x, f_y = (w-i_w) / 2, (h-i_h) / 2
-        offset = [0, 2][self._get_item_action_flag_() is not None]
+        offset = self._get_action_offset_()
         #
-        bkg_color = [Color.TRANSPARENT, Color.ITEM_BACKGROUND_HOVER][self._item_is_hovered]
+        background_color = painter._get_item_background_color_1_by_rect_(
+            self._icon_frame_rect,
+            is_hovered=self._item_is_hovered,
+            is_actioned=self._get_is_actioned_()
+        )
         painter._set_frame_draw_by_rect_(
             self._icon_frame_rect,
-            border_color=bkg_color,
-            background_color=bkg_color,
+            border_color=QtBorderColor.Transparent,
+            background_color=background_color,
             border_radius=4,
             offset=offset
         )
@@ -455,11 +458,16 @@ class _QtIconPressItem(
                 )
             elif self._color_icon_rgb is not None:
                 painter._set_color_icon_draw_(
-                    self._color_icon_rect, self._color_icon_rgb, offset=offset
+                    self._color_icon_rect,
+                    self._color_icon_rgb,
+                    offset=offset
                 )
             elif self._icon_name_text is not None:
                 painter._set_name_icon_draw_by_rect_(
-                    self._name_icon_rect, self._icon_name_text, offset=offset, border_radius=2,
+                    self._name_icon_rect,
+                    self._icon_name_text,
+                    offset=offset,
+                    border_radius=2,
                     is_hovered=self._item_is_hovered
                 )
 
@@ -499,7 +507,7 @@ class _QtIconPressItem(
 
 class _QtPressItem(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract._QtStatusDef,
     utl_gui_qt_abstract._QtStatusesDef,
     #
@@ -509,7 +517,7 @@ class _QtPressItem(
     utl_gui_qt_abstract._QtProgressDef,
     #
     utl_gui_qt_abstract._QtItemDef,
-    utl_gui_qt_abstract._QtItemActionDef,
+    utl_gui_qt_abstract.AbsQtActionDef,
     utl_gui_qt_abstract._QtItemPressActionDef,
     utl_gui_qt_abstract._QtItemCheckActionDef,
     utl_gui_qt_abstract._QtItemOptionPressActionDef,
@@ -544,7 +552,7 @@ class _QtPressItem(
         self._set_progress_def_init_()
         #
         self._set_item_def_init_()
-        self._set_item_action_def_init_()
+        self._set_action_def_init_(self)
         self._set_item_press_action_def_init_()
         self._set_item_check_action_def_init_()
         self._set_item_option_press_action_def_init_()
@@ -678,9 +686,9 @@ class _QtPressItem(
                     self._action_flag = None
                     #
                     flag_raw = [
-                        (check_enable, self._item_check_frame_rect, utl_gui_configure.ActionFlag.CHECK_CLICK),
-                        (click_enable, self._frame_rect, utl_gui_configure.ActionFlag.PRESS_CLICK),
-                        (option_click_enable, self._option_click_rect, utl_gui_configure.ActionFlag.OPTION_CLICK),
+                        (check_enable, self._item_check_frame_rect, self.ActionFlag.CheckClick),
+                        (click_enable, self._frame_rect, self.ActionFlag.PressClick),
+                        (option_click_enable, self._option_click_rect, self.ActionFlag.OptionClick),
                     ]
                     if event.button() == QtCore.Qt.LeftButton:
                         pos = event.pos()
@@ -695,12 +703,12 @@ class _QtPressItem(
                     self._item_is_hovered = True
                     self.update()
                 elif event.type() == QtCore.QEvent.MouseButtonRelease:
-                    if self._action_flag == utl_gui_configure.ActionFlag.CHECK_CLICK:
+                    if self._action_flag == self.ActionFlag.CheckClick:
                         self._set_item_check_swap_()
                         self.checked.emit()
-                    elif self._action_flag == utl_gui_configure.ActionFlag.PRESS_CLICK:
+                    elif self._action_flag == self.ActionFlag.PressClick:
                         self.clicked.emit()
-                    elif self._action_flag == utl_gui_configure.ActionFlag.OPTION_CLICK:
+                    elif self._action_flag == self.ActionFlag.OptionClick:
                         self.option_clicked.emit()
                     #
                     self._action_flag = None
@@ -711,14 +719,14 @@ class _QtPressItem(
         painter = _utl_gui_qt_wgt_utility.QtPainter(self)
         self._set_widget_geometry_update_()
         #
-        offset = self._get_item_action_offset_()
+        offset = self._get_action_offset_()
         #
         if self._item_is_enable is True:
             border_color = [self._frame_border_color, self._hovered_frame_border_color][self._item_is_hovered]
             background_color = [self._frame_background_color, self._hovered_frame_background_color][self._item_is_hovered]
         else:
-            border_color = Color.BUTTON_BORDER_DISABLE
-            background_color = Color.BUTTON_BACKGROUND_DISABLE
+            border_color = QtBackgroundColor.ButtonDisable
+            background_color = QtBackgroundColor.ButtonDisable
         #
         painter._set_frame_draw_by_rect_(
             self._frame_rect,
@@ -749,7 +757,7 @@ class _QtPressItem(
         if self._get_is_progress_enable_() is True:
             painter._set_frame_draw_by_rect_(
                 self._progress_rect,
-                border_color=Color.TRANSPARENT,
+                border_color=QtBackgroundColor.Transparent,
                 background_color=Color.PROGRESS,
                 border_radius=2,
                 offset=offset
@@ -782,9 +790,9 @@ class _QtPressItem(
         # name
         if self._name_text is not None:
             if self._item_is_enable is True:
-                text_color = [Color.TEXT_NORMAL, Color.TEXT_HOVERED][self._item_is_hovered]
+                text_color = [QtFontColor.Basic, QtFontColor.Light][self._item_is_hovered]
             else:
-                text_color = Color.TEXT_DISABLE
+                text_color = QtFontColor.Disable
             #
             painter._set_text_draw_by_rect_(
                 self._name_rect, self._name_text, text_color, font=Font.NAME, offset=offset
@@ -796,12 +804,12 @@ class _QtPressItem(
 
 class _QtCheckItem(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract._QtIconDef,
     utl_gui_qt_abstract._QtNameDef,
     #
     utl_gui_qt_abstract._QtItemDef,
-    utl_gui_qt_abstract._QtItemActionDef,
+    utl_gui_qt_abstract.AbsQtActionDef,
     utl_gui_qt_abstract._QtItemCheckActionDef,
     #
     utl_gui_qt_abstract.AbsQtItemValueDefaultDef,
@@ -825,7 +833,7 @@ class _QtCheckItem(
         self._set_name_def_init_()
         #
         self._set_item_def_init_()
-        self._set_item_action_def_init_()
+        self._set_action_def_init_(self)
         self._set_item_check_action_def_init_()
         #
         self._set_item_value_default_def_init_()
@@ -867,13 +875,13 @@ class _QtCheckItem(
             #
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
-                    self._set_item_action_flag_(self.CHECK_CLICK_FLAG)
+                    self._set_action_flag_(self.ActionFlag.CheckClick)
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 if event.button() == QtCore.Qt.LeftButton:
-                    if self._get_item_action_flag_() == self.CHECK_CLICK_FLAG:
+                    if self._get_action_flag_() == self.ActionFlag.CheckClick:
                         self._set_item_check_action_run_()
-                        #
-                        self._set_item_action_flag_clear_()
+                    #
+                    self._set_action_flag_clear_()
         return False
 
     def paintEvent(self, event):
@@ -881,13 +889,17 @@ class _QtCheckItem(
         #
         self._set_widget_geometry_update_()
         #
-        offset = self._get_item_action_offset_()
+        offset = self._get_action_offset_()
         #
-        bkg_color = [Color.TRANSPARENT, Color.ITEM_BACKGROUND_HOVER][self._item_is_hovered]
+        background_color = painter._get_item_background_color_1_by_rect_(
+            self._item_check_frame_rect,
+            is_hovered=self._item_is_hovered,
+            is_actioned=self._get_is_actioned_()
+        )
         painter._set_frame_draw_by_rect_(
             self._item_check_frame_rect,
-            border_color=bkg_color,
-            background_color=bkg_color,
+            border_color=QtBorderColor.Transparent,
+            background_color=background_color,
             border_radius=4,
             offset=offset
         )
@@ -904,7 +916,7 @@ class _QtCheckItem(
                 self._name_rect,
                 self._name_text,
                 font=Font.NAME,
-                color=Color.TEXT_NORMAL,
+                color=QtFontColor.Basic,
                 text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                 offset=offset
             )
@@ -912,11 +924,11 @@ class _QtCheckItem(
 
 class _QtStatusItem(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract._QtIconDef,
     #
     utl_gui_qt_abstract._QtItemDef,
-    utl_gui_qt_abstract._QtItemActionDef,
+    utl_gui_qt_abstract.AbsQtActionDef,
     utl_gui_qt_abstract._QtItemCheckActionDef,
 ):
     def __init__(self, *args, **kwargs):
@@ -934,7 +946,7 @@ class _QtStatusItem(
         self._set_icon_def_init_()
         #
         self._set_item_def_init_()
-        self._set_item_action_def_init_()
+        self._set_action_def_init_(self)
         self._set_item_check_action_def_init_()
         #
         self._set_item_check_update_()
@@ -957,13 +969,13 @@ class _QtStatusItem(
             #
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
-                    self._set_item_action_flag_(self.CHECK_CLICK_FLAG)
+                    self._set_action_flag_(self.ActionFlag.CheckClick)
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 if event.button() == QtCore.Qt.LeftButton:
-                    if self._get_item_action_flag_() == self.CHECK_CLICK_FLAG:
+                    if self._get_action_flag_() == self.ActionFlag.CheckClick:
                         self._set_item_check_action_run_()
-                        #
-                        self._set_item_action_flag_clear_()
+                #
+                self._set_action_flag_clear_()
         return False
 
     def paintEvent(self, event):
@@ -971,7 +983,7 @@ class _QtStatusItem(
         #
         self._set_widget_geometry_update_()
         #
-        offset = self._get_item_action_offset_()
+        offset = self._get_action_offset_()
         is_hovered = self._get_item_is_hovered_()
         #
         if self._get_item_is_checked_():
@@ -1177,7 +1189,7 @@ class _QtFilterBar(QtWidgets.QWidget):
 
 class _QtEntryFrame(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract._QtStatusDef,
 ):
     def _set_widget_update_(self):
@@ -1195,11 +1207,11 @@ class _QtEntryFrame(
         self._set_status_def_init_()
         self._set_frame_def_init_()
         #
-        self._frame_border_color = BorderColor.get('color-light')
-        self._hovered_frame_border_color = BorderColor.get('color-hovered')
-        self._selected_frame_border_color = BorderColor.get('color-selected')
+        self._frame_border_color = QtBackgroundColor.Light
+        self._hovered_frame_border_color = QtBackgroundColor.Hovered
+        self._selected_frame_border_color = QtBackgroundColor.Selected
         #
-        self._frame_background_color = BackgroundColor.get('color-entry')
+        self._frame_background_color = QtBackgroundColor.Dark
 
     def paintEvent(self, event):
         pos_x, pos_y = 0, 0
@@ -1207,13 +1219,13 @@ class _QtEntryFrame(
         #
         painter = _utl_gui_qt_wgt_utility.QtPainter(self)
         size = self._entry_count
-        spacing = 4
+        spacing = 2
         #
         d = width/size
         #
         is_hovered = True
         is_selected = self._is_focused
-        bkg_color = self._frame_background_color
+        background_color = self._frame_background_color
         bdr_color = [self._frame_border_color, self._selected_frame_border_color][is_selected]
         if size == 1:
             i_rect = QtCore.QRect(
@@ -1222,7 +1234,7 @@ class _QtEntryFrame(
             painter._set_frame_draw_by_rect_(
                 i_rect,
                 border_color=bdr_color,
-                background_color=bkg_color,
+                background_color=background_color,
                 border_radius=4
             )
         elif size > 1:
@@ -1242,7 +1254,7 @@ class _QtEntryFrame(
                 painter._set_frame_draw_by_rect_(
                     i_rect,
                     border_color=bdr_color,
-                    background_color=bkg_color,
+                    background_color=background_color,
                     border_radius=4
                 )
 
@@ -1314,12 +1326,13 @@ class _QtChooseDropView(utl_gui_qt_abstract.AbsQtListWidget):
         pass
 
 
-class _QtChooseDropWidget(
+class _QtItemGuideChooseDropFrame(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtDropDef,
 ):
     def __init__(self, *args, **kwargs):
-        super(_QtChooseDropWidget, self).__init__(*args, **kwargs)
+        super(_QtItemGuideChooseDropFrame, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
         self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -1328,11 +1341,9 @@ class _QtChooseDropWidget(
         self.setPalette(QtDccMtd.get_qt_palette())
         #
         self._set_frame_def_init_()
+        self._set_drop_def_init_(self)
         #
-        self.installEventFilter(self)
         self.setFocusProxy(self.parent())
-        #
-        self._view_rect = QtCore.QRect()
         #
         self._list_widget = _QtChooseDropView(self)
         #
@@ -1342,19 +1353,13 @@ class _QtChooseDropWidget(
         self._list_widget.setSpacing(2)
         self._list_widget.setUniformItemSizes(True)
         #
-        self._region = 0
-        #
         self._choose_index = None
         #
-        self._side = 2
-        self._margin = 8
-        self._shadow_radius = 4
+        self._frame_border_color = QtBackgroundColor.Light
+        self._hovered_frame_border_color = QtBackgroundColor.Hovered
+        self._selected_frame_border_color = QtBackgroundColor.Selected
         #
-        self._frame_border_color = BorderColor.get('color-light')
-        self._hovered_frame_border_color = BorderColor.get('color-hovered')
-        self._selected_frame_border_color = BorderColor.get('color-selected')
-        #
-        self._frame_background_color = BackgroundColor.get('color-entry')
+        self._frame_background_color = QtBackgroundColor.Dark
 
     def paintEvent(self, event):
         x, y = 0, 0
@@ -1367,10 +1372,10 @@ class _QtChooseDropWidget(
         #
         painter._set_popup_frame_draw_(
             bck_rect,
-            margin=self._margin,
-            side=self._side,
-            shadow_radius=self._shadow_radius,
-            region=self._region,
+            margin=self._drop_margin,
+            side=self._drop_side,
+            shadow_radius=self._drop_shadow_radius,
+            region=self._drop_region,
             border_color=self._selected_frame_border_color,
             background_color=self._frame_background_color,
         )
@@ -1379,9 +1384,9 @@ class _QtChooseDropWidget(
         widget, event = args
         if widget == self.parent():
             if event.type() == QtCore.QEvent.MouseButtonPress:
-                self._set_close_()
+                self._set_drop_close_()
             elif event.type() == QtCore.QEvent.WindowDeactivate:
-                self._set_close_()
+                self._set_drop_close_()
         elif widget == self:
             if event.type() == QtCore.QEvent.Close:
                 self._set_drop_end_()
@@ -1391,9 +1396,9 @@ class _QtChooseDropWidget(
         self.update()
 
     def _set_widget_geometry_update_(self):
-        side = self._side
-        margin = self._margin
-        shadow_radius = self._shadow_radius
+        side = self._drop_side
+        margin = self._drop_margin
+        shadow_radius = self._drop_shadow_radius
         #
         x, y = 0, 0
         w, h = self.width(), self.height()
@@ -1405,26 +1410,16 @@ class _QtChooseDropWidget(
         )
         self._list_widget.updateGeometries()
 
-    def _get_choose_point_(self, widget):
-        rect = widget.rect()
-        # p = QtCore.QPoint(rect.right(), rect.center().y())
-        p = widget.mapToGlobal(rect.bottomLeft())
-        return p.x(), p.y()
-
-    def _get_choose_size_(self, widget):
-        rect = widget.rect()
-        return rect.width(), rect.height()
-
-    def _set_drop_start_at_(self, index):
+    def _set_drop_start_(self, index):
         parent = self.parent()
-        content_name_texts = parent._get_choose_item_content_name_texts_at_(index)
+        content_name_texts = parent._get_view_choose_item_content_name_texts_at_(index)
         if isinstance(content_name_texts, (tuple, list)):
             desktop_rect = get_qt_desktop_rect()
             #
-            press_pos = parent._get_choose_pos_at_(index)
-            press_size = parent._get_choose_size_at_(index)
+            press_pos = parent._get_view_choose_item_point_at_(index)
+            press_rect = parent._get_view_choose_item_rect_at_(index)
             #
-            current_name_text = parent._get_guide_item_name_text_at_(index)
+            current_name_text = parent._get_view_guide_item_name_text_at_(index)
             #
             for seq, i_name_text in enumerate(content_name_texts):
                 item_widget = _QtHItem()
@@ -1445,8 +1440,8 @@ class _QtChooseDropWidget(
             #
             self.setFocus(QtCore.Qt.PopupFocusReason)
             #
-            self._drop_fnc_(
-                press_pos, press_size,
+            self._set_drop_fnc_0_(
+                press_pos, press_rect,
                 desktop_rect,
                 self._get_maximum_width_(content_name_texts),
                 self._get_maximum_height_()
@@ -1457,7 +1452,7 @@ class _QtChooseDropWidget(
             self._list_widget._set_scroll_to_selected_item_top_()
             #
             self._list_widget.itemClicked.connect(
-                self._set_close_
+                self._set_drop_close_
             )
 
     def _set_drop_end_(self):
@@ -1466,26 +1461,26 @@ class _QtChooseDropWidget(
             selected_item_widget = self._list_widget._get_selected_item_widget_()
             if selected_item_widget:
                 name_text = selected_item_widget._get_name_text_()
-                path_text = parent._get_guide_item_path_text_at_(
+                path_text = parent._get_view_guide_item_path_text_at_(
                     self._choose_index
                 )
                 path_opt = bsc_core.DccPathDagOpt(path_text)
                 path_opt.set_name(name_text)
                 #
-                parent._set_guide_item_name_text_at_(
+                parent._set_view_guide_item_name_text_at_(
                     name_text,
                     self._choose_index
                 )
-                parent._set_guide_item_path_text_at_(
+                parent._set_view_guide_item_path_text_at_(
                     str(path_opt),
                     self._choose_index
                 )
-                parent._set_item_geometries_update_()
+                parent._set_view_item_geometries_update_()
             #
             parent._set_choose_item_collapse_at_(self._choose_index)
-            parent._set_guide_current_(self._choose_index)
-            parent._set_guide_item_clicked_emit_send_()
-            parent._set_guide_current_clear_()
+            parent._set_view_guide_current_index_(self._choose_index)
+            parent._set_view_guide_item_clicked_emit_send_()
+            parent._set_view_guide_current_clear_()
 
     def _get_maximum_width_(self, texts):
         count = len(texts)
@@ -1502,87 +1497,22 @@ class _QtChooseDropWidget(
         h = rect.height()
         return y+h+1+4
 
-    def _drop_fnc_(self, press_pos, press_size, desktop_rect, view_width, view_height):
-        press_x, press_y = press_pos.x(), press_pos.y()
-        press_w, press_h = press_size
-        #
-        maxWidth = desktop_rect.width()
-        maxHeight = desktop_rect.height()
-        #
-        side = self._side
-        margin = self._margin
-        shadow_radius = self._shadow_radius
-        #
-        o_x = 0
-        o_y = 0
-        #
-        width_ = view_width+margin*2+side*2+shadow_radius
-        height_ = view_height+margin*2+side*2+shadow_radius
-        #
-        r_x, r_y, region = bsc_core.CoordMtd.set_region_to(
-            position=(press_x, press_y),
-            size=(width_, height_),
-            maximum_size=(maxWidth, maxHeight),
-            offset=(o_x, o_y)
-        )
-        self._region = region
-        #
-        if region in [0, 1]:
-            y_ = r_y-side+press_h/2
-        else:
-            y_ = r_y+side+shadow_radius-press_h/2
-        #
-        if region in [0, 2]:
-            x_ = r_x-margin*3
-        else:
-            x_ = r_x+margin*3+side+shadow_radius
-        #
-        self.setGeometry(
-            x_, y_,
-            width_, height_
-        )
-        #
-        self._set_widget_geometry_update_()
-        #
-        self.show()
-        #
-        self.update()
 
-    def _set_drop_(self, pos, size):
-        x, y = pos
-        w, h = size
-        # desktop_rect = get_qt_desktop_rect()
-        self.setGeometry(
-            x, y,
-            w, h
-        )
-        self._set_widget_geometry_update_()
-        #
-        self.show()
-        #
-        self.update()
-
-    def _set_close_(self):
-        self.close()
-        self.deleteLater()
-
-
-class _QtChooseDropWidget1(
+class _QtItemChooseDropFrame(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtDropDef,
 ):
     def __init__(self, *args, **kwargs):
-        super(_QtChooseDropWidget1, self).__init__(*args, **kwargs)
+        super(_QtItemChooseDropFrame, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
         self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         #
-        self.setPalette(QtDccMtd.get_qt_palette())
-        #
         self._set_frame_def_init_()
+        self._set_drop_def_init_(self)
         #
-        self.installEventFilter(self)
         self.setFocusProxy(self.parent())
         #
         self._list_widget = _QtChooseDropView(self)
@@ -1593,19 +1523,13 @@ class _QtChooseDropWidget1(
         self._list_widget.setSpacing(2)
         self._list_widget.setUniformItemSizes(True)
         #
-        self._region = 0
-        #
         self._choose_index = None
         #
-        self._side = 2
-        self._margin = 8
-        self._shadow_radius = 4
+        self._frame_border_color = QtBackgroundColor.Light
+        self._hovered_frame_border_color = QtBackgroundColor.Hovered
+        self._selected_frame_border_color = QtBackgroundColor.Selected
         #
-        self._frame_border_color = BorderColor.get('color-light')
-        self._hovered_frame_border_color = BorderColor.get('color-hovered')
-        self._selected_frame_border_color = BorderColor.get('color-selected')
-        #
-        self._frame_background_color = BackgroundColor.get('color-entry')
+        self._frame_background_color = QtBackgroundColor.Dark
 
     def paintEvent(self, event):
         x, y = 0, 0
@@ -1624,9 +1548,9 @@ class _QtChooseDropWidget1(
         widget, event = args
         if widget == self.parent():
             if event.type() == QtCore.QEvent.MouseButtonPress:
-                self._set_close_()
+                self._set_drop_close_()
             elif event.type() == QtCore.QEvent.WindowDeactivate:
-                self._set_close_()
+                self._set_drop_close_()
         elif widget == self:
             if event.type() == QtCore.QEvent.Close:
                 self._set_drop_end_()
@@ -1636,9 +1560,9 @@ class _QtChooseDropWidget1(
         self.update()
 
     def _set_widget_geometry_update_(self):
-        side = self._side
-        margin = self._margin
-        shadow_radius = self._shadow_radius
+        side = self._drop_side
+        margin = self._drop_margin
+        shadow_radius = self._drop_shadow_radius
         #
         x, y = 0, 0
         w, h = self.width(), self.height()
@@ -1652,23 +1576,13 @@ class _QtChooseDropWidget1(
             x+1, y+1, w-2, h-2
         )
         self._list_widget.updateGeometries()
-    @classmethod
-    def _get_choose_point_(cls, widget):
-        rect = widget.rect()
-        # p = QtCore.QPoint(rect.right(), rect.center().y())
-        p = widget.mapToGlobal(rect.bottomLeft())
-        return p.x(), p.y()+1
-    @classmethod
-    def _get_choose_size_(cls, widget):
-        rect = widget.rect()
-        return rect.width(), rect.height()
 
     def _set_drop_start_(self):
         parent = self.parent()
         content_name_texts = parent._get_item_values_()
         if isinstance(content_name_texts, (tuple, list)):
-            press_pos = self._get_choose_point_(parent)
-            width, height = self._get_choose_size_(parent)
+            press_pos = self._get_drop_pos_(parent)
+            width, height = self._get_drop_size_(parent)
             #
             current_name_text = parent._get_item_value_()
             #
@@ -1691,7 +1605,7 @@ class _QtChooseDropWidget1(
             #
             self.setFocus(QtCore.Qt.PopupFocusReason)
             #
-            self._set_drop_(
+            self._set_drop_fnc_(
                 press_pos,
                 (width, self._get_maximum_height_())
             )
@@ -1699,7 +1613,7 @@ class _QtChooseDropWidget1(
             self._list_widget._set_scroll_to_selected_item_top_()
             #
             self._list_widget.itemClicked.connect(
-                self._set_close_
+                self._set_drop_close_
             )
             parent._set_focused_(True)
 
@@ -1709,7 +1623,7 @@ class _QtChooseDropWidget1(
         if selected_item_widget:
             name_text = selected_item_widget._get_name_text_()
             parent._set_item_value_(name_text)
-            parent._set_choose_changed_emit_send_()
+            parent._set_item_choose_changed_emit_send_()
         #
         parent._set_focused_(False)
 
@@ -1722,23 +1636,189 @@ class _QtChooseDropWidget1(
             return y+h+1+4
         return 20
 
-    def _set_drop_(self, pos, size):
-        x, y = pos
-        w, h = size
-        # desktop_rect = get_qt_desktop_rect()
-        self.setGeometry(
-            x, y,
-            w, h
+
+class _QtItemRgbaChooseDropFrame(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtDropDef,
+):
+    def _set_widget_update_(self):
+        self.update()
+        self._chart.update()
+
+    def __init__(self, *args, **kwargs):
+        super(_QtItemRgbaChooseDropFrame, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.installEventFilter(self)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setFocusProxy(self.parent())
+        self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
+        #
+        self._set_frame_def_init_()
+        self._set_drop_def_init_(self)
+        #
+        self._frame_border_color = QtBackgroundColor.Light
+        self._hovered_frame_border_color = QtBackgroundColor.Hovered
+        self._selected_frame_border_color = QtBackgroundColor.Selected
+        self._frame_background_color = QtBackgroundColor.Dark
+
+        self._chart = _utl_gui_qt_wgt_chart._QtColorChooseChart(self)
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self.parent():
+            if event.type() == QtCore.QEvent.MouseButtonPress:
+                self._set_drop_close_()
+            elif event.type() == QtCore.QEvent.WindowDeactivate:
+                self._set_drop_close_()
+        elif widget == self:
+            if event.type() == QtCore.QEvent.Close:
+                self._set_drop_end_()
+            elif event.type() == QtCore.QEvent.Resize:
+                self._set_widget_geometry_update_()
+            elif event.type() == QtCore.QEvent.Show:
+                self._set_widget_geometry_update_()
+        return False
+
+    def paintEvent(self, event):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        #
+        bck_rect = QtCore.QRect(
+            x, y, w - 1, h - 1
         )
-        self._set_widget_geometry_update_()
+        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
         #
-        self.show()
+        painter._set_popup_frame_draw_(
+            bck_rect,
+            margin=self._drop_margin,
+            side=self._drop_side,
+            shadow_radius=self._drop_shadow_radius,
+            region=self._drop_region,
+            border_color=self._selected_frame_border_color,
+            background_color=self._frame_background_color,
+        )
+
+    def _set_widget_geometry_update_(self):
+        side = self._drop_side
+        margin = self._drop_margin
+        shadow_radius = self._drop_shadow_radius
         #
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        v_x, v_y = x+margin+side+1, y+margin+side+1
+        v_w, v_h = w-margin*2-side*2-shadow_radius-2, h-margin*2-side*2-shadow_radius - 2
+        #
+        self._chart.setGeometry(
+            v_x, v_y, v_w, v_h
+        )
+        self._chart.update()
+
+    def _set_drop_start_(self):
+        parent = self.parent()
+        press_rect = parent._get_color_rect_()
+        press_point = self._get_drop_press_point_(parent, press_rect)
+        desktop_rect = get_qt_desktop_rect()
+        self._set_drop_fnc_0_(
+            press_point,
+            press_rect,
+            desktop_rect,
+            320, 320
+        )
+        self._chart._set_color_rgba_(*parent._get_color_rgba_())
+        parent._set_focused_(True)
+
+    def _set_drop_end_(self, *args, **kwargs):
+        r, g, b, a = self._chart._get_color_rgba_()
+        self.parent()._set_color_rgba_(r, g, b, a)
+
+
+class _QtRgbaItem(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtRgbaDef,
+    #
+    utl_gui_qt_abstract._QtItemDef,
+    utl_gui_qt_abstract.AbsQtActionDef,
+    utl_gui_qt_abstract._QtItemPressActionDef,
+):
+    CHOOSE_DROP_FRAME_CLS = _QtItemRgbaChooseDropFrame
+    def _set_widget_update_(self):
         self.update()
 
-    def _set_close_(self):
-        self.close()
-        self.deleteLater()
+    def __init__(self, *args, **kwargs):
+        super(_QtRgbaItem, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.installEventFilter(self)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        #
+        self.setMaximumHeight(20)
+        self.setMinimumHeight(20)
+        #
+        self._set_color_def_init_()
+        #
+        self._set_item_def_init_()
+        self._set_action_def_init_(self)
+        self._set_item_press_action_def_init_()
+
+    def _set_widget_geometry_update_(self):
+        x, y = 0, 0
+        w, h = 48, self.height()
+        c_w, c_h = 32, 16
+        # print w, h
+        self._color_rect.setRect(
+            x+2, y+(h-c_h)/2, c_w, c_h
+        )
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            self._set_item_hover_event_filter_(event)
+            if event.type() == QtCore.QEvent.MouseButtonPress:
+                if event.button() == QtCore.Qt.LeftButton:
+                    self._set_action_flag_(self.ActionFlag.PressClick)
+                elif event.button() == QtCore.Qt.RightButton:
+                    pass
+                #
+                self._item_is_hovered = True
+                self.update()
+            elif event.type() == QtCore.QEvent.MouseButtonDblClick:
+                if event.button() == QtCore.Qt.LeftButton:
+                    self.press_db_clicked.emit()
+                elif event.button() == QtCore.Qt.RightButton:
+                    pass
+            elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                if event.button() == QtCore.Qt.LeftButton:
+                    if self._get_item_is_click_flag_() is True:
+                        self.press_clicked.emit()
+                        self._set_color_choose_drop_()
+                #
+                self._set_action_flag_clear_()
+                #
+                self._item_is_hovered = False
+                self.update()
+        return False
+
+    def paintEvent(self, event):
+        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        self._set_widget_geometry_update_()
+        # name
+        if self._color_rgba is not None:
+            offset = self._get_action_offset_()
+            background_color = self._get_color_rgba_255_()
+            painter._set_frame_draw_by_rect_(
+                self._color_rect,
+                border_color=QtBorderColor.Transparent,
+                background_color=background_color,
+                offset=offset
+            )
+
+    def _set_color_choose_drop_(self):
+        widget = self.CHOOSE_DROP_FRAME_CLS(self)
+        widget._set_drop_start_()
+
+    def _set_focused_(self, boolean):
+        self._is_focused = boolean
+        self.update()
 
 
 class _QtConstantValueEntryItem(
@@ -1815,7 +1895,7 @@ class _QtEnumerateValueEntryItem(
     utl_gui_qt_abstract._QtItemEntryActionDef,
 ):
     QT_VALUE_ENTRY_CLASS = QtLineEdit_
-    CHOOSE_DROP_WIDGET_CLS = _QtChooseDropWidget1
+    CHOOSE_DROP_FRAME_CLS = _QtItemChooseDropFrame
     def __init__(self, *args, **kwargs):
         super(_QtEnumerateValueEntryItem, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -1863,7 +1943,7 @@ class _QtEnumerateValueEntryItem(
             if cur_index != pre_index:
                 self._set_item_value_(values[cur_index])
                 # set value before
-                self._set_choose_changed_emit_send_()
+                self._set_item_choose_changed_emit_send_()
 
     def _set_item_value_entry_build_(self, value_type):
         self._item_value_type = value_type
@@ -1873,7 +1953,7 @@ class _QtEnumerateValueEntryItem(
         self._item_value_entry_widget._set_item_value_type_(self._item_value_type)
 
     def _set_item_choose_drop_(self):
-        widget = self.CHOOSE_DROP_WIDGET_CLS(self)
+        widget = self.CHOOSE_DROP_FRAME_CLS(self)
         widget._set_drop_start_()
 
     def _set_item_entry_enable_(self, boolean):
@@ -1921,12 +2001,12 @@ class _QtArrayValueEntryItem(
 
 class _QtHExpandItem0(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract._QtNameDef,
     utl_gui_qt_abstract._QtIconDef,
     #
     utl_gui_qt_abstract._QtItemDef,
-    utl_gui_qt_abstract._QtItemActionDef,
+    utl_gui_qt_abstract.AbsQtActionDef,
     utl_gui_qt_abstract._QtItemPressActionDef,
     utl_gui_qt_abstract._QtItemExpandActionDef,
 ):
@@ -1948,13 +2028,13 @@ class _QtHExpandItem0(
         self._icon_name_is_enable = True
         #
         self._set_item_def_init_()
-        self._set_item_action_def_init_()
+        self._set_action_def_init_(self)
         self._set_item_press_action_def_init_()
         self._set_item_expand_action_def_init_()
         #
         self._item_is_expanded = False
-        self._item_expand_icon_file_path_0 = utl_gui_core.Icons.get('expandopen')
-        self._item_expand_icon_file_path_1 = utl_gui_core.Icons.get('expandclose')
+        self._item_expand_icon_file_path_0 = utl_gui_core.RscIconFile.get('expandopen')
+        self._item_expand_icon_file_path_1 = utl_gui_core.RscIconFile.get('expandclose')
         self._item_is_hovered = False
         #
         self._set_item_expand_update_()
@@ -2021,13 +2101,13 @@ class _QtHExpandItem0(
             #
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
-                    self._set_item_action_flag_(self.EXPAND_CLICKED_FLAG)
+                    self._set_action_flag_(self.ActionFlag.ExpandClick)
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 if event.button() == QtCore.Qt.LeftButton:
-                    if self._get_item_action_flag_() == self.EXPAND_CLICKED_FLAG:
+                    if self._get_action_flag_() == self.ActionFlag.ExpandClick:
                         self._set_item_expand_action_run_()
-                        #
-                        self._set_item_action_flag_clear_()
+                #
+                self._set_action_flag_clear_()
         return False
 
     def paintEvent(self, event):
@@ -2035,17 +2115,17 @@ class _QtHExpandItem0(
         #
         self._set_widget_geometry_update_()
         #
-        offset = self._get_item_action_offset_()
+        offset = self._get_action_offset_()
         #
         frame_color = Color.BAR_FRAME_NORMAL
         painter._set_border_color_(frame_color)
-        bkg_color = [self._frame_background_color, self._hovered_frame_background_color][self._item_is_hovered]
-        # painter.setBrush(bkg_color)
+        background_color = [self._frame_background_color, self._hovered_frame_background_color][self._item_is_hovered]
+        # painter.setBrush(background_color)
         #
         painter._set_frame_draw_by_rect_(
             self._frame_rect,
-            border_color=bkg_color,
-            background_color=bkg_color,
+            border_color=background_color,
+            background_color=background_color,
             border_radius=1,
             offset=offset
         )
@@ -2061,7 +2141,7 @@ class _QtHExpandItem0(
                 painter._set_name_icon_draw_by_rect_(
                     self._name_icon_rect,
                     self._icon_name_text,
-                    # background_color=bkg_color,
+                    # background_color=background_color,
                     offset=offset,
                     border_radius=2,
                 )
@@ -2090,12 +2170,12 @@ class _QtHExpandItem0(
 
 class _QtHExpandItem1(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract._QtNameDef,
     utl_gui_qt_abstract._QtIconDef,
     #
     utl_gui_qt_abstract._QtItemDef,
-    utl_gui_qt_abstract._QtItemActionDef,
+    utl_gui_qt_abstract.AbsQtActionDef,
     utl_gui_qt_abstract._QtItemPressActionDef,
     utl_gui_qt_abstract._QtItemExpandActionDef,
 ):
@@ -2114,15 +2194,15 @@ class _QtHExpandItem1(
         self._set_icon_def_init_()
         #
         self._set_item_def_init_()
-        self._set_item_action_def_init_()
+        self._set_action_def_init_(self)
         self._set_item_press_action_def_init_()
         self._set_item_expand_action_def_init_()
         #
         self._item_is_expand_enable = True
         self._item_is_expanded = False
-        self._item_expand_icon_file_path_0 = utl_gui_core.Icons.get('qt-style/arrow-down')
-        self._item_expand_icon_file_path_1 = utl_gui_core.Icons.get('qt-style/arrow-right')
-        self._item_expand_icon_file_path_2 = utl_gui_core.Icons.get('qt-style/arrow-up')
+        self._item_expand_icon_file_path_0 = utl_gui_core.RscIconFile.get('qt-style/arrow-down')
+        self._item_expand_icon_file_path_1 = utl_gui_core.RscIconFile.get('qt-style/arrow-right')
+        self._item_expand_icon_file_path_2 = utl_gui_core.RscIconFile.get('qt-style/arrow-up')
         r, g, b = 135, 135, 135
         h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
         color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
@@ -2150,15 +2230,15 @@ class _QtHExpandItem1(
         #
         self._set_widget_geometry_update_()
         #
-        offset = self._get_item_action_offset_()
+        offset = self._get_action_offset_()
         #
         frame_color = Color.BAR_FRAME_NORMAL
         painter._set_border_color_(frame_color)
-        bkg_color = [self._frame_background_color, self._hovered_frame_background_color][self._item_is_hovered]
+        background_color = [self._frame_background_color, self._hovered_frame_background_color][self._item_is_hovered]
         painter._set_frame_draw_by_rect_(
             rect=self._frame_rect,
-            border_color=bkg_color,
-            background_color=bkg_color,
+            border_color=background_color,
+            background_color=background_color,
             border_radius=self._frame_border_radius,
             offset=offset
         )
@@ -2176,13 +2256,13 @@ class _QtHExpandItem1(
             #
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
-                    self._set_item_action_flag_(self.EXPAND_CLICKED_FLAG)
+                    self._set_action_flag_(self.ActionFlag.ExpandClick)
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 if event.button() == QtCore.Qt.LeftButton:
-                    if self._get_item_action_flag_() == self.EXPAND_CLICKED_FLAG:
+                    if self._get_action_flag_() == self.ActionFlag.ExpandClick:
                         self._set_item_expand_action_run_()
-                        #
-                        self._set_item_action_flag_clear_()
+                #
+                self._set_action_flag_clear_()
         return False
 
     def _set_item_expand_update_(self):
@@ -2324,7 +2404,7 @@ class QtTreeWidgetItem(
         self._icon_name_text = text
         self.setIcon(
             column,
-            utl_gui_qt_core.QtUtilMtd.get_name_text_icon(text)
+            utl_gui_qt_core.QtUtilMtd.get_name_text_icon_(text)
         )
 
     def _set_icon_state_update_(self, column=0):
@@ -2353,7 +2433,7 @@ class QtTreeWidgetItem(
                 x, y = rect.x(), rect.y()
                 w, h = rect.width(), rect.height()
                 #
-                border_color = Color.ICON_BORDER_NORMAL
+                border_color = QtBorderColor.Icon
                 #
                 state_rect = QtCore.QRect(
                     x, y+h/2, w/2, h/2
@@ -2379,7 +2459,9 @@ class QtTreeWidgetItem(
         self._set_icon_state_update_(column)
         #
         if state == utl_gui_core.State.NORMAL:
-            self.setForeground(column, QtGui.QBrush(Color.NORMAL))
+            self.setForeground(
+                column, QtGui.QBrush(Color.NORMAL)
+            )
         elif state == utl_gui_core.State.ENABLE:
             self.setForeground(column, QtGui.QBrush(Color.ENABLE))
         elif state == utl_gui_core.State.DISABLE:
@@ -2474,6 +2556,9 @@ class QtTreeWidgetItem(
         column_count = self.treeWidget().columnCount()
         return [self.text(i) for i in range(column_count)]
 
+    def _get_name_text_(self, column=0):
+        return self.text(column)
+
     def _get_item_keyword_filter_tgt_keys_(self):
         return self._get_name_texts_()
     # show
@@ -2498,6 +2583,33 @@ class QtTreeWidgetItem(
 
     def _set_name_(self, text, column=0):
         self.setText(column, text)
+
+    def _set_tool_tip_(self, raw, column=0, as_markdown_style=False):
+        if raw is not None:
+            if isinstance(raw, (tuple, list)):
+                _ = u'\n'.join(raw)
+            elif isinstance(raw, (str, unicode)):
+                _ = raw
+            else:
+                raise TypeError()
+            #
+            self._set_tool_tip_text_(_, column, as_markdown_style)
+
+    def _set_tool_tip_text_(self, text, column=0, markdown_style=False):
+        if hasattr(self, 'setToolTip'):
+            if markdown_style is True:
+                import markdown
+                html = markdown.markdown(text)
+                # noinspection PyCallingNonCallable
+                self.setToolTip(column, html)
+            else:
+                html = '<html>\n<body>\n'
+                html += '<h3>{}</h3>\n'.format(self._get_name_text_())
+                for i in text.split('\n'):
+                    html += '<ul>\n<li><i>{}</i></li>\n</ul>\n'.format(i)
+                html += '</body>\n</html>'
+                # noinspection PyCallingNonCallable
+                self.setToolTip(column, html)
 
     def _set_item_show_loading_update_(self):
         self._item_show_loading_index += 1
@@ -2616,7 +2728,7 @@ class QtListWidgetItem(
 
 class _QtHItem(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract._QtIndexDef,
     utl_gui_qt_abstract._QtTypeDef,
     utl_gui_qt_abstract._QtIconDef,
@@ -2624,7 +2736,7 @@ class _QtHItem(
     utl_gui_qt_abstract._QtPathDef,
     # action
     utl_gui_qt_abstract._QtItemDef,
-    utl_gui_qt_abstract._QtItemActionDef,
+    utl_gui_qt_abstract.AbsQtActionDef,
     utl_gui_qt_abstract._QtItemPressActionDef,
     utl_gui_qt_abstract._QtItemSelectActionDef,
 ):
@@ -2642,9 +2754,11 @@ class _QtHItem(
         self._set_path_def_init_()
         #
         self._set_item_def_init_()
-        self._set_item_action_def_init_()
+        self._set_action_def_init_(self)
         self._set_item_press_action_def_init_()
         self._set_item_select_action_def_init_()
+        #
+        self._frame_background_color = QtBackgroundColor.Light
 
     def eventFilter(self, *args):
         widget, event = args
@@ -2668,15 +2782,15 @@ class _QtHItem(
         #
         self._set_widget_geometry_update_()
         #
-        bkg_color = painter._get_item_background_color_(
+        background_color = painter._get_item_background_color_by_rect_(
             self._frame_rect,
             is_hovered=self._item_is_hovered,
-            is_selected=self._is_selected
+            is_selected=self._item_is_selected
         )
         painter._set_frame_draw_by_rect_(
             self._frame_rect,
-            border_color=Color.TRANSPARENT,
-            background_color=bkg_color,
+            border_color=QtBackgroundColor.Transparent,
+            background_color=background_color,
             border_radius=1
         )
         # name-icon
@@ -2685,7 +2799,7 @@ class _QtHItem(
                 painter._set_name_icon_draw_by_rect_(
                     self._name_icon_rect,
                     self._icon_name_text,
-                    background_color=bkg_color,
+                    background_color=background_color,
                     # offset=0,
                     border_radius=2,
                 )
@@ -2696,7 +2810,9 @@ class _QtHItem(
                 self._name_text,
                 color=self._name_text_color,
                 font=self._name_text_font,
-                text_option=self._name_text_option
+                text_option=self._name_text_option,
+                is_hovered=self._item_is_hovered,
+                is_selected=self._item_is_selected,
             )
         #
         if self._index is not None:
@@ -2745,7 +2861,7 @@ class _QtHItem(
 
 class _QtListItemWidget(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract._QtIndexDef,
     utl_gui_qt_abstract._QtImageDef,
     utl_gui_qt_abstract.AbsQtMovieDef,
@@ -2756,7 +2872,7 @@ class _QtListItemWidget(
     utl_gui_qt_abstract.AbsQtNamesDef,
     #
     utl_gui_qt_abstract._QtItemDef,
-    utl_gui_qt_abstract._QtItemActionDef,
+    utl_gui_qt_abstract.AbsQtActionDef,
     utl_gui_qt_abstract._QtItemPressActionDef,
     utl_gui_qt_abstract._QtItemSelectActionDef,
     #
@@ -2782,7 +2898,7 @@ class _QtListItemWidget(
         self._set_movie_def_init_()
         #
         self._set_item_def_init_()
-        self._set_item_action_def_init_()
+        self._set_action_def_init_(self)
         self._set_item_press_action_def_init_()
         self._set_item_select_action_def_init_()
         #
@@ -2804,6 +2920,8 @@ class _QtListItemWidget(
         #
         self._frame_size = 128, 128
         #
+        self._frame_background_color = QtBackgroundColor.Light
+        #
         self._is_viewport_show_enable = True
         #
         self.setFont(get_font())
@@ -2820,19 +2938,21 @@ class _QtListItemWidget(
                 if event.button() == QtCore.Qt.RightButton:
                     self._set_menu_show_()
                 elif event.button() == QtCore.Qt.LeftButton:
-                    self._set_item_action_flag_(self.PRESS_CLICK_FLAG)
+                    self._set_item_pressed_(True)
+                    self._set_action_flag_(self.ActionFlag.PressClick)
             #
             elif event.type() == QtCore.QEvent.MouseButtonDblClick:
                 if event.button() == QtCore.Qt.LeftButton:
-                    self._set_item_action_flag_(self.PRESS_DB_CLICK_FLAG)
+                    self._set_item_pressed_(True)
+                    self._set_action_flag_(self.ActionFlag.PressDbClick)
             #
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
-                if self._get_item_action_flag_is_match_(self.PRESS_CLICK_FLAG):
+                if self._get_action_flag_is_match_(self.ActionFlag.PressClick):
                     self.press_clicked.emit()
-                elif self._get_item_action_flag_is_match_(self.PRESS_DB_CLICK_FLAG):
+                elif self._get_action_flag_is_match_(self.ActionFlag.PressDbClick):
                     self.press_db_clicked.emit()
-                #
-                self._set_item_action_flag_clear_()
+                self._set_item_pressed_(False)
+                self._set_action_flag_clear_()
         return False
 
     def paintEvent(self, event):
@@ -2842,13 +2962,14 @@ class _QtListItemWidget(
         #
         w, h = self.width(), self.height()
         #
-        offset = [0, 2][self._get_item_action_flag_() is not None]
+        offset = self._get_action_offset_()
         #
         bkg_rect = QtCore.QRect(1, 1, w-2, h-2)
-        bkg_color = painter._get_item_background_color_(
+        background_color = painter._get_item_background_color_by_rect_(
             bkg_rect,
             is_hovered=self._item_is_hovered,
-            is_selected=self._is_selected,
+            is_selected=self._item_is_selected,
+            is_actioned=self._get_is_actioned_()
         )
         #
         if self._get_item_()._item_show_loading_is_started is True:
@@ -2859,8 +2980,8 @@ class _QtListItemWidget(
         else:
             painter._set_frame_draw_by_rect_(
                 bkg_rect,
-                border_color=Color.TRANSPARENT,
-                background_color=bkg_color,
+                border_color=QtBackgroundColor.Transparent,
+                background_color=background_color,
                 border_radius=1,
                 offset=offset
             )
@@ -2869,8 +2990,8 @@ class _QtListItemWidget(
                 if self._get_has_icon_():
                     painter._set_frame_draw_by_rect_(
                         self._icon_frame_rect,
-                        border_color=Color.TRANSPARENT,
-                        background_color=Color.ITEM_BACKGROUND_NORMAL,
+                        border_color=self._frame_background_color,
+                        background_color=self._frame_background_color,
                         offset=offset
                     )
             #
@@ -2887,8 +3008,8 @@ class _QtListItemWidget(
                 if self._get_has_image_():
                     painter._set_frame_draw_by_rect_(
                         self._image_frame_rect,
-                        border_color=Color.TRANSPARENT,
-                        background_color=Color.ITEM_BACKGROUND_NORMAL,
+                        border_color=self._frame_background_color,
+                        background_color=self._frame_background_color,
                         offset=offset
                     )
             # icon
@@ -2930,7 +3051,9 @@ class _QtListItemWidget(
                                 key_text=i_key,
                                 value_text=i_value,
                                 key_text_width=key_text_width,
-                                offset=offset
+                                offset=offset,
+                                is_hovered=self._item_is_hovered,
+                                is_selected=self._item_is_selected
                             )
                     else:
                         for i_name_index in name_indices:
@@ -2940,7 +3063,9 @@ class _QtListItemWidget(
                                 font=get_font(),
                                 text_option=text_option,
                                 word_warp=self._name_word_warp,
-                                offset=offset
+                                offset=offset,
+                                is_hovered=self._item_is_hovered,
+                                is_selected=self._item_is_selected
                             )
             # image
             if self._get_has_image_() is True:
@@ -2968,6 +3093,8 @@ class _QtListItemWidget(
                     self._movie_rect,
                     offset=offset,
                     is_hovered=self._item_is_hovered,
+                    is_selected=self._item_is_selected,
+                    is_actioned=self._get_is_actioned_()
                 )
             #
             # painter._set_text_draw_by_rect_(
@@ -3193,9 +3320,10 @@ class _QtListItemWidget(
 
 class _AbsQtSplitterHandle(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract._QtItemDef,
-    utl_gui_qt_abstract._QtItemActionDef,
+    #
+    utl_gui_qt_abstract.AbsQtActionDef,
     utl_gui_qt_abstract._QtItemPressActionDef,
     #
     utl_gui_qt_abstract.AbsQtItemStateDef,
@@ -3283,25 +3411,29 @@ class _AbsQtSplitterHandle(
         #
         self._set_frame_def_init_()
         self._set_item_def_init_()
-        self._set_item_action_def_init_()
+        self._set_action_def_init_(self)
         self._set_item_press_action_def_init_()
         #
         self._set_item_state_def_init_()
         #
-        self._hovered_frame_border_color = 95, 95, 95
-        self._hovered_frame_background_color = 95, 95, 95
-        #
-        self._selected_frame_border_color = 63, 127, 255
-        self._selected_frame_background_color = 63, 127, 255
+        self._hovered_frame_border_color = QtBorderColor.Button
+        self._hovered_frame_background_color = QtBackgroundColor.Button
+
+        self._actioned_frame_border_color = QtBorderColor.Actioned
+        self._actioned_frame_background_color = QtBackgroundColor.Actioned
 
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Enter:
                 if self._get_orientation_() == QtCore.Qt.Horizontal:
-                    self.setCursor(QtCore.Qt.SplitHCursor)
+                    self._set_action_flag_(
+                        self.ActionFlag.SplitHHover
+                    )
                 elif self._get_orientation_() == QtCore.Qt.Vertical:
-                    self.setCursor(QtCore.Qt.SplitVCursor)
+                    self._set_action_flag_(
+                        self.ActionFlag.SplitVHover
+                    )
                 #
                 self._set_item_hovered_(True)
             elif event.type() == QtCore.QEvent.Leave:
@@ -3310,15 +3442,30 @@ class _AbsQtSplitterHandle(
                 self._set_item_hovered_(False)
             #
             elif event.type() == QtCore.QEvent.MouseButtonPress:
+                if self._get_orientation_() == QtCore.Qt.Horizontal:
+                    self._set_action_flag_(
+                        self.ActionFlag.SplitHClick
+                    )
+                elif self._get_orientation_() == QtCore.Qt.Vertical:
+                    self._set_action_flag_(
+                        self.ActionFlag.SplitVClick
+                    )
                 self._set_move_started_(event)
                 self._set_item_pressed_(True)
-                self._set_widget_update_()
             elif event.type() == QtCore.QEvent.MouseMove:
+                if self._get_orientation_() == QtCore.Qt.Horizontal:
+                    self._set_action_flag_(
+                        self.ActionFlag.SplitHMove
+                    )
+                elif self._get_orientation_() == QtCore.Qt.Vertical:
+                    self._set_action_flag_(
+                        self.ActionFlag.SplitVMove
+                    )
                 self._set_move_running_(event)
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 self._set_move_stopped_(event)
                 self._set_item_pressed_(False)
-                self._set_widget_update_()
+                self._set_action_flag_clear_()
         return False
 
     def paintEvent(self, event):
@@ -3326,27 +3473,27 @@ class _AbsQtSplitterHandle(
         #
         self._set_widget_geometry_update_()
         #
-        offset = self._get_item_action_offset_()
+        offset = self._get_action_offset_()
         #
         if self._item_is_enable is True:
             condition = self._item_is_hovered, self._item_is_pressed
             if condition == (False, False):
-                border_color = Color.TRANSPARENT
-                background_color = Color.TRANSPARENT
+                border_color = QtBackgroundColor.Transparent
+                background_color = QtBackgroundColor.Transparent
             elif condition == (False, True):
-                border_color = self._selected_frame_border_color
-                background_color = self._selected_frame_background_color
+                border_color = self._actioned_frame_border_color
+                background_color = self._actioned_frame_background_color
             elif condition == (True, True):
-                border_color = self._selected_frame_border_color
-                background_color = self._selected_frame_background_color
+                border_color = self._actioned_frame_border_color
+                background_color = self._actioned_frame_background_color
             elif condition == (True, False):
                 border_color = self._hovered_frame_border_color
                 background_color = self._hovered_frame_background_color
             else:
                 raise SyntaxError()
         else:
-            border_color = Color.BUTTON_BORDER_DISABLE
-            background_color = Color.BUTTON_BACKGROUND_DISABLE
+            border_color = QtBackgroundColor.ButtonDisable
+            background_color = QtBackgroundColor.ButtonDisable
         #
         painter._set_frame_draw_by_rect_(
             self._frame_rect,
@@ -3438,9 +3585,9 @@ class _AbsQtSplitterHandle(
         pass
 
     def _set_move_running_(self, event):
-        self._contract_l_button._set_item_action_flag_(self._contract_l_button.PRESS_MOVE_FLAG)
-        self._contract_r_button._set_item_action_flag_(self._contract_r_button.PRESS_MOVE_FLAG)
-        self._swap_button._set_item_action_flag_(self._swap_button.PRESS_MOVE_FLAG)
+        self._contract_l_button._set_action_flag_(self.ActionFlag.PressMove)
+        self._contract_r_button._set_action_flag_(self.ActionFlag.PressMove)
+        self._swap_button._set_action_flag_(self.ActionFlag.PressMove)
         p = event.pos()
         x, y = p.x(), p.y()
         splitter = self.splitter()
@@ -3456,9 +3603,9 @@ class _AbsQtSplitterHandle(
             splitter._set_adjacent_sizes_(indices, [s_l, s_r])
 
     def _set_move_stopped_(self, event):
-        self._contract_l_button._set_item_action_flag_clear_()
-        self._contract_r_button._set_item_action_flag_clear_()
-        self._swap_button._set_item_action_flag_clear_()
+        self._contract_l_button._set_action_flag_clear_()
+        self._contract_r_button._set_action_flag_clear_()
+        self._swap_button._set_action_flag_clear_()
 
 
 class _QtHSplitterHandle(_AbsQtSplitterHandle):
@@ -3475,7 +3622,7 @@ class _QtVSplitterHandle(_AbsQtSplitterHandle):
 
 class _QtWindowHead(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameDef,
 ):
     def _set_widget_update_(self):
         self.update()
@@ -3534,3 +3681,34 @@ class _QtWindowHead(
             self._close_button.setGeometry(
                 i_x-i_w, i_y, i_w, i_h
             )
+
+
+class _QtItemGuideRect(
+    utl_gui_qt_abstract._QtIconDef,
+    utl_gui_qt_abstract._QtTypeDef,
+    utl_gui_qt_abstract._QtNameDef,
+    utl_gui_qt_abstract._QtPathDef,
+    utl_gui_qt_abstract.AbsQtFrameDef,
+    #
+    utl_gui_qt_abstract.AbsQtItemActionChooseDef,
+):
+    def _set_widget_update_(self):
+        pass
+
+    def __init__(self, *args, **kwargs):
+        self._set_icon_def_init_()
+        self._set_type_def_init_()
+        self._set_name_def_init_()
+        self._set_path_def_init_()
+        self._set_frame_def_init_()
+        self._set_item_action_choose_def_init_()
+        #
+        self._set_icon_file_path_(
+            self._choose_collapse_icon_file_path
+        )
+
+    def _get_icon_file_path_(self):
+        return [
+            self._choose_collapse_icon_file_path,
+            self._choose_expand_icon_file_path
+        ][self._get_item_choose_is_dropped_()]

@@ -139,7 +139,7 @@ class PrxDccObjTreeViewTagFilterOpt(object):
             item_prx.set_expanded(True)
         #
         item_prx.set_checked(True)
-        item_prx.set_icon_by_name(key, 0)
+        item_prx.set_icon_by_text(key, 0)
         item_prx.set_emit_send_enable(True)
         return item_prx
 
@@ -286,7 +286,7 @@ class PrxDccObjTreeViewAddOpt(object):
             item_prx.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
             item_prx.set_expanded(True)
             item_prx.set_checked(True)
-            item_prx.set_icon_by_name(obj.type_name, 1)
+            item_prx.set_icon_by_text(obj.type_name, 1)
             self._obj_add_dict[obj_path] = item_prx
             return item_prx
 
@@ -318,7 +318,7 @@ class PrxDccObjTreeViewAddOpt(object):
         item_prx.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
         item_prx.set_expanded(True)
         item_prx.set_checked(True)
-        item_prx.set_icon_by_name(obj.type_name, 1)
+        item_prx.set_icon_by_text(obj.type_name, 1)
         self._obj_add_dict[obj.path] = item_prx
         return item_prx
 
@@ -487,7 +487,7 @@ class PrxStgObjTreeViewAddOpt(object):
                     **kwargs
                 )
             #
-            # item_prx.set_icon_by_name(obj.type_name, 0)
+            # item_prx.set_icon_by_text(obj.type_name, 0)
             item_prx.set_checked(True)
             self._obj_add_dict[obj_key] = item_prx
             #
@@ -608,7 +608,7 @@ class PrxDccObjTreeViewAddOpt1(object):
         item_prx.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
         item_prx.set_expanded(True)
         item_prx.set_checked(True)
-        item_prx.set_icon_by_name(obj.type_name, 1)
+        item_prx.set_icon_by_text(obj.type_name, 1)
         self._obj_add_dict[obj.path] = item_prx
         return item_prx
 
@@ -716,8 +716,8 @@ class PrxRsvObjTreeViewAddOpt(object):
         obj_path = obj.path
         obj_type = obj.type
         if obj_path in self._obj_add_dict:
-            item_prx = self._obj_add_dict[obj_path]
-            return False, item_prx, None
+            prx_item = self._obj_add_dict[obj_path]
+            return False, prx_item, None
         else:
             create_kwargs = dict(
                 name='loading ...',
@@ -728,36 +728,36 @@ class PrxRsvObjTreeViewAddOpt(object):
             parent = obj.get_parent()
             if parent is not None:
                 item_prx_parent = self._obj_add_dict[parent.path]
-                item_prx = item_prx_parent.set_child_add(
+                prx_item = item_prx_parent.set_child_add(
                     **create_kwargs
                 )
             else:
-                item_prx = self._prx_tree_view.set_item_add(
+                prx_item = self._prx_tree_view.set_item_add(
                     **create_kwargs
                 )
             #
-            item_prx.set_checked(True)
-            item_prx.set_keyword_filter_tgt_contexts([obj_path, obj_type])
-            obj.set_obj_gui(item_prx)
-            item_prx.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
-            self._obj_add_dict[obj_path] = item_prx
+            prx_item.set_checked(True)
+            prx_item.set_keyword_filter_tgt_contexts([obj_path, obj_type])
+            obj.set_obj_gui(prx_item)
+            prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
+            self._obj_add_dict[obj_path] = prx_item
             #
             if use_show_thread is True:
-                item_prx.set_show_method(
-                    lambda *args, **kwargs: self._set_item_prx_show_(item_prx)
+                prx_item.set_show_method(
+                    lambda *args, **kwargs: self.__set_prx_item_show_deferred_(prx_item)
                 )
-                return True, item_prx, None
+                return True, prx_item, None
             else:
-                self._set_item_prx_show_(item_prx)
-                return True, item_prx, None
+                self.__set_prx_item_show_deferred_(prx_item)
+                return True, prx_item, None
 
-    def _set_item_prx_show_(self, item_prx):
+    def __set_prx_item_show_deferred_(self, prx_item):
         def expand_by_condition_fnc_(*args):
             _prx_item = args[0]
             type_name = _prx_item.get_name(1)
             return type_name
         #
-        obj = item_prx.get_gui_dcc_obj(namespace=self._dcc_namespace)
+        obj = prx_item.get_gui_dcc_obj(namespace=self._dcc_namespace)
         obj_name = obj.name
         obj_path = obj.path
         obj_type = obj.type
@@ -769,28 +769,28 @@ class PrxRsvObjTreeViewAddOpt(object):
             obj.get_gui_extend_menu_raw() or []
         )
         #
-        item_prx.set_name(obj_name)
-        item_prx.set_tool_tips((obj_path,))
+        prx_item.set_name(obj_name)
+        prx_item.set_tool_tip(obj.description)
         #
         menu_raw.extend(
             [
                 ('expanded', ),
-                ('Expand branch', None, item_prx.set_expand_branch),
-                ('Collapse branch', None, item_prx.set_collapse_branch),
+                ('Expand branch', None, prx_item.set_expand_branch),
+                ('Collapse branch', None, prx_item.set_collapse_branch),
                 # (),
                 # [
                 #     'Expand branch to', None,
                 #     [
-                #         ('Role / Sequence', None, lambda: item_prx.set_expand_branch_by_condition(expand_by_condition_fnc_, ['role', 'sequence'])),
-                #         ('Asset / Shot', None, lambda: item_prx.set_expand_branch_by_condition(expand_by_condition_fnc_, ['asset', 'shot'])),
-                #         ('Step', None, lambda: item_prx.set_expand_branch_by_condition(expand_by_condition_fnc_, ['step'])),
-                #         ('Task', None, lambda: item_prx.set_expand_branch_by_condition(expand_by_condition_fnc_, ['task']))
+                #         ('Role / Sequence', None, lambda: prx_item.set_expand_branch_by_condition(expand_by_condition_fnc_, ['role', 'sequence'])),
+                #         ('Asset / Shot', None, lambda: prx_item.set_expand_branch_by_condition(expand_by_condition_fnc_, ['asset', 'shot'])),
+                #         ('Step', None, lambda: prx_item.set_expand_branch_by_condition(expand_by_condition_fnc_, ['step'])),
+                #         ('Task', None, lambda: prx_item.set_expand_branch_by_condition(expand_by_condition_fnc_, ['task']))
                 #     ]
                 # ]
             ]
         )
-        item_prx.set_gui_menu_raw(menu_raw)
-        item_prx.set_menu_content(obj.get_gui_menu_content())
+        prx_item.set_gui_menu_raw(menu_raw)
+        prx_item.set_menu_content(obj.get_gui_menu_content())
         #
         self._prx_tree_view.set_loading_update()
 
@@ -806,10 +806,10 @@ class PrxRsvObjTreeViewAddOpt(object):
                     if i_show_thread is not None:
                         show_threads.append(i_show_thread)
         #
-        is_create, item_prx, thread = self._set_item_prx_add_(obj, use_show_thread=True)
+        is_create, prx_item, thread = self._set_item_prx_add_(obj, use_show_thread=True)
         if thread is not None:
             show_threads.append(thread)
-        return is_create, item_prx, show_threads
+        return is_create, prx_item, show_threads
 
 
 class PrxObjTreeViewAddOpt(object):
