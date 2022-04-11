@@ -521,6 +521,9 @@ class PrxConstantEntry(AbsRsvTypeQtEntry):
     def set_value_type(self, value_type):
         self._qt_entry_widget._set_item_value_type_(value_type)
 
+    def set_use_as_text_frames(self):
+        self._qt_entry_widget._set_use_as_text_frames_()
+
     def get(self):
         return self._qt_entry_widget._get_item_value_()
 
@@ -655,7 +658,7 @@ class PrxFloatArrayEntry(PrxArrayEntry):
 
 class PrxRgbEntry(AbsRsvTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtRgbaItem
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtRgbaValueEntryItem
     def __init__(self, *args, **kwargs):
         super(PrxRgbEntry, self).__init__(*args, **kwargs)
         # self._qt_entry_widget._set_item_value_entry_build_(3, float)
@@ -1205,7 +1208,7 @@ class AbsPrxTypePort(AbsPrxPortDef):
         if text is not None:
             if isinstance(text, (tuple, list)):
                 if len(text) > 0:
-                    text_ = '\n'.join(('{}'.format(i) for i in text))
+                    text_ = u'\n'.join((u'{}'.format(i) for i in text))
                 elif len(text) == 1:
                     text_ = text[0]
                 else:
@@ -1289,6 +1292,13 @@ class PrxStringPort(PrxConstantPort):
     ENTRY_CLASS = PrxStringEntry
     def __init__(self, *args, **kwargs):
         super(PrxStringPort, self).__init__(*args, **kwargs)
+
+
+class PrxFramesPort(PrxConstantPort):
+    ENTRY_CLASS = PrxStringEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxFramesPort, self).__init__(*args, **kwargs)
+        self._prx_port_entry.set_use_as_text_frames()
 
 
 class PrxIntegerPort(PrxConstantPort):
@@ -1974,6 +1984,14 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             port.set(value_)
         elif widget_ in ['script']:
             port = PrxScriptPort(
+                port_path,
+                node_widget=self.widget
+            )
+            port.set(value_)
+            port.set_default(value_)
+        #
+        elif widget_ in ['frames']:
+            port = PrxFramesPort(
                 port_path,
                 node_widget=self.widget
             )

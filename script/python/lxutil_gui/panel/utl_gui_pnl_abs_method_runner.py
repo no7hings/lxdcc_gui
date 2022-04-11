@@ -359,7 +359,7 @@ class AbsSceneMethodRunnerPanel(
                         if method is not None:
                             method.set_check_rest()
                             method._set_check_debug_run_()
-                            method.set_check_result_update(self._task_properties)
+                            method.set_check_result_update(self._rsv_scene_properties)
                             check_tags = method.get_check_tags()
                             method_obj_gui.check_state.set(check_tags)
                             self._set_obj_check_result_build_(method, method_obj_gui)
@@ -367,7 +367,7 @@ class AbsSceneMethodRunnerPanel(
                 p.set_stop()
             #
             self._root_obj_gui.set_tool_tip(
-                self._task_properties.get_str_as_yaml_style()
+                self._rsv_scene_properties.get_str_as_yaml_style()
             )
 
     def _set_checked_methods_repair_run_(self):
@@ -429,30 +429,30 @@ class AbsSceneMethodRunnerPanel(
                 if new_scene_src_file_path:
                     _port.set_append(new_scene_src_file_path)
                     _port.set_current(new_scene_src_file_path)
-                    self._task_properties = self._resolver.get_task_properties_by_any_scene_file_path(new_scene_src_file_path)
-                    if self._task_properties is not None:
-                        self._task_properties.set('option.scheme', scheme)
+                    self._rsv_scene_properties = self._resolver.get_task_properties_by_any_scene_file_path(new_scene_src_file_path)
+                    if self._rsv_scene_properties is not None:
+                        self._rsv_scene_properties.set('option.scheme', scheme)
                     else:
-                        self._task_properties = None
+                        self._rsv_scene_properties = None
                 else:
-                    self._task_properties = None
+                    self._rsv_scene_properties = None
             else:
-                self._task_properties = None
+                self._rsv_scene_properties = None
         else:
-            self._task_properties = None
+            self._rsv_scene_properties = None
 
     def _set_properties_update_(self):
         scheme = self._configure_gui.get_port('scheme').get()
         #
         if scheme == 'work':
-            version = self._task_properties.get('version')
-            self._task_properties.set('option.workspace', 'work')
-            self._task_properties.set('option.version', version)
+            version = self._rsv_scene_properties.get('version')
+            self._rsv_scene_properties.set('option.workspace', 'work')
+            self._rsv_scene_properties.set('option.version', version)
         elif scheme == 'publish':
-            self._task_properties.set('option.workspace', 'publish')
+            self._rsv_scene_properties.set('option.workspace', 'publish')
             version_scheme = self._configure_gui.get_port('version').get()
-            version = self._resolver.get_task_publish_version(self._task_properties, version_scheme)
-            self._task_properties.set('option.version', version)
+            version = self._resolver.get_task_publish_version(self._rsv_scene_properties, version_scheme)
+            self._rsv_scene_properties.set('option.version', version)
 
     def _set_method_obj_guis_build_(self):
         tree_viewer = self._tree_viewer
@@ -461,7 +461,7 @@ class AbsSceneMethodRunnerPanel(
         tree_viewer.set_clear()
         if method_obj_paths:
             root_obj = self._methods_loader.get_root_obj()
-            root_obj.properties = self._task_properties
+            root_obj.properties = self._rsv_scene_properties
             self._root_obj_gui = self._set_method_group_obj_gui_add_(root_obj, tree_viewer=tree_viewer)
             self._root_obj_gui.set_checked(True)
             self._root_obj_gui.set_expanded(True)
@@ -484,13 +484,13 @@ class AbsSceneMethodRunnerPanel(
     def _set_refresh_all_(self):
         self._method_obj_paths = []
         self._get_task_properties_()
-        if self._task_properties is not None:
+        if self._rsv_scene_properties is not None:
             # self._set_properties_update_()
             #
             if utl_core.System.get_user_name() == 'dongchangbao':
                 utl_core.Environ.set_td_enable(True)
             #
-            self._methods_loader = utl_fnc_objects.TaskMethodsLoader(self._task_properties)
+            self._methods_loader = utl_fnc_objects.TaskMethodsLoader(self._rsv_scene_properties)
             entity_path = self._methods_loader.get_entity_obj_path()
             #
             self._method_obj_paths = self._methods_loader.get_entity_method_obj_paths(entity_path)

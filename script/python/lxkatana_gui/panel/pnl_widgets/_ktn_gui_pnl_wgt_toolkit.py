@@ -121,9 +121,9 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
         work_look_ass_file_obj = utl_dcc_objects.OsFile(work_look_ass_file_path)
         if work_look_ass_file_obj.get_is_exists() is True:
             ktn_fnc_importers.LookAssImporter(
-                file_path=work_look_ass_file_path,
-                root='/root/materials',
                 option=dict(
+                    file=work_look_ass_file_path,
+                    location='/root/materials',
                     look_pass=look_pass_name
                 )
             ).set_run()

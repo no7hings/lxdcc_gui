@@ -291,9 +291,52 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
         pass
     # geometry
     def set_work_surface_geometry_uv_map_export(self):
-        import lxmaya_fnc.scripts as mya_fnc_scripts
-        task_properties = self._task_properties
-        mya_fnc_scripts.set_asset_geometry_usd_export(task_properties)
+        import lxmaya.fnc.exporters as mya_fnc_exporters
+        #
+        rsv_task = self._resolver.get_rsv_task(
+            **self._task_properties.value
+        )
+        version = 'new'
+        root = '/master'
+        mya_root_dat_opt = bsc_core.DccPathDagOpt(root).set_translate_to(
+            pathsep='|'
+        )
+        mya_root = mya_dcc_objects.Group(
+            mya_root_dat_opt.get_value()
+        )
+        if mya_root.get_is_exists() is True:
+            keyword = 'asset-work-geometry-usd-var-file'
+            location_names = ['hi', 'shape']
+            with utl_core.gui_progress(maximum=len(location_names)) as g_p:
+                for i_location_name in location_names:
+                    g_p.set_update()
+                    #
+                    i_geometry_usd_var_file_rsv_unit = rsv_task.get_rsv_unit(
+                        keyword=keyword
+                    )
+                    i_geometry_usd_var_file_path = i_geometry_usd_var_file_rsv_unit.get_result(
+                        version=version,
+                        extend_variants=dict(var=i_location_name)
+                    )
+                    #
+                    i_location = '{}/{}'.format(root, i_location_name)
+                    i_sub_root_dag_path = bsc_core.DccPathDagOpt(i_location)
+                    i_mya_sub_root_dag_path = i_sub_root_dag_path.set_translate_to(
+                        pathsep='|'
+                    )
+                    #
+                    sub_root_mya_obj = mya_dcc_objects.Group(i_mya_sub_root_dag_path.path)
+                    if sub_root_mya_obj.get_is_exists() is True:
+                        mya_fnc_exporters.GeometryUsdExporter_(
+                            file_path=i_geometry_usd_var_file_path,
+                            root=i_location,
+                            option=dict(
+                                default_prim_path=root,
+                                with_uv=True,
+                                with_mesh=True,
+                                use_override=False
+                            )
+                        ).set_run()
 
     def set_work_surface_geometry_uv_map_import(self):
         import lxmaya.fnc.builders as mya_fnc_builders
@@ -354,7 +397,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
                 utl_core.DialogWindow.set_create(
                     label='Geometry-update',
                     content='you scene has some error, press "Yes" to continue\n{}'.format(
-                        '\n'.join(check_descriptions)
+                        u'\n'.join(check_descriptions)
                     ),
                     yes_method=lambda *_args, **_kwargs: run_continue_fnc_(methods)
                 )

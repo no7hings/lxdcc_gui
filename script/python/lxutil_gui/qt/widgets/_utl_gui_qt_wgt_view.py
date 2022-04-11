@@ -1148,7 +1148,7 @@ class _QtGuideBar(
                     i_item._name_rect,
                     text=i_name_text,
                     text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
-                    font=get_font(size=12, italic=True),
+                    font=get_font(size=12),
                     offset=name_offset,
                     is_hovered=guide_is_hovered,
                 )

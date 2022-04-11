@@ -24,7 +24,7 @@ from lxutil_gui import utl_gui_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxsession import ssn_configure
+from lxsession import ssn_core
 
 import lxsession.objects as ssn_objects
 
@@ -43,6 +43,8 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
     def __init__(self, session, *args, **kwargs):
         super(AbsEntitiesLoaderPanel_, self).__init__(*args, **kwargs)
         #
+        self._rez_beta = bsc_core.EnvironMtd.get('REZ_BETA')
+        #
         self._session = session
         self._hook_configure = self._session.configure
         self._hook_gui_configure = self._session.gui_configure
@@ -53,9 +55,15 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         #
         self._filter_project = self._hook_resolver_filter_opt.get('project')
         #
-        self.set_window_title(
-            self._hook_gui_configure.get('name')
-        )
+        if self._rez_beta:
+            self.set_window_title(
+                '[BETA] {}'.format(self._hook_gui_configure.get('name'))
+            )
+        else:
+            self.set_window_title(
+                self._hook_gui_configure.get('name')
+            )
+        #
         self.set_definition_window_size(
             self._hook_gui_configure.get('size')
         )
@@ -681,8 +689,8 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         if session_path in self._session_dict:
             return self._session_dict[session_path]
         else:
-            python_file_path = ssn_configure.Hooks.get_python_file(key)
-            yaml_file_path = ssn_configure.Hooks.get_yaml_file(key)
+            python_file_path = ssn_core.RscHookFile.get_python(key)
+            yaml_file_path = ssn_core.RscHookFile.get_yaml(key)
             if python_file_path and yaml_file_path:
                 python_file = utl_dcc_objects.OsPythonFile(python_file_path)
                 yaml_file = utl_dcc_objects.OsFile(yaml_file_path)

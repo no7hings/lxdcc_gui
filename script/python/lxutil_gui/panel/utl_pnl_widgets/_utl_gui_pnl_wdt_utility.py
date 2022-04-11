@@ -39,13 +39,13 @@ class RsvEntitiesLoader(utl_gui_pnl_abs_loader.AbsEntitiesLoaderPanel_):
         super(RsvEntitiesLoader, self).__init__(session, *args, **kwargs)
 
 
-class AssetRenderSubmitter(utl_gui_pnl_abs_render_submitter.AbsAssetRenderSubmitter):
+class AssetRenderSubmitter(utl_gui_pnl_abs_render_submitter.AbsAssetRenderSubmitterPanel):
     OPTION_HOOK_KEY = 'tool-panels/asset-render-submitter'
     def __init__(self, hook_option=None, *args, **kwargs):
         super(AssetRenderSubmitter, self).__init__(hook_option, *args, **kwargs)
 
 
-class ShotRenderSubmitter(utl_gui_pnl_abs_render_submitter.AbsShotRenderSubmitter):
+class ShotRenderSubmitter(utl_gui_pnl_abs_render_submitter.AbsShotRenderSubmitterPanel):
     OPTION_HOOK_KEY = 'tool-panels/shot-render-submitter'
     def __init__(self, hook_option=None, *args, **kwargs):
         super(ShotRenderSubmitter, self).__init__(hook_option, *args, **kwargs)

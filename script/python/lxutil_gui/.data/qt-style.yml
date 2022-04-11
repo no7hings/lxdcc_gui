@@ -70,10 +70,17 @@ option:
         down-arrow: '<option.icon-dir>/qt-style/down-arrow.svg'
     #
     size:
+        head-view:
+            width: 16
+            height: 16
         scroll-bar:
-            width: 20
-            height: 20
-
+            width: 16
+            height: 16
+        #
+        item:
+             width: -1
+             height: 20
+#
 widget:
     QScrollArea:
         |-
@@ -208,7 +215,7 @@ widget:
         QScrollBar:vertical{
             background: rgba(<option.background.color-transparent>);
             border: 1px rgba(<option.border.color-dark>); border-radius: 1px; border-style: solid;
-            width: 16px; margin: 0px, 0px, 0px, 0px; padding: 16px 1px 16px 1px;
+            width: <option.size.scroll-bar.width>px; margin: 0px, 0px, 0px, 0px; padding: <option.size.scroll-bar.width>px 1px <option.size.scroll-bar.width>px 1px;
         }
         QScrollBar::handle:vertical{
             background: rgba(<option.background.color-light>); width: 5px; min-height: 5px;
@@ -236,7 +243,7 @@ widget:
         QScrollBar:horizontal{
             background: rgba(<option.background.color-transparent>);
             border: 1px rgba(<option.border.color-dark>); border-radius: 1px; border-style: solid;
-            height: 16px; margin: 0px, 0px, 0px, 0px; padding: 1px 16px 1px 16px;
+            height: <option.size.scroll-bar.height>px; margin: 0px, 0px, 0px, 0px; padding: 1px <option.size.scroll-bar.height>px 1px <option.size.scroll-bar.height>px;
         }
         QScrollBar::handle:horizontal{
             background: rgba(<option.background.color-light>); height: 5px; min-height: 5px;

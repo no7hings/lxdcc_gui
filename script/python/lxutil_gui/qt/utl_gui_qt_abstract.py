@@ -2381,6 +2381,9 @@ class AbsQtItemValueTypeConstantEntryDef(object):
         self._item_value_type = value_type
         self._item_value_entry_widget._set_item_value_type_(value_type)
 
+    def _set_use_as_text_frames_(self):
+        self._item_value_entry_widget._set_use_as_text_frames_()
+
     def _get_item_value_type_(self):
         return self._item_value_type
 

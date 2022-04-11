@@ -32,12 +32,6 @@ class QtLineEdit_(QtWidgets.QLineEdit):
         self.returnPressed.connect(self._set_enter_finished_emit_send_)
         self.textChanged.connect(self._set_enter_changed_emit_send_)
         #
-        self.setToolTip(
-            (
-                '"LMB-click" to entry\n'
-                '"MMB-wheel" to modify "int" or "float" value'
-            )
-        )
         self.setStyleSheet(
             utl_gui_core.QtStyleMtd.get('QLineEdit')
         )
@@ -144,14 +138,46 @@ class QtLineEdit_(QtWidgets.QLineEdit):
         reg = QtCore.QRegExp(r'^[a-zA-Z0-9_]+$')
         validator = QtGui.QRegExpValidator(reg, self)
         self.setValidator(validator)
+        self.setToolTip(
+            (
+                '"LMB-click" to entry\n'
+            )
+        )
 
     def _set_use_as_integer_(self):
         self.setValidator(QtGui.QIntValidator())
         self._set_value_completion_()
+        self.setToolTip(
+            (
+                '"LMB-click" to entry\n'
+                '"MMB-wheel" to modify "int" value'
+            )
+        )
 
     def _set_use_as_float_(self):
         self.setValidator(QtGui.QDoubleValidator())
         self._set_value_completion_()
+        self.setToolTip(
+            (
+                '"LMB-click" to entry\n'
+                '"MMB-wheel" to modify "float" value'
+            )
+        )
+
+    def _set_use_as_text_frames_(self):
+        self._set_item_value_type_(str)
+        reg = QtCore.QRegExp(r'^[0-9-,]')
+        validator = QtGui.QRegExpValidator(reg, self)
+        self.setValidator(validator)
+        self.setToolTip(
+            (
+                '"LMB-click" to entry\n'
+                'etc:\n'
+                '   1\n'
+                '   1-2\n'
+                '   1-5,7,50-100,101'
+            )
+        )
 
     def _set_value_maximum_(self, value):
         self._maximum = value
@@ -394,15 +420,15 @@ class _QtIconPressItem(
             #
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
+                    self._set_item_pressed_(True)
                     self._set_action_flag_(self.ActionFlag.PressClick)
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
-                #
-                self._item_is_hovered = True
-                self.update()
             elif event.type() == QtCore.QEvent.MouseButtonDblClick:
                 if event.button() == QtCore.Qt.LeftButton:
+                    self._set_item_pressed_(True)
                     self.db_clicked.emit()
+                    self._set_action_flag_(self.ActionFlag.PressDbClick)
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
@@ -414,10 +440,8 @@ class _QtIconPressItem(
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
                 #
+                self._set_item_pressed_(False)
                 self._set_action_flag_clear_()
-                #
-                self._item_is_hovered = False
-                self.update()
         return False
 
     def paintEvent(self, event):
@@ -1733,7 +1757,7 @@ class _QtItemRgbaChooseDropFrame(
         self.parent()._set_color_rgba_(r, g, b, a)
 
 
-class _QtRgbaItem(
+class _QtRgbaValueEntryItem(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtRgbaDef,
     #
@@ -1746,7 +1770,7 @@ class _QtRgbaItem(
         self.update()
 
     def __init__(self, *args, **kwargs):
-        super(_QtRgbaItem, self).__init__(*args, **kwargs)
+        super(_QtRgbaValueEntryItem, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.installEventFilter(self)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -2951,6 +2975,7 @@ class _QtListItemWidget(
                     self.press_clicked.emit()
                 elif self._get_action_flag_is_match_(self.ActionFlag.PressDbClick):
                     self.press_db_clicked.emit()
+                #
                 self._set_item_pressed_(False)
                 self._set_action_flag_clear_()
         return False
