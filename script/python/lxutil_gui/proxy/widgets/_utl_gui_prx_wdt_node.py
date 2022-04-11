@@ -26,6 +26,24 @@ class AttrConfig(object):
     PRX_PORT_HEIGHT = 22
 
 
+class _PrxPortInfo(utl_gui_prx_abstract.AbsPrxWidget):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item._QtIconPressItem
+
+    def __init__(self, *args, **kwargs):
+        super(_PrxPortInfo, self).__init__(*args, **kwargs)
+        # self.widget.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignRight | utl_gui_qt_core.QtCore.Qt.AlignVCenter)
+        self.widget.setMaximumHeight(AttrConfig.PRX_PORT_HEIGHT)
+        self.widget.setMinimumHeight(AttrConfig.PRX_PORT_HEIGHT)
+        self.widget.setMaximumWidth(AttrConfig.PRX_PORT_HEIGHT)
+        self.widget.setMinimumWidth(AttrConfig.PRX_PORT_HEIGHT)
+        self.widget.setToolTip(
+            '"LMB-click" to use value "default" / "latest"'
+        )
+
+    def set(self, boolean):
+        self.widget._set_item_checked_(boolean)
+
+
 class _PrxPortStatus(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_item._QtStatusItem
     def __init__(self, *args, **kwargs):
@@ -1166,6 +1184,10 @@ class AbsPrxTypePort(AbsPrxPortDef):
     def set_name(self, name):
         self._prx_port_label.set_name(name)
 
+    def set_label(self, text):
+        if text:
+            self.set_name(text)
+
     def set_sub_name_update(self):
         if hasattr(self._prx_port_entry._qt_entry_widget, '_set_name_text_'):
             self._prx_port_entry._qt_entry_widget._set_name_text_(self.label)
@@ -1883,6 +1905,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
     def set_port_create_by_option(self, port_path, option):
         widget_ = option['widget']
         key_ = option.get('key')
+        label_ = option.get('label')
         value_ = option['value']
         enable_ = option.get('enable')
         tool_tip_ = option.get('tool_tip')
@@ -2002,6 +2025,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             raise TypeError()
         #
         port.set_key(key_)
+        port.set_label(label_)
         port.set_enable(enable_)
         port.set_tool_tip(tool_tip_)
         port.set_join_to_next(join_to_next_)

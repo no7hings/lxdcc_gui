@@ -138,46 +138,46 @@ class QtLineEdit_(QtWidgets.QLineEdit):
         reg = QtCore.QRegExp(r'^[a-zA-Z0-9_]+$')
         validator = QtGui.QRegExpValidator(reg, self)
         self.setValidator(validator)
-        self.setToolTip(
-            (
-                '"LMB-click" to entry\n'
-            )
-        )
+        # self.setToolTip(
+        #     (
+        #         '"LMB-click" to entry\n'
+        #     )
+        # )
 
     def _set_use_as_integer_(self):
         self.setValidator(QtGui.QIntValidator())
         self._set_value_completion_()
-        self.setToolTip(
-            (
-                '"LMB-click" to entry\n'
-                '"MMB-wheel" to modify "int" value'
-            )
-        )
+        # self.setToolTip(
+        #     (
+        #         '"LMB-click" to entry\n'
+        #         '"MMB-wheel" to modify "int" value'
+        #     )
+        # )
 
     def _set_use_as_float_(self):
         self.setValidator(QtGui.QDoubleValidator())
         self._set_value_completion_()
-        self.setToolTip(
-            (
-                '"LMB-click" to entry\n'
-                '"MMB-wheel" to modify "float" value'
-            )
-        )
+        # self.setToolTip(
+        #     (
+        #         '"LMB-click" to entry\n'
+        #         '"MMB-wheel" to modify "float" value'
+        #     )
+        # )
 
     def _set_use_as_text_frames_(self):
         self._set_item_value_type_(str)
         reg = QtCore.QRegExp(r'^[0-9-,]')
         validator = QtGui.QRegExpValidator(reg, self)
         self.setValidator(validator)
-        self.setToolTip(
-            (
-                '"LMB-click" to entry\n'
-                'etc:\n'
-                '   1\n'
-                '   1-2\n'
-                '   1-5,7,50-100,101'
-            )
-        )
+        # self.setToolTip(
+        #     (
+        #         '"LMB-click" to entry\n'
+        #         'etc:\n'
+        #         '   1\n'
+        #         '   1-2\n'
+        #         '   1-5,7,50-100,101'
+        #     )
+        # )
 
     def _set_value_maximum_(self, value):
         self._maximum = value
@@ -381,6 +381,10 @@ class _QtTextItem(
                 font=Font.NAME,
                 text_option=QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter,
             )
+
+
+class _QtInfoItem(QtWidgets.QWidget):
+    pass
 
 
 class _QtIconPressItem(
