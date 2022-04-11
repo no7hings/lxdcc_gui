@@ -35,7 +35,11 @@ class AbsRenderSubmitterDef(object):
             self._option_hook_gui_configure = self._option_hook_configure.get_content('option.gui')
             self._option_hook_build_configure = self._option_hook_configure.get_content('build')
             #
-            self._rez_beta = bsc_core.EnvironMtd.get('REZ_BETA')
+            raw = bsc_core.EnvironMtd.get('REZ_BETA')
+            if raw:
+                self._rez_beta = True
+            else:
+                self._rez_beta = False
             self._stg_connector = stg_objects.StgConnector()
         else:
             self._file_path = None
@@ -577,7 +581,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         if hook_option_dic:
             if self.get_file_is_changed() is True:
                 hook_option_dic['user'] = bsc_core.SystemMtd.get_user_name()
-                hook_option_dic['rez_beta'] = bool(self._rez_beta)
+                hook_option_dic['rez_beta'] = self._rez_beta
                 # hook_option_dic['td_enable'] = True
                 hook_option_dic['option_hook_key'] = 'rsv-task-batchers/asset/gen-cmb-render-submit'
                 option_opt = bsc_core.KeywordArgumentsOpt(hook_option_dic)
@@ -922,7 +926,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         if hook_option_dic:
             if self.get_file_is_changed() is True:
                 hook_option_dic['user'] = bsc_core.SystemMtd.get_user_name()
-                hook_option_dic['rez_beta'] = bool(self._rez_beta)
+                hook_option_dic['rez_beta'] = self._rez_beta
                 # hook_option_dic['td_enable'] = True
                 hook_option_dic['option_hook_key'] = 'rsv-task-batchers/shot/tmp-render-submit'
                 #
