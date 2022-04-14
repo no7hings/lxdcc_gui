@@ -64,6 +64,9 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 self._hook_gui_configure.get('name')
             )
         #
+        self.set_window_icon_name_text(
+            self._hook_gui_configure.get('name')
+        )
         self.set_definition_window_size(
             self._hook_gui_configure.get('size')
         )

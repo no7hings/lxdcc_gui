@@ -1529,7 +1529,6 @@ class QtMainWindow(
 
     def _set_window_system_tray_icon_(self, widget):
         self._window_system_tray_icon = widget
-
     @property
     def lynxi_window(self):
         return True
@@ -1821,8 +1820,8 @@ class _QtProgressBar(
     def __init__(self, *args, **kwargs):
         super(_QtProgressBar, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setMaximumHeight(4)
-        self.setMinimumHeight(4)
+        self.setMaximumHeight(8)
+        self.setMinimumHeight(8)
         #
         self._set_progress_def_init_()
 
@@ -1833,32 +1832,55 @@ class _QtProgressBar(
         painter = QtPainter(self)
         if self._get_is_progress_enable_() is True:
             if self._progress_raw:
+                cur_rect = None
                 w, h = self.width(), self.height()
                 w -= 2
                 layer_count = len(self._progress_raw)
+                r, g, b = utl_methods.Color.hsv2rgb(120, 1, 1)
                 for layer_index, i in enumerate(self._progress_raw):
-                    minimum, maximum, percent, label = i
-                    p_w = w*(maximum-minimum)*percent
+                    i_minimum, i_maximum, percent, label = i
+                    p_w = w*(i_maximum-i_minimum)*percent
+                    p_h = 2
+                    #
+                    i_x, i_y = w*i_minimum, (h-p_h)/2
+                    i_x += 1
+                    i_rect = QtCore.QRect(i_x, i_y, p_w+1, p_h)
+                    #
+                    i_p = float(layer_index)/float(layer_count)
+                    r_1, g_1, b_1 = utl_methods.Color.hsv2rgb(120*i_p, 1, 1)
+                    i_cur_color = QtGui.QColor(r_1, g_1, b_1, 255)
                     if layer_index == 0:
-                        p_h = h
+                        i_pre_color = QtGui.QColor(r, g, b, 255)
+                        i_gradient_color = QtGui.QLinearGradient(i_rect.topLeft(), i_rect.topRight())
+                        i_gradient_color.setColorAt(.5, i_pre_color)
+                        i_gradient_color.setColorAt(.975, i_cur_color)
+                        i_background_color = i_gradient_color
                     else:
-                        p_h = 2
-                    #
-                    x, y = w*minimum, (h-p_h)/2
-                    x += 1
-                    base_rect = QtCore.QRect(x, y, p_w+1, p_h)
-                    #
-                    p = float(layer_index)/float(layer_count)
-                    r_0, g_0, b_0 = utl_methods.Color.hsv2rgb(120*p, 1, 1)
-                    color_0 = QtGui.QColor(r_0, g_0, b_0, 255)
-                    r_1, g_1, b_1 = utl_methods.Color.hsv2rgb(120*p, .75, 1)
-                    color_1 = QtGui.QColor(r_1, g_1, b_1, 255)
-                    brush_1 = QtGui.QBrush(color_1)
+                        i_gradient_color = QtGui.QLinearGradient(i_rect.topLeft(), i_rect.topRight())
+                        i_gradient_color.setColorAt(0, QtBackgroundColor.Transparent)
+                        i_gradient_color.setColorAt(.5, i_cur_color)
+                        i_gradient_color.setColorAt(.975, i_cur_color)
+                        i_gradient_color.setColorAt(1, QtBackgroundColor.Transparent)
+                        i_background_color = i_gradient_color
                     #
                     painter._set_frame_draw_by_rect_(
-                        base_rect,
-                        border_color=color_0,
-                        background_color=color_1,
+                        i_rect,
+                        border_color=QtBorderColor.Transparent,
+                        background_color=i_background_color,
+                        border_radius=1,
+                    )
+                    cur_rect = i_rect
+                #
+                if cur_rect is not None:
+                    c_x, c_y = cur_rect.x(), cur_rect.y()
+                    c_w, c_h = cur_rect.width(), cur_rect.height()
+                    rect = QtCore.QRect(
+                        c_x+c_w-2, 0, 2, h
+                    )
+                    painter._set_frame_draw_by_rect_(
+                        rect,
+                        border_color=QtBorderColor.Transparent,
+                        background_color=(255, 255, 255, 255),
                         border_radius=1,
                     )
 

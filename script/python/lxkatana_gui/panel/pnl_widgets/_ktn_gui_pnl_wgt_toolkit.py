@@ -94,10 +94,8 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
         pass
     @classmethod
     def set_look_pass_add(cls, **kwargs):
-        import lxkatana.fnc.builders as ktn_fnc_builders
-        #
         look_pass_name = kwargs['look_pass']
-        ktn_fnc_builders.AssetWorkspaceBuilder().set_look_pass_add(look_pass_name)
+        ktn_dcc_objects.AssetWorkspace().set_look_pass_add(look_pass_name)
 
     def set_work_look_ass_export(self):
         import lxkatana_fnc.scripts as ktn_fnc_scripts
@@ -138,9 +136,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
             )
     @classmethod
     def get_look_passes(cls, **kwargs):
-        import lxkatana.fnc.builders as ktn_fnc_builders
-        #
-        return ktn_fnc_builders.AssetWorkspaceBuilder().get_look_pass_names()
+        return ktn_dcc_objects.AssetWorkspace().get_look_pass_names()
 
     def get_work_look_ass_files(self, **kwargs):
         import lxresolver.operators as rsv_operators

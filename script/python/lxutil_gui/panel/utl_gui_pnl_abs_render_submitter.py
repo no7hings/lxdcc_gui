@@ -20,6 +20,7 @@ import lxshotgun.objects as stg_objects
 
 class AbsRenderSubmitterDef(object):
     OPTION_HOOK_KEY = None
+    TD_ENABLE = True
     def _set_render_submitter_def_init_(self, hook_option):
         if hook_option is not None:
             self._hook_option_opt = bsc_core.KeywordArgumentsOpt(hook_option)
@@ -32,14 +33,15 @@ class AbsRenderSubmitterDef(object):
                 self._hook_option_opt.to_string()
             )
             #
-            self._option_hook_gui_configure = self._option_hook_configure.get_content('option.gui')
-            self._option_hook_build_configure = self._option_hook_configure.get_content('build')
+            self._hook_gui_configure = self._option_hook_configure.get_content('option.gui')
+            self._hook_build_configure = self._option_hook_configure.get_content('build')
             #
             raw = bsc_core.EnvironMtd.get('REZ_BETA')
             if raw:
                 self._rez_beta = True
             else:
                 self._rez_beta = False
+            #
             self._stg_connector = stg_objects.StgConnector()
         else:
             self._file_path = None
@@ -60,15 +62,18 @@ class AbsRenderSubmitterPanel(
             self._set_render_submitter_def_init_(hook_option)
             if self._rez_beta:
                 self.set_window_title(
-                    '[BETA] {}'.format(self._option_hook_gui_configure.get('name'))
+                    '[BETA] {}'.format(self._hook_gui_configure.get('name'))
                 )
             else:
                 self.set_window_title(
-                    self._option_hook_gui_configure.get('name')
+                    self._hook_gui_configure.get('name')
                 )
             #
+            self.set_window_icon_name_text(
+                self._hook_gui_configure.get('name')
+            )
             self.set_definition_window_size(
-                self._option_hook_gui_configure.get('size')
+                self._hook_gui_configure.get('size')
             )
         else:
             self._file_path = None
@@ -144,7 +149,7 @@ class AbsRenderSubmitterPanel(
         )
 
         self._rsv_renderer_list_view.set_item_frame_size(
-            *self._option_hook_gui_configure.get('item_frame_size')
+            *self._hook_gui_configure.get('item_frame_size')
         )
         self._rsv_renderer_list_view.set_item_icon_frame_draw_enable(True)
         self._rsv_renderer_list_view.set_item_name_frame_draw_enable(True)
@@ -157,19 +162,19 @@ class AbsRenderSubmitterPanel(
 
     def _set_prx_node_build_(self):
         self._prx_schemes_node.set_ports_create_by_configure(
-            self._option_hook_build_configure.get('node.schemes')
+            self._hook_build_configure.get('node.schemes')
         )
         #
         self._prx_options_node.set_ports_create_by_configure(
-            self._option_hook_build_configure.get('node.options')
+            self._hook_build_configure.get('node.options')
         )
         # usd
         self._prx_usd_node.set_ports_create_by_configure(
-            self._option_hook_build_configure.get('node.usd')
+            self._hook_build_configure.get('node.usd')
         )
 
         self._prx_settings_node.set_ports_create_by_configure(
-            self._option_hook_build_configure.get('node.settings')
+            self._hook_build_configure.get('node.settings')
         )
 
         self._set_prx_node_effect_()
@@ -423,21 +428,23 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         self._rsv_renderer_list_view.set_clear()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
         #
-        self._variable_variants_dic = self._option_hook_build_configure.get('variables.character')
-        self._variable_keys = self._option_hook_build_configure.get_branch_keys(
+        self._variable_variants_dic = self._hook_build_configure.get('variables.character')
+        self._variable_keys = self._hook_build_configure.get_branch_keys(
             'variables.character'
         )
         combinations = bsc_core.VariablesMtd.get_all_combinations(
             self._variable_variants_dic
         )
-        for i_seq, i_variants in enumerate(combinations):
-            # print i_seq, i_variants
-            i_prx_item = self._rsv_renderer_list_view.set_item_add()
-            set_thread_create_fnc_(i_prx_item, i_variants)
-            for j_key in self._variable_keys:
-                self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
-                    '{}.{}'.format(j_key, i_variants[j_key]), i_prx_item
-                )
+        with utl_core.gui_progress(maximum=len(combinations)) as g_p:
+            for i_seq, i_variants in enumerate(combinations):
+                g_p.set_update()
+                # print i_seq, i_variants
+                i_prx_item = self._rsv_renderer_list_view.set_item_add()
+                set_thread_create_fnc_(i_prx_item, i_variants)
+                for j_key in self._variable_keys:
+                    self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
+                        '{}.{}'.format(j_key, i_variants[j_key]), i_prx_item
+                    )
 
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
@@ -485,7 +492,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
     
     def set_filter_scheme_load_from_scheme(self):
         filter_scheme = self._prx_schemes_node.get('variables')
-        filter_dict = self._option_hook_build_configure.get(
+        filter_dict = self._hook_build_configure.get(
             'scheme.variables.{}'.format(filter_scheme)
         )
         if filter_dict:
@@ -582,8 +589,9 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         if hook_option_dic:
             if self.get_file_is_changed() is True:
                 hook_option_dic['user'] = bsc_core.SystemMtd.get_user_name()
-                hook_option_dic['rez_beta'] = self._rez_beta
-                # hook_option_dic['td_enable'] = True
+                # hook_option_dic['rez_beta'] = self._rez_beta
+                # hook_option_dic['rez_beta'] = True
+                hook_option_dic['td_enable'] = True
                 hook_option_dic['option_hook_key'] = 'rsv-task-batchers/asset/gen-cmb-render-submit'
                 option_opt = bsc_core.KeywordArgumentsOpt(hook_option_dic)
                 #
@@ -591,7 +599,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     option=option_opt.to_string()
                 )
                 utl_core.DialogWindow.set_create(
-                    self._option_hook_gui_configure.get('name'),
+                    self._hook_gui_configure.get('name'),
                     content='{} is submit completed'.format(self._file_path),
                     status=utl_core.DialogWindow.GuiStatus.Correct,
                     #
@@ -601,7 +609,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 )
             else:
                 utl_core.DialogWindow.set_create(
-                    self._option_hook_gui_configure.get('name'),
+                    self._hook_gui_configure.get('name'),
                     content='file="{}" is already submitted or scene changed is not be save'.format(self._file_path),
                     status=utl_core.DialogWindow.GuiStatus.Error,
                     #
@@ -766,7 +774,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
     def set_filter_scheme_load_from_scheme(self):
         filter_scheme = self._prx_schemes_node.get('variables')
-        filter_dict = self._option_hook_build_configure.get(
+        filter_dict = self._hook_build_configure.get(
             'scheme.variables.{}'.format(filter_scheme)
         )
         if filter_dict:
@@ -856,8 +864,8 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         self._rsv_renderer_list_view.set_clear()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
         #
-        self._variable_variants_dic = self._option_hook_build_configure.get('variables.character')
-        self._variable_keys = self._option_hook_build_configure.get_branch_keys(
+        self._variable_variants_dic = self._hook_build_configure.get('variables.character')
+        self._variable_keys = self._hook_build_configure.get_branch_keys(
             'variables.character'
         )
         combinations = bsc_core.VariablesMtd.get_all_combinations(
@@ -927,7 +935,8 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         if hook_option_dic:
             if self.get_file_is_changed() is True:
                 hook_option_dic['user'] = bsc_core.SystemMtd.get_user_name()
-                hook_option_dic['rez_beta'] = self._rez_beta
+                # hook_option_dic['rez_beta'] = self._rez_beta
+                hook_option_dic['rez_beta'] = True
                 # hook_option_dic['td_enable'] = True
                 hook_option_dic['option_hook_key'] = 'rsv-task-batchers/shot/tmp-render-submit'
                 #
@@ -938,7 +947,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 )
                 #
                 utl_core.DialogWindow.set_create(
-                    self._option_hook_gui_configure.get('name'),
+                    self._hook_gui_configure.get('name'),
                     content='{} is submit completed'.format(self._file_path),
                     status=utl_core.DialogWindow.GuiStatus.Correct,
                     #
@@ -948,7 +957,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 )
             else:
                 utl_core.DialogWindow.set_create(
-                    self._option_hook_gui_configure.get('name'),
+                    self._hook_gui_configure.get('name'),
                     content='file="{}" is already submitted or scene changed is not be save'.format(self._file_path),
                     status=utl_core.DialogWindow.GuiStatus.Error,
                     #
