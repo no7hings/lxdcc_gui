@@ -913,8 +913,8 @@ class PrxRsvObjChooseEntry(AbsRsvTypeEntry):
         self.widget.setMaximumHeight(160)
         self.widget.setMinimumHeight(160)
         self._prx_entry_widget.set_header_view_create(
-            [('name', 2), ('update', 1)],
-            180
+            [('name', 1), ('update', 1), ('user', 1)],
+            320
         )
         self._prx_entry_widget.set_single_selection()
         self._prx_entry_widget.set_size_policy_height_fixed_mode()
@@ -980,7 +980,8 @@ class PrxRsvObjChooseEntry(AbsRsvTypeEntry):
         #
         result = obj.get('result')
         update = obj.get('update')
-        prx_item.set_names([obj_name, update])
+        user = obj.get('user')
+        prx_item.set_names([obj_name, update, user])
         prx_item.set_tool_tip(obj.description)
         if result:
             if bsc_core.StoragePathOpt(result).get_is_file():

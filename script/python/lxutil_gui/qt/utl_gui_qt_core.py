@@ -806,7 +806,7 @@ class QtPixmapMtd(object):
         painter.setPen(QtBorderColor.Icon)
         r, g, b = bsc_core.TextOpt(tag).to_rgb()
         painter.setBrush(QtGui.QBrush(QtGui.QColor(r, g, b, 255)))
-        painter.drawRoundedRect(tag_rect, rd/4, rd/4, QtCore.Qt.AbsoluteSize)
+        painter.drawRoundedRect(tag_rect, rd/8, rd/8, QtCore.Qt.AbsoluteSize)
         #
         t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(r, g, b)
         t_r = QtGui.qGray(t_r, t_g, t_b)
@@ -817,7 +817,7 @@ class QtPixmapMtd(object):
         #
         text_color_ = QtGui.QColor(t_r_1, t_r_1, t_r_1)
         painter.setPen(text_color_)
-        painter.setFont(get_font(size=int(rd/2*.8)))
+        painter.setFont(get_font(size=int(rd/2*.75)))
         painter.drawText(
             tag_rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(tag[0]).capitalize()
         )
