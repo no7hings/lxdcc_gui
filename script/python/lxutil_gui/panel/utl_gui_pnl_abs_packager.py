@@ -5,15 +5,9 @@ import lxutil_gui.qt.widgets as qt_widgets
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
-from lxbasic import bsc_core
-
 from lxutil import utl_core
 
-import lxutil.dcc.dcc_objects as utl_dcc_objects
-
 import lxutil.dcc.dcc_operators as utl_dcc_operators
-
-from lxutil_gui.proxy import utl_gui_prx_core
 
 from lxutil_gui.panel import utl_gui_pnl_abstract
 

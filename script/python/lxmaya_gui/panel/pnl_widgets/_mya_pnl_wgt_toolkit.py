@@ -106,7 +106,7 @@ class SceneCleanerPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
     def set_all_run(self, *args, **kwargs):
         item_prx = args[0]
         sub_item_prxes = self.get_item_prxes()
-        item_prx.widget._set_progress_maximum_value_(len(sub_item_prxes))
+        item_prx.widget._set_progress_maximum_(len(sub_item_prxes))
         for i in sub_item_prxes:
             item_prx.widget._set_progress_update_()
             #
@@ -506,10 +506,11 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
         work_look_ass_file_obj = utl_dcc_objects.OsFile(work_look_ass_file_path)
         if work_look_ass_file_obj.get_is_exists() is True:
             mya_fnc_importers.LookAssImporter(
-                file_path=work_look_ass_file_path,
-                root='/master',
                 option=dict(
-                    look_pass=look_pass
+                    file=work_look_ass_file_path,
+                    location='/master',
+                    look_pass=look_pass,
+                    name_join_time_tag=True,
                 )
             ).set_run()
         else:

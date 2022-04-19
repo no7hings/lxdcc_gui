@@ -3,7 +3,7 @@ from lxutil import utl_configure, utl_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_window
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_window
 
 from lxutil_gui.proxy import utl_gui_prx_configure, utl_gui_prx_core, utl_gui_prx_abstract
 
@@ -57,7 +57,7 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         self._head._set_name_icon_enable_(boolean)
 
     def set_name_font_size(self, size):
-        self._head._set_name_text_font_size_(size)
+        self._head._set_name_font_size_(size)
 
     def set_expanded(self, boolean):
         self._head._set_item_expanded_(boolean)
@@ -274,7 +274,7 @@ class ContentWidget(utl_gui_prx_abstract.AbsPrxWidget):
         super(ContentWidget, self).__init__(*args, **kwargs)
 
     def set_name(self, text):
-        self._qt_label_0.setText(text)
+        self._qt_label_0._set_name_text_(text)
 
     def _set_build_(self):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
@@ -287,9 +287,11 @@ class ContentWidget(utl_gui_prx_abstract.AbsPrxWidget):
         qt_layout_0.addWidget(qt_top_widget_0)
         #
         qt_top_layout_1 = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_top_widget_0)
-        self._qt_label_0 = _utl_gui_qt_wgt_utility.QtLabel()
-        self._qt_label_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignHCenter)
-        self._qt_label_0.setFont(utl_gui_qt_core.Font.title)
+        self._qt_label_0 = _utl_gui_qt_wgt_item._QtTextItem()
+        self._qt_label_0._set_name_text_option_(
+            utl_gui_qt_core.QtCore.Qt.AlignHCenter | utl_gui_qt_core.QtCore.Qt.AlignVCenter
+        )
+        self._qt_label_0._set_name_font_size_(12)
         qt_top_layout_1.addWidget(self._qt_label_0)
         self._button_0 = PrxIconPressItem()
         self._button_0.set_icon_name('close')
@@ -454,7 +456,7 @@ class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
     def set_icon_name(self, icon_name):
         self.widget._set_icon_file_path_(utl_core.Icon.get(icon_name))
 
-    def set_icon_by_text(self, text):
+    def set_icon_by_name_text(self, text):
         self.widget._set_icon_name_text_(text)
 
     def set_icon_size(self, w, h):
@@ -499,12 +501,12 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget._icon_is_enable = True
         self.widget.update()
 
-    def set_color_icon(self, color):
+    def set_icon_by_color(self, color):
         self.widget._color_icon_rgb = color
         self.widget._icon_is_enable = True
         self.widget.update()
 
-    def set_icon_by_text(self, text):
+    def set_icon_by_name_text(self, text):
         self.widget._set_icon_name_text_(text)
 
     def set_icon_color_by_name(self):
@@ -740,11 +742,15 @@ class PrxToolWindow(
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_0)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
 
-        self._loading_content = ContentWidget()
-        self._loading_content.set_name('loading')
+        content_widget_0 = ContentWidget()
+        # content_widget_0.set_name('loading')
 
-        qt_layout_0.addWidget(self._loading_content.widget)
-        self._loading_content.set_close_connect_to(fnc_)
+        qt_layout_0.addWidget(content_widget_0.widget)
+        content_widget_0.set_close_connect_to(fnc_)
+
+        self._waiting_char = _utl_gui_qt_wgt_chart._QtWaitingChart(self.widget)
+        self._waiting_char.hide()
+        self.widget._set_size_changed_connect_to_(self._set_waiting_update_)
 
     def get_main_widget(self):
         return self._main_widget
@@ -798,38 +804,42 @@ class PrxToolWindow(
         )
         self._loading_show_timer.stop()
 
+    def set_waiting_start(self):
+        self._waiting_char.show()
+        self._waiting_char._set_waiting_start_()
+
+    def set_waiting_stop(self):
+        self._waiting_char.hide()
+        self._waiting_char._set_waiting_stop_()
+
+    def _set_waiting_update_(self):
+        x, y = 0, 0
+        w, h = self.widget.width(), self.widget.height()
+        self._waiting_char.setGeometry(
+            x, y, w, h
+        )
+
     def set_loading_start(self, time, method):
         self._is_loading = True
         self._loading_index = 0
         self.set_current_unit('window_loading_0')
         #
+        self.set_waiting_start()
+        #
         self._loading_timer_0 = utl_gui_qt_core.QtCore.QTimer(self.widget)
-        self._loading_update_timer = utl_gui_qt_core.QtCore.QTimer(self.widget)
         self._loading_show_timer = utl_gui_qt_core.QtCore.QTimer(self.widget)
         #
         self._loading_timer_0.start(time)
         self._loading_timer_0.timeout.connect(method)
         #
-        self._loading_update_timer.start(time/5)
-        self._loading_update_timer.timeout.connect(self.set_window_loading_update)
-        #
         self._loading_show_timer.start(time-100)
         self._loading_show_timer.timeout.connect(self.set_window_loading_show)
 
-    def set_window_loading_update(self):
-        self._loading_index += 1
-        #
-        self._loading_content.set_name(
-            'loading {}'.format('.'*(self._loading_index % 5))
-        )
-        #
-        utl_gui_qt_core.QtWidgets.QApplication.instance().processEvents(
-            utl_gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
-        )
-
     def set_window_loading_end(self):
+        self.set_waiting_stop()
+        #
         self.set_current_unit('main_0')
-        self._loading_update_timer.stop()
+        #
         self._loading_timer_0.stop()
         self._is_loading = False
     # log
@@ -895,7 +905,7 @@ class PrxToolWindow(
         #
         if self._is_loading is True:
             utl_gui_qt_core.set_qt_window_show(
-                self.widget, pos, size=(480, 80)
+                self.widget, pos, size=(480, 160)
             )
         else:
             utl_gui_qt_core.set_qt_window_show(

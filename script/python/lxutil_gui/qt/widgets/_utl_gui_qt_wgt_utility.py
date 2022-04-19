@@ -348,6 +348,9 @@ class QtPainter(QtGui.QPainter):
         #
         self.device()
 
+    def _set_antialiasing_(self):
+        self.setRenderHint(self.Antialiasing)
+
     def _set_loading_draw_by_rect_(self, rect, loading_index):
         self.setRenderHint(self.Antialiasing)
         self._set_border_color_(QtBackgroundColor.ItemLoading)
@@ -444,10 +447,10 @@ class QtPainter(QtGui.QPainter):
         #
         ellipse_rect = QtCore.QRect(x_-4, y_-4, r_+8, r_+8)
         points = [
-            utl_gui_core.Ellipse2dMtd.get_position_at_angle(center=(x_, y_), radius=r_, angle=90),
-            utl_gui_core.Ellipse2dMtd.get_position_at_angle(center=(x_, y_), radius=r_, angle=210),
-            utl_gui_core.Ellipse2dMtd.get_position_at_angle(center=(x_, y_), radius=r_, angle=330),
-            utl_gui_core.Ellipse2dMtd.get_position_at_angle(center=(x_, y_), radius=r_, angle=90)
+            utl_gui_core.Ellipse2dMtd.get_position_at_angle(start=(x_, y_), radius=r_, angle=90),
+            utl_gui_core.Ellipse2dMtd.get_position_at_angle(start=(x_, y_), radius=r_, angle=210),
+            utl_gui_core.Ellipse2dMtd.get_position_at_angle(start=(x_, y_), radius=r_, angle=330),
+            utl_gui_core.Ellipse2dMtd.get_position_at_angle(start=(x_, y_), radius=r_, angle=90)
         ]
         #
         self._set_background_color_(QtBackgroundColor.Transparent)
@@ -1376,15 +1379,16 @@ class QtMenu(QtWidgets.QMenu):
         )
 
     def _set_menu_content_(self, content):
-        if isinstance(content, bsc_obj_abs.AbsContent):
-            keys = content.get_keys(regex='*.properties')
-            for i_key in keys:
-                type_ = content.get('{}.type'.format(i_key))
-                i_content = content.get_content(i_key)
-                if type_ == 'separator':
-                    self._set_separator_add__(self, i_content)
-                elif type_ == 'action':
-                    self._set_action_add__(self, i_content)
+        QtMenuOpt(self).set_create_by_content(content)
+        # if isinstance(content, bsc_obj_abs.AbsContent):
+        #     keys = content.get_keys(regex='*.properties')
+        #     for i_key in keys:
+        #         type_ = content.get('{}.type'.format(i_key))
+        #         i_content = content.get_content(i_key)
+        #         if type_ == 'separator':
+        #             self._set_separator_add__(self, i_content)
+        #         elif type_ == 'action':
+        #             self._set_action_add__(self, i_content)
     @classmethod
     def _set_action_create_by_menu_content_(cls, menu):
         menu.clear()
@@ -1497,6 +1501,7 @@ class QtMainWindow(
 ):
     close_clicked = qt_signal()
     key_escape_pressed = qt_signal()
+    size_changed = qt_signal()
     def __init__(self, *args, **kwargs):
         super(QtMainWindow, self).__init__(*args, **kwargs)
         self.setWindowFlags(QtCore.Qt.Window)
@@ -1544,8 +1549,12 @@ class QtMainWindow(
                 elif event.type() == QtCore.QEvent.KeyPress:
                     if event.key() == QtCore.Qt.Key_Escape:
                         self.key_escape_pressed.emit()
+                elif event.type() == QtCore.QEvent.Resize:
+                    self.size_changed.emit()
         return False
 
+    def _set_size_changed_connect_to_(self, fnc):
+        self.size_changed.connect(fnc)
     # def close(self):
     #     self.close_clicked.emit()
     #     return super(QtMainWindow, self).close()
@@ -1820,8 +1829,8 @@ class _QtProgressBar(
     def __init__(self, *args, **kwargs):
         super(_QtProgressBar, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setMaximumHeight(8)
-        self.setMinimumHeight(8)
+        self.setMaximumHeight(4)
+        self.setMinimumHeight(4)
         #
         self._set_progress_def_init_()
 
@@ -1836,7 +1845,7 @@ class _QtProgressBar(
                 w, h = self.width(), self.height()
                 w -= 2
                 layer_count = len(self._progress_raw)
-                r, g, b = utl_methods.Color.hsv2rgb(120, 1, 1)
+                r, g, b = utl_methods.Color.hsv2rgb(120, .5, 1)
                 for layer_index, i in enumerate(self._progress_raw):
                     i_minimum, i_maximum, percent, label = i
                     p_w = w*(i_maximum-i_minimum)*percent
@@ -1847,7 +1856,7 @@ class _QtProgressBar(
                     i_rect = QtCore.QRect(i_x, i_y, p_w+1, p_h)
                     #
                     i_p = float(layer_index)/float(layer_count)
-                    r_1, g_1, b_1 = utl_methods.Color.hsv2rgb(120*i_p, 1, 1)
+                    r_1, g_1, b_1 = utl_methods.Color.hsv2rgb(120*i_p, .5, 1)
                     i_cur_color = QtGui.QColor(r_1, g_1, b_1, 255)
                     if layer_index == 0:
                         i_pre_color = QtGui.QColor(r, g, b, 255)

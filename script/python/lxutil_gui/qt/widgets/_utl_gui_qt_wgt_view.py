@@ -53,6 +53,16 @@ class _AbsQtSplitter(QtWidgets.QWidget):
     def resizeEvent(self, event):
         self._set_update_()
 
+    def paintEvent(self, event):
+        # painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        # painter._set_background_color_(255, 0, 0)
+        # painter.drawRect(
+        #     QtCore.QRect(
+        #         0, 0, self.width(), self.height()
+        #     )
+        # )
+        pass
+
     def _set_update_(self):
         self._set_update_by_size_()
         self._set_widget_geometry_update_()
@@ -60,21 +70,22 @@ class _AbsQtSplitter(QtWidgets.QWidget):
     def _set_update_by_size_(self):
         ss = self._size_dict
         maximum_size = sum(ss.values())
+        # print self.QT_ORIENTATION, maximum_size, self._widget_list, self._handle_list
         if maximum_size > 0:
             if self.QT_ORIENTATION == QtCore.Qt.Horizontal:
                 x, y = 0, 0
                 w, h = self.width(), self.height()
                 _ = [w*(float(ss[i])/float(maximum_size)) for i in range(len(self._handle_list))]
-                for idx, size in enumerate(_):
+                for idx, i_size in enumerate(_):
                     self._pos_dict[idx] = sum(_[:idx]) + x
-                    self._size_dict[idx] = size
+                    self._size_dict[idx] = i_size
             elif self.QT_ORIENTATION == QtCore.Qt.Vertical:
                 x, y = 0, 0
                 w, h = self.width(), self.height()
                 _ = [h*(float(ss[i])/float(maximum_size)) for i in range(len(self._handle_list))]
-                for idx, size in enumerate(_):
+                for idx, i_size in enumerate(_):
                     self._pos_dict[idx] = sum(_[:idx]) + y
-                    self._size_dict[idx] = size
+                    self._size_dict[idx] = i_size
             else:
                 raise TypeError()
 
@@ -83,16 +94,16 @@ class _AbsQtSplitter(QtWidgets.QWidget):
         c = len(self._handle_list)
         h_f_w = self.HANDLE_WIDTH
         for idx in range(c):
-            handle = self._handle_list[idx]
+            i_handle = self._handle_list[idx]
             widget = self._widget_list[idx]
-            rect = self._rect_list[idx]
+            i_rect = self._rect_list[idx]
             #
             p = self._pos_dict[idx]
             s = self._size_dict[idx]
             ps = self._size_dict.get(idx-1)
             ns = self._size_dict.get(idx+1)
             if self.QT_ORIENTATION == QtCore.Qt.Horizontal:
-                # handle
+                # i_handle
                 hx, hy = p, 0
                 hw, hh = h_f_w, h
                 if idx == 0:
@@ -100,11 +111,11 @@ class _AbsQtSplitter(QtWidgets.QWidget):
                 else:
                     if s == 0:
                         hx, hy = p-h_f_w, 0
-                handle.setGeometry(
+                i_handle.setGeometry(
                     hx, hy, hw, hh
                 )
                 # print hx, hy, hw, hh
-                rect.setRect(
+                i_rect.setRect(
                     hx, hy, hw, hh
                 )
                 # widget
@@ -120,17 +131,18 @@ class _AbsQtSplitter(QtWidgets.QWidget):
                     wx, wy, ww, wh
                 )
             elif self.QT_ORIENTATION == QtCore.Qt.Vertical:
-                # handle
+                # i_handle
                 hx, hy = 0, p
                 hw, hh = w, h_f_w
                 if idx == 0:
                     hx, hy = 0, p-h_f_w
                 if s == 0:
                     hx, hy = 0, p-h_f_w
-                handle.setGeometry(
+                i_handle.setGeometry(
                     hx, hy, hw, hh
                 )
-                rect.setRect(
+                # print i_handle.geometry()
+                i_rect.setRect(
                     hx, hy, hw, hh
                 )
                 # widget
@@ -190,8 +202,8 @@ class _AbsQtSplitter(QtWidgets.QWidget):
         return self._widget_list[index]
 
     def _get_cur_index_(self, qt_point):
-        for idx, rect in enumerate(self._rect_list):
-            if rect.contains(qt_point) is True:
+        for idx, i_rect in enumerate(self._rect_list):
+            if i_rect.contains(qt_point) is True:
                 return idx
 
     def _get_orientation_(self):
@@ -204,6 +216,9 @@ class _AbsQtSplitter(QtWidgets.QWidget):
         return self._size_dict[index]
 
     def setSizes(self, sizes):
+        pass
+
+    def _set_sizes_(self, sizes):
         pass
 
     def widget(self, index):
@@ -631,7 +646,7 @@ class QtTreeWidget(
     def _set_item_show_update_at_(cls, item):
         children = item._get_children_()
         for i in children:
-            i._set_item_show_all_run_()
+            i._set_item_show_all_start_()
 
     def _set_item_descendants_expanded_at_(self, index, expanded):
         for i in range(0, index.model().rowCount(index)):
@@ -984,7 +999,7 @@ class _QtGuideBar(
     utl_gui_qt_abstract._QtViewChooseActionDef,
 ):
     CHOOSE_RECT_CLS = _utl_gui_qt_wgt_item._QtItemGuideRect
-    CHOOSE_DROP_FRAME_CLS = _utl_gui_qt_wgt_item._QtItemGuideChooseDropFrame
+    CHOOSE_DROP_FRAME_CLASS = _utl_gui_qt_wgt_item._QtItemGuideChooseDropFrame
     def __init__(self, *args, **kwargs):
         super(_QtGuideBar, self).__init__(*args, **kwargs)
         self.installEventFilter(self)

@@ -15,10 +15,16 @@ class W(prx_widgets.PrxToolWindow):
              ('face', 53489.937469401586, 16456), ('edge', 106979.87493880317, 33328),
              ('vertex', 53768.530893721385, 16842)]
         #
-        s = prx_widgets.PrxVSplitter()
-        self.set_widget_add(s)
+        h_s = prx_widgets.PrxHSplitter()
+        self.set_widget_add(h_s)
+
+        v_s = prx_widgets.PrxVSplitter()
+        h_s.set_widget_add(v_s)
+
+        t = prx_widgets.PrxTreeView()
+        h_s.set_widget_add(t)
         s_c = prx_widgets.PrxSectorChart()
-        s.set_widget_add(
+        v_s.set_widget_add(
             s_c
         )
         #
@@ -32,7 +38,7 @@ class W(prx_widgets.PrxToolWindow):
         )
         #
         r_c = prx_widgets.PrxRadarChart()
-        s.set_widget_add(
+        v_s.set_widget_add(
             r_c
         )
         c_d = []

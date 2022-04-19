@@ -266,12 +266,15 @@ def set_normal_cursor():
     )
 
 
-def set_window_prx_loading_modifier(method):
+def set_prx_window_waiting(method):
     def sub_method(*args, **kwargs):
+        prx_window = args[0]
         window = args[0].widget
         window.setCursor(QtCore.Qt.BusyCursor)
+        prx_window.set_waiting_start()
         _method = method(*args, **kwargs)
         window.unsetCursor()
+        prx_window.set_waiting_stop()
         return _method
 
     return sub_method
@@ -746,8 +749,82 @@ class QtIconMtd(object):
             QtGui.QIcon.On
         )
         return icon
+
+
+class QtPixmapMtd(object):
     @classmethod
-    def get_pixmap(cls, text, rounded=False, background_color=None):
+    def _to_gray_(cls, pixmap):
+        w, h = pixmap.width(), pixmap.height()
+        image_gray = QtGui.QImage(w, h, QtGui.QImage.Format_RGB32)
+        image = pixmap.toImage()
+        image_alpha = image.alphaChannel()
+        for i_x in range(w):
+            for i_y in range(h):
+                i_p = image.pixel(i_x, i_y)
+                i_g = QtGui.qGray(i_p)
+                i_g_c = QtGui.QColor(i_g, i_g, i_g)
+                image_gray.setPixel(i_x, i_y, i_g_c.rgb())
+        #
+        image_gray.setAlphaChannel(image_alpha)
+        return pixmap.fromImage(image_gray)
+    @classmethod
+    def get_by_file(cls, file_path, size=(20, 20)):
+        pixmap = QtGui.QPixmap(file_path)
+        new_pixmap = pixmap.scaled(
+            QtCore.QSize(*size),
+            QtCore.Qt.KeepAspectRatio,
+            QtCore.Qt.SmoothTransformation
+        )
+        return new_pixmap
+    @classmethod
+    def get_by_file_ext(cls, ext, size=(20, 20), gray=False):
+        _ = utl_core.FileIcon.get_by_file_ext(ext)
+        if _ is not None:
+            pixmap = cls.get_by_file(_, size)
+            if gray is True:
+                return cls._to_gray_(pixmap)
+            return pixmap
+        return cls.get_by_name(
+            ext[1:]
+        )
+    @classmethod
+    def get_by_file_ext_with_tag(cls, ext, tag, size=(20, 20), gray=False):
+        pixmap = cls.get_by_file_ext(
+            ext=ext,
+            size=size,
+            gray=gray
+        )
+        painter = QtGui.QPainter(pixmap)
+        painter.setRenderHint(painter.Antialiasing)
+        rect = pixmap.rect()
+        x, y = rect.x(), rect.y()
+        w, h = rect.width(), rect.height()
+        rd = min(w, h)
+        tag_rect = QtCore.QRect(
+            x+rd/2-1, y+rd/2-1, rd/2, rd/2
+        )
+        painter.setPen(QtBorderColor.Icon)
+        r, g, b = bsc_core.TextOpt(tag).to_rgb()
+        painter.setBrush(QtGui.QBrush(QtGui.QColor(r, g, b, 255)))
+        painter.drawRoundedRect(tag_rect, rd/4, rd/4, QtCore.Qt.AbsoluteSize)
+        #
+        t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(r, g, b)
+        t_r = QtGui.qGray(t_r, t_g, t_b)
+        if t_r >= 127:
+            t_r_1 = 223
+        else:
+            t_r_1 = 63
+        #
+        text_color_ = QtGui.QColor(t_r_1, t_r_1, t_r_1)
+        painter.setPen(text_color_)
+        painter.setFont(get_font(size=int(rd/2*.8)))
+        painter.drawText(
+            tag_rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(tag[0]).capitalize()
+        )
+        painter.end()
+        return pixmap
+    @classmethod
+    def get_by_name(cls, text, rounded=False, background_color=None):
         f_w, f_h = 14, 14
         c_w, c_h = 13, 13
         pixmap = QtGui.QPixmap(f_w, f_h)
@@ -977,44 +1054,6 @@ class QtDccMtd(utl_abstract.AbsDccMtd):
             return QtUtilMtd.get_qt_palette()
         else:
             return QtUtilMtd.get_qt_palette(tool_tip=True)
-
-
-class QtPixmapMtd(object):
-    @classmethod
-    def _to_gray_(cls, pixmap):
-        w, h = pixmap.width(), pixmap.height()
-        image_gray = QtGui.QImage(w, h, QtGui.QImage.Format_RGB32)
-        image = pixmap.toImage()
-        image_alpha = image.alphaChannel()
-        for i_x in range(w):
-            for i_y in range(h):
-                i_p = image.pixel(i_x, i_y)
-                i_g = QtGui.qGray(i_p)
-                i_g_c = QtGui.QColor(i_g, i_g, i_g)
-                image_gray.setPixel(i_x, i_y, i_g_c.rgb())
-        #
-        image_gray.setAlphaChannel(image_alpha)
-        return pixmap.fromImage(image_gray)
-    @classmethod
-    def get_by_file_path(cls, file_path, size=(20, 20)):
-        pixmap = QtGui.QPixmap(file_path)
-        new_pixmap = pixmap.scaled(
-            QtCore.QSize(*size),
-            QtCore.Qt.KeepAspectRatio,
-            QtCore.Qt.SmoothTransformation
-        )
-        return new_pixmap
-    @classmethod
-    def get_by_ext(cls, ext, size=(20, 20), gray=False):
-        _ = utl_core.FileIcon.get_by_ext(ext)
-        if _ is not None:
-            pixmap = cls.get_by_file_path(_, size)
-            if gray is True:
-                return cls._to_gray_(pixmap)
-            return pixmap
-        return QtIconMtd.get_pixmap(
-            ext[1:]
-        )
 
 
 class QtTreeMtd(object):
@@ -1731,6 +1770,20 @@ class QtMenuOpt(object):
                 lambda *args, **kwargs: self._set_cmd_debug_run_(cmd)
             )
         return widget_action
+
+
+class ApplicationOpt(object):
+    def __init__(self, app=None):
+        if app is None:
+            self._instance = QtWidgets.QApplication.instance()
+
+    def set_process_run_0(self):
+        self._instance.processEvents(
+            QtCore.QEventLoop.ExcludeUserInputEvents
+        )
+
+    def set_process_run_1(self):
+        self._instance.processEvents()
 
 
 def set_gui_proxy_set_print(gui_proxy, text):

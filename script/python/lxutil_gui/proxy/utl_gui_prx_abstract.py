@@ -1,7 +1,7 @@
 # coding:utf-8
 import fnmatch
 
-from lxbasic import bsc_configure
+from lxbasic import bsc_configure, bsc_core
 
 from lxutil_gui import utl_gui_configure
 
@@ -16,6 +16,8 @@ class _PrxStateDef(object):
     DISABLE_STATE = utl_gui_configure.State.DISABLE
     WARNING_STATE = utl_gui_configure.State.WARNING
     ERROR_STATE = utl_gui_configure.State.ERROR
+    #
+    State = utl_gui_configure.State
 
 
 class AbsPrx(object):
@@ -241,8 +243,10 @@ class GuiProgress(object):
         self._maximum = maximum
         self._value = 0
         self._label = label
+        # all value map to low
+        self._map_maximum = 10
+        self._map_value = 0
         #
-        self._range_maximum = 100
         self._parent = None
         #
         self._sub_start = None
@@ -288,8 +292,15 @@ class GuiProgress(object):
         if self._is_stop is False:
             self._value += 1
             #
-            root = self.get_root()
-            root._set_qt_progress_update_()
+            if self._maximum > 1:
+                map_value = int(
+                    bsc_core.RangeMtd.set_map_to((1, self._maximum), (1, self._map_maximum), self._value)
+                )
+                if map_value != self._map_value:
+                    self._map_value = map_value
+                    #
+                    root = self.get_root()
+                    root._set_qt_progress_update_()
 
     def set_stop(self):
         if self.get_is_root():
@@ -330,25 +341,22 @@ class GuiProgress(object):
     def _set_qt_progress_update_(self):
         if self.get_qt_progress() is not None:
             if self.get_is_root() is True:
-                raw = []
                 descendants = self.get_descendants()
-                #
+                raw = [(0, 1, self._get_percent_(), self.label)]
                 maximums, values = [self.maximum], [self.value]
-                [maximums.append(i.maximum) for i in descendants], [values.append(i.value) for i in descendants]
+                for i_descendant in descendants:
+                    maximums.append(i_descendant.maximum)
+                    values.append(i_descendant.value)
+                    raw.append(
+                        (i_descendant._sub_start, i_descendant._sub_end, i_descendant._get_percent_(), i_descendant.label)
+                    )
                 #
                 maximum, value = sum(maximums), sum(values)
                 #
-                raw.append(
-                    (0, 1, self._get_percent_(), self.label)
-                )
-                for descendant in descendants:
-                    raw.append(
-                        (descendant._sub_start, descendant._sub_end, descendant._get_percent_(), descendant.label)
-                    )
-                #
                 self._qt_progress._set_progress_raw_(raw)
                 #
-                self._qt_progress._set_progress_maximum_value_(maximum)
+                self._qt_progress._set_progress_maximum_(maximum)
+                self._qt_progress._set_progress_map_maximum_(self._map_maximum)
                 self._qt_progress._set_progress_value_(value)
 
     def get_root(self):

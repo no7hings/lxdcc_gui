@@ -3,6 +3,8 @@ import lxbasic.objects as bsc_objects
 #
 from lxutil import utl_configure, utl_core
 
+from lxutil_gui.qt import utl_gui_qt_core
+
 import lxutil_gui.qt.widgets as qt_widgets
 
 import lxutil_gui.proxy.widgets as prx_widgets
@@ -54,7 +56,7 @@ class AbsAssetComparerPanel(
         #
         self._update_geometry_from_model_item = prx_widgets.PrxPressItem()
         self._update_geometry_from_model_item.set_name('Update Geometry(s) from model')
-        self._update_geometry_from_model_item.set_icon_by_text('Update Geometry(s) from model')
+        self._update_geometry_from_model_item.set_icon_by_name_text('Update Geometry(s) from model')
         self._update_geometry_from_model_item.set_tool_tip(
             [
                 'press to update geometry(s) form model task'
@@ -65,14 +67,14 @@ class AbsAssetComparerPanel(
         #
         self._update_geometry_from_surface_item = prx_widgets.PrxPressItem()
         self._update_geometry_from_surface_item.set_name('Update Geometry(s) from surface')
-        self._update_geometry_from_surface_item.set_icon_by_text('Update Geometry(s) from surface')
+        self._update_geometry_from_surface_item.set_icon_by_name_text('Update Geometry(s) from surface')
         self.set_button_add(self._update_geometry_from_surface_item)
         self._update_geometry_from_surface_item.set_enable(False)
         # self._update_geometry_from_surface_item.set_press_clicked_connect_to(self._set_checked_geometry_import_)
         #
         self._update_look_from_surface_item = prx_widgets.PrxPressItem()
         self._update_look_from_surface_item.set_name('Update Look(s) from surface')
-        self._update_look_from_surface_item.set_icon_by_text('Update Look(s) from surface')
+        self._update_look_from_surface_item.set_icon_by_name_text('Update Look(s) from surface')
         self.set_button_add(self._update_look_from_surface_item)
         self._update_look_from_surface_item.set_enable(False)
         self._update_look_from_surface_item.set_press_clicked_connect_to(self._set_checked_look_import_from_surface_)
@@ -145,36 +147,36 @@ class AbsAssetComparerPanel(
         qt_layout_0.addWidget(self._configure_gui.widget)
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxTextPort('scene_file_path', 'Scene-file')
+            prx_widgets.PrxFileOpenPort('scene_file_path', 'Scene-file')
         )
         _port.set_use_as_storage()
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxEnumeratePort('model_usd_file_path', 'Model-usd-file')
+            prx_widgets.PrxEnumeratePort_('model_usd_file_path', 'Model-usd-file')
         )
         _port.set_use_as_storage()
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxEnumeratePort('model_ass_file_path', 'Model-ass-file')
+            prx_widgets.PrxEnumeratePort_('model_ass_file_path', 'Model-ass-file')
         )
         _port.set_use_as_storage()
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxEnumeratePort('surface_usd_file_path', 'Surface-usd-file')
+            prx_widgets.PrxEnumeratePort_('surface_usd_file_path', 'Surface-usd-file')
         )
         _port.set_use_as_storage()
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxEnumeratePort('surface_ass_file_path', 'Surface-ass-file')
+            prx_widgets.PrxEnumeratePort_('surface_ass_file_path', 'Surface-ass-file')
         )
         _port.set_use_as_storage()
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxEnumeratePort('cache_directory_path', 'Cache-directory')
+            prx_widgets.PrxEnumeratePort_('cache_directory_path', 'Cache-directory')
         )
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxTextPort('scene_root', 'Scene-root')
+            prx_widgets.PrxStringPort('scene_root', 'Scene-root')
         )
         #
         _port = self._configure_gui.set_port_add(
@@ -186,10 +188,8 @@ class AbsAssetComparerPanel(
         self.set_window_loading_end()
         self._set_refresh_all_()
 
-    def _set_dcc_obj_guis_build_(self):
-        self._prx_usd_mesh_tree_view_add_opt.set_restore()
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
-        #
+    @utl_gui_qt_core.set_prx_window_waiting
+    def _set_comparer_result_update_(self):
         scene_file_path = self._configure_gui.get_port('scene_file_path').get()
         root = self._configure_gui.get_port('scene_root').get()
         self._fnc_dcc_geometry_comparer = self.FNC_GEOMETRY_COMPARER(
@@ -200,8 +200,15 @@ class AbsAssetComparerPanel(
             self._configure_gui.get_port('model_usd_file_path').get()
         )
         #
+        return self._fnc_dcc_geometry_comparer.get_results()
+
+    def _set_dcc_obj_guis_build_(self):
+        self._prx_usd_mesh_tree_view_add_opt.set_restore()
+        self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
+        #
+        comparer_results = self._set_comparer_result_update_()
+        #
         sector_chart_data_dict = {}
-        comparer_results = self._fnc_dcc_geometry_comparer.get_results()
         count = len(comparer_results)
         if comparer_results:
             g_p = utl_core.GuiProgressesRunner(maximum=count)
@@ -283,7 +290,7 @@ class AbsAssetComparerPanel(
         )
         if self._task_properties is not None:
             step = self._task_properties.get('step')
-            if step in ['mod', 'srf', 'rig']:
+            if step in ['mod', 'srf', 'rig', 'grm']:
                 model_geometry_usd_hi_file_paths = rsv_operators.RsvAssetGeometryQuery(
                     self._task_properties
                 ).get_usd_hi_file(
@@ -292,7 +299,7 @@ class AbsAssetComparerPanel(
                 if model_geometry_usd_hi_file_paths:
                     _port = self._configure_gui.get_port('model_usd_file_path')
                     _port.set(model_geometry_usd_hi_file_paths)
-                    _port.set_current(model_geometry_usd_hi_file_paths[-1])
+                    _port.set(model_geometry_usd_hi_file_paths[-1])
                 #
                 model_look_ass_file_paths = rsv_operators.RsvAssetLookQuery(
                     self._task_properties
@@ -302,7 +309,7 @@ class AbsAssetComparerPanel(
                 if model_look_ass_file_paths:
                     _port = self._configure_gui.get_port('model_ass_file_path')
                     _port.set(model_look_ass_file_paths)
-                    _port.set_current(model_look_ass_file_paths[-1])
+                    _port.set(model_look_ass_file_paths[-1])
                 #
                 surface_geometry_usd_hi_file_paths = rsv_operators.RsvAssetGeometryQuery(
                     self._task_properties
@@ -312,7 +319,7 @@ class AbsAssetComparerPanel(
                 if surface_geometry_usd_hi_file_paths:
                     _port = self._configure_gui.get_port('surface_usd_file_path')
                     _port.set(surface_geometry_usd_hi_file_paths)
-                    _port.set_current(surface_geometry_usd_hi_file_paths[-1])
+                    _port.set(surface_geometry_usd_hi_file_paths[-1])
                 #
                 surface_look_ass_file_paths = rsv_operators.RsvAssetLookQuery(
                     self._task_properties
@@ -322,7 +329,7 @@ class AbsAssetComparerPanel(
                 if surface_look_ass_file_paths:
                     _port = self._configure_gui.get_port('surface_ass_file_path')
                     _port.set(surface_look_ass_file_paths)
-                    _port.set_current(surface_look_ass_file_paths[-1])
+                    _port.set(surface_look_ass_file_paths[-1])
                 #
                 self._configure_gui.get_port('scene_root').set(
                     '/master/hi'

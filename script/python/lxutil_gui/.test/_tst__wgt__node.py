@@ -14,9 +14,12 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
         n = utl_prx_widgets.PrxNode_('root')
         self.set_widget_add(n)
         p = n.set_port_add(
-            utl_prx_widgets.PrxRgbPort(
+            utl_prx_widgets.PrxRgbaPort(
                 'test'
             )
+        )
+        p.set(
+            (1, 0, 0)
         )
 
 

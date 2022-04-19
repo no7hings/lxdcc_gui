@@ -46,8 +46,8 @@ class AbsPrxTreeDef(object):
             else:
                 file_icons = None
             #
-            if 'name_icon' in kwargs:
-                _name_icon = kwargs['name_icon']
+            if 'icon_name_text' in kwargs:
+                _name_icon = kwargs['icon_name_text']
                 if isinstance(_name_icon, (tuple, list)):
                     name_icons = _name_icon
                 else:
@@ -83,12 +83,12 @@ class AbsPrxTreeDef(object):
         if file_icons is not None:
             for column, i_file_icon in enumerate(file_icons):
                 if i_file_icon is not None:
-                    item_prx.set_file_icon(i_file_icon, column)
+                    item_prx.set_icon_by_file(i_file_icon, column)
         #
         if name_icons is not None:
             for column, i_name_icon in enumerate(name_icons):
                 if i_name_icon is not None:
-                    item_prx.set_icon_by_text(i_name_icon, column)
+                    item_prx.set_icon_by_name_text(i_name_icon, column)
         #
         if name is not None:
             pass
@@ -213,17 +213,17 @@ class PrxTreeItem(
             return '/{}'.format(self.get_name())
         return '/'
 
-    def set_file_icon(self, icon, column=0):
+    def set_icon_by_file(self, icon, column=0):
         if isinstance(icon, (str, unicode)):
             self.widget._set_icon_file_path_(icon, column)
         elif isinstance(icon, utl_gui_qt_core.QtGui.QIcon):
             qt_icon = icon
             self.widget.setIcon(column, qt_icon)
 
-    def set_color_icon(self, color, column=0):
+    def set_icon_by_color(self, color, column=0):
         self.widget._set_color_icon_rgb_(color, column)
 
-    def set_icon_by_text(self, text, column=0):
+    def set_icon_by_name_text(self, text, column=0):
         self.widget._set_icon_name_text_(text, column)
 
     def get_parent(self):
@@ -565,27 +565,27 @@ class PrxLabelTreeItem(PrxTreeItem):
         self.set_normal_state()
 
     def set_normal_state(self):
-        self.set_file_icon(utl_core.Icon.get('tag'))
+        self.set_icon_by_file(utl_core.Icon.get('tag'))
         self.set_foreground_update(utl_gui_qt_core.Brush.default_text)
 
     def set_error_state(self):
-        self.set_file_icon(utl_core.Icon.get('error'))
+        self.set_icon_by_file(utl_core.Icon.get('error'))
         self.set_foreground_update(utl_gui_qt_core.Brush.error_text)
 
     def set_warning_state(self):
-        self.set_file_icon(utl_core.Icon.get('warning'))
+        self.set_icon_by_file(utl_core.Icon.get('warning'))
         self.set_foreground_update(utl_gui_qt_core.Brush.warning_text)
 
     def set_adopt_state(self):
-        self.set_file_icon(utl_core.Icon.get('adopt'))
+        self.set_icon_by_file(utl_core.Icon.get('adopt'))
         self.set_foreground_update(utl_gui_qt_core.Brush.adopt_text)
 
     def set_disable_state(self):
-        self.set_file_icon(utl_core.Icon.get('disable'))
+        self.set_icon_by_file(utl_core.Icon.get('disable'))
         self.set_foreground_update(utl_gui_qt_core.Brush.disable_text)
 
     def set_temporary_state(self):
-        self.set_file_icon(utl_core.Icon.get('temporary'))
+        self.set_icon_by_file(utl_core.Icon.get('temporary'))
         self.set_foreground_update(utl_gui_qt_core.Brush.temporary_text)
 
     def set_foreground_update(self, qt_brush):
@@ -601,14 +601,14 @@ class PrxLoadingTreeItem(PrxTreeItem):
     def __init__(self, *args, **kwargs):
         super(PrxLoadingTreeItem, self).__init__(*args, **kwargs)
         self.set_name('loading ...')
-        self.set_file_icon(utl_core.Icon.get('refresh'))
+        self.set_icon_by_file(utl_core.Icon.get('refresh'))
 
 
 class PrxObjTreeItem(PrxTreeItem):
     def __init__(self, *args, **kwargs):
         super(PrxObjTreeItem, self).__init__(*args, **kwargs)
         self.widget.setForeground(0, utl_gui_qt_core.Brush.default_text)
-        # self.set_file_icon(utl_core.Icon.get('tag'))
+        # self.set_icon_by_file(utl_core.Icon.get('tag'))
         self.set_normal_state()
     @property
     def check_state(self):
@@ -683,10 +683,10 @@ class PrxListItem(
     def set_index(self, index):
         self.widget._set_index_(index)
 
-    def set_pixmap_icons(self, icons):
-        self.widget._set_pixmap_icons_(icons)
+    def set_icons_by_pixmap(self, icons):
+        self.widget._set_icons_by_pixmap_(icons)
 
-    def set_file_icon(self, icon_name=None, icon_file_path=None):
+    def set_icon_by_file(self, icon_name=None, icon_file_path=None):
         if icon_file_path is not None:
             self.widget._set_icon_file_path_(
                 icon_file_path
@@ -709,7 +709,7 @@ class PrxListItem(
             utl_core.Icon.get(icon_name)
         )
 
-    def set_icon_by_text(self, text):
+    def set_icon_by_name_text(self, text):
         self.widget._set_icon_name_text_(
             text
         )

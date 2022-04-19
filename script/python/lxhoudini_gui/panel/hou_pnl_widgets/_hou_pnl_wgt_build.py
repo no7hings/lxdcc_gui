@@ -51,14 +51,14 @@ class SceneBuildToolPanel(utl_gui_pnl_abstract.AbsShotBuildToolPanel):
                 dcc_obj = self.DCC_OBJ_CLASS(dcc_path)
                 if dcc_obj.get_is_exists() is True:
                     obj_gui.set_gui_attribute('dcc_obj', dcc_obj)
-                    obj_gui.set_file_icon(dcc_obj.icon)
+                    obj_gui.set_icon_by_file(dcc_obj.icon)
                     #
                     display_enable = dcc_obj.get_is_display_enable()
                     obj_gui.set_name(str(display_enable), self.GUI_DISPLAY_INDEX)
-                    obj_gui.set_file_icon(utl_gui_qt_core.QtUtilMtd.get_qt_icon(['hide', 'show'][display_enable]), self.GUI_DISPLAY_INDEX)
+                    obj_gui.set_icon_by_file(utl_gui_qt_core.QtUtilMtd.get_qt_icon(['hide', 'show'][display_enable]), self.GUI_DISPLAY_INDEX)
                     render_enable = dcc_obj.get_is_render_enable()
                     obj_gui.set_name(str(render_enable), self.GUI_RENDER_INDEX)
-                    obj_gui.set_file_icon(utl_gui_qt_core.QtUtilMtd.get_qt_icon(['hide', 'show'][render_enable]), self.GUI_RENDER_INDEX)
+                    obj_gui.set_icon_by_file(utl_gui_qt_core.QtUtilMtd.get_qt_icon(['hide', 'show'][render_enable]), self.GUI_RENDER_INDEX)
 
     def _set_dcc_objs_build_(self):
         self._set_dcc_pre_build_()

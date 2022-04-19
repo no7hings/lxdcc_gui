@@ -38,20 +38,28 @@ def _set_texture_tx_load(window, item_prx, texture_references, includes, force, 
     #
     import lxbasic.objects as bsc_objects
     #
-    result_dict = utl_dcc_operators.DccTexturesOpt(
+    textures_opt = utl_dcc_operators.DccTexturesOpt(
         texture_references,
         includes=includes,
-    ).set_tx_create_and_repath(use_deferred=True, force=force)
+    )
+    create_process = textures_opt.set_tx_create(use_deferred=True, force=force)
     #
-    p = result_dict['tx-create']
-    p_m = bsc_objects.ProcessMonitor(p)
+    # result_dict = utl_dcc_operators.DccTexturesOpt(
+    #     texture_references,
+    #     includes=includes,
+    # ).set_tx_create_and_repath(use_deferred=True, force=force)
+    #
+    # create_process = result_dict['tx-create']
+    p_m = bsc_objects.ProcessMonitor(create_process)
     p_m.logging.set_connect_to(set_logging_update)
     p_m.processing.set_connect_to(set_processing_update)
     p_m.status_changed.set_connect_to(set_status_changed_update)
     p_m.element_statuses_changed.set_connect_to(set_element_status_changed_update)
     p_m.set_start()
-    p.set_start()
+    create_process.set_start()
     window.set_window_close_connect_to(p_m.set_stop)
+    #
+    p_m.completed.set_connect_to(textures_opt.set_tx_repath)
     #
     if completed_fnc is not None:
         p_m.completed.set_connect_to(completed_fnc)
@@ -86,20 +94,22 @@ def _set_texture_jpg_load(window, item_prx, texture_references, includes, force,
     #
     label = 'Load Texture-jpg(s)'
     #
-    result_dict = utl_dcc_operators.DccTexturesOpt(
+    textures_opt = utl_dcc_operators.DccTexturesOpt(
         texture_references,
         includes=includes,
-    ).set_jpg_create_and_repath(use_deferred=True, force=force)
+    )
+    create_process = textures_opt.set_jpg_create(use_deferred=True, force=force)
     #
-    p = result_dict['jpg-create']
-    p_m = bsc_objects.ProcessMonitor(p)
+    p_m = bsc_objects.ProcessMonitor(create_process)
     p_m.logging.set_connect_to(set_logging_update)
     p_m.processing.set_connect_to(set_processing_update)
     p_m.status_changed.set_connect_to(set_status_changed_update)
     p_m.element_statuses_changed.set_connect_to(set_element_status_changed_update)
     p_m.set_start()
-    p.set_start()
+    create_process.set_start()
     window.set_window_close_connect_to(p_m.set_stop)
+    #
+    p_m.completed.set_connect_to(textures_opt.set_jpg_repath)
     #
     if completed_fnc is not None:
         p_m.completed.set_connect_to(completed_fnc)
@@ -391,20 +401,24 @@ class AbsSceneTextureManagerPanel(
                     stg_files = i_dcc_obj.get_file_objs()
                     if stg_files:
                         for stg_file in stg_files:
-                            is_create, stg_file_item_prx = self._prx_stg_obj_tree_view_add_opt.set_item_prx_add_as(stg_file, mode='list')
+                            is_create, stg_file_item_prx = self._prx_stg_obj_tree_view_add_opt.set_item_prx_add_as(
+                                stg_file,
+                                mode='list',
+                                use_show_thread=True
+                            )
                             if is_create is True:
                                 if stg_file.get_is_exists() is True:
-                                    tx_is_exists = stg_file.get_tx_is_exists()
-                                    if tx_is_exists is True:
-                                        stg_file_item_prx.set_state(utl_gui_core.State.NORMAL)
-                                    else:
-                                        stg_file_item_prx.set_state(utl_gui_core.State.WARNING)
+                                    # tx_is_exists = stg_file.get_tx_is_exists()
+                                    # if tx_is_exists is True:
+                                    #     stg_file_item_prx.set_state(utl_gui_core.State.NORMAL)
+                                    # else:
+                                    #     stg_file_item_prx.set_state(utl_gui_core.State.WARNING)
                                     #
                                     texture_color_space = stg_file.get_color_space()
                                     stg_file_item_prx.set_name(
                                         texture_color_space, self.DSC_IDX_COLORS_SPACE
                                     )
-                                    stg_file_item_prx.set_icon_by_text(
+                                    stg_file_item_prx.set_icon_by_name_text(
                                         texture_color_space, self.DSC_IDX_COLORS_SPACE
                                     )
                                     #
@@ -412,34 +426,32 @@ class AbsSceneTextureManagerPanel(
                                     stg_file_item_prx.set_name(
                                         texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
                                     )
-                                    stg_file_item_prx.set_icon_by_text(
+                                    stg_file_item_prx.set_icon_by_name_text(
                                         texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
                                     )
                             #
-                            # self._dcc_objs.append(i_dcc_obj)
-                            #
-                            i_dcc_obj_item_prx = self._prx_dcc_obj_tree_view_add_opt._set_item_prx_add_2_(
+                            i_dcc_prx_item = self._prx_dcc_obj_tree_view_add_opt._set_item_prx_add_2_(
                                 i_dcc_obj,
                                 stg_file_item_prx
                             )
-                            i_dcc_obj.set_obj_gui(i_dcc_obj_item_prx)
+                            i_dcc_obj.set_obj_gui(i_dcc_prx_item)
                             #
                             ext = stg_file.type
                             ext_key = 'ext.{}'.format(ext)
                             self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
-                                ext_key, i_dcc_obj_item_prx
+                                ext_key, i_dcc_prx_item
                             )
                             #
                             node_color_space = i_dcc_obj.get_color_space()
                             color_space_key = 'color-space.{}'.format(node_color_space)
                             self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
-                                color_space_key, i_dcc_obj_item_prx
+                                color_space_key, i_dcc_prx_item
                             )
                             #
-                            i_dcc_obj_item_prx.set_name(
+                            i_dcc_prx_item.set_name(
                                 node_color_space, self.DSC_IDX_USED_COLORS_SPACE
                             )
-                            i_dcc_obj_item_prx.set_icon_by_text(
+                            i_dcc_prx_item.set_icon_by_name_text(
                                 node_color_space, self.DSC_IDX_USED_COLORS_SPACE
                             )
                 #

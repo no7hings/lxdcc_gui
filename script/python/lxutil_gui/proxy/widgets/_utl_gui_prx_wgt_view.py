@@ -40,7 +40,7 @@ class PrxHSplitter(utl_gui_prx_abstract.AbsPrxWidget):
             widget.setMaximumWidth(0)
 
     def set_sizes(self, sizes):
-        self.widget.setSizes(sizes)
+        self.widget._set_sizes_(sizes)
 
     def set_swap_enable(self, boolean):
         self.widget._swap_enable = boolean

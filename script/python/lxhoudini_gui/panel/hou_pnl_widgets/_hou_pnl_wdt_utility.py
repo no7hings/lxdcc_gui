@@ -93,7 +93,7 @@ class SceneOverviewToolPanel(utl_gui_pnl_abstract.AbsUtilToolPanel):
                 item_class=prx_widgets.PrxDccObjTreeItem,
                 tool_tip=dcc_obj.path
             )
-        tree_item.set_file_icon(dcc_obj.icon)
+        tree_item.set_icon_by_file(dcc_obj.icon)
         if is_dcc_node is True:
             tree_item.set_gui_attribute('dcc_obj', dcc_obj)
         return dcc_obj, tree_item
@@ -110,7 +110,7 @@ class SceneOverviewToolPanel(utl_gui_pnl_abstract.AbsUtilToolPanel):
                 item_class=prx_widgets.PrxDccObjTreeItem,
             )
         if icon is not None:
-            tree_item.set_file_icon(icon)
+            tree_item.set_icon_by_file(icon)
         return tree_item
 
     def set_run(self):
@@ -301,7 +301,7 @@ class AttributeConstantTool(utl_gui_pnl_abstract.AbsUtilToolPanel):
                 item_class=prx_widgets.PrxDccObjTreeItem,
             )
         if icon is not None:
-            tree_item.set_file_icon(icon)
+            tree_item.set_icon_by_file(icon)
         return tree_item
     @classmethod
     def set_node_data_update(cls, dic, hou_node):
@@ -384,7 +384,7 @@ class AttributeConstantTool(utl_gui_pnl_abstract.AbsUtilToolPanel):
             tree_item = self.set_attribute_tree_item_add(label, name, type_name, value)
             if k in self._right_dict:
                 tree_item.set_adopt_state(0)
-                tree_item.set_file_icon(utl_core.Icon.get('intersection'))
+                tree_item.set_icon_by_file(utl_core.Icon.get('intersection'))
                 right_value = self._right_dict[name][2]
                 descriptions.append('intersection')
                 if not value == right_value:
@@ -393,7 +393,7 @@ class AttributeConstantTool(utl_gui_pnl_abstract.AbsUtilToolPanel):
                     descriptions.append('value is changed')
             else:
                 tree_item.set_error_state(0)
-                tree_item.set_file_icon(utl_core.Icon.get('deletion'))
+                tree_item.set_icon_by_file(utl_core.Icon.get('deletion'))
                 descriptions.append('deletion')
 
             tree_item.set_name('; '.join(descriptions), 4)
@@ -408,7 +408,7 @@ class AttributeConstantTool(utl_gui_pnl_abstract.AbsUtilToolPanel):
             if k not in self._left_dict:
                 tree_item = self.set_attribute_tree_item_add(label, name, type_name, value)
                 tree_item.set_warning_state(0)
-                tree_item.set_file_icon(utl_core.Icon.get('addition'))
+                tree_item.set_icon_by_file(utl_core.Icon.get('addition'))
                 descriptions.append('addition')
 
                 tree_item.set_name('; '.join(descriptions), 4)

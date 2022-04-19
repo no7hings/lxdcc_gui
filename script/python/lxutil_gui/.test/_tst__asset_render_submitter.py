@@ -1,7 +1,11 @@
 # coding:utf-8
+from lxbasic import bsc_core
+
 from lxutil_gui.qt import utl_gui_qt_core
 
 import lxutil_gui.panel.utl_pnl_widgets as utl_pnl_widgets
+
+bsc_core.EnvironMtd.set_td_enable(True)
 
 # hook_option = 'file={}'.format('/l/prod/cgm/work/assets/chr/nn_14y_test/mod/modeling/maya/scenes/nn_14y_test.mod.modeling.v006.ma')
 # hook_option = 'file={}'.format('/l/prod/cgm/work/assets/chr/nn_14y_test/srf/surfacing/katana/nn_14y_test.srf.surfacing.v045.td_render.katana')

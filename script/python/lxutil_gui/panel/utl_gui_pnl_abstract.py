@@ -241,7 +241,7 @@ class AbsSceneComposeToolPanel(
             dcc_obj = self.DCC_OBJ_CLASS(dcc_name)
             if dcc_obj.get_is_exists() is True:
                 obj_gui.set_gui_attribute('dcc_obj', dcc_obj)
-                obj_gui.set_file_icon(dcc_obj.icon)
+                obj_gui.set_icon_by_file(dcc_obj.icon)
                 exists_path = dcc_obj.path
                 if not exists_path == obj_opt.dcc_path:
                     obj_gui.set_warning_state()
@@ -1050,7 +1050,7 @@ class AbsShotBuildToolPanel(
                 dcc_obj = self.DCC_OBJ_CLASS(dcc_path)
                 if dcc_obj.get_is_exists() is True:
                     obj_gui.set_gui_attribute('dcc_obj', dcc_obj)
-                    obj_gui.set_file_icon(dcc_obj.icon)
+                    obj_gui.set_icon_by_file(dcc_obj.icon)
 
     def _set_obj_element_dcc_update_(self, element_opt, element_gui):
         self._set_obj_gui_dcc_update_(element_opt, element_gui)

@@ -1,5 +1,6 @@
 # coding:utf-8
 import collections
+
 import os
 
 import lxutil_gui.proxy.widgets as prx_widgets
@@ -32,14 +33,9 @@ import lxsession.commands as ssn_commands
 
 
 class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
-    PANEL_KEY = None
     DCC_NAMESPACE = 'resolver'
-    RESOLVER_FILTER = None
-    #
-    ITEM_FRAME_SIZE = 128, 128
-    #
-    WINDOW_NAME = 'Entities Loader'
-    WINDOW_SIZE = 1280, 960
+    ITEM_ICON_FRAME_SIZE = 26, 26
+    ITEM_ICON_SIZE = 24, 24
     def __init__(self, session, *args, **kwargs):
         super(AbsEntitiesLoaderPanel_, self).__init__(*args, **kwargs)
         #
@@ -113,21 +109,21 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         self._prx_obj_guide_bar = prx_widgets.PrxGuideBar()
         expand_box_0.set_widget_add(self._prx_obj_guide_bar)
         #
-        h_splitter_0 = prx_widgets.PrxHSplitter()
-        expand_box_0.set_widget_add(h_splitter_0)
-        v_splitter_0 = prx_widgets.PrxVSplitter()
-        h_splitter_0.set_widget_add(v_splitter_0)
+        h_s = prx_widgets.PrxHSplitter()
+        expand_box_0.set_widget_add(h_s)
+        v_s = prx_widgets.PrxVSplitter()
+        h_s.set_widget_add(v_s)
         self._rsv_obj_tree_view_0 = prx_widgets.PrxTreeView()
-        v_splitter_0.set_widget_add(self._rsv_obj_tree_view_0)
+        v_s.set_widget_add(self._rsv_obj_tree_view_0)
         #
         self._filter_tree_viewer_0 = prx_widgets.PrxTreeView()
-        v_splitter_0.set_widget_add(self._filter_tree_viewer_0)
+        v_s.set_widget_add(self._filter_tree_viewer_0)
         #
         self._rsv_uint_list_view_0 = prx_widgets.PrxListView()
-        h_splitter_0.set_widget_add(self._rsv_uint_list_view_0)
+        h_s.set_widget_add(self._rsv_uint_list_view_0)
         #
-        v_splitter_0.set_stretches([1, 1])
-        h_splitter_0.set_stretches([1, 3])
+        v_s.set_stretches([1, 1])
+        h_s.set_stretches([1, 3])
         #
         self._set_obj_viewer_build_()
 
@@ -211,6 +207,8 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         )
         #
         self._rsv_uint_list_view_0.set_item_frame_size(*self._item_frame_size)
+        self._rsv_uint_list_view_0.set_item_icon_frame_size(*self.ITEM_ICON_FRAME_SIZE)
+        self._rsv_uint_list_view_0.set_item_icon_size(*self.ITEM_ICON_SIZE)
         self._rsv_uint_list_view_0.set_item_icon_frame_draw_enable(True)
         self._rsv_uint_list_view_0.set_item_name_frame_draw_enable(True)
         self._rsv_uint_list_view_0.set_item_image_frame_draw_enable(True)
@@ -221,7 +219,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         #
         self._prx_obj_guide_bar.set_item_clicked_connect_to(self._set_rsv_obj_select_)
         # self._prx_obj_guide_bar.set_item_changed_connect_to(self._set_rsv_obj_select_)
-    @utl_gui_qt_core.set_window_prx_loading_modifier
+    @utl_gui_qt_core.set_prx_window_waiting
     def _set_rsv_obj_viewer_refresh_(self):
         self._resolver = rsv_commands.get_resolver()
         #
@@ -294,7 +292,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 rsv_entity_gui, lambda *args, **kwargs: self._set_rsv_task_guis_add_(rsv_entity)
             )
         return show_threads
-    @utl_gui_qt_core.set_window_prx_loading_modifier
+    @utl_gui_qt_core.set_prx_window_waiting
     def _set_rsv_task_guis_add_(self, rsv_obj):
         rsv_obj_item_prx = rsv_obj.get_obj_gui()
         #
@@ -356,7 +354,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 obj_path,
                 exclusive=True
             )
-    @utl_gui_qt_core.set_window_prx_loading_modifier
+    @utl_gui_qt_core.set_prx_window_waiting
     def _set_rsv_unit_viewer_refresh_(self):
         tree_item_prxes = self._rsv_obj_tree_view_0.get_selected_items()
         self._rsv_uint_list_view_0.set_clear()
@@ -397,7 +395,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
     def _set_rsv_task_unit_gui_add_(self, rsv_task):
         def set_thread_create_fnc_(rsv_task_, rsv_task_unit_args_lis_, i_rsv_unit_item_prx_):
             i_rsv_unit_item_prx_.set_show_method(
-                lambda *args, **kwargs: self.__set_rsv_unit_gui_show_deferred_(
+                lambda *args, **kwargs: self._set_rsv_unit_prx_item_show_deferred_(
                     rsv_task_, i_rsv_unit_item_prx_, rsv_task_unit_args_lis_
                 )
             )
@@ -423,7 +421,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             else:
                 rsv_task_gui.set_state(utl_gui_core.State.DISABLE)
 
-    def __set_rsv_unit_gui_show_deferred_(self, rsv_task, rsv_unit_prx_item, rsv_task_unit_show_raw):
+    def _set_rsv_unit_prx_item_show_deferred_(self, rsv_task, rsv_unit_prx_item, rsv_task_unit_show_raw):
         task_properties = rsv_task.properties
         project = rsv_task.get('project')
         branch = rsv_task.get('branch')
@@ -438,27 +436,30 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 ('task', task)
             ]
         )
-        pixmap_icons = []
-        for i_enable, i_rsv_unit, i_rsv_unit_file_path in rsv_task_unit_show_raw:
+        pixmaps = []
+        for i_enable, i_rsv_unit, i_file_path in rsv_task_unit_show_raw:
             if i_enable is True:
-                # i_result_properties = i_rsv_unit.get_properties_by_result(i_rsv_unit_file_path)
-                # version = i_result_properties.get('version')
-                #
-                i_rsv_unit_file = utl_dcc_objects.OsFile(i_rsv_unit_file_path)
-                # i_user = i_rsv_unit_file.get_user()
-                # i_time = i_rsv_unit_file.get_time()
-                # icon_names.append(icon_name)
-                i_icon_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_ext(i_rsv_unit_file.ext)
-                pixmap_icons.append(i_icon_pixmap)
-            else:
-                i_rsv_unit_file = utl_dcc_objects.OsFile(i_rsv_unit_file_path)
-                i_icon_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_ext(i_rsv_unit_file.ext, gray=not i_enable)
-                pixmap_icons.append(i_icon_pixmap)
+                i_rsv_properties = i_rsv_unit.get_properties_by_result(i_file_path)
+                i_rsv_unit_file = utl_dcc_objects.OsFile(i_file_path)
+                i_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
+                    i_rsv_unit_file.ext,
+                    tag=i_rsv_properties.get('workspace'),
+                    size=self.ITEM_ICON_SIZE
+                )
+                pixmaps.append(i_pixmap)
+            # else:
+            #     i_rsv_unit_file = utl_dcc_objects.OsFile(i_file_path)
+            #     i_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_file_ext(
+            #         i_rsv_unit_file.ext,
+            #         size=self.ITEM_ICON_SIZE,
+            #         gray=not i_enable
+            #     )
+            #     pixmaps.append(i_pixmap)
         #
         rsv_unit_prx_item.set_name_dict(name_text_dict)
         r, g, b = bsc_core.TextOpt(task).to_rgb()
         rsv_unit_prx_item.set_name_frame_background_color((r, g, b, 127))
-        rsv_unit_prx_item.set_pixmap_icons(pixmap_icons)
+        rsv_unit_prx_item.set_icons_by_pixmap(pixmaps)
         rsv_unit_prx_item.set_tool_tip(
             rsv_task.description
         )
@@ -565,12 +566,12 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 i_rsv_unit = rsv_task.get_rsv_unit(
                     keyword=i_keyword
                 )
-                i_rsv_unit_file_path = i_rsv_unit.get_result(version='latest')
-                if i_rsv_unit_file_path:
+                i_file_path = i_rsv_unit.get_result(version='latest')
+                if i_file_path:
                     enable = True
                     #
                     lis.append(
-                        (True, i_rsv_unit, i_rsv_unit_file_path)
+                        (True, i_rsv_unit, i_file_path)
                     )
                 # else:
                 #     i_rsv_unit_pattern = i_rsv_unit.pattern
@@ -646,40 +647,80 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             hook_keys, rsv_task
         )
 
-    def __get_menu_content_by_hook_keys_(self, keys, *args, **kwargs):
+    def __get_menu_content_by_hook_keys_(self, hooks, *args, **kwargs):
         content = bsc_objects.Dict()
-        for i_key in keys:
+        for i_hook in hooks:
+            if isinstance(i_hook, (str, unicode)):
+                i_hook_key = i_hook
+                i_hook_option = None
+            elif isinstance(i_hook, dict):
+                i_hook_key = i_hook.keys()[0]
+                i_hook_option = i_hook.values()[0]
+            else:
+                raise RuntimeError()
+            #
             i_args = self.__get_rsv_unit_action_hook_args_(
-                i_key, *args, **kwargs
+                i_hook_key, *args, **kwargs
             )
             if i_args:
                 i_session, i_execute_fnc = i_args
                 if i_session.get_is_loadable() is True and i_session.get_is_visible() is True:
-                    i_group_name = i_session.gui_group_name
-                    if i_group_name:
+                    i_gui_configure = i_session.gui_configure
+                    #
+                    i_gui_parent_path = '/'
+                    #
+                    i_gui_name = i_gui_configure.get('name')
+                    if i_hook_option:
+                        if 'gui_name' in i_hook_option:
+                            i_gui_name = i_hook_option.get('gui_name')
+                        #
+                        if 'gui_parent' in i_hook_option:
+                            i_gui_parent_path = i_hook_option['gui_parent']
+                    #
+                    i_gui_parent_path_opt = bsc_core.DccPathDagOpt(i_gui_parent_path)
+                    #
+                    if i_gui_parent_path_opt.get_is_root():
+                        i_gui_path = '/{}'.format(i_gui_name)
+                    else:
+                        i_gui_path = '{}/{}'.format(i_gui_parent_path, i_gui_name)
+                    #
+                    i_gui_separator_name = i_gui_configure.get('group_name')
+                    if i_gui_separator_name:
+                        if i_gui_parent_path_opt.get_is_root():
+                            i_gui_separator_path = '/{}'.format(i_gui_separator_name)
+                        else:
+                            i_gui_separator_path = '{}/{}'.format(i_gui_parent_path, i_gui_separator_name)
+                        #
                         content.set(
-                            '{}.properties.type'.format(i_group_name), 'separator'
+                            '{}.properties.type'.format(i_gui_separator_path), 'separator'
                         )
                         content.set(
-                            '{}.properties.name'.format(i_group_name), i_group_name
+                            '{}.properties.name'.format(i_gui_separator_path), i_gui_configure.get('group_name')
                         )
                     #
-                    i_action_name = i_session.gui_name
+                    content.set(
+                        '{}.properties.type'.format(i_gui_path), 'action'
+                    )
+                    content.set(
+                        '{}.properties.group_name'.format(i_gui_path), i_gui_configure.get('group_name')
+                    )
+                    content.set(
+                        '{}.properties.name'.format(i_gui_path), i_gui_name
+                    )
+                    content.set(
+                        '{}.properties.icon_name'.format(i_gui_path), i_gui_configure.get('icon_name')
+                    )
+                    if i_hook_option:
+                        if 'gui_icon_name' in i_hook_option:
+                            content.set(
+                                '{}.properties.icon_name'.format(i_gui_path), i_hook_option.get('gui_icon_name')
+                            )
                     #
                     content.set(
-                        '{}.properties.type'.format(i_action_name), 'action'
+                        '{}.properties.executable_fnc'.format(i_gui_path), i_session.get_is_executable
                     )
                     content.set(
-                        '{}.properties.name'.format(i_action_name), i_action_name
-                    )
-                    content.set(
-                        '{}.properties.icon_name'.format(i_action_name), i_session.gui_icon_name
-                    )
-                    content.set(
-                        '{}.properties.executable_fnc'.format(i_action_name), i_session.get_is_executable
-                    )
-                    content.set(
-                        '{}.properties.execute_fnc'.format(i_action_name), i_execute_fnc
+                        '{}.properties.execute_fnc'.format(i_gui_path), i_execute_fnc
                     )
         return content
 

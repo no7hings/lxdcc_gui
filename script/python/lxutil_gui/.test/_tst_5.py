@@ -16,9 +16,9 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
         for i in range(50):
             item_prx = wdt.set_item_add(name=str(i))
             item_prx.set_image('/data/f/vedio_test/laohu_da.rig.layout_rigging.v002.thumbnail.jpg')
-            item_prx.set_file_icon('application/maya')
+            item_prx.set_icon_by_file('application/maya')
             item_prx.set_name(str(i).zfill(9))
-            # item_prx.set_icon_by_text('asset')
+            # item_prx.set_icon_by_name_text('asset')
             item_prx.set_gui_menu_raw(
                 [
                     ('Open folder', None, None),

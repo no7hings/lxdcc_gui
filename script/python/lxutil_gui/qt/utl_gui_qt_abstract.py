@@ -470,7 +470,7 @@ class _QtIconsDef(object):
         if index in self._get_icon_indices_():
             return self._icon_rects[index]
 
-    def _set_pixmap_icons_(self, icons):
+    def _set_icons_by_pixmap_(self, icons):
         self._pixmap_icons = icons
         self._icon_indices = range(len(icons))
         self._icon_rects = []
@@ -479,11 +479,11 @@ class _QtIconsDef(object):
                 QtCore.QRect()
             )
 
-    def _get_pixmap_icon_at_(self, index):
+    def _get_icon_as_pixmap_at_(self, index):
         if index in self._get_icon_indices_():
             return self._pixmap_icons[index]
 
-    def _get_pixmap_icons_(self):
+    def _get_icons_as_pixmap_(self):
         return self._pixmap_icons
 
     def _set_icon_file_path_(self, file_path):
@@ -500,7 +500,7 @@ class _QtIconsDef(object):
                 QtCore.QRect()
             )
 
-    def _set_icon_name_texts_(self, texts):
+    def _set_icons_by_name_text_(self, texts):
         self._icon_name_texts = texts
         self._icon_indices = range(len(self._icon_name_texts))
         self._icon_rects = []
@@ -527,6 +527,9 @@ class _QtIconsDef(object):
 
     def _get_has_icon_(self):
         return self._icon_indices != []
+
+    def _get_icon_count_(self):
+        return len(self._icon_indices)
 
     def _set_icon_frame_size_(self, w, h):
         self._icon_frame_size = w, h
@@ -620,6 +623,9 @@ class _QtNameDef(object):
     def _get_name_text_option_(self):
         return self._name_text_option
 
+    def _set_name_text_option_(self, option):
+        self._name_text_option = option
+
     def _set_name_width_(self, w):
         self._name_width = w
 
@@ -666,18 +672,21 @@ class _QtNameDef(object):
                 # noinspection PyCallingNonCallable
                 self.setToolTip(html)
     # noinspection PyUnresolvedReferences
-    def _set_name_text_font_size_(self, size):
+    def _set_name_font_size_(self, size):
         self.setFont(self._name_text_font)
         font = self.font()
         font.setPointSize(size)
         self._name_text_font = font
+
+    def _set_name_font_(self):
+        pass
 
 
 class AbsQtRgbaDef(object):
     def _set_widget_update_(self):
         raise NotImplementedError()
 
-    def _set_color_def_init_(self):
+    def _set_rgba_def_init_(self):
         self._color_rgba = 1.0, 1.0, 1.0, 1.0
         self._color_rect = QtCore.QRect()
 
@@ -724,11 +733,11 @@ class _QtProgressDef(object):
     def _set_progress_def_init_(self):
         self._progress_height = 2
         #
-        self._progress_maximum_value = 100
+        self._progress_maximum_value = 0
         self._progress_value = 0
         #
-        self._progress_sub_maximum_value = 100
-        self._progress_sub_value = 0
+        self._progress_map_maximum_ = 10
+        self._progress_map_value_ = 0
         #
         self._progress_rect = QtCore.QRect()
         #
@@ -745,17 +754,23 @@ class _QtProgressDef(object):
             QtCore.QEventLoop.ExcludeUserInputEvents
         )
 
-    def _set_progress_maximum_value_(self, value):
+    def _set_progress_maximum_(self, value):
         self._progress_maximum_value = value
+
+    def _set_progress_map_maximum_(self, value):
+        self._progress_map_maximum_ = value
 
     def _set_progress_value_(self, value):
         self._progress_value = value
-        sub_value = int(
-            (float(value)/float(self._progress_maximum_value))*self._progress_sub_maximum_value
-        )
-        if sub_value != self._progress_sub_value:
-            self._progress_sub_value = sub_value
-            self._set_progress_run_()
+        #
+        if self._progress_map_maximum_ > 1:
+            map_value = int(
+                bsc_core.RangeMtd.set_map_to((1, self._progress_maximum_value), (1, self._progress_map_maximum_), self._progress_value)
+            )
+            if map_value != self._progress_map_value_:
+                self._progress_map_value_ = map_value
+                #
+                self._set_progress_run_()
 
     def _set_progress_update_(self):
         self._set_progress_value_(self._progress_value+1)
@@ -763,15 +778,16 @@ class _QtProgressDef(object):
     def _set_progress_stop_(self):
         self._set_progress_value_(0)
         self._progress_raw = []
+        self._set_widget_update_()
 
     def _get_progress_percent_(self):
-        return float(self._progress_sub_value) / float(self._progress_sub_maximum_value)
+        return float(self._progress_map_value_) / float(self._progress_map_maximum_)
 
     def _set_progress_raw_(self, raw):
         self._progress_raw = raw
 
     def _get_is_progress_enable_(self):
-        return self._progress_sub_value != 0
+        return self._progress_map_value_ != 0
 
 
 class _QtImageDef(object):
@@ -1143,9 +1159,7 @@ class AbsQtActionDef(object):
                     )
                 )
         else:
-            self._widget.setCursor(
-                QtCore.Qt.CustomCursor
-            )
+            self._widget.unsetCursor()
 
     def _get_action_flag_(self):
         return self._action_flag
@@ -1419,7 +1433,7 @@ class _QtViewBarDef(object):
 
 class _QtViewChooseActionDef(object):
     CHOOSE_RECT_CLS = None
-    CHOOSE_DROP_FRAME_CLS = None
+    CHOOSE_DROP_FRAME_CLASS = None
     #
     choose_item_changed = qt_signal()
     choose_item_clicked = qt_signal()
@@ -1470,7 +1484,7 @@ class _QtViewChooseActionDef(object):
         return self._get_view_choose_item_at_(index)._get_item_choose_content_name_texts_()
 
     def _set_view_choose_item_drop_at_(self, index=0):
-        widget = self.CHOOSE_DROP_FRAME_CLS(self)
+        widget = self.CHOOSE_DROP_FRAME_CLASS(self)
         widget._set_drop_start_(
             index
         )
@@ -1642,9 +1656,9 @@ class _QtItemShowDef(object):
             self._item_show_method_is_started = True
             self._item_show_loading_is_started = True
             # self._item_show_thread.started.connect(self._item_show_method)
-            # self._set_item_show_loading_run_()
+            # self._set_item_show_loading_start_()
             if self._get_item_is_viewport_show_able_() is True:
-                self._set_item_show_all_run_()
+                self._set_item_show_all_start_()
 
     def _set_item_show_sub_process_(self, sub_process):
         if self._item_show_image_sub_process is None and sub_process is not None:
@@ -1658,7 +1672,7 @@ class _QtItemShowDef(object):
     def _get_item_is_viewport_show_able_(self):
         raise NotImplementedError()
     # loading
-    def _set_item_show_loading_run_(self):
+    def _set_item_show_loading_start_(self):
         if self._item_show_loading_is_started is True:
             if self._item_show_loading_is_finished is False:
                 self._item_show_loading_timer.timeout.connect(
@@ -1668,12 +1682,14 @@ class _QtItemShowDef(object):
 
     def _set_item_show_loading_update_(self):
         self._item_show_loading_index += 1
-        self._set_widget_update_()
+        # self._set_widget_update_()
 
     def _set_item_show_loading_stop_(self):
         self._item_show_loading_is_started = False
         self._item_show_loading_is_finished = True
         self._item_show_loading_timer.stop()
+        #
+        self._set_widget_update_()
 
     def _get_item_show_image_loading_is_termination_(self):
         sub_process = self._get_item_show_sub_process_()
@@ -1723,7 +1739,7 @@ class _QtItemShowDef(object):
         #
         self._item_show_image_loading_timer.stop()
 
-    def _set_item_show_method_run_(self):
+    def _set_item_show_method_start_(self):
         if self._item_show_method_is_started is True:
             if self._item_show_method_is_finished is False:
                 # self._item_show_thread.start()
@@ -1739,22 +1755,25 @@ class _QtItemShowDef(object):
 
     def _set_item_show_update_(self):
         if self._get_item_is_viewport_show_able_() is True:
-            self._set_item_show_all_run_()
+            self._set_item_show_all_start_()
 
-    def _set_item_show_all_run_(self, time=100):
+    def _set_item_show_all_start_(self, time=100):
         def run_fnc():
-            self._set_item_show_loading_run_()
-            self._set_item_show_method_run_()
+            self._set_item_show_method_start_()
             self._set_item_show_image_loading_run_()
             #
             self._set_item_show_stop_()
             self._set_item_show_loading_stop_()
+        #
+        self._set_item_show_loading_start_()
         #
         self._item_show_timer.timeout.connect(run_fnc)
         self._item_show_timer.start(time)
 
     def _set_item_show_stop_(self):
         self._item_show_timer.stop()
+        #
+        self._set_widget_update_()
 
     def _set_item_show_all_stop_(self):
         self._set_item_show_stop_()
@@ -1764,7 +1783,7 @@ class _QtItemShowDef(object):
     def _set_item_viewport_visible_(self, boolean):
         if boolean is True:
             if self._item_show_loading_is_finished is False:
-                self._set_item_show_all_run_()
+                self._set_item_show_all_start_()
         #
         self._set_item_widget_visible_(boolean)
 
@@ -2218,6 +2237,7 @@ class AbsQtTreeWidget(
 
 class AbsQtListWidget(
     QtWidgets.QListWidget,
+    #
     AbsQtViewSelectActionDef,
     AbsQtViewScrollActionDef,
     #
@@ -2381,8 +2401,11 @@ class AbsQtItemValueTypeConstantEntryDef(object):
         self._item_value_type = value_type
         self._item_value_entry_widget._set_item_value_type_(value_type)
 
-    def _set_use_as_text_frames_(self):
-        self._item_value_entry_widget._set_use_as_text_frames_()
+    def _set_use_as_frames_(self):
+        self._item_value_entry_widget._set_use_as_frames_()
+
+    def _set_use_as_rgba_(self):
+        self._item_value_entry_widget._set_use_as_rgba_()
 
     def _get_item_value_type_(self):
         return self._item_value_type

@@ -1,6 +1,4 @@
 # coding=utf-8
-from lxutil_gui import utl_gui_core
-
 from lxutil_gui.qt.utl_gui_qt_core import *
 
 from lxutil_gui.qt import utl_gui_qt_abstract
@@ -421,6 +419,115 @@ class _QtColorChooseChart(
         self._mult_v_minimum = 0.0
 
 
+class _QtWaitingChart(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract._QtChartDef,
+):
+    def _set_widget_update_(self):
+        self.update()
+        #
+        ApplicationOpt().set_process_run_0()
+
+    def __init__(self, *args, **kwargs):
+        super(_QtWaitingChart, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+        self.setMouseTracking(True)
+        #
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Expanding
+        )
+        #
+        self.installEventFilter(self)
+
+        self._set_chart_def_init_()
+        self._c = 10
+        self._w, self._h = 64, 64
+        self._i_w, self._i_h = 10, 10
+        self._basic_rect = QtCore.QRect()
+        self._positions = []
+
+        self._timer = QtCore.QTimer(self)
+
+        self._timer.timeout.connect(
+            self._set_widget_update_
+        )
+
+    def _set_waiting_start_(self):
+        self._timer.start(10)
+        ApplicationOpt().set_process_run_0()
+
+    def _set_waiting_stop_(self):
+        self._timer.stop()
+        ApplicationOpt().set_process_run_0()
+
+    def _set_chart_data_update_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        #
+        c_w, c_h = self._w, self._h
+        self._basic_rect.setRect(
+            x, y, w, h
+        )
+        start = x+(w-c_w)/2, y+(h-c_h)/2
+        radius = min(c_w, c_h)
+        self._positions = []
+        for i in range(self._c):
+            i_angle = 360.0/self._c*i
+            i_x, i_y = utl_gui_core.Ellipse2dMtd.get_position_at_angle(
+                start=start, radius=radius, angle=i_angle
+            )
+            self._positions.append(
+                (i_x, i_y)
+            )
+
+        self._set_widget_update_()
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.Resize:
+                self._set_chart_data_update_()
+                event.accept()
+        return False
+
+    def paintEvent(self, event):
+        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter._set_border_color_(0, 0, 0, 0)
+        painter._set_antialiasing_()
+
+        painter._set_border_color_(0, 0, 0, 0)
+        painter._set_background_color_(31, 31, 31, 127)
+        painter.drawRect(
+            self._basic_rect
+        )
+
+        timestamp = int(bsc_core.SystemMtd.get_timestamp()*5)
+        for seq, i in enumerate(self._positions):
+            i_x, i_y = i
+
+            cur_index = self._c - timestamp % (self._c+1)
+            # print cur_index
+            if seq == cur_index:
+                i_h, i_s, i_v = 0, 0.5, 1.0
+                i_r, i_g, i_b = bsc_core.ColorMtd.hsv2rgb(i_h, i_s, i_v)
+                i_w, i_h = 12, 12
+            else:
+                i_a = abs(cur_index-seq) * (360 / self._c)
+                i_h, i_s, i_v = i_a, 0.5, 1.0
+                i_r, i_g, i_b = bsc_core.ColorMtd.hsv2rgb(i_h, i_s, i_v)
+                i_w, i_h = 8, 8
+            #
+            painter._set_border_color_(0, 0, 0, 0)
+            painter._set_background_color_(i_r, i_g, i_b, 255)
+            #
+            painter.drawEllipse(
+                i_x-i_w/2, i_y-i_h/2, i_w, i_h
+            )
+        # painter.drawEllipse(self._basic_rect)
+
+
 class _QtSectorChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtChartDef
@@ -446,11 +553,6 @@ class _QtSectorChart(
         #
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setMouseTracking(True)
-        #
-        self.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding,
-            QtWidgets.QSizePolicy.Expanding
-        )
         #
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding,

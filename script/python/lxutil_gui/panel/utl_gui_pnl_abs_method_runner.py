@@ -43,8 +43,8 @@ class AbsTaskMethodObjGuiDef(object):
             raise TypeError()
         #
         obj.set_obj_gui(obj_gui)
-        obj_gui.set_icon_by_text(obj.name)
-        obj_gui.set_icon_by_text(obj.type_name, 1)
+        obj_gui.set_icon_by_name_text(obj.name)
+        obj_gui.set_icon_by_name_text(obj.type_name, 1)
         return obj_gui
     @classmethod
     def _set_method_unit_obj_gui_add_(cls, method_obj, root_dcc_obj_gui):
@@ -82,8 +82,8 @@ class AbsTaskMethodObjGuiDef(object):
         #
         obj_gui.set_checked(True)
         obj.set_obj_gui(obj_gui)
-        obj_gui.set_icon_by_text(obj.name)
-        obj_gui.set_icon_by_text(obj.type_name, 1)
+        obj_gui.set_icon_by_name_text(obj.name)
+        obj_gui.set_icon_by_name_text(obj.type_name, 1)
         obj_gui.set_gui_dcc_obj(obj, namespace='method')
         return obj_gui
     @classmethod
@@ -201,19 +201,19 @@ class AbsSceneMethodRunnerPanel(
         self._set_configure_groups_build_()
         #
         self._check_button = prx_widgets.PrxPressItem()
-        self._check_button.set_icon_by_text('Check')
+        self._check_button.set_icon_by_name_text('Check')
         self._check_button.set_name('Check')
         self.set_button_add(self._check_button)
         self._check_button.set_press_clicked_connect_to(self._set_checked_methods_check_run_)
         #
         self._repair_button = prx_widgets.PrxPressItem()
-        self._repair_button.set_icon_by_text('Repair')
+        self._repair_button.set_icon_by_name_text('Repair')
         self._repair_button.set_name('Repair')
         self.set_button_add(self._repair_button)
         self._repair_button.set_press_clicked_connect_to(self._set_checked_methods_repair_run_)
         #
         self._export_button = prx_widgets.PrxPressItem()
-        self._export_button.set_icon_by_text('Export')
+        self._export_button.set_icon_by_name_text('Export')
         self._export_button.set_name('Export')
         self.set_button_add(self._export_button)
         self._export_button.set_press_clicked_connect_to(self._set_checked_methods_export_run_)
@@ -413,7 +413,10 @@ class AbsSceneMethodRunnerPanel(
         scheme = self._configure_gui.get_port('scheme').get()
         if work_scene_src_file_path:
             rsv_task = self._resolver.get_rsv_task_by_work_scene_src_file_path(file_path=work_scene_src_file_path)
-            new_version = rsv_task.get_new_version(workspace='publish')
+            version_rsv_unit = rsv_task.get_rsv_unit(
+                keyword='{branch}-version-dir'
+            )
+            new_version = version_rsv_unit.get_new_version()
             work_task_properties = self._resolver.get_task_properties_by_work_scene_src_file_path(file_path=work_scene_src_file_path)
             if work_task_properties:
                 _port = self._configure_gui.get_port('scene_src_file_path')
@@ -431,6 +434,9 @@ class AbsSceneMethodRunnerPanel(
                     _port.set_current(new_scene_src_file_path)
                     self._rsv_scene_properties = self._resolver.get_task_properties_by_any_scene_file_path(new_scene_src_file_path)
                     if self._rsv_scene_properties is not None:
+                        self._rsv_task = self._resolver.get_rsv_task(
+                            **self._rsv_scene_properties.value
+                        )
                         self._rsv_scene_properties.set('option.scheme', scheme)
                     else:
                         self._rsv_scene_properties = None
@@ -451,7 +457,18 @@ class AbsSceneMethodRunnerPanel(
         elif scheme == 'publish':
             self._rsv_scene_properties.set('option.workspace', 'publish')
             version_scheme = self._configure_gui.get_port('version').get()
-            version = self._resolver.get_task_publish_version(self._rsv_scene_properties, version_scheme)
+            if version_scheme == 'latest':
+                version_rsv_unit = self._rsv_task.get_rsv_unit(
+                    keyword='{branch}-version-dir'
+                )
+                version = version_rsv_unit.get_latest_version()
+            elif version_scheme == 'new':
+                version_rsv_unit = self._rsv_task.get_rsv_unit(
+                    keyword='{branch}-version-dir'
+                )
+                version = version_rsv_unit.get_new_version()
+            else:
+                raise RuntimeError()
             self._rsv_scene_properties.set('option.version', version)
 
     def _set_method_obj_guis_build_(self):
