@@ -375,18 +375,6 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         pixmaps = []
         #
         variable_name = '.'.join(variants.values())
-
-        for i_rsv_unit in self._check_rsv_units:
-            i_file_path = i_rsv_unit.get_result(version='latest')
-            if i_file_path:
-                i_rsv_properties = i_rsv_unit.get_properties_by_result(i_file_path)
-                i_rsv_unit_file = utl_dcc_objects.OsFile(i_file_path)
-                i_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
-                    i_rsv_unit_file.ext,
-                    tag=i_rsv_properties.get('workspace'),
-                    size=self.ITEM_ICON_SIZE
-                )
-                pixmaps.append(i_pixmap)
         # print variable_name
         movie_file_path = self._render_movie_file_rsv_unit.get_result(
             version='latest',
@@ -453,6 +441,30 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             prx_item.set_image(
                 utl_core.Icon._get_file_path_('@image_loading_failed@')
             )
+
+        for i_rsv_unit in self._check_rsv_units:
+            i_file_path = i_rsv_unit.get_result(version='latest')
+            if i_file_path:
+                i_rsv_properties = i_rsv_unit.get_properties_by_result(i_file_path)
+                i_rsv_unit_file = utl_dcc_objects.OsFile(i_file_path)
+                i_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
+                    i_rsv_unit_file.ext,
+                    tag=i_rsv_properties.get('workspace'),
+                    size=self.ITEM_ICON_SIZE
+                )
+                pixmaps.append(i_pixmap)
+
+                hook_options.append(
+                    bsc_core.KeywordArgumentsOpt(
+                        dict(
+                            option_hook_key='actions/file-directory-open',
+                            file=i_file_path,
+                            gui_parent='/Open Folder',
+                            gui_group_name='usd',
+                            gui_name='{}'.format(i_rsv_unit.get('keyword'))
+                        )
+                    ).to_string()
+                )
 
         menu_content = ssn_commands.get_menu_content_by_hook_options(hook_options)
         prx_item.set_menu_content(menu_content)
@@ -784,29 +796,6 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         variable_name = '.'.join(variants.values())
         # print variable_name
 
-        for i_rsv_unit in self._check_rsv_units:
-            i_file_path = i_rsv_unit.get_result(version='latest')
-            if i_file_path:
-                i_rsv_properties = i_rsv_unit.get_properties_by_result(i_file_path)
-                i_rsv_unit_file = utl_dcc_objects.OsFile(i_file_path)
-                i_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
-                    i_rsv_unit_file.ext,
-                    tag=i_rsv_properties.get('workspace'),
-                    size=self.ITEM_ICON_SIZE
-                )
-                pixmaps.append(i_pixmap)
-
-                hook_options.append(
-                    bsc_core.KeywordArgumentsOpt(
-                        dict(
-                            option_hook_key='actions/file-directory-open',
-                            file=i_file_path,
-                            gui_group_name='usd',
-                            gui_name='open "{}" directory'.format(i_rsv_unit.get('keyword'))
-                        )
-                    ).to_string()
-                )
-
         movie_file_path = self._render_movie_file_rsv_unit.get_result(
             version='latest',
             extend_variants=variants
@@ -873,6 +862,30 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             prx_item.set_image(
                 utl_core.Icon._get_file_path_('@image_loading_failed@')
             )
+
+        for i_rsv_unit in self._check_rsv_units:
+            i_file_path = i_rsv_unit.get_result(version='latest')
+            if i_file_path:
+                i_rsv_properties = i_rsv_unit.get_properties_by_result(i_file_path)
+                i_rsv_unit_file = utl_dcc_objects.OsFile(i_file_path)
+                i_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
+                    i_rsv_unit_file.ext,
+                    tag=i_rsv_properties.get('workspace'),
+                    size=self.ITEM_ICON_SIZE
+                )
+                pixmaps.append(i_pixmap)
+
+                hook_options.append(
+                    bsc_core.KeywordArgumentsOpt(
+                        dict(
+                            option_hook_key='actions/file-directory-open',
+                            file=i_file_path,
+                            gui_parent='Extend',
+                            gui_group_name='usd',
+                            gui_name='open "{}" directory'.format(i_rsv_unit.get('keyword'))
+                        )
+                    ).to_string()
+                )
 
         menu_content = ssn_commands.get_menu_content_by_hook_options(hook_options)
         prx_item.set_menu_content(menu_content)
