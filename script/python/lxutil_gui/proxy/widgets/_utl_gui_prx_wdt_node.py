@@ -913,8 +913,8 @@ class PrxRsvObjChooseEntry(AbsRsvTypeEntry):
         self.widget.setMaximumHeight(160)
         self.widget.setMinimumHeight(160)
         self._prx_entry_widget.set_header_view_create(
-            [('name', 1), ('update', 1), ('user', 1)],
-            320
+            [('name', 2), ('update', 1)],
+            180
         )
         self._prx_entry_widget.set_single_selection()
         self._prx_entry_widget.set_size_policy_height_fixed_mode()
@@ -980,8 +980,7 @@ class PrxRsvObjChooseEntry(AbsRsvTypeEntry):
         #
         result = obj.get('result')
         update = obj.get('update')
-        user = obj.get('user')
-        prx_item.set_names([obj_name, update, user])
+        prx_item.set_names([obj_name, update])
         prx_item.set_tool_tip(obj.description)
         if result:
             if bsc_core.StoragePathOpt(result).get_is_file():
@@ -1051,6 +1050,154 @@ class PrxRsvObjChooseEntry(AbsRsvTypeEntry):
         _ = self._prx_entry_widget.get_current_item()
         if _:
             return _.get_gui_dcc_obj(namespace=self.NAMESPACE)
+
+    def set_changed_connect_to(self, fnc):
+        self._prx_entry_widget.set_item_select_changed_connect_to(
+            fnc
+        )
+
+
+class PrxComponentsEntry(AbsRsvTypeEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    PRX_ENTRY_CLASS = _utl_gui_prx_wgt_view.PrxTreeView
+    NAMESPACE = 'resolver'
+    def __init__(self, *args, **kwargs):
+        super(PrxComponentsEntry, self).__init__(*args, **kwargs)
+        self.widget.setMaximumHeight(160)
+        self.widget.setMinimumHeight(160)
+        self._prx_entry_widget.set_header_view_create(
+            [('name', 1)],
+            320
+        )
+        self._prx_entry_widget.set_single_selection()
+        self._prx_entry_widget.set_size_policy_height_fixed_mode()
+        self._obj_add_dict = {}
+
+    def __set_item_comp_add_as_tree_(self, obj, use_show_thread=False):
+        obj_path = obj.path
+        obj_type = obj.type
+        if obj_path in self._obj_add_dict:
+            prx_item = self._obj_add_dict[obj_path]
+            return False, prx_item, None
+        else:
+            create_kwargs = dict(
+                name='loading ...',
+                icon_name_text=obj_type,
+                filter_key=obj_path
+            )
+            parent = obj.get_parent()
+            if parent is not None:
+                item_prx_parent = self._obj_add_dict[parent.path]
+                prx_item = item_prx_parent.set_child_add(
+                    **create_kwargs
+                )
+            else:
+                prx_item = self._prx_entry_widget.set_item_add(
+                    **create_kwargs
+                )
+            prx_item.set_checked(True)
+            prx_item.set_keyword_filter_tgt_contexts([obj_path, obj_type])
+            obj.set_obj_gui(prx_item)
+            prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
+            self._obj_add_dict[obj_path] = prx_item
+            #
+            if use_show_thread is True:
+                prx_item.set_show_method(
+                    lambda *args, **kwargs: self.__set_item_show_deferred_(prx_item)
+                )
+                return True, prx_item, None
+            else:
+                self.__set_item_show_deferred_(prx_item)
+                return True, prx_item, None
+
+    def __set_item_show_deferred_(self, prx_item, use_as_tree=True):
+        obj = prx_item.get_gui_dcc_obj(namespace=self.NAMESPACE)
+        obj_name = obj.name
+        obj_path = obj.path
+        menu_raw = []
+        menu_raw.extend(
+            obj.get_gui_menu_raw() or []
+        )
+        menu_raw.extend(
+            obj.get_gui_extend_menu_raw() or []
+        )
+        #
+        if use_as_tree is True:
+            menu_raw.extend(
+                [
+                    ('expanded',),
+                    ('Expand branch', None, prx_item.set_expand_branch),
+                    ('Collapse branch', None, prx_item.set_collapse_branch),
+                ]
+            )
+        #
+        prx_item.set_names([obj_name])
+        #
+        prx_item.set_gui_menu_raw(menu_raw)
+        prx_item.set_menu_content(obj.get_gui_menu_content())
+        #
+        self._prx_entry_widget.set_loading_update()
+
+    def __set_item_add_as_tree_(self, obj):
+        ancestors = obj.get_ancestors()
+        if ancestors:
+            ancestors.reverse()
+            for i_rsv_obj in ancestors:
+                ancestor_path = i_rsv_obj.path
+                if ancestor_path not in self._obj_add_dict:
+                    self.__set_item_comp_add_as_tree_(i_rsv_obj, use_show_thread=True)
+        #
+        self.__set_item_comp_add_as_tree_(obj, use_show_thread=True)
+
+    def __set_item_add_as_list_(self, obj):
+        obj_path = obj.path
+        obj_type = obj.type_name
+        #
+        create_kwargs = dict(
+            name='...',
+            icon_name_text=obj_type,
+            filter_key=obj_path
+        )
+        prx_item = self._prx_entry_widget.set_item_add(
+            **create_kwargs
+        )
+        #
+        prx_item.set_checked(True)
+        prx_item.set_keyword_filter_tgt_contexts([obj_path, obj_type])
+        obj.set_obj_gui(prx_item)
+        prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
+        self._obj_add_dict[obj_path] = prx_item
+        #
+        self.__set_item_show_deferred_(prx_item, use_as_tree=False)
+
+    def __set_item_selected_(self, obj):
+        item = obj.get_obj_gui()
+        self._prx_entry_widget.set_item_selected(
+            item, exclusive=True
+        )
+
+    def __set_item_clear_(self):
+        self._prx_entry_widget.set_clear()
+
+    def set(self, raw=None, **kwargs):
+        if isinstance(raw, (tuple, list)):
+            self.__set_item_clear_()
+            objs = raw
+            if objs:
+                for i in objs:
+                    self.__set_item_add_as_list_(i)
+                #
+                self.__set_item_selected_(
+                    objs[-1]
+                )
+        else:
+            pass
+
+    def get(self):
+        _ = self._prx_entry_widget.get_all_items()
+        if _:
+            return [i.get_gui_dcc_obj(namespace=self.NAMESPACE) for i in _ if i.get_is_checked()]
+        return []
 
     def set_changed_connect_to(self, fnc):
         self._prx_entry_widget.set_item_select_changed_connect_to(
@@ -1516,6 +1663,15 @@ class PrxRsvObjChoosePort(AbsPrxTypePort):
     ENTRY_CLASS = PrxRsvObjChooseEntry
     def __init__(self, *args, **kwargs):
         super(PrxRsvObjChoosePort, self).__init__(*args, **kwargs)
+
+
+class PrxComponentsPort(AbsPrxTypePort):
+    ENABLE_CLASS = _PrxPortStatus
+    LABEL_CLASS = _PrxPortLabel
+    LABEL_HIDED = False
+    ENTRY_CLASS = PrxComponentsEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxComponentsPort, self).__init__(*args, **kwargs)
 
 
 class PrxPortStack(obj_abstract.AbsObjStack):
@@ -2037,6 +2193,12 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             )
             port.set(value_)
             port.set_default(value_)
+        #
+        elif widget_ in ['components']:
+            port = PrxComponentsPort(
+                port_path,
+                node_widget=self.widget
+            )
         #
         elif widget_ in ['frames']:
             port = PrxFramesPort(

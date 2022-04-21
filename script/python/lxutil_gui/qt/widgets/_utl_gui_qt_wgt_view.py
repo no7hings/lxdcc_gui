@@ -990,9 +990,9 @@ class _QtGuideBar(
     utl_gui_qt_abstract.AbsQtMenuDef,
     utl_gui_qt_abstract.AbsQtActionDef,
     #
-    utl_gui_qt_abstract.AbsQtHoverActionDef,
+    utl_gui_qt_abstract.AbsQtActionHoverDef,
     #
-    utl_gui_qt_abstract.AbsQtPressActionDef,
+    utl_gui_qt_abstract.AbsQtActionPressDef,
     utl_gui_qt_abstract.AbsQtItemEntryActionDef,
     #
     utl_gui_qt_abstract._QtViewGuideActionDef,
@@ -1020,9 +1020,9 @@ class _QtGuideBar(
         #
         self._set_menu_def_init_()
         #
-        self._set_hover_action_def_init_()
+        self._set_action_hover_def_init_()
         self._set_action_def_init_(self)
-        self._set_press_action_def_init_()
+        self._set_action_press_def_init_()
         self._set_item_entry_action_def_init_()
         #
         self._set_view_guide_action_def_init_()
@@ -1068,8 +1068,8 @@ class _QtGuideBar(
                 self.update()
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 if event.button() == QtCore.Qt.LeftButton:
-                    if self._get_item_is_click_flag_() is True:
-                        self._set_item_click_emit_send_()
+                    if self._get_is_press_click_flag_() is True:
+                        self._set_press_click_emit_send_()
                         self._set_view_guide_item_clicked_emit_send_()
                     elif self._get_is_choose_flag_() is True:
                         self._set_view_choose_item_drop_at_(self._view_choose_current_index)
@@ -1168,7 +1168,7 @@ class _QtGuideBar(
                     is_hovered=guide_is_hovered,
                 )
 
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self.update()
 
     def _set_view_current_index_update_(self, event):

@@ -37,12 +37,40 @@ class _QtNGGraphViewport(QtWidgets.QWidget):
         painter.drawRect(rect)
 
 
-class AbsQtNGGraphActionDef(object):
-    def _set_ng_graph_action_def_init_(self, widget):
+class AbsQtActionRectSelectDef(
+    utl_gui_qt_abstract.AbsQtActionDef
+):
+    def _set_widget_draw_update_(self):
+        raise NotImplementedError()
+
+    def _set_action_rect_select_def_init_(self, widget):
+        self._set_action_def_init_(self)
+        #
         self._widget = widget
 
-        self._ng_graph_translate_flag = False
-        self._ng_graph_scale_flag = True
+        self._action_rect_select_start_point = QtCore.QPoint(0, 0)
+        self._action_rect_select_rect = QtCore.QRect(
+            0, 0, 0, 0
+        )
+
+    def _set_action_rect_select_start_(self, event):
+        self._action_rect_select_start_point = event.pos()
+    
+    def _set_action_rect_select_execute_(self, event):
+        self._action_rect_select_rect.setTopLeft(
+            self._action_rect_select_start_point
+        )
+        self._action_rect_select_rect.setBottomRight(
+            event.pos()
+        )
+    
+    def _set_action_rect_select_end_(self, event):
+        pass
+
+
+class AbsQtNGActionGraphDef(object):
+    def _set_ng_action_graph_def_init_(self, widget):
+        self._widget = widget
 
         self._ng_graph_translate_point = QtCore.QPoint(0, 0)
         #
@@ -66,10 +94,13 @@ class AbsQtNGGraphActionDef(object):
             self._ng_graph_width, self._ng_graph_height
         )
 
+    def _set_widget_draw_update_(self):
+        raise NotImplementedError()
+
     def _set_widget_update_(self):
         raise NotImplementedError()
 
-    def _set_ng_graph_action_update_(self):
+    def _set_ng_action_graph_update_(self):
         x_0, y_0 = self._ng_graph_point_0.x(), self._ng_graph_point_0.y()
         x_1, y_1 = self._ng_graph_point_1.x(), self._ng_graph_point_1.y()
         r_w, r_h = x_1-x_0, y_1-y_0
@@ -83,12 +114,11 @@ class AbsQtNGGraphActionDef(object):
             x_0, y_0, r_w, r_h
         )
 
-    def _set_ng_graph_action_translate_start_(self, event):
+    def _set_ng_action_graph_translate_start_(self, event):
         self._ng_graph_translate_point = event.pos()
-        self._ng_graph_translate_flag = True
         self._set_widget_update_()
 
-    def _set_ng_graph_action_translate_execute_(self, event):
+    def _set_ng_action_graph_translate_execute_(self, event):
         point = event.pos()
         #
         d_p = point - self._ng_graph_translate_point
@@ -100,29 +130,27 @@ class AbsQtNGGraphActionDef(object):
         #
         self._set_widget_update_()
 
-    def _set_ng_graph_action_translate_stop_(self, event):
+    def _set_ng_action_graph_translate_stop_(self, event):
         self._ng_graph_translate_point = event.pos()
-        self._ng_graph_translate_flag = False
         self._set_widget_update_()
 
-    def _set_ng_graph_action_scale_execute_(self, event):
-        if self._ng_graph_scale_flag is True:
-            delta = event.angleDelta().y()
-            point = event.pos()
-            #
-            if delta > 0:
-                d_s_x, d_s_y = 1 + self._ng_graph_scale_radix_x, 1 + self._ng_graph_scale_radix_y
-            else:
-                d_s_x, d_s_y = 1/(1 + self._ng_graph_scale_radix_x), 1/(1 + self._ng_graph_scale_radix_y)
-            #
-            c_x, c_y = point.x(), point.y()
-            #
-            self.__set_ng_graph_scale_(c_x, c_y, d_s_x, d_s_y)
-            self.__set_ng_graph_transformation_update_()
-            #
-            self._ng_graph_translate_point = point
-            #
-            self._set_widget_update_()
+    def _set_ng_action_graph_scale_execute_(self, event):
+        delta = event.angleDelta().y()
+        point = event.pos()
+        #
+        if delta > 0:
+            d_s_x, d_s_y = 1 + self._ng_graph_scale_radix_x, 1 + self._ng_graph_scale_radix_y
+        else:
+            d_s_x, d_s_y = 1/(1 + self._ng_graph_scale_radix_x), 1/(1 + self._ng_graph_scale_radix_y)
+        #
+        c_x, c_y = point.x(), point.y()
+        #
+        self.__set_ng_graph_scale_(c_x, c_y, d_s_x, d_s_y)
+        self.__set_ng_graph_transformation_update_()
+        #
+        self._ng_graph_translate_point = point
+        #
+        self._set_widget_update_()
     #
     def _get_ng_graph_scale_(self):
         return self._ng_graph_scale_x, self._ng_graph_scale_y
@@ -192,21 +220,13 @@ class AbsQtNGGraphDrawDef(object):
             t_y * self._ng_graph_draw_grid_translate_direction_y
         )
     @classmethod
-    def _set_ng_graph_position_mark_draw_(cls, painter, rect, string, font_color):
+    def _set_ng_graph_info_draw_(cls, painter, rect, string, font_color):
         width, height = rect.width(), rect.height()
         rect_ = QtCore.QRect(4, 0, width, height - 4)
         #
         painter._set_font_color_(font_color)
         painter.setFont(get_font(size=10, weight=75))
         painter.drawText(rect_, QtCore.Qt.AlignLeft | QtCore.Qt.AlignBottom, string)
-    @classmethod
-    def _set_ng_graph_press_key_mark_draw_(cls, painter, rect, key, font_color):
-        width, height = rect.width(), rect.height()
-        rect_ = QtCore.QRect(width - 120 - 4, 0, 120, height - 4)
-        #
-        painter._set_font_color_(font_color)
-        painter.setFont(get_font(size=10, weight=75))
-        painter.drawText(rect_, QtCore.Qt.AlignRight | QtCore.Qt.AlignBottom, key)
 
 
 class AbsQtNGGraphNodeDef(object):
@@ -232,7 +252,9 @@ class _QtNGGraph(
     utl_gui_qt_abstract.AbsQtGridDef,
     AbsQtNGGraphNodeDef,
     #
-    AbsQtNGGraphActionDef,
+    AbsQtActionRectSelectDef,
+    #
+    AbsQtNGActionGraphDef,
     AbsQtNGGraphDrawDef,
 ):
     def __init__(self, *args, **kwargs):
@@ -248,15 +270,20 @@ class _QtNGGraph(
         self._set_grid_def_init_(self)
         self._grid_axis_lock_x, self._grid_axis_lock_y = 1, 1
         #
+        self._set_action_rect_select_def_init_(self)
+        #
         self._set_ng_graph_node_def_init_(self)
         #
-        self._set_ng_graph_action_def_init_(self)
+        self._set_ng_action_graph_def_init_(self)
         self._set_ng_graph_draw_def_init_(self)
 
         self._ng_graph_viewport = _QtNGGraphViewport(self)
 
+    def _set_widget_draw_update_(self):
+        self.update()
+
     def _set_widget_update_(self):
-        self._set_ng_graph_action_update_()
+        self._set_ng_action_graph_update_()
         #
         self._set_ng_graph_draw_update_(
             self._ng_graph_translate_x, self._ng_graph_translate_y
@@ -266,8 +293,8 @@ class _QtNGGraph(
         )
         #
         self._set_ng_graph_nodes_update_()
-        #
-        self._widget.update()
+
+        self._set_widget_draw_update_()
 
     def _set_ng_graph_geometry_update_(self, rect):
         self._ng_graph_viewport.setGeometry(
@@ -285,43 +312,49 @@ class _QtNGGraph(
                 pass
             elif event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
-                    self._move_flag = True
+                    self._set_action_flag_(
+                        self.ActionFlag.RectSelectClick
+                    )
+                    self._set_action_rect_select_start_(event)
                 #
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
                 elif event.button() == QtCore.Qt.MidButton:
-                    self._set_ng_graph_action_translate_start_(event)
-                    # Zoom
-                    self._zoom_scale_flag = False
-                else:
-                    event.ignore()
-            elif event.type() == QtCore.QEvent.MouseButtonRelease:
-                if event.button() == QtCore.Qt.LeftButton:
-                    self._move_flag = False
-                elif event.button() == QtCore.Qt.RightButton:
-                    pass
-                elif event.button() == QtCore.Qt.MidButton:
-                    self._set_ng_graph_action_translate_stop_(event)
-                    self._ng_graph_scale_flag = True
+                    self._set_action_flag_(
+                        self.ActionFlag.NGGraphTranslateClick
+                    )
+                    self._set_ng_action_graph_translate_start_(event)
                 else:
                     event.ignore()
             elif event.type() == QtCore.QEvent.MouseMove:
                 if event.buttons() == QtCore.Qt.LeftButton:
-                    if self._move_flag is True:
-                        #
-                        self.update()
+                    self._set_action_flag_(
+                        self.ActionFlag.RectSelectMove
+                    )
+                    self._set_action_rect_select_execute_(event)
                 elif event.buttons() == QtCore.Qt.RightButton:
                     pass
                 elif event.buttons() == QtCore.Qt.MidButton:
-                    # Track
-                    if self._ng_graph_translate_flag is True:
-                        self._set_ng_graph_action_translate_execute_(event)
+                    self._set_action_flag_(
+                        self.ActionFlag.NGGraphTranslateMove
+                    )
+                    self._set_ng_action_graph_translate_execute_(event)
                 else:
                     event.ignore()
+            elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                if event.button() == QtCore.Qt.LeftButton:
+                    self._set_action_rect_select_end_(event)
+                elif event.button() == QtCore.Qt.RightButton:
+                    pass
+                elif event.button() == QtCore.Qt.MidButton:
+                    self._set_ng_action_graph_translate_stop_(event)
+                else:
+                    event.ignore()
+
+                self._set_action_flag_clear_()
             #
             elif event.type() == QtCore.QEvent.Wheel:
-                if self._ng_graph_scale_flag is True:
-                    self._set_ng_graph_action_scale_execute_(event)
+                self._set_ng_action_graph_scale_execute_(event)
             #
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
@@ -374,11 +407,21 @@ class _QtNGGraph(
                 self._grid_value_show_mode
             )
 
-        string = 'translate: {}, {}\nscale: {}, {}'.format(
+        if self._get_action_flag_is_match_(
+            self.ActionFlag.RectSelectMove
+        ):
+            painter._set_dotted_frame_draw_(
+                self._action_rect_select_rect,
+                border_color=QtBorderColor.Selected,
+                background_color=QtBackgroundColor.Transparent
+            )
+
+        string = 'translate: {}, {}\nscale: {}, {}\naction flag: {}'.format(
             self._ng_graph_translate_x, self._ng_graph_translate_y,
-            self._ng_graph_scale_x, self._ng_graph_scale_y
+            self._ng_graph_scale_x, self._ng_graph_scale_y,
+            str(self._get_action_flag_())
         )
-        self._set_ng_graph_position_mark_draw_(
+        self._set_ng_graph_info_draw_(
             painter, rect, string, QtFontColor.Basic
         )
 
@@ -391,7 +434,7 @@ class _QtNGGraph(
         ng_node._set_ng_node_graph_(self)
         return ng_node
 
-    def _set_ng_graph_node_show_(self):
+    def _set_ng_graph_node_show_by_universe_(self):
         nodes = self._ng_graph_universe.get_objs()
         for i_node in nodes:
             i_ng_node = self._set_ng_graph_node_add_()
@@ -416,24 +459,27 @@ class _QtNGGraph(
 
 
 class AbsQtNGNodeActionDef(object):
-    def _set_ng_node_action_def_init_(self, widget):
+    def _set_ng_action_node_def_init_(self, widget):
         self._widget = widget
 
-        self._ng_node_point = QtCore.QPoint(0, 0)
+        self._ng_action_node_point = QtCore.QPoint(0, 0)
         #
-        self._ng_node_move_point = QtCore.QPoint(0, 0)
-
-        self._ng_node_move_flag = False
+        self._ng_action_node_move_start_point = QtCore.QPoint(0, 0)
 
         self._ng_node_graph = None
 
         self._ng_node_translate_x, self._ng_node_translate_y = 0, 0
         self._ng_node_width, self._ng_node_height = 192, 48
 
+        self._ng_node_rect = QtCore.QRect(0, 0, 0, 0)
+
+    def _set_widget_draw_update_(self):
+        raise NotImplementedError()
+
     def _set_widget_update_(self):
         raise NotImplementedError()
 
-    def _set_ng_node_action_update_(self):
+    def _set_ng_action_node_update_(self):
         (x, y), (w, h) = self._get_ng_node_local_pos_(), self._get_ng_node_local_size_()
         #
         self._widget.setGeometry(
@@ -446,7 +492,7 @@ class AbsQtNGNodeActionDef(object):
 
     def _set_ng_node_translate_(self, x, y):
         self._ng_node_translate_x, self._ng_node_translate_y = x, y
-        self._set_ng_node_action_update_()
+        self._set_ng_action_node_update_()
 
     def _get_ng_node_translate_(self):
         return self._ng_node_translate_x, self._ng_node_translate_y
@@ -454,32 +500,32 @@ class AbsQtNGNodeActionDef(object):
     def _set_ng_node_point_(self, x, y):
         t_x, t_y = self._get_ng_node_translate_()
         s_x, s_y = self._ng_node_graph._get_ng_graph_scale_()
-        self._ng_node_point.setX((x - t_x)/s_x), self._ng_node_point.setY((y - t_y)/s_y)
+        self._ng_action_node_point.setX((x - t_x)/s_x), self._ng_action_node_point.setY((y - t_y)/s_y)
     #
     def _get_ng_node_local_pos_(self):
         t_x, t_y = self._get_ng_node_translate_()
         s_x, s_y = self._ng_node_graph._get_ng_graph_scale_()
-        return self._ng_node_point.x()*s_x + t_x, self._ng_node_point.y()*s_y + t_y
+        return self._ng_action_node_point.x()*s_x + t_x, self._ng_action_node_point.y()*s_y + t_y
     #
     def _get_ng_node_local_size_(self):
         s_x, s_y = self._ng_node_graph._get_ng_graph_scale_()
         return self._ng_node_width*s_x, self._ng_node_height*s_y
 
-    def _set_ng_node_action_move_start_(self, event):
-        self._ng_node_move_point = event.globalPos()
-        self._ng_node_move_point -= self._widget.pos()
+    def _set_ng_action_node_move_start_(self, event):
+        self._ng_action_node_move_start_point = event.globalPos()
+        self._ng_action_node_move_start_point -= self._widget.pos()
         #
-        self._ng_node_move_flag = True
         self._set_widget_update_()
 
-    def _set_ng_node_action_move_execute_(self, event):
-        if self._ng_node_move_flag is True:
-            d_point = event.globalPos() - self._ng_node_move_point
-            self._set_ng_node_move_(d_point)
-            self._ng_node_graph._set_ng_graph_node_move_(
-                d_point
-            )
-        #
+    def _set_ng_action_node_move_execute_(self, event):
+        d_point = event.globalPos() - self._ng_action_node_move_start_point
+        self._set_ng_node_move_(d_point)
+        self._ng_node_graph._set_ng_graph_node_move_(
+            d_point
+        )
+        self._set_widget_update_()
+
+    def _set_ng_action_node_move_stop_(self, event):
         self._set_widget_update_()
 
     def _set_ng_node_move_(self, d_point, offset_point=None):
@@ -494,16 +540,15 @@ class AbsQtNGNodeActionDef(object):
         #
         self._set_ng_node_point_(x, y)
 
-    def _set_ng_node_action_move_stop_(self, event):
-        self._ng_node_move_flag = False
-        self._set_widget_update_()
+    def _set_ng_action_node_graph_flag_(self, flag):
+        self._ng_node_graph._set_action_flag_(flag)
 
 
 class AbsQtNGNodeDrawDef(object):
     def _set_ng_node_draw_def_init_(self, widget):
         self._widget = widget
 
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
 
@@ -515,18 +560,14 @@ class _QtNGNode(
     utl_gui_qt_abstract.AbsQtIconDef,
     #
     utl_gui_qt_abstract.AbsQtActionDef,
-    utl_gui_qt_abstract.AbsQtHoverActionDef,
-    utl_gui_qt_abstract.AbsQtPressActionDef,
+    utl_gui_qt_abstract.AbsQtActionHoverDef,
+    utl_gui_qt_abstract.AbsQtActionPressDef,
+    #
+    utl_gui_qt_abstract.AbsQtItemSelectActionDef,
     #
     AbsQtNGNodeActionDef,
     AbsQtNGNodeDrawDef,
 ):
-    def _get_action_flag_(self):
-        pass
-
-    def _get_action_flag_is_match_(self, flag):
-        pass
-
     def __init__(self, *args, **kwargs):
         super(_QtNGNode, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -542,10 +583,12 @@ class _QtNGNode(
         self._set_icon_def_init_()
         #
         self._set_action_def_init_(self)
-        self._set_hover_action_def_init_()
-        self._set_press_action_def_init_()
+        self._set_action_hover_def_init_()
+        self._set_action_press_def_init_()
 
-        self._set_ng_node_action_def_init_(self)
+        self._set_item_select_action_def_init_()
+
+        self._set_ng_action_node_def_init_(self)
         self._set_ng_node_draw_def_init_(self)
 
         self._ng_node_draw_font_size = 8
@@ -553,9 +596,12 @@ class _QtNGNode(
         self._ng_node_draw_border_radius = 2
 
     def _set_widget_update_(self):
-        self._set_ng_node_action_update_()
+        self._set_ng_action_node_update_()
         self._set_ng_node_geometry_update_()
         #
+        self._set_widget_draw_update_()
+
+    def _set_widget_draw_update_(self):
         self.update()
 
     def _set_ng_node_geometry_update_(self):
@@ -583,17 +629,18 @@ class _QtNGNode(
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            self._set_hover_action_execute_(event)
+            self._set_action_hover_execute_(event)
             #
             if event.type() == QtCore.QEvent.Resize:
                 self._set_widget_update_()
-            elif event.type() == QtCore.QEvent.Enter:
-                pass
-            elif event.type() == QtCore.QEvent.Leave:
-                pass
             elif event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
-                    self._set_ng_node_action_move_start_(event)
+                    self._set_ng_action_node_graph_flag_(
+                        self.ActionFlag.NGNodeClick
+                    )
+                    self._set_action_flag_(self.ActionFlag.PressClick)
+                    #
+                    self._set_ng_action_node_move_start_(event)
                 #
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
@@ -603,16 +650,18 @@ class _QtNGNode(
                     event.ignore()
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 if event.button() == QtCore.Qt.LeftButton:
-                    self._set_ng_node_action_move_stop_(event)
+                    self._set_ng_action_node_move_stop_(event)
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
                 elif event.button() == QtCore.Qt.MidButton:
                     pass
                 else:
                     event.ignore()
+                #
+                self._set_action_flag_clear_()
             elif event.type() == QtCore.QEvent.MouseMove:
                 if event.buttons() == QtCore.Qt.LeftButton:
-                    self._set_ng_node_action_move_execute_(event)
+                    self._set_ng_action_node_move_execute_(event)
                 elif event.buttons() == QtCore.Qt.RightButton:
                     pass
                 elif event.buttons() == QtCore.Qt.MidButton:
@@ -624,12 +673,20 @@ class _QtNGNode(
     def paintEvent(self, event):
         painter = _utl_gui_qt_wgt_utility.QtPainter(self)
 
-        offset = 0
+        offset = self._get_is_actioned_()
+
+        background_color = painter._get_item_background_color_by_rect_(
+            self._frame_rect,
+            is_hovered=self._get_is_hovered_(),
+            is_selected=self._item_is_selected,
+            is_actioned=self._get_is_actioned_(),
+            default_background_color=(127, 127, 127, 127)
+        )
 
         painter._set_frame_draw_by_rect_(
             self._frame_rect,
             border_color=(191, 191, 191, 255),
-            background_color=(191, 191, 191, 127),
+            background_color=background_color,
             border_width=self._ng_node_draw_border_width,
             border_radius=self._ng_node_draw_border_radius,
             offset=offset

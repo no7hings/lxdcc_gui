@@ -466,7 +466,7 @@ class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget.clicked.connect(fnc)
 
     def set_click(self):
-        self.widget._set_item_click_emit_send_()
+        self.widget._set_press_click_emit_send_()
 
     def set_tool_tip(self, *args, **kwargs):
         self.widget._set_tool_tip_(*args, **kwargs)
@@ -480,10 +480,10 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget.setMinimumHeight(20)
 
     def set_enable(self, boolean):
-        self.widget._set_item_enable_(boolean)
+        self.widget._set_action_enable_(boolean)
 
     def set_check_enable(self, boolean):
-        self.widget._set_item_checked_enable_(boolean)
+        self.widget._set_action_check_enable_(boolean)
         self.widget.update()
 
     def get_is_checked(self):
@@ -537,7 +537,7 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget.option_clicked.connect(fnc)
 
     def set_click(self):
-        self.widget._set_item_click_emit_send_()
+        self.widget._set_press_click_emit_send_()
 
     def set_status(self, status):
         self.widget._set_status_(status)

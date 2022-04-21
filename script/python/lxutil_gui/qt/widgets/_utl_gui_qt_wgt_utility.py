@@ -40,7 +40,7 @@ class QtWidget(
         #
         self._set_status_def_init_()
 
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self.update()
 
     def paintEvent(self, event):
@@ -109,7 +109,7 @@ class _QtLine(
         self._frame_border_color = 95, 95, 95, 255
         self._frame_background_color = 0, 0, 0, 0
 
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self.update()
 
     def paintEvent(self, event):
@@ -223,6 +223,11 @@ class QtPainter(QtGui.QPainter):
     def _set_border_color_(self, *args):
         qt_color = Color._get_qt_color_(*args)
         self.setPen(QtGui.QPen(qt_color))
+
+    def _set_border_style_(self, style):
+        pen = self.pen()
+        pen.setStyle(style)
+        self.setPen(pen)
 
     def _set_border_color_alpha_(self, alpha):
         color = self.pen().color()
@@ -850,13 +855,23 @@ class QtPainter(QtGui.QPainter):
             color.setColorAt(1, color_1)
             return color
     @classmethod
-    def _get_item_background_color_by_rect_(cls, rect, is_hovered=False, is_selected=False, is_actioned=False):
+    def _get_item_background_color_by_rect_(cls, rect, is_hovered=False, is_selected=False, is_actioned=False, default_background_color=None):
         condition = [is_hovered, is_selected]
         if condition == [False, False]:
+            if default_background_color is not None:
+                return default_background_color
             return QtBackgroundColor.Transparent
         elif condition == [False, True]:
             return QtBackgroundColor.Selected
         elif condition == [True, False]:
+            if is_actioned:
+                color_0 = QtBackgroundColor.Hovered
+                color_1 = QtBackgroundColor.Actioned
+                start_pos, end_pos = rect.topLeft(), rect.bottomLeft()
+                color = QtGui.QLinearGradient(start_pos, end_pos)
+                color.setColorAt(0, color_0)
+                color.setColorAt(1, color_1)
+                return color
             return QtBackgroundColor.Hovered
         elif condition == [True, True]:
             color_0 = QtBackgroundColor.Hovered
@@ -864,6 +879,7 @@ class QtPainter(QtGui.QPainter):
                 color_1 = QtBackgroundColor.Actioned
             else:
                 color_1 = QtBackgroundColor.Selected
+            #
             start_pos, end_pos = rect.topLeft(), rect.bottomLeft()
             color = QtGui.QLinearGradient(start_pos, end_pos)
             color.setColorAt(0, color_0)
@@ -1131,6 +1147,13 @@ class QtPainter(QtGui.QPainter):
         #
         self._set_border_color_(border_color_y)
         self.drawLine(v_points[0], v_points[1])
+
+    def _set_dotted_frame_draw_(self, rect, border_color, background_color):
+        self._set_background_color_(background_color)
+        self._set_border_color_(border_color)
+        self._set_border_style_(QtCore.Qt.DashLine)
+        #
+        self.drawRect(rect)
 
 
 class QtIconButton(QtWidgets.QPushButton):
@@ -1551,7 +1574,7 @@ class QtMainWindow(
 
         self._window_system_tray_icon = None
     #
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self.update()
     #
     def _set_icon_name_text_(self, text):
@@ -1618,7 +1641,7 @@ class QtDialog(
         #
         self._set_status_def_init_()
     #
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self.update()
     #
     def _set_icon_name_text_(self, text):
@@ -1863,7 +1886,7 @@ class _QtProgressBar(
         #
         self._set_progress_def_init_()
 
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self.update()
 
     def paintEvent(self, event):

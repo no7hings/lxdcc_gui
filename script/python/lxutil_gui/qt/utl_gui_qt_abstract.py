@@ -13,7 +13,7 @@ from lxutil_gui.qt.utl_gui_qt_core import *
 
 
 class AbsQtFocusDef(object):
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
     def _set_widget_focus_update_(self):
@@ -27,7 +27,7 @@ class AbsQtFocusDef(object):
         self._is_focused = boolean
         #
         self._set_widget_focus_update_()
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _get_is_focused_(self):
         return self._is_focused
@@ -138,7 +138,7 @@ class _QtStatusDef(object):
         #
         self._status_rect = QtCore.QRect()
 
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
     def _set_status_(self, status):
@@ -155,7 +155,7 @@ class _QtStatusDef(object):
         self._status_color, self._hover_status_color = self._get_status_color_(
             self._status
         )
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _get_status_(self):
         return self._status
@@ -175,7 +175,7 @@ class _QtStatusesDef(object):
         #
         self._element_status_rect = QtCore.QRect()
 
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
     def _set_statuses_(self, element_statuses):
@@ -194,7 +194,7 @@ class _QtStatusesDef(object):
             self._element_status_colors = []
             self._hover_element_status_colors = []
         #
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _get_is_statuses_enable_(self):
         return self._is_element_status_enable
@@ -218,16 +218,16 @@ class AbsQtFrameDef(object):
         self._frame_size = 20, 20
         self._frame_draw_enable = False
 
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
     def _set_border_color_(self, color):
         self._frame_border_color = Color._get_qt_color_(color)
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _set_background_color_(self, color):
         self._frame_background_color = Color._get_qt_color_(color)
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _get_border_color_(self):
         return self._frame_border_color
@@ -277,7 +277,7 @@ class AbsQtDropDef(object):
         rect = widget.rect()
         return rect.width(), rect.height()
 
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
     def _set_widget_geometry_update_(self):
@@ -336,7 +336,7 @@ class AbsQtDropDef(object):
         self._set_widget_geometry_update_()
         #
         self._widget.show()
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _set_drop_fnc_(self, pos, size):
         x, y = pos
@@ -354,7 +354,7 @@ class AbsQtDropDef(object):
 
 
 class AbsQtIconDef(object):
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
     def _set_icon_def_init_(self):
@@ -386,7 +386,7 @@ class AbsQtIconDef(object):
     def _set_icon_file_path_(self, file_path):
         self._icon_is_enable = True
         self._icon_file_path = file_path
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _set_hover_icon_file_path_(self, file_path):
         self._hover_icon_file_path = file_path
@@ -404,12 +404,12 @@ class AbsQtIconDef(object):
     def _set_color_icon_rgb_(self, rgb):
         self._icon_is_enable = True
         self._color_icon_rgb = rgb
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _set_icon_name_text_(self, text):
         self._icon_is_enable = True
         self._icon_name_text = text
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _set_color_icon_rect_(self, x, y, w, h):
         self._color_icon_rect.setRect(
@@ -606,7 +606,7 @@ class AbsQtNameDef(object):
         self._name_color = 223, 223, 223
         self._hover_name_color = 255, 255, 255
 
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
     # noinspection PyUnresolvedReferences
     def _get_name_text_draw_width_(self, text=None):
@@ -618,7 +618,7 @@ class AbsQtNameDef(object):
         self._name_enable = True
         self._name_text = text
         # noinspection PyUnresolvedReferences
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _get_name_text_option_(self):
         return self._name_text_option
@@ -683,7 +683,7 @@ class AbsQtNameDef(object):
 
 
 class AbsQtRgbaDef(object):
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
     def _set_rgba_def_init_(self):
@@ -692,7 +692,7 @@ class AbsQtRgbaDef(object):
 
     def _set_color_rgba_(self, r, g, b, a):
         self._color_rgba = r, g, b, a
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _get_color_rgba_(self):
         return self._color_rgba
@@ -705,7 +705,7 @@ class AbsQtRgbaDef(object):
 
 
 class _QtPathDef(object):
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
     def _set_path_def_init_(self):
@@ -714,7 +714,7 @@ class _QtPathDef(object):
 
     def _set_path_text_(self, text):
         self._path_text = text
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _get_path_text_(self):
         return self._path_text
@@ -724,7 +724,7 @@ class _QtPathDef(object):
 
 
 class _QtProgressDef(object):
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
     def _set_widget_geometry_update_(self):
@@ -748,7 +748,7 @@ class _QtProgressDef(object):
 
     def _set_progress_run_(self):
         self._set_widget_geometry_update_()
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
         #
         QtWidgets.QApplication.instance().processEvents(
             QtCore.QEventLoop.ExcludeUserInputEvents
@@ -778,7 +778,7 @@ class _QtProgressDef(object):
     def _set_progress_stop_(self):
         self._set_progress_value_(0)
         self._progress_raw = []
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _get_progress_percent_(self):
         return float(self._progress_map_value_) / float(self._progress_map_maximum_)
@@ -804,13 +804,13 @@ class _QtImageDef(object):
         self._image_frame_rect = QtCore.QRect(0, 0, 0, 0)
         self._image_rect = QtCore.QRect(0, 0, 0, 0)
 
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
     def _set_image_file_path_(self, file_path):
         self._image_enable = True
         self._image_file_path = file_path
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _set_image_name_text_(self, text):
         self._image_name_text = text
@@ -859,7 +859,7 @@ class _QtImageDef(object):
 
 
 class AbsQtMovieDef(object):
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
     #
     def _set_movie_def_init_(self):
@@ -877,7 +877,7 @@ class AbsQtMovieDef(object):
 
 
 class AbsQtNamesDef(object):
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
     def _set_names_def_init_(self):
@@ -929,7 +929,7 @@ class AbsQtNamesDef(object):
                 QtCore.QRect()
             )
         #
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _get_name_texts_(self):
         return self._name_texts
@@ -1002,7 +1002,7 @@ class AbsQtNamesDef(object):
 
 
 class _QtChartDef(object):
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
     #
     def _set_chart_def_init_(self):
@@ -1030,7 +1030,7 @@ class _QtChartDef(object):
         #
         self._set_chart_data_update_()
         self._set_chart_data_post_run_()
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _set_chart_data_post_run_(self):
         pass
@@ -1045,48 +1045,24 @@ class _QtChartDef(object):
         self.setMinimumHeight(h)
 
 
-class AbsQtHoverActionDef(object):
-    def _set_widget_update_(self):
-        raise NotImplementedError()
-
-    def _set_hover_action_def_init_(self):
-        self._item_is_enable = True
-        self._is_hovered = False
-
-    def _set_item_enable_(self, boolean):
-        self._item_is_enable = boolean
-
-    def _get_item_is_enable_(self):
-        return self._item_is_enable
-
-    def _set_hovered_(self, boolean):
-        self._is_hovered = boolean
-        self._set_widget_update_()
-
-    def _get_is_hovered_(self):
-        return self._is_hovered
-
-    def _set_hover_action_execute_(self, event):
-        if event.type() == QtCore.QEvent.Enter:
-            self._set_hovered_(True)
-        elif event.type() == QtCore.QEvent.Leave:
-            self._set_hovered_(False)
-
-
 class AbsQtActionDef(object):
     ActionFlag = utl_gui_configure.ActionFlag
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
     def _set_action_def_init_(self, widget):
         self._widget = widget
         self._action_flag = None
+        self._action_flags = []
 
     def _set_action_flag_(self, flag):
         if flag is not None:
             self._action_flag = flag
             self.__set_action_cursor_update_()
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
+
+    def _set_action_flag_add_(self, flag):
+        pass
 
     def __set_action_cursor_update_(self):
         if self._action_flag is not None:
@@ -1165,12 +1141,17 @@ class AbsQtActionDef(object):
 
     def _set_action_flag_clear_(self):
         self._action_flag = None
-
+        self._action_flags = []
+        #
         self.__set_action_cursor_update_()
-        self._set_widget_update_()
+        #
+        self._set_widget_draw_update_()
 
     def _get_action_flag_is_match_(self, flag):
         return self._action_flag == flag
+
+    def _get_action_flag_is_include_(self, flag):
+        return flag in self._action_flags
 
     def _get_is_actioned_(self):
         return self._action_flag is not None
@@ -1181,7 +1162,36 @@ class AbsQtActionDef(object):
         return 0
 
 
-class AbsQtPressActionDef(object):
+class AbsQtActionHoverDef(object):
+    def _set_widget_draw_update_(self):
+        raise NotImplementedError()
+
+    def _set_action_hover_def_init_(self):
+        self._item_is_enable = True
+        self._is_hovered = False
+
+    def _set_action_enable_(self, boolean):
+        self._item_is_enable = boolean
+
+    def _get_action_is_enable_(self):
+        return self._item_is_enable
+
+    def _set_hovered_(self, boolean):
+        self._is_hovered = boolean
+        #
+        self._set_widget_draw_update_()
+
+    def _get_is_hovered_(self):
+        return self._is_hovered
+
+    def _set_action_hover_execute_(self, event):
+        if event.type() == QtCore.QEvent.Enter:
+            self._set_hovered_(True)
+        elif event.type() == QtCore.QEvent.Leave:
+            self._set_hovered_(False)
+
+
+class AbsQtActionPressDef(object):
     press_clicked = qt_signal()
     press_db_clicked = qt_signal()
     press_toggled = qt_signal(bool)
@@ -1190,13 +1200,13 @@ class AbsQtPressActionDef(object):
     db_clicked = qt_signal()
     #
     ActionFlag = utl_gui_configure.ActionFlag
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
-    def _get_item_is_enable_(self):
+    def _get_action_is_enable_(self):
         raise NotImplementedError()
     #
-    def _set_press_action_def_init_(self):
+    def _set_action_press_def_init_(self):
         self._item_is_press_enable = True
         self._item_is_pressed = False
         #
@@ -1208,38 +1218,39 @@ class AbsQtPressActionDef(object):
     def _get_action_flag_is_match_(self, flag):
         raise NotImplementedError()
 
-    def _get_item_is_press_enable_(self):
-        if self._get_item_is_enable_() is True:
+    def _get_action_press_is_enable_(self):
+        if self._get_action_is_enable_() is True:
             return self._item_is_press_enable
         return False
 
-    def _set_item_pressed_(self, boolean):
+    def _set_pressed_(self, boolean):
         self._item_is_pressed = boolean
 
-    def _get_item_is_pressed_(self):
+    def _get_is_pressed_(self):
         return self._item_is_pressed
 
-    def _set_item_click_emit_send_(self):
+    def _set_press_click_emit_send_(self):
         self.clicked.emit()
+        self.press_clicked.emit()
 
-    def _get_item_is_click_flag_(self):
+    def _get_is_press_click_flag_(self):
         return self._get_action_flag_is_match_(
             self.ActionFlag.PressClick
         )
 
 
-class _QtItemCheckActionDef(object):
+class AbsQtActionCheckDef(object):
     check_clicked = qt_signal()
     check_toggled = qt_signal(bool)
     #
     ActionFlag = utl_gui_configure.ActionFlag
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
-    def _get_item_is_enable_(self):
+    def _get_action_is_enable_(self):
         raise NotImplementedError()
 
-    def _set_item_check_action_def_init_(self):
+    def _set_action_check_def_init_(self):
         self._is_check_enable = False
         #
         self._item_check_icon_file_path = None
@@ -1250,11 +1261,11 @@ class _QtItemCheckActionDef(object):
         self._item_check_frame_rect = QtCore.QRect()
         self._item_check_icon_rect = QtCore.QRect()
 
-    def _set_item_checked_enable_(self, boolean):
+    def _set_action_check_enable_(self, boolean):
         self._is_check_enable = boolean
 
-    def _get_item_is_check_enable_(self):
-        if self._get_item_is_enable_() is True:
+    def _get_action_check_is_enable_(self):
+        if self._get_action_is_enable_() is True:
             return self._is_check_enable
         return False
 
@@ -1274,7 +1285,7 @@ class _QtItemCheckActionDef(object):
             self._item_check_icon_file_path_0, self._item_check_icon_file_path_1
         ][self._item_is_checked]
         #
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _set_item_check_frame_rect_(self, x, y, w, h):
         self._item_check_frame_rect.setRect(
@@ -1304,7 +1315,7 @@ class _QtItemExpandActionDef(object):
     EXPAND_BOTTOM_TO_TOP = 1
     #
     ActionFlag = utl_gui_configure.ActionFlag
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
     def _set_item_expand_action_def_init_(self):
@@ -1350,10 +1361,10 @@ class _QtItemExpandActionDef(object):
 
 class _QtItemOptionPressActionDef(object):
     checked = qt_signal()
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
-    def _get_item_is_enable_(self):
+    def _get_action_is_enable_(self):
         raise NotImplementedError()
 
     def _set_item_option_press_action_def_init_(self):
@@ -1367,7 +1378,7 @@ class _QtItemOptionPressActionDef(object):
         self._option_click_enable = boolean
 
     def _get_item_option_click_enable_(self):
-        if self._get_item_is_enable_() is True:
+        if self._get_action_is_enable_() is True:
             return self._option_click_enable
         return False
 
@@ -1439,7 +1450,7 @@ class _QtViewChooseActionDef(object):
     choose_item_double_clicked = qt_signal()
     #
     CHOOSE_FLAG = utl_gui_configure.ActionFlag.ChooseClick
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
     def _set_view_choose_action_def_init_(self):
@@ -1585,8 +1596,8 @@ class _QtViewGuideActionDef(object):
         self.guide_item_double_clicked.emit()
 
 
-class _QtItemSelectActionDef(object):
-    def _set_widget_update_(self):
+class AbsQtItemSelectActionDef(object):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
     #
     def _set_item_select_action_def_init_(self):
@@ -1597,7 +1608,7 @@ class _QtItemSelectActionDef(object):
 
     def _set_item_selected_(self, boolean):
         self._item_is_selected = boolean
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _get_item_is_selected_(self):
         return self._item_is_selected
@@ -1619,7 +1630,7 @@ class AbsQtItemMovieActionDef(object):
 
 
 class _QtItemShowDef(object):
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
     def _get_view_(self):
@@ -1681,14 +1692,14 @@ class _QtItemShowDef(object):
 
     def _set_item_show_loading_update_(self):
         self._item_show_loading_index += 1
-        # self._set_widget_update_()
+        # self._set_widget_draw_update_()
 
     def _set_item_show_loading_stop_(self):
         self._item_show_loading_is_started = False
         self._item_show_loading_is_finished = True
         self._item_show_loading_timer.stop()
         #
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _get_item_show_image_loading_is_termination_(self):
         sub_process = self._get_item_show_sub_process_()
@@ -1718,7 +1729,7 @@ class _QtItemShowDef(object):
         else:
             self._item_show_loading_index += 1
         #
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _set_item_show_image_sub_process_update_(self):
         sub_process = self._get_item_show_sub_process_()
@@ -1743,7 +1754,7 @@ class _QtItemShowDef(object):
             if self._item_show_method_is_finished is False:
                 # self._item_show_thread.start()
                 self._item_show_method()
-                self._set_widget_update_()
+                self._set_widget_draw_update_()
                 #
                 self._item_show_method_is_finished = True
                 # QtWidgets.QApplication.instance().processEvents(
@@ -1772,7 +1783,7 @@ class _QtItemShowDef(object):
     def _set_item_show_stop_(self):
         self._item_show_timer.stop()
         #
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _set_item_show_all_stop_(self):
         self._set_item_show_stop_()
@@ -1795,7 +1806,7 @@ class _QtItemShowDef(object):
 
 class AbsQtItemEntryActionDef(object):
     entry_changed = qt_signal()
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
     def _get_action_flag_(self):
@@ -1808,7 +1819,7 @@ class AbsQtItemEntryActionDef(object):
 
     def _set_entered_(self, boolean):
         self._item_is_entered = boolean
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _set_entry_frame_rect_(self, x, y, w, h):
         self._entry_frame_rect.setRect(
@@ -2324,7 +2335,7 @@ class AbsQtListWidget(
         s = self.gridSize()
         return s.width(), s.width()
 
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self.update()
         self.viewport().update()
 
@@ -2551,7 +2562,7 @@ class AbsQtGridDef(object):
 
         self._grid_axis_lock_x, self._grid_axis_lock_y = 0, 0
 
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         raise NotImplementedError()
 
 
@@ -2574,7 +2585,7 @@ class AbsQtTrackActionDef(object):
         #
         self._track_offset_radix_x, self._track_offset_radix_y = 2, 2
 
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self._widget.update()
 
     def _set_tack_offset_action_start_(self, event):
@@ -2601,7 +2612,7 @@ class AbsQtTrackActionDef(object):
             value_range=(self._track_offset_minimum_y, self._track_offset_maximum_y),
             direction=self._track_offset_direction_y
         )
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def _set_track_offset_action_end_(self, event):
         self._tmp_track_offset_x, self._tmp_track_offset_y = self._track_offset_x, self._track_offset_y
@@ -2620,7 +2631,7 @@ class AbsQtZoomActionDef(object):
 
         self._zoom_scale_radix_x, self._zoom_scale_radix_y = 5.0, 5.0
 
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self._widget.update()
 
     def _set_zoom_scale_action_run_(self, event):
@@ -2641,4 +2652,4 @@ class AbsQtZoomActionDef(object):
             direction=1
         )
         #
-        self._set_widget_update_()
+        self._set_widget_draw_update_()

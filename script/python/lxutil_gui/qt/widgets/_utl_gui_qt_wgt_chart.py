@@ -14,7 +14,7 @@ class _QtColorChooseChart(
     utl_gui_qt_abstract._QtChartDef,
 ):
     color_choose_changed = qt_signal()
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self.update()
 
     def _set_chart_data_update_(self):
@@ -271,7 +271,7 @@ class _QtColorChooseChart(
                 self._circle_flag = False
                 self._track_offset_flag = False
                 self._set_chart_data_update_()
-                self._set_widget_update_()
+                self._set_widget_draw_update_()
         return False
 
     def _set_choose_color_update_(self):
@@ -291,7 +291,7 @@ class _QtColorChooseChart(
             #
             self.color_choose_changed.emit()
             #
-            self._set_widget_update_()
+            self._set_widget_draw_update_()
     #
     def _set_press_click_action_run_(self, event):
         self._color_point = event.pos()
@@ -313,7 +313,7 @@ class _QtColorChooseChart(
         if pre_count != cur_count:
             self._count = cur_count
             self._set_chart_data_update_()
-            self._set_widget_update_()
+            self._set_widget_draw_update_()
             self._set_choose_color_update_()
     #
     def _set_track_circle_action_run_(self, event):
@@ -328,7 +328,7 @@ class _QtColorChooseChart(
             self._color_h_offset = angle
         #
         self._set_chart_data_update_()
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
         self._set_choose_color_update_()
     #
     def _set_track_offset_action_run_(self, point):
@@ -429,7 +429,7 @@ class _QtWaitingChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtChartDef,
 ):
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self.update()
         #
         ApplicationOpt().set_process_run_0()
@@ -457,7 +457,7 @@ class _QtWaitingChart(
         self._timer = QtCore.QTimer(self)
 
         self._timer.timeout.connect(
-            self._set_widget_update_
+            self._set_widget_draw_update_
         )
 
     def _set_waiting_start_(self):
@@ -488,7 +488,7 @@ class _QtWaitingChart(
                 (i_x, i_y)
             )
 
-        self._set_widget_update_()
+        self._set_widget_draw_update_()
 
     def eventFilter(self, *args):
         widget, event = args
@@ -538,7 +538,7 @@ class _QtSectorChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtChartDef
 ):
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self.update()
 
     def _set_chart_data_update_(self):
@@ -602,7 +602,7 @@ class _QtRadarChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtChartDef
 ):
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self.update()
 
     def _set_chart_data_update_(self):
@@ -716,7 +716,7 @@ class _QtPieChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtChartDef
 ):
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self.update()
 
     def _set_chart_data_update_(self):
@@ -868,7 +868,7 @@ class _QtHistogramChart(
     #
     utl_gui_qt_abstract._QtChartDef,
 ):
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self.update()
 
     def _set_chart_data_update_(self):
@@ -1121,7 +1121,7 @@ class _QtSequenceChart(
             #
             self.update()
 
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self.update()
 
     def __init__(self, *args, **kwargs):

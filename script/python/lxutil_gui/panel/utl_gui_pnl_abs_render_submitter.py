@@ -11,6 +11,8 @@ import lxbasic.objects as bsc_objects
 
 import lxresolver.commands as rsv_commands
 
+from lxobj import core_objects
+
 import lxutil_gui.proxy.operators as utl_prx_operators
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
@@ -231,7 +233,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     self._camera_abc_file_rsv_unit = self._camera_rsv_task.get_rsv_unit(
                         keyword='{branch}-camera-main-abc-file'
                     )
-                    self._component_us_file_rsv_units = [
+                    self._check_rsv_units = [
                         # self._rsv_task.get_rsv_unit(
                         #     keyword='{branch}-component-usd-file'
                         # ),
@@ -310,10 +312,10 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         rsv_versions = self._work_scene_file_rsv_unit.get_rsv_versions()
         self._options_prx_node.set('version', rsv_versions)
 
-        self._rsv_asset_set_usd_creator = usd_rsv_objects.RsvAssetSetUsdCreator(self._rsv_entity)
+        self._rsv_entity_set_usd_creator = usd_rsv_objects.RsvAssetSetUsdCreator(self._rsv_entity)
         if bsc_core.SystemMtd.get_is_linux():
             # if bsc_core.SystemMtd.get_application() not in ['maya']:
-            rsv_shots = self._rsv_asset_set_usd_creator.get_rsv_asset_shots()
+            rsv_shots = self._rsv_entity_set_usd_creator.get_rsv_asset_shots()
             self._options_prx_node.set('shot', rsv_shots)
 
     def set_current_refresh(self):
@@ -374,7 +376,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         #
         variable_name = '.'.join(variants.values())
 
-        for i_rsv_unit in self._component_us_file_rsv_units:
+        for i_rsv_unit in self._check_rsv_units:
             i_file_path = i_rsv_unit.get_result(version='latest')
             if i_file_path:
                 i_rsv_properties = i_rsv_unit.get_properties_by_result(i_file_path)
@@ -436,7 +438,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                             option_hook_key='actions/file-directory-open',
                             file=movie_file_path,
                             gui_group_name='movie',
-                            gui_name='open movie-directory'
+                            gui_name='open movie directory'
                         )
                     ).to_string()
                 ]
@@ -502,7 +504,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         if bsc_core.SystemMtd.get_is_linux():
             # if bsc_core.SystemMtd.get_application() not in ['maya']:
             if rsv_asset is not None:
-                asset_usd_variant_dict = self._rsv_asset_set_usd_creator._get_asset_usd_set_dress_variant_dict_(rsv_asset)
+                asset_usd_variant_dict = self._rsv_entity_set_usd_creator._get_asset_usd_set_dress_variant_dict_(rsv_asset)
                 for k, v in asset_usd_variant_dict.items():
                     i_port_path = v['port_path']
                     i_variant_names = v['variant_names']
@@ -517,7 +519,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                         i_port_path, i_current_variant_name
                     )
             #
-            # shot_usd_variant_dict = self._rsv_asset_set_usd_creator._get_shot_usd_set_dress_variant_dict_(rsv_shot)
+            # shot_usd_variant_dict = self._rsv_entity_set_usd_creator._get_shot_usd_set_dress_variant_dict_(rsv_shot)
             # for k, v in shot_usd_variant_dict.items():
             #     i_port_path = v['port_path']
             #     i_variant_names = v['variant_names']
@@ -766,6 +768,15 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             'submit', self.set_submit
         )
 
+        usd_node_collapse = self._hook_build_configure.get(
+            'node_collapse.usd'
+        )
+        if usd_node_collapse:
+            for i in usd_node_collapse:
+                self._usd_prx_node.get_port(
+                    i
+                ).set_expanded(False)
+
     def _set_rsv_unit_prx_item_show_deferred_(self, prx_item, variants):
         hook_options = []
         pixmaps = []
@@ -773,7 +784,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         variable_name = '.'.join(variants.values())
         # print variable_name
 
-        for i_rsv_unit in self._component_us_file_rsv_units:
+        for i_rsv_unit in self._check_rsv_units:
             i_file_path = i_rsv_unit.get_result(version='latest')
             if i_file_path:
                 i_rsv_properties = i_rsv_unit.get_properties_by_result(i_file_path)
@@ -784,6 +795,17 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     size=self.ITEM_ICON_SIZE
                 )
                 pixmaps.append(i_pixmap)
+
+                hook_options.append(
+                    bsc_core.KeywordArgumentsOpt(
+                        dict(
+                            option_hook_key='actions/file-directory-open',
+                            file=i_file_path,
+                            gui_group_name='usd',
+                            gui_name='open "{}" directory'.format(i_rsv_unit.get('keyword'))
+                        )
+                    ).to_string()
+                )
 
         movie_file_path = self._render_movie_file_rsv_unit.get_result(
             version='latest',
@@ -836,7 +858,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                             option_hook_key='actions/file-directory-open',
                             file=movie_file_path,
                             gui_group_name='movie',
-                            gui_name='open movie-directory'
+                            gui_name='open movie directory'
                         )
                     ).to_string()
                 ]
@@ -877,13 +899,15 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 self._render_movie_file_rsv_unit = self._rsv_task.get_rsv_unit(
                     keyword='{branch}-output-katana-render-movie-file'
                 )
-                self._component_us_file_rsv_units = [
-                    self._rsv_task.get_rsv_unit(
-                        keyword='{branch}-component-usd-file'
-                    ),
-                    self._rsv_task.get_rsv_unit(
-                        keyword='{branch}-output-component-usd-file'
-                    )
+                self._component_usd_file_unit = self._rsv_task.get_rsv_unit(
+                    keyword='{branch}-component-usd-file'
+                )
+                self._output_component_usd_file_unit = self._rsv_task.get_rsv_unit(
+                    keyword='{branch}-output-component-usd-file'
+                )
+                self._check_rsv_units = [
+                    self._component_usd_file_unit,
+                    self._output_component_usd_file_unit
                 ]
                 #
                 self._stg_entity_query = self._stg_connector.get_stg_entity_query(
@@ -937,6 +961,8 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
     @utl_gui_qt_core.set_prx_window_waiting
     def set_options_refresh(self):
+        import lxusd.rsv.objects as usd_rsv_objects
+        #
         self._options_prx_node.set(
             'task', self._rsv_task.path
         )
@@ -990,8 +1016,22 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
         self._options_prx_node.set('version', rsv_versions)
 
+        self._rsv_entity_set_usd_creator = usd_rsv_objects.RsvShotSetUsdCreator(self._rsv_entity)
+
     def set_usd_refresh(self):
-        pass
+        if bsc_core.SystemMtd.get_is_linux():
+            output_component_usd_file_path = self._output_component_usd_file_unit.get_result('latest')
+            if output_component_usd_file_path:
+                paths = self._rsv_entity_set_usd_creator.get_effect_component_paths(output_component_usd_file_path)
+                u = core_objects.ObjUniverse()
+                o_t = u._get_obj_type_force_('usd', 'effect')
+
+                for i_path in paths:
+                    o_t.set_obj_create(i_path)
+
+                self._usd_prx_node.set(
+                    'components.effect', u.get_obj_type('effect').get_objs()
+                )
 
     def set_settings_refresh(self):
         if self._stg_entity_query is not None:
@@ -1064,6 +1104,11 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
     def set_scheme_save(self):
         pass
 
+    def _get_usd_dict_(self):
+        c = bsc_objects.Configure(value={})
+        c.set('usd_effect_components', [i.name for i in self._usd_prx_node.get('components.effect')])
+        return c.value
+
     def _get_settings_dic_(self):
         c = bsc_objects.Configure(value={})
         #
@@ -1103,8 +1148,8 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             #
             dic['choice_scheme'] = self._options_prx_node.get('choice_scheme')
             #
-            settings_dic = self._get_settings_dic_()
-            dic.update(settings_dic)
+            dic.update(self._get_settings_dic_())
+            dic.update(self._get_usd_dict_())
 
             td_test_scheme = self._settings_prx_node.get(
                 'td.test_scheme'

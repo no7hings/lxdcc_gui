@@ -41,4 +41,4 @@ class PrxNodeGraph(
         self._qt_view._set_ng_graph_universe_(universe)
 
     def set_node_show(self):
-        self._qt_view._set_ng_graph_node_show_()
+        self._qt_view._set_ng_graph_node_show_by_universe_()

@@ -16,17 +16,23 @@ class W(prx_widgets.PrxToolWindow):
         self.set_widget_add(c)
         u = core_objects.ObjUniverse()
 
-        o_c = u.set_obj_category_create(
-            'test'
-        )
+        o_t = u._get_obj_type_force_('lynxi', 'shader')
 
-        o_t = o_c.set_type_create(
-            'lynxi'
-        )
+        n_0 = o_t.set_obj_create('/test_0')
 
-        o_0 = o_t.set_obj_create('/test_0')
+        n_1 = o_t.set_obj_create('/test_1')
 
-        o_1 = o_t.set_obj_create('/test_1')
+        t = u._get_type_force_(u.Category.CONSTANT, u.Type.NODE)
+
+        for i in [n_0, n_1]:
+            i.set_input_port_create(
+                t, 'input'
+            )
+            i.set_output_port_create(
+                t, 'output'
+            )
+
+        n_0.get_input_port('input').set_source(n_1.get_output_port('output'))
 
         c.set_node_universe(u)
 

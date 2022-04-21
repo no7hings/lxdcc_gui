@@ -42,6 +42,13 @@ class ActionFlag(enum.IntEnum):
     SplitVMove = 0x46
     #
     ZoomWheel = 0x51
+    #
+    RectSelectClick = 0x61
+    RectSelectMove = 0x62
+    #
+    NGGraphTranslateClick = 0x71
+    NGGraphTranslateMove = 0x72
+    NGNodeClick = 0x73
 
 
 class State(object):

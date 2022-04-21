@@ -281,7 +281,7 @@ class PrxTreeItem(
             self.widget._set_check_state_extra_(column)
 
     def get_check_enable(self):
-        return self.widget._get_item_is_check_enable_()
+        return self.widget._get_action_check_is_enable_()
 
     def set_check_enable(self, boolean, descendants=False, column=0):
         self.widget.setDisabled(not boolean)

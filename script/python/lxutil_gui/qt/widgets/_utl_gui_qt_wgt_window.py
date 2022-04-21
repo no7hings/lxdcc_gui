@@ -10,7 +10,7 @@ class _QtWindow(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
 ):
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self.update()
 
     def __init__(self, *args, **kwargs):
@@ -53,7 +53,7 @@ class _QtWindow(
 class _QtFramelessWindow(
     QtWidgets.QWidget
 ):
-    def _set_widget_update_(self):
+    def _set_widget_draw_update_(self):
         self.update()
 
     def __init__(self, *args, **kwargs):
