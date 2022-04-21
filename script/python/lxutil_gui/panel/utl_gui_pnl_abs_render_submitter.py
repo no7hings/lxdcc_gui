@@ -221,18 +221,41 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 self._render_movie_file_rsv_unit = self._rsv_task.get_rsv_unit(
                     keyword='{branch}-output-katana-render-movie-file'
                 )
-                self._component_us_file_rsv_units = [
-                    self._rsv_task.get_rsv_unit(
-                        keyword='{branch}-component-usd-file'
-                    ),
-                    self._rsv_task.get_rsv_unit(
-                        keyword='{branch}-output-component-usd-file'
+                self._camera_rsv_task = self._rsv_entity.get_rsv_task(
+                    step='cam', task='camera'
+                )
+                if self._camera_rsv_task is not None:
+                    self._camera_work_maya_scene_src_file_rsv_unit = self._camera_rsv_task.get_rsv_unit(
+                        keyword='{branch}-work-maya-scene-src-file'
                     )
-                ]
-                #
-                self.set_current_refresh()
-                #
-                self.set_settings_refresh()
+                    self._camera_abc_file_rsv_unit = self._camera_rsv_task.get_rsv_unit(
+                        keyword='{branch}-camera-main-abc-file'
+                    )
+                    self._component_us_file_rsv_units = [
+                        # self._rsv_task.get_rsv_unit(
+                        #     keyword='{branch}-component-usd-file'
+                        # ),
+                        # self._rsv_task.get_rsv_unit(
+                        #     keyword='{branch}-output-component-usd-file'
+                        # ),
+                        self._camera_work_maya_scene_src_file_rsv_unit,
+                        self._camera_abc_file_rsv_unit
+                    ]
+                    #
+                    self.set_current_refresh()
+                    #
+                    self.set_settings_refresh()
+                else:
+                    utl_core.DialogWindow.set_create(
+                        self._hook_gui_configure.get('name'),
+                        content='file="{}" camera task is non-exists, please call for TD ge more help'.format(self._file_path),
+                        status=utl_core.DialogWindow.GuiStatus.Error,
+                        #
+                        yes_label='Close', yes_method=self.set_window_close,
+                        #
+                        no_visible=False, cancel_visible=False,
+                        use_exec=False
+                    )
 
     def set_scheme_save(self):
         filter_dict = self._prx_dcc_obj_tree_view_tag_filter_opt.get_filter_dict()
@@ -246,7 +269,6 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         self._options_prx_node.set(
             'task', self._rsv_task.path
         )
-        rsv_asset = self._rsv_task.get_rsv_entity()
         branch = self._rsv_task.get('branch')
         step = self._rsv_task.get('step')
         if step in ['mod']:
@@ -288,7 +310,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         rsv_versions = self._work_scene_file_rsv_unit.get_rsv_versions()
         self._options_prx_node.set('version', rsv_versions)
 
-        self._rsv_asset_set_usd_creator = usd_rsv_objects.RsvAssetSetUsdCreator(rsv_asset)
+        self._rsv_asset_set_usd_creator = usd_rsv_objects.RsvAssetSetUsdCreator(self._rsv_entity)
         if bsc_core.SystemMtd.get_is_linux():
             # if bsc_core.SystemMtd.get_application() not in ['maya']:
             rsv_shots = self._rsv_asset_set_usd_creator.get_rsv_asset_shots()
@@ -340,6 +362,10 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
         self._settings_prx_node.set(
             'submit', self.set_submit
+        )
+
+        self._settings_prx_node.set(
+            'td.publish_camera', self.set_camera_publish
         )
 
     def __set_rsv_unit_gui_show_deferred_(self, prx_item, variants):
@@ -422,7 +448,6 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     prx_item.set_image_show_sub_process(image_sub_process)
                     # prx_item.set_image_loading_start()
         else:
-            variants['version'] = 'None'
             prx_item.set_image(
                 utl_core.Icon._get_file_path_('@image_loading_failed@')
             )
@@ -628,38 +653,85 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         return True
 
     @utl_gui_qt_core.set_prx_window_waiting
-    def set_submit(self):
-        hook_option_dic = self._get_hook_option_dic_()
-        if hook_option_dic:
-            if self.get_file_is_changed() is True:
-                hook_option_dic['user'] = bsc_core.SystemMtd.get_user_name()
-                hook_option_dic['option_hook_key'] = 'rsv-task-batchers/asset/gen-cmb-render-submit'
-                option_opt = bsc_core.KeywordArgumentsOpt(hook_option_dic)
+    def set_camera_publish(self):
+        camera_work_maya_scene_scr_file_path = self._camera_work_maya_scene_src_file_rsv_unit.get_result(
+            version='latest'
+        )
+        if camera_work_maya_scene_scr_file_path:
+            hook_option_opt = bsc_core.KeywordArgumentsOpt(
+                option=dict(
+                    option_hook_key='rsv-task-batchers/asset/maya/camera-export',
+                    #
+                    file=camera_work_maya_scene_scr_file_path,
+                    user=bsc_core.SystemMtd.get_user_name(),
+                    #
+                    # td_enable=True,
+                    rez_beta=True,
+                )
+            )
+            #
+            ssn_commands.set_option_hook_execute_by_deadline(
+                option=hook_option_opt.to_string()
+            )
+            #
+            utl_core.DialogWindow.set_create(
+                self._hook_gui_configure.get('name'),
+                content='{} publish job is send to deadline, more information you see in deadline monitor'.format(camera_work_maya_scene_scr_file_path),
+                status=utl_core.DialogWindow.GuiStatus.Correct,
                 #
-                ssn_commands.set_option_hook_execute_by_deadline(
-                    option=option_opt.to_string()
-                )
-                utl_core.DialogWindow.set_create(
-                    self._hook_gui_configure.get('name'),
-                    content='{} is submit completed'.format(self._file_path),
-                    status=utl_core.DialogWindow.GuiStatus.Correct,
+                yes_label='Close',
+                #
+                no_visible=False, cancel_visible=False,
+                use_exec=False
+            )
+
+    @utl_gui_qt_core.set_prx_window_waiting
+    def set_submit(self):
+        if self._camera_abc_file_rsv_unit.get_result(
+                version='latest'
+        ):
+            hook_option_dic = self._get_hook_option_dic_()
+            if hook_option_dic:
+                if self.get_file_is_changed() is True:
+                    hook_option_dic['user'] = bsc_core.SystemMtd.get_user_name()
+                    hook_option_dic['option_hook_key'] = 'rsv-task-batchers/asset/gen-cmb-render-submit'
+                    option_opt = bsc_core.KeywordArgumentsOpt(hook_option_dic)
                     #
-                    yes_label='Close',
-                    #
-                    no_visible=False, cancel_visible=False,
-                    use_exec=False
-                )
-            else:
-                utl_core.DialogWindow.set_create(
-                    self._hook_gui_configure.get('name'),
-                    content='file="{}" is already submitted or scene changed is not be save'.format(self._file_path),
-                    status=utl_core.DialogWindow.GuiStatus.Error,
-                    #
-                    yes_label='Close',
-                    #
-                    no_visible=False, cancel_visible=False,
-                    use_exec=False
-                )
+                    ssn_commands.set_option_hook_execute_by_deadline(
+                        option=option_opt.to_string()
+                    )
+                    utl_core.DialogWindow.set_create(
+                        self._hook_gui_configure.get('name'),
+                        content='{} render job is send to deadline, more information you see in deadline monitor'.format(self._file_path),
+                        status=utl_core.DialogWindow.GuiStatus.Correct,
+                        #
+                        yes_label='Close',
+                        #
+                        no_visible=False, cancel_visible=False,
+                        use_exec=False
+                    )
+                else:
+                    utl_core.DialogWindow.set_create(
+                        self._hook_gui_configure.get('name'),
+                        content='file="{}" is already submitted or scene changed is not be save'.format(self._file_path),
+                        status=utl_core.DialogWindow.GuiStatus.Error,
+                        #
+                        yes_label='Close',
+                        #
+                        no_visible=False, cancel_visible=False,
+                        use_exec=False
+                    )
+        else:
+            utl_core.DialogWindow.set_create(
+                self._hook_gui_configure.get('name'),
+                content='file="{}" camera cache(abc) is non-exists, please call for TD ge more help'.format(self._file_path),
+                status=utl_core.DialogWindow.GuiStatus.Error,
+                #
+                yes_label='Close',
+                #
+                no_visible=False, cancel_visible=False,
+                use_exec=False
+            )
 
 
 class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
@@ -868,7 +940,6 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         self._options_prx_node.set(
             'task', self._rsv_task.path
         )
-        rsv_shot = self._rsv_task.get_rsv_entity()
         branch = self._rsv_task.get('branch')
         step = self._rsv_task.get('step')
         if step in ['rlo', 'ani', 'flo']:

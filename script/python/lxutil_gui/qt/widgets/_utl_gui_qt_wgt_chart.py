@@ -209,8 +209,8 @@ class _QtColorChooseChart(
                     self._set_action_flag_(self.ActionFlag.PressClick)
                 elif event.button() == QtCore.Qt.RightButton:
                     # Track
-                    self._track_start_pos = event.globalPos()
-                    self._track_flag = True
+                    self._track_offset_start_point = event.globalPos()
+                    self._track_offset_flag = True
                 elif event.button() == QtCore.Qt.MidButton:
                     # Circle
                     point = event.pos()
@@ -230,9 +230,9 @@ class _QtColorChooseChart(
                     self.update()
                 elif event.buttons() == QtCore.Qt.RightButton:
                     # Track
-                    self._track_flag = True
-                    point = event.globalPos() - self._track_start_pos
-                    self._set_track_action_run_(point)
+                    self._track_offset_flag = True
+                    point = event.globalPos() - self._track_offset_start_point
+                    self._set_track_offset_action_run_(point)
                 elif event.buttons() == QtCore.Qt.MidButton:
                     # Circle
                     self._circle_flag = True
@@ -251,7 +251,7 @@ class _QtColorChooseChart(
                     # Track
                     self._tmp_track_offset_x = self._track_offset_x
                     self._track_offset_y_temp = self._track_offset_y
-                    self._track_flag = True
+                    self._track_offset_flag = True
                 elif event.button() == QtCore.Qt.MidButton:
                     # Circle
                     self._circle_angle_temp = self._color_h_offset
@@ -261,15 +261,15 @@ class _QtColorChooseChart(
                 self._set_action_flag_(
                     self.ActionFlag.ZoomWheel
                 )
-                self._set_zoom_action_run_(event)
+                self._set_zoom_scale_action_run_(event)
                 #
                 self._move_flag = False
                 self._circle_flag = False
-                self._track_flag = False
+                self._track_offset_flag = False
             elif event.type() == QtCore.QEvent.Resize:
                 self._move_flag = False
                 self._circle_flag = False
-                self._track_flag = False
+                self._track_offset_flag = False
                 self._set_chart_data_update_()
                 self._set_widget_update_()
         return False
@@ -297,15 +297,18 @@ class _QtColorChooseChart(
         self._color_point = event.pos()
         self._set_choose_color_update_()
     #
-    def _set_zoom_action_run_(self, event):
+    def _set_zoom_scale_action_run_(self, event):
         delta = event.angleDelta().y()
         #
         radix = 3
         #
         pre_count = self._count
         cur_count = bsc_core.ValueMtd.step_to(
-            value=pre_count, delta=-delta, step=radix,
-            valueRange=(self._count_minimum, self._count_maximum)
+            value=pre_count,
+            delta=-delta,
+            step=radix,
+            value_range=(self._count_minimum, self._count_maximum),
+            direction=1
         )
         if pre_count != cur_count:
             self._count = cur_count
@@ -328,14 +331,17 @@ class _QtColorChooseChart(
         self._set_widget_update_()
         self._set_choose_color_update_()
     #
-    def _set_track_action_run_(self, point):
+    def _set_track_offset_action_run_(self, point):
         xDelta = point.x()
         yDelta = point.y()
         xRadix = 5.0
         yRadix = 5.0
         self._color_v_multiply = bsc_core.ValueMtd.step_to(
-            value=self._color_v_multiply, delta=-yDelta, step=yRadix,
-            valueRange=(self._mult_v_minimum, self._mult_v_maximum)
+            value=self._color_v_multiply,
+            delta=-yDelta,
+            step=yRadix,
+            value_range=(self._mult_v_minimum, self._mult_v_maximum),
+            direction=1
         )
         #
         self.update()
@@ -390,7 +396,7 @@ class _QtColorChooseChart(
         #
         self._move_flag = False
         #
-        self._track_start_pos = QtCore.QPoint(0, 0)
+        self._track_offset_start_point = QtCore.QPoint(0, 0)
         #
         self._color_point = QtCore.QPoint(0, 0)
         self._color_point_temp = QtCore.QPoint(0, 0)
@@ -404,7 +410,7 @@ class _QtColorChooseChart(
         self._circle_angle_temp = 0.0
         self._color_h_offset = 0.0
         #
-        self._track_flag = False
+        self._track_offset_flag = False
         self._tmp_track_offset_x = 0
         self._track_offset_y_temp = 0
         self._track_offset_x = 0
@@ -855,7 +861,12 @@ class _QtPieChart(
 
 class _QtHistogramChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtChartDef
+    utl_gui_qt_abstract.AbsQtGridDef,
+    #
+    utl_gui_qt_abstract.AbsQtTrackActionDef,
+    utl_gui_qt_abstract.AbsQtZoomActionDef,
+    #
+    utl_gui_qt_abstract._QtChartDef,
 ):
     def _set_widget_update_(self):
         self.update()
@@ -878,31 +889,18 @@ class _QtHistogramChart(
     #
     def __set_selection_update_(self, event):
         x = event.pos().x()-self._track_offset_x-self._grid_offset_x
-        self._selectedIndex = int(x / int(self._grid_w / self._grid_scale_w))
+        self._selectedIndex = int(x / int(self._grid_width / self._zoom_scale_x))
     #
-    def __set_track_update_(self, point):
-        radix = self._grid_w / 2
-        track_offset_x = self._tmp_track_offset_x
-        track_offset_x += point.x()
-        #
-        if self._limitEnabled is True:
-            track_offset_x = [0, track_offset_x][track_offset_x < 0]
-        # Track
-        if self._track_flag is True:
-            self._track_offset_x = int(track_offset_x/radix)*radix
-        #
-        self.update()
-    #
-    def _set_zoom_action_run_(self, delta):
-        radix = 2.5
-        if radix >= self._grid_scale_h:
-            self._grid_scale_h += [0, radix][delta > 0]
-        elif radix < self._grid_scale_h < self._grid_w:
-            self._grid_scale_h += [-radix, radix][delta > 0]
-        elif self._grid_scale_h >= self._grid_w:
-            self._grid_scale_h += [-radix, 0][delta > 0]
-        #
-        self.update()
+    # def _set_zoom_scale_action_run_(self, delta):
+    #     radix = 2.5
+    #     if radix >= self._grid_scale_y:
+    #         self._grid_scale_y += [0, radix][delta > 0]
+    #     elif radix < self._grid_scale_y < self._grid_width:
+    #         self._grid_scale_y += [-radix, radix][delta > 0]
+    #     elif self._grid_scale_y >= self._grid_width:
+    #         self._grid_scale_y += [-radix, 0][delta > 0]
+    #     #
+    #     self.update()
     #
     def __init__(self, *args, **kwargs):
         super(_QtHistogramChart, self).__init__(*args, **kwargs)
@@ -922,9 +920,20 @@ class _QtHistogramChart(
         #
         self.installEventFilter(self)
         #
-        self._set_build_()
+        self._set_grid_def_init_(self)
+        self._grid_axis_lock_x, self._grid_axis_lock_y = 1, 1
+        self._grid_offset_x, self._grid_offset_y = 20, 20
+        #
+        self._set_track_action_def_init_(self)
+        self._track_offset_direction_x, self._track_offset_direction_y = self._grid_dir_x, self._grid_dir_y
+        self._track_offset_minimum_x, self._track_offset_minimum_y = -10000, -10000
+        self._track_offset_maximum_x, self._track_offset_maximum_y = 0, 0
+        #
+        self._set_zoom_action_def_init_(self)
         #
         self._set_chart_def_init_()
+        #
+        self._set_build_()
 
     def _set_labels_(self, labels):
         self._xValueExplain, self._yValueExplain = labels
@@ -942,7 +951,7 @@ class _QtHistogramChart(
             elif event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
                     x = event.pos().x()-self._track_offset_x-self._grid_offset_x
-                    self._selectedIndex = int(x / int(self._grid_w / 2))
+                    self._selectedIndex = int(x / int(self._grid_width / 2))
                     #
                     self.update()
                     # Drag Select
@@ -951,11 +960,9 @@ class _QtHistogramChart(
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
                 elif event.button() == QtCore.Qt.MidButton:
-                    # Track
-                    self._track_start_pos = event.globalPos()
-                    self._track_flag = True
+                    self._set_tack_offset_action_start_(event)
                     # Zoom
-                    self._zoom_flag = False
+                    self._zoom_scale_flag = False
                 else:
                     event.ignore()
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
@@ -965,10 +972,9 @@ class _QtHistogramChart(
                     pass
                 elif event.button() == QtCore.Qt.MidButton:
                     # Track
-                    self._tmp_track_offset_x = self._track_offset_x
-                    self._track_flag = False
+                    self._set_track_offset_action_end_(event)
                     # Zoom
-                    self._zoom_flag = True
+                    self._zoom_scale_flag = True
                 else:
                     event.ignore()
             elif event.type() == QtCore.QEvent.MouseMove:
@@ -981,16 +987,14 @@ class _QtHistogramChart(
                     pass
                 elif event.buttons() == QtCore.Qt.MidButton:
                     # Track
-                    if self._track_flag is True:
-                        point = event.globalPos()-self._track_start_pos
-                        self.__set_track_update_(point)
+                    if self._track_offset_flag is True:
+                        self._set_track_offset_action_run_(event)
                 else:
                     event.ignore()
             #
             elif event.type() == QtCore.QEvent.Wheel:
-                if self._zoom_flag is True:
-                    delta = event.angleDelta().y()
-                    self._set_zoom_action_run_(delta)
+                if self._zoom_scale_flag is True:
+                    self._set_zoom_scale_action_run_(event)
         return False
     #
     def paintEvent(self, event):
@@ -1000,89 +1004,64 @@ class _QtHistogramChart(
         width = self.width()
         height = self.height()
         #
-        gridSize = self._grid_w
-        #
-        grid_offset_x = self._grid_offset_x
-        grid_offset_y = gridSize
-        #
-        track_offset_x, track_offset_y = self._track_offset_x, 0
-        #
-        value_scale_x, value_scale_y = 1, 1
+        value_scale_x, value_scale_y = self._zoom_scale_x, self._zoom_scale_y
         #
         painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        rect = QtCore.QRect(
+            x, y, width, height
+        )
         painter._set_grid_draw_(
-            width, height, (1, -1),
-            gridSize, (track_offset_x, track_offset_y), (grid_offset_x, grid_offset_y),
+            rect,
+            (self._grid_dir_x, self._grid_dir_y),
+            (self._grid_width, self._grid_height),
+            (self._track_offset_x, 0),
+            (self._grid_offset_x, self._grid_offset_y),
             self._grid_border_color
         )
         #
         if self._value_array:
             value_maximum = max(self._value_array)
-            value_scale_x, value_scale_y = self._grid_scale_w, int(float('1' + len(str(value_maximum)) * '0') / float(self._grid_scale_h))
+            value_scale_x, value_scale_y = 1.0, int(float('1' + len(str(value_maximum))*'0') / float(self._zoom_scale_y))
             #
             painter._set_histogram_draw_(
+                rect,
                 value_array=self._value_array,
                 value_scale=(value_scale_x, value_scale_y),
-                value_offset=(self._xValueOffset, self._yValueOffset),
+                value_offset=(self._grid_value_offset_x, self._grid_value_offset_y),
                 label=(self._xValueExplain, self._yValueExplain),
-                pos=(x, y),
-                size=(width, height),
-                mode=self._useMode,
-                grid_scale=(self._grid_scale_w, self._grid_scale_h),
-                grid_size=(gridSize, gridSize),
-                grid_offset=(self._grid_offset_x, gridSize),
-                track_offset=(self._track_offset_x, 0),
-                current_index=self._selectedIndex
+                grid_scale=(1.0, self._zoom_scale_y),
+                grid_size=(self._grid_width, self._grid_height),
+                grid_offset=(self._grid_offset_x, self._grid_offset_y),
+                translate=(self._track_offset_x, 0),
+                current_index=self._selectedIndex,
+                mode=self._grid_value_show_mode,
             )
         #
         painter._set_grid_axis_draw_(
-            width,
-            height,
-            (track_offset_x, track_offset_y),
-            (grid_offset_x-1, grid_offset_y-1),
-            self._axis_border_color
+            rect,
+            (self._grid_dir_x, self._grid_dir_y),
+            (self._track_offset_x, self._track_offset_y),
+            (self._grid_offset_x, self._grid_offset_y),
+            (self._grid_axis_lock_x, self._grid_axis_lock_y),
+            (self._grid_axis_border_color_x, self._grid_axis_border_color_y)
         )
         painter._set_grid_mark_draw_(
-            width,
-            height,
-            (1, -1),
-            gridSize, (track_offset_x, track_offset_y), (grid_offset_x, grid_offset_y),
-            (value_scale_x, value_scale_y), (self._xValueOffset, self._yValueOffset),
-            self._mark_border_color,
-            self._useMode
+            rect,
+            (self._grid_dir_x, self._grid_dir_y),
+            (self._grid_width, self._grid_height),
+            (self._track_offset_x, self._track_offset_y),
+            (self._grid_offset_x, self._grid_offset_y),
+            (value_scale_x, value_scale_y),
+            (self._grid_value_offset_x, self._grid_value_offset_y),
+            self._grid_mark_border_color,
+            self._grid_value_show_mode
         )
     #
     def _set_selected_at_(self, index):
         self._selectedIndex = index
     #
     def _set_build_(self):
-        self._grid_border_color = 71, 71, 71, 255
-        self._mark_border_color = 191, 191, 191, 255
-        self._axis_border_color = 191, 191, 191, 255
-        #
-        self._useMode = 1
-        #
-        self._zoom_flag = True
-        #
-        self._limitEnabled = True
-        self._track_flag = False
-        self._track_start_pos = QtCore.QPoint(0, 0)
-        self._tmp_track_offset_x = 0
-        self._track_offset_x = 0
-        #
-        self._move_flag = False
-        #
-        self._grid_w = 20
-        #
-        self._grid_scale_w = 2
-        self._grid_scale_h = 10
-        #
-        self._grid_offset_x = self._grid_w*2
-        #
         self._value_array = []
-        #
-        self._xValueOffset = 0
-        self._yValueOffset = 0
         #
         self._xValueExplain = 'X'
         self._yValueExplain = 'Y'
@@ -1092,7 +1071,7 @@ class _QtHistogramChart(
 
 class _QtSequenceChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtNameDef,
+    utl_gui_qt_abstract.AbsQtNameDef,
     utl_gui_qt_abstract._QtChartDef,
     utl_gui_qt_abstract._QtStatusDef,
     #

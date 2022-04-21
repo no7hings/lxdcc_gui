@@ -353,7 +353,7 @@ class AbsQtDropDef(object):
         self._widget.update()
 
 
-class _QtIconDef(object):
+class AbsQtIconDef(object):
     def _set_widget_update_(self):
         raise NotImplementedError()
 
@@ -370,7 +370,7 @@ class _QtIconDef(object):
         self._icon_frame_rect = QtCore.QRect()
         self._file_icon_rect = QtCore.QRect()
         self._color_icon_rect = QtCore.QRect()
-        self._name_icon_rect = QtCore.QRect()
+        self._icon_name_text_rect = QtCore.QRect()
         #
         self._icon_frame_size = 20, 20
         self._file_icon_size = 16, 16
@@ -416,8 +416,8 @@ class _QtIconDef(object):
             x, y, w, h
         )
 
-    def _set_icon_name_rect_(self, x, y, w, h):
-        self._name_icon_rect.setRect(
+    def _set_icon_name_text_rect_(self, x, y, w, h):
+        self._icon_name_text_rect.setRect(
             x, y, w, h
         )
 
@@ -589,7 +589,7 @@ class _QtTypeDef(object):
         )
 
 
-class _QtNameDef(object):
+class AbsQtNameDef(object):
     def _set_name_def_init_(self):
         self._name_enable = False
         self._name_text = None
@@ -1045,14 +1045,13 @@ class _QtChartDef(object):
         self.setMinimumHeight(h)
 
 
-# item
-class _QtItemDef(object):
+class AbsQtHoverActionDef(object):
     def _set_widget_update_(self):
         raise NotImplementedError()
 
-    def _set_item_def_init_(self):
+    def _set_hover_action_def_init_(self):
         self._item_is_enable = True
-        self._item_is_hovered = False
+        self._is_hovered = False
 
     def _set_item_enable_(self, boolean):
         self._item_is_enable = boolean
@@ -1060,18 +1059,18 @@ class _QtItemDef(object):
     def _get_item_is_enable_(self):
         return self._item_is_enable
 
-    def _set_item_hovered_(self, boolean):
-        self._item_is_hovered = boolean
+    def _set_hovered_(self, boolean):
+        self._is_hovered = boolean
         self._set_widget_update_()
 
-    def _get_item_is_hovered_(self):
-        return self._item_is_hovered
+    def _get_is_hovered_(self):
+        return self._is_hovered
 
-    def _set_item_hover_event_filter_(self, event):
+    def _set_hover_action_execute_(self, event):
         if event.type() == QtCore.QEvent.Enter:
-            self._set_item_hovered_(True)
+            self._set_hovered_(True)
         elif event.type() == QtCore.QEvent.Leave:
-            self._set_item_hovered_(False)
+            self._set_hovered_(False)
 
 
 class AbsQtActionDef(object):
@@ -1182,7 +1181,7 @@ class AbsQtActionDef(object):
         return 0
 
 
-class _QtItemPressActionDef(object):
+class AbsQtPressActionDef(object):
     press_clicked = qt_signal()
     press_db_clicked = qt_signal()
     press_toggled = qt_signal(bool)
@@ -1197,7 +1196,7 @@ class _QtItemPressActionDef(object):
     def _get_item_is_enable_(self):
         raise NotImplementedError()
     #
-    def _set_item_press_action_def_init_(self):
+    def _set_press_action_def_init_(self):
         self._item_is_press_enable = True
         self._item_is_pressed = False
         #
@@ -2529,3 +2528,117 @@ class _QtArrayValueEntryDef(object):
     def _set_item_entry_changed_connect_to_(self, fnc):
         for i in self._value_entry_widgets:
             i.entry_changed.connect(fnc)
+
+
+class AbsQtGridDef(object):
+    def _set_grid_def_init_(self, widget):
+        self._widget = widget
+        #
+        self._grid_border_color = 71, 71, 71, 255
+        self._grid_mark_border_color = 191, 191, 191, 255
+        self._grid_axis_border_color_x, self._grid_axis_border_color_y = (255, 0, 63, 255), (63, 255, 127, 255)
+        #
+        self._grid_value_show_mode = 1
+        #
+        self._grid_width, self._grid_height = 20, 20
+        #
+        self._grid_offset_x, self._grid_offset_y = 0, 0
+        self._grid_scale_x, self._grid_scale_y = 1, 1
+        #
+        self._grid_value_offset_x, self._grid_value_offset_y = 0, 0
+
+        self._grid_dir_x, self._grid_dir_y = 1, -1
+
+        self._grid_axis_lock_x, self._grid_axis_lock_y = 0, 0
+
+    def _set_widget_update_(self):
+        raise NotImplementedError()
+
+
+class AbsQtTrackActionDef(object):
+    def _set_track_action_def_init_(self, widget):
+        self._widget = widget
+        #
+        self._track_offset_flag = False
+        #
+        self._track_offset_start_point = QtCore.QPoint(0, 0)
+        #
+        self._tmp_track_offset_x, self._tmp_track_offset_y = 0, 0
+        self._track_offset_x, self._track_offset_y = 0, 0
+        #
+        self._track_offset_minimum_x, self._track_offset_minimum_y = -1000, -1000
+        self._track_offset_maximum_x, self._track_offset_maximum_y = 1000, 1000
+        #
+        self._track_limit_x, self._track_limit_x = 0, 0
+        self._track_offset_direction_x, self._track_offset_direction_y = 1, 1
+        #
+        self._track_offset_radix_x, self._track_offset_radix_y = 2, 2
+
+    def _set_widget_update_(self):
+        self._widget.update()
+
+    def _set_tack_offset_action_start_(self, event):
+        self._track_offset_flag = True
+        self._track_offset_start_point = event.globalPos()
+
+    def _set_track_offset_action_run_(self, event):
+        track_point = event.globalPos() - self._track_offset_start_point
+        track_offset_x, track_offset_y = self._tmp_track_offset_x, self._tmp_track_offset_y
+        track_d_offset_x, track_d_offset_y = track_point.x(), track_point.y()
+        #
+        self._track_offset_x = bsc_core.ValueMtd.set_offset_range_to(
+            value=track_offset_x,
+            d_value=track_d_offset_x,
+            radix=self._track_offset_radix_x,
+            value_range=(self._track_offset_minimum_x, self._track_offset_maximum_x),
+            direction=self._track_offset_direction_x
+        )
+        #
+        self._track_offset_y = bsc_core.ValueMtd.set_offset_range_to(
+            value=track_offset_y,
+            d_value=track_d_offset_y,
+            radix=self._track_offset_radix_y,
+            value_range=(self._track_offset_minimum_y, self._track_offset_maximum_y),
+            direction=self._track_offset_direction_y
+        )
+        self._set_widget_update_()
+
+    def _set_track_offset_action_end_(self, event):
+        self._tmp_track_offset_x, self._tmp_track_offset_y = self._track_offset_x, self._track_offset_y
+        self._track_offset_flag = False
+
+
+class AbsQtZoomActionDef(object):
+    def _set_zoom_action_def_init_(self, widget):
+        self._widget = widget
+        #
+        self._zoom_scale_flag = True
+        #
+        self._zoom_scale_x, self._zoom_scale_y = 1.0, 1.0
+        self._zoom_scale_minimum_x, self._zoom_scale_minimum_y = 0.1, 0.1
+        self._zoom_scale_maximum_x, self._zoom_scale_maximum_y = 100.0, 100.0
+
+        self._zoom_scale_radix_x, self._zoom_scale_radix_y = 5.0, 5.0
+
+    def _set_widget_update_(self):
+        self._widget.update()
+
+    def _set_zoom_scale_action_run_(self, event):
+        delta = event.angleDelta().y()
+        self._zoom_scale_x = bsc_core.ValueMtd.step_to(
+            value=self._zoom_scale_x,
+            delta=delta,
+            step=self._zoom_scale_radix_x,
+            value_range=(self._zoom_scale_minimum_x, self._zoom_scale_maximum_x),
+            direction=1
+        )
+
+        self._zoom_scale_y = bsc_core.ValueMtd.step_to(
+            value=self._zoom_scale_y,
+            delta=delta,
+            step=self._zoom_scale_radix_y,
+            value_range=(self._zoom_scale_minimum_y, self._zoom_scale_maximum_y),
+            direction=1
+        )
+        #
+        self._set_widget_update_()

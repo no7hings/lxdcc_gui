@@ -990,9 +990,9 @@ class _QtGuideBar(
     utl_gui_qt_abstract.AbsQtMenuDef,
     utl_gui_qt_abstract.AbsQtActionDef,
     #
-    utl_gui_qt_abstract._QtItemDef,
+    utl_gui_qt_abstract.AbsQtHoverActionDef,
     #
-    utl_gui_qt_abstract._QtItemPressActionDef,
+    utl_gui_qt_abstract.AbsQtPressActionDef,
     utl_gui_qt_abstract.AbsQtItemEntryActionDef,
     #
     utl_gui_qt_abstract._QtViewGuideActionDef,
@@ -1020,9 +1020,9 @@ class _QtGuideBar(
         #
         self._set_menu_def_init_()
         #
-        self._set_item_def_init_()
+        self._set_hover_action_def_init_()
         self._set_action_def_init_(self)
-        self._set_item_press_action_def_init_()
+        self._set_press_action_def_init_()
         self._set_item_entry_action_def_init_()
         #
         self._set_view_guide_action_def_init_()
@@ -1035,10 +1035,10 @@ class _QtGuideBar(
                 self._set_view_item_geometries_update_()
                 self.update()
             elif event.type() == QtCore.QEvent.Enter:
-                self._item_is_hovered = True
+                self._is_hovered = True
                 self.update()
             elif event.type() == QtCore.QEvent.Leave:
-                self._item_is_hovered = False
+                self._is_hovered = False
                 self._set_choose_current_clear_()
                 self._set_view_guide_current_clear_()
                 self.update()
@@ -1078,7 +1078,7 @@ class _QtGuideBar(
                 #
                 self._set_action_flag_clear_()
                 #
-                self._item_is_hovered = False
+                self._is_hovered = False
                 self.update()
             #
             elif event.type() == QtCore.QEvent.FocusIn:
@@ -1103,7 +1103,7 @@ class _QtGuideBar(
                     self._entry_frame_rect,
                     text=self._get_view_choose_item_at_(-1)._path_text,
                     text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
-                    color=QtFontColor.Basic,
+                    font_color=QtFontColor.Basic,
                     font=get_font(size=10)
                 )
         else:
@@ -1153,7 +1153,7 @@ class _QtGuideBar(
                     i_item._type_rect,
                     text=i_type_text,
                     text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
-                    color=bsc_core.TextOpt(i_type_text).to_rgb(),
+                    font_color=bsc_core.TextOpt(i_type_text).to_rgb(),
                     font=get_font(size=10, italic=True),
                     offset=name_offset
                 )

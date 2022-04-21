@@ -10,3 +10,6 @@ from ._utl_gui_prx_wgt_view import *
 from ._utl_gui_prx_wgt_window import *
 
 from ._utl_gui_prx_wgt_chart import *
+
+from ._utl_gui_prx_wgt_node_graph import *
+

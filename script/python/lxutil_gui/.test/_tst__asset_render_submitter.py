@@ -11,8 +11,8 @@ bsc_core.EnvironMtd.set_td_enable(True)
 # hook_option = 'file={}'.format('/l/prod/cgm/work/assets/chr/nn_14y_test/srf/surfacing/katana/nn_14y_test.srf.surfacing.v045.td_render.katana')
 # hook_option = 'file={}'.format('/l/prod/cgm/work/assets/chr/nn_4y_test/srf/surfacing/katana/nn_4y_test.srf.surfacing.v052.td_test.katana')
 # hook_option = 'file={}'.format('/l/prod/cgm/work/assets/chr/nn_4y_test/mod/modeling/maya/scenes/nn_4y_test.mod.modeling.v053.ma')
-hook_option = 'file={}'.format('/l/prod/cgm/work/assets/chr/nn_4y_test/mod/modeling/maya/scenes/nn_4y_test.mod.modeling.v066.td.ma')
-
+# hook_option = 'file={}'.format('/l/prod/cgm/work/assets/chr/nn_4y_test/mod/modeling/maya/scenes/nn_4y_test.mod.modeling.v066.td.ma')
+hook_option = 'file={}'.format('/l/prod/cgm/work/assets/chr/nn_14y/mod/modeling/maya/scenes/nn_14y.mod.modeling.v013.ma')
 utl_gui_qt_core.set_window_show_standalone(
     utl_pnl_widgets.AssetRenderSubmitter, hook_option=hook_option
 )
