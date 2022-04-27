@@ -1310,6 +1310,7 @@ class AbsPrxTypePort(AbsPrxPortDef):
         self.set_changed_connect_to(
             self.set_changed_update
         )
+
     def set_node_widget(self, node_widget):
         self._prx_port_enable.set_parent_widget(
             node_widget
@@ -2068,10 +2069,10 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
     def get_as_kwargs(self):
         dic = {}
         ports = self._port_stack.get_objects()
-        for port in ports:
-            key = port.get_path()
-            if port.get_type() not in ['group']:
-                value = port.get()
+        for i_port in ports:
+            key = i_port.get_path()
+            if i_port.get_type() not in ['group']:
+                value = i_port.get()
                 dic[key] = value
         return dic
 

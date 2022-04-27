@@ -219,6 +219,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         #
         self._prx_obj_guide_bar.set_item_clicked_connect_to(self._set_rsv_obj_select_)
         # self._prx_obj_guide_bar.set_item_changed_connect_to(self._set_rsv_obj_select_)
+
     @utl_gui_qt_core.set_prx_window_waiting
     def _set_rsv_obj_viewer_refresh_(self):
         self._resolver = rsv_commands.get_resolver()
@@ -292,6 +293,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 rsv_entity_gui, lambda *args, **kwargs: self._set_rsv_task_guis_add_(rsv_entity)
             )
         return show_threads
+
     @utl_gui_qt_core.set_prx_window_waiting
     def _set_rsv_task_guis_add_(self, rsv_obj):
         rsv_obj_item_prx = rsv_obj.get_obj_gui()

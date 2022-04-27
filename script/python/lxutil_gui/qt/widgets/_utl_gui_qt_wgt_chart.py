@@ -14,10 +14,10 @@ class _QtColorChooseChart(
     utl_gui_qt_abstract._QtChartDef,
 ):
     color_choose_changed = qt_signal()
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
-    def _set_chart_data_update_(self):
+    def _set_chart_update_data_(self):
         def set_branch_draw_fnc_(x, y, radius_, color_h_offset_, color_h_multiply_):
             _i_pos = x, y
             if not _i_pos in poses:
@@ -40,7 +40,7 @@ class _QtColorChooseChart(
                     d1 = 360.0 / side_count
                     d2 = 360.0 / side_count / 2
                     of = -d2
-                    a2 = a1 + of - utl_gui_core.ChartMethod.FNC_FLOOR(a1 / d1) * d1
+                    a2 = a1+of - utl_gui_core.ChartMethod.FNC_FLOOR(a1 / d1) * d1
                     _l = [
                         utl_gui_core.ChartMethod.FNC_SIN(utl_gui_core.ChartMethod.FNC_ANGLE(d1)) / utl_gui_core.ChartMethod.FNC_COS(utl_gui_core.ChartMethod.FNC_ANGLE(a2)) * r1,
                         r1
@@ -89,8 +89,8 @@ class _QtColorChooseChart(
                 xSubR = x_offset * i_x * 2 - x_offset * (i_y % 2)
                 ySubR = i_y * subRadius * 1.5
                 #
-                xSubPos = xSubR + pos_x
-                _ySubPos = ySubR + pos_y
+                xSubPos = xSubR+pos_x
+                _ySubPos = ySubR+pos_y
                 #
                 _xSubPos = width / 2 - xSubR
                 ySubPos = height / 2 - ySubR
@@ -270,8 +270,8 @@ class _QtColorChooseChart(
                 self._move_flag = False
                 self._circle_flag = False
                 self._track_offset_flag = False
-                self._set_chart_data_update_()
-                self._set_widget_draw_update_()
+                self._set_chart_update_data_()
+                self._set_wgt_update_draw_()
         return False
 
     def _set_choose_color_update_(self):
@@ -287,11 +287,11 @@ class _QtColorChooseChart(
             r, g, b, a = cur_color
             self._color_rgba_255 = r, g, b, a
             self._color_hsv = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            self._color_css = hex(r)[2:].zfill(2) + hex(g)[2:].zfill(2) + hex(b)[2:].zfill(2)
+            self._color_css = hex(r)[2:].zfill(2)+hex(g)[2:].zfill(2)+hex(b)[2:].zfill(2)
             #
             self.color_choose_changed.emit()
             #
-            self._set_widget_draw_update_()
+            self._set_wgt_update_draw_()
     #
     def _set_press_click_action_run_(self, event):
         self._color_point = event.pos()
@@ -312,8 +312,8 @@ class _QtColorChooseChart(
         )
         if pre_count != cur_count:
             self._count = cur_count
-            self._set_chart_data_update_()
-            self._set_widget_draw_update_()
+            self._set_chart_update_data_()
+            self._set_wgt_update_draw_()
             self._set_choose_color_update_()
     #
     def _set_track_circle_action_run_(self, event):
@@ -321,14 +321,14 @@ class _QtColorChooseChart(
         #
         angle_ = self._get_angle_at_circle_(point)
         #
-        angle = self._circle_angle_temp + self._circle_angle_start
+        angle = self._circle_angle_temp+self._circle_angle_start
         angle -= angle_
         #
         if self._circle_flag is True:
             self._color_h_offset = angle
         #
-        self._set_chart_data_update_()
-        self._set_widget_draw_update_()
+        self._set_chart_update_data_()
+        self._set_wgt_update_draw_()
         self._set_choose_color_update_()
     #
     def _set_track_offset_action_run_(self, point):
@@ -429,10 +429,8 @@ class _QtWaitingChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtChartDef,
 ):
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
-        #
-        ApplicationOpt().set_process_run_0()
 
     def __init__(self, *args, **kwargs):
         super(_QtWaitingChart, self).__init__(*args, **kwargs)
@@ -453,22 +451,23 @@ class _QtWaitingChart(
         self._i_w, self._i_h = 10, 10
         self._basic_rect = QtCore.QRect()
         self._positions = []
+        self._timestamp = 0
 
         self._timer = QtCore.QTimer(self)
-
+        self._timer.setInterval(0)
         self._timer.timeout.connect(
-            self._set_widget_draw_update_
+            self._set_waiting_update_
         )
 
     def _set_waiting_start_(self):
-        self._timer.start(10)
+        self._timer.start(0)
         ApplicationOpt().set_process_run_0()
 
     def _set_waiting_stop_(self):
         self._timer.stop()
         ApplicationOpt().set_process_run_0()
 
-    def _set_chart_data_update_(self):
+    def _set_chart_update_data_(self):
         x, y = 0, 0
         w, h = self.width(), self.height()
         #
@@ -481,20 +480,25 @@ class _QtWaitingChart(
         self._positions = []
         for i in range(self._c):
             i_angle = 360.0/self._c*i
-            i_x, i_y = utl_gui_core.Ellipse2dMtd.get_position_at_angle(
+            i_x, i_y = utl_gui_core.Ellipse2dMtd.get_coord_at_angle(
                 start=start, radius=radius, angle=i_angle
             )
             self._positions.append(
                 (i_x, i_y)
             )
 
-        self._set_widget_draw_update_()
+        self._set_wgt_update_draw_()
+
+    def _set_waiting_update_(self):
+        self._timestamp = int(bsc_core.SystemMtd.get_timestamp() * 5)
+        self._set_wgt_update_draw_()
+        ApplicationOpt().set_process_run_0()
 
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Resize:
-                self._set_chart_data_update_()
+                self._set_chart_update_data_()
                 event.accept()
         return False
 
@@ -508,29 +512,36 @@ class _QtWaitingChart(
         painter.drawRect(
             self._basic_rect
         )
-
-        timestamp = int(bsc_core.SystemMtd.get_timestamp()*5)
+        c = self._c
+        timestamp = self._timestamp
         for seq, i in enumerate(self._positions):
             i_x, i_y = i
 
-            cur_index = self._c - timestamp % (self._c+1)
-            # print cur_index
-            if seq == cur_index:
-                i_h, i_s, i_v = 0, 0.5, 1.0
-                i_r, i_g, i_b = bsc_core.ColorMtd.hsv2rgb(i_h, i_s, i_v)
-                i_w, i_h = 12, 12
-            else:
-                i_a = abs(cur_index-seq) * (360 / self._c)
-                i_h, i_s, i_v = i_a, 0.5, 1.0
-                i_r, i_g, i_b = bsc_core.ColorMtd.hsv2rgb(i_h, i_s, i_v)
-                i_w, i_h = 8, 8
+            cur_index = self._c - timestamp % (c+1)
+            i_c_h = abs(cur_index-seq) * (360 / c)
+            i_h, i_s, i_v = i_c_h, 0.5, 1.0
+            i_c_r, i_c_g, i_c_b = bsc_core.ColorMtd.hsv2rgb(i_h, i_s, i_v)
+            i_r = 12
             #
             painter._set_border_color_(0, 0, 0, 0)
-            painter._set_background_color_(i_r, i_g, i_b, 255)
+            painter._set_background_color_(i_c_r, i_c_g, i_c_b, 255)
             #
-            painter.drawEllipse(
-                i_x-i_w/2, i_y-i_h/2, i_w, i_h
-            )
+            if seq == cur_index:
+                painter.drawEllipse(
+                    i_x-i_r/2, i_y-i_r/2, i_r, i_r
+                )
+            else:
+                i_a = 360.0/c*seq
+                i_coords = [
+                    utl_gui_core.Ellipse2dMtd.get_coord_at_angle_(center=(i_x, i_y), radius=i_r, angle=-90+i_a),
+                    utl_gui_core.Ellipse2dMtd.get_coord_at_angle_(center=(i_x, i_y), radius=i_r, angle=-210+i_a),
+                    utl_gui_core.Ellipse2dMtd.get_coord_at_angle_(center=(i_x, i_y), radius=i_r, angle=-330+i_a),
+                    utl_gui_core.Ellipse2dMtd.get_coord_at_angle_(center=(i_x, i_y), radius=i_r, angle=-90+i_a)
+                ]
+                painter._set_path_draw_by_coords_(
+                    i_coords
+                )
+
         # painter.drawEllipse(self._basic_rect)
 
 
@@ -538,10 +549,10 @@ class _QtSectorChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtChartDef
 ):
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
-    def _set_chart_data_update_(self):
+    def _set_chart_update_data_(self):
         x, y = 0, 0
         # noinspection PyUnresolvedReferences
         w, h = self.width(), self.height()
@@ -573,7 +584,7 @@ class _QtSectorChart(
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Resize:
-                self._set_chart_data_update_()
+                self._set_chart_update_data_()
                 self.update()
             elif event.type() == QtCore.QEvent.Enter:
                 pass
@@ -602,10 +613,10 @@ class _QtRadarChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtChartDef
 ):
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
-    def _set_chart_data_update_(self):
+    def _set_chart_update_data_(self):
         x, y = 0, 0
         # noinspection PyUnresolvedReferences
         w, h = self.width(), self.height()
@@ -647,7 +658,7 @@ class _QtRadarChart(
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Resize:
-                self._set_chart_data_update_()
+                self._set_chart_update_data_()
                 self.update()
             elif event.type() == QtCore.QEvent.Enter:
                 pass
@@ -716,10 +727,10 @@ class _QtPieChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtChartDef
 ):
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
-    def _set_chart_data_update_(self):
+    def _set_chart_update_data_(self):
         x, y = 0, 0
         # noinspection PyUnresolvedReferences
         w, h = self.width(), self.height()
@@ -746,7 +757,7 @@ class _QtPieChart(
                         self._current_name_text = i_name
                         self._current_percent = i_percent
                         i_path.translate(x, y)
-                        i_shadow_path.translate(x + offset_x, y + offset_y)
+                        i_shadow_path.translate(x+offset_x, y+offset_y)
                     #
                     i_enable = True
                 elif i_path.contains(event.pos()) is False:
@@ -799,7 +810,7 @@ class _QtPieChart(
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Resize:
-                self._set_chart_data_update_()
+                self._set_chart_update_data_()
                 self.update()
             elif event.type() == QtCore.QEvent.Enter:
                 pass
@@ -868,10 +879,10 @@ class _QtHistogramChart(
     #
     utl_gui_qt_abstract._QtChartDef,
 ):
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
-    def _set_chart_data_update_(self):
+    def _set_chart_update_data_(self):
         x, y = 0, 0
         # noinspection PyUnresolvedReferences
         w, h = self.width(), self.height()
@@ -890,17 +901,6 @@ class _QtHistogramChart(
     def __set_selection_update_(self, event):
         x = event.pos().x()-self._track_offset_x-self._grid_offset_x
         self._selectedIndex = int(x / int(self._grid_width / self._zoom_scale_x))
-    #
-    # def _set_zoom_scale_action_run_(self, delta):
-    #     radix = 2.5
-    #     if radix >= self._grid_scale_y:
-    #         self._grid_scale_y += [0, radix][delta > 0]
-    #     elif radix < self._grid_scale_y < self._grid_width:
-    #         self._grid_scale_y += [-radix, radix][delta > 0]
-    #     elif self._grid_scale_y >= self._grid_width:
-    #         self._grid_scale_y += [-radix, 0][delta > 0]
-    #     #
-    #     self.update()
     #
     def __init__(self, *args, **kwargs):
         super(_QtHistogramChart, self).__init__(*args, **kwargs)
@@ -922,6 +922,7 @@ class _QtHistogramChart(
         #
         self._set_grid_def_init_(self)
         self._grid_axis_lock_x, self._grid_axis_lock_y = 1, 1
+        self._grid_dir_x, self._grid_dir_y = 1, -1
         self._grid_offset_x, self._grid_offset_y = 20, 20
         #
         self._set_track_action_def_init_(self)
@@ -942,7 +943,7 @@ class _QtHistogramChart(
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Resize:
-                self._set_chart_data_update_()
+                self._set_chart_update_data_()
                 self.update()
             elif event.type() == QtCore.QEvent.Enter:
                 pass
@@ -1012,16 +1013,17 @@ class _QtHistogramChart(
         )
         painter._set_grid_draw_(
             rect,
-            (self._grid_dir_x, self._grid_dir_y),
-            (self._grid_width, self._grid_height),
-            (self._track_offset_x, 0),
-            (self._grid_offset_x, self._grid_offset_y),
-            self._grid_border_color
+            axis_dir=(self._grid_dir_x, self._grid_dir_y),
+            grid_size=(self._grid_width, self._grid_height),
+            grid_scale=(1.0, self._zoom_scale_y),
+            translate=(self._track_offset_x, 0),
+            grid_offset=(self._grid_offset_x, self._grid_offset_y),
+            border_color=self._grid_border_color
         )
         #
         if self._value_array:
             value_maximum = max(self._value_array)
-            value_scale_x, value_scale_y = 1.0, int(float('1' + len(str(value_maximum))*'0') / float(self._zoom_scale_y))
+            value_scale_x, value_scale_y = 1.0, int(float('1'+len(str(value_maximum))*'0') / float(self._zoom_scale_y))
             #
             painter._set_histogram_draw_(
                 rect,
@@ -1040,7 +1042,7 @@ class _QtHistogramChart(
         painter._set_grid_axis_draw_(
             rect,
             (self._grid_dir_x, self._grid_dir_y),
-            (self._track_offset_x, self._track_offset_y),
+            (self._track_offset_x, 0),
             (self._grid_offset_x, self._grid_offset_y),
             (self._grid_axis_lock_x, self._grid_axis_lock_y),
             (self._grid_axis_border_color_x, self._grid_axis_border_color_y)
@@ -1049,7 +1051,7 @@ class _QtHistogramChart(
             rect,
             (self._grid_dir_x, self._grid_dir_y),
             (self._grid_width, self._grid_height),
-            (self._track_offset_x, self._track_offset_y),
+            (self._track_offset_x, 0),
             (self._grid_offset_x, self._grid_offset_y),
             (value_scale_x, value_scale_y),
             (self._grid_value_offset_x, self._grid_value_offset_y),
@@ -1078,7 +1080,7 @@ class _QtSequenceChart(
     utl_gui_qt_abstract.AbsQtMenuDef,
 ):
     QT_MENU_CLASS = _utl_gui_qt_wgt_utility.QtMenu
-    def _set_chart_data_update_(self):
+    def _set_chart_update_data_(self):
         data = self._chart_data
         if data is not None:
             index_array, index_range, name_text = data
@@ -1121,7 +1123,7 @@ class _QtSequenceChart(
             #
             self.update()
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def __init__(self, *args, **kwargs):
@@ -1154,7 +1156,7 @@ class _QtSequenceChart(
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Resize:
-                # self._set_chart_data_update_()
+                # self._set_chart_update_data_()
                 self.update()
             elif event.type() == QtCore.QEvent.Enter:
                 self._hover_flag = True

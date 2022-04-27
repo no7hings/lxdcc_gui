@@ -8,6 +8,8 @@ import cgitb
 #
 import math
 #
+import threading
+
 import types
 #
 from lxbasic import bsc_core
@@ -239,7 +241,7 @@ def set_shadow(qt_widget, radius):
     shadow = QtWidgets.QGraphicsDropShadowEffect()
     shadow.setBlurRadius(radius)
     shadow.setColor(QtBackgroundColor.Black)
-    shadow.setOffset(0, 2)
+    shadow.setOffset(2, 2)
     qt_widget.setGraphicsEffect(shadow)
 
 
@@ -270,10 +272,10 @@ def set_prx_window_waiting(method):
     def sub_method(*args, **kwargs):
         prx_window = args[0]
         window = args[0].widget
-        window.setCursor(QtCore.Qt.BusyCursor)
+        # window.setCursor(QtCore.Qt.BusyCursor)
         prx_window.set_waiting_start()
         _method = method(*args, **kwargs)
-        window.unsetCursor()
+        # window.unsetCursor()
         prx_window.set_waiting_stop()
         return _method
 
@@ -1145,13 +1147,31 @@ class QtShowThread(QtCore.QThread):
 
 
 class QtPrintThread(QtCore.QThread):
-    printed = qt_signal(str)
-
+    added = qt_signal(str)
+    overed = qt_signal(str)
     def __init__(self, *args, **kwargs):
         super(QtPrintThread, self).__init__(*args, **kwargs)
 
     def run(self):
         pass
+
+
+class QtMethodThread(QtCore.QThread):
+    stated = qt_signal()
+    running = qt_signal()
+    completed = qt_signal()
+    def __init__(self, *args, **kwargs):
+        super(QtMethodThread, self).__init__(*args, **kwargs)
+        self._methods = []
+
+    def set_method_add(self, method):
+        self._methods.append(method)
+
+    def run(self):
+        self.stated.emit()
+        for i in self._methods:
+            i()
+        self.completed.emit()
 
 
 class QtHBoxLayout(QtWidgets.QHBoxLayout):
@@ -1776,14 +1796,18 @@ class ApplicationOpt(object):
     def __init__(self, app=None):
         if app is None:
             self._instance = QtWidgets.QApplication.instance()
+        else:
+            self._instance = None
 
     def set_process_run_0(self):
-        self._instance.processEvents(
-            QtCore.QEventLoop.ExcludeUserInputEvents
-        )
+        if self._instance:
+            self._instance.processEvents(
+                QtCore.QEventLoop.ExcludeUserInputEvents
+            )
 
     def set_process_run_1(self):
-        self._instance.processEvents()
+        if self._instance:
+            self._instance.processEvents()
 
 
 def set_gui_proxy_set_print(gui_proxy, text):
@@ -1796,8 +1820,10 @@ def set_qt_log_result_trace(text):
     windows = get_all_lx_windows()
     if windows:
         window = windows[0]
-        gui_proxy = window.gui_proxy
-        return set_gui_proxy_set_print(gui_proxy, text)
+        window_gui_proxy = window.gui_proxy
+        if hasattr(window_gui_proxy, 'PRX_TYPE'):
+            if window_gui_proxy.PRX_TYPE == 'tool_window':
+                return set_gui_proxy_set_print(window_gui_proxy, text)
 
 
 def set_qt_log_warning_trace(text):

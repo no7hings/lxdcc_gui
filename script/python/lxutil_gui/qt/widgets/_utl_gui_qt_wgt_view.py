@@ -1168,7 +1168,7 @@ class _QtGuideBar(
                     is_hovered=guide_is_hovered,
                 )
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def _set_view_current_index_update_(self, event):

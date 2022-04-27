@@ -1,7 +1,11 @@
 # coding:utf-8
+import functools
+
 from lxbasic import bsc_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
+from lxutil import utl_core
+
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_chart
 
 from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wdt_node
 
@@ -10,9 +14,13 @@ from lxutil_gui.qt import utl_gui_qt_core
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
 
-class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
+class AbsPrxDialogWindow(
+    utl_gui_prx_abstract.AbsPrxWindow,
+    utl_gui_prx_abstract.AbsPrxWaitingDef
+):
     QT_WIDGET_CLASS = None
     BUTTON_WIDTH = 120
+    WAITING_CHART_CLASS = _utl_gui_qt_wgt_chart._QtWaitingChart
     def __init__(self, *args, **kwargs):
         super(AbsPrxDialogWindow, self).__init__(*args, **kwargs)
         self.widget.setWindowFlags(
@@ -29,6 +37,7 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
 
     def _set_build_(self):
         self._set_central_layout_create_()
+        self._set_waiting_def_init_()
         #
         self._customize_widget = _utl_gui_qt_wgt_utility.QtWidget()
         self._central_layout.addWidget(self._customize_widget)
@@ -38,17 +47,17 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
         )
         self._customize_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._customize_widget)
         self._customize_layout.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignTop)
-        # tip
-        self._tip_group = _utl_gui_prx_wdt_utility.PrxExpandedGroup()
-        self._tip_group.set_visible(False)
-        self._tip_group.set_name('Tip(s)')
-        self._customize_layout.addWidget(self._tip_group.widget)
-        self._tip_text_browser = _utl_gui_prx_wdt_utility.PrxTextBrowser()
-        self._tip_group.set_widget_add(self._tip_text_browser)
         # option
         self._options_prx_node = _utl_gui_prx_wdt_node.PrxNode_('options')
         self._customize_layout.addWidget(self._options_prx_node.widget)
         self._options_prx_node.set_hide()
+        # tip
+        self._tip_group = _utl_gui_prx_wdt_utility.PrxExpandedGroup()
+        self._tip_group.set_visible(False)
+        self._tip_group.set_name('tips')
+        self._customize_layout.addWidget(self._tip_group.widget)
+        self._tip_text_browser = _utl_gui_prx_wdt_utility.PrxTextBrowser()
+        self._tip_group.set_widget_add(self._tip_text_browser)
         #
         self._button_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
         self._button_tool_bar.set_expanded(True)
@@ -90,23 +99,40 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
         #
         self._result = False
 
+    def _set_method_run_(self, methods):
+        def debug_run_fnc_(fnc_, *args, **kwargs):
+            # noinspection PyBroadException
+            try:
+                _method = fnc_(*args, **kwargs)
+            except:
+                from lxutil import utl_core
+                #
+                utl_core.ExceptionCatcher.set_create()
+                raise
+
+        thread = self.widget._set_thread_create_()
+
+        thread.stated.connect(self.set_waiting_start)
+        thread.completed.connect(self.set_waiting_stop)
+        thread.completed.connect(self.set_window_close_later)
+        for i in methods:
+            thread.set_method_add(
+                functools.partial(debug_run_fnc_, i)
+            )
+        #
+        thread.start()
+
     def set_no_run(self):
         self._result = False
-        for i in self._no_methods:
-            i()
-        self.set_window_close()
+        self._set_method_run_(self._no_methods)
 
     def set_yes_run(self):
         self._result = True
-        for i in self._yes_methods:
-            i()
-        self.set_window_close()
+        self._set_method_run_(self._yes_methods)
 
     def set_cancel_run(self):
         self._result = False
-        for i in self._cancel_methods:
-            i()
-        self.set_window_close()
+        self._set_method_run_(self._cancel_methods)
 
     def get_result(self):
         return self._result
@@ -153,10 +179,10 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._customize_layout.addWidget(qt_widget)
 
     def set_content(self, text):
-        self._tip_text_browser.set_content(text)
+        self.set_print_over_use_thread(text)
 
     def set_content_add(self, text):
-        self._tip_text_browser.set_add(text)
+        self.set_print_add_use_thread(text)
 
     def set_content_font_size(self, size):
         self._tip_text_browser.set_font_size(size)
@@ -165,18 +191,24 @@ class AbsPrxDialogWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._tip_group.set_visible(True)
         self._tip_group.set_expanded(True)
 
-    def set_option_group_enable(self):
+    def set_options_group_enable(self):
         self._options_prx_node.set_visible(True)
         self._options_prx_node.set_expanded(True)
 
-    def get_option_as_kwargs(self):
+    def get_options_as_kwargs(self):
         return self._options_prx_node.get_as_kwargs()
 
     def get_options_node(self):
         return self._options_prx_node
 
+    def set_options_create_by_configure(self, configure):
+        self._options_prx_node.set_ports_create_by_configure(configure)
+
     def set_print_add_use_thread(self, text):
         self._tip_text_browser.set_print_add_use_thread(text)
+
+    def set_print_over_use_thread(self, text):
+        self._tip_text_browser.set_print_over_use_thread(text)
 
 
 class PrxTipWindow(AbsPrxDialogWindow):
@@ -400,7 +432,7 @@ class PrxWaitWindow(utl_gui_prx_abstract.AbsPrxWindow):
         super(PrxWaitWindow, self).__init__(*args, **kwargs)
 
         self._t = utl_gui_qt_core.QtPrintThread()
-        self._t.printed.connect(self.set_content_add)
+        self._t.added.connect(self.set_content_add)
 
     def _set_build_(self):
         self._central_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)

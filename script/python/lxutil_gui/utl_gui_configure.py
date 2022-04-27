@@ -46,9 +46,14 @@ class ActionFlag(enum.IntEnum):
     RectSelectClick = 0x61
     RectSelectMove = 0x62
     #
-    NGGraphTranslateClick = 0x71
-    NGGraphTranslateMove = 0x72
-    NGNodeClick = 0x73
+    NGGraphTrackClick = 0x71
+    NGGraphTrackMove = 0x72
+    NGNodePressClick = 0x73
+    NGNodePressMove = 0x74
+    #
+    KeyAltPress = 0x81
+    KeyControlPress = 0x82
+    KeyShiftPress = 0x83
 
 
 class State(object):

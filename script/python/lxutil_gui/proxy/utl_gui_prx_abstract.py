@@ -1,6 +1,8 @@
 # coding:utf-8
 import fnmatch
 
+import functools
+
 from lxbasic import bsc_configure, bsc_core
 
 from lxutil_gui import utl_gui_configure
@@ -128,6 +130,58 @@ class AbsPrxViewDef(object):
         return [i.gui_proxy for i in self._get_selected_items_()]
 
 
+class AbsPrxWaitingDef(object):
+    WAITING_CHART_CLASS = None
+    def _set_waiting_def_init_(self):
+        self._waiting_char = self.WAITING_CHART_CLASS(self.widget)
+        self._waiting_char.hide()
+        self.widget._set_size_changed_connect_to_(self._set_waiting_update_)
+    @property
+    def widget(self):
+        raise NotImplementedError()
+
+    def set_waiting_start(self):
+        self.widget.setCursor(utl_gui_qt_core.QtCore.Qt.BusyCursor)
+        self._waiting_char.show()
+        utl_gui_qt_core.ApplicationOpt().set_process_run_0()
+        self._waiting_char._set_waiting_start_()
+
+    def set_waiting_stop(self):
+        self.widget.unsetCursor()
+        self._waiting_char.hide()
+        utl_gui_qt_core.ApplicationOpt().set_process_run_0()
+        self._waiting_char._set_waiting_stop_()
+
+    def _set_waiting_update_(self):
+        x, y = 0, 0
+        w, h = self.widget.width(), self.widget.height()
+        self._waiting_char.setGeometry(
+            x, y, w, h
+        )
+
+    def set_methods_run_use_thread(self, methods):
+        def debug_run_fnc_(fnc_, *args, **kwargs):
+            # noinspection PyBroadException
+            try:
+                _method = fnc_(*args, **kwargs)
+            except:
+                from lxutil import utl_core
+                #
+                utl_core.ExceptionCatcher.set_create()
+                raise
+
+        thread = self.widget._set_thread_create_()
+
+        thread.stated.connect(self.set_waiting_start)
+        thread.completed.connect(self.set_waiting_stop)
+        for i in methods:
+            thread.set_method_add(
+                functools.partial(debug_run_fnc_, i)
+            )
+        #
+        thread.start()
+
+
 class AbsPrxWindow(AbsPrx):
     def __init__(self, *args, **kwargs):
         super(AbsPrxWindow, self).__init__(*args, **kwargs)
@@ -186,6 +240,9 @@ class AbsPrxWindow(AbsPrx):
         #
         self._qt_widget.close()
         self._qt_widget.deleteLater()
+
+    def set_window_close_later(self, time=1000):
+        self._qt_widget._set_close_later_(time)
 
     def set_window_title(self, *args):
         text = args[0]

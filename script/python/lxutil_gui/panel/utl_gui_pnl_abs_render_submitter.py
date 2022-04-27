@@ -370,7 +370,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             'td.publish_camera', self.set_camera_publish
         )
 
-    def __set_rsv_unit_gui_show_deferred_(self, prx_item, variants):
+    def _set_rsv_unit_prx_item_show_deferred_(self, prx_item, variants):
         hook_options = []
         pixmaps = []
         #
@@ -418,17 +418,23 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                             option_hook_key='actions/movie-open',
                             file=movie_file_path,
                             gui_group_name='movie',
-                            gui_name='open movie'
                         )
                     ).to_string(),
                     bsc_core.KeywordArgumentsOpt(
                         dict(
                             option_hook_key='actions/file-directory-open',
                             file=movie_file_path,
-                            gui_group_name='movie',
+                            gui_group_name='directory',
                             gui_name='open movie directory'
                         )
-                    ).to_string()
+                    ).to_string(),
+                    bsc_core.KeywordArgumentsOpt(
+                        dict(
+                            option_hook_key='actions/movie-upload',
+                            file=movie_file_path,
+                            gui_group_name='upload',
+                        )
+                    ).to_string(),
                 ]
             )
             if image_sub_process_cmds is not None:
@@ -441,7 +447,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             prx_item.set_image(
                 utl_core.Icon._get_file_path_('@image_loading_failed@')
             )
-
+        #
         for i_rsv_unit in self._check_rsv_units:
             i_file_path = i_rsv_unit.get_result(version='latest')
             if i_file_path:
@@ -465,7 +471,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                         )
                     ).to_string()
                 )
-
+        #
         menu_content = ssn_commands.get_menu_content_by_hook_options(hook_options)
         prx_item.set_menu_content(menu_content)
 
@@ -482,7 +488,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
     def set_renderers_refresh(self):
         def set_thread_create_fnc_(prx_item_, variants_):
             prx_item_.set_show_method(
-                lambda *args, **kwargs: self.__set_rsv_unit_gui_show_deferred_(
+                lambda *args, **kwargs: self._set_rsv_unit_prx_item_show_deferred_(
                     prx_item_, variants_
                 )
             )

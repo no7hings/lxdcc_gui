@@ -40,7 +40,7 @@ class QtWidget(
         #
         self._set_status_def_init_()
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def paintEvent(self, event):
@@ -109,7 +109,7 @@ class _QtLine(
         self._frame_border_color = 95, 95, 95, 255
         self._frame_background_color = 0, 0, 0, 0
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def paintEvent(self, event):
@@ -222,7 +222,10 @@ class QtPainter(QtGui.QPainter):
 
     def _set_border_color_(self, *args):
         qt_color = Color._get_qt_color_(*args)
-        self.setPen(QtGui.QPen(qt_color))
+        pen = QtGui.QPen(qt_color)
+        pen.setCapStyle(QtCore.Qt.RoundCap)
+        pen.setJoinStyle(QtCore.Qt.RoundJoin)
+        self.setPen(pen)
 
     def _set_border_style_(self, style):
         pen = self.pen()
@@ -261,6 +264,11 @@ class QtPainter(QtGui.QPainter):
     def _set_border_width_(self, size):
         pen = self.pen()
         pen.setWidth(size)
+        self.setPen(pen)
+
+    def _set_border_join_(self, join):
+        pen = self.pen()
+        pen.setJoinStyle(join)
         self.setPen(pen)
 
     def _set_pixmap_draw_by_rect_(self, rect, pixmap, offset=0, enable=True):
@@ -437,25 +445,30 @@ class QtPainter(QtGui.QPainter):
         #
         self.device()
 
-    def _set_movie_play_button_draw_by_rect_(self, rect, scale=1.0, offset=0, is_hovered=False, is_selected=False, is_actioned=False):
-        rect_ = QtCore.QRect(
-            rect.x() + offset, rect.y() + offset,
-            rect.width() - offset, rect.height() - offset
-        )
+    def _set_movie_play_button_draw_by_rect_(self, rect, scale=1.0, offset=0, border_width=4, is_hovered=False, is_selected=False, is_actioned=False):
+        b_ = border_width / 2
+        if offset != 0:
+            offset_ = b_ + offset
+            rect_ = QtCore.QRect(
+                rect.x() + offset_, rect.y() + offset_,
+                rect.width() - offset_, rect.height() - offset_
+            )
+        else:
+            rect_ = rect
         #
         x, y = rect_.x(), rect_.y()
-        width = rect.width()
-        height = rect.height()
+        width = rect_.width()
+        height = rect_.height()
         #
         r_ = height*scale
         x_, y_ = (width - r_)/2 + x, (height - r_)/2 + y
         #
         ellipse_rect = QtCore.QRect(x_-4, y_-4, r_+8, r_+8)
         points = [
-            utl_gui_core.Ellipse2dMtd.get_position_at_angle(start=(x_, y_), radius=r_, angle=90),
-            utl_gui_core.Ellipse2dMtd.get_position_at_angle(start=(x_, y_), radius=r_, angle=210),
-            utl_gui_core.Ellipse2dMtd.get_position_at_angle(start=(x_, y_), radius=r_, angle=330),
-            utl_gui_core.Ellipse2dMtd.get_position_at_angle(start=(x_, y_), radius=r_, angle=90)
+            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x_, y_), radius=r_, angle=90),
+            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x_, y_), radius=r_, angle=210),
+            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x_, y_), radius=r_, angle=330),
+            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x_, y_), radius=r_, angle=90)
         ]
         #
         self._set_background_color_(QtBackgroundColor.Transparent)
@@ -463,12 +476,12 @@ class QtPainter(QtGui.QPainter):
         self._set_border_color_(border_color)
         self._set_border_color_alpha_(127)
         #
-        self._set_border_width_(4)
+        self._set_border_width_(border_width)
         self.setRenderHint(self.Antialiasing)
         self.drawEllipse(ellipse_rect)
-        self._set_path_draw_by_points_(points)
+        self._set_path_draw_by_coords_(points)
 
-    def _set_path_draw_by_points_(self, points):
+    def _set_path_draw_by_coords_(self, points):
         path = QtPainterPath()
         path._set_points_add_(points)
         self.drawPath(path)
@@ -527,11 +540,26 @@ class QtPainter(QtGui.QPainter):
         self._set_background_color_(background_color_)
         self._set_border_width_(border_width)
         #
-        self.drawRoundedRect(
-            frame_rect,
-            border_radius, border_radius,
-            QtCore.Qt.AbsoluteSize
-        )
+        b_ = border_width / 2
+        if border_radius > 0:
+            border_radius_ = b_+border_radius
+            self.setRenderHint(self.Antialiasing)
+            self.drawRoundedRect(
+                frame_rect,
+                border_radius_, border_radius_,
+                QtCore.Qt.AbsoluteSize
+            )
+        elif border_radius == -1:
+            border_radius = frame_rect.height()/2
+            border_radius_ = b_+border_radius
+            self.setRenderHint(self.Antialiasing)
+            self.drawRoundedRect(
+                frame_rect,
+                border_radius_, border_radius_,
+                QtCore.Qt.AbsoluteSize
+            )
+        else:
+            self.drawRect(frame_rect)
         #
         self._set_border_color_(text_color_)
         # self._set_border_width_(border_width)
@@ -542,6 +570,8 @@ class QtPainter(QtGui.QPainter):
             x+(w-f_s)/2, y+(h-f_s)/2,
             f_s, f_s
         )
+
+        f_s = max(f_s, 1)
         #
         self._set_font_(
             get_font(size=f_s, italic=True)
@@ -582,6 +612,15 @@ class QtPainter(QtGui.QPainter):
             rect_ = rect
         #
         if border_radius > 0:
+            border_radius_ = b_+border_radius
+            self.setRenderHint(self.Antialiasing)
+            self.drawRoundedRect(
+                rect_,
+                border_radius_, border_radius_,
+                QtCore.Qt.AbsoluteSize
+            )
+        elif border_radius == -1:
+            border_radius = rect_.height()/2
             border_radius_ = b_+border_radius
             self.setRenderHint(self.Antialiasing)
             self.drawRoundedRect(
@@ -934,13 +973,13 @@ class QtPainter(QtGui.QPainter):
             #
             grid_scale_x, grid_scale_y = grid_scale
             grid_offset_x, grid_offset_y = grid_offset
-            track_offset_x, track_offset_y = translate
+            translate_x, translate_y = translate
             value_scale_x, value_scale_y = value_scale
             #
-            grid_width, grid_height = grid_size
-            column_w = grid_width / grid_scale_x
+            grid_w, grid_h = grid_size
+            column_w = grid_w / grid_scale_x
             #
-            minimum_h = grid_width / grid_scale_y
+            minimum_h = grid_w / grid_scale_y
             #
             current_x, current_y = None, None
             for i_index, i_value in enumerate(value_array):
@@ -952,8 +991,8 @@ class QtPainter(QtGui.QPainter):
                 self._set_border_color_(i_r, i_g, i_b, 255)
                 #
                 i_value_percent = float(i_value) / float(value_scale_y)
-                i_pos_x = pos_x + column_w * i_index + grid_offset_x + track_offset_x + 1
-                i_pos_y = (height - minimum_h * i_value_percent * grid_scale_y - grid_offset_y + track_offset_y)
+                i_pos_x = pos_x + column_w * i_index + grid_offset_x + translate_x + 1
+                i_pos_y = (height - minimum_h * i_value_percent * grid_scale_y - grid_offset_y + translate_y)
                 # filter visible
                 if grid_offset_x <= i_pos_x <= width:
                     i_w, i_h = column_w - spacing, (minimum_h * i_value_percent) * grid_scale_y
@@ -996,24 +1035,23 @@ class QtPainter(QtGui.QPainter):
                     )
                 )
 
-    def _set_grid_draw_(self, rect, axis_dir, grid_size, translate, grid_offset, border_color):
-        def set_branch_draw_fnc_(lines, axis_index):
-            for seq, points in enumerate(lines):
-                value = seq - axis_index + 1
-                if value % 100 == 1:
-                    self._set_border_width_(2)
-                else:
-                    self._set_border_width_(1)
-                self.drawLine(*points)
+    def _set_grid_draw_(self, rect, axis_dir, grid_size, grid_scale, translate, grid_offset, border_color):
+        def set_branch_draw_fnc_(lines, axis_index, scale):
+            for seq, line_points in enumerate(lines):
+                # if (seq - axis_index)/scale % 10 == 0:
+                #     self._set_border_width_(2)
+                # else:
+                #     self._set_border_width_(1)
+                self.drawLine(*line_points)
         #
         def get_lines_h_fnc_():
             lis = []
-            for x in range(height / grid_width):
+            for i_y in range(height / grid_h):
                 pox_x_1, pox_x_2 = grid_offset_x, width
-                if axi_dir_y == -1:
-                    pos_y_1 = pos_y_2 = height - (grid_width*(x - index_y) + grid_offset_y + track_offset_y)
+                if axis_dir_y == -1:
+                    pos_y_1 = pos_y_2 = height-grid_h*(i_y-index_y)-translate_y+grid_offset_y
                 else:
-                    pos_y_1 = pos_y_2 = grid_width*(x - index_y) + grid_offset_y + track_offset_y
+                    pos_y_1 = pos_y_2 = grid_h*(i_y-index_y)+translate_y+grid_offset_y
                 #
                 lis.append(
                     (QtCore.QPointF(pox_x_1, pos_y_1), QtCore.QPointF(pox_x_2, pos_y_2))
@@ -1022,14 +1060,13 @@ class QtPainter(QtGui.QPainter):
         #
         def get_lines_v_fnc_():
             lis = []
-            for y in range(width / grid_width):
-                pox_x_1 = pox_x_2 = grid_width*(y - index_x) + grid_offset_x + track_offset_x
-                if axi_dir_y == -1:
-                    pos_y_1 = 0
-                    pos_y_2 = height - grid_offset_y
+            for i_x in range(width / grid_h):
+                if axis_dir_x == -1:
+                    pox_x_1 = pox_x_2 = width-grid_w*(i_x-index_x)-translate_x+grid_offset_x
                 else:
-                    pos_y_1 = height
-                    pos_y_2 = grid_offset_y
+                    pox_x_1 = pox_x_2 = grid_w*(i_x-index_x)+translate_x+grid_offset_x
+
+                pos_y_1, pos_y_2 = height, grid_offset_y
                 #
                 lis.append(
                     (QtCore.QPointF(pox_x_1, pos_y_1), QtCore.QPointF(pox_x_2, pos_y_2))
@@ -1037,105 +1074,123 @@ class QtPainter(QtGui.QPainter):
             return lis
         #
         width, height = rect.width(), rect.height()
-        grid_width, grid_height = grid_size
-        if grid_width > 4:
-            axi_dir_x, axi_dir_y = axis_dir
-            track_offset_x, track_offset_y = translate
-            grid_offset_x, grid_offset_y = grid_offset
-            index_x = track_offset_x / grid_width
-            index_y = track_offset_y / grid_width
-            #
-            lines_h, lines_v = get_lines_h_fnc_(), get_lines_v_fnc_()
-            #
-            self._set_background_color_(0, 0, 0, 0)
-            self._set_border_color_(border_color)
-            #
-            set_branch_draw_fnc_(lines_h, index_y); set_branch_draw_fnc_(lines_v, index_x)
+        grid_w, grid_h = grid_size
+        grid_scale_x, grid_scale_y = grid_scale
+        axis_dir_x, axis_dir_y = axis_dir
+        #
+        translate_x, translate_y = translate
+        grid_offset_x, grid_offset_y = grid_offset
+        index_x = translate_x/grid_w
+        index_y = translate_y/grid_w
+        #
+        lines_h, lines_v = get_lines_h_fnc_(), get_lines_v_fnc_()
+        #
+        self._set_background_color_(0, 0, 0, 0)
+        self._set_border_color_(border_color)
+        #
+        set_branch_draw_fnc_(lines_h, index_y, grid_scale_y)
+        set_branch_draw_fnc_(lines_v, index_x, grid_scale_x)
 
-    def _set_grid_mark_draw_(self, rect, axis_dir, grid_size, translate, grid_offset, zoom_value, grid_value_offset, grid_border_color, grid_value_show_mode):
-        def set_branch_draw_fnc_(points, axis_index, mult, offset):
-            for seq, point in enumerate(points):
+    def _set_grid_mark_draw_(self, rect, axis_dir, grid_size, translate, grid_offset, grid_scale, grid_value_offset, grid_border_color, grid_value_show_mode):
+        def set_branch_draw_fnc_(points, axis_index, scale, value_offset):
+            for seq, i_point in enumerate(points):
                 if (seq - axis_index) % 5 == 0:
+                    value = (seq - axis_index)/scale+value_offset
                     text = bsc_core.IntegerMtd.get_prettify_(
-                        (seq - axis_index)*mult+offset,
+                        value,
                         grid_value_show_mode
                     )
                     self.drawText(
-                        point, text
+                        i_point, text
                     )
         #
         def get_h_points():
             lis = []
-            for i in range(width / grid_width):
-                if axi_dir_y == -1:
-                    pos_x, pos_y = grid_width*(i - index_x) + grid_offset_x + track_offset_x, height
+            for i_x in range(width/grid_w):
+                if axis_dir_x == -1:
+                    i_p_x = width-grid_w*(i_x-index_x)-translate_x+grid_offset_x
                 else:
-                    pos_x, pos_y = grid_width*(i - index_x) + grid_offset_x + track_offset_x, text_h
+                    i_p_x = grid_w*(i_x-index_x)+translate_x+grid_offset_x
                 #
-                lis.append(QtCore.QPointF(pos_x, pos_y))
+                if axis_dir_y == -1:
+                    i_p_y = height
+                else:
+                    i_p_y = text_h
+                #
+                lis.append(
+                    QtCore.QPointF(i_p_x, i_p_y)
+                )
             #
             return lis
         #
         def get_v_points():
             lis = []
-            for i in range(height / grid_width):
-                if axi_dir_y == -1:
-                    pos_x, pos_y = 0, height - (grid_width*(i - index_y) + grid_offset_y + track_offset_y)
+            for i_y in range(height/grid_h):
+                if axis_dir_x == -1:
+                    i_p_x = width-text_h
                 else:
-                    pos_x, pos_y = 0, grid_width*(i - index_y) + grid_offset_y + track_offset_y
+                    i_p_x = 0
                 #
-                lis.append(QtCore.QPointF(pos_x, pos_y))
+                if axis_dir_y == -1:
+                    i_p_y = height-grid_h*(i_y-index_y)-translate_y+grid_offset_y
+                else:
+                    i_p_y = grid_h*(i_y-index_y)+translate_y+grid_offset_y
+                #
+                lis.append(
+                    QtCore.QPointF(i_p_x, i_p_y)
+                )
             #
             return lis
         #
         width, height = rect.width(), rect.height()
-        grid_width, grid_height = grid_size
-        if grid_width > 4:
-            text_h = self.fontMetrics().height()
-            #
-            axi_dir_x, axi_dir_y = axis_dir
-            track_offset_x, track_offset_y = translate
-            grid_offset_x, grid_offset_y = grid_offset
-            value_scale_x, value_scale_y = zoom_value
-            value_offset_x, value_offset_y = grid_value_offset
-            index_x = track_offset_x / grid_width
-            index_y = track_offset_y / grid_width
-            #
-            h_points, v_points = get_h_points(), get_v_points()
-            #
-            self._set_border_color_(grid_border_color)
-            self._set_font_(get_font())
-            #
-            set_branch_draw_fnc_(
-                h_points, index_x, value_scale_x, value_offset_x
-            )
-            set_branch_draw_fnc_(
-                v_points, index_y, value_scale_y, value_offset_y
-            )
+        grid_w, grid_h = grid_size
+        #
+        axis_dir_x, axis_dir_y = axis_dir
+        translate_x, translate_y = translate
+        grid_offset_x, grid_offset_y = grid_offset
+        value_scale_x, value_scale_y = grid_scale
+        value_offset_x, value_offset_y = grid_value_offset
+        index_x = translate_x/grid_w
+        index_y = translate_y/grid_h
+        #
+        self._set_border_color_(grid_border_color)
+        self._set_font_(get_font(size=6))
+        text_h = self.fontMetrics().height()
+        points_h, points_v = get_h_points(), get_v_points()
+        #
+        set_branch_draw_fnc_(
+            points_h, index_x, value_scale_x, value_offset_x
+        )
+        set_branch_draw_fnc_(
+            points_v, index_y, value_scale_y, value_offset_y
+        )
 
     def _set_grid_axis_draw_(self, rect, axis_dir, translate, grid_offset, grid_axis_lock, grid_border_colors):
         width, height = rect.width(), rect.height()
-        axi_dir_x, axi_dir_y = axis_dir
+        axis_dir_x, axis_dir_y = axis_dir
         #
-        track_offset_x, track_offset_y = translate
+        translate_x, translate_y = translate
         grid_offset_x, grid_offset_y = grid_offset
         grid_axis_lock_x, grid_axis_lock_y = grid_axis_lock
-        #
         if grid_axis_lock_y:
-            h_y_0 = height-grid_offset_y-1
+            if axis_dir_y == -1:
+                h_y_0 = height-grid_offset_y-1
+            else:
+                h_y_0 = 0
         else:
-            h_y_0 = height-grid_offset_y-track_offset_y-1
+            h_y_0 = height-grid_offset_y-translate_y-1
         #
-        h_points = (
+        points_h = (
             QtCore.QPointF(grid_offset_x, h_y_0),
             QtCore.QPointF(width, h_y_0)
         )
+        #
         if grid_axis_lock_x:
             v_x_0 = 0+grid_offset_x
         else:
-            v_x_0 = grid_offset_x+track_offset_x
+            v_x_0 = grid_offset_x+translate_x
         #
-        v_points = (
+        points_v = (
             QtCore.QPointF(v_x_0, -grid_offset_y),
             QtCore.QPointF(v_x_0, height-grid_offset_y))
 
@@ -1143,17 +1198,176 @@ class QtPainter(QtGui.QPainter):
         border_color_x, border_color_y = grid_border_colors
         self._set_background_color_(0, 0, 0, 0)
         self._set_border_color_(border_color_x)
-        self.drawLine(h_points[0], h_points[1])
+        self.drawLine(points_h[0], points_h[1])
         #
         self._set_border_color_(border_color_y)
-        self.drawLine(v_points[0], v_points[1])
+        self.drawLine(points_v[0], points_v[1])
 
-    def _set_dotted_frame_draw_(self, rect, border_color, background_color):
+    def _set_dotted_frame_draw_(self, rect, border_color, background_color, border_width=2):
         self._set_background_color_(background_color)
         self._set_border_color_(border_color)
+        self._set_border_width_(2)
         self._set_border_style_(QtCore.Qt.DashLine)
         #
         self.drawRect(rect)
+
+
+class QtNGPainter(QtPainter):
+    def __init__(self, *args, **kwargs):
+        super(QtNGPainter, self).__init__(*args, **kwargs)
+    @classmethod
+    def _get_ng_node_background_color_(cls, rect, is_hovered=False, is_selected=False, is_actioned=False):
+        condition = [is_hovered, is_selected]
+        a = 255
+        color_hovered = QtGui.QColor(255, 127, 63, a)
+        color_selected = QtGui.QColor(63, 127, 255, a)
+        color_actioned = QtGui.QColor(63, 255, 127, a)
+        color = QtGui.QColor(191, 191, 191, a)
+        if condition == [False, False]:
+            return color
+        elif condition == [False, True]:
+            return color_selected
+        elif condition == [True, False]:
+            if is_actioned:
+                color_0 = color_hovered
+                color_1 = color_actioned
+                start_coord, end_coord = rect.topLeft(), rect.bottomLeft()
+                color = QtGui.QLinearGradient(start_coord, end_coord)
+                color.setColorAt(0, color_0)
+                color.setColorAt(1, color_1)
+                return color
+            return color_hovered
+        elif condition == [True, True]:
+            color_0 = color_hovered
+            if is_actioned:
+                color_1 = color_actioned
+            else:
+                color_1 = color_selected
+            #
+            start_coord, end_coord = rect.topLeft(), rect.bottomLeft()
+            color = QtGui.QLinearGradient(start_coord, end_coord)
+            color.setColorAt(0, color_0)
+            color.setColorAt(1, color_1)
+            return color
+
+    def _set_ng_node_input_draw_(self, rect, border_width, offset):
+        self.setRenderHint(self.Antialiasing)
+        self._set_border_color_(191, 191, 191, 255)
+        self._set_border_width_(border_width)
+        self._set_background_color_(63, 255, 127, 255)
+        #
+        b_ = border_width / 2
+        if offset != 0:
+            offset_ = b_ + offset
+            rect_ = QtCore.QRect(
+                rect.x() + offset_, rect.y() + offset_,
+                rect.width() - offset_, rect.height() - offset_
+            )
+        else:
+            rect_ = rect
+        #
+        self.drawRect(rect_)
+
+    def _set_ng_node_output_draw_(self, rect, border_width, offset):
+        self.setRenderHint(self.Antialiasing)
+        self._set_border_color_(191, 191, 191, 255)
+        self._set_border_width_(border_width)
+        self._set_background_color_(255, 63, 31, 255)
+        #
+        b_ = border_width / 2
+        if offset != 0:
+            offset_ = b_ + offset
+            rect_ = QtCore.QRect(
+                rect.x() + offset_, rect.y() + offset_,
+                rect.width() - offset_, rect.height() - offset_
+            )
+        else:
+            rect_ = rect
+        #
+        x, y = rect_.x(), rect_.y()
+        w, h = rect_.width(), rect_.height()
+        #
+        r = h
+        points = [
+            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=90),
+            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=210),
+            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=330),
+            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=90)
+        ]
+        #
+        self._set_path_draw_by_coords_(points)
+
+    def _set_ng_node_resize_button_draw_(self, rect, border_width, mode, is_current, is_hovered):
+        self.setRenderHint(self.Antialiasing)
+        if is_current is True:
+            self._set_border_color_(255, 255, 255, 255)
+        else:
+            self._set_border_color_(63, 63, 63, 255)
+        #
+        x, y = rect.x(), rect.y()
+        w, h = rect.width(), rect.height()
+        c = 4
+        m = mode
+        for i in range(4):
+            if 0 < i < c:
+                if i <= m:
+                    self._set_border_color_(255, 255, 255, 255)
+                else:
+                    self._set_border_color_(63, 63, 63, 255)
+                self._set_border_width_(border_width)
+                self._set_background_color_(0, 0, 0, 0)
+                i_p_0, i_p_1 = QtCore.QPoint(x, y+i*h/c), QtCore.QPoint(x+w, y+i*h/c)
+                self.drawLine(i_p_0, i_p_1)
+
+    def _set_ng_node_frame_head_draw_(self, rect, border_width, border_radius, is_hovered=False, is_selected=False, is_actioned=False):
+        self.setRenderHint(self.Antialiasing)
+        x, y = rect.x(), rect.y()
+        w, h = rect.width(), rect.height()
+        x_0, y_0 = x, y
+        w_0, h_0 = w, h-border_radius-border_width
+        x_1, y_1 = x, y+border_radius+border_width
+        w_1, h_1 = w, h-border_radius-border_width
+        self._set_border_color_(191, 191, 191, 255)
+        self._set_border_width_(border_width)
+        self._set_border_join_(QtCore.Qt.MiterJoin)
+        background_color = self._get_ng_node_background_color_(
+            rect,
+            is_hovered, is_selected, is_actioned
+        )
+        self._set_background_color_(background_color)
+        path_0 = QtGui.QPainterPath()
+        path_0.addRoundedRect(
+            QtCore.QRect(x_0, y_0, w_0, h_0),
+            border_radius, border_radius, QtCore.Qt.AbsoluteSize
+        )
+        path_1 = QtGui.QPainterPath()
+        path_1.addRect(
+            QtCore.QRect(x_1, y_1, w_1, h_1)
+        )
+        self.drawPath(path_0+path_1)
+
+    def _set_ng_node_frame_body_draw_(self, rect, border_width, border_radius):
+        self.setRenderHint(self.Antialiasing)
+        x, y = rect.x(), rect.y()
+        w, h = rect.width(), rect.height()
+        x_0, y_0 = x, y
+        w_0, h_0 = w, h - border_radius - border_width
+        x_1, y_1 = x, y + border_radius + border_width
+        w_1, h_1 = w, h - border_radius - border_width
+        self._set_border_color_(191, 191, 191, 255)
+        self._set_border_width_(border_width)
+        self._set_border_join_(QtCore.Qt.MiterJoin)
+        self._set_background_color_(127, 127, 127, 63)
+        path_0 = QtGui.QPainterPath()
+        path_0.addRect(
+            QtCore.QRect(x_0, y_0, w_0, h_0)
+        )
+        path_1 = QtGui.QPainterPath()
+        path_1.addRoundedRect(
+            QtCore.QRect(x_1, y_1, w_1, h_1),
+            border_radius, border_radius, QtCore.Qt.AbsoluteSize
+        )
+        self.drawPath(path_0 + path_1)
 
 
 class QtIconButton(QtWidgets.QPushButton):
@@ -1546,15 +1760,25 @@ class QtScrollArea(QtWidgets.QScrollArea):
         )
 
 
+class QtThreadDef(object):
+    def _set_thread_def_init_(self):
+        pass
+
+    def _set_thread_create_(self):
+        return QtMethodThread(self)
+
+
 class QtMainWindow(
     QtWidgets.QMainWindow,
-    utl_gui_qt_abstract.AbsQtIconDef
+    utl_gui_qt_abstract.AbsQtIconDef,
+    QtThreadDef
 ):
     close_clicked = qt_signal()
     key_escape_pressed = qt_signal()
     size_changed = qt_signal()
     def __init__(self, *args, **kwargs):
         super(QtMainWindow, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
         self.setWindowFlags(QtCore.Qt.Window)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         #
@@ -1566,15 +1790,11 @@ class QtMainWindow(
         #
         set_shadow(self, radius=2)
         #
-        self.installEventFilter(self)
-        #
         self._set_icon_def_init_()
-
-        # self.showNormal
 
         self._window_system_tray_icon = None
     #
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
     #
     def _set_icon_name_text_(self, text):
@@ -1614,13 +1834,21 @@ class QtMainWindow(
         self.close()
         self.deleteLater()
 
+    def _set_close_later_(self, time):
+        close_timer = QtCore.QTimer(self)
+        close_timer.timeout.connect(self._set_close_)
+        close_timer.start(time)
+
 
 class QtDialog(
     QtWidgets.QDialog,
-    utl_gui_qt_abstract._QtStatusDef
+    utl_gui_qt_abstract._QtStatusDef,
+    QtThreadDef
 ):
+    size_changed = qt_signal()
     def __init__(self, *args, **kwargs):
         super(QtDialog, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
         self.setWindowFlags(
             QtCore.Qt.Window | QtCore.Qt.WindowStaysOnTopHint
         )
@@ -1641,7 +1869,7 @@ class QtDialog(
         #
         self._set_status_def_init_()
     #
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
     #
     def _set_icon_name_text_(self, text):
@@ -1668,15 +1896,22 @@ class QtDialog(
         self.close()
         self.deleteLater()
 
+    def _set_size_changed_connect_to_(self, fnc):
+        self.size_changed.connect(fnc)
+
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            if event.type() == QtCore.QEvent.Close:
-                if hasattr(self, 'gui_proxy'):
-                    self.gui_proxy.set_window_close()
-            elif event.type() == QtCore.QEvent.KeyPress:
-                if event.key() == QtCore.Qt.Key_Escape:
-                    self.key_escape_pressed.emit()
+            if hasattr(event, 'type'):
+                if event.type() == QtCore.QEvent.Close:
+                    if hasattr(self, 'gui_proxy'):
+                        self.gui_proxy.set_window_close()
+                        self.hide()
+                elif event.type() == QtCore.QEvent.KeyPress:
+                    if event.key() == QtCore.Qt.Key_Escape:
+                        self.key_escape_pressed.emit()
+                elif event.type() == QtCore.QEvent.Resize:
+                    self.size_changed.emit()
         return False
 
 
@@ -1692,72 +1927,6 @@ class QtCommonStyle(QtWidgets.QCommonStyle):
             return
         else:
             QtWidgets.QCommonStyle().drawPrimitive(element, option, painter, widget)
-
-
-class QtTextBrowser(QtWidgets.QTextBrowser):
-    def __init__(self, *args, **kwargs):
-        super(QtTextBrowser, self).__init__(*args, **kwargs)
-        self.setWordWrapMode(QtGui.QTextOption.WordWrap)
-        # self.setWordWrapMode(QtGui.QTextOption.NoWrap)
-        #
-        self.setFont(Font.CONTENT)
-        qt_palette = QtDccMtd.get_qt_palette()
-        self.setPalette(qt_palette)
-        self.setAutoFillBackground(True)
-        self.setFocusPolicy(QtCore.Qt.ClickFocus)
-        #
-        self._print_thread = QtPrintThread(self)
-        self._print_thread.printed.connect(self._set_print_add_)
-        #
-        self.setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QTextBrowser')
-        )
-        #
-        self.verticalScrollBar().setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QScrollBar')
-        )
-        self.horizontalScrollBar().setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QScrollBar')
-        )
-
-    def _set_print_add_(self, text):
-        def add_fnc_(text_):
-            self.moveCursor(QtGui.QTextCursor.End)
-            self.insertPlainText(text_ + '\n')
-        #
-        if isinstance(text, (tuple, list)):
-            [add_fnc_(i) for i in text]
-        else:
-            add_fnc_(text)
-        #
-        self.update()
-
-    def _set_print_add_use_thread_(self, text):
-        self._print_thread.printed.emit(text)
-
-    def contextMenuEvent(self, event):
-        menu_raw = [
-            ('Basic', ),
-            ('Copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
-            ('Paste', None, (True, self.paste, False), QtGui.QKeySequence.Paste),
-            ('Cut', None, (True, self.cut, False), QtGui.QKeySequence.Cut),
-            ('Extend', ),
-            ('Undo', None, (True, self.undo, False), QtGui.QKeySequence.Undo),
-            ('Redo', None, (True, self.redo, False), QtGui.QKeySequence.Redo),
-            ('Select All', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll),
-        ]
-        if self.isReadOnly():
-            menu_raw = [
-                ('Basic',),
-                ('Copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
-                ('Extend', ),
-                ('Select All', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll)
-            ]
-        #
-        if menu_raw:
-            self._qt_menu = QtMenu(self)
-            self._qt_menu._set_menu_raw_(menu_raw)
-            self._qt_menu._set_show_()
 
 
 class _QtSpacer(QtWidgets.QWidget):
@@ -1886,7 +2055,7 @@ class _QtProgressBar(
         #
         self._set_progress_def_init_()
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def paintEvent(self, event):

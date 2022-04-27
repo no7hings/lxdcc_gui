@@ -258,8 +258,9 @@ class QtTextBrowser_(QtWidgets.QTextBrowser):
         self.setAutoFillBackground(True)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         #
-        self._print_thread = QtPrintThread(self)
-        self._print_thread.printed.connect(self._set_print_add_)
+        self._method_thread = QtPrintThread(self)
+        self._method_thread.added.connect(self._set_content_add_)
+        self._method_thread.overed.connect(self._set_content_)
         #
         self.setStyleSheet(
             utl_gui_core.QtStyleMtd.get('QTextBrowser')
@@ -272,7 +273,7 @@ class QtTextBrowser_(QtWidgets.QTextBrowser):
             utl_gui_core.QtStyleMtd.get('QScrollBar')
         )
 
-    def _set_print_add_(self, text):
+    def _set_content_add_(self, text):
         def add_fnc_(text_):
             self.moveCursor(QtGui.QTextCursor.End)
             self.insertPlainText(text_ + '\n')
@@ -284,8 +285,14 @@ class QtTextBrowser_(QtWidgets.QTextBrowser):
         #
         self.update()
 
-    def _set_print_add_use_thread_(self, text):
-        self._print_thread.printed.emit(text)
+    def _set_content_(self, text):
+        self.setText(text)
+
+    def _set_content_add_use_thread_(self, text):
+        self._method_thread.added.emit(text)
+
+    def _set_print_over_use_thread_(self, text):
+        self._method_thread.overed.emit(text)
 
     def eventFilter(self, *args):
         widget, event = args
@@ -327,12 +334,12 @@ class QtTextBrowser_(QtWidgets.QTextBrowser):
             self._qt_menu._set_show_()
 
     def _get_item_value_(self):
-        return self.placeholderText()
+        return self.toPlainText()
 
     def _set_item_value_(self, value):
         if value is not None:
             self.setText(
-                str(value).encode("UTF8")
+                unicode(value).encode('utf-8')
             )
         else:
             self.setText('')
@@ -345,7 +352,7 @@ class _QtTextItem(
     utl_gui_qt_abstract.AbsQtActionDef,
     utl_gui_qt_abstract.AbsQtActionPressDef,
 ):
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def __init__(self, *args, **kwargs):
@@ -373,7 +380,7 @@ class _QtTextItem(
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            self._set_action_hover_execute_(event)
+            self._set_action_hover_filter_execute_(event)
         return False
 
     def paintEvent(self, event):
@@ -429,7 +436,7 @@ class _QtIconPressItem(
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            self._set_action_hover_execute_(event)
+            self._set_action_hover_filter_execute_(event)
             #
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
@@ -509,7 +516,7 @@ class _QtIconPressItem(
                     is_hovered=self._is_hovered
                 )
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         # noinspection PyUnresolvedReferences
         self.update()
 
@@ -612,7 +619,7 @@ class _QtPressItem(
         self._frame_background_color = color
         self._hovered_frame_background_color = hover_color
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def _set_widget_geometry_update_(self):
@@ -882,7 +889,7 @@ class _QtCheckItem(
         #
         self._set_item_check_update_()
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def _set_widget_geometry_update_(self):
@@ -913,7 +920,7 @@ class _QtCheckItem(
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            self._set_action_hover_execute_(event)
+            self._set_action_hover_filter_execute_(event)
             #
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
@@ -993,7 +1000,7 @@ class _QtStatusItem(
         #
         self._set_item_check_update_()
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def _set_widget_geometry_update_(self):
@@ -1007,7 +1014,7 @@ class _QtStatusItem(
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            self._set_action_hover_execute_(event)
+            self._set_action_hover_filter_execute_(event)
             #
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
@@ -1238,7 +1245,7 @@ class _QtEntryFrame(
     def _get_action_is_enable_(self):
         pass
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def __init__(self, *args, **kwargs):
@@ -1439,7 +1446,7 @@ class _QtItemGuideChooseDropFrame(
                 self._set_drop_end_()
         return False
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def _set_widget_geometry_update_(self):
@@ -1603,7 +1610,7 @@ class _QtItemChooseDropFrame(
                 self._set_drop_end_()
         return False
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def _set_widget_geometry_update_(self):
@@ -1689,7 +1696,7 @@ class _QtItemRgbaChooseDropFrame(
     utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract.AbsQtDropDef,
 ):
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
         self._chart.update()
 
@@ -1860,7 +1867,7 @@ class _QtRgbaValueEntryItem(
     QT_VALUE_ENTRY_CLASS = QtLineEdit_
     #
     CHOOSE_DROP_FRAME_CLASS = _QtItemRgbaChooseDropFrame
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def __init__(self, *args, **kwargs):
@@ -1906,7 +1913,7 @@ class _QtRgbaValueEntryItem(
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            self._set_action_hover_execute_(event)
+            self._set_action_hover_filter_execute_(event)
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
                     self._set_action_flag_(self.ActionFlag.PressClick)
@@ -2137,7 +2144,7 @@ class _QtHExpandItem0(
         # font
         self.setFont(Font.NAME)
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def _set_widget_geometry_update_(self):
@@ -2170,7 +2177,7 @@ class _QtHExpandItem0(
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            self._set_action_hover_execute_(event)
+            self._set_action_hover_filter_execute_(event)
             #
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
@@ -2238,7 +2245,7 @@ class _QtHExpandItem0(
             [self._item_expand_icon_file_path_1, self._item_expand_icon_file_path_0][self._item_is_expanded]
         )
         #
-        self._set_widget_draw_update_()
+        self._set_wgt_update_draw_()
 
 
 class _QtHExpandItem1(
@@ -2295,7 +2302,7 @@ class _QtHExpandItem1(
         # font
         self.setFont(Font.NAME)
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def paintEvent(self, event):
@@ -2325,7 +2332,7 @@ class _QtHExpandItem1(
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            self._set_action_hover_execute_(event)
+            self._set_action_hover_filter_execute_(event)
             #
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
@@ -2357,7 +2364,7 @@ class _QtHExpandItem1(
                 [self._item_expand_icon_file_path_1, self._item_expand_icon_file_path_2][self._item_is_expanded]
             )
         #
-        self._set_widget_draw_update_()
+        self._set_wgt_update_draw_()
 
     def _set_widget_geometry_update_(self):
         x, y = 0, 0
@@ -2425,7 +2432,7 @@ class QtTreeWidgetItem(
     def _get_item_is_hidden_(self):
         return self.isHidden()
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         pass
 
     def setCheckState(self, column, state):
@@ -2749,7 +2756,7 @@ class QtListWidgetItem(
     def _get_item_is_hidden_(self):
         return self.isHidden()
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         item_widget = self._get_item_widget_()
         if item_widget is not None:
             item_widget.update()
@@ -2804,7 +2811,7 @@ class _QtHItem(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract._QtIndexDef,
-    utl_gui_qt_abstract._QtTypeDef,
+    utl_gui_qt_abstract.AbsQtTypeDef,
     utl_gui_qt_abstract.AbsQtIconDef,
     utl_gui_qt_abstract.AbsQtNameDef,
     utl_gui_qt_abstract._QtPathDef,
@@ -2812,7 +2819,7 @@ class _QtHItem(
     utl_gui_qt_abstract.AbsQtActionHoverDef,
     utl_gui_qt_abstract.AbsQtActionDef,
     utl_gui_qt_abstract.AbsQtActionPressDef,
-    utl_gui_qt_abstract.AbsQtItemSelectActionDef,
+    utl_gui_qt_abstract.AbsQtActionSelectDef,
 ):
     def __init__(self, *args, **kwargs):
         super(_QtHItem, self).__init__(*args, **kwargs)
@@ -2830,14 +2837,14 @@ class _QtHItem(
         self._set_action_hover_def_init_()
         self._set_action_def_init_(self)
         self._set_action_press_def_init_()
-        self._set_item_select_action_def_init_()
+        self._set_action_select_def_init_()
         #
         self._frame_background_color = QtBackgroundColor.Light
 
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            self._set_action_hover_execute_(event)
+            self._set_action_hover_filter_execute_(event)
             #
             if event.type() == QtCore.QEvent.Resize:
                 self.update()
@@ -2898,7 +2905,7 @@ class _QtHItem(
                 text_option=self._index_text_option
             )
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def _set_widget_geometry_update_(self):
@@ -2948,7 +2955,7 @@ class _QtListItemWidget(
     utl_gui_qt_abstract.AbsQtActionHoverDef,
     utl_gui_qt_abstract.AbsQtActionDef,
     utl_gui_qt_abstract.AbsQtActionPressDef,
-    utl_gui_qt_abstract.AbsQtItemSelectActionDef,
+    utl_gui_qt_abstract.AbsQtActionSelectDef,
     #
     utl_gui_qt_abstract.AbsQtItemStateDef,
     #
@@ -2974,7 +2981,7 @@ class _QtListItemWidget(
         self._set_action_hover_def_init_()
         self._set_action_def_init_(self)
         self._set_action_press_def_init_()
-        self._set_item_select_action_def_init_()
+        self._set_action_select_def_init_()
         #
         self._set_item_movie_action_def_init_()
         #
@@ -3003,7 +3010,7 @@ class _QtListItemWidget(
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            self._set_action_hover_execute_(event)
+            self._set_action_hover_filter_execute_(event)
             #
             if event.type() == QtCore.QEvent.Resize:
                 self.update()
@@ -3022,9 +3029,9 @@ class _QtListItemWidget(
             #
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 if self._get_action_flag_is_match_(self.ActionFlag.PressClick):
-                    self.press_clicked.emit()
+                    self._set_press_click_emit_send_()
                 elif self._get_action_flag_is_match_(self.ActionFlag.PressDbClick):
-                    self.press_db_clicked.emit()
+                    self._set_press_db_click_emit_send_()
                 #
                 self._set_pressed_(False)
                 self._set_action_flag_clear_()
@@ -3386,7 +3393,7 @@ class _QtListItemWidget(
                     i_name_index
                 )
 
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         # noinspection PyUnresolvedReferences
         self.update()
 
@@ -3411,7 +3418,7 @@ class _AbsQtSplitterHandle(
     utl_gui_qt_abstract.AbsQtItemStateDef,
 ):
     QT_ORIENTATION = None
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def __init__(self, *args, **kwargs):
@@ -3558,7 +3565,7 @@ class _AbsQtSplitterHandle(
         offset = self._get_action_offset_()
         #
         if self._item_is_enable is True:
-            condition = self._is_hovered, self._item_is_pressed
+            condition = self._is_hovered, self._press_is_clicked
             if condition == (False, False):
                 border_color = QtBackgroundColor.Transparent
                 background_color = QtBackgroundColor.Transparent
@@ -3706,7 +3713,7 @@ class _QtWindowHead(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
 ):
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         self.update()
 
     def __init__(self, *args, **kwargs):
@@ -3767,14 +3774,14 @@ class _QtWindowHead(
 
 class _QtItemGuideRect(
     utl_gui_qt_abstract.AbsQtIconDef,
-    utl_gui_qt_abstract._QtTypeDef,
+    utl_gui_qt_abstract.AbsQtTypeDef,
     utl_gui_qt_abstract.AbsQtNameDef,
     utl_gui_qt_abstract._QtPathDef,
     utl_gui_qt_abstract.AbsQtFrameDef,
     #
     utl_gui_qt_abstract.AbsQtItemActionChooseDef,
 ):
-    def _set_widget_draw_update_(self):
+    def _set_wgt_update_draw_(self):
         pass
 
     def __init__(self, *args, **kwargs):

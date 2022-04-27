@@ -35,10 +35,10 @@ class PrxNodeGraph(
         return self._prx_filter_bar
 
     def set_node_add(self, *args, **kwargs):
-        self._qt_view._set_ng_graph_node_add_(*args, **kwargs)
+        self._qt_view._set_ng_graph_node_create_(*args, **kwargs)
 
     def set_node_universe(self, universe):
         self._qt_view._set_ng_graph_universe_(universe)
 
-    def set_node_show(self):
-        self._qt_view._set_ng_graph_node_show_by_universe_()
+    def set_node_show(self, obj_path):
+        self._qt_view._set_ng_graph_node_show_(obj_path)

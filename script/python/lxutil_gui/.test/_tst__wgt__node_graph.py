@@ -18,25 +18,40 @@ class W(prx_widgets.PrxToolWindow):
 
         o_t = u._get_obj_type_force_('lynxi', 'shader')
 
-        n_0 = o_t.set_obj_create('/test_0')
-
-        n_1 = o_t.set_obj_create('/test_1')
-
         t = u._get_type_force_(u.Category.CONSTANT, u.Type.NODE)
 
-        for i in [n_0, n_1]:
-            i.set_input_port_create(
+        r = u.get_root()
+
+        r.set_input_port_create(
+            t, 'input'
+        )
+        r.set_output_port_create(
+            t, 'output'
+        )
+
+        p_n = None
+        for i in range(10):
+            i_n = o_t.set_obj_create(
+                '/test_{}'.format(i)
+            )
+            i_n.set_input_port_create(
                 t, 'input'
             )
-            i.set_output_port_create(
+            i_n.set_output_port_create(
                 t, 'output'
             )
-
-        n_0.get_input_port('input').set_source(n_1.get_output_port('output'))
+            if p_n is not None:
+                p_n.get_input_port('input').set_source(i_n.get_output_port('output'))
+            else:
+                i_n.get_output_port('output').set_target(r.get_input_port('input'))
+            #
+            if not i % 2:
+                p_n = i_n
+            else:
+                i_n.get_output_port('output').set_target(r.get_input_port('input'))
 
         c.set_node_universe(u)
-
-        c.set_node_show()
+        c.set_node_show('/')
 
     def test(self):
         pass

@@ -159,10 +159,17 @@ class SizeMtd(object):
 
 class Ellipse2dMtd(object):
     @classmethod
-    def get_position_at_angle(cls, start, radius, angle):
+    def get_coord_at_angle(cls, start, radius, angle):
         x, y = start
         xp = math.sin(math.radians(angle)) * radius / 2 + x + radius / 2
         yp = math.cos(math.radians(angle)) * radius / 2 + y + radius / 2
+        return xp, yp
+
+    @classmethod
+    def get_coord_at_angle_(cls, center, radius, angle):
+        x, y = center
+        xp = math.sin(math.radians(angle)) * radius/2 + x
+        yp = math.cos(math.radians(angle)) * radius/2 + y
         return xp, yp
 
 

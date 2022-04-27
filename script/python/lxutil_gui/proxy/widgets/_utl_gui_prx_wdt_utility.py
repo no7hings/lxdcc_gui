@@ -360,10 +360,13 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
         )
 
     def set_print_add(self, text):
-        self._qt_text_browser_0._set_print_add_(text)
+        self._qt_text_browser_0._set_content_add_(text)
 
     def set_print_add_use_thread(self, text):
-        self._qt_text_browser_0._set_print_add_use_thread_(text)
+        self._qt_text_browser_0._set_content_add_use_thread_(text)
+
+    def set_print_over_use_thread(self, text):
+        self._qt_text_browser_0._set_print_over_use_thread_(text)
 
     def set_content(self, text, as_html=False):
         if as_html is True:
@@ -590,8 +593,11 @@ class PrxEntryItem(utl_gui_prx_abstract.AbsPrxWidget):
 
 class PrxToolWindow(
     utl_gui_prx_abstract.AbsPrxWindow,
+    #
     utl_gui_prx_abstract.AbsWidgetContentDef,
-    utl_gui_prx_abstract.AbsPrxProgressesDef
+    utl_gui_prx_abstract.AbsPrxProgressesDef,
+    #
+    utl_gui_prx_abstract.AbsPrxWaitingDef
 ):
     PRX_TYPE = 'tool_window'
     #
@@ -599,9 +605,9 @@ class PrxToolWindow(
     #
     CONTENT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
     PROGRESS_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtProgressBar
+    WAITING_CHART_CLASS = _utl_gui_qt_wgt_chart._QtWaitingChart
     #
     HELP_FILE_PATH = None
-    #
     def __init__(self, *args, **kwargs):
         super(PrxToolWindow, self).__init__(*args, **kwargs)
         #
@@ -652,7 +658,9 @@ class PrxToolWindow(
         self._set_cnt_wdt_2_build_()
         self._set_cnt_wdt_3_build_()
         self._set_cnt_wdt_4_build_()
-
+        #
+        self._set_waiting_def_init_()
+        #
         self.set_current_unit('main_0')
 
     def set_menu_add(self, name):
@@ -748,10 +756,6 @@ class PrxToolWindow(
         qt_layout_0.addWidget(content_widget_0.widget)
         content_widget_0.set_close_connect_to(fnc_)
 
-        self._waiting_char = _utl_gui_qt_wgt_chart._QtWaitingChart(self.widget)
-        self._waiting_char.hide()
-        self.widget._set_size_changed_connect_to_(self._set_waiting_update_)
-
     def get_main_widget(self):
         return self._main_widget
 
@@ -803,21 +807,6 @@ class PrxToolWindow(
             self.widget, size=self.get_definition_window_size()
         )
         self._loading_show_timer.stop()
-
-    def set_waiting_start(self):
-        self._waiting_char.show()
-        self._waiting_char._set_waiting_start_()
-
-    def set_waiting_stop(self):
-        self._waiting_char.hide()
-        self._waiting_char._set_waiting_stop_()
-
-    def _set_waiting_update_(self):
-        x, y = 0, 0
-        w, h = self.widget.width(), self.widget.height()
-        self._waiting_char.setGeometry(
-            x, y, w, h
-        )
 
     def set_loading_start(self, time, method):
         self._is_loading = True

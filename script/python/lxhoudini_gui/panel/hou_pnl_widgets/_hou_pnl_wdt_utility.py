@@ -53,7 +53,7 @@ class SceneOverviewToolPanel(utl_gui_pnl_abstract.AbsUtilToolPanel):
         expand_box_1 = prx_widgets.PrxExpandedGroup()
         expand_box_1.set_name('Log')
         self.set_widget_add(expand_box_1)
-        self._text_browser = qt_widgets.QtTextBrowser()
+        self._text_browser = qt_widgets.QtTextBrowser_()
         expand_box_1.set_widget_add(self._text_browser)
 
         self._refresh_button_0 = qt_widgets.QtPressButton()
@@ -217,7 +217,7 @@ class AttributeConstantTool(utl_gui_pnl_abstract.AbsUtilToolPanel):
         expand_box_1 = prx_widgets.PrxExpandedGroup()
         expand_box_1.set_name('Log')
         self.set_widget_add(expand_box_1)
-        self._text_browser = qt_widgets.QtTextBrowser()
+        self._text_browser = qt_widgets.QtTextBrowser_()
         expand_box_1.set_widget_add(self._text_browser)
 
         self._load_left_button = qt_widgets.QtPressButton()

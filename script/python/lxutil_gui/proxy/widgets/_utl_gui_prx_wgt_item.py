@@ -806,6 +806,9 @@ class PrxListItem(
         # print self.get_names(), fnc
         self.widget.press_db_clicked.connect(fnc)
 
+    def set_press_db_clicked_method_add_(self, fnc):
+        self.widget._set_press_db_clicked_method_add_(fnc)
+
     def __str__(self):
         return '{}(names={})'.format(
             self.__class__.__name__,
