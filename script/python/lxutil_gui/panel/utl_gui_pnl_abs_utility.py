@@ -9,12 +9,14 @@ import lxutil_gui.proxy.widgets as prx_widgets
 
 from lxutil_gui import utl_gui_core
 
+from lxutil_gui.qt import utl_gui_qt_core
+
 import lxutil_gui.proxy.operators as utl_prx_operators
 
 import lxutil.dcc.dcc_operators as utl_dcc_operators
 
 
-def _set_texture_tx_load(window, item_prx, texture_references, includes, force, completed_fnc):
+def _set_texture_tx_create(window, item_prx, texture_references, includes, force, completed_fnc):
     def set_processing_update(time_cost):
         c = 'Load Texture-tx(s) [ {} ] [ {} ]'.format(
             str(p_m.get_status()),
@@ -47,7 +49,7 @@ def _set_texture_tx_load(window, item_prx, texture_references, includes, force, 
     # result_dict = utl_dcc_operators.DccTexturesOpt(
     #     texture_references,
     #     includes=includes,
-    # ).set_tx_create_and_repath(use_deferred=True, force=force)
+    # ).set_tx_create_and_repath_use_thread(use_deferred=True, force=force)
     #
     # create_process = result_dict['tx-create']
     p_m = bsc_objects.ProcessMonitor(create_process)
@@ -55,17 +57,24 @@ def _set_texture_tx_load(window, item_prx, texture_references, includes, force, 
     p_m.processing.set_connect_to(set_processing_update)
     p_m.status_changed.set_connect_to(set_status_changed_update)
     p_m.element_statuses_changed.set_connect_to(set_element_status_changed_update)
-    p_m.set_start()
-    create_process.set_start()
+    #
     window.set_window_close_connect_to(p_m.set_stop)
-    #
-    p_m.completed.set_connect_to(textures_opt.set_tx_repath)
-    #
     if completed_fnc is not None:
         p_m.completed.set_connect_to(completed_fnc)
+    #
+    p_m.set_start()
+    create_process.set_start()
 
 
-def _set_texture_jpg_load(window, item_prx, texture_references, includes, force, completed_fnc):
+def _set_texture_tx_repath(texture_references, includes):
+    textures_opt = utl_dcc_operators.DccTexturesOpt(
+        texture_references,
+        includes=includes,
+    )
+    textures_opt.set_tx_repath()
+
+
+def _set_texture_jpg_create(window, item_prx, texture_references, includes, force, completed_fnc):
     def set_processing_update(time_cost):
         c = '{} [ {} ] [ {} ]'.format(
             label,
@@ -105,14 +114,21 @@ def _set_texture_jpg_load(window, item_prx, texture_references, includes, force,
     p_m.processing.set_connect_to(set_processing_update)
     p_m.status_changed.set_connect_to(set_status_changed_update)
     p_m.element_statuses_changed.set_connect_to(set_element_status_changed_update)
-    p_m.set_start()
-    create_process.set_start()
+    #
     window.set_window_close_connect_to(p_m.set_stop)
-    #
-    p_m.completed.set_connect_to(textures_opt.set_jpg_repath)
-    #
     if completed_fnc is not None:
         p_m.completed.set_connect_to(completed_fnc)
+    #
+    p_m.set_start()
+    create_process.set_start()
+
+
+def _set_texture_jpg_repath(texture_references, includes):
+    textures_opt = utl_dcc_operators.DccTexturesOpt(
+        texture_references,
+        includes=includes,
+    )
+    textures_opt.set_jpg_repath()
 
 
 class AbsSceneTextureManagerPanel(
@@ -245,7 +261,7 @@ class AbsSceneTextureManagerPanel(
                 'create new "texture-tx" and repath to "texture-tx"',
             ]
         )
-        _port.set(self.set_tx_create_and_repath)
+        _port.set(self.set_tx_create_and_repath_use_thread)
         #
         _port = self._tool_node_prx.set_port_add(
             prx_widgets.PrxButtonPort('repath_tx_to_orig', 'Repath tx(s) to Orig EXT')
@@ -274,7 +290,7 @@ class AbsSceneTextureManagerPanel(
                 'create new "texture-tx" and repath to "texture-tx"',
             ]
         )
-        _port.set(self.set_jpg_create_and_repath)
+        _port.set(self.set_jpg_create_and_repath_use_thread)
         _port = self._tool_node_prx.set_port_add(
             prx_widgets.PrxButtonPort('repath_jpg_to_orig', 'Repath jpg(s) to Orig EXT')
         )
@@ -519,18 +535,25 @@ class AbsSceneTextureManagerPanel(
             #
             self._set_refresh_all_(includes)
 
-    def set_tx_create_and_repath(self):
+    def set_tx_create_and_repath_use_thread(self):
+        def complete_fnc():
+            _set_texture_tx_repath(self._texture_references, includes)
+            self._set_refresh_all_()
+
+        thread = utl_gui_qt_core.QtMethodThread(self.widget)
+        thread.stated.connect(complete_fnc)
+
         if self._texture_references is not None:
             force = self._tool_node_prx.get_port('create_and_repath_to_tx_force').get()
             includes = self._get_checked_dcc_objs_()
             #
-            _set_texture_tx_load(
+            _set_texture_tx_create(
                 self,
                 self._tool_node_prx.get_port('create_and_repath_to_tx'),
                 self._texture_references,
                 includes,
                 force,
-                completed_fnc=lambda: self._refresh_button_0.set_press_clicked()
+                completed_fnc=thread.stated.emit
             )
 
     def set_tx_repath_to_orig(self):
@@ -543,18 +566,25 @@ class AbsSceneTextureManagerPanel(
             #
             self._set_refresh_all_(includes)
 
-    def set_jpg_create_and_repath(self):
+    def set_jpg_create_and_repath_use_thread(self):
+        def complete_fnc():
+            _set_texture_jpg_repath(self._texture_references, includes)
+            self._set_refresh_all_()
+
+        thread = utl_gui_qt_core.QtMethodThread(self.widget)
+        thread.stated.connect(complete_fnc)
+
         if self._texture_references is not None:
             force = self._tool_node_prx.get_port('create_and_repath_to_jpg_force').get()
             includes = self._get_checked_dcc_objs_()
             #
-            _set_texture_jpg_load(
+            _set_texture_jpg_create(
                 self,
                 self._tool_node_prx.get_port('create_and_repath_to_jpg'),
                 self._texture_references,
                 includes,
                 force,
-                completed_fnc=lambda: self._refresh_button_0.set_press_clicked()
+                completed_fnc=thread.stated.emit
             )
 
     def set_jpg_repath_to_orig(self):

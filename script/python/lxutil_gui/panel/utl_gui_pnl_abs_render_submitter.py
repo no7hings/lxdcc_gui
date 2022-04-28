@@ -291,8 +291,24 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             )
             key = 'groom'
             cache_workspace = 'output'
+        elif step in ['rig']:
+            self._schemes_prx_node.set(
+                'variables', 'rig'
+            )
+            key = 'rig'
+            cache_workspace = 'output'
         else:
-            raise RuntimeError()
+            utl_core.DialogWindow.set_create(
+                self._hook_gui_configure.get('name'),
+                content='step="{}" is not available, please call for TD ge more help'.format(step),
+                status=utl_core.DialogWindow.GuiStatus.Error,
+                #
+                yes_label='Close', yes_method=self.set_window_close,
+                #
+                no_visible=False, cancel_visible=False,
+                use_exec=False
+            )
+            return False
         #
         application = self._rsv_scene_properties.get('application')
         self._work_keyword = '{}-work-{}-scene-src-file'.format(
@@ -328,12 +344,14 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         with utl_core.gui_progress(maximum=len(methods)) as g_p:
             for i in methods:
                 g_p.set_update()
-                i()
+                result = i()
+                if result is False:
+                    break
 
     def _set_prx_node_effect_(self):
-        self._schemes_prx_node.set(
-            'save', self.set_scheme_save
-        )
+        # self._schemes_prx_node.set(
+        #     'save', self.set_scheme_save
+        # )
         self._schemes_prx_node.set_changed_connect_to(
             'variables', self.set_variables_load_from_scheme
         )
@@ -548,6 +566,10 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             #     self._usd_prx_node.set(
             #         i_port_path, i_current_variant_name
             #     )
+        else:
+            if rsv_asset is not None:
+                asset_usd_variant_dict = self._rsv_entity_set_usd_creator._get_asset_usd_set_dress_variant_dict_(rsv_asset)
+                print rsv_asset
 
     def set_variables_refresh(self):
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
@@ -759,9 +781,9 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         super(AbsShotRenderSubmitterPanel, self).__init__(hook_option, *args, **kwargs)
 
     def _set_prx_node_effect_(self):
-        self._schemes_prx_node.set(
-            'save', self.set_scheme_save
-        )
+        # self._schemes_prx_node.set(
+        #     'save', self.set_scheme_save
+        # )
         self._schemes_prx_node.set_changed_connect_to(
             'variables', self.set_variables_load_from_scheme
         )
@@ -951,7 +973,9 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         with utl_core.gui_progress(maximum=len(methods)) as g_p:
             for i in methods:
                 g_p.set_update()
-                i()
+                result = i()
+                if result is False:
+                    break
 
     def set_variables_refresh(self):
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)

@@ -45,7 +45,7 @@ def _set_texture_tx_load(window, item_prx):
                 with_reference=False
             )
         )
-    ).set_tx_create_and_repath(use_deferred=True)
+    ).set_tx_create_and_repath_use_thread(use_deferred=True)
     p = result_dict['tx-create']
     p_m = bsc_objects.ProcessMonitor(p)
     p_m.logging.set_connect_to(set_logging_update)
