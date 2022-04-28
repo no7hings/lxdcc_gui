@@ -329,14 +329,9 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         self._options_prx_node.set('version', rsv_versions)
 
         self._rsv_entity_set_usd_creator = usd_rsv_objects.RsvAssetSetUsdCreator(self._rsv_entity)
-        if bsc_core.SystemMtd.get_is_linux():
-            # if bsc_core.SystemMtd.get_application() not in ['maya']:
-            rsv_shots = self._rsv_entity_set_usd_creator.get_rsv_asset_shots()
-            self._options_prx_node.set('shot', rsv_shots)
-        else:
-            if bsc_core.SystemMtd.get_application() not in ['maya']:
-                rsv_shots = self._rsv_entity_set_usd_creator.get_rsv_asset_shots()
-                self._options_prx_node.set('shot', rsv_shots)
+        # if bsc_core.SystemMtd.get_application() not in ['maya']:
+        rsv_shots = self._rsv_entity_set_usd_creator.get_rsv_asset_shots()
+        self._options_prx_node.set('shot', rsv_shots)
 
     def set_current_refresh(self):
         methods = [
@@ -541,41 +536,21 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         rsv_shot = self._options_prx_node.get(
             'shot'
         )
-        if bsc_core.SystemMtd.get_is_linux():
-            # if bsc_core.SystemMtd.get_application() not in ['maya']:
-            if rsv_asset is not None:
-                asset_usd_variant_dict = self._rsv_entity_set_usd_creator._get_asset_usd_set_dress_variant_dict_(rsv_asset)
-                for k, v in asset_usd_variant_dict.items():
-                    i_port_path = v['port_path']
-                    i_variant_names = v['variant_names']
-                    i_current_variant_name = v['variant_name']
-                    self._usd_prx_node.set(
-                        i_port_path, i_variant_names
-                    )
-                    self._usd_prx_node.set(
-                        i_port_path, i_current_variant_name
-                    )
-                    self._usd_prx_node.set_default(
-                        i_port_path, i_current_variant_name
-                    )
-        else:
-            if bsc_core.SystemMtd.get_application() not in ['maya']:
-                if rsv_asset is not None:
-                    asset_usd_variant_dict = self._rsv_entity_set_usd_creator._get_asset_usd_set_dress_variant_dict_(
-                        rsv_asset)
-                    for k, v in asset_usd_variant_dict.items():
-                        i_port_path = v['port_path']
-                        i_variant_names = v['variant_names']
-                        i_current_variant_name = v['variant_name']
-                        self._usd_prx_node.set(
-                            i_port_path, i_variant_names
-                        )
-                        self._usd_prx_node.set(
-                            i_port_path, i_current_variant_name
-                        )
-                        self._usd_prx_node.set_default(
-                            i_port_path, i_current_variant_name
-                        )
+        if rsv_asset is not None:
+            asset_usd_variant_dict = self._rsv_entity_set_usd_creator._get_asset_usd_set_dress_variant_cache_(rsv_asset)
+            for k, v in asset_usd_variant_dict.items():
+                i_port_path = v['port_path']
+                i_variant_names = v['variant_names']
+                i_current_variant_name = v['variant_name']
+                self._usd_prx_node.set(
+                    i_port_path, i_variant_names
+                )
+                self._usd_prx_node.set(
+                    i_port_path, i_current_variant_name
+                )
+                self._usd_prx_node.set_default(
+                    i_port_path, i_current_variant_name
+                )
 
     def set_variables_refresh(self):
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
@@ -1074,10 +1049,9 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 paths = self._rsv_entity_set_usd_creator.get_effect_component_paths(output_component_usd_file_path)
                 u = core_objects.ObjUniverse()
                 o_t = u._get_obj_type_force_('usd', 'effect')
-
                 for i_path in paths:
                     o_t.set_obj_create(i_path)
-
+                #
                 self._usd_prx_node.set(
                     'components.effect', u.get_obj_type('effect').get_objs()
                 )
