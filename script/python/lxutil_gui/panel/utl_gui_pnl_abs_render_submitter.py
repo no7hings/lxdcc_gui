@@ -333,6 +333,10 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             # if bsc_core.SystemMtd.get_application() not in ['maya']:
             rsv_shots = self._rsv_entity_set_usd_creator.get_rsv_asset_shots()
             self._options_prx_node.set('shot', rsv_shots)
+        else:
+            if bsc_core.SystemMtd.get_application() not in ['maya']:
+                rsv_shots = self._rsv_entity_set_usd_creator.get_rsv_asset_shots()
+                self._options_prx_node.set('shot', rsv_shots)
 
     def set_current_refresh(self):
         methods = [
@@ -554,22 +558,24 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     self._usd_prx_node.set_default(
                         i_port_path, i_current_variant_name
                     )
-            #
-            # shot_usd_variant_dict = self._rsv_entity_set_usd_creator._get_shot_usd_set_dress_variant_dict_(rsv_shot)
-            # for k, v in shot_usd_variant_dict.items():
-            #     i_port_path = v['port_path']
-            #     i_variant_names = v['variant_names']
-            #     i_current_variant_name = v['variant_name']
-            #     self._usd_prx_node.set(
-            #         i_port_path, i_variant_names
-            #     )
-            #     self._usd_prx_node.set(
-            #         i_port_path, i_current_variant_name
-            #     )
         else:
-            if rsv_asset is not None:
-                asset_usd_variant_dict = self._rsv_entity_set_usd_creator._get_asset_usd_set_dress_variant_dict_(rsv_asset)
-                print rsv_asset
+            if bsc_core.SystemMtd.get_application() not in ['maya']:
+                if rsv_asset is not None:
+                    asset_usd_variant_dict = self._rsv_entity_set_usd_creator._get_asset_usd_set_dress_variant_dict_(
+                        rsv_asset)
+                    for k, v in asset_usd_variant_dict.items():
+                        i_port_path = v['port_path']
+                        i_variant_names = v['variant_names']
+                        i_current_variant_name = v['variant_name']
+                        self._usd_prx_node.set(
+                            i_port_path, i_variant_names
+                        )
+                        self._usd_prx_node.set(
+                            i_port_path, i_current_variant_name
+                        )
+                        self._usd_prx_node.set_default(
+                            i_port_path, i_current_variant_name
+                        )
 
     def set_variables_refresh(self):
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
