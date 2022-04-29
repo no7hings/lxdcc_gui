@@ -221,7 +221,10 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 )
                 self._rsv_entity = self._rsv_task.get_rsv_entity()
                 self._render_movie_file_rsv_unit = self._rsv_task.get_rsv_unit(
-                    keyword='{branch}-output-katana-render-movie-file'
+                    keyword='{branch}-output-katana-render-video-mov-file'
+                )
+                self._render_info_file_rsv_unit = self._rsv_task.get_rsv_unit(
+                    keyword='{branch}-output-render-info-yaml-file'
                 )
                 self._camera_rsv_task = self._rsv_entity.get_rsv_task(
                     step='cam', task='camera'
@@ -391,6 +394,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         hook_options = []
         pixmaps = []
         #
+        show_info_dict = variants
         variable_name = '.'.join(variants.values())
         # print variable_name
         movie_file_path = self._render_movie_file_rsv_unit.get_result(
@@ -402,13 +406,23 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 movie_file_path
             )
             version = rsv_properties.get('version')
-            variants['version'] = version
-            variants['update'] = bsc_core.TimeMtd.to_prettify_by_timestamp(
+            show_info_dict['version'] = version
+            show_info_dict['update'] = bsc_core.TimeMtd.to_prettify_by_timestamp(
                 bsc_core.StorageFileOpt(
                     movie_file_path
                 ).get_modify_timestamp(),
                 language=1
             )
+            render_info_file_path = self._render_info_file_rsv_unit.get_result(
+                version=version
+            )
+            if render_info_file_path:
+                render_info = bsc_core.StorageFileOpt(render_info_file_path).set_read()
+                show_info_dict['user'] = render_info['user']
+                # show_info_dict['submit time'] = bsc_core.TimeMtd.to_prettify_by_time_tag(
+                #     render_info['time_tag'],
+                #     language=1
+                # )
             image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
             prx_item.set_image(image_file_path)
             prx_item.set_movie_enable(True)
@@ -492,13 +506,13 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         menu_content = ssn_commands.get_menu_content_by_hook_options(hook_options)
         prx_item.set_menu_content(menu_content)
 
-        prx_item.set_name_dict(variants)
+        prx_item.set_name_dict(show_info_dict)
         prx_item.set_icons_by_pixmap(pixmaps)
         r, g, b = bsc_core.TextOpt(variable_name).to_rgb()
         prx_item.set_name_frame_background_color((r, g, b, 127))
 
         prx_item.set_tool_tip(
-            '\n'.join(['{} : {}'.format(k, v) for k, v in variants.items()])
+            '\n'.join(['{} : {}'.format(k, v) for k, v in show_info_dict.items()])
         )
 
     @utl_gui_qt_core.set_prx_window_waiting
@@ -919,7 +933,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 )
                 self._rsv_entity = self._rsv_task.get_rsv_entity()
                 self._render_movie_file_rsv_unit = self._rsv_task.get_rsv_unit(
-                    keyword='{branch}-output-katana-render-movie-file'
+                    keyword='{branch}-output-katana-render-video-mov-file'
                 )
                 self._component_usd_file_unit = self._rsv_task.get_rsv_unit(
                     keyword='{branch}-component-usd-file'
