@@ -504,12 +504,15 @@ class PrxStgObjTreeViewAddOpt(object):
         if obj_key in self._obj_add_dict:
             return False, self._obj_add_dict[obj_key]
 
-        root = obj.get_root()
-        self._set_item_prx_add_(obj=root, use_show_thread=use_show_thread)
-        directory = obj.get_parent()
-        self._set_item_prx_add_(obj=directory, parent=root, use_show_thread=use_show_thread, name_use_path_prettify=True)
+        if obj.PATHSEP in obj.path:
+            root = obj.get_root()
+            self._set_item_prx_add_(obj=root, use_show_thread=use_show_thread)
+            directory = obj.get_parent()
+            self._set_item_prx_add_(obj=directory, parent=root, use_show_thread=use_show_thread, name_use_path_prettify=True)
+            #
+            return self._set_item_prx_add_(obj=obj, parent=directory, use_show_thread=use_show_thread)
         #
-        return self._set_item_prx_add_(obj=obj, parent=directory, use_show_thread=use_show_thread)
+        return False, None
 
     def set_item_prx_add_as_tree_mode(self, obj):
         ancestors = obj.get_ancestors()

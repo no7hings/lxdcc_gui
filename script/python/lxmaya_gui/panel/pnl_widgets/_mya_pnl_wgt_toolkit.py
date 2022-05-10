@@ -298,11 +298,11 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
         )
         version = 'new'
         root = '/master'
-        mya_root_dat_opt = bsc_core.DccPathDagOpt(root).set_translate_to(
+        mya_root_dag_opt = bsc_core.DccPathDagOpt(root).set_translate_to(
             pathsep='|'
         )
         mya_root = mya_dcc_objects.Group(
-            mya_root_dat_opt.get_value()
+            mya_root_dag_opt.get_value()
         )
         if mya_root.get_is_exists() is True:
             keyword = 'asset-work-geometry-usd-var-file'

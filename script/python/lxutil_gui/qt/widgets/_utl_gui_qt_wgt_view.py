@@ -245,6 +245,211 @@ class _QtVSplitter(_AbsQtSplitter):
         super(_QtVSplitter, self).__init__(*args, **kwargs)
 
 
+class AbsQtItemsDef(object):
+    def _set_wgt_update_draw_(self):
+        raise NotImplementedError()
+
+    def _set_items_def_init_(self, widget):
+        self._widget = widget
+
+        self._items = []
+        self._item_index_current = 0
+        self._item_index_hovered = None
+
+        self._item_rects = []
+        self._item_name_texts = []
+        self._item_icon_name_texts = []
+
+    def _set_item_current_index_(self, index):
+        pass
+
+
+class _QtTabView(
+    QtWidgets.QWidget,
+    AbsQtItemsDef,
+    utl_gui_qt_abstract.AbsQtWgtDef,
+):
+    def __init__(self, *args, **kwargs):
+        super(_QtTabView, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setMouseTracking(True)
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+
+        self._set_items_def_init_(self)
+        self._set_wgt_def_init_(self)
+
+        self._tab_w, self._tab_h = 48, 24
+
+        self.setFont(
+            get_font(size=10)
+        )
+
+    def _set_item_add_(self, widget, *args, **kwargs):
+        widget.setParent(self)
+        self._items.append(widget)
+        self._item_rects.append(QtCore.QRect())
+        if 'name' in kwargs:
+            self._item_name_texts.append(kwargs['name'])
+        else:
+            self._item_name_texts.append(None)
+        #
+        if 'icon_name_text' in kwargs:
+            self._item_icon_name_texts.append(kwargs['icon_name_text'])
+        else:
+            self._item_icon_name_texts.append(None)
+        #
+        widget.installEventFilter(self)
+
+    def _set_wgt_update_draw_(self):
+        self.update()
+
+    def _set_wgt_update_(self):
+        self._set_wgt_update_geometry_(self.rect())
+        self._set_wgt_update_draw_()
+
+    def _set_wgt_update_geometry_(self, rect):
+        x, y = rect.x(), rect.y()
+        w, h = rect.width(), rect.height()
+        t_w, t_h = self._tab_w, self._tab_h
+        #
+        c_x = x
+        for i_index, i_item_rect in enumerate(self._item_rects):
+            i_name_text = self._item_name_texts[i_index]
+            if i_name_text is not None:
+                i_text_width = self._get_text_draw_width_(
+                    i_name_text
+                )
+            else:
+                i_text_width = t_w
+            #
+            i_icon_name_text = self._item_icon_name_texts[i_index]
+            if i_icon_name_text is not None:
+                i_icon_w = t_h
+            else:
+                i_icon_w = 0
+            #
+            i_t_w = i_text_width+i_icon_w+t_h*2
+            #
+            i_item_rect.setRect(
+                c_x, y, i_t_w, t_h
+            )
+            c_x += i_t_w
+        # widget
+        for i_index, i_item in enumerate(self._items):
+            if i_index == self._item_index_current:
+                if i_item is not None:
+                    i_item.show()
+                    i_item.setGeometry(
+                        x, y+t_h, w, h-t_h
+                    )
+            else:
+                i_item.hide()
+
+    def _set_item_hovered_clear_(self):
+        self._item_index_hovered = None
+        self._set_wgt_update_draw_()
+
+    def _set_item_current_index_(self, index):
+        self._item_index_current = index
+        self._set_wgt_update_()
+
+    def _set_action_hover_execute_(self, event):
+        point = event.pos()
+        self._item_index_hovered = None
+
+        for i_index, i in enumerate(self._item_rects):
+            if i.contains(point):
+                self._item_index_hovered = i_index
+                break
+
+        self._set_wgt_update_draw_()
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.Enter:
+                pass
+            elif event.type() == QtCore.QEvent.Leave:
+                self._set_item_hovered_clear_()
+            elif event.type() == QtCore.QEvent.Resize:
+                self._set_wgt_update_()
+            elif event.type() == QtCore.QEvent.MouseButtonPress:
+                if event.button() == QtCore.Qt.LeftButton:
+                    pass
+                #
+                elif event.button() == QtCore.Qt.RightButton:
+                    pass
+                elif event.button() == QtCore.Qt.MidButton:
+                    pass
+                else:
+                    event.ignore()
+            elif event.type() == QtCore.QEvent.MouseMove:
+                if event.buttons() == QtCore.Qt.LeftButton:
+                    pass
+                elif event.buttons() == QtCore.Qt.RightButton:
+                    pass
+                elif event.buttons() == QtCore.Qt.MidButton:
+                    pass
+                elif event.button() == QtCore.Qt.NoButton:
+                    self._set_action_hover_execute_(event)
+                else:
+                    event.ignore()
+            elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                if event.button() == QtCore.Qt.LeftButton:
+                    if self._item_index_hovered is not None:
+                        self._set_item_current_index_(self._item_index_hovered)
+                elif event.button() == QtCore.Qt.RightButton:
+                    pass
+                elif event.button() == QtCore.Qt.MidButton:
+                    pass
+                else:
+                    event.ignore()
+        else:
+            if event.type() == QtCore.QEvent.Enter:
+                self._set_item_hovered_clear_()
+            if event.type() == QtCore.QEvent.Leave:
+                self._set_item_hovered_clear_()
+        return False
+
+    def paintEvent(self, event):
+        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+
+        painter.setRenderHints(
+            painter.Antialiasing
+        )
+        for i_index, i_item_rect in enumerate(self._item_rects):
+            i_name_text = self._item_name_texts[i_index]
+            i_icon_name_text = self._item_icon_name_texts[i_index]
+            is_current = i_index == self._item_index_current
+            is_hovered = i_index == self._item_index_hovered
+            if is_current is False:
+                painter._set_tab_button_draw_(
+                    i_item_rect,
+                    icon_name_text=i_icon_name_text,
+                    name_text=i_name_text,
+                    is_hovered=is_hovered,
+                    is_current=is_current,
+                )
+
+        for i_index, i_item_rect in enumerate(self._item_rects):
+            i_name_text = self._item_name_texts[i_index]
+            i_icon_name_text = self._item_icon_name_texts[i_index]
+            is_current = i_index == self._item_index_current
+            is_hovered = i_index == self._item_index_hovered
+            if is_current is True:
+                painter._set_tab_button_draw_(
+                    i_item_rect,
+                    icon_name_text=i_icon_name_text,
+                    name_text=i_name_text,
+                    is_hovered=is_hovered,
+                    is_current=is_current,
+                )
+
+
 class QtTreeWidget(
     utl_gui_qt_abstract.AbsQtTreeWidget
 ):

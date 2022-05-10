@@ -280,11 +280,17 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             self._schemes_prx_node.set(
                 'variables', 'model'
             )
+            self._schemes_prx_node.set(
+                'settings', 'asset'
+            )
             key = 'model'
             cache_workspace = 'output'
         elif step in ['srf']:
             self._schemes_prx_node.set(
                 'variables', 'surface'
+            )
+            self._schemes_prx_node.set(
+                'settings', 'asset'
             )
             key = 'surface'
             cache_workspace = 'output'
@@ -292,11 +298,17 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             self._schemes_prx_node.set(
                 'variables', 'groom'
             )
+            self._schemes_prx_node.set(
+                'settings', 'asset'
+            )
             key = 'groom'
             cache_workspace = 'output'
         elif step in ['rig']:
             self._schemes_prx_node.set(
                 'variables', 'rig'
+            )
+            self._schemes_prx_node.set(
+                'settings', 'asset'
             )
             key = 'rig'
             cache_workspace = 'output'
@@ -331,7 +343,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         rsv_versions = self._work_scene_file_rsv_unit.get_rsv_versions()
         self._options_prx_node.set('version', rsv_versions)
 
-        self._rsv_entity_set_usd_creator = usd_rsv_objects.RsvAssetSetUsdCreator(self._rsv_entity)
+        self._rsv_entity_set_usd_creator = usd_rsv_objects.RsvUsdAssetSetCreator(self._rsv_entity)
         # if bsc_core.SystemMtd.get_application() not in ['maya']:
         rsv_shots = self._rsv_entity_set_usd_creator.get_rsv_asset_shots()
         self._options_prx_node.set('shot', rsv_shots)
@@ -349,6 +361,9 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 result = i()
                 if result is False:
                     break
+        #
+        self.set_variables_load_from_scheme()
+        self.set_settings_load_from_scheme()
 
     def _set_prx_node_effect_(self):
         # self._schemes_prx_node.set(
@@ -356,6 +371,9 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         # )
         self._schemes_prx_node.set_changed_connect_to(
             'variables', self.set_variables_load_from_scheme
+        )
+        self._schemes_prx_node.set_changed_connect_to(
+            'settings', self.set_settings_load_from_scheme
         )
 
         self._options_prx_node.get_port(
@@ -419,10 +437,13 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             if render_info_file_path:
                 render_info = bsc_core.StorageFileOpt(render_info_file_path).set_read()
                 show_info_dict['user'] = render_info['user']
-                # show_info_dict['submit time'] = bsc_core.TimeMtd.to_prettify_by_time_tag(
+                # show_info_dict['submit_time'] = bsc_core.TimeMtd.to_prettify_by_time_tag(
                 #     render_info['time_tag'],
                 #     language=1
                 # )
+                if variants['camera'] == 'shot':
+                    show_info_dict['shot'] = render_info['shot']
+            #
             image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
             prx_item.set_image(image_file_path)
             prx_item.set_movie_enable(True)
@@ -547,9 +568,6 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
     def set_usd_refresh(self):
         rsv_asset = self._rsv_task.get_rsv_entity()
-        rsv_shot = self._options_prx_node.get(
-            'shot'
-        )
         if rsv_asset is not None:
             asset_usd_variant_dict = self._rsv_entity_set_usd_creator._get_asset_usd_set_dress_variant_cache_(rsv_asset)
             for k, v in asset_usd_variant_dict.items():
@@ -565,14 +583,21 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 self._usd_prx_node.set_default(
                     i_port_path, i_current_variant_name
                 )
+            #
+            rsv_shot = self._options_prx_node.get(
+                'shot'
+            )
+            if rsv_shot is not None:
+                shot_asset_dict = self._rsv_entity_set_usd_creator._get_shot_asset_cache_(
+                    rsv_asset, rsv_shot
+                )
+                self._usd_prx_node.set('variants.shot_asset', shot_asset_dict.keys())
 
     def set_variables_refresh(self):
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()
         # self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
-        #
-        self.set_variables_load_from_scheme()
-    
+
     def set_variables_load_from_scheme(self):
         scheme = self._schemes_prx_node.get('variables')
         filter_dict = self._hook_build_configure.get(
@@ -597,33 +622,67 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     frame_range = (
                         stg_shot_query.get('sg_cut_in'), stg_shot_query.get('sg_cut_out')
                     )
+                    frames = '{}-{}'.format(*frame_range)
                     self._settings_prx_node.set(
-                        'render.shot.frame_range', frame_range
+                        'render.shot.frames', frames
                     )
-        #
-        self.set_settings_load_from_scheme()
+                    self._settings_prx_node.set_default(
+                        'render.shot.frames', frames
+                    )
 
         if bsc_core.EnvironMtd.get_td_enable() is True:
+            self._settings_prx_node.set_default(
+                'td.test_scheme', 'td_enable'
+            )
             self._settings_prx_node.set(
                 'td.test_scheme', 'td_enable'
             )
 
     def set_settings_load_from_scheme(self):
-        pass
+        scheme = self._schemes_prx_node.get('settings')
+
+        dic = self._hook_build_configure.get(
+            'scheme.settings.{}'.format(scheme)
+        )
+        self._settings_prx_node.set_reset()
+        if dic:
+            for k, v in dic.items():
+                if isinstance(v, dict):
+                    if 'expression' in v:
+                        value = None
+                        e = 'value{}'.format(v['expression'])
+                        exec e
+                        self._settings_prx_node.set(
+                            k.replace('/', '.'), value
+                        )
+                else:
+                    self._settings_prx_node.set(
+                        k.replace('/', '.'), v
+                    )
 
     def _get_settings_dic_(self):
         dic = {}
-        render_asset_frame_range = self._settings_prx_node.get('render.asset.frame_range')
-        render_asset_frame_step = self._settings_prx_node.get('render.asset.frame_step')
-        render_shot_frame_range = self._settings_prx_node.get('render.shot.frame_range')
-        render_shot_frame_step = self._settings_prx_node.get('render.shot.frame_step')
+        asset_frames = self._settings_prx_node.get('render.asset.frames')
         #
-        dic['render_asset_frames'] = bsc_core.FrameRangeMtd.get(
-            render_asset_frame_range, render_asset_frame_step
-        )
-        dic['render_shot_frames'] = bsc_core.FrameRangeMtd.get(
-            render_shot_frame_range, render_shot_frame_step
-        )
+        dic['cache_asset_frames'] = asset_frames
+        dic['render_asset_frames'] = asset_frames
+        dic['render_asset_frame_step'] = int(self._settings_prx_node.get('render.asset.frame_step'))
+        #
+        shot_frames = self._settings_prx_node.get('render.shot.frames')
+        #
+        dic['cache_shot_frames'] = shot_frames
+        dic['render_shot_frames'] = shot_frames
+        dic['render_shot_frame_step'] = int(self._settings_prx_node.get('render.shot.frame_step'))
+        #
+        dic['render_override_enable'] = self._settings_prx_node.get('render.override_enable')
+        dic['render_override_percent'] = self._settings_prx_node.get('render.override.percent')
+        #
+        dic['render_arnold_aov_enable'] = self._settings_prx_node.get('render.arnold.aov_enable')
+        #
+        dic['render_arnold_override_enable'] = self._settings_prx_node.get('render.arnold_override_enable')
+        dic['render_arnold_override_aa_sample'] = self._settings_prx_node.get('render.arnold_override.aa_sample')
+        #
+        dic['deadline_priority'] = int(self._settings_prx_node.get('deadline.priority'))
         return dic
 
     def _get_variables_dic_(self):
@@ -634,7 +693,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 if c.get(_i_k) is True:
                     _name = bsc_core.DccPathDagOpt(_i_k).get_name()
                     dic.setdefault(_key, []).append(_name)
-
+        #
         key_mapper = {
             'camera': 'cameras',
             'layer': 'layers',
@@ -642,6 +701,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             'look_pass': 'look_passes',
             'quality': 'qualities'
         }
+        #
         dic = {}
         filter_dic = self._prx_dcc_obj_tree_view_tag_filter_opt.get_filter_dict()
         c = bsc_objects.Configure(value=filter_dic)
@@ -664,14 +724,16 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             if rsv_shot:
                 dic['shot'] = rsv_shot.name
             #
+            dic['shot_asset'] = self._usd_prx_node.get('variants.shot_asset')
+            #
             dic['choice_scheme'] = self._options_prx_node.get('choice_scheme')
             #
             settings_dic = self._get_settings_dic_()
             dic.update(settings_dic)
-
+            #
             variable_dic = self._get_variables_dic_()
             dic.update(variable_dic)
-
+            #
             td_test_scheme = self._settings_prx_node.get(
                 'td.test_scheme'
             )
@@ -971,13 +1033,14 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 result = i()
                 if result is False:
                     break
+        #
+        self.set_variables_load_from_scheme()
+        self.set_settings_load_from_scheme()
 
     def set_variables_refresh(self):
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()
         # self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
-        #
-        self.set_variables_load_from_scheme()
 
     def set_variables_load_from_scheme(self):
         scheme = self._schemes_prx_node.get('variables')
@@ -1054,7 +1117,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
         self._options_prx_node.set('version', rsv_versions)
 
-        self._rsv_entity_set_usd_creator = usd_rsv_objects.RsvShotSetUsdCreator(self._rsv_entity)
+        self._rsv_entity_set_usd_creator = usd_rsv_objects.RsvUsdShotSetCreator(self._rsv_entity)
 
     def set_usd_refresh(self):
         if bsc_core.SystemMtd.get_is_linux():
@@ -1075,11 +1138,13 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             self._start_frame, self._end_frame = (
                 self._stg_entity_query.get('sg_cut_in'), self._stg_entity_query.get('sg_cut_out')
             )
+            frames = '{}-{}'.format(self._start_frame, self._end_frame)
             self._settings_prx_node.set(
-                'render.frames', '{}-{}'.format(self._start_frame, self._end_frame)
+                'render.frames', frames
             )
-        #
-        self.set_settings_load_from_scheme()
+            self._settings_prx_node.set_default(
+                'render.frames', frames
+            )
 
         if bsc_core.EnvironMtd.get_td_enable() is True:
             self._settings_prx_node.set(
@@ -1092,8 +1157,8 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         dic = self._hook_build_configure.get(
             'scheme.settings.{}'.format(scheme)
         )
+        self._settings_prx_node.set_reset()
         if dic:
-            self._settings_prx_node.set_reset()
             for k, v in dic.items():
                 if isinstance(v, dict):
                     if 'expression' in v:

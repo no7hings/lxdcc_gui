@@ -388,7 +388,7 @@ class _QtTextItem(
         self._set_widget_geometry_update_()
         # name
         if self._name_text is not None:
-            text_color = [QtFontColor.Basic, QtFontColor.Light][self._is_hovered]
+            text_color = [self._name_color, self._hover_name_color][self._is_hovered]
             #
             painter._set_text_draw_by_rect_(
                 self._name_rect,
@@ -1976,6 +1976,23 @@ class _QtEnumerateValueEntryItem(
 ):
     QT_VALUE_ENTRY_CLASS = QtLineEdit_
     CHOOSE_DROP_FRAME_CLASS = _QtItemChooseDropFrame
+    def _set_wgt_update_(self):
+        values = self._get_item_values_()
+        if values:
+            value = self._get_item_value_()
+            if value in values:
+                self._text_label.show()
+                maximum = len(values)
+                value = values.index(value)+1
+                text = '{}/{}'.format(value, maximum)
+                self._text_label._set_name_text_(text)
+                width = self._text_label._get_name_text_draw_width_(text)
+                self._text_label.setMinimumWidth(width+4)
+            else:
+                self._text_label.hide()
+        else:
+            self._text_label.hide()
+
     def __init__(self, *args, **kwargs):
         super(_QtEnumerateValueEntryItem, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -1991,6 +2008,11 @@ class _QtEnumerateValueEntryItem(
         #
         self._set_item_value_entry_build_(self._item_value_type)
         self._item_value_entry_widget._set_enter_enable_(False)
+        #
+        self._text_label = _QtTextItem()
+        self._layout.addWidget(self._text_label)
+        self._text_label._set_name_color_(QtFontColor.Disable)
+        self._text_label.hide()
         #
         self._drop_button = _QtIconPressItem()
         self._layout.addWidget(self._drop_button)
@@ -2124,8 +2146,8 @@ class _QtHExpandItem0(
         color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
         hover_color = r, g, b
         #
-        self._name_text_color = color
-        self._hover_name_text_color = hover_color
+        self._name_color = color
+        self._hover_name_color = hover_color
         #
         r, g, b = 135, 135, 135
         h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
@@ -2227,7 +2249,7 @@ class _QtHExpandItem0(
                 )
         # text
         if self._name_text is not None:
-            color = [self._name_text_color, self._hover_name_text_color][self._is_hovered]
+            color = [self._name_color, self._hover_name_color][self._is_hovered]
             painter._set_text_draw_by_rect_(
                 self._name_rect,
                 self._name_text,
@@ -2889,7 +2911,7 @@ class _QtHItem(
             painter._set_text_draw_by_rect_(
                 self._name_rect,
                 self._name_text,
-                font_color=self._name_text_color,
+                font_color=self._name_color,
                 font=self._name_text_font,
                 text_option=self._name_text_option,
                 is_hovered=self._is_hovered,

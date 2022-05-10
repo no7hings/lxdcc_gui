@@ -12,6 +12,14 @@ from lxutil_gui import utl_gui_configure
 from lxutil_gui.qt.utl_gui_qt_core import *
 
 
+class AbsQtWgtDef(object):
+    def _set_wgt_def_init_(self, widget):
+        self._widget = widget
+
+    def _get_text_draw_width_(self, text=None):
+        return self._widget.fontMetrics().width(text)
+
+
 class AbsQtFocusDef(object):
     def _set_wgt_update_draw_(self):
         raise NotImplementedError()
@@ -593,18 +601,18 @@ class AbsQtNameDef(object):
     def _set_name_def_init_(self):
         self._name_enable = False
         self._name_text = None
-        self._name_text_color = QtFontColor.Basic
-        self._hover_name_text_color = QtFontColor.Light
         self._name_text_font = Font.NAME
+        self._name_color = QtFontColor.Basic
+        self._hover_name_color = QtFontColor.Light
         self._name_text_option = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
         #
         self._name_width = 160
         #
         self._name_frame_rect = QtCore.QRect()
         self._name_rect = QtCore.QRect()
-        #
-        self._name_color = 223, 223, 223
-        self._hover_name_color = 255, 255, 255
+
+    def _set_name_color_(self, color):
+        self._name_color = color
 
     def _set_wgt_update_draw_(self):
         raise NotImplementedError()
@@ -2481,6 +2489,9 @@ class AbsQtItemValueEnumerateEntryDef(object):
         #
         self._item_value_entry_widget = None
 
+    def _set_wgt_update_(self):
+        raise NotImplementedError()
+
     def _set_item_value_entry_build_(self, value_type):
         pass
 
@@ -2500,15 +2511,18 @@ class AbsQtItemValueEnumerateEntryDef(object):
     def _set_item_values_(self, values):
         self._values = values
         self._item_value_entry_widget._set_completer_values_(values)
+        self._set_wgt_update_()
 
     def _get_item_values_(self):
         return self._values
 
     def _set_item_value_append_(self, value):
         self._values.append(value)
+        self._set_wgt_update_()
 
     def _set_item_value_(self, value):
         self._item_value_entry_widget._set_item_value_(value)
+        self._set_wgt_update_()
 
     def _get_item_value_(self):
         return self._item_value_entry_widget._get_item_value_()

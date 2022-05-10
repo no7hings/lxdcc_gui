@@ -52,6 +52,20 @@ class PrxVSplitter(PrxHSplitter):
         super(PrxVSplitter, self).__init__(*args, **kwargs)
 
 
+class PrxTabView(utl_gui_prx_abstract.AbsPrxWidget):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_view._QtTabView
+    def __init__(self, *args, **kwargs):
+        super(PrxTabView, self).__init__(*args, **kwargs)
+
+    def set_item_add(self, widget, *args, **kwargs):
+        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+            qt_widget = widget
+        else:
+            qt_widget = widget.widget
+        #
+        self.widget._set_item_add_(qt_widget, *args, **kwargs)
+
+
 class AbsPrxViewDef(object):
     @property
     def view(self):

@@ -173,7 +173,7 @@ class AbsPrxWaitingDef(object):
         thread = self.widget._set_thread_create_()
 
         thread.stated.connect(self.set_waiting_start)
-        thread.completed.connect(self.set_waiting_stop)
+        thread.stopped.connect(self.set_waiting_stop)
         for i in methods:
             thread.set_method_add(
                 functools.partial(debug_run_fnc_, i)

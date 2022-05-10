@@ -610,6 +610,9 @@ class PrxChooseEntry_(AbsRsvTypeQtEntry):
     def set_default(self, raw, **kwargs):
         self._qt_entry_widget._set_item_value_default_(raw)
 
+    def get_default(self):
+        return self._qt_entry_widget._get_item_value_default_()
+
     def get_is_default(self):
         return self._qt_entry_widget._get_item_value_is_default_()
 
@@ -704,6 +707,9 @@ class PrxBooleanEntry(AbsRsvTypeQtEntry):
 
     def set_default(self, raw, **kwargs):
         self._qt_entry_widget._set_item_value_default_(raw)
+
+    def get_default(self):
+        return self._qt_entry_widget._get_item_value_default_()
 
     def get_is_default(self):
         return self._qt_entry_widget._get_item_value_is_default_()
@@ -1951,8 +1957,11 @@ class PrxGroupPort_(
             if i_child.get_type() == 'group':
                 pass
             else:
-                i_width = i_child._prx_port_label.get_name_draw_width()
-                widths.append(i_width)
+                if i_child.LABEL_HIDED is False:
+                    i_width = i_child._prx_port_label.get_name_draw_width()
+                    widths.append(i_width)
+                else:
+                    widths.append(0)
         if widths:
             return max(widths)
         return 0
@@ -2138,13 +2147,20 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             )
             port.set(value_)
             port.set_default(value_)
+
         elif widget_ in ['enumerate']:
             port = PrxEnumeratePort_(
                 port_path,
                 node_widget=self.widget
             )
             port.set(value_)
-            port.set_default(value_[-1])
+            current_ = option.get('current')
+            if current_ is not None:
+                port.set(current_)
+                port.set_default(current_)
+            else:
+                port.set(value_[-1])
+                port.set_default(value_[-1])
         #
         elif widget_ in ['file']:
             port = PrxFileOpenPort(
@@ -2153,6 +2169,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             )
             port.set(value_)
             port.set_default(value_)
+        #
         elif widget_ in ['directory']:
             port = PrxDirectoryOpenPort(
                 port_path,
@@ -2227,6 +2244,11 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         port = self.get_port(key)
         if port is not None:
             port.set(value)
+        else:
+            utl_core.Log.set_module_warning_trace(
+                'port set',
+                'port="{}" is non-exists'.format(key)
+            )
 
     def set_changed_connect_to(self, key, value):
         port = self.get_port(key)

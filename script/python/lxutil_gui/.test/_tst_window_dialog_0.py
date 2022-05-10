@@ -3,18 +3,14 @@ import threading
 
 from lxutil import utl_core
 
-from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_node, _utl_gui_prx_wgt_window
+import lxutil_gui.proxy.widgets as prx_widgets
 
 
 def yes_method():
-    # _w = utl_core.DialogWindow.set_create(
-    #     'Test-2',
-    #     use_exec=False
-    # )
-    # print _w
     import time
     w.set_content('stated')
     print 'AAA'
+    # print A
     print w.get_options_as_kwargs()
     time.sleep(5)
     print 'BBB'
@@ -28,6 +24,8 @@ if __name__ == '__main__':
     from PySide2 import QtWidgets
     #
     app = QtWidgets.QApplication(sys.argv)
+    w = prx_widgets.PrxToolWindow()
+    w.set_window_show()
     for i in range(20):
         if i == 10:
             w = utl_core.DialogWindow.set_create(
@@ -42,7 +40,6 @@ if __name__ == '__main__':
                         'tool_tip': '...'
                     }
                 }
-
             )
     #
     sys.exit(app.exec_())

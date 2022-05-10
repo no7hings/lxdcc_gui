@@ -565,16 +565,17 @@ class QtPainter(QtGui.QPainter):
         # self._set_border_width_(border_width)
         #
         r = min(w, h)
-        f_s = int(r*.75)
+        t_f_s = int(r*.675)
+        t_o = 0
         text_rect_0 = QtCore.QRect(
-            x+(w-f_s)/2, y+(h-f_s)/2,
-            f_s, f_s
+            x+(w-t_f_s)/2+t_o, y+(h-t_f_s)/2,
+            t_f_s, t_f_s
         )
-
-        f_s = max(f_s, 1)
+        #
+        t_f_s = max(t_f_s, 1)
         #
         self._set_font_(
-            get_font(size=f_s, italic=True)
+            get_font(size=t_f_s, italic=True)
         )
         self.drawText(
             text_rect_0,
@@ -1211,6 +1212,86 @@ class QtPainter(QtGui.QPainter):
         #
         self.drawRect(rect)
 
+    def _set_tab_button_draw_(self, rect, name_text, icon_name_text=None, border_width=1, offset=0, is_hovered=False, is_current=False):
+        self._set_border_color_(47, 47, 47, 255)
+        self._set_border_width_(border_width)
+        a = 255
+        if is_current:
+            color = QtGui.QColor(63, 63, 63, a)
+        else:
+            color = QtGui.QColor(95, 95, 95, a)
+        #
+        if is_hovered is True:
+            color_hovered = QtGui.QColor(127, 127, 127, a)
+        else:
+            color_hovered = color
+        #
+        start_coord, end_coord = rect.topLeft(), rect.bottomLeft()
+        l_color = QtGui.QLinearGradient(start_coord, end_coord)
+        l_color.setColorAt(0, color_hovered)
+        l_color.setColorAt(0.5, color)
+        self._set_background_color_(l_color)
+        #
+        b_ = border_width / 2
+        if offset != 0:
+            offset_ = b_ + offset
+            rect_ = QtCore.QRect(
+                rect.x() + offset_, rect.y() + offset_,
+                rect.width() - offset_, rect.height() - offset_
+            )
+        else:
+            rect_ = rect
+        #
+        x, y = rect_.x(), rect_.y()
+        w, h = rect_.width(), rect_.height()
+        r = h
+        s = 4
+        x_0, y_0 = x, y+2
+        w_0, h_0 = w+r, h-2
+
+        if is_current is True:
+            coords = [
+                (x_0, y_0 + h_0), (x_0 + h_0, y_0), (x_0 + w_0 - h_0, y_0), (x_0 + w_0, y_0 + h_0), (x_0, y_0 + h_0)
+            ]
+        else:
+            coords = [
+                (x_0, y_0 + h_0), (x_0 + h_0, y_0), (x_0 + w_0 - h_0, y_0), (x_0 + w_0, y_0 + h_0), (x_0, y_0 + h_0)
+            ]
+        #
+        self._set_path_draw_by_coords_(coords)
+        i_f_x, i_f_y = x_0+r, y_0
+        i_f_w, i_f_h = h_0, h_0
+        i_w, i_h = 12, 12
+        t_x = i_f_x+s
+        t_w = w
+        if icon_name_text is not None:
+            icon_rect = QtCore.QRect(
+                i_f_x+s, i_f_y+(i_f_h-i_h)/2, i_w, i_h
+            )
+            t_x += i_w+s
+            t_w -= i_f_w
+
+            self._set_icon_name_text_draw_by_rect_(
+                icon_rect,
+                icon_name_text,
+                border_radius=i_h/2
+            )
+        #
+        if name_text is not None:
+            text_rect = QtCore.QRect(
+                t_x, y_0, t_w, h_0
+            )
+            text_option = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+            self._set_font_(
+                get_font(size=10)
+            )
+            self._set_font_color_(255, 255, 255, 255)
+            self.drawText(
+                text_rect,
+                text_option,
+                name_text,
+            )
+
 
 class QtNGPainter(QtPainter):
     def __init__(self, *args, **kwargs):
@@ -1232,10 +1313,10 @@ class QtNGPainter(QtPainter):
                 color_0 = color_hovered
                 color_1 = color_actioned
                 start_coord, end_coord = rect.topLeft(), rect.bottomLeft()
-                color = QtGui.QLinearGradient(start_coord, end_coord)
-                color.setColorAt(0, color_0)
-                color.setColorAt(1, color_1)
-                return color
+                l_color = QtGui.QLinearGradient(start_coord, end_coord)
+                l_color.setColorAt(0, color_0)
+                l_color.setColorAt(1, color_1)
+                return l_color
             return color_hovered
         elif condition == [True, True]:
             color_0 = color_hovered
@@ -1245,10 +1326,10 @@ class QtNGPainter(QtPainter):
                 color_1 = color_selected
             #
             start_coord, end_coord = rect.topLeft(), rect.bottomLeft()
-            color = QtGui.QLinearGradient(start_coord, end_coord)
-            color.setColorAt(0, color_0)
-            color.setColorAt(1, color_1)
-            return color
+            l_color = QtGui.QLinearGradient(start_coord, end_coord)
+            l_color.setColorAt(0, color_0)
+            l_color.setColorAt(1, color_1)
+            return l_color
 
     def _set_ng_node_input_draw_(self, rect, border_width, offset):
         self.setRenderHint(self.Antialiasing)
@@ -1288,14 +1369,14 @@ class QtNGPainter(QtPainter):
         w, h = rect_.width(), rect_.height()
         #
         r = h
-        points = [
+        coords = [
             utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=90),
             utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=210),
             utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=330),
             utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=90)
         ]
         #
-        self._set_path_draw_by_coords_(points)
+        self._set_path_draw_by_coords_(coords)
 
     def _set_ng_node_resize_button_draw_(self, rect, border_width, mode, is_current, is_hovered):
         self.setRenderHint(self.Antialiasing)
@@ -1895,6 +1976,11 @@ class QtDialog(
     def _set_close_(self):
         self.close()
         self.deleteLater()
+
+    def _set_close_later_(self, time):
+        close_timer = QtCore.QTimer(self)
+        close_timer.timeout.connect(self._set_close_)
+        close_timer.start(time)
 
     def _set_size_changed_connect_to_(self, fnc):
         self.size_changed.connect(fnc)

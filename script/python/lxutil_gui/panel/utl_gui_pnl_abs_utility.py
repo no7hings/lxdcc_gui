@@ -414,62 +414,63 @@ class AbsSceneTextureManagerPanel(
                 g_p = utl_core.GuiProgressesRunner(maximum=len(self._dcc_objs))
                 for i_dcc_obj in self._dcc_objs:
                     g_p.set_update()
-                    stg_files = i_dcc_obj.get_file_objs()
-                    if stg_files:
-                        for stg_file in stg_files:
-                            is_create, stg_file_item_prx = self._prx_stg_obj_tree_view_add_opt.set_item_prx_add_as(
-                                stg_file,
+                    i_files = i_dcc_obj.get_file_objs()
+                    if i_files:
+                        for j_file in i_files:
+                            j_is_create, j_file_prx_item = self._prx_stg_obj_tree_view_add_opt.set_item_prx_add_as(
+                                j_file,
                                 mode='list',
                                 use_show_thread=True
                             )
-                            if is_create is True:
-                                if stg_file.get_is_exists() is True:
-                                    # tx_is_exists = stg_file.get_tx_is_exists()
-                                    # if tx_is_exists is True:
-                                    #     stg_file_item_prx.set_state(utl_gui_core.State.NORMAL)
-                                    # else:
-                                    #     stg_file_item_prx.set_state(utl_gui_core.State.WARNING)
-                                    #
-                                    texture_color_space = stg_file.get_color_space()
-                                    stg_file_item_prx.set_name(
-                                        texture_color_space, self.DSC_IDX_COLORS_SPACE
-                                    )
-                                    stg_file_item_prx.set_icon_by_name_text(
-                                        texture_color_space, self.DSC_IDX_COLORS_SPACE
-                                    )
-                                    #
-                                    texture_used_color_space = stg_file.get_used_color_space()
-                                    stg_file_item_prx.set_name(
-                                        texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
-                                    )
-                                    stg_file_item_prx.set_icon_by_name_text(
-                                        texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
-                                    )
-                            #
-                            i_dcc_prx_item = self._prx_dcc_obj_tree_view_add_opt._set_item_prx_add_2_(
-                                i_dcc_obj,
-                                stg_file_item_prx
-                            )
-                            i_dcc_obj.set_obj_gui(i_dcc_prx_item)
-                            #
-                            ext = stg_file.type
-                            ext_key = 'ext.{}'.format(ext)
-                            self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
-                                ext_key, i_dcc_prx_item
-                            )
-                            #
-                            node_color_space = i_dcc_obj.get_color_space()
-                            color_space_key = 'color-space.{}'.format(node_color_space)
-                            self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
-                                color_space_key, i_dcc_prx_item
-                            )
-                            #
-                            i_dcc_prx_item.set_name(
-                                node_color_space, self.DSC_IDX_USED_COLORS_SPACE
-                            )
-                            i_dcc_prx_item.set_icon_by_name_text(
-                                node_color_space, self.DSC_IDX_USED_COLORS_SPACE
-                            )
+                            if j_file_prx_item is not None:
+                                if j_is_create is True:
+                                    if j_file.get_is_exists() is True:
+                                        # tx_is_exists = j_file.get_tx_is_exists()
+                                        # if tx_is_exists is True:
+                                        #     j_file_prx_item.set_state(utl_gui_core.State.NORMAL)
+                                        # else:
+                                        #     j_file_prx_item.set_state(utl_gui_core.State.WARNING)
+                                        #
+                                        texture_color_space = j_file.get_color_space()
+                                        j_file_prx_item.set_name(
+                                            texture_color_space, self.DSC_IDX_COLORS_SPACE
+                                        )
+                                        j_file_prx_item.set_icon_by_name_text(
+                                            texture_color_space, self.DSC_IDX_COLORS_SPACE
+                                        )
+                                        #
+                                        texture_used_color_space = j_file.get_used_color_space()
+                                        j_file_prx_item.set_name(
+                                            texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
+                                        )
+                                        j_file_prx_item.set_icon_by_name_text(
+                                            texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
+                                        )
+                                #
+                                i_dcc_prx_item = self._prx_dcc_obj_tree_view_add_opt._set_item_prx_add_2_(
+                                    i_dcc_obj,
+                                    j_file_prx_item
+                                )
+                                i_dcc_obj.set_obj_gui(i_dcc_prx_item)
+                                #
+                                ext = j_file.type
+                                ext_key = 'ext.{}'.format(ext)
+                                self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
+                                    ext_key, i_dcc_prx_item
+                                )
+                                #
+                                node_color_space = i_dcc_obj.get_color_space()
+                                color_space_key = 'color-space.{}'.format(node_color_space)
+                                self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
+                                    color_space_key, i_dcc_prx_item
+                                )
+                                #
+                                i_dcc_prx_item.set_name(
+                                    node_color_space, self.DSC_IDX_USED_COLORS_SPACE
+                                )
+                                i_dcc_prx_item.set_icon_by_name_text(
+                                    node_color_space, self.DSC_IDX_USED_COLORS_SPACE
+                                )
                 #
                 g_p.set_stop()
                 #

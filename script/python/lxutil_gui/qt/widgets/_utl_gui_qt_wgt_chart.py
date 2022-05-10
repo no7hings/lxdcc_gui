@@ -461,11 +461,11 @@ class _QtWaitingChart(
 
     def _set_waiting_start_(self):
         self._timer.start(0)
-        ApplicationOpt().set_process_run_0()
+        # ApplicationOpt().set_process_run_0()
 
     def _set_waiting_stop_(self):
         self._timer.stop()
-        ApplicationOpt().set_process_run_0()
+        # ApplicationOpt().set_process_run_0()
 
     def _set_chart_update_data_(self):
         x, y = 0, 0
@@ -492,7 +492,7 @@ class _QtWaitingChart(
     def _set_waiting_update_(self):
         self._timestamp = int(bsc_core.SystemMtd.get_timestamp() * 5)
         self._set_wgt_update_draw_()
-        ApplicationOpt().set_process_run_0()
+        # ApplicationOpt().set_process_run_0()
 
     def eventFilter(self, *args):
         widget, event = args

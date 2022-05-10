@@ -100,24 +100,15 @@ class AbsPrxDialogWindow(
         self._result = False
 
     def _set_method_run_(self, methods):
-        def debug_run_fnc_(fnc_, *args, **kwargs):
-            # noinspection PyBroadException
-            try:
-                _method = fnc_(*args, **kwargs)
-            except:
-                from lxutil import utl_core
-                #
-                utl_core.ExceptionCatcher.set_create()
-                raise
-
         thread = self.widget._set_thread_create_()
 
         thread.stated.connect(self.set_waiting_start)
-        thread.completed.connect(self.set_waiting_stop)
+        thread.stopped.connect(self.set_waiting_stop)
         thread.completed.connect(self.set_window_close_later)
+        thread.error_occurred.connect(utl_core.ExceptionCatcher.set_create)
         for i in methods:
             thread.set_method_add(
-                functools.partial(debug_run_fnc_, i)
+                i
             )
         #
         thread.start()
@@ -211,15 +202,6 @@ class AbsPrxDialogWindow(
         self._tip_text_browser.set_print_over_use_thread(text)
 
 
-class PrxTipWindow(AbsPrxDialogWindow):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtMainWindow
-    def __init__(self, *args, **kwargs):
-        super(PrxTipWindow, self).__init__(*args, **kwargs)
-        self._tip_group.set_visible(True)
-        self._tip_group.set_expanded(True)
-        self.set_content_font_size(10)
-
-
 class PrxDialogWindow0(AbsPrxDialogWindow):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtMainWindow
     def __init__(self, *args, **kwargs):
@@ -284,6 +266,32 @@ class PrxDialogWindow1(AbsPrxDialogWindow):
             size,
             use_exec=True
         )
+
+
+class PrxTipWindow(PrxDialogWindow0):
+    def __init__(self, *args, **kwargs):
+        super(PrxTipWindow, self).__init__(*args, **kwargs)
+        self._tip_group.set_visible(True)
+        self._tip_group.set_expanded(True)
+        self.set_content_font_size(10)
+
+    def set_no_run(self):
+        self._result = False
+        for i in self._no_methods:
+            i()
+        self.set_window_close_later()
+
+    def set_yes_run(self):
+        self._result = True
+        for i in self._yes_methods:
+            i()
+        self.set_window_close_later()
+
+    def set_cancel_run(self):
+        self._result = False
+        for i in self._cancel_methods:
+            i()
+        self.set_window_close_later()
 
 
 class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):

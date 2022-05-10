@@ -656,6 +656,7 @@ class QtUtilMtd(object):
         )
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
+        rd = min(w, h)
         icon_rect = QtCore.QRect(
             x + (w - c_w) / 2, y + (h - c_h) / 2,
             c_w, c_h
@@ -682,7 +683,7 @@ class QtUtilMtd(object):
             # )
             painter.drawRoundedRect(icon_rect, 2, 2, QtCore.Qt.AbsoluteSize)
             painter.setPen(text_color_)
-            painter.setFont(get_font(italic=True))
+            painter.setFont(get_font(size=int(rd*.675), italic=True))
             painter.drawText(
                 rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(name[0]).capitalize()
             )
@@ -819,7 +820,7 @@ class QtPixmapMtd(object):
         #
         text_color_ = QtGui.QColor(t_r_1, t_r_1, t_r_1)
         painter.setPen(text_color_)
-        painter.setFont(get_font(size=int(rd/2*.75)))
+        painter.setFont(get_font(size=int(rd/2*.675), italic=True))
         painter.drawText(
             tag_rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(tag[0]).capitalize()
         )
@@ -837,6 +838,7 @@ class QtPixmapMtd(object):
         )
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
+        rd = min(w, h)
         icon_rect = QtCore.QRect(
             x + (w - c_w) / 2, y + (h - c_h) / 2,
             c_w, c_h
@@ -853,9 +855,10 @@ class QtPixmapMtd(object):
             #
             # t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(r, g, b)
             painter.setPen(QtFontColor.Basic)
-            painter.setFont(get_font(italic=True))
+            painter.setFont(get_font(size=int(rd*.6), italic=True))
             painter.drawText(
-                rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(name[0]).capitalize()
+                rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+                str(name[0]).capitalize()
             )
         #
         painter.end()
@@ -1159,7 +1162,10 @@ class QtPrintThread(QtCore.QThread):
 class QtMethodThread(QtCore.QThread):
     stated = qt_signal()
     running = qt_signal()
+    stopped = qt_signal()
+    #
     completed = qt_signal()
+    error_occurred = qt_signal()
     def __init__(self, *args, **kwargs):
         super(QtMethodThread, self).__init__(*args, **kwargs)
         self._methods = []
@@ -1169,9 +1175,18 @@ class QtMethodThread(QtCore.QThread):
 
     def run(self):
         self.stated.emit()
-        for i in self._methods:
-            i()
-        self.completed.emit()
+        # noinspection PyBroadException
+        try:
+            for i in self._methods:
+                i()
+            #
+            self.completed.emit()
+        except Exception:
+            self.error_occurred.emit()
+            raise RuntimeError()
+        #
+        finally:
+            self.stopped.emit()
 
 
 class QtHBoxLayout(QtWidgets.QHBoxLayout):
