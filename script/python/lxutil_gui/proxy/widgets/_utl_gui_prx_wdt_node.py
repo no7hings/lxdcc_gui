@@ -450,6 +450,11 @@ class PrxRsvProjectChooseEntry(AbsRsvTypeQtEntry):
         if _:
             self._qt_entry_widget._set_item_value_(_)
 
+    def get_histories(self):
+        return utl_core.History.get(
+            self.HISTORY_KEY
+        )
+
 
 class PrxSchemeChooseEntry(AbsRsvTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
@@ -1537,6 +1542,9 @@ class PrxRsvProjectChoosePort(PrxConstantPort):
     def __init__(self, *args, **kwargs):
         super(PrxRsvProjectChoosePort, self).__init__(*args, **kwargs)
 
+    def get_histories(self):
+        return self.entry_widget.get_histories()
+
 
 class PrxSchemChoosePort(PrxConstantPort):
     ENTRY_CLASS = PrxSchemeChooseEntry
@@ -2159,8 +2167,9 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
                 port.set(current_)
                 port.set_default(current_)
             else:
-                port.set(value_[-1])
-                port.set_default(value_[-1])
+                if value_:
+                    port.set(value_[-1])
+                    port.set_default(value_[-1])
         #
         elif widget_ in ['file']:
             port = PrxFileOpenPort(

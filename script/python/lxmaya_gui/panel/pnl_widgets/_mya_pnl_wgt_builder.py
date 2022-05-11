@@ -8,15 +8,13 @@ from lxutil.dcc.dcc_objects import _utl_dcc_obj_utility
 
 from lxutil_prd import utl_prd_configure, utl_prd_objects
 
+from lxutil_gui.qt import utl_gui_qt_core
+
 from lxutil_gui.panel import utl_gui_pnl_abstract, utl_gui_pnl_abs_builder
 
 from lxmaya_prd import ma_prd_objects
 
 import lxmaya.dcc.dcc_objects as ma_dcc_objects
-
-import lxresolver.commands as rsv_commands
-
-import lxmaya.fnc.importers as mya_fnc_importers
 
 
 class SceneBuildToolPanel(utl_gui_pnl_abstract.AbsShotBuildToolPanel):
@@ -98,16 +96,28 @@ class AssetBuilderPanel(utl_gui_pnl_abs_builder.AbsAssetBuilderPanel):
     def __init__(self, *args, **kwargs):
         super(AssetBuilderPanel, self).__init__(*args, **kwargs)
 
+    @utl_gui_qt_core.set_prx_window_waiting
     def _set_build_run_(self):
         import lxmaya.fnc.builders as mya_fnc_builders
         #
         mya_fnc_builders.AssetBuilder(
             option=dict(
-                project=self._node_prx_0.get_port('project').get(),
-                asset=self._node_prx_0.get_port('asset').get(),
-                with_model_geometry=self._node_prx_0.get_port('with_model_geometry').get(),
-                with_surface_geometry_uv_map=self._node_prx_0.get_port('with_surface_geometry_uv_map').get(),
-                with_groom_geometry=self._node_prx_0.get_port('with_groom_geometry').get(),
-                with_surface_look=self._node_prx_0.get_port('with_surface_look').get()
+                project=self._options_prx_node.get('project'),
+                asset=self._options_prx_node.get('asset').name,
+                #
+                with_model_geometry=self._options_prx_node.get('with_model_geometry'),
+                #
+                with_groom_geometry=self._options_prx_node.get('with_groom_geometry'),
+                with_groom_grow_geometry=self._options_prx_node.get('with_groom_grow_geometry'),
+                #
+                with_surface_geometry_uv_map=self._options_prx_node.get('with_surface_geometry_uv_map'),
+                with_surface_look=self._options_prx_node.get('with_surface_look'),
+                #
+                with_camera=self._options_prx_node.get('with_camera'),
+                with_light=self._options_prx_node.get('with_light'),
+                #
+                render_resolution=self._options_prx_node.get('render.resolution'),
+                #
+                save_scene=self._options_prx_node.get('save_scene'),
             )
         ).set_run()

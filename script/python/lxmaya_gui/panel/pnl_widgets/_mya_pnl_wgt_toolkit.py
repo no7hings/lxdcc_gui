@@ -208,7 +208,7 @@ class AssetToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
             option=dict(
                 project=project,
                 asset=asset,
-                with_groom_geometry=True,
+                with_groom_geometry=True, with_groom_grow_geometry=True,
             )
         ).set_run()
 
@@ -460,29 +460,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
         w.set_window_show()
 
     def set_groom_geometry_xgen_import(self):
-        import lxresolver.operators as rsv_operators
-        #
-        import lxmaya.fnc.importers as mya_fnc_importers
-        #
-        task_properties = self._task_properties
-        #
-        asset_geometry_rsv_query = rsv_operators.RsvAssetGeometryQuery(task_properties)
-        #
-        groom_geometry_xgen_file_path = asset_geometry_rsv_query.get_xgen_file()
-        groom_geometry_xgen_grow_file_path = asset_geometry_rsv_query.get_xgen_grow_file()
-        #
-        if groom_geometry_xgen_file_path:
-            i = mya_fnc_importers.GeometryXgenImporter(
-                file_path=groom_geometry_xgen_file_path,
-                root='/master/hair'
-            )
-            if groom_geometry_xgen_grow_file_path:
-                i.set_glow_import(
-                    file_path=groom_geometry_xgen_grow_file_path,
-                    root='/master/hair/hair_shape/hair_growMesh'
-                )
-            #
-            i.set_run()
+        pass
 
     def get_work_look_ass_files(self, **kwargs):
         import lxresolver.operators as rsv_operators
