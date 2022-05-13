@@ -290,6 +290,7 @@ class _QtTabView(
 
     def _set_item_add_(self, widget, *args, **kwargs):
         widget.setParent(self)
+        #
         self._items.append(widget)
         self._item_rects.append(QtCore.QRect())
         if 'name' in kwargs:
@@ -303,6 +304,8 @@ class _QtTabView(
             self._item_icon_name_texts.append(None)
         #
         widget.installEventFilter(self)
+
+        self._set_wgt_update_()
 
     def _set_wgt_update_draw_(self):
         self.update()

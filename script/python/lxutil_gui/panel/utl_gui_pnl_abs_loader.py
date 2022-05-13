@@ -45,11 +45,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         self._hook_configure = self._session.configure
         self._hook_gui_configure = self._session.gui_configure
 
-        self._hook_resolver_filter = self._hook_configure.get('resolver.filter')
-        #
-        self._hook_resolver_filter_opt = bsc_core.KeywordArgumentsOpt(self._hook_resolver_filter)
-        #
-        self._filter_project = self._hook_resolver_filter_opt.get('project')
+        self._rsv_filter = self._hook_configure.get('resolver.filter')
         #
         if self._rez_beta:
             self.set_window_title(
@@ -66,12 +62,6 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         self.set_definition_window_size(
             self._hook_gui_configure.get('size')
         )
-        # filter
-        application_filter = self._get_resolver_application_filter_()
-        if application_filter:
-            self._hook_resolver_filter = application_filter
-        else:
-            self._hook_resolver_filter = self._hook_configure.get('resolver.filter')
         #
         self._item_frame_size = self._hook_gui_configure.get('item_frame_size')
         #
@@ -98,11 +88,11 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
 
     def _set_panel_build_(self):
         self._set_viewer_groups_build_()
-        self._set_configure_groups_build_()
+        self._set_options_build_()
 
     def _set_viewer_groups_build_(self):
         expand_box_0 = prx_widgets.PrxExpandedGroup()
-        expand_box_0.set_name('Viewer(s)')
+        expand_box_0.set_name('viewers')
         expand_box_0.set_expanded(True)
         self.set_widget_add(expand_box_0)
         #
@@ -127,17 +117,21 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         #
         self._set_obj_viewer_build_()
 
-    def _set_configure_groups_build_(self):
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
-        expand_box_0.set_name('Configure(s)')
-        expand_box_0.set_expanded(True)
-        self.set_widget_add(expand_box_0)
+    def _set_options_build_(self):
+        self._rsv_filter_opt = bsc_core.KeywordArgumentsOpt(self._rsv_filter)
+        self._filter_project = self._rsv_filter_opt.get('project')
         #
-        qt_widget_0 = qt_widgets.QtWidget()
-        expand_box_0.set_widget_add(qt_widget_0)
-        qt_layout_0 = qt_widgets.QtVBoxLayout(qt_widget_0)
-        self._configure_gui = prx_widgets.PrxNode()
-        qt_layout_0.addWidget(self._configure_gui.widget)
+        self._options_prx_node = prx_widgets.PrxNode_('options')
+        self.set_widget_add(self._options_prx_node)
+        #
+        _port = self._options_prx_node.set_port_add(
+            prx_widgets.PrxEnumeratePort_('filter')
+        )
+        self._rsv_filters_dict = self._hook_configure.get('resolver.filters')
+        if self._rsv_filters_dict is not None:
+            _port.set(
+                self._rsv_filters_dict.keys()
+            )
         #
         projects = [
             'shl',
@@ -161,7 +155,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             'gui.projects'
         )
         #
-        _port = self._configure_gui.set_port_add(
+        _port = self._options_prx_node.set_port_add(
             prx_widgets.PrxRsvProjectChoosePort('project')
         )
         if self._filter_project is not None:
@@ -169,7 +163,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         else:
             _port.set(histories[-1])
         #
-        _port = self._configure_gui.set_port_add(
+        _port = self._options_prx_node.set_port_add(
             prx_widgets.PrxButtonPort('refresh')
         )
         _port.set(self._set_refresh_all_)
@@ -224,18 +218,20 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
     def _set_rsv_obj_viewer_refresh_(self):
         self._resolver = rsv_commands.get_resolver()
         #
-        project = self._configure_gui.get_port(
+        project = self._options_prx_node.get_port(
             'project'
         ).get()
         #
         self._rsv_project = self._resolver.get_rsv_project(project=project)
         #
+        self._rsv_project.set_gui_restore()
         self._prx_dcc_obj_tree_view_add_opt.set_restore()
+        #
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
         self._prx_obj_guide_bar.set_clear()
         #
         rsv_tags = self._rsv_project.get_rsv_tags(
-            **self._hook_resolver_filter_opt.value
+            **self._rsv_filter_opt.value
         )
         self._set_rsv_obj_guis_add_use_thread_(
             rsv_tags, self._set_rsv_tag_gui_add_
@@ -298,7 +294,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
     def _set_rsv_task_guis_add_(self, rsv_obj):
         rsv_obj_item_prx = rsv_obj.get_obj_gui()
         #
-        rsv_tasks = rsv_obj.get_rsv_tasks(**self._hook_resolver_filter_opt.value)
+        rsv_tasks = rsv_obj.get_rsv_tasks(**self._rsv_filter_opt.value)
         self._set_rsv_obj_guis_add_use_thread_(
             rsv_tasks, self._set_rsv_task_gui_add_
         )
@@ -527,6 +523,15 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         self._rsv_uint_list_view_0.set_loading_update()
 
     def _set_refresh_all_(self):
+        if self._rsv_filters_dict:
+            key = self._options_prx_node.get('filter')
+            if key == 'auto':
+                self._rsv_filter = self._get_resolver_application_filter_()
+            else:
+                self._rsv_filter = self._rsv_filters_dict[key]
+            #
+            self._rsv_filter_opt = bsc_core.KeywordArgumentsOpt(self._rsv_filter)
+        #
         self._set_rsv_obj_viewer_refresh_()
         self.set_filter_refresh()
 
@@ -555,6 +560,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         for k, v in _.items():
             if bsc_core.SystemMtd.get_is_matched(['*-{}'.format(k)]):
                 return v
+        return self._hook_configure.get('resolver.filter')
 
     def get_rsv_task_unit_show_raw(self, rsv_task):
         lis = []

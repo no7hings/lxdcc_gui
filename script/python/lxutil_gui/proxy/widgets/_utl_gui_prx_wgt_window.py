@@ -29,6 +29,7 @@ class AbsPrxDialogWindow(
         self.widget.setWindowModality(
             _utl_gui_qt_wgt_utility.QtCore.Qt.WindowModal
         )
+        self._use_thread = True
 
     def _set_central_layout_create_(self):
         self._central_widget = _utl_gui_qt_wgt_utility.QtWidget()
@@ -100,18 +101,27 @@ class AbsPrxDialogWindow(
         self._result = False
 
     def _set_method_run_(self, methods):
-        thread = self.widget._set_thread_create_()
+        if self._use_thread is True:
+            thread = self.widget._set_thread_create_()
+            thread.stated.connect(self.set_waiting_start)
+            thread.stopped.connect(self.set_waiting_stop)
+            thread.completed.connect(self.set_window_close_later)
+            thread.error_occurred.connect(utl_core.ExceptionCatcher.set_create)
+            for i in methods:
+                thread.set_method_add(
+                    i
+                )
+            #
+            thread.start()
+        else:
+            self.set_waiting_start()
+            for i in methods:
+                i()
+            self.set_waiting_stop()
+            self.set_window_close_later()
 
-        thread.stated.connect(self.set_waiting_start)
-        thread.stopped.connect(self.set_waiting_stop)
-        thread.completed.connect(self.set_window_close_later)
-        thread.error_occurred.connect(utl_core.ExceptionCatcher.set_create)
-        for i in methods:
-            thread.set_method_add(
-                i
-            )
-        #
-        thread.start()
+    def set_use_thread(self, boolean):
+        self._use_thread = boolean
 
     def set_no_run(self):
         self._result = False

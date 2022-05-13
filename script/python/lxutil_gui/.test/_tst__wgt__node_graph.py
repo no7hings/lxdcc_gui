@@ -30,7 +30,7 @@ class W(prx_widgets.PrxToolWindow):
         )
 
         p_n = None
-        for i in range(10):
+        for i in range(200):
             i_n = o_t.set_obj_create(
                 '/test_{}'.format(i)
             )
@@ -45,7 +45,7 @@ class W(prx_widgets.PrxToolWindow):
             else:
                 i_n.get_output_port('output').set_target(r.get_input_port('input'))
             #
-            if not i % 2:
+            if not i % 10:
                 p_n = i_n
             else:
                 i_n.get_output_port('output').set_target(r.get_input_port('input'))
