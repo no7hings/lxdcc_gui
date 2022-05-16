@@ -1189,6 +1189,28 @@ class QtMethodThread(QtCore.QThread):
             self.stopped.emit()
 
 
+class QtRsvThread(QtCore.QThread):
+    cached = qt_signal()
+    built = qt_signal(list)
+    completed = qt_signal()
+    mutex = QtCore.QMutex()
+
+    def __init__(self, *args, **kwargs):
+        super(QtRsvThread, self).__init__(*args, **kwargs)
+        self._method = None
+
+    def set_method(self, method):
+        self._method = method
+
+    def run(self):
+        # self.mutex.lock()
+        self.cached.emit()
+        results = self._method()
+        self.built.emit(results)
+        self.completed.emit()
+        # self.mutex.unlock()
+
+
 class QtHBoxLayout(QtWidgets.QHBoxLayout):
     def __init__(self, *args, **kwargs):
         super(QtHBoxLayout, self).__init__(*args, **kwargs)
