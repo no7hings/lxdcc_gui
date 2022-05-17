@@ -1189,26 +1189,84 @@ class QtMethodThread(QtCore.QThread):
             self.stopped.emit()
 
 
-class QtRsvThread(QtCore.QThread):
-    cached = qt_signal()
+class QtBuildThread(QtCore.QThread):
+    cache_started = qt_signal()
+    cache_finished = qt_signal()
+    #
     built = qt_signal(list)
-    completed = qt_signal()
-    mutex = QtCore.QMutex()
-
+    #
+    run_started = qt_signal()
+    run_finished = qt_signal()
     def __init__(self, *args, **kwargs):
-        super(QtRsvThread, self).__init__(*args, **kwargs)
-        self._method = None
+        super(QtBuildThread, self).__init__(*args, **kwargs)
+        self._cache_fnc = None
 
-    def set_method(self, method):
-        self._method = method
+    def set_cache_fnc(self, method):
+        self._cache_fnc = method
 
     def run(self):
-        # self.mutex.lock()
-        self.cached.emit()
-        results = self._method()
-        self.built.emit(results)
-        self.completed.emit()
-        # self.mutex.unlock()
+        self.run_started.emit()
+        #
+        self.cache_started.emit()
+        cache = self._cache_fnc()
+        self.cache_finished.emit()
+        #
+        self.built.emit(cache)
+        #
+        self.run_finished.emit()
+
+
+class QtBuildThreadsRunner(QtCore.QObject):
+    run_started = qt_signal()
+    run_finished = qt_signal()
+    def __init__(self, *args, **kwargs):
+        super(QtBuildThreadsRunner, self).__init__(*args, **kwargs)
+        #
+        self._widget = self.parent()
+        #
+        self._cache_fncs = []
+        self._build_fncs = []
+
+        self._results = []
+
+    def set_cache_fnc_add(self, fnc):
+        self._cache_fncs.append(fnc)
+        self._results.append(0)
+
+    def set_build_fnc_add(self, fnc):
+        self._build_fncs.append(fnc)
+
+    def set_result_at(self, thread, index, result):
+        self._results[index] = result
+        if sum(self._results) == len(self._results):
+            self.run_finished.emit()
+
+    def set_start(self):
+        c = len(self._cache_fncs)
+        #
+        self.run_started.connect(self._widget.gui_proxy.set_waiting_start)
+        self.run_finished.connect(self._widget.gui_proxy.set_waiting_stop)
+        #
+        self.run_started.emit()
+        c_t = None
+        for i in range(c):
+            i_cache_fnc = self._cache_fncs[i]
+            i_build_fnc = self._build_fncs[i]
+            #
+            i_t = QtBuildThread(self._widget)
+            i_t.set_cache_fnc(i_cache_fnc)
+            i_t.built.connect(i_build_fnc)
+            #
+            i_t.run_finished.connect(
+                functools.partial(self.set_result_at, i_t, i, 1)
+            )
+            #
+            if c_t is None:
+                i_t.start()
+            else:
+                c_t.cache_finished.connect(i_t.start)
+            #
+            c_t = i_t
 
 
 class QtHBoxLayout(QtWidgets.QHBoxLayout):

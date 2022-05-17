@@ -526,25 +526,29 @@ class PrxTreeItem(
                     tgt_item_prxes = tgt_raw[src_key]
                     for prx_item_tgt in tgt_item_prxes:
                         prx_item_tgt.set_hidden(self.get_is_hidden())
-                        prx_item_tgt.widget._get_list_widget_item_()._set_item_show_update_()
+                        prx_item_tgt.widget._get_list_widget_item_()._set_item_show_start_()
 
     def set_loading_start(self):
-        view = self.get_view()
-        item_prx = self.set_child_add(
-            'loading',
-            icon=utl_core.Icon.get('refresh')
-        )
-        self._loading_item_prx = item_prx
-        view.set_loading_item_add(self._loading_item_prx)
+        # view = self.get_view()
+        # item_prx = self.set_child_add(
+        #     'loading',
+        #     icon=utl_core.Icon.get('refresh')
+        # )
+        # self._loading_item_prx = item_prx
+        # view.set_loading_item_add(self._loading_item_prx)
+
+        self.widget._set_item_dag_loading_start_()
 
     def set_loading_end(self):
-        if self._loading_item_prx is not None:
-            view = self.get_view()
-            self.widget.takeChild(
-                self.widget.indexOfChild(self._loading_item_prx.widget)
-            )
-            self._loading_item_prx = None
-            view.set_loading_item_remove(self._loading_item_prx)
+        # if self._loading_item_prx is not None:
+        #     view = self.get_view()
+        #     self.widget.takeChild(
+        #         self.widget.indexOfChild(self._loading_item_prx.widget)
+        #     )
+        #     self._loading_item_prx = None
+        #     view.set_loading_item_remove(self._loading_item_prx)
+
+        self.widget._set_item_dag_loading_end_()
 
     def set_show_method(self, method):
         self.widget._set_item_show_method_(method)
@@ -795,6 +799,9 @@ class PrxListItem(
 
     def set_show_method(self, method):
         self.widget._get_item_()._set_item_show_method_(method)
+
+    def set_show_fnc(self, cache_fnc, show_fnc):
+        self.widget._get_item_()._set_item_show_fnc_(cache_fnc, show_fnc)
 
     def set_image_loading_start(self):
         self.widget._get_item_()._set_item_show_image_loading_run_()

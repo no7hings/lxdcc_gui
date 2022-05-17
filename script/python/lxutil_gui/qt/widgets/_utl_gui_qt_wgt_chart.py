@@ -508,7 +508,7 @@ class _QtWaitingChart(
         painter._set_antialiasing_()
 
         painter._set_border_color_(0, 0, 0, 0)
-        painter._set_background_color_(31, 31, 31, 127)
+        painter._set_background_color_(31, 31, 31, 63)
         painter.drawRect(
             self._basic_rect
         )
@@ -541,8 +541,6 @@ class _QtWaitingChart(
                 painter._set_path_draw_by_coords_(
                     i_coords
                 )
-
-        # painter.drawEllipse(self._basic_rect)
 
 
 class _QtSectorChart(

@@ -210,7 +210,7 @@ class PrxTreeView(
         return self.view._get_view_items_()
 
     def get_all_items(self):
-        return [i.gui_proxy for i in self.view._get_view_items_()]
+        return [i.gui_proxy for i in self.view._get_view_items_() if hasattr(i, 'gui_proxy')]
 
     def get_all_leaf_items(self):
         return [i.gui_proxy for i in self.view._get_all_leaf_items_()]

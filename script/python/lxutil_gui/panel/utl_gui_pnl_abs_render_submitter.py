@@ -216,6 +216,13 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             self._resolver = rsv_commands.get_resolver()
             self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
             if self._rsv_scene_properties:
+                self._variable_variants_dic = self._hook_build_configure.get(
+                    'variables.character'
+                )
+                self._variable_keys = self._hook_build_configure.get_branch_keys(
+                    'variables.character'
+                )
+                #
                 self._rsv_task = self._resolver.get_rsv_task(
                     **self._rsv_scene_properties.value
                 )
@@ -266,8 +273,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         filter_dict = self._prx_dcc_obj_tree_view_tag_filter_opt.get_filter_dict()
         # print filter_dict
         bsc_objects.Configure(value=filter_dict).set_print_as_yaml_style()
-
-    @utl_gui_qt_core.set_prx_window_waiting
+    # options
     def set_options_refresh(self):
         import lxusd.rsv.objects as usd_rsv_objects
 
@@ -340,20 +346,56 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
         self._work_scene_file_rsv_unit = self._rsv_task.get_rsv_unit(keyword=self._work_keyword)
         self._output_scene_file_rsv_unit = self._rsv_task.get_rsv_unit(keyword=self._output_keyword)
-        rsv_versions = self._work_scene_file_rsv_unit.get_rsv_versions()
-        self._options_prx_node.set('version', rsv_versions)
-
         self._rsv_entity_set_usd_creator = usd_rsv_objects.RsvUsdAssetSetCreator(self._rsv_entity)
-        # if bsc_core.SystemMtd.get_application() not in ['maya']:
-        rsv_shots = self._rsv_entity_set_usd_creator.get_rsv_asset_shots()
-        self._options_prx_node.set('shot', rsv_shots)
+        #
+        self._set_options_add_rsv_versions_()
 
+        self._set_options_add_rsv_shots_()
+
+    def _set_options_add_rsv_versions_(self):
+        def post_fnc_():
+            pass
+
+        def cache_fnc_():
+            return self._work_scene_file_rsv_unit.get_rsv_versions()
+
+        def build_fnc_(rsv_versions_):
+            self._options_prx_node.set('version', rsv_versions_)
+
+        t = utl_gui_qt_core.QtBuildThread(self.widget)
+        t.set_cache_fnc(
+            cache_fnc_
+        )
+        t.built.connect(build_fnc_)
+        t.run_finished.connect(post_fnc_)
+        #
+        t.start()
+
+    def _set_options_add_rsv_shots_(self):
+        def post_fnc_():
+            pass
+
+        def cache_fnc_():
+            return self._rsv_entity_set_usd_creator.get_rsv_asset_shots()
+
+        def build_fnc_(rsv_shots_):
+            self._options_prx_node.set('shot', rsv_shots_)
+
+        t = utl_gui_qt_core.QtBuildThread(self.widget)
+        t.set_cache_fnc(
+            cache_fnc_
+        )
+        t.built.connect(build_fnc_)
+        t.run_finished.connect(post_fnc_)
+        #
+        t.start()
+
+    @utl_gui_qt_core.set_prx_window_waiting
     def set_current_refresh(self):
         methods = [
             self.set_options_refresh,
-            self.set_usd_refresh,
             self.set_renderers_refresh,
-            self.set_variables_refresh,
+            self.set_usd_refresh,
         ]
         with utl_core.gui_progress(maximum=len(methods)) as g_p:
             for i in methods:
@@ -362,7 +404,6 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 if result is False:
                     break
         #
-        self.set_variables_load_from_scheme()
         self.set_settings_load_from_scheme()
 
     def _set_prx_node_effect_(self):
@@ -536,41 +577,17 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             '\n'.join(['{} : {}'.format(k, v) for k, v in show_info_dict.items()])
         )
 
-    @utl_gui_qt_core.set_prx_window_waiting
-    def set_renderers_refresh(self):
-        def set_thread_create_fnc_(prx_item_, variants_):
-            prx_item_.set_show_method(
-                lambda *args, **kwargs: self._set_rsv_unit_prx_item_show_deferred_(
-                    prx_item_, variants_
-                )
-            )
-        #
-        self._rsv_renderer_list_view.set_clear()
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
-        #
-        self._variable_variants_dic = self._hook_build_configure.get('variables.character')
-        self._variable_keys = self._hook_build_configure.get_branch_keys(
-            'variables.character'
-        )
-        combinations = bsc_core.VariablesMtd.get_all_combinations(
-            self._variable_variants_dic
-        )
-        for i_seq, i_variants in enumerate(combinations):
-            # print i_seq, i_variants
-            i_prx_item = self._rsv_renderer_list_view.set_item_add()
-            set_thread_create_fnc_(i_prx_item, i_variants)
-            for j_key in self._variable_keys:
-                self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
-                    '{}.{}'.format(j_key, i_variants[j_key]), i_prx_item
-                )
+    def _set_usd_load_asset_variant_(self, rsv_asset):
+        def post_fnc_():
+            pass
 
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
+        def cache_fnc_():
+            return [
+                self._rsv_entity_set_usd_creator._get_asset_usd_set_dress_variant_cache_(rsv_asset)
+            ]
 
-    def set_usd_refresh(self):
-        rsv_asset = self._rsv_task.get_rsv_entity()
-        if rsv_asset is not None:
-            asset_usd_variant_dict = self._rsv_entity_set_usd_creator._get_asset_usd_set_dress_variant_cache_(rsv_asset)
-            for k, v in asset_usd_variant_dict.items():
+        def build_fnc_(data_):
+            for k, v in data_[0].items():
                 i_port_path = v['port_path']
                 i_variant_names = v['variant_names']
                 i_current_variant_name = v['variant_name']
@@ -583,20 +600,49 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 self._usd_prx_node.set_default(
                     i_port_path, i_current_variant_name
                 )
-            #
-            rsv_shot = self._options_prx_node.get(
-                'shot'
-            )
-            if rsv_shot is not None:
-                shot_asset_dict = self._rsv_entity_set_usd_creator._get_shot_asset_cache_(
+
+        t = utl_gui_qt_core.QtBuildThread(self.widget)
+        t.set_cache_fnc(
+            cache_fnc_
+        )
+        t.built.connect(build_fnc_)
+        t.run_finished.connect(post_fnc_)
+        #
+        t.start()
+
+    def _set_usd_load_shot_variant_(self, rsv_asset, rsv_shot):
+        def post_fnc_():
+            pass
+
+        def cache_fnc_():
+            return [
+                self._rsv_entity_set_usd_creator._get_shot_asset_cache_(
                     rsv_asset, rsv_shot
                 )
-                self._usd_prx_node.set('variants.shot_asset', shot_asset_dict.keys())
+            ]
 
+        def build_fnc_(data_):
+            self._usd_prx_node.set('variants.shot_asset', data_[0].keys())
+
+        t = utl_gui_qt_core.QtBuildThread(self.widget)
+        t.set_cache_fnc(
+            cache_fnc_
+        )
+        t.built.connect(build_fnc_)
+        t.run_finished.connect(post_fnc_)
+        #
+        t.start()
+    # renderers
+    def set_renderers_refresh(self):
+        self._rsv_renderer_list_view.set_clear()
+        self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
+
+        self._set_renderers_add_rsv_units_()
+    # variables
     def set_variables_refresh(self):
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()
-        # self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
+        self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
     def set_variables_load_from_scheme(self):
         scheme = self._schemes_prx_node.get('variables')
@@ -607,6 +653,61 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_by_dict(
                 filter_dict
             )
+    # usds
+    def set_usd_refresh(self):
+        if self._rsv_entity is not None:
+            self._set_usd_load_asset_variant_(self._rsv_entity)
+            #
+            rsv_shot = self._options_prx_node.get(
+                'shot'
+            )
+            if rsv_shot is not None:
+                self._set_usd_load_shot_variant_(self._rsv_entity, rsv_shot)
+
+    def _set_renderers_add_rsv_units_(self):
+        def post_fnc_():
+            self.set_variables_refresh()
+            self.set_variables_load_from_scheme()
+
+        def cache_fnc_():
+            return [
+                bsc_core.VariablesMtd.get_all_combinations(
+                    self._variable_variants_dic
+                )
+            ]
+
+        def build_fnc_(data_):
+            for i_seq, i_variants in enumerate(data_[0]):
+                self._set_gui_add_rsv_unit_(i_variants)
+
+        t = utl_gui_qt_core.QtBuildThread(self.widget)
+        t.set_cache_fnc(
+            cache_fnc_
+        )
+        t.built.connect(build_fnc_)
+        t.run_finished.connect(post_fnc_)
+        #
+        t.start()
+
+    def _set_gui_add_rsv_unit_(self, variants):
+        def cache_fnc_():
+            return []
+
+        def build_fnc_(data):
+            self._set_rsv_unit_prx_item_show_deferred_(
+                rsv_unit_prx_item, variants
+            )
+        #
+        rsv_unit_prx_item = self._rsv_renderer_list_view.set_item_add()
+        for j_key in self._variable_keys:
+            self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
+                '{}.{}'.format(j_key, variants[j_key]), rsv_unit_prx_item
+            )
+
+        rsv_unit_prx_item.set_show_fnc(
+            cache_fnc_, build_fnc_
+        )
+        return rsv_unit_prx_item
 
     def set_settings_refresh(self):
         rsv_task = self._rsv_task
@@ -1059,7 +1160,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
     def get_single_frame(self):
         return self._start_frame
-
+    # options
     @utl_gui_qt_core.set_prx_window_waiting
     def set_options_refresh(self):
         import lxusd.rsv.objects as usd_rsv_objects
@@ -1113,11 +1214,29 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
         self._work_scene_file_rsv_unit = self._rsv_task.get_rsv_unit(keyword=self._work_keyword)
         self._output_scene_file_rsv_unit = self._rsv_task.get_rsv_unit(keyword=self._output_keyword)
-        rsv_versions = self._work_scene_file_rsv_unit.get_rsv_versions()
-
-        self._options_prx_node.set('version', rsv_versions)
+        #
+        self._set_options_add_rsv_versions_()
 
         self._rsv_entity_set_usd_creator = usd_rsv_objects.RsvUsdShotSetCreator(self._rsv_entity)
+
+    def _set_options_add_rsv_versions_(self):
+        def post_fnc_():
+            pass
+
+        def cache_fnc_():
+            return self._work_scene_file_rsv_unit.get_rsv_versions()
+
+        def build_fnc_(rsv_versions_):
+            self._options_prx_node.set('version', rsv_versions_)
+
+        t = utl_gui_qt_core.QtBuildThread(self.widget)
+        t.set_cache_fnc(
+            cache_fnc_
+        )
+        t.built.connect(build_fnc_)
+        t.run_finished.connect(post_fnc_)
+        #
+        t.start()
 
     def set_usd_refresh(self):
         if bsc_core.SystemMtd.get_is_linux():

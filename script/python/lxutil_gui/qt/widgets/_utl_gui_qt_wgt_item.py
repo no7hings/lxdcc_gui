@@ -2411,8 +2411,27 @@ class _QtHExpandItem1(
             )
 
 
+class AbsQtItemDagLoading(object):
+    def _set_item_dag_loading_def_init_(self, widget):
+        self._widget = widget
+
+        self._loading_item = None
+
+    def _set_item_dag_loading_start_(self):
+        self._loading_item = self._widget._set_child_add_()
+        self._loading_item.setText(0, 'loading ...')
+
+    def _set_item_dag_loading_end_(self):
+        if self._loading_item is not None:
+            self._widget.takeChild(
+                self._widget.indexOfChild(self._loading_item)
+            )
+            self._loading_item = None
+
+
 class QtTreeWidgetItem(
     QtWidgets.QTreeWidgetItem,
+    AbsQtItemDagLoading,
     utl_gui_qt_abstract.AbsQtIconDef,
     utl_gui_qt_abstract._QtItemShowDef,
     utl_gui_qt_abstract.AbsQtMenuDef,
@@ -2434,6 +2453,7 @@ class QtTreeWidgetItem(
             QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled
         )
         #
+        self._set_item_dag_loading_def_init_(self)
         self._set_item_show_def_init_()
         #
         self._is_check_enable = True
@@ -2450,6 +2470,12 @@ class QtTreeWidgetItem(
         self._set_visible_def_init_()
         #
         self._set_item_visible_connection_def_init_()
+
+    def _set_child_add_(self):
+        item = self.__class__()
+        item._set_item_show_connect_()
+        self.addChild(item)
+        return item
 
     def _get_item_is_hidden_(self):
         return self.isHidden()
@@ -2713,7 +2739,7 @@ class QtTreeWidgetItem(
                 # noinspection PyCallingNonCallable
                 self.setToolTip(column, html)
 
-    def _set_item_show_loading_update_(self):
+    def _set_item_show_update_loading_(self):
         self._item_show_loading_index += 1
         #
         if self._item_show_loading_is_finished is False:
@@ -2822,7 +2848,7 @@ class QtListWidgetItem(
         item = self
         list_widget = self.listWidget()
         #
-        self._set_item_show_loading_start_()
+        self._set_item_show_start_loading_()
         return list_widget._get_item_is_viewport_show_able_at_(item)
 
     def _set_item_widget_visible_(self, boolean):

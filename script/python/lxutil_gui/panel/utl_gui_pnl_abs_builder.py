@@ -77,14 +77,10 @@ class AbsAssetBuilderPanel(
                     current_project
                 )
         #
-        _port = self._options_prx_node.get_port('refresh')
-        _port.set(
-            self._set_refresh_all_
-        )
-        _port = self._options_prx_node.get_port('build')
-        _port.set(
-            self._set_build_run_
-        )
+        self._options_prx_node.set('refresh', self._set_refresh_all_)
+        self._options_prx_node.set('check_all', self._set_check_all_)
+        self._options_prx_node.set('check_clear', self._set_check_clear_)
+        self._options_prx_node.set('build', self._set_build_run_)
     @classmethod
     def _get_current_project_(cls):
         import os
@@ -103,6 +99,14 @@ class AbsAssetBuilderPanel(
         self._options_prx_node.set(
             'asset', rsv_assets
         )
+
+    def _set_check_all_(self):
+        for i in self._options_prx_node.get_port('build_options').get_children():
+            i.set(True)
+
+    def _set_check_clear_(self):
+        for i in self._options_prx_node.get_port('build_options').get_children():
+            i.set(False)
 
     @utl_gui_qt_core.set_prx_window_waiting
     def _set_refresh_all_(self):

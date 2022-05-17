@@ -1,7 +1,11 @@
 # coding:utf-8
 import collections
 
+import math
+
 import os
+
+import functools
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
@@ -198,7 +202,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             self._set_guide_bar_update_
         )
         self._rsv_obj_tree_view_0.set_item_select_changed_connect_to(
-            self._set_gui_rsv_task_units_refresh_
+            self._set_gui_rsv_task_units_refresh_by_selection_
         )
         #
         self._rsv_uint_list_view_0.set_item_frame_size(*self._item_frame_size)
@@ -215,21 +219,21 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         self._prx_obj_guide_bar.set_item_clicked_connect_to(self._set_rsv_obj_select_)
         # self._prx_obj_guide_bar.set_item_changed_connect_to(self._set_rsv_obj_select_)
 
-    def _set_gui_refresh_use_thread_(self, cache_fnc, build_fnc):
-        t = utl_gui_qt_core.QtRsvThread(self.widget)
-        t.set_method(
-            cache_fnc
-        )
-        t.cached.connect(self.set_waiting_start)
-        t.built.connect(build_fnc)
-        t.completed.connect(self.set_waiting_stop)
-        #
-        t.start()
-    #
-    def _set_gui_add_rsv_objs_use_deferred_(self, rsv_objs, add_fnc):
-        for rsv_obj in rsv_objs:
-            add_fnc(rsv_obj)
-            self._rsv_obj_tree_view_0.set_loading_update()
+    def _set_gui_rsv_task_units_refresh_by_selection_(self):
+        tree_item_prxes = self._rsv_obj_tree_view_0.get_selected_items()
+        self._rsv_uint_list_view_0.set_clear()
+        if tree_item_prxes:
+            tree_item_prx = tree_item_prxes[-1]
+            rsv_obj = tree_item_prx.get_gui_dcc_obj(self.DCC_NAMESPACE)
+            if rsv_obj is not None:
+                obj_type_name = rsv_obj.type_name
+                if obj_type_name in [
+                    'role', 'sequence',
+                    'asset', 'shot',
+                    'step',
+                    'task'
+                ]:
+                    self._set_add_rsv_task_units_(rsv_obj)
 
     def _set_gui_rsv_objs_refresh_(self):
         self._resolver = rsv_commands.get_resolver()
@@ -246,60 +250,52 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
         self._prx_obj_guide_bar.set_clear()
         #
-        self._set_add_rsv_tags_([rsv_project])
-    # tags
-    def _set_add_rsv_tags_(self, rsv_projects):
-        self._set_gui_refresh_use_thread_(
-            cache_fnc=lambda *args, **kwargs: self._set_cache_rsv_tags_(rsv_projects),
-            build_fnc=self._set_gui_add_rsv_tags_
-        )
+        self._set_add_rsv_entities_(rsv_project)
+    #
+    def _set_add_rsv_entities_(self, rsv_project):
+        def post_fnc_():
+            rsv_project.get_obj_gui().set_expanded(True, ancestors=True)
+            #
+            self._end_timestamp = bsc_core.SystemMtd.get_timestamp()
+            #
+            utl_core.Log.set_module_result_trace(
+                'load asset/shot from "{}"'.format(
+                    rsv_project.path
+                ),
+                'count={}, cost-time="{}"'.format(
+                    self._count,
+                    bsc_core.IntegerMtd.second_to_time_prettify(math.ceil(self._end_timestamp - self._start_timestamp))
+                )
+            )
 
-    def _set_cache_rsv_tags_(self, rsv_projects):
-        list_ = []
-        for i_rsv_project in rsv_projects:
-            i_rsv_tags = i_rsv_project.get_rsv_tags(**self._rsv_filter_opt.value)
-            list_.extend(i_rsv_tags)
-        return list_
-
-    def _set_gui_add_rsv_tags_(self, rsv_tags):
-        self._set_gui_add_rsv_objs_use_deferred_(
-            rsv_tags, self._set_gui_add_rsv_tag_
-        )
+        self._count = 0
+        self._start_timestamp = bsc_core.SystemMtd.get_timestamp()
         #
-        self._rsv_obj_tree_view_0.set_items_expand_by_depth(depth=2)
+        rsv_tags = rsv_project.get_rsv_tags(**self._rsv_filter_opt.value)
         #
-        self._set_add_rsv_entities_(rsv_tags)
-
-    def _set_gui_add_rsv_tag_(self, rsv_tag):
-        is_create, rsv_tag_item_prx, show_threads = self._prx_dcc_obj_tree_view_add_opt.set_item_prx_add_as_tree_mode(
-            rsv_tag
-        )
-        return show_threads
-    # entities
-    def _set_add_rsv_entities_(self, rsv_tags):
-        self._set_gui_refresh_use_thread_(
-            cache_fnc=lambda *args, **kwargs: self._set_cache_rsv_entities_(rsv_tags),
-            build_fnc=self._set_gui_add_rsv_entities_
-        )
-
-    def _set_cache_rsv_entities_(self, rsv_tags):
-        list_ = []
+        t_r = utl_gui_qt_core.QtBuildThreadsRunner(self.widget)
+        t_r.run_finished.connect(post_fnc_)
         for i_rsv_tag in rsv_tags:
-            i_rsv_entities = i_rsv_tag.get_rsv_entities(**self._rsv_filter_opt.value)
-            list_.extend(i_rsv_entities)
-        return list_
-
+            t_r.set_cache_fnc_add(
+                functools.partial(i_rsv_tag.get_rsv_entities, **self._rsv_filter_opt.value),
+            )
+            t_r.set_build_fnc_add(
+                self._set_gui_add_rsv_entities_
+            )
+        t_r.set_start()
+    # entities for tag
     def _set_gui_add_rsv_entities_(self, rsv_entities):
-        self._set_gui_add_rsv_objs_use_deferred_(
-            rsv_entities, self._set_gui_add_rsv_entity_
-        )
+        for i_rsv_entity in rsv_entities:
+            self._set_gui_add_rsv_entity_(i_rsv_entity)
+        #
+        self._count += len(rsv_entities)
 
     def _set_gui_add_rsv_entity_(self, rsv_entity):
-        is_create, rsv_entity_gui, show_threads = self._prx_dcc_obj_tree_view_add_opt.set_item_prx_add_as_tree_mode(
+        is_create, prx_item, show_threads = self._prx_dcc_obj_tree_view_add_opt.set_item_prx_add_as_tree_mode(
             rsv_entity
         )
         if is_create is True:
-            rsv_entity_gui.set_loading_start()
+            prx_item.set_loading_start()
             #
             branch = rsv_entity.properties.get('branch')
             if branch == 'asset':
@@ -310,27 +306,29 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                     )
             #
             self._rsv_obj_tree_view_0.set_item_expand_connect_to(
-                rsv_entity_gui, lambda *args, **kwargs: self._set_add_rsv_tasks_by_rsv_entity_(rsv_entity)
+                prx_item, lambda *args, **kwargs: self._set_add_rsv_tasks_by_entity_(rsv_entity),
+                time=100
             )
         return show_threads
-    # tasks
-    def _set_add_rsv_tasks_by_rsv_entity_(self, rsv_obj):
-        rsv_obj_prx_item = rsv_obj.get_obj_gui()
-        rsv_obj_prx_item.set_loading_end()
+    # tasks from entity
+    def _set_add_rsv_tasks_by_entity_(self, rsv_entity):
+        def post_fnc_():
+            rsv_entity.get_obj_gui().set_loading_end()
+            #
+            self.set_filter_update()
         #
-        self._set_gui_refresh_use_thread_(
-            cache_fnc=lambda *args, **kwargs: self._set_cache_rsv_tasks_by_rsv_entity_(rsv_obj),
-            build_fnc=self._set_gui_add_rsv_tasks_
+        t = utl_gui_qt_core.QtBuildThread(self.widget)
+        t.set_cache_fnc(
+            functools.partial(rsv_entity.get_rsv_tasks, **self._rsv_filter_opt.value)
         )
-
-    def _set_cache_rsv_tasks_by_rsv_entity_(self, rsv_obj):
-        return rsv_obj.get_rsv_tasks(**self._rsv_filter_opt.value)
+        t.built.connect(self._set_gui_add_rsv_tasks_)
+        t.run_finished.connect(post_fnc_)
+        #
+        t.start()
 
     def _set_gui_add_rsv_tasks_(self, rsv_tasks):
-        self._set_gui_add_rsv_objs_use_deferred_(
-            rsv_tasks, self._set_gui_add_rsv_task_
-        )
-        self.set_filter_update()
+        for i_rsv_task in rsv_tasks:
+            self._set_gui_add_rsv_task_(i_rsv_task)
 
     def _set_gui_add_rsv_task_(self, rsv_task):
         is_create, rsv_task_item_prx, show_threads = self._prx_dcc_obj_tree_view_add_opt.set_item_prx_add_as_tree_mode(
@@ -350,53 +348,100 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 '{}.{}'.format(step, task), rsv_task_item_prx
             )
         return show_threads
-    # units
-    def _set_add_rsv_units_(self, rsv_obj):
-        rsv_obj_prx_item = rsv_obj.get_obj_gui()
-        rsv_obj_prx_item.set_loading_end()
+    # tasks and units
+    def _set_add_rsv_task_units_(self, rsv_obj):
+        def post_fnc_():
+            rsv_obj.get_obj_gui().set_loading_end()
+            #
+            self.set_filter_update()
+            #
+            self._rsv_uint_list_view_0.set_visible_tgt_raw_update()
+            self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
+            #
+            self._end_timestamp = bsc_core.SystemMtd.get_timestamp()
+            utl_core.Log.set_module_result_trace(
+                'load task from "{}"'.format(
+                    rsv_obj.path
+                ),
+                'count={}, cost-time="{}"'.format(
+                    self._count,
+                    bsc_core.IntegerMtd.second_to_time_prettify(math.ceil(self._end_timestamp - self._start_timestamp))
+                )
+            )
+
+        self._count = 0
+        self._start_timestamp = bsc_core.SystemMtd.get_timestamp()
         #
-        self._set_gui_refresh_use_thread_(
-            cache_fnc=lambda *args, **kwargs: self._set_cache_rsv_units_(rsv_obj),
-            build_fnc=self._set_gui_add_rsv_units_
-        )
+        type_name = rsv_obj.type_name
+        if type_name in [
+            'role', 'sequence',
+        ]:
+            rsv_objs = rsv_obj.get_rsv_entities(
+                **self._rsv_filter_opt.value
+            )
+        else:
+            rsv_objs = [rsv_obj]
+        #
+        t_r = utl_gui_qt_core.QtBuildThreadsRunner(self.widget)
+        t_r.run_finished.connect(post_fnc_)
+        for i_rsv_obj in rsv_objs:
+            t_r.set_cache_fnc_add(
+                functools.partial(self._set_cache_rsv_task_units_, i_rsv_obj)
+            )
+            t_r.set_build_fnc_add(
+                self._set_gui_add_rsv_task_units_
+            )
+        t_r.set_start()
 
-    def _set_cache_rsv_units_(self, rsv_obj):
-        return rsv_obj.get_rsv_tasks(**self._rsv_filter_opt.value)
+    def _set_cache_rsv_task_units_(self, rsv_obj):
+        if rsv_obj.type_name == 'task':
+            rsv_tasks = [rsv_obj]
+        else:
+            rsv_tasks = rsv_obj.get_rsv_tasks(**self._rsv_filter_opt.value)
+        #
+        # for i_rsv_task in rsv_tasks:
+        #     for j_keyword in self._rsv_keywords:
+        #         i_rsv_task.get_rsv_unit(
+        #             keyword=j_keyword
+        #         )
+        return rsv_tasks
 
-    def _set_gui_add_rsv_units_(self, rsv_tasks):
+    def _set_gui_add_rsv_task_units_(self, rsv_tasks):
         for i_rsv_task in rsv_tasks:
             self._set_gui_add_rsv_task_(i_rsv_task)
             self._set_gui_add_rsv_task_unit_(i_rsv_task)
-        #
+
+        self._count += len(rsv_tasks)
+
+    def _set_gui_add_rsv_units_post_run_(self):
         self.set_filter_update()
         #
         self._rsv_uint_list_view_0.set_visible_tgt_raw_update()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
-    def _set_add_rsv_unit_(self, rsv_unit):
-        pass
-    # task unit
-    def _set_add_rsv_task_unit_(self, rsv_task):
-        self._set_gui_refresh_use_thread_(
-            cache_fnc=lambda *args, **kwargs: self._set_cache_rsv_task_units_(rsv_task),
-            build_fnc=self._set_gui_add_rsv_units_
-        )
-
-    def _set_cache_rsv_task_units_(self, rsv_task):
+    def _get_rsv_task_unit_args_(self, rsv_task):
         list_ = []
         #
-        enable = False
         for i_keyword in self._rsv_keywords:
             i_rsv_unit = rsv_task.get_rsv_unit(
                 keyword=i_keyword
             )
             i_file_path = i_rsv_unit.get_result(version='latest')
             if i_file_path:
-                enable = True
                 list_.append(
-                    (True, i_rsv_unit, i_file_path)
+                    (i_rsv_unit, i_file_path)
                 )
-        return enable, list_
+        return list_
+
+    def _get_rsv_task_unit_enable_(self, rsv_task):
+        for i_keyword in self._rsv_keywords:
+            i_rsv_unit = rsv_task.get_rsv_unit(
+                keyword=i_keyword
+            )
+            i_file_path = i_rsv_unit.get_result(version='latest')
+            if i_file_path:
+                return True
+        return False
 
     def _get_available_rsv_keywords_(self):
         list_ = []
@@ -446,42 +491,30 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 obj_path,
                 exclusive=True
             )
-
-    @utl_gui_qt_core.set_prx_window_waiting
-    def _set_gui_rsv_task_units_refresh_(self):
-        tree_item_prxes = self._rsv_obj_tree_view_0.get_selected_items()
-        self._rsv_uint_list_view_0.set_clear()
-        if tree_item_prxes:
-            tree_item_prx = tree_item_prxes[-1]
-            rsv_obj = tree_item_prx.get_gui_dcc_obj(self.DCC_NAMESPACE)
-            if rsv_obj is not None:
-                obj_type_name = rsv_obj.type_name
-                if obj_type_name in [
-                    'role', 'sequence',
-                    'asset', 'shot',
-                    'step'
-                ]:
-                    self._set_add_rsv_units_(rsv_obj)
-                else:
-                    self._set_gui_add_rsv_task_units_([rsv_obj])
-
-    def _set_gui_add_rsv_task_units_(self, rsv_tasks):
-        for i_rsv_task in rsv_tasks:
-            self._set_gui_add_rsv_task_unit_(i_rsv_task)
-        #
-        self._rsv_uint_list_view_0.set_visible_tgt_raw_update()
     #
     def _set_gui_add_rsv_task_unit_(self, rsv_task):
-        def set_thread_create_fnc_(rsv_task_, rsv_task_unit_args_lis_, i_rsv_unit_item_prx_):
-            i_rsv_unit_item_prx_.set_show_method(
-                lambda *args, **kwargs: self._set_rsv_unit_prx_item_show_deferred_(
-                    rsv_task_, i_rsv_unit_item_prx_, rsv_task_unit_args_lis_
+        def cache_fnc_():
+            list_ = []
+            #
+            for i_keyword in self._rsv_keywords:
+                i_rsv_unit = rsv_task.get_rsv_unit(
+                    keyword=i_keyword
                 )
+                i_file_path = i_rsv_unit.get_result(version='latest')
+                if i_file_path:
+                    list_.append(
+                        (i_rsv_unit, i_file_path)
+                    )
+            return list_
+
+        def build_fnc_(data):
+            self._set_rsv_unit_prx_item_show_deferred_(
+                rsv_task, rsv_unit_prx_item, data
             )
         #
         rsv_task_gui = rsv_task.get_obj_gui()
         if rsv_task_gui is not None:
-            enable, rsv_task_unit_show_raw = self._set_cache_rsv_task_units_(rsv_task)
+            enable = self._get_rsv_task_unit_enable_(rsv_task)
             if enable is True:
                 rsv_unit_prx_item = self._rsv_uint_list_view_0.set_item_add()
                 rsv_unit_prx_item.set_gui_dcc_obj(rsv_task, namespace=self.DCC_NAMESPACE)
@@ -491,17 +524,14 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                     key, rsv_unit_prx_item
                 )
                 #
-                set_thread_create_fnc_(
-                    rsv_task,
-                    rsv_task_unit_show_raw,
-                    rsv_unit_prx_item
+                rsv_unit_prx_item.set_show_fnc(
+                    cache_fnc_, build_fnc_
                 )
                 rsv_task_gui.set_state(utl_gui_core.State.ENABLE)
             else:
                 rsv_task_gui.set_state(utl_gui_core.State.DISABLE)
 
-    def _set_rsv_unit_prx_item_show_deferred_(self, rsv_task, rsv_unit_prx_item, rsv_task_unit_show_raw):
-        task_properties = rsv_task.properties
+    def _set_rsv_unit_prx_item_show_deferred_(self, rsv_task, rsv_unit_prx_item, show_data):
         project = rsv_task.get('project')
         branch = rsv_task.get('branch')
         name = rsv_task.get(branch)
@@ -516,24 +546,16 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             ]
         )
         pixmaps = []
-        for i_enable, i_rsv_unit, i_file_path in rsv_task_unit_show_raw:
-            if i_enable is True:
-                i_rsv_properties = i_rsv_unit.get_properties_by_result(i_file_path)
-                i_rsv_unit_file = utl_dcc_objects.OsFile(i_file_path)
-                i_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
-                    i_rsv_unit_file.ext,
-                    tag=i_rsv_properties.get('workspace'),
-                    size=self.ITEM_ICON_SIZE
-                )
-                pixmaps.append(i_pixmap)
-            # else:
-            #     i_rsv_unit_file = utl_dcc_objects.OsFile(i_file_path)
-            #     i_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_file_ext(
-            #         i_rsv_unit_file.ext,
-            #         size=self.ITEM_ICON_SIZE,
-            #         gray=not i_enable
-            #     )
-            #     pixmaps.append(i_pixmap)
+        for i_rsv_unit, i_file_path in show_data:
+            i_file_path = i_rsv_unit.get_result()
+            i_rsv_properties = i_rsv_unit.get_properties_by_result(i_file_path)
+            i_rsv_unit_file = utl_dcc_objects.OsFile(i_file_path)
+            i_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
+                i_rsv_unit_file.ext,
+                tag=i_rsv_properties.get('workspace'),
+                size=self.ITEM_ICON_SIZE
+            )
+            pixmaps.append(i_pixmap)
         #
         rsv_unit_prx_item.set_name_dict(name_text_dict)
         r, g, b = bsc_core.TextOpt(task).to_rgb()

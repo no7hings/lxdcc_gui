@@ -105,16 +105,13 @@ class AssetBuilderPanel(utl_gui_pnl_abs_builder.AbsAssetBuilderPanel):
                 project=self._options_prx_node.get('project'),
                 asset=self._options_prx_node.get('asset').name,
                 #
-                with_model_geometry=self._options_prx_node.get('with_model_geometry'),
+                with_model_geometry=self._options_prx_node.get('build_options.with_model_geometry'),
                 #
-                with_groom_geometry=self._options_prx_node.get('with_groom_geometry'),
-                with_groom_grow_geometry=self._options_prx_node.get('with_groom_grow_geometry'),
+                with_groom_geometry=self._options_prx_node.get('build_options.with_groom_geometry'), with_groom_grow_geometry=self._options_prx_node.get('build_options.with_groom_grow_geometry'),
                 #
-                with_surface_geometry_uv_map=self._options_prx_node.get('with_surface_geometry_uv_map'),
-                with_surface_look=self._options_prx_node.get('with_surface_look'),
+                with_surface_geometry_uv_map=self._options_prx_node.get('build_options.with_surface_geometry_uv_map'), with_surface_look=self._options_prx_node.get('build_options.with_surface_look'),
                 #
-                with_camera=self._options_prx_node.get('with_camera'),
-                with_light=self._options_prx_node.get('with_light'),
+                with_camera=self._options_prx_node.get('build_options.with_camera'), with_light=self._options_prx_node.get('build_options.with_light'),
                 #
                 render_resolution=self._options_prx_node.get('render.resolution'),
                 #

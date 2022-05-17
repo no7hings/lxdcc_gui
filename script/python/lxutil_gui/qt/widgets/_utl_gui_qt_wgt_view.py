@@ -468,6 +468,9 @@ class QtTreeWidget(
     #
     ctrl_f_key_pressed = qt_signal()
     f_key_pressed = qt_signal()
+    #
+    item_expanded = qt_signal(str)
+    item_extend_expanded = qt_signal(list)
     def __init__(self, *args, **kwargs):
         super(QtTreeWidget, self).__init__(*args, **kwargs)
         self.setIndentation(20)
@@ -520,8 +523,9 @@ class QtTreeWidget(
         self._selected_indices = []
         self._selected_indirect_indices = []
         #
-        self.collapsed.connect(self.onCollapsed)
-        self.expanded.connect(self.onExpanded)
+        self.expanded.connect(self._set_item_action_expand_execute_at_)
+        self.collapsed.connect(self._set_item_action_collapse_execute_at_)
+        #
         self.itemSelectionChanged.connect(self._set_item_selected_update_)
         # self.itemChanged.connect(self._set_item_changed_update_)
         #
@@ -825,19 +829,14 @@ class QtTreeWidget(
         # Reset flags
         self._is_expand_descendants = False
 
-    def onCollapsed(self, index):
-        if self._is_expand_descendants:
-            self._is_expand_descendants = False
-            self._set_item_descendants_expanded_at_(index, False)
-
-    def onExpanded(self, index):
+    def _set_item_action_expand_execute_at_(self, index):
         def fnc_():
             method()
             timer.stop()
         #
         if self._is_expand_descendants:
             self._is_expand_descendants = False
-            self._set_item_descendants_expanded_at_(index, True)
+            self._set_item_extend_expanded_at_(index, True)
         #
         item = self.itemFromIndex(index)
         if item in self._item_expand_method_dic:
@@ -850,17 +849,30 @@ class QtTreeWidget(
                 timer.start(time)
         #
         self._set_item_show_update_at_(item)
+
+    def _set_item_action_collapse_execute_at_(self, index):
+        if self._is_expand_descendants:
+            self._is_expand_descendants = False
+            self._set_item_extend_expanded_at_(index, False)
+
+    def _set_item_extend_expanded_at_(self, index, expanded):
+        indices = self._get_descendant_indices_at_(index)
+        [self.setExpanded(i, expanded) for i in indices]
+    @classmethod
+    def _get_descendant_indices_at_(cls, index):
+        def rcs_fnc_(list__, index_):
+            for _i in range(0, index.model().rowCount(index_)):
+                _i_child_index = index.child(_i, 0)
+                list__.append(_i_child_index)
+
+        list_ = []
+        rcs_fnc_(list_, index)
+        return list_
     @classmethod
     def _set_item_show_update_at_(cls, item):
         children = item._get_children_()
         for i in children:
-            i._set_item_show_all_start_()
-
-    def _set_item_descendants_expanded_at_(self, index, expanded):
-        for i in range(0, index.model().rowCount(index)):
-            child_index = index.child(i, 0)
-            self.setExpanded(child_index, expanded)
-            self._set_item_descendants_expanded_at_(child_index, expanded)
+            i._set_item_show_start_all_()
 
     def _set_item_expand_connect_to_(self, item, method, time):
         self._item_expand_method_dic[item] = method, time
@@ -933,7 +945,7 @@ class QtTreeWidget(
 
     def _set_clear_(self):
         for i in self._get_view_items_():
-            i._set_item_show_all_stop_()
+            i._set_item_show_stop_all_()
         #
         self.clear()
         self._item_expand_method_dic = {}
@@ -1185,7 +1197,7 @@ class QtListWidget(
 
     def _set_clear_(self):
         for i in self._get_view_items_():
-            i._set_item_show_all_stop_()
+            i._set_item_show_stop_all_()
         #
         self._pre_selected_item = None
         #

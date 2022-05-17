@@ -146,6 +146,10 @@ class AbsPrxWaitingDef(object):
         utl_gui_qt_core.ApplicationOpt().set_process_run_0()
         self._waiting_char._set_waiting_start_()
 
+    def set_waiting_update(self):
+        self._waiting_char.update()
+        utl_gui_qt_core.ApplicationOpt().set_process_run_0()
+
     def set_waiting_stop(self):
         self.widget.unsetCursor()
         self._waiting_char.hide()
