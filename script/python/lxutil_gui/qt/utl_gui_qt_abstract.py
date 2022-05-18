@@ -1777,19 +1777,20 @@ class _QtItemShowDef(
             )
             #
             r.set_start()
+            #
             self._item_show_status = self.ShowStatus.Loading
 
     def _set_item_show_fnc_stop_(self):
         self._set_item_show_stop_(
-            self.ShowStatus.Finished
+            self.ShowStatus.Completed
         )
 
-    def _set_item_show_start_(self, time=200):
+    def _set_item_show_start_(self, time=200, force=False):
         def run_fnc():
             if self._item_show_cache_fnc is not None:
                 self._set_item_show_fnc_start_()
         #
-        if self._item_show_status == self.ShowStatus.Waiting:
+        if self._item_show_status == self.ShowStatus.Waiting or force is True:
             self._set_item_show_start_loading_()
             #
             self._item_show_timer.timeout.connect(run_fnc)
@@ -1799,6 +1800,11 @@ class _QtItemShowDef(
         self._item_show_status = status
         self._item_show_timer.stop()
         self._set_item_show_stop_loading_()
+
+    def _get_item_show_is_finished_(self):
+        return self._item_show_status in [
+            self.ShowStatus.Completed, self.ShowStatus.Failed
+        ]
     # loading
     def _set_item_show_start_loading_(self):
         if self._item_show_status == self.ShowStatus.Waiting:
@@ -1855,23 +1861,23 @@ class _QtItemShowDef(
             #
             self._item_show_image_status = self.ShowStatus.Loading
 
-    def _set_item_show_image_start_(self, time=200):
+    def _set_item_show_image_fnc_stop_(self):
+        if self._item_show_image_file_path is not None:
+            if os.path.isfile(self._item_show_image_file_path) is True:
+                self._set_item_show_image_stop_(self.ShowStatus.Completed)
+            else:
+                self._set_item_show_image_stop_(self.ShowStatus.Failed)
+
+    def _set_item_show_image_start_(self, time=200, force=False):
         def run_fnc():
             if self._item_show_cache_fnc is not None:
                 self._set_item_show_image_fnc_start_()
         #
-        if self._item_show_image_status == self.ShowStatus.Waiting:
+        if self._item_show_image_status == self.ShowStatus.Waiting or force is True:
             self._set_item_show_image_start_loading_()
             #
             self._item_show_image_timer.timeout.connect(run_fnc)
             self._item_show_image_timer.start(time)
-
-    def _set_item_show_image_fnc_stop_(self):
-        if self._item_show_image_file_path is not None:
-            if os.path.isfile(self._item_show_image_file_path) is True:
-                self._set_item_show_image_stop_(self.ShowStatus.Finished)
-            else:
-                self._set_item_show_image_stop_(self.ShowStatus.Failed)
 
     def _set_item_show_image_stop_(self, status):
         self._item_show_image_status = status
@@ -1904,9 +1910,9 @@ class _QtItemShowDef(
         self._item_show_image_loading_timer.stop()
         self._set_wgt_update_draw_()
 
-    def _set_item_show_start_all_(self, time=200):
-        self._set_item_show_start_(time)
-        self._set_item_show_image_start_(time)
+    def _set_item_show_start_all_(self, time=200, force=False):
+        self._set_item_show_start_(time, force)
+        self._set_item_show_image_start_(time, force)
 
     def _set_item_show_stop_all_(self):
         self._set_item_show_stop_(self.ShowStatus.Stopped)
@@ -1927,6 +1933,9 @@ class _QtItemShowDef(
     def _set_item_show_start_auto_(self):
         if self._get_item_is_viewport_show_able_() is True:
             self._set_item_show_start_all_()
+
+    def _set_item_show_force_(self):
+        self._set_item_show_start_all_(force=True)
 
 
 class AbsQtItemEntryActionDef(object):

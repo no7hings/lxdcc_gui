@@ -2745,12 +2745,12 @@ class QtTreeWidgetItem(
                 # noinspection PyCallingNonCallable
                 self.setToolTip(column, html)
 
-    def _set_item_show_update_loading_(self):
-        if self._item_show_status in [self.ShowStatus.Loading, self.ShowStatus.Waiting]:
-            self._item_show_loading_index += 1
-            self._set_name_(
-                'loading .{}'.format('.'*(self._item_show_loading_index % 3))
-            )
+    # def _set_item_show_update_loading_(self):
+    #     if self._item_show_status in [self.ShowStatus.Loading, self.ShowStatus.Waiting]:
+    #         self._item_show_loading_index += 1
+    #         self._set_name_(
+    #             'loading .{}'.format('.'*(self._item_show_loading_index % 3))
+    #         )
 
     def _get_item_widget_(self):
         pass

@@ -43,6 +43,8 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
     def __init__(self, session, *args, **kwargs):
         super(AbsEntitiesLoaderPanel_, self).__init__(*args, **kwargs)
         #
+        self._use_thread = True
+        #
         self._rez_beta = bsc_core.EnvironMtd.get('REZ_BETA')
         #
         self._session = session
@@ -285,13 +287,16 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         t_r.run_finished.connect(post_fnc_)
         for i_rsv_tag in rsv_tags:
             t_r.set_cache_fnc_add(
-                functools.partial(i_rsv_tag.get_rsv_entities, **self._rsv_filter_opt.value),
+                functools.partial(self._set_cache_add_rsv_entities_, i_rsv_tag),
             )
             t_r.set_build_fnc_add(
                 self._set_gui_add_rsv_entities_
             )
         t_r.set_start()
     # entities for tag
+    def _set_cache_add_rsv_entities_(self, rsv_tag):
+        return rsv_tag.get_rsv_entities(**self._rsv_filter_opt.value)
+
     def _set_gui_add_rsv_entities_(self, rsv_entities):
         for i_rsv_entity in rsv_entities:
             self._set_gui_add_rsv_entity_(i_rsv_entity)
