@@ -497,7 +497,7 @@ class AbsSceneTextureManagerPanel(
                 if _.get_is_directory():
                     descendants = tree_item_prx.get_descendants()
                     for i_item_prx in descendants:
-                        self._obj_list_viewer_0.set_loading_update()
+                        # self._obj_list_viewer_0.set_loading_update()
                         stg_file = i_item_prx.get_gui_dcc_obj(namespace='storage-file')
                         if stg_file is not None:
                             if stg_file.get_is_exists() is True:

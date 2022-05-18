@@ -609,7 +609,7 @@ class PrxStgObjTreeViewAddOpt(object):
             if obj.get_is_directory() is True:
                 prx_item.set_expanded(True)
         #
-        self._prx_tree_view.set_loading_update()
+        # self._prx_tree_view.set_loading_update()
 
 
 class PrxStgTextureTreeViewAddOpt(PrxStgObjTreeViewAddOpt):
@@ -681,7 +681,7 @@ class PrxStgTextureTreeViewAddOpt(PrxStgObjTreeViewAddOpt):
                 else:
                     prx_item.set_state(prx_item.State.WARNING)
         #
-        self._prx_tree_view.set_loading_update()
+        # self._prx_tree_view.set_loading_update()
 
 
 class PrxDccObjTreeViewAddOpt1(object):
@@ -942,7 +942,7 @@ class PrxRsvObjTreeViewAddOpt(object):
         prx_item.set_gui_menu_raw(menu_raw)
         prx_item.set_menu_content(obj.get_gui_menu_content())
         #
-        self._prx_tree_view.set_loading_update()
+        # self._prx_tree_view.set_loading_update()
 
     def set_item_prx_add_as_tree_mode(self, obj):
         show_threads = []

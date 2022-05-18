@@ -398,11 +398,12 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             self.set_renderers_refresh,
             self.set_usd_refresh,
         ]
-        for i in methods:
-            # g_p.set_update()
-            result = i()
-            if result is False:
-                break
+        with utl_core.gui_progress(maximum=len(methods)) as g_p:
+            for i in methods:
+                g_p.set_update()
+                result = i()
+                if result is False:
+                    break
         #
         self.set_settings_load_from_scheme()
 

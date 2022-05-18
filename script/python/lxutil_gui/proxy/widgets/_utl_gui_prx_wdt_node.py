@@ -1150,8 +1150,8 @@ class PrxComponentsEntry(AbsRsvTypeEntry):
         prx_item.set_gui_menu_raw(menu_raw)
         prx_item.set_menu_content(obj.get_gui_menu_content())
         #
-        self._prx_entry_widget.set_loading_update()
-
+        # self._prx_entry_widget.set_loading_update()
+    #
     def __set_item_add_as_tree_(self, obj):
         ancestors = obj.get_ancestors()
         if ancestors:

@@ -18,7 +18,7 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
                 thumbnail_file_path = bsc_core.ImageOpt(
                     '/l/temp/td/dongchangbao/Arnold_Shader_Suite_for_MAYA_v2.0/09-ADVANCED/Del_Cracks_11_1_1_1.jpg'
                 ).get_thumbnail()
-                wdt.set_loading_update()
+                # wdt.set_loading_update()
                 item_prx.set_image(thumbnail_file_path)
                 if i_ % 2 == 0:
                     print 'AAA'
