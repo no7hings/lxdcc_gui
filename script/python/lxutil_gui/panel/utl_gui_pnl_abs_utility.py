@@ -184,7 +184,7 @@ class AbsSceneTextureManagerPanel(
         self._set_texture_references_update_()
         self._set_stg_file_tree_item_prxes_refresh_(includes)
         #
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh()
+        # self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
@@ -482,13 +482,9 @@ class AbsSceneTextureManagerPanel(
                 thumbnail_file_path = stg_file_.get_thumbnail_file_path()
                 if thumbnail_file_path:
                     i_list_item_prx_.set_image(thumbnail_file_path)
-                    # i_list_item_prx_.set_image_loading_start()
                     i_list_item_prx_.set_names(
                         [stg_file_.name]
                     )
-                    # i_list_item_prx_.set_file_icons(
-                    #     icon_names=['file/file']
-                    # )
             #
             i_list_item_prx_.set_show_method(show_fnc_)
         #

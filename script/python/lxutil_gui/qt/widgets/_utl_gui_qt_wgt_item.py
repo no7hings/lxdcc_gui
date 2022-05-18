@@ -258,9 +258,9 @@ class QtTextBrowser_(QtWidgets.QTextBrowser):
         self.setAutoFillBackground(True)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         #
-        self._method_thread = QtPrintThread(self)
-        self._method_thread.added.connect(self._set_content_add_)
-        self._method_thread.overed.connect(self._set_content_)
+        self._print_signals = QtPrintSignals(self)
+        self._print_signals.added.connect(self._set_content_add_)
+        self._print_signals.overed.connect(self._set_content_)
         #
         self.setStyleSheet(
             utl_gui_core.QtStyleMtd.get('QTextBrowser')
@@ -289,10 +289,10 @@ class QtTextBrowser_(QtWidgets.QTextBrowser):
         self.setText(text)
 
     def _set_content_add_use_thread_(self, text):
-        self._method_thread.added.emit(text)
+        self._print_signals.added.emit(text)
 
     def _set_print_over_use_thread_(self, text):
-        self._method_thread.overed.emit(text)
+        self._print_signals.overed.emit(text)
 
     def eventFilter(self, *args):
         widget, event = args
@@ -2423,6 +2423,7 @@ class AbsQtItemDagLoading(object):
 
     def _set_item_dag_loading_end_(self):
         if self._loading_item is not None:
+            self._loading_item._set_item_show_stop_all_()
             self._widget.takeChild(
                 self._widget.indexOfChild(self._loading_item)
             )
@@ -2473,15 +2474,15 @@ class QtTreeWidgetItem(
 
     def _set_child_add_(self):
         item = self.__class__()
-        item._set_item_show_connect_()
         self.addChild(item)
+        item._set_item_show_connect_()
         return item
 
     def _get_item_is_hidden_(self):
         return self.isHidden()
 
     def _set_wgt_update_draw_(self):
-        pass
+        self._get_view_().update()
 
     def setCheckState(self, column, state):
         self.setData(column, QtCore.Qt.CheckStateRole, state, emit_send_enable=False)
@@ -2700,10 +2701,15 @@ class QtTreeWidgetItem(
         return self.treeWidget()
 
     def _get_item_is_viewport_show_able_(self):
-        _ = self.parent()
-        if self.parent() is None:
-            return True
-        return _.isExpanded()
+        item = self
+        view = self.treeWidget()
+        parent = self.parent()
+        if parent is None:
+            return view._get_item_is_viewport_show_able_at_(item)
+        else:
+            if parent.isExpanded():
+                return view._get_item_is_viewport_show_able_at_(item)
+        return False
 
     def _set_item_widget_visible_(self, boolean):
         pass
@@ -2740,9 +2746,8 @@ class QtTreeWidgetItem(
                 self.setToolTip(column, html)
 
     def _set_item_show_update_loading_(self):
-        self._item_show_loading_index += 1
-        #
-        if self._item_show_loading_is_finished is False:
+        if self._item_show_status in [self.ShowStatus.Loading, self.ShowStatus.Waiting]:
+            self._item_show_loading_index += 1
             self._set_name_(
                 'loading .{}'.format('.'*(self._item_show_loading_index % 3))
             )
@@ -2801,6 +2806,11 @@ class QtListWidgetItem(
         #
         self._set_item_visible_connection_def_init_()
 
+    def setData(self, role, value):
+        if role == QtCore.Qt.CheckStateRole:
+            pass
+        super(QtListWidgetItem, self).setData(role, value)
+
     def _get_item_is_hidden_(self):
         return self.isHidden()
 
@@ -2808,12 +2818,6 @@ class QtListWidgetItem(
         item_widget = self._get_item_widget_()
         if item_widget is not None:
             item_widget.update()
-            ApplicationOpt().set_process_run_0()
-
-    def setData(self, role, value):
-        if role == QtCore.Qt.CheckStateRole:
-            pass
-        super(QtListWidgetItem, self).setData(role, value)
 
     def _set_item_widget_(self, widget):
         list_widget = self.listWidget()
@@ -2846,10 +2850,10 @@ class QtListWidgetItem(
 
     def _get_item_is_viewport_show_able_(self):
         item = self
-        list_widget = self.listWidget()
+        view = self.listWidget()
         #
         self._set_item_show_start_loading_()
-        return list_widget._get_item_is_viewport_show_able_at_(item)
+        return view._get_item_is_viewport_show_able_at_(item)
 
     def _set_item_widget_visible_(self, boolean):
         self._get_item_widget_().setVisible(boolean)
@@ -3102,10 +3106,11 @@ class _QtListItemWidget(
             is_actioned=self._get_is_actioned_()
         )
         #
-        if self._get_item_()._item_show_loading_is_started is True:
+        item = self._get_item_()
+        if item._item_show_status in [item.ShowStatus.Loading, item.ShowStatus.Waiting]:
             painter._set_loading_draw_by_rect_(
                 self._frame_rect,
-                self._get_item_()._item_show_loading_index
+                item._item_show_loading_index
             )
         else:
             painter._set_frame_draw_by_rect_(
@@ -3227,10 +3232,10 @@ class _QtListItemWidget(
                     is_actioned=self._get_is_actioned_()
                 )
             #
-            if self._get_item_()._item_show_image_loading_is_started is True:
+            if item._item_show_image_status in [item.ShowStatus.Loading, item.ShowStatus.Waiting]:
                 painter._set_loading_draw_by_rect_(
                     self._image_frame_rect,
-                    self._get_item_()._item_show_loading_index
+                    item._item_show_image_loading_index
                 )
 
     def _set_frame_icon_size_(self, w, h):

@@ -150,7 +150,7 @@ class AbsAssetLookViewerPanel(
     def _set_obj_gui_refresh_(self):
         self._set_dcc_obj_guis_build_()
         #
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh()
+        # self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 

@@ -1,5 +1,6 @@
 # coding:utf-8
 import collections
+import functools
 
 from lxbasic import bsc_core
 
@@ -68,6 +69,8 @@ class PrxDccObjTreeViewTagFilterOpt(object):
         self._dcc_obj_dict = {}
         self._dcc_selection_cls = None
         self._dcc_namespace = None
+
+        self._obj_add_dict = self._prx_tree_view_src._item_dict
         #
         self._prx_tree_view_src.set_item_check_changed_connect_to(
             self.set_filter
@@ -94,39 +97,31 @@ class PrxDccObjTreeViewTagFilterOpt(object):
         return self._filter_content._to_key_path_(key)
 
     def set_tgt_item_tag_update(self, key, prx_item_tgt, dcc_obj=None):
-        tag_filter_key = self._to_filter_key_path_(key)
-        #
-        prx_item_tgt.set_tag_filter_tgt_mode('A+B')
-        prx_item_tgt.set_tag_filter_tgt_key_add(
-            tag_filter_key, ancestors=True
+        self.set_registry(
+            prx_item_tgt,
+            [key],
+            dcc_obj=dcc_obj
         )
-        prx_item_tgt.set_tag_filter_tgt_statistic_enable(True)
-        self._filter_content.set_element_add(key, prx_item_tgt)
-        #
-        if dcc_obj is not None:
-            self._dcc_obj_dict[tag_filter_key] = dcc_obj
 
-    def set_src_item_add(self, filter_path):
-        item_dict = self._prx_tree_view_src._item_dict
+    def set_src_item_add(self, path):
+        path_dag_opt = bsc_core.DccPathDagOpt(path)
+        name = path_dag_opt.name
         #
-        dag_path = bsc_core.DccPathDagOpt(filter_path)
-        name = dag_path.name
+        key = path_dag_opt.path
+        if key in self._obj_add_dict:
+            return False, self._obj_add_dict[key]
         #
-        key = dag_path.path
-        if key in item_dict:
-            return item_dict[key]
-        #
-        icon_color = bsc_core.TextOpt(dag_path.path).to_rgb()
+        icon_color = bsc_core.TextOpt(path_dag_opt.path).to_rgb()
         _kwargs = dict(
             name=(name, ),
             item_class=self._prx_tree_item_cls,
-            tool_tip=dag_path.path,
+            tool_tip=path_dag_opt.path,
             filter_key=key
         )
         #
-        parent_path = bsc_core.DccPathDagOpt(filter_path).get_parent_path()
-        if parent_path in item_dict:
-            item_prx_parent = item_dict[parent_path]
+        parent_path = bsc_core.DccPathDagOpt(path).get_parent_path()
+        if parent_path in self._obj_add_dict:
+            item_prx_parent = self._obj_add_dict[parent_path]
             item_prx = item_prx_parent.set_child_add(
                 **_kwargs
             )
@@ -141,7 +136,7 @@ class PrxDccObjTreeViewTagFilterOpt(object):
         item_prx.set_checked(True)
         item_prx.set_icon_by_name_text(key, 0)
         item_prx.set_emit_send_enable(True)
-        return item_prx
+        return True, item_prx
 
     def set_src_items_refresh(self, expand_depth=None):
         self._prx_tree_view_src.set_clear()
@@ -151,7 +146,7 @@ class PrxDccObjTreeViewTagFilterOpt(object):
         all_paths.sort()
         all_paths = bsc_core.TextsOpt(all_paths).set_sort_to()
         for path in all_paths:
-            i_prx_item_src = self.set_src_item_add(path)
+            i_is_create, i_prx_item_src = self.set_src_item_add(path)
             if path in leaf_paths:
                 tag_filter_key = path
                 i_prx_item_src.set_tag_filter_src_key_add(tag_filter_key)
@@ -165,17 +160,6 @@ class PrxDccObjTreeViewTagFilterOpt(object):
             self._prx_tree_view_src.set_items_expand_by_depth(expand_depth)
         else:
             self._prx_tree_view_src.set_all_items_expand()
-
-    def set_src_items_update(self):
-        leaf_paths = self._filter_content.get_leaf_key_as_paths()
-        all_paths = self._filter_content.get_key_as_paths()
-        all_paths.sort()
-        all_paths = bsc_core.TextsOpt(all_paths).set_sort_to()
-        for path in all_paths:
-            i_prx_item_src = self.set_src_item_add(path)
-            if path in leaf_paths:
-                tag_filter_key = path
-                i_prx_item_src.set_tag_filter_src_key_add(tag_filter_key)
 
     def set_filter_statistic(self):
         target_filter_tag_item_prx_dict = self._prx_tree_view_tgt.get_tag_filter_tgt_statistic_raw()
@@ -243,6 +227,46 @@ class PrxDccObjTreeViewTagFilterOpt(object):
                 i_prx_item.set_checked(False)
 
         self.set_filter()
+
+    def set_registry(self, prx_item_tgt, keys, dcc_obj=None, expand_depth=1):
+        for i_key in keys:
+            i_path = self._to_filter_key_path_(i_key)
+            #
+            prx_item_tgt.set_tag_filter_tgt_mode('A+B')
+            prx_item_tgt.set_tag_filter_tgt_key_add(
+                i_path, ancestors=True
+            )
+            prx_item_tgt.set_tag_filter_tgt_statistic_enable(True)
+            self._filter_content.set_element_add(
+                i_key,
+                prx_item_tgt
+            )
+            #
+            self._set_registry_src_(i_path, dcc_obj, expand_depth)
+
+    def _set_registry_src_(self, path, dcc_obj=None, expand_depth=1):
+        path_dag_opt = bsc_core.DccPathDagOpt(path)
+        ancestor_paths = path_dag_opt.get_ancestor_paths()
+        if ancestor_paths:
+            ancestor_paths.reverse()
+            #
+            for seq, i_ancestor_path in enumerate(ancestor_paths):
+                if i_ancestor_path not in self._obj_add_dict:
+                    i_is_create, i_ancestor_prx_item_src = self.set_src_item_add(i_ancestor_path)
+                    if i_is_create is True:
+                        if seq+1 <= expand_depth:
+                            i_ancestor_prx_item_src.set_expanded(True)
+        #
+        is_create, prx_item_src = self.set_src_item_add(path)
+        prx_item_src.set_tag_filter_src_key_add(path)
+        if is_create is True:
+            if self._dcc_namespace is not None:
+                if dcc_obj is not None:
+                    prx_item_src.set_gui_dcc_obj(
+                        dcc_obj,
+                        namespace=self._dcc_namespace
+                    )
+        return prx_item_src
 
 
 class PrxDccObjKeywordFilterOpt(object):
@@ -519,10 +543,10 @@ class PrxStgObjTreeViewAddOpt(object):
         if ancestors:
             ancestors.reverse()
             #
-            for ancestor in ancestors:
-                ancestor_path = ancestor.path
+            for i_ancestor in ancestors:
+                ancestor_path = i_ancestor.path
                 if ancestor_path not in self._obj_add_dict:
-                    self._set_dag_dcc_obj_gui_add_(ancestor)
+                    self._set_dag_dcc_obj_gui_add_(i_ancestor)
         #
         return self._set_dag_dcc_obj_gui_add_(obj)
 
@@ -843,8 +867,7 @@ class PrxRsvObjTreeViewAddOpt(object):
             return False, prx_item, None
         else:
             create_kwargs = dict(
-                name='loading ...',
-                icon_name_text=obj_type,
+                name='...',
                 item_class=self._prx_tree_item_cls,
                 filter_key=obj.path
             )
@@ -867,7 +890,9 @@ class PrxRsvObjTreeViewAddOpt(object):
             #
             if use_show_thread is True:
                 prx_item.set_show_method(
-                    lambda *args, **kwargs: self._set_prx_item_show_deferred_(prx_item)
+                    functools.partial(
+                        self._set_prx_item_show_deferred_, prx_item
+                    )
                 )
                 return True, prx_item, None
             else:
@@ -881,9 +906,10 @@ class PrxRsvObjTreeViewAddOpt(object):
             return type_name
         #
         obj = prx_item.get_gui_dcc_obj(namespace=self._dcc_namespace)
+        obj_type_name = obj.type_name
         obj_name = obj.name
         obj_path = obj.path
-        obj_type = obj.type
+        #
         menu_raw = []
         menu_raw.extend(
             obj.get_gui_menu_raw() or []
@@ -892,6 +918,7 @@ class PrxRsvObjTreeViewAddOpt(object):
             obj.get_gui_extend_menu_raw() or []
         )
         #
+        prx_item.set_icon_by_name_text(obj_type_name)
         prx_item.set_name(obj_name)
         prx_item.set_tool_tip(obj.description)
         #

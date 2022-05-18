@@ -1,6 +1,8 @@
 # coding:utf-8
 import math
 
+import re
+
 import enum
 
 from lxutil import utl_configure, utl_core
@@ -219,11 +221,19 @@ class QtStyleMtd(object):
 
 class RscIconFile(object):
     BRANCH = 'icons'
+    ICON_KEY_PATTERN = r'[@](.*?)[@]'
     @classmethod
     def get(cls, key):
         return utl_core.Resources.get(
             '{}/{}.*'.format(cls.BRANCH, key)
         )
+    @classmethod
+    def get_(cls, key):
+        _ = re.findall(
+            re.compile(cls.ICON_KEY_PATTERN, re.S), key
+        )
+        if _:
+            cls.get(_)
 
 
 class RscFontFile(object):

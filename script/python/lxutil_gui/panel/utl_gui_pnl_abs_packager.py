@@ -366,6 +366,6 @@ class AbsScenePackagerPanel(
         self._set_file_references_update_()
         self._set_file_guis_refresh_()
         #
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh()
+        # self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()

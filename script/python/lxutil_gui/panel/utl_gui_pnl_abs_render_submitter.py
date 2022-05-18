@@ -17,6 +17,8 @@ import lxutil_gui.proxy.operators as utl_prx_operators
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
+from lxutil_gui import utl_gui_core
+
 from lxutil_gui.qt import utl_gui_qt_core
 
 import lxsession.commands as ssn_commands
@@ -357,7 +359,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             pass
 
         def cache_fnc_():
-            return self._work_scene_file_rsv_unit.get_rsv_versions()
+            return self._work_scene_file_rsv_unit.get_rsv_versions(trim=(-10, None))
 
         def build_fnc_(rsv_versions_):
             self._options_prx_node.set('version', rsv_versions_)
@@ -390,19 +392,17 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         #
         t.start()
 
-    @utl_gui_qt_core.set_prx_window_waiting
     def set_current_refresh(self):
         methods = [
             self.set_options_refresh,
             self.set_renderers_refresh,
             self.set_usd_refresh,
         ]
-        with utl_core.gui_progress(maximum=len(methods)) as g_p:
-            for i in methods:
-                g_p.set_update()
-                result = i()
-                if result is False:
-                    break
+        for i in methods:
+            # g_p.set_update()
+            result = i()
+            if result is False:
+                break
         #
         self.set_settings_load_from_scheme()
 
@@ -449,7 +449,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             'td.publish_camera', self.set_camera_publish
         )
 
-    def _set_rsv_unit_prx_item_show_deferred_(self, prx_item, variants):
+    def _set_gui_rsv_task_unit_show_deferred_(self, prx_item, variants):
         hook_options = []
         pixmaps = []
         #
@@ -531,14 +531,10 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 ]
             )
             if image_sub_process_cmds is not None:
-                if prx_item.get_image_show_sub_process() is None:
-                    image_sub_process = bsc_objects.SubProcess(image_sub_process_cmds)
-                    image_sub_process.set_start()
-                    prx_item.set_image_show_sub_process(image_sub_process)
-                    # prx_item.set_image_loading_start()
+                prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
         else:
             prx_item.set_image(
-                utl_core.Icon._get_file_path_('@image_loading_failed@')
+                utl_gui_core.RscIconFile.get('image_loading_failed')
             )
         #
         for i_rsv_unit in self._check_rsv_units:
@@ -640,7 +636,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         self._set_renderers_add_rsv_units_()
     # variables
     def set_variables_refresh(self):
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
+        # self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
@@ -694,15 +690,20 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             return []
 
         def build_fnc_(data):
-            self._set_rsv_unit_prx_item_show_deferred_(
+            self._set_gui_rsv_task_unit_show_deferred_(
                 rsv_unit_prx_item, variants
             )
         #
         rsv_unit_prx_item = self._rsv_renderer_list_view.set_item_add()
+        keys = []
         for j_key in self._variable_keys:
-            self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
-                '{}.{}'.format(j_key, variants[j_key]), rsv_unit_prx_item
+            keys.append(
+                '{}.{}'.format(j_key, variants[j_key])
             )
+        #
+        self._prx_dcc_obj_tree_view_tag_filter_opt.set_registry(
+            rsv_unit_prx_item, keys
+        )
 
         rsv_unit_prx_item.set_show_fnc(
             cache_fnc_, build_fnc_
@@ -975,7 +976,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     i
                 ).set_expanded(False)
 
-    def _set_rsv_unit_prx_item_show_deferred_(self, prx_item, variants):
+    def _set_gui_rsv_task_unit_show_deferred_(self, prx_item, variants):
         hook_options = []
         pixmaps = []
         #
@@ -1039,14 +1040,10 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 ]
             )
             if image_sub_process_cmds is not None:
-                if prx_item.get_image_show_sub_process() is None:
-                    image_sub_process = bsc_objects.SubProcess(image_sub_process_cmds)
-                    image_sub_process.set_start()
-                    prx_item.set_image_show_sub_process(image_sub_process)
-                    # prx_item.set_image_loading_start()
+                prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
         else:
             prx_item.set_image(
-                utl_core.Icon._get_file_path_('@image_loading_failed@')
+                utl_gui_core.RscIconFile.get('image_loading_failed')
             )
 
         for i_rsv_unit in self._check_rsv_units:
@@ -1139,7 +1136,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         self.set_settings_load_from_scheme()
 
     def set_variables_refresh(self):
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
+        # self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()
         # self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
@@ -1296,7 +1293,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
     def set_renderers_refresh(self):
         def set_thread_create_fnc_(prx_item_, variants_):
             prx_item_.set_show_method(
-                lambda *args, **kwargs: self._set_rsv_unit_prx_item_show_deferred_(
+                lambda *args, **kwargs: self._set_gui_rsv_task_unit_show_deferred_(
                     prx_item_, variants_
                 )
             )

@@ -449,7 +449,7 @@ class PrxWaitWindow(utl_gui_prx_abstract.AbsPrxWindow):
     def __init__(self, *args, **kwargs):
         super(PrxWaitWindow, self).__init__(*args, **kwargs)
 
-        self._t = utl_gui_qt_core.QtPrintThread()
+        self._t = utl_gui_qt_core.QtPrintSignals()
         self._t.added.connect(self.set_content_add)
 
     def _set_build_(self):

@@ -1,4 +1,5 @@
 # coding:utf-8
+import functools
 import types
 
 from lxbasic import bsc_core
@@ -970,6 +971,7 @@ class PrxRsvObjChooseEntry(AbsRsvTypeEntry):
 
     def __set_item_show_deferred_(self, prx_item, use_as_tree=True):
         obj = prx_item.get_gui_dcc_obj(namespace=self.NAMESPACE)
+        obj_type_name = obj.type_name
         obj_name = obj.name
         obj_path = obj.path
         menu_raw = []
@@ -991,6 +993,7 @@ class PrxRsvObjChooseEntry(AbsRsvTypeEntry):
         #
         result = obj.get('result')
         update = obj.get('update')
+        prx_item.set_icon_by_name_text(obj_type_name)
         prx_item.set_names([obj_name, update])
         prx_item.set_tool_tip(obj.description)
         if result:
@@ -999,8 +1002,6 @@ class PrxRsvObjChooseEntry(AbsRsvTypeEntry):
         #
         prx_item.set_gui_menu_raw(menu_raw)
         prx_item.set_menu_content(obj.get_gui_menu_content())
-        #
-        self._prx_entry_widget.set_loading_update()
 
     def __set_item_add_as_tree_(self, obj):
         ancestors = obj.get_ancestors()
@@ -1019,20 +1020,22 @@ class PrxRsvObjChooseEntry(AbsRsvTypeEntry):
         #
         create_kwargs = dict(
             name='...',
-            icon_name_text=obj_type,
             filter_key=obj_path
         )
         prx_item = self._prx_entry_widget.set_item_add(
             **create_kwargs
         )
-        #
         # prx_item.set_checked(True)
         prx_item.set_keyword_filter_tgt_contexts([obj_path, obj_type])
         obj.set_obj_gui(prx_item)
         prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
         self._obj_add_dict[obj_path] = prx_item
         #
-        self.__set_item_show_deferred_(prx_item, use_as_tree=False)
+        prx_item.set_show_method(
+            functools.partial(
+                self.__set_item_show_deferred_, prx_item, False
+            )
+        )
 
     def __set_item_selected_(self, obj):
         item = obj.get_obj_gui()

@@ -1674,7 +1674,36 @@ class AbsQtItemMovieActionDef(object):
         self.movie_play_press_clicked.emit()
 
 
-class _QtItemShowDef(object):
+class AbsQtBuildItemDef(object):
+    def _set_build_item_def_init_(self):
+        pass
+
+    def _set_build_item_setup_(self, view):
+        self._build_runnable_runner = view._build_runnable_runner
+
+    def _set_build_item_start_(self, runnable):
+        self._build_runnable_runner.set_start_by_runnable(runnable)
+
+    def _set_build_item_runnable_create_(self, cache_fnc, build_fnc, post_fnc=None):
+        return self._build_runnable_runner.set_runnable_create(
+            cache_fnc, build_fnc, post_fnc
+        )
+
+
+class AbsQtBuildViewDef(object):
+    def _set_build_view_def_init_(self):
+        pass
+
+    def _set_build_view_setup_(self, view):
+        self._build_runnable_runner = QtBuildRunnableRunner(
+            view
+        )
+
+
+class _QtItemShowDef(
+    AbsQtBuildItemDef
+):
+    ShowStatus = bsc_configure.ShowStatus
     def _set_wgt_update_draw_(self):
         raise NotImplementedError()
 
@@ -1685,201 +1714,203 @@ class _QtItemShowDef(object):
         raise NotImplementedError()
 
     def _set_item_show_def_init_(self):
+        #
         self._item_show_cache_fnc = None
         self._item_show_build_fnc = None
         #
-        self._show_thread = None
+        self._item_show_status = self.ShowStatus.Stopped
+        # image
+        self._item_show_image_cache_fnc = None
+        self._item_show_image_build_fnc = None
         #
-        self._item_show_method = None
-        #
-        self._item_show_is_started = False
-        self._item_show_is_finished = False
-        #
-        self._item_show_loading_is_started = False
-        self._item_show_loading_is_finished = False
-        #
-        self._item_show_image_loading_is_started = False
-        self._item_show_image_loading_is_finished = False
+        self._item_show_image_status = self.ShowStatus.Stopped
+
+        self._set_build_item_def_init_()
 
     def _set_item_show_def_setup_(self, view):
+        self._set_build_item_setup_(view)
+
+        self._item_show_runnable = None
+        self._item_show_image_runnable = None
+        #
         self._item_show_timer = QtCore.QTimer(view)
-        #
-        self._item_show_thread = QtBuildThread(view)
-        #
         self._item_show_loading_index = 0
         self._item_show_loading_timer = QtCore.QTimer(view)
         #
+        self._item_show_image_timer = QtCore.QTimer(view)
+        self._item_show_image_loading_index = 0
         self._item_show_image_loading_timer = QtCore.QTimer(view)
+        #
         self._item_show_image_sub_process = None
+        self._item_show_image_cmd = None
+        self._item_show_image_file_path = None
 
     def _set_item_show_method_(self, method):
-        if self._item_show_method is None and method is not None:
-            self._item_show_method = method
-            self._item_show_is_started = True
-            self._item_show_loading_is_started = True
-            if self._get_item_is_viewport_show_able_() is True:
-                self._set_item_show_start_all_()
+        def cache_fnc_():
+            return []
 
+        def build_fnc_(data):
+            method()
+
+        if method is not None:
+            self._set_item_show_fnc_(cache_fnc_, build_fnc_)
+    # fnc
     def _set_item_show_fnc_(self, cache_fnc, build_fnc):
         if cache_fnc is not None and build_fnc is not None:
             if self._item_show_cache_fnc is None and self._item_show_build_fnc is None:
                 self._item_show_cache_fnc = cache_fnc
                 self._item_show_build_fnc = build_fnc
-                self._item_show_is_started = True
-                self._item_show_loading_is_started = True
                 #
-                self._item_show_thread.set_cache_fnc(
-                    self._item_show_cache_fnc
-                )
-                self._item_show_thread.built.connect(
-                    self._item_show_build_fnc
-                )
-                #
+                self._item_show_status = self.ShowStatus.Waiting
                 if self._get_item_is_viewport_show_able_() is True:
-                    self._set_item_show_start_all_()
+                    self._set_item_show_start_()
 
     def _set_item_show_fnc_start_(self):
-        if self._item_show_is_started is True:
-            if self._item_show_is_finished is False:
-                self._item_show_thread.run_finished.connect(
-                    self._set_item_show_fnc_stop_
-                )
-                self._item_show_thread.start()
+        if self._item_show_status == self.ShowStatus.Waiting:
+            r = self._set_build_item_runnable_create_(
+                self._item_show_cache_fnc,
+                self._item_show_build_fnc,
+                self._set_item_show_fnc_stop_
+            )
             #
-            self._item_show_is_started = False
+            r.set_start()
+            self._item_show_status = self.ShowStatus.Loading
 
     def _set_item_show_fnc_stop_(self):
-        self._item_show_is_finished = True
+        self._set_item_show_stop_(
+            self.ShowStatus.Finished
+        )
+
+    def _set_item_show_start_(self, time=200):
+        def run_fnc():
+            if self._item_show_cache_fnc is not None:
+                self._set_item_show_fnc_start_()
+        #
+        if self._item_show_status == self.ShowStatus.Waiting:
+            self._set_item_show_start_loading_()
+            #
+            self._item_show_timer.timeout.connect(run_fnc)
+            self._item_show_timer.start(time)
+
+    def _set_item_show_stop_(self, status):
+        self._item_show_status = status
+        self._item_show_timer.stop()
         self._set_item_show_stop_loading_()
-
-    def _set_item_show_sub_process_(self, sub_process):
-        if self._item_show_image_sub_process is None and sub_process is not None:
-            self._item_show_image_sub_process = sub_process
-            self._item_show_image_loading_is_started = True
-            # self._item_show_image_sub_process.set_start()
-
-    def _get_item_show_sub_process_(self):
-        return self._item_show_image_sub_process
-
-    def _get_item_is_viewport_show_able_(self):
-        raise NotImplementedError()
     # loading
     def _set_item_show_start_loading_(self):
-        if self._item_show_loading_is_started is True:
-            if self._item_show_loading_is_finished is False:
-                self._item_show_loading_timer.timeout.connect(
-                    self._set_item_show_update_loading_
-                )
-                self._item_show_loading_timer.start(1000)
+        if self._item_show_status == self.ShowStatus.Waiting:
+            self._set_item_show_update_loading_()
+            self._item_show_loading_timer.timeout.connect(
+                self._set_item_show_update_loading_
+            )
+            self._item_show_loading_timer.start(100)
 
     def _set_item_show_update_loading_(self):
         self._item_show_loading_index += 1
-        # self._set_wgt_update_draw_()
+        self._set_wgt_update_draw_()
 
     def _set_item_show_stop_loading_(self):
-        self._item_show_loading_is_started = False
-        self._item_show_loading_is_finished = True
         self._item_show_loading_timer.stop()
-        #
         self._set_wgt_update_draw_()
+    # image fnc
+    def _set_item_show_image_cmd_(self, image_file_path, cmd):
+        def cache_fnc_():
+            return []
 
-    def _get_item_show_image_loading_is_termination_(self):
-        sub_process = self._get_item_show_sub_process_()
-        if sub_process is not None:
-            return sub_process.get_is_termination()
-        return True
-
-    def _get_item_show_image_loading_is_abnormal_termination_(self):
-        sub_process = self._get_item_show_sub_process_()
-        if sub_process is not None:
-            return sub_process.get_is_abnormal_termination()
-        return False
-
-    def _set_item_show_image_loading_run_(self):
-        if self._item_show_image_loading_is_started is True:
-            if self._get_item_show_image_loading_is_termination_() is False:
-                self._item_show_image_loading_timer.timeout.connect(
-                    self._set_item_show_image_loading_update_
+        def build_fnc_(data):
+            # noinspection PyBroadException
+            try:
+                bsc_core.SubProcessMtd.set_run_with_result(
+                    cmd
                 )
-                self._item_show_image_loading_timer.start(1000)
+            except:
+                pass
 
-    def _set_item_show_image_loading_update_(self):
-        self._set_item_show_image_sub_process_update_()
-        #
-        if self._get_item_show_image_loading_is_termination_() is True:
-            self._set_item_show_image_loading_stop_()
-        else:
-            self._item_show_loading_index += 1
-        #
-        self._set_wgt_update_draw_()
+        if cmd is not None:
+            self._item_show_image_file_path = image_file_path
+            self._set_item_show_image_fnc_(cache_fnc_, build_fnc_)
 
-    def _set_item_show_image_sub_process_update_(self):
-        sub_process = self._get_item_show_sub_process_()
-        if sub_process is not None:
-            sub_process.set_update()
+    def _set_item_show_image_fnc_(self, cache_fnc, build_fnc):
+        if cache_fnc is not None and build_fnc is not None:
+            if self._item_show_image_cache_fnc is None and self._item_show_image_build_fnc is None:
+                self._item_show_image_cache_fnc = cache_fnc
+                self._item_show_image_build_fnc = build_fnc
+                #
+                self._item_show_image_status = self.ShowStatus.Waiting
+                if self._get_item_is_viewport_show_able_() is True:
+                    self._set_item_show_image_start_()
 
-    def _set_item_show_image_loading_stop_(self):
-        self._item_show_image_loading_is_started = False
-        self._item_show_image_loading_is_finished = True
+    def _set_item_show_image_fnc_start_(self):
+        if self._item_show_image_status == self.ShowStatus.Waiting:
+            r = self._set_build_item_runnable_create_(
+                self._item_show_image_cache_fnc,
+                self._item_show_image_build_fnc,
+                self._set_item_show_image_fnc_stop_
+            )
+            #
+            r.set_start()
+            #
+            self._item_show_image_status = self.ShowStatus.Loading
+
+    def _set_item_show_image_start_(self, time=200):
+        def run_fnc():
+            if self._item_show_cache_fnc is not None:
+                self._set_item_show_image_fnc_start_()
         #
-        if self._get_item_show_image_loading_is_abnormal_termination_() is True:
+        if self._item_show_image_status == self.ShowStatus.Waiting:
+            self._set_item_show_image_start_loading_()
+            #
+            self._item_show_image_timer.timeout.connect(run_fnc)
+            self._item_show_image_timer.start(time)
+
+    def _set_item_show_image_fnc_stop_(self):
+        if self._item_show_image_file_path is not None:
+            if os.path.isfile(self._item_show_image_file_path) is True:
+                self._set_item_show_image_stop_(self.ShowStatus.Finished)
+            else:
+                self._set_item_show_image_stop_(self.ShowStatus.Failed)
+
+    def _set_item_show_image_stop_(self, status):
+        self._item_show_image_status = status
+        if status == self.ShowStatus.Failed:
             item_widget = self._get_item_widget_()
             if item_widget is not None:
                 item_widget._set_image_file_path_(
-                    utl_core.Icon._get_file_path_('@image_loading_failed_error@')
+                    utl_gui_core.RscIconFile.get('image_loading_failed_error')
                 )
-        #
-        self._item_show_image_loading_timer.stop()
+        self._item_show_image_timer.stop()
+        self._set_item_show_image_stop_loading_()
 
-    def _set_item_show_method_start_(self):
-        if self._item_show_is_started is True:
-            if self._item_show_is_finished is False:
-                if self._item_show_method is not None:
-                    self._item_show_method()
-                #
-                self._item_show_is_finished = True
-                #
-                self._set_item_show_stop_()
-                self._set_item_show_stop_loading_()
-                #
-                self._set_wgt_update_draw_()
-            #
-            self._item_show_is_started = False
+    def _get_item_is_viewport_show_able_(self):
+        raise NotImplementedError()
 
-    def _set_item_show_start_(self):
-        if self._get_item_is_viewport_show_able_() is True:
-            self._set_item_show_start_all_()
+    def _set_item_show_image_start_loading_(self):
+        if self._item_show_image_status == self.ShowStatus.Waiting:
+            self._set_item_show_image_update_loading_()
+            self._item_show_image_loading_timer.timeout.connect(
+                self._set_item_show_image_update_loading_
+            )
+            self._item_show_image_loading_timer.start(100)
 
-    def _set_item_show_stop_(self):
-        self._item_show_timer.stop()
-        #
+    def _set_item_show_image_update_loading_(self):
+        self._item_show_image_loading_index += 1
         self._set_wgt_update_draw_()
 
-    def _set_item_show_start_all_(self, time=100):
-        def run_fnc():
-            if self._item_show_method is not None:
-                self._set_item_show_method_start_()
-            if self._item_show_cache_fnc is not None:
-                self._set_item_show_fnc_start_()
-            #
-            self._set_item_show_stop_()
-            #
-            self._set_item_show_image_loading_run_()
-        #
-        self._set_item_show_start_loading_()
-        #
-        self._item_show_timer.timeout.connect(run_fnc)
-        self._item_show_timer.start(time)
+    def _set_item_show_image_stop_loading_(self):
+        self._item_show_image_loading_timer.stop()
+        self._set_wgt_update_draw_()
+
+    def _set_item_show_start_all_(self, time=200):
+        self._set_item_show_start_(time)
+        self._set_item_show_image_start_(time)
 
     def _set_item_show_stop_all_(self):
-        self._set_item_show_stop_()
-        self._set_item_show_stop_loading_()
-        self._set_item_show_image_loading_stop_()
+        self._set_item_show_stop_(self.ShowStatus.Stopped)
+        self._set_item_show_image_stop_(self.ShowStatus.Stopped)
 
     def _set_item_viewport_visible_(self, boolean):
         if boolean is True:
-            if self._item_show_loading_is_finished is False:
-                self._set_item_show_start_all_()
+            self._set_item_show_start_auto_()
         #
         self._set_item_widget_visible_(boolean)
 
@@ -1888,6 +1919,10 @@ class _QtItemShowDef(object):
 
     def _set_viewport_show_enable_(self, boolean):
         self._is_viewport_show_enable = boolean
+
+    def _set_item_show_start_auto_(self):
+        if self._get_item_is_viewport_show_able_() is True:
+            self._set_item_show_start_all_()
 
 
 class AbsQtItemEntryActionDef(object):
@@ -2206,7 +2241,7 @@ class AbsQtItemVisibleConnectionDef(object):
                     items_tgt = tgt_raw[src_key]
                     for i_item_tgt in items_tgt:
                         i_item_tgt.set_hidden(self._get_item_is_hidden_())
-                        i_item_tgt._set_item_show_start_()
+                        i_item_tgt._set_item_show_start_auto_()
 
 
 class AbsQtViewVisibleConnectionDef(object):
@@ -2271,7 +2306,8 @@ class AbsQtTreeWidget(
     AbsQtViewStateDef,
     AbsQtViewVisibleConnectionDef,
     #
-    AbsQtViewScrollActionDef
+    AbsQtViewScrollActionDef,
+    AbsQtBuildViewDef
 ):
     def __init__(self, *args, **kwargs):
         super(AbsQtTreeWidget, self).__init__(*args, **kwargs)
@@ -2285,7 +2321,13 @@ class AbsQtTreeWidget(
         self._set_view_visible_connection_def_init_()
 
         self._set_view_scroll_action_def_init_()
-        self._get_view_v_scroll_bar_().valueChanged.connect(self._set_view_items_show_update_)
+        #
+        self._get_view_v_scroll_bar_().valueChanged.connect(
+            self._set_view_items_show_update_
+        )
+        #
+        self._set_build_view_def_init_()
+        self._set_build_view_setup_(self)
 
     def _get_view_items_(self, column=0):
         def _rcs_fnc(index_):
@@ -2330,6 +2372,25 @@ class AbsQtTreeWidget(
     def _get_view_v_scroll_bar_(self):
         return self.verticalScrollBar()
 
+    def _set_view_items_show_update_(self):
+        for i_item in self._get_view_items_():
+            if i_item.isHidden() is False:
+                i_result = self._get_item_is_viewport_show_able_at_(i_item)
+                if i_result is True:
+                    i_item._set_item_viewport_visible_(True)
+
+    def _get_item_is_viewport_show_able_at_(self, item):
+        rect = self.rect()
+        p_t_, p_b_ = rect.top(), rect.bottom()
+        i_rect = self.visualItemRect(item)
+        i_w, i_h = i_rect.width(), i_rect.height()
+        if i_w != 0 and i_h != 0:
+            i_p_t, i_p_b = i_rect.top(), i_rect.bottom()
+            if i_p_b >= p_t_:
+                if i_p_t <= p_b_:
+                    return True
+        return False
+
 
 class AbsQtListWidget(
     QtWidgets.QListWidget,
@@ -2339,7 +2400,8 @@ class AbsQtListWidget(
     #
     AbsQtViewFilterTgtDef,
     AbsQtViewStateDef,
-    AbsQtViewVisibleConnectionDef
+    AbsQtViewVisibleConnectionDef,
+    AbsQtBuildViewDef
 ):
     item_show_changed = qt_signal()
     def __init__(self, *args, **kwargs):
@@ -2357,7 +2419,9 @@ class AbsQtListWidget(
         self.itemSelectionChanged.connect(self._set_item_select_update_)
         self.itemSelectionChanged.connect(self._set_item_widget_selected_update_)
         # noinspection PyUnresolvedReferences
-        self._get_view_v_scroll_bar_().valueChanged.connect(self._set_view_items_show_update_)
+        self._get_view_v_scroll_bar_().valueChanged.connect(
+            self._set_view_items_show_update_
+        )
         self._viewport_rect = QtCore.QRect()
         self._item_rects = []
         #
@@ -2371,6 +2435,9 @@ class AbsQtListWidget(
         self.horizontalScrollBar().setStyleSheet(
             utl_gui_core.QtStyleMtd.get('QScrollBar')
         )
+        #
+        self._set_build_view_def_init_()
+        self._set_build_view_setup_(self)
 
     def _get_view_h_scroll_bar_(self):
         return self.horizontalScrollBar()
@@ -2426,27 +2493,22 @@ class AbsQtListWidget(
         self.viewport().update()
 
     def _set_view_items_show_update_(self):
-        rect = self.rect()
-        self._item_rects = []
-        p_t_, p_b_ = rect.top(), rect.bottom()
-        for i in self._get_view_items_():
-            if i.isHidden() is False:
-                i._set_item_viewport_visible_(False)
-                i_rect = self.visualItemRect(i)
-                i_p_t, i_p_b = i_rect.top(), i_rect.bottom()
-                if i_p_b >= p_t_:
-                    if i_p_t <= p_b_:
-                        self._item_rects.append(i_rect)
-                        i._set_item_viewport_visible_(True)
+        for i_item in self._get_view_items_():
+            if i_item.isHidden() is False:
+                i_result = self._get_item_is_viewport_show_able_at_(i_item)
+                if i_result is True:
+                    i_item._set_item_viewport_visible_(True)
 
     def _get_item_is_viewport_show_able_at_(self, item):
         rect = self.rect()
         p_t_, p_b_ = rect.top(), rect.bottom()
         i_rect = self.visualItemRect(item)
         i_p_t, i_p_b = i_rect.top(), i_rect.bottom()
-        if i_p_b >= p_t_:
-            if i_p_t <= p_b_:
-                return True
+        i_w, i_h = i_rect.width(), i_rect.height()
+        if i_w != 0 and i_h != 0:
+            if i_p_b >= p_t_:
+                if i_p_t <= p_b_:
+                    return True
         return False
     #
     def _get_viewport_size_(self):

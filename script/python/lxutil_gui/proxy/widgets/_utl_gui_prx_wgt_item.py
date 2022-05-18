@@ -522,11 +522,12 @@ class PrxTreeItem(
             tgt_view_prx = src_item_prx.get_visible_tgt_view()
             if tgt_view_prx is not None:
                 tgt_raw = tgt_view_prx.get_visible_tgt_raw()
-                if src_key in tgt_raw:
-                    tgt_item_prxes = tgt_raw[src_key]
-                    for prx_item_tgt in tgt_item_prxes:
-                        prx_item_tgt.set_hidden(self.get_is_hidden())
-                        prx_item_tgt.widget._get_list_widget_item_()._set_item_show_start_()
+                if tgt_raw is not None:
+                    if src_key in tgt_raw:
+                        tgt_item_prxes = tgt_raw[src_key]
+                        for prx_item_tgt in tgt_item_prxes:
+                            prx_item_tgt.set_hidden(self.get_is_hidden())
+                            prx_item_tgt.widget._get_list_widget_item_()._set_item_show_start_auto_()
 
     def set_loading_start(self):
         # view = self.get_view()
@@ -758,10 +759,10 @@ class PrxListItem(
         pass
 
     def set_image_show_sub_process(self, sub_process):
-        self.widget._get_item_()._set_item_show_sub_process_(sub_process)
+        pass
 
-    def get_image_show_sub_process(self):
-        self.widget._get_item_()._get_item_show_sub_process_()
+    def set_image_show_args(self, image, cmd):
+        self.widget._get_item_()._set_item_show_image_cmd_(image, cmd)
 
     def set_visible_tgt_key(self, key):
         self.set_gui_attribute(
@@ -804,7 +805,7 @@ class PrxListItem(
         self.widget._get_item_()._set_item_show_fnc_(cache_fnc, show_fnc)
 
     def set_image_loading_start(self):
-        self.widget._get_item_()._set_item_show_image_loading_run_()
+        self.widget._get_item_()._set_item_show_image_start_loading_()
 
     def set_press_clicked_connect_to(self, fnc):
         self.widget.press_clicked.connect(fnc)

@@ -102,7 +102,7 @@ class AbsSceneShaderViewerPanel(
     def _set_refresh_all_(self):
         self._set_dcc_obj_viewer_refresh_()
         #
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh()
+        # self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 

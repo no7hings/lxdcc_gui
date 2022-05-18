@@ -250,12 +250,20 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
         self._prx_obj_guide_bar.set_clear()
         #
+        self._set_gui_add_rsv_project_(rsv_project)
+        #
         self._set_add_rsv_entities_(rsv_project)
+    #
+    def _set_gui_add_rsv_project_(self, rsv_project):
+        is_create, prx_item, show_threads = self._prx_dcc_obj_tree_view_add_opt.set_item_prx_add_as_tree_mode(
+            rsv_project
+        )
+        if is_create is True:
+            prx_item.set_expanded(True, ancestors=True)
+        return show_threads
     #
     def _set_add_rsv_entities_(self, rsv_project):
         def post_fnc_():
-            rsv_project.get_obj_gui().set_expanded(True, ancestors=True)
-            #
             self._end_timestamp = bsc_core.SystemMtd.get_timestamp()
             #
             utl_core.Log.set_module_result_trace(
@@ -273,7 +281,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         #
         rsv_tags = rsv_project.get_rsv_tags(**self._rsv_filter_opt.value)
         #
-        t_r = utl_gui_qt_core.QtBuildThreadsRunner(self.widget)
+        t_r = utl_gui_qt_core.QtBuildRunnableRunner(self.widget)
         t_r.run_finished.connect(post_fnc_)
         for i_rsv_tag in rsv_tags:
             t_r.set_cache_fnc_add(
@@ -344,6 +352,11 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                     task_menu_content
                 )
             #
+            keys = ['{}.{}'.format(step, task)]
+            self._prx_dcc_obj_tree_view_tag_filter_opt.set_registry(
+                rsv_task_item_prx, keys
+            )
+            #
             self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
                 '{}.{}'.format(step, task), rsv_task_item_prx
             )
@@ -382,7 +395,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         else:
             rsv_objs = [rsv_obj]
         #
-        t_r = utl_gui_qt_core.QtBuildThreadsRunner(self.widget)
+        t_r = utl_gui_qt_core.QtBuildRunnableRunner(self.widget)
         t_r.run_finished.connect(post_fnc_)
         for i_rsv_obj in rsv_objs:
             t_r.set_cache_fnc_add(
@@ -412,12 +425,6 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             self._set_gui_add_rsv_task_unit_(i_rsv_task)
 
         self._count += len(rsv_tasks)
-
-    def _set_gui_add_rsv_units_post_run_(self):
-        self.set_filter_update()
-        #
-        self._rsv_uint_list_view_0.set_visible_tgt_raw_update()
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
     def _get_rsv_task_unit_args_(self, rsv_task):
         list_ = []
@@ -494,22 +501,24 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
     #
     def _set_gui_add_rsv_task_unit_(self, rsv_task):
         def cache_fnc_():
-            list_ = []
+            _list = []
             #
-            for i_keyword in self._rsv_keywords:
-                i_rsv_unit = rsv_task.get_rsv_unit(
-                    keyword=i_keyword
+            _keywords = ['{branch}-review-file'] + self._rsv_keywords
+            #
+            for _i_keyword in _keywords:
+                _i_rsv_unit = rsv_task.get_rsv_unit(
+                    keyword=_i_keyword
                 )
-                i_file_path = i_rsv_unit.get_result(version='latest')
-                if i_file_path:
-                    list_.append(
-                        (i_rsv_unit, i_file_path)
+                _i_file_path = _i_rsv_unit.get_result(version='latest')
+                if _i_file_path:
+                    _list.append(
+                        (_i_rsv_unit, _i_file_path)
                     )
-            return list_
+            return _list
 
         def build_fnc_(data):
-            self._set_rsv_unit_prx_item_show_deferred_(
-                rsv_task, rsv_unit_prx_item, data
+            self._set_gui_rsv_task_unit_show_deferred_(
+                rsv_task, rsv_unit_prx_item, data[1:]
             )
         #
         rsv_task_gui = rsv_task.get_obj_gui()
@@ -531,14 +540,14 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             else:
                 rsv_task_gui.set_state(utl_gui_core.State.DISABLE)
 
-    def _set_rsv_unit_prx_item_show_deferred_(self, rsv_task, rsv_unit_prx_item, show_data):
+    def _set_gui_rsv_task_unit_show_deferred_(self, rsv_task, rsv_unit_prx_item, show_data):
         project = rsv_task.get('project')
         branch = rsv_task.get('branch')
         name = rsv_task.get(branch)
         step = rsv_task.get('step')
         task = rsv_task.get('task')
         #
-        name_text_dict = collections.OrderedDict(
+        show_info_dict = collections.OrderedDict(
             [
                 (branch, name),
                 ('step', step),
@@ -557,73 +566,56 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             )
             pixmaps.append(i_pixmap)
         #
-        rsv_unit_prx_item.set_name_dict(name_text_dict)
+        review_rsv_unit = rsv_task.get_rsv_unit(
+            keyword='{branch}-review-file'
+        )
+        movie_file_path = review_rsv_unit.get_result(
+            version=rsv_configure.Version.LATEST
+        )
+        if movie_file_path:
+            session, execute_fnc = ssn_commands.get_option_hook_args(
+                bsc_core.KeywordArgumentsOpt(
+                    dict(
+                        option_hook_key='actions/movie-open',
+                        file=movie_file_path,
+                        gui_group_name='movie',
+                        gui_name='open movie'
+                    )
+                ).to_string()
+            )
+            #
+            show_info_dict['update'] = bsc_core.TimeMtd.to_prettify_by_timestamp(
+                bsc_core.StorageFileOpt(
+                    movie_file_path
+                ).get_modify_timestamp(),
+                language=1
+            )
+            #
+            rsv_unit_prx_item.set_press_db_clicked_connect_to(
+                execute_fnc
+            )
+            image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
+            rsv_unit_prx_item.set_image(image_file_path)
+            rsv_unit_prx_item.set_movie_enable(True)
+            if image_sub_process_cmds is not None:
+                rsv_unit_prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
+        else:
+            show_info_dict['update'] = 'N/a'
+            rsv_unit_prx_item.set_image(
+                utl_gui_core.RscIconFile.get('image_loading_failed')
+            )
+        #
+        unit_menu_content = self.get_rsv_task_unit_menu_content(rsv_task)
+        if unit_menu_content:
+            rsv_unit_prx_item.set_menu_content(unit_menu_content)
+
+        rsv_unit_prx_item.set_name_dict(show_info_dict)
         r, g, b = bsc_core.TextOpt(task).to_rgb()
         rsv_unit_prx_item.set_name_frame_background_color((r, g, b, 127))
         rsv_unit_prx_item.set_icons_by_pixmap(pixmaps)
         rsv_unit_prx_item.set_tool_tip(
             rsv_task.description
         )
-        #
-        if project in ['lib'] and task in ['surfacing']:
-            review_rsv_unit = rsv_task.get_rsv_unit(
-                keyword='asset-render-mov-sub-file'
-            )
-            movie_file_path = review_rsv_unit.get_result(
-                version=rsv_configure.Version.LATEST, extend_variants=dict(
-                    look_pass='default'
-                )
-            )
-            if movie_file_path:
-                image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
-                rsv_unit_prx_item.set_image(image_file_path)
-                if image_sub_process_cmds is not None:
-                    image_sub_process = bsc_objects.SubProcess(image_sub_process_cmds)
-                    image_sub_process.set_start()
-                    rsv_unit_prx_item.set_image_show_sub_process(image_sub_process)
-                    # rsv_unit_prx_item.set_image_loading_start()
-            else:
-                rsv_unit_prx_item.set_image(
-                    utl_core.Icon._get_file_path_('@image_loading_failed@')
-                )
-        else:
-            review_rsv_unit = rsv_task.get_rsv_unit(keyword='{}-review-file'.format(branch))
-            movie_file_path = review_rsv_unit.get_result(
-                version=rsv_configure.Version.LATEST
-            )
-            if movie_file_path:
-                session, execute_fnc = ssn_commands.get_option_hook_args(
-                    bsc_core.KeywordArgumentsOpt(
-                        dict(
-                            option_hook_key='actions/movie-open',
-                            file=movie_file_path,
-                            gui_group_name='movie',
-                            gui_name='open movie'
-                        )
-                    ).to_string()
-                )
-                #
-                rsv_unit_prx_item.set_press_db_clicked_connect_to(
-                    execute_fnc
-                )
-                image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
-                rsv_unit_prx_item.set_image(image_file_path)
-                rsv_unit_prx_item.set_movie_enable(True)
-                if image_sub_process_cmds is not None:
-                    image_sub_process = bsc_objects.SubProcess(image_sub_process_cmds)
-                    image_sub_process.set_start()
-                    rsv_unit_prx_item.set_image_show_sub_process(image_sub_process)
-                    # rsv_unit_prx_item.set_image_loading_start()
-            else:
-                rsv_unit_prx_item.set_image(
-                    utl_core.Icon._get_file_path_('@image_loading_failed@')
-                )
-        #
-        unit_menu_content = self.get_rsv_task_unit_menu_content(rsv_task)
-        if unit_menu_content:
-            rsv_unit_prx_item.set_menu_content(unit_menu_content)
-
-        self._rsv_uint_list_view_0.set_loading_update()
 
     def set_refresh_all(self):
         if self._rsv_filters_dict:
@@ -636,17 +628,17 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             self._rsv_filter_opt = bsc_core.KeywordArgumentsOpt(self._rsv_filter)
         #
         self._set_gui_rsv_objs_refresh_()
-        self.set_filter_refresh()
+        # self.set_filter_refresh()
 
     def set_filter_update(self):
         self._rsv_uint_list_view_0.set_visible_tgt_raw_update()
         #
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_update()
+        # self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_update()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
     def set_filter_refresh(self):
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
+        # self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
     @classmethod

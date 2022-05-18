@@ -350,6 +350,8 @@ class PrxTreeView(
             for i in prx_item_tgt.get_ancestors():
                 if is_hidden is False:
                     i.set_hidden(False)
+        #
+        self.view._set_view_items_show_update_()
     @classmethod
     def _get_item_name_colors_(cls, item_prxes, column=0):
         lis = []
