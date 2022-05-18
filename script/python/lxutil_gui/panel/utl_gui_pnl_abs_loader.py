@@ -281,7 +281,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         #
         rsv_tags = rsv_project.get_rsv_tags(**self._rsv_filter_opt.value)
         #
-        t_r = utl_gui_qt_core.QtBuildRunnableRunner(self.widget)
+        t_r = utl_gui_qt_core.QtBuildThreadsRunner(self.widget)
         t_r.run_finished.connect(post_fnc_)
         for i_rsv_tag in rsv_tags:
             t_r.set_cache_fnc_add(
@@ -395,7 +395,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         else:
             rsv_objs = [rsv_obj]
         #
-        t_r = utl_gui_qt_core.QtBuildRunnableRunner(self.widget)
+        t_r = utl_gui_qt_core.QtBuildThreadsRunner(self.widget)
         t_r.run_finished.connect(post_fnc_)
         for i_rsv_obj in rsv_objs:
             t_r.set_cache_fnc_add(
