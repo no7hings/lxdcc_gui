@@ -422,6 +422,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
     def _set_gui_add_rsv_task_units_(self, rsv_tasks):
         for i_rsv_task in rsv_tasks:
             self._set_gui_add_rsv_task_(i_rsv_task)
+            #
             self._set_gui_add_rsv_task_unit_(i_rsv_task)
 
         self._count += len(rsv_tasks)
@@ -518,29 +519,31 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
 
         def build_fnc_(data):
             self._set_gui_rsv_task_unit_show_deferred_(
-                rsv_task, rsv_unit_prx_item, data[1:]
+                rsv_task, rsv_task_unit_gui, data[1:]
             )
         #
         rsv_task_gui = rsv_task.get_obj_gui()
         if rsv_task_gui is not None:
             enable = self._get_rsv_task_unit_enable_(rsv_task)
             if enable is True:
-                rsv_unit_prx_item = self._rsv_uint_list_view_0.set_item_add()
-                rsv_unit_prx_item.set_gui_dcc_obj(rsv_task, namespace=self.DCC_NAMESPACE)
+                rsv_task_unit_gui = self._rsv_uint_list_view_0.set_item_add()
+                rsv_task_unit_gui.set_gui_dcc_obj(
+                    rsv_task, namespace=self.DCC_NAMESPACE
+                )
                 #
                 key = rsv_task.path
                 rsv_task_gui.set_visible_connect_to(
-                    key, rsv_unit_prx_item
+                    key, rsv_task_unit_gui
                 )
                 #
-                rsv_unit_prx_item.set_show_fnc(
+                rsv_task_unit_gui.set_show_fnc(
                     cache_fnc_, build_fnc_
                 )
                 rsv_task_gui.set_state(utl_gui_core.State.ENABLE)
             else:
                 rsv_task_gui.set_state(utl_gui_core.State.DISABLE)
 
-    def _set_gui_rsv_task_unit_show_deferred_(self, rsv_task, rsv_unit_prx_item, show_data):
+    def _set_gui_rsv_task_unit_show_deferred_(self, rsv_task, rsv_task_unit_gui, show_data):
         project = rsv_task.get('project')
         branch = rsv_task.get('branch')
         name = rsv_task.get(branch)
@@ -591,29 +594,29 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 language=1
             )
             #
-            rsv_unit_prx_item.set_press_db_clicked_connect_to(
+            rsv_task_unit_gui.set_press_db_clicked_connect_to(
                 execute_fnc
             )
             image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
-            rsv_unit_prx_item.set_image(image_file_path)
-            rsv_unit_prx_item.set_movie_enable(True)
+            rsv_task_unit_gui.set_image(image_file_path)
+            rsv_task_unit_gui.set_movie_enable(True)
             if image_sub_process_cmds is not None:
-                rsv_unit_prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
+                rsv_task_unit_gui.set_image_show_args(image_file_path, image_sub_process_cmds)
         else:
             show_info_dict['update'] = 'N/a'
-            rsv_unit_prx_item.set_image(
+            rsv_task_unit_gui.set_image(
                 utl_gui_core.RscIconFile.get('image_loading_failed')
             )
         #
         unit_menu_content = self.get_rsv_task_unit_menu_content(rsv_task)
         if unit_menu_content:
-            rsv_unit_prx_item.set_menu_content(unit_menu_content)
+            rsv_task_unit_gui.set_menu_content(unit_menu_content)
 
-        rsv_unit_prx_item.set_name_dict(show_info_dict)
+        rsv_task_unit_gui.set_name_dict(show_info_dict)
         r, g, b = bsc_core.TextOpt(task).to_rgb()
-        rsv_unit_prx_item.set_name_frame_background_color((r, g, b, 127))
-        rsv_unit_prx_item.set_icons_by_pixmap(pixmaps)
-        rsv_unit_prx_item.set_tool_tip(
+        rsv_task_unit_gui.set_name_frame_background_color((r, g, b, 127))
+        rsv_task_unit_gui.set_icons_by_pixmap(pixmaps)
+        rsv_task_unit_gui.set_tool_tip(
             rsv_task.description
         )
 

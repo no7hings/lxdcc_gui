@@ -1274,7 +1274,7 @@ class QtBuildRunnableRunner(QtCore.QObject):
         self._widget = self.parent()
 
         self._pool = QtCore.QThreadPool(self.parent())
-        self._pool.setMaxThreadCount(250)
+        self._pool.setMaxThreadCount(100)
         #
         self._cache_fncs = []
         self._build_fncs = []

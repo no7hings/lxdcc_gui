@@ -1689,6 +1689,9 @@ class AbsQtBuildItemDef(object):
             cache_fnc, build_fnc, post_fnc
         )
 
+    def _set_build_item_thread_create_(self, cache_fnc, build_fnc, post_fnc=None):
+        pass
+
 
 class AbsQtBuildViewDef(object):
     def _set_build_view_def_init_(self):
@@ -1878,6 +1881,7 @@ class _QtItemShowDef(
                 item_widget._set_image_file_path_(
                     utl_gui_core.RscIconFile.get('image_loading_failed_error')
                 )
+        #
         self._item_show_image_timer.stop()
         self._set_item_show_image_stop_loading_()
 
