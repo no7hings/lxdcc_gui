@@ -62,7 +62,7 @@ class AbsObjGuiDef(object):
                 item_dict[obj_path] = obj_gui
                 return obj_gui
     @classmethod
-    def _set_item_prx_add_(cls, dcc_obj, parent_obj_gui):
+    def _set_prx_item_add_(cls, dcc_obj, parent_obj_gui):
         dcc_obj_gui = parent_obj_gui.set_child_add(
             dcc_obj.name, dcc_obj.type,
             item_class=prx_widgets.PrxDccObjTreeItem,
@@ -1093,7 +1093,7 @@ class AbsShotBuildToolPanel(
 
 class AbsDccObjGuiDef(object):
     @classmethod
-    def _set_item_prx_add_(cls, obj, obj_gui_parent=None, tree_viewer=None):
+    def _set_prx_item_add_(cls, obj, obj_gui_parent=None, tree_viewer=None):
         kwargs = dict(
             name=(obj.name, obj.type.name),
             item_class=prx_widgets.PrxObjTreeItem,

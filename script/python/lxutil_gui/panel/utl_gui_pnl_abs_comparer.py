@@ -226,7 +226,7 @@ class AbsAssetComparerPanel(
                     i_src_dcc_geometry = self._fnc_dcc_geometry_comparer.get_model_dcc_geometry(i_src_geometry_path)
                 #
                 if i_src_dcc_geometry.type_name in ['Mesh', 'mesh']:
-                    i_src_mesh_item_prx = self._prx_usd_mesh_tree_view_add_opt.set_item_prx_add_as(
+                    i_src_mesh_item_prx = self._prx_usd_mesh_tree_view_add_opt.set_prx_item_add_as(
                         i_src_dcc_geometry, mode='list'
                     )
                     self._prx_usd_mesh_tree_view_add_opt.set_item_prx_update(i_src_dcc_geometry)

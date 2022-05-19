@@ -12,7 +12,7 @@ import threading
 
 import types
 #
-from lxbasic import bsc_core
+from lxbasic import bsc_configure, bsc_core
 
 from lxbasic.objects import bsc_obj_abs
 
@@ -1122,6 +1122,15 @@ class QtPrintSignals(QtCore.QObject):
     overed = qt_signal(str)
 
 
+class QtMethodSignals(QtCore.QObject):
+    stated = qt_signal()
+    running = qt_signal()
+    stopped = qt_signal()
+    #
+    completed = qt_signal()
+    error_occurred = qt_signal()
+
+
 class QtMethodThread(QtCore.QThread):
     stated = qt_signal()
     running = qt_signal()
@@ -1129,6 +1138,9 @@ class QtMethodThread(QtCore.QThread):
     #
     completed = qt_signal()
     error_occurred = qt_signal()
+    #
+    run_started = qt_signal()
+    run_finished = qt_signal()
     def __init__(self, *args, **kwargs):
         super(QtMethodThread, self).__init__(*args, **kwargs)
         self._methods = []
@@ -1137,19 +1149,12 @@ class QtMethodThread(QtCore.QThread):
         self._methods.append(method)
 
     def run(self):
-        self.stated.emit()
-        # noinspection PyBroadException
-        try:
-            for i in self._methods:
-                i()
-            #
-            self.completed.emit()
-        except Exception:
-            self.error_occurred.emit()
-            raise RuntimeError()
+        self.run_started.emit()
         #
-        finally:
-            self.stopped.emit()
+        for i in self._methods:
+            i()
+        #
+        self.run_finished.emit()
 
 
 class QtBuildThread(QtCore.QThread):
@@ -1160,65 +1165,76 @@ class QtBuildThread(QtCore.QThread):
     #
     run_started = qt_signal()
     run_finished = qt_signal()
+
+    Status = bsc_configure.Status
     def __init__(self, *args, **kwargs):
         super(QtBuildThread, self).__init__(*args, **kwargs)
         self._cache_fnc = None
+        self._is_killed = False
+
+        self._status = self.Status.Waiting
 
     def set_cache_fnc(self, method):
         self._cache_fnc = method
 
+    def set_kill(self):
+        self._status = self.Status.Killed
+
     def run(self):
-        self.run_started.emit()
-        #
-        self.cache_started.emit()
-        cache = self._cache_fnc()
-        self.cache_finished.emit()
-        #
-        self.built.emit(cache)
-        #
-        self.run_finished.emit()
+        if self._status == self.Status.Waiting:
+            self.run_started.emit()
+            self._status = self.Status.Started
+            #
+            self.cache_started.emit()
+            cache = self._cache_fnc()
+            self.cache_finished.emit()
+            #
+            self.built.emit(cache)
+            self.run_finished.emit()
+            self._status = self.Status.Finished
 
 
 class QtBuildThreadsRunner(QtCore.QObject):
     run_started = qt_signal()
     run_finished = qt_signal()
+    run_resulted = qt_signal(list)
     def __init__(self, *args, **kwargs):
         super(QtBuildThreadsRunner, self).__init__(*args, **kwargs)
         #
         self._widget = self.parent()
-        #
-        self._cache_fncs = []
-        self._build_fncs = []
 
+        self._threads = []
         self._results = []
 
-    def set_cache_fnc_add(self, fnc):
-        self._cache_fncs.append(fnc)
+    def set_thread_create(self, cache_fnc, build_fnc, post_fnc=None):
+        thread = QtBuildThread(self._widget)
+        thread.set_cache_fnc(cache_fnc)
+        thread.built.connect(build_fnc)
+        if post_fnc is not None:
+            thread.run_finished.connect(post_fnc)
+        return thread
+
+    def set_registry(self, cache_fnc, build_fnc, post_fnc=None):
+        thread = self.set_thread_create(cache_fnc, build_fnc, post_fnc)
+        self._threads.append(thread)
         self._results.append(0)
+        return thread
 
-    def set_build_fnc_add(self, fnc):
-        self._build_fncs.append(fnc)
-
-    def set_result_at(self, thread, index, result):
+    def set_result_at(self, thread, result):
+        index = self._threads.index(thread)
         self._results[index] = result
         if sum(self._results) == len(self._results):
             self.run_finished.emit()
 
+    def set_kill(self):
+        [i.set_kill() for i in self._threads]
+
     def set_start(self):
-        c = len(self._cache_fncs)
-        #
         self.run_started.emit()
         c_t = None
-        for i in range(c):
-            i_cache_fnc = self._cache_fncs[i]
-            i_build_fnc = self._build_fncs[i]
-            #
-            i_t = QtBuildThread(self._widget)
-            i_t.set_cache_fnc(i_cache_fnc)
-            i_t.built.connect(i_build_fnc)
-            #
+        for i_t in self._threads:
             i_t.run_finished.connect(
-                functools.partial(self.set_result_at, i_t, i, 1)
+                functools.partial(self.set_result_at, i_t, 1)
             )
             #
             if c_t is None:
@@ -1240,6 +1256,7 @@ class QtBuildSignals(QtCore.QObject):
 
 
 class QtBuildRunnable(QtCore.QRunnable):
+    Status = bsc_configure.Status
     def __init__(self, pool):
         super(QtBuildRunnable, self).__init__()
         self._pool = pool
@@ -1247,19 +1264,30 @@ class QtBuildRunnable(QtCore.QRunnable):
         self._build_signals = QtBuildSignals()
         self._cache_fnc = None
 
+        self._status = self.Status.Waiting
+
+        self.setAutoDelete(True)
+
     def set_cache_fnc(self, method):
         self._cache_fnc = method
 
+    def set_kill(self):
+        self._status = self.Status.Killed
+
+    def set_stop(self):
+        self._status = self.Status.Stopped
+
     def run(self):
-        self._build_signals.run_started.emit()
-        #
-        self._build_signals.cache_started.emit()
-        cache = self._cache_fnc()
-        self._build_signals.cache_finished.emit()
-        #
-        self._build_signals.built.emit(cache)
-        #
-        self._build_signals.run_finished.emit()
+        if self._status == self.Status.Waiting:
+            self._build_signals.run_started.emit()
+            #
+            self._build_signals.cache_started.emit()
+            cache = self._cache_fnc()
+            self._build_signals.cache_finished.emit()
+            #
+            self._build_signals.built.emit(cache)
+            #
+            self._build_signals.run_finished.emit()
 
     def set_start(self):
         self._pool.start(self)
@@ -1279,21 +1307,10 @@ class QtBuildRunnableRunner(QtCore.QObject):
         self._cache_fncs = []
         self._build_fncs = []
 
+        self._threads = []
         self._results = []
 
-    def set_cache_fnc_add(self, fnc):
-        self._cache_fncs.append(fnc)
-        self._results.append(0)
-
-    def set_build_fnc_add(self, fnc):
-        self._build_fncs.append(fnc)
-
-    def set_result_at(self, runnable, index, result):
-        self._results[index] = result
-        if sum(self._results) == len(self._results):
-            self.run_finished.emit()
-
-    def set_runnable_create(self, cache_fnc, build_fnc, post_fnc=None):
+    def set_thread_create(self, cache_fnc, build_fnc, post_fnc=None):
         runnable = QtBuildRunnable(self._pool)
         runnable.set_cache_fnc(cache_fnc)
         runnable._build_signals.built.connect(build_fnc)
@@ -1301,24 +1318,30 @@ class QtBuildRunnableRunner(QtCore.QObject):
             runnable._build_signals.run_finished.connect(post_fnc)
         return runnable
 
+    def set_registry(self, cache_fnc, build_fnc, post_fnc=None):
+        thread = self.set_thread_create(cache_fnc, build_fnc, post_fnc)
+        self._threads.append(thread)
+        self._results.append(0)
+        return thread
+
+    def set_result_at(self, thread, result):
+        index = self._threads.index(thread)
+        self._results[index] = result
+        if sum(self._results) == len(self._results):
+            self.run_finished.emit()
+
     def set_start_by_runnable(self, runnable):
         self._pool.start(runnable)
 
+    def set_kill(self):
+        [i.set_kill() for i in self._threads]
+
     def set_start(self):
-        c = len(self._cache_fncs)
-        #
         self.run_started.emit()
         c_t = None
-        for i in range(c):
-            i_cache_fnc = self._cache_fncs[i]
-            i_build_fnc = self._build_fncs[i]
-            #
-            i_t = QtBuildRunnable(self._pool)
-            i_t.set_cache_fnc(i_cache_fnc)
-            i_t._build_signals.built.connect(i_build_fnc)
-            #
+        for i_t in self._threads:
             i_t._build_signals.run_finished.connect(
-                functools.partial(self.set_result_at, i_t, i, 1)
+                functools.partial(self.set_result_at, i_t, 1)
             )
             #
             if c_t is None:

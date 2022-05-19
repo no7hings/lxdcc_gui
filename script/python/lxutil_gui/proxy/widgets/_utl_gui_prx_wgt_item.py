@@ -527,7 +527,7 @@ class PrxTreeItem(
                         tgt_item_prxes = tgt_raw[src_key]
                         for prx_item_tgt in tgt_item_prxes:
                             prx_item_tgt.set_hidden(self.get_is_hidden())
-                            prx_item_tgt.widget._get_list_widget_item_()._set_item_show_start_auto_()
+                            prx_item_tgt.widget._get_item_()._set_item_show_start_auto_()
 
     def set_loading_start(self):
         # view = self.get_view()
@@ -786,7 +786,7 @@ class PrxListItem(
 
     def set_hidden(self, boolean=True):
         self.widget.setHidden(boolean)
-        self.widget._get_list_widget_item_().setHidden(boolean)
+        self.widget._get_item_().setHidden(boolean)
 
     def set_force_hidden(self, boolean):
         self.set_gui_attribute('force_hidden', boolean)
@@ -811,7 +811,6 @@ class PrxListItem(
         self.widget.press_clicked.connect(fnc)
 
     def set_press_db_clicked_connect_to(self, fnc):
-        # print self.get_names(), fnc
         self.widget.press_db_clicked.connect(fnc)
 
     def set_press_db_clicked_method_add_(self, fnc):

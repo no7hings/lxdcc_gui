@@ -417,7 +417,7 @@ class AbsSceneTextureManagerPanel(
                     i_files = i_dcc_obj.get_file_objs()
                     if i_files:
                         for j_file in i_files:
-                            j_is_create, j_file_prx_item = self._prx_stg_obj_tree_view_add_opt.set_item_prx_add_as(
+                            j_is_create, j_file_prx_item = self._prx_stg_obj_tree_view_add_opt.set_prx_item_add_as(
                                 j_file,
                                 mode='list',
                                 use_show_thread=True
@@ -447,7 +447,7 @@ class AbsSceneTextureManagerPanel(
                                             texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
                                         )
                                 #
-                                i_dcc_prx_item = self._prx_dcc_obj_tree_view_add_opt._set_item_prx_add_2_(
+                                i_dcc_prx_item = self._prx_dcc_obj_tree_view_add_opt._set_prx_item_add_2_(
                                     i_dcc_obj,
                                     j_file_prx_item
                                 )
@@ -537,8 +537,8 @@ class AbsSceneTextureManagerPanel(
             _set_texture_tx_repath(self._texture_references, includes)
             self._set_refresh_all_()
 
-        thread = utl_gui_qt_core.QtMethodThread(self.widget)
-        thread.stated.connect(complete_fnc)
+        method_signals = utl_gui_qt_core.QtMethodSignals(self.widget)
+        method_signals.stated.connect(complete_fnc)
 
         if self._texture_references is not None:
             force = self._tool_node_prx.get_port('create_and_repath_to_tx_force').get()
@@ -550,7 +550,7 @@ class AbsSceneTextureManagerPanel(
                 self._texture_references,
                 includes,
                 force,
-                completed_fnc=thread.stated.emit
+                completed_fnc=method_signals.stated.emit
             )
 
     def set_tx_repath_to_orig(self):
@@ -568,8 +568,8 @@ class AbsSceneTextureManagerPanel(
             _set_texture_jpg_repath(self._texture_references, includes)
             self._set_refresh_all_()
 
-        thread = utl_gui_qt_core.QtMethodThread(self.widget)
-        thread.stated.connect(complete_fnc)
+        method_signals = utl_gui_qt_core.QtMethodSignals(self.widget)
+        method_signals.stated.connect(complete_fnc)
 
         if self._texture_references is not None:
             force = self._tool_node_prx.get_port('create_and_repath_to_jpg_force').get()
@@ -581,7 +581,7 @@ class AbsSceneTextureManagerPanel(
                 self._texture_references,
                 includes,
                 force,
-                completed_fnc=thread.stated.emit
+                completed_fnc=method_signals.stated.emit
             )
 
     def set_jpg_repath_to_orig(self):

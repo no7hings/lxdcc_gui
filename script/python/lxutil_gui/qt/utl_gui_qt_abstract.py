@@ -1486,7 +1486,7 @@ class _QtViewBarDef(object):
     pass
 
 
-class _QtViewChooseActionDef(object):
+class AbsQtGuideChooseActionDef(object):
     CHOOSE_RECT_CLS = None
     CHOOSE_DROP_FRAME_CLASS = None
     #
@@ -1498,9 +1498,9 @@ class _QtViewChooseActionDef(object):
     def _set_wgt_update_draw_(self):
         raise NotImplementedError()
 
-    def _set_view_choose_action_def_init_(self):
+    def _set_guide_choose_action_def_init_(self):
         self._choose_items = []
-        self._view_choose_current_index = None
+        self._guide_choose_current_index = None
 
     def _get_action_flag_(self):
         raise NotImplementedError()
@@ -1508,89 +1508,89 @@ class _QtViewChooseActionDef(object):
     def _get_action_flag_is_match_(self, flag):
         raise NotImplementedError()
 
-    def _get_view_choose_items_(self):
+    def _get_guide_choose_items_(self):
         return self._choose_items
 
-    def _get_view_choose_item_indices_(self):
-        return range(len(self._get_view_choose_items_()))
+    def _get_guide_choose_item_indices_(self):
+        return range(len(self._get_guide_choose_items_()))
 
-    def _get_view_choose_item_at_(self, index=0):
-        return self._get_view_choose_items_()[index]
+    def _get_guide_choose_item_at_(self, index=0):
+        return self._get_guide_choose_items_()[index]
 
-    def _get_view_choose_item_point_at_(self, index=0):
+    def _get_guide_choose_item_point_at_(self, index=0):
         raise NotImplementedError()
 
-    def _get_view_choose_item_rect_at_(self, index=0):
+    def _get_guide_choose_item_rect_at_(self, index=0):
         raise NotImplementedError()
 
-    def _set_choose_item_current_at_(self, text, index=0):
-        self._get_view_choose_item_at_(index)._set_name_text_(text)
+    def _set_guide_choose_item_current_at_(self, text, index=0):
+        self._get_guide_choose_item_at_(index)._set_name_text_(text)
 
-    def _get_choose_item_current_at_(self, index=0):
-        return self._get_view_choose_item_at_(index)._name_text
+    def _get_guide_choose_item_current_at_(self, index=0):
+        return self._get_guide_choose_item_at_(index)._name_text
     #
-    def _set_choose_item_content_at_(self, raw, index=0):
-        self._get_view_choose_item_at_(index)._set_item_choose_content_raw_(raw)
+    def _set_guide_choose_item_content_at_(self, raw, index=0):
+        self._get_guide_choose_item_at_(index)._set_item_choose_content_raw_(raw)
     #
-    def _set_view_choose_item_content_name_texts_at_(self, texts, index=0):
-        self._get_view_choose_item_at_(index)._set_item_choose_content_name_texts_(texts)
+    def _set_guide_choose_item_content_name_texts_at_(self, texts, index=0):
+        self._get_guide_choose_item_at_(index)._set_item_choose_content_name_texts_(texts)
     #
-    def _get_view_choose_item_content_name_texts_at_(self, index=0):
-        return self._get_view_choose_item_at_(index)._get_item_choose_content_name_texts_()
+    def _get_guide_choose_item_content_name_texts_at_(self, index=0):
+        return self._get_guide_choose_item_at_(index)._get_item_choose_content_name_texts_()
 
-    def _set_view_choose_item_drop_at_(self, index=0):
+    def _set_guide_choose_item_drop_at_(self, index=0):
         widget = self.CHOOSE_DROP_FRAME_CLASS(self)
         widget._set_drop_start_(
             index
         )
 
-    def _set_choose_item_expanded_at_(self, boolean, index=0):
-        item = self._get_view_choose_item_at_(index)
+    def _set_guide_choose_item_expanded_at_(self, boolean, index=0):
+        item = self._get_guide_choose_item_at_(index)
         item._set_item_choose_dropped_(boolean)
 
-    def _get_choose_item_is_expanded_at_(self, index=0):
-        item = self._get_view_choose_item_at_(index)
+    def _get_guide_choose_item_is_expanded_at_(self, index=0):
+        item = self._get_guide_choose_item_at_(index)
         return item._get_item_choose_is_dropped_()
 
-    def _set_choose_item_expand_at_(self, index=0):
-        self._set_choose_item_expanded_at_(True, index)
+    def _set_guide_choose_item_expand_at_(self, index=0):
+        self._set_guide_choose_item_expanded_at_(True, index)
 
-    def _set_choose_item_collapse_at_(self, index=0):
-        self._set_choose_item_expanded_at_(False, index)
+    def _set_guide_choose_item_collapse_at_(self, index=0):
+        self._set_guide_choose_item_expanded_at_(False, index)
 
     def _get_is_choose_flag_(self):
         return self._get_action_flag_is_match_(self.CHOOSE_FLAG)
 
-    def _set_view_choose_clear_(self):
-        self._view_choose_current_index = None
+    def _set_guide_choose_clear_(self):
+        self._guide_choose_current_index = None
         #
         self._choose_items = []
 
-    def _set_choose_item_create_(self):
+    def _set_guide_choose_item_create_(self):
         item = self.CHOOSE_RECT_CLS()
         self._choose_items.append(item)
         return item
 
-    def _set_choose_item_clicked_emit_send_(self):
+    def _set_guide_choose_item_clicked_emit_send_(self):
         self.choose_item_clicked.emit()
 
-    def _set_choose_item_double_clicked_emit_send_(self):
+    def _set_guide_choose_item_db_clicked_emit_send_(self):
         self.choose_item_double_clicked.emit()
 
-    def _set_choose_item_changed_emit_send_(self):
+    def _set_guide_choose_item_changed_emit_send_(self):
         self.choose_item_changed.emit()
 
-    def _set_view_choose_current_index_(self, index):
-        self._view_choose_current_index = index
+    def _set_guide_choose_current_index_(self, index):
+        self._guide_choose_current_index = index
 
-    def _set_choose_current_clear_(self):
-        self._view_choose_current_index = None
+    def _set_guide_choose_current_clear_(self):
+        self._guide_choose_current_index = None
 
 
-class _QtViewGuideActionDef(object):
+class AbsQtGuideActionDef(object):
     guide_item_clicked = qt_signal()
     guide_item_double_clicked = qt_signal()
-    def _set_view_guide_action_def_init_(self):
+    def _set_guide_action_def_init_(self):
         self._guide_items = []
         self._view_guide_current_index = None
 
@@ -1678,19 +1678,24 @@ class AbsQtBuildItemDef(object):
     def _set_build_item_def_init_(self):
         pass
 
+    def _get_view_(self):
+        raise NotImplementedError()
+
     def _set_build_item_setup_(self, view):
         self._build_runnable_runner = view._build_runnable_runner
 
-    def _set_build_item_start_(self, runnable):
-        self._build_runnable_runner.set_start_by_runnable(runnable)
-
     def _set_build_item_runnable_create_(self, cache_fnc, build_fnc, post_fnc=None):
-        return self._build_runnable_runner.set_runnable_create(
+        return self._build_runnable_runner.set_thread_create(
             cache_fnc, build_fnc, post_fnc
         )
 
     def _set_build_item_thread_create_(self, cache_fnc, build_fnc, post_fnc=None):
-        pass
+        thread = QtBuildThread(self._get_view_())
+        thread.set_cache_fnc(cache_fnc)
+        thread.built.connect(build_fnc)
+        if post_fnc is not None:
+            thread.run_finished.connect(post_fnc)
+        return thread
 
 
 class AbsQtBuildViewDef(object):
@@ -1703,7 +1708,7 @@ class AbsQtBuildViewDef(object):
         )
 
 
-class _QtItemShowDef(
+class AbsShowItemDef(
     AbsQtBuildItemDef
 ):
     ShowStatus = bsc_configure.ShowStatus
@@ -1716,7 +1721,15 @@ class _QtItemShowDef(
     def _get_item_widget_(self):
         raise NotImplementedError()
 
-    def _set_item_show_def_init_(self):
+    def _set_show_item_def_init_(self):
+        #
+        if bsc_core.ApplicationMtd.get_is_maya():
+            self._item_show_use_thread = False
+        else:
+            self._item_show_use_thread = True
+        #
+        self._item_show_thread = None
+        self._item_show_image_thread = None
         #
         self._item_show_cache_fnc = None
         self._item_show_build_fnc = None
@@ -1770,22 +1783,28 @@ class _QtItemShowDef(
 
     def _set_item_show_fnc_start_(self):
         if self._item_show_status == self.ShowStatus.Waiting:
-            r = self._set_build_item_runnable_create_(
-                self._item_show_cache_fnc,
-                self._item_show_build_fnc,
-                self._set_item_show_fnc_stop_
-            )
-            #
-            r.set_start()
-            #
-            self._item_show_status = self.ShowStatus.Loading
+            if self._item_show_use_thread is True:
+                self._item_show_status = self.ShowStatus.Loading
+                #
+                self._item_show_thread = self._set_build_item_runnable_create_(
+                    self._item_show_cache_fnc,
+                    self._item_show_build_fnc,
+                    self._set_item_show_fnc_stop_
+                )
+                #
+                self._item_show_thread.set_start()
+            else:
+                self._item_show_build_fnc(
+                    self._item_show_cache_fnc()
+                )
+                self._set_item_show_fnc_stop_()
 
     def _set_item_show_fnc_stop_(self):
         self._set_item_show_stop_(
             self.ShowStatus.Completed
         )
 
-    def _set_item_show_start_(self, time=200, force=False):
+    def _set_item_show_start_(self, time=50, force=False):
         def run_fnc():
             if self._item_show_cache_fnc is not None:
                 self._set_item_show_fnc_start_()
@@ -1816,11 +1835,11 @@ class _QtItemShowDef(
 
     def _set_item_show_update_loading_(self):
         self._item_show_loading_index += 1
-        self._set_wgt_update_draw_()
+        # self._set_wgt_update_draw_()
 
     def _set_item_show_stop_loading_(self):
         self._item_show_loading_timer.stop()
-        self._set_wgt_update_draw_()
+        # self._set_wgt_update_draw_()
     # image fnc
     def _set_item_show_image_cmd_(self, image_file_path, cmd):
         def cache_fnc_():
@@ -1851,13 +1870,19 @@ class _QtItemShowDef(
 
     def _set_item_show_image_fnc_start_(self):
         if self._item_show_image_status == self.ShowStatus.Waiting:
-            r = self._set_build_item_runnable_create_(
-                self._item_show_image_cache_fnc,
-                self._item_show_image_build_fnc,
-                self._set_item_show_image_fnc_stop_
-            )
-            #
-            r.set_start()
+            if self._item_show_use_thread is True:
+                self._item_show_image_thread = self._set_build_item_runnable_create_(
+                    self._item_show_image_cache_fnc,
+                    self._item_show_image_build_fnc,
+                    self._set_item_show_image_fnc_stop_
+                )
+                #
+                self._item_show_image_thread.set_start()
+            else:
+                self._item_show_image_build_fnc(
+                    self._item_show_image_cache_fnc()
+                )
+                self._set_item_show_image_fnc_stop_()
             #
             self._item_show_image_status = self.ShowStatus.Loading
 
@@ -1868,7 +1893,7 @@ class _QtItemShowDef(
             else:
                 self._set_item_show_image_stop_(self.ShowStatus.Failed)
 
-    def _set_item_show_image_start_(self, time=200, force=False):
+    def _set_item_show_image_start_(self, time=50, force=False):
         def run_fnc():
             if self._item_show_cache_fnc is not None:
                 self._set_item_show_image_fnc_start_()
@@ -1904,23 +1929,30 @@ class _QtItemShowDef(
 
     def _set_item_show_image_update_loading_(self):
         self._item_show_image_loading_index += 1
-        self._set_wgt_update_draw_()
+        # self._set_wgt_update_draw_()
 
     def _set_item_show_image_stop_loading_(self):
         self._item_show_image_loading_timer.stop()
-        self._set_wgt_update_draw_()
+        # self._set_wgt_update_draw_()
 
-    def _set_item_show_start_all_(self, time=200, force=False):
-        self._set_item_show_start_(time, force)
-        self._set_item_show_image_start_(time, force)
+    def _set_item_show_start_all_(self, force=False):
+        self._set_item_show_start_(force=force)
+        self._set_item_show_image_start_(force=force)
 
     def _set_item_show_stop_all_(self):
         self._set_item_show_stop_(self.ShowStatus.Stopped)
         self._set_item_show_image_stop_(self.ShowStatus.Stopped)
 
+    def _set_item_show_kill_all_(self):
+        if self._item_show_thread is not None:
+            self._item_show_thread.set_kill()
+        #
+        if self._item_show_image_thread is not None:
+            self._item_show_image_thread.set_kill()
+
     def _set_item_viewport_visible_(self, boolean):
         if boolean is True:
-            self._set_item_show_start_auto_()
+            self._set_item_show_start_all_()
         #
         self._set_item_widget_visible_(boolean)
 
@@ -2007,9 +2039,6 @@ class AbsQtViewScrollActionDef(object):
 
     def _get_v_maximum_scroll_value_(self):
         return self._get_view_v_scroll_bar_().maximum()
-
-    def _set_view_items_show_update_(self):
-        pass
 
     def _get_v_scroll_percent_(self):
         v = self._get_view_v_scroll_value_()
@@ -2310,6 +2339,30 @@ class AbsQtViewStateDef(object):
         return []
 
 
+class AbsShowViewDef(object):
+    def _set_show_view_def_init_(self, widget):
+        self._widget = widget
+
+    def _get_show_view_item_showable_(self, item):
+        rect = self._widget.rect()
+        i_rect = self._widget.visualItemRect(item)
+        i_w, i_h = i_rect.width(), i_rect.height()
+        if i_w != 0 and i_h != 0:
+            p_t_, p_b_ = rect.top(), rect.bottom()
+            i_p_t, i_p_b = i_rect.top(), i_rect.bottom()
+            if i_p_b >= p_t_:
+                if i_p_t <= p_b_:
+                    return True
+        return False
+
+    def _set_show_view_items_update_(self):
+        for i_item in self._widget._get_view_items_():
+            if i_item.isHidden() is False:
+                i_result = self._get_show_view_item_showable_(i_item)
+                if i_result is True:
+                    i_item._set_item_viewport_visible_(True)
+
+
 class AbsQtTreeWidget(
     QtWidgets.QTreeWidget,
     AbsQtMenuDef,
@@ -2320,7 +2373,8 @@ class AbsQtTreeWidget(
     AbsQtViewVisibleConnectionDef,
     #
     AbsQtViewScrollActionDef,
-    AbsQtBuildViewDef
+    AbsQtBuildViewDef,
+    AbsShowViewDef
 ):
     def __init__(self, *args, **kwargs):
         super(AbsQtTreeWidget, self).__init__(*args, **kwargs)
@@ -2336,11 +2390,13 @@ class AbsQtTreeWidget(
         self._set_view_scroll_action_def_init_()
         #
         self._get_view_v_scroll_bar_().valueChanged.connect(
-            self._set_view_items_show_update_
+            self._set_show_view_items_update_
         )
         #
         self._set_build_view_def_init_()
         self._set_build_view_setup_(self)
+
+        self._set_show_view_def_init_(self)
 
     def _get_view_items_(self, column=0):
         def _rcs_fnc(index_):
@@ -2385,25 +2441,6 @@ class AbsQtTreeWidget(
     def _get_view_v_scroll_bar_(self):
         return self.verticalScrollBar()
 
-    def _set_view_items_show_update_(self):
-        for i_item in self._get_view_items_():
-            if i_item.isHidden() is False:
-                i_result = self._get_item_is_viewport_show_able_at_(i_item)
-                if i_result is True:
-                    i_item._set_item_viewport_visible_(True)
-
-    def _get_item_is_viewport_show_able_at_(self, item):
-        rect = self.rect()
-        p_t_, p_b_ = rect.top(), rect.bottom()
-        i_rect = self.visualItemRect(item)
-        i_w, i_h = i_rect.width(), i_rect.height()
-        if i_w != 0 and i_h != 0:
-            i_p_t, i_p_b = i_rect.top(), i_rect.bottom()
-            if i_p_b >= p_t_:
-                if i_p_t <= p_b_:
-                    return True
-        return False
-
 
 class AbsQtListWidget(
     QtWidgets.QListWidget,
@@ -2414,7 +2451,8 @@ class AbsQtListWidget(
     AbsQtViewFilterTgtDef,
     AbsQtViewStateDef,
     AbsQtViewVisibleConnectionDef,
-    AbsQtBuildViewDef
+    AbsQtBuildViewDef,
+    AbsShowViewDef
 ):
     item_show_changed = qt_signal()
     def __init__(self, *args, **kwargs):
@@ -2433,7 +2471,7 @@ class AbsQtListWidget(
         self.itemSelectionChanged.connect(self._set_item_widget_selected_update_)
         # noinspection PyUnresolvedReferences
         self._get_view_v_scroll_bar_().valueChanged.connect(
-            self._set_view_items_show_update_
+            self._set_show_view_items_update_
         )
         self._viewport_rect = QtCore.QRect()
         self._item_rects = []
@@ -2451,6 +2489,8 @@ class AbsQtListWidget(
         #
         self._set_build_view_def_init_()
         self._set_build_view_setup_(self)
+
+        self._set_show_view_def_init_(self)
 
     def _get_view_h_scroll_bar_(self):
         return self.horizontalScrollBar()
@@ -2504,25 +2544,6 @@ class AbsQtListWidget(
     def _set_wgt_update_draw_(self):
         self.update()
         self.viewport().update()
-
-    def _set_view_items_show_update_(self):
-        for i_item in self._get_view_items_():
-            if i_item.isHidden() is False:
-                i_result = self._get_item_is_viewport_show_able_at_(i_item)
-                if i_result is True:
-                    i_item._set_item_viewport_visible_(True)
-
-    def _get_item_is_viewport_show_able_at_(self, item):
-        rect = self.rect()
-        p_t_, p_b_ = rect.top(), rect.bottom()
-        i_rect = self.visualItemRect(item)
-        i_p_t, i_p_b = i_rect.top(), i_rect.bottom()
-        i_w, i_h = i_rect.width(), i_rect.height()
-        if i_w != 0 and i_h != 0:
-            if i_p_b >= p_t_:
-                if i_p_t <= p_b_:
-                    return True
-        return False
     #
     def _get_viewport_size_(self):
         return self.viewport().width(), self.viewport().height()

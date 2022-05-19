@@ -1,8 +1,6 @@
 # coding:utf-8
 import collections
 
-import math
-
 import os
 
 import functools
@@ -17,11 +15,7 @@ from lxutil import utl_core
 
 import lxutil_gui.proxy.operators as utl_prx_operators
 
-import lxutil_gui.qt.widgets as qt_widgets
-
 import lxutil.dcc.dcc_objects as utl_dcc_objects
-
-from lxresolver import rsv_configure, rsv_core
 
 import lxresolver.commands as rsv_commands
 
@@ -43,7 +37,10 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
     def __init__(self, session, *args, **kwargs):
         super(AbsEntitiesLoaderPanel_, self).__init__(*args, **kwargs)
         #
-        self._use_thread = True
+        if bsc_core.ApplicationMtd.get_is_maya():
+            self._use_thread = False
+        else:
+            self._use_thread = True
         #
         self._rez_beta = bsc_core.EnvironMtd.get('REZ_BETA')
         #
@@ -79,9 +76,8 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             time=1000,
             method=self._set_tool_panel_setup_
         )
-        #
-        self._rsv_entity_show_thread_timers = []
-        self._rsv_task_show_thread_timers = []
+
+        self._rsv_task_unit_runner = None
 
         self._session_dict = {}
     #
@@ -223,6 +219,9 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
 
     def _set_gui_rsv_task_units_refresh_by_selection_(self):
         tree_item_prxes = self._rsv_obj_tree_view_0.get_selected_items()
+        if self._rsv_task_unit_runner is not None:
+            self._rsv_task_unit_runner.set_kill()
+        #
         self._rsv_uint_list_view_0.set_clear()
         if tree_item_prxes:
             tree_item_prx = tree_item_prxes[-1]
@@ -257,7 +256,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         self._set_add_rsv_entities_(rsv_project)
     #
     def _set_gui_add_rsv_project_(self, rsv_project):
-        is_create, prx_item, show_threads = self._prx_dcc_obj_tree_view_add_opt.set_item_prx_add_as_tree_mode(
+        is_create, prx_item, show_threads = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as_tree_mode(
             rsv_project
         )
         if is_create is True:
@@ -274,7 +273,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 ),
                 'count={}, cost-time="{}"'.format(
                     self._count,
-                    bsc_core.IntegerMtd.second_to_time_prettify(math.ceil(self._end_timestamp - self._start_timestamp))
+                    bsc_core.IntegerMtd.second_to_time_prettify(int(self._end_timestamp - self._start_timestamp))
                 )
             )
 
@@ -283,16 +282,22 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         #
         rsv_tags = rsv_project.get_rsv_tags(**self._rsv_filter_opt.value)
         #
-        t_r = utl_gui_qt_core.QtBuildThreadsRunner(self.widget)
-        t_r.run_finished.connect(post_fnc_)
-        for i_rsv_tag in rsv_tags:
-            t_r.set_cache_fnc_add(
-                functools.partial(self._set_cache_add_rsv_entities_, i_rsv_tag),
-            )
-            t_r.set_build_fnc_add(
-                self._set_gui_add_rsv_entities_
-            )
-        t_r.set_start()
+        if self._use_thread is True:
+            t_r = utl_gui_qt_core.QtBuildThreadsRunner(self.widget)
+            t_r.run_finished.connect(post_fnc_)
+            for i_rsv_tag in rsv_tags:
+                t_r.set_registry(
+                    functools.partial(self._set_cache_add_rsv_entities_, i_rsv_tag),
+                    self._set_gui_add_rsv_entities_
+                )
+            t_r.set_start()
+        else:
+            with utl_core.gui_progress(maximum=len(rsv_tags)) as g_p:
+                for i_rsv_tag in rsv_tags:
+                    g_p.set_update()
+                    self._set_gui_add_rsv_entities_(
+                        self._set_cache_add_rsv_entities_(i_rsv_tag)
+                    )
     # entities for tag
     def _set_cache_add_rsv_entities_(self, rsv_tag):
         return rsv_tag.get_rsv_entities(**self._rsv_filter_opt.value)
@@ -304,7 +309,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         self._count += len(rsv_entities)
 
     def _set_gui_add_rsv_entity_(self, rsv_entity):
-        is_create, prx_item, show_threads = self._prx_dcc_obj_tree_view_add_opt.set_item_prx_add_as_tree_mode(
+        is_create, prx_item, show_threads = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as_tree_mode(
             rsv_entity
         )
         if is_create is True:
@@ -322,7 +327,6 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 prx_item, lambda *args, **kwargs: self._set_add_rsv_tasks_by_entity_(rsv_entity),
                 time=100
             )
-        return show_threads
     # tasks from entity
     def _set_add_rsv_tasks_by_entity_(self, rsv_entity):
         def post_fnc_():
@@ -344,7 +348,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             self._set_gui_add_rsv_task_(i_rsv_task)
 
     def _set_gui_add_rsv_task_(self, rsv_task):
-        is_create, rsv_task_item_prx, show_threads = self._prx_dcc_obj_tree_view_add_opt.set_item_prx_add_as_tree_mode(
+        is_create, rsv_task_item_prx, show_threads = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as_tree_mode(
             rsv_task
         )
         if is_create is True:
@@ -383,7 +387,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 ),
                 'count={}, cost-time="{}"'.format(
                     self._count,
-                    bsc_core.IntegerMtd.second_to_time_prettify(math.ceil(self._end_timestamp - self._start_timestamp))
+                    bsc_core.IntegerMtd.second_to_time_prettify(int(self._end_timestamp - self._start_timestamp))
                 )
             )
 
@@ -400,28 +404,28 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         else:
             rsv_objs = [rsv_obj]
         #
-        t_r = utl_gui_qt_core.QtBuildThreadsRunner(self.widget)
-        t_r.run_finished.connect(post_fnc_)
-        for i_rsv_obj in rsv_objs:
-            t_r.set_cache_fnc_add(
-                functools.partial(self._set_cache_rsv_task_units_, i_rsv_obj)
-            )
-            t_r.set_build_fnc_add(
-                self._set_gui_add_rsv_task_units_
-            )
-        t_r.set_start()
+        if self._use_thread is True:
+            self._rsv_task_unit_runner = utl_gui_qt_core.QtBuildThreadsRunner(self.widget)
+            self._rsv_task_unit_runner.run_finished.connect(post_fnc_)
+            for i_rsv_obj in rsv_objs:
+                self._rsv_task_unit_runner.set_registry(
+                    functools.partial(self._set_cache_rsv_task_units_, i_rsv_obj),
+                    self._set_gui_add_rsv_task_units_
+                )
+            self._rsv_task_unit_runner.set_start()
+        else:
+            with utl_core.gui_progress(maximum=len(rsv_objs)) as g_p:
+                for i_rsv_obj in rsv_objs:
+                    g_p.set_update()
+                    self._set_gui_add_rsv_task_units_(
+                        self._set_cache_rsv_task_units_(i_rsv_obj)
+                    )
 
     def _set_cache_rsv_task_units_(self, rsv_obj):
         if rsv_obj.type_name == 'task':
             rsv_tasks = [rsv_obj]
         else:
             rsv_tasks = rsv_obj.get_rsv_tasks(**self._rsv_filter_opt.value)
-        #
-        # for i_rsv_task in rsv_tasks:
-        #     for j_keyword in self._rsv_keywords:
-        #         i_rsv_task.get_rsv_unit(
-        #             keyword=j_keyword
-        #         )
         return rsv_tasks
 
     def _set_gui_add_rsv_task_units_(self, rsv_tasks):
@@ -578,7 +582,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             keyword='{branch}-review-file'
         )
         movie_file_path = review_rsv_unit.get_result(
-            version=rsv_configure.Version.LATEST
+            version='latest'
         )
         if movie_file_path:
             session, execute_fnc = ssn_commands.get_option_hook_args(

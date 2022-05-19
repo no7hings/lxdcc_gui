@@ -1466,12 +1466,12 @@ class _QtItemGuideChooseDropFrame(
 
     def _set_drop_start_(self, index):
         parent = self.parent()
-        content_name_texts = parent._get_view_choose_item_content_name_texts_at_(index)
+        content_name_texts = parent._get_guide_choose_item_content_name_texts_at_(index)
         if isinstance(content_name_texts, (tuple, list)):
             desktop_rect = get_qt_desktop_rect()
             #
-            press_pos = parent._get_view_choose_item_point_at_(index)
-            press_rect = parent._get_view_choose_item_rect_at_(index)
+            press_pos = parent._get_guide_choose_item_point_at_(index)
+            press_rect = parent._get_guide_choose_item_rect_at_(index)
             #
             current_name_text = parent._get_view_guide_item_name_text_at_(index)
             #
@@ -1501,7 +1501,7 @@ class _QtItemGuideChooseDropFrame(
                 self._get_maximum_height_()
             )
             self._choose_index = index
-            parent._set_choose_item_expand_at_(index)
+            parent._set_guide_choose_item_expand_at_(index)
             #
             self._list_widget._set_scroll_to_selected_item_top_()
             #
@@ -1531,7 +1531,7 @@ class _QtItemGuideChooseDropFrame(
                 )
                 parent._set_view_item_geometries_update_()
             #
-            parent._set_choose_item_collapse_at_(self._choose_index)
+            parent._set_guide_choose_item_collapse_at_(self._choose_index)
             parent._set_view_guide_current_index_(self._choose_index)
             parent._set_view_guide_item_clicked_emit_send_()
             parent._set_view_guide_current_clear_()
@@ -2423,6 +2423,7 @@ class AbsQtItemDagLoading(object):
 
     def _set_item_dag_loading_end_(self):
         if self._loading_item is not None:
+            self._loading_item._set_item_show_kill_all_()
             self._loading_item._set_item_show_stop_all_()
             self._widget.takeChild(
                 self._widget.indexOfChild(self._loading_item)
@@ -2434,7 +2435,7 @@ class QtTreeWidgetItem(
     QtWidgets.QTreeWidgetItem,
     AbsQtItemDagLoading,
     utl_gui_qt_abstract.AbsQtIconDef,
-    utl_gui_qt_abstract._QtItemShowDef,
+    utl_gui_qt_abstract.AbsShowItemDef,
     utl_gui_qt_abstract.AbsQtMenuDef,
     #
     utl_gui_qt_abstract.AbsQtItemFilterTgtDef,
@@ -2455,7 +2456,7 @@ class QtTreeWidgetItem(
         )
         #
         self._set_item_dag_loading_def_init_(self)
-        self._set_item_show_def_init_()
+        self._set_show_item_def_init_()
         #
         self._is_check_enable = True
         self._emit_send_enable = False
@@ -2705,10 +2706,10 @@ class QtTreeWidgetItem(
         view = self.treeWidget()
         parent = self.parent()
         if parent is None:
-            return view._get_item_is_viewport_show_able_at_(item)
+            return view._get_show_view_item_showable_(item)
         else:
             if parent.isExpanded():
-                return view._get_item_is_viewport_show_able_at_(item)
+                return view._get_show_view_item_showable_(item)
         return False
 
     def _set_item_widget_visible_(self, boolean):
@@ -2745,13 +2746,6 @@ class QtTreeWidgetItem(
                 # noinspection PyCallingNonCallable
                 self.setToolTip(column, html)
 
-    # def _set_item_show_update_loading_(self):
-    #     if self._item_show_status in [self.ShowStatus.Loading, self.ShowStatus.Waiting]:
-    #         self._item_show_loading_index += 1
-    #         self._set_name_(
-    #             'loading .{}'.format('.'*(self._item_show_loading_index % 3))
-    #         )
-
     def _get_item_widget_(self):
         pass
 
@@ -2778,7 +2772,7 @@ class QtTreeWidgetItem(
 
 class QtListWidgetItem(
     QtWidgets.QListWidgetItem,
-    utl_gui_qt_abstract._QtItemShowDef,
+    utl_gui_qt_abstract.AbsShowItemDef,
     #
     utl_gui_qt_abstract.AbsQtItemFilterTgtDef,
     #
@@ -2794,7 +2788,7 @@ class QtListWidgetItem(
         self.setFlags(
             QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled
         )
-        self._set_item_show_def_init_()
+        self._set_show_item_def_init_()
         #
         self._visible_tgt_key = None
         self._set_item_filter_tgt_def_init_()
@@ -2853,7 +2847,7 @@ class QtListWidgetItem(
         view = self.listWidget()
         #
         self._set_item_show_start_loading_()
-        return view._get_item_is_viewport_show_able_at_(item)
+        return view._get_show_view_item_showable_(item)
 
     def _set_item_widget_visible_(self, boolean):
         self._get_item_widget_().setVisible(boolean)
@@ -3246,12 +3240,6 @@ class _QtListItemWidget(
 
     def _set_frame_name_size_(self, w, h):
         self._frame_name_width, self._frame_name_height = w, h
-
-    def _set_list_widget_item_(self, widget):
-        self._list_widget_item = widget
-
-    def _get_list_widget_item_(self):
-        return self._list_widget_item
 
     def _get_item_(self):
         return self._list_widget_item

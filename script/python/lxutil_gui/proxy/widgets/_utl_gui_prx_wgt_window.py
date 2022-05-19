@@ -101,15 +101,24 @@ class AbsPrxDialogWindow(
         self._result = False
 
     def _set_method_run_(self, methods):
+        def debug_run_fnc_(fnc_, *args, **kwargs):
+            # noinspection PyBroadException
+            try:
+                _method = fnc_(*args, **kwargs)
+            except:
+                from lxutil import utl_core
+                #
+                utl_core.ExceptionCatcher.set_create()
+                raise
+
         if self._use_thread is True:
             thread = self.widget._set_thread_create_()
-            thread.stated.connect(self.set_waiting_start)
-            thread.stopped.connect(self.set_waiting_stop)
-            thread.completed.connect(self.set_window_close_later)
-            thread.error_occurred.connect(utl_core.ExceptionCatcher.set_create)
+            thread.run_started.connect(self.set_waiting_start)
+            thread.run_finished.connect(self.set_waiting_stop)
+            thread.run_finished.connect(self.set_window_close_later)
             for i in methods:
                 thread.set_method_add(
-                    i
+                    functools.partial(debug_run_fnc_, i)
                 )
             #
             thread.start()

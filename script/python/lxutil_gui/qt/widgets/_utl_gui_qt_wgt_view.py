@@ -836,7 +836,7 @@ class QtTreeWidget(
         #
         if self._is_expand_descendants:
             self._is_expand_descendants = False
-            self._set_item_extend_expanded_at_(index, True)
+            self._set_item_extend_expanded_at__(index, True)
         #
         item = self.itemFromIndex(index)
         if item in self._item_expand_method_dic:
@@ -853,13 +853,19 @@ class QtTreeWidget(
     def _set_item_action_collapse_execute_at_(self, index):
         if self._is_expand_descendants:
             self._is_expand_descendants = False
-            self._set_item_extend_expanded_at_(index, False)
+            self._set_item_extend_expanded_at__(index, False)
 
         self._set_item_collapse_at_(index)
 
-    def _set_item_extend_expanded_at_(self, index, expanded):
+    def _set_item_extend_expanded_at__(self, index, boolean):
+        for i in range(0, index.model().rowCount(index)):
+            i_child_index = index.child(i, 0)
+            self.setExpanded(i_child_index, boolean)
+            self._set_item_extend_expanded_at__(i_child_index, boolean)
+
+    def _set_item_extend_expanded_at_(self, index, boolean):
         indices = self._get_descendant_indices_at_(index)
-        [self.setExpanded(i, expanded) for i in indices]
+        [self.setExpanded(i, boolean) for i in indices]
     @classmethod
     def _get_descendant_indices_at_(cls, index):
         def rcs_fnc_(list__, index_):
@@ -970,6 +976,7 @@ class QtTreeWidget(
 
     def _set_clear_(self):
         for i in self._get_view_items_():
+            i._set_item_show_kill_all_()
             i._set_item_show_stop_all_()
         #
         self.clear()
@@ -1036,7 +1043,7 @@ class QtListWidget(
             elif event.type() == QtCore.QEvent.Wheel:
                 self._set_action_wheel_update_(event)
             elif event.type() == QtCore.QEvent.Resize:
-                self._set_view_items_show_update_()
+                self._set_show_view_items_update_()
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 parent = self.parent()
@@ -1186,7 +1193,7 @@ class QtListWidget(
         view.setItemWidget(item, item_widget)
         item._set_item_show_connect_()
         item_widget._set_view_(view)
-        item_widget._set_list_widget_item_(item)
+        item_widget._set_item_(item)
         item_widget._set_index_(view._get_item_count_())
         #
         item_widget._set_frame_size_(
@@ -1222,6 +1229,7 @@ class QtListWidget(
 
     def _set_clear_(self):
         for i in self._get_view_items_():
+            i._set_item_show_kill_all_()
             i._set_item_show_stop_all_()
         #
         self._pre_selected_item = None
@@ -1240,8 +1248,8 @@ class _QtGuideBar(
     utl_gui_qt_abstract.AbsQtActionPressDef,
     utl_gui_qt_abstract.AbsQtItemEntryActionDef,
     #
-    utl_gui_qt_abstract._QtViewGuideActionDef,
-    utl_gui_qt_abstract._QtViewChooseActionDef,
+    utl_gui_qt_abstract.AbsQtGuideActionDef,
+    utl_gui_qt_abstract.AbsQtGuideChooseActionDef,
 ):
     CHOOSE_RECT_CLS = _utl_gui_qt_wgt_item._QtItemGuideRect
     CHOOSE_DROP_FRAME_CLASS = _utl_gui_qt_wgt_item._QtItemGuideChooseDropFrame
@@ -1270,8 +1278,8 @@ class _QtGuideBar(
         self._set_action_press_def_init_()
         self._set_item_entry_action_def_init_()
         #
-        self._set_view_guide_action_def_init_()
-        self._set_view_choose_action_def_init_()
+        self._set_guide_action_def_init_()
+        self._set_guide_choose_action_def_init_()
 
     def eventFilter(self, *args):
         widget, event = args
@@ -1284,11 +1292,11 @@ class _QtGuideBar(
                 self.update()
             elif event.type() == QtCore.QEvent.Leave:
                 self._is_hovered = False
-                self._set_choose_current_clear_()
+                self._set_guide_choose_current_clear_()
                 self._set_view_guide_current_clear_()
                 self.update()
             elif event.type() == QtCore.QEvent.MouseMove:
-                self._set_choose_current_clear_()
+                self._set_guide_choose_current_clear_()
                 self._set_view_guide_current_clear_()
                 if self._item_is_entered is False:
                     self._set_view_current_index_update_(event)
@@ -1296,7 +1304,7 @@ class _QtGuideBar(
             elif event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
                     self._set_view_current_index_update_(event)
-                    if self._view_choose_current_index is not None:
+                    if self._guide_choose_current_index is not None:
                         self._set_action_flag_(self.CHOOSE_FLAG)
                     elif self._view_guide_current_index is not None:
                         self._set_action_flag_(self.ActionFlag.PressClick)
@@ -1317,7 +1325,7 @@ class _QtGuideBar(
                         self._set_press_click_emit_send_()
                         self._set_view_guide_item_clicked_emit_send_()
                     elif self._get_is_choose_flag_() is True:
-                        self._set_view_choose_item_drop_at_(self._view_choose_current_index)
+                        self._set_guide_choose_item_drop_at_(self._guide_choose_current_index)
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
                 #
@@ -1343,22 +1351,22 @@ class _QtGuideBar(
             border_radius=4
         )
         if self._item_is_entered is True:
-            if self._get_view_choose_item_indices_():
+            if self._get_guide_choose_item_indices_():
                 painter._set_text_draw_by_rect_(
                     self._entry_frame_rect,
-                    text=self._get_view_choose_item_at_(-1)._path_text,
+                    text=self._get_guide_choose_item_at_(-1)._path_text,
                     text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                     font_color=QtFontColor.Basic,
                     font=get_font(size=10)
                 )
         else:
-            for index in self._get_view_choose_item_indices_():
-                i_item = self._get_view_choose_item_at_(index)
+            for index in self._get_guide_choose_item_indices_():
+                i_item = self._get_guide_choose_item_at_(index)
                 i_icon_offset = 0
                 name_offset = 0
-                choose_is_hovered = index == self._view_choose_current_index
+                choose_is_hovered = index == self._guide_choose_current_index
                 guide_is_hovered = index == self._view_guide_current_index
-                if index == self._view_choose_current_index:
+                if index == self._guide_choose_current_index:
                     i_icon_offset = [0, 2][self._get_action_flag_() is not None]
                     background_color = painter._get_item_background_color_1_by_rect_(
                         i_item._icon_frame_rect,
@@ -1419,12 +1427,12 @@ class _QtGuideBar(
     def _set_view_current_index_update_(self, event):
         p = event.pos()
         #
-        self._set_choose_current_clear_()
+        self._set_guide_choose_current_clear_()
         self._set_view_guide_current_clear_()
-        for index in self._get_view_choose_item_indices_():
-            i_item = self._get_view_choose_item_at_(index)
+        for index in self._get_guide_choose_item_indices_():
+            i_item = self._get_guide_choose_item_at_(index)
             if i_item._icon_frame_rect.contains(p) is True:
-                self._set_view_choose_current_index_(index)
+                self._set_guide_choose_current_index_(index)
                 break
             elif i_item._name_frame_rect.contains(p) is True:
                 self._set_view_guide_current_index_(index)
@@ -1433,12 +1441,12 @@ class _QtGuideBar(
         self.update()
 
     def _set_view_path_args_(self, path_args):
-        self._set_view_choose_clear_()
+        self._set_guide_choose_clear_()
         self._set_view_guide_clear_()
         #
         path_values = path_args.values()
         for index, (k, v) in enumerate(path_args.items()):
-            i_item = self._set_choose_item_create_()
+            i_item = self._set_guide_choose_item_create_()
             #
             i_path = '/' + '/'.join(path_values[:index+1])
             i_item._set_path_text_(i_path)
@@ -1460,8 +1468,8 @@ class _QtGuideBar(
         #
         i_x, i_y = x + 1, (h-i_f_h)/2
         #
-        for index in self._get_view_choose_item_indices_():
-            i_item = self._get_view_choose_item_at_(index)
+        for index in self._get_guide_choose_item_indices_():
+            i_item = self._get_guide_choose_item_at_(index)
             i_item._set_icon_frame_rect_(
                 i_x, i_y, i_f_w, i_f_h
             )
@@ -1497,15 +1505,15 @@ class _QtGuideBar(
         self._set_view_path_args_({})
 
     def _get_view_guide_items_(self):
-        return self._get_view_choose_items_()
+        return self._get_guide_choose_items_()
 
-    def _get_view_choose_item_point_at_(self, index=0):
-        item = self._get_view_choose_item_at_(index)
+    def _get_guide_choose_item_point_at_(self, index=0):
+        item = self._get_guide_choose_item_at_(index)
         rect = item._icon_frame_rect
         return self.mapToGlobal(rect.center())
 
-    def _get_view_choose_item_rect_at_(self, index=0):
-        item = self._get_view_choose_item_at_(index)
+    def _get_guide_choose_item_rect_at_(self, index=0):
+        item = self._get_guide_choose_item_at_(index)
         rect = item._icon_frame_rect
         return rect
 

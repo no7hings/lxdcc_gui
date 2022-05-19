@@ -117,7 +117,7 @@ class AbsSceneShaderViewerPanel(
                 gp.set_update()
                 #
                 material_type_name = 'material'
-                material_gui = self._prx_dcc_obj_tree_view_add_opt.set_item_prx_add_as(material, mode='list')
+                material_gui = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as(material, mode='list')
                 #
                 tag_filter_key = 'material.{}'.format(material_type_name)
                 self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
@@ -130,7 +130,7 @@ class AbsSceneShaderViewerPanel(
                     shader = self.DCC_SHADER_CLS(shader_path)
                     shader_type_name = shader.get_shader_type_name()
                     if shader_type_name:
-                        shader_gui = self._prx_dcc_obj_tree_view_add_opt.set_item_prx_add_as(shader, mode='list')
+                        shader_gui = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as(shader, mode='list')
                         shader_gui.set_name(shader_type_name, 2)
                         shader_gui.set_icon_by_color(bsc_core.TextOpt(shader_type_name).to_rgb(), 2)
                         #

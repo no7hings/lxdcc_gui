@@ -329,10 +329,10 @@ class AbsScenePackagerPanel(
                     stg_files = dcc_obj.get_file_objs()
                     if stg_files:
                         for stg_file in stg_files:
-                            is_create, stg_file_item_prx = self._prx_stg_obj_tree_view_add_opt.set_item_prx_add_as(stg_file, mode='list')
+                            is_create, stg_file_item_prx = self._prx_stg_obj_tree_view_add_opt.set_prx_item_add_as(stg_file, mode='list')
                             stg_file_item_prx.set_gui_dcc_obj(stg_file, namespace='storage-file')
                             #
-                            dcc_node_item_prx = self._prx_dcc_obj_tree_view_add_opt._set_item_prx_add_(
+                            dcc_node_item_prx = self._prx_dcc_obj_tree_view_add_opt._set_prx_item_add_(
                                 dcc_obj,
                                 stg_file_item_prx,
                                 name_use_path_prettify=False

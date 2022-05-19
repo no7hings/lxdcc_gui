@@ -946,8 +946,8 @@ class PrxRsvObjChooseEntry(AbsRsvTypeEntry):
             )
             parent = obj.get_parent()
             if parent is not None:
-                item_prx_parent = self._obj_add_dict[parent.path]
-                prx_item = item_prx_parent.set_child_add(
+                prx_item_parent = self._obj_add_dict[parent.path]
+                prx_item = prx_item_parent.set_child_add(
                     **create_kwargs
                 )
             else:
@@ -1101,8 +1101,8 @@ class PrxComponentsEntry(AbsRsvTypeEntry):
             )
             parent = obj.get_parent()
             if parent is not None:
-                item_prx_parent = self._obj_add_dict[parent.path]
-                prx_item = item_prx_parent.set_child_add(
+                prx_item_parent = self._obj_add_dict[parent.path]
+                prx_item = prx_item_parent.set_child_add(
                     **create_kwargs
                 )
             else:

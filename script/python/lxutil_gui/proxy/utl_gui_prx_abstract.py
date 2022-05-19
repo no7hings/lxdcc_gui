@@ -176,8 +176,8 @@ class AbsPrxWaitingDef(object):
 
         thread = self.widget._set_thread_create_()
 
-        thread.stated.connect(self.set_waiting_start)
-        thread.stopped.connect(self.set_waiting_stop)
+        thread.run_started.connect(self.set_waiting_start)
+        thread.run_finished.connect(self.set_waiting_stop)
         for i in methods:
             thread.set_method_add(
                 functools.partial(debug_run_fnc_, i)
@@ -557,7 +557,7 @@ class AbsPrxViewFilterTagDef(object):
         #
         self.set_items_visible_by_any_filter()
         #
-        self.view._set_view_items_show_update_()
+        self.view._set_show_view_items_update_()
 
     def get_item_states(self, items):
         return self.view._get_view_item_states_(items)

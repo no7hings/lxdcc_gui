@@ -708,18 +708,18 @@ class SceneSwitcherToolPanel(
             entity_gui.set_gui_attribute('entity_opt', entity_opt)
             ctn_gmt_abc_dcc_path = entity_opt.get_variant('self.asset.ctn.gmt_abc.dcc_path')
             ctn_gmt_abc_dcc_obj = hou_dcc_objects.Node(ctn_gmt_abc_dcc_path)
-            ctn_gmt_abc_dcc_obj_gui = self._set_item_prx_add_(ctn_gmt_abc_dcc_obj, entity_gui)
+            ctn_gmt_abc_dcc_obj_gui = self._set_prx_item_add_(ctn_gmt_abc_dcc_obj, entity_gui)
             #
             for dta_scm in ['mtl_mtx', 'gmt_abc']:
                 elm_dcc_path = entity_opt.get_variant('self.asset.{}.dcc_path'.format(dta_scm))
                 elm_dcc_obj = hou_dcc_objects.Node(elm_dcc_path)
-                elm_dcc_obj_gui = self._set_item_prx_add_(elm_dcc_obj, ctn_gmt_abc_dcc_obj_gui)
+                elm_dcc_obj_gui = self._set_prx_item_add_(elm_dcc_obj, ctn_gmt_abc_dcc_obj_gui)
                 elm_menu_raw = self._get_elm_gui_menu_raw_(entity_opt, elm_dcc_obj_gui, dta_scm)
                 elm_dcc_obj_gui.set_gui_menu_raw(elm_menu_raw)
             #
             ctn_prx_ass_dcc_path = entity_opt.get_variant('self.asset.ctn.prx_ass.dcc_path')
             ctn_prx_ass_dcc_obj = hou_dcc_objects.Node(ctn_prx_ass_dcc_path)
-            ctn_prx_ass_dcc_obj_gui = self._set_item_prx_add_(ctn_prx_ass_dcc_obj, entity_gui)
+            ctn_prx_ass_dcc_obj_gui = self._set_prx_item_add_(ctn_prx_ass_dcc_obj, entity_gui)
 
     def _set_dcc_obj_select_(self):
         if self.DCC_SELECTION_CLS is not None:

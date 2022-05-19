@@ -87,7 +87,7 @@ class AbsTaskMethodObjGuiDef(object):
         obj_gui.set_gui_dcc_obj(obj, namespace='method')
         return obj_gui
     @classmethod
-    def _set_item_prx_add_(cls, dcc_obj, obj_gui_parent=None, tree_viewer=None):
+    def _set_prx_item_add_(cls, dcc_obj, obj_gui_parent=None, tree_viewer=None):
         kwargs = dict(
             name=(dcc_obj.name, dcc_obj.type),
             item_class=prx_widgets.PrxDccObjTreeItem,
@@ -294,7 +294,7 @@ class AbsSceneMethodRunnerPanel(
             check_tags = method.get_obj_check_tags(obj_path)
             #
             dcc_obj = self.DCC_OBJ_CLASS(obj_path)
-            dcc_obj_gui = self._set_item_prx_add_(
+            dcc_obj_gui = self._set_prx_item_add_(
                 dcc_obj, obj_gui_parent=method_obj_gui
             )
             dcc_obj_gui.check_state.set(check_tags)

@@ -351,7 +351,7 @@ class PrxTreeView(
                 if is_hidden is False:
                     i.set_hidden(False)
         #
-        self.view._set_view_items_show_update_()
+        self.view._set_show_view_items_update_()
     @classmethod
     def _get_item_name_colors_(cls, item_prxes, column=0):
         lis = []
@@ -559,7 +559,7 @@ class PrxGuideBar(
         self.widget._set_view_path_args_(path_args)
 
     def set_item_contents_at(self, content, index=0):
-        self.widget._set_choose_item_content_at_(content, index)
+        self.widget._set_guide_choose_item_content_at_(content, index)
 
     def get_current_path(self):
         return self.widget._get_view_guide_current_path_()

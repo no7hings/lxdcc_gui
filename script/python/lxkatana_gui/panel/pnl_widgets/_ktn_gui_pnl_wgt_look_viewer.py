@@ -108,7 +108,7 @@ class AssetLookViewerPanel(utl_gui_pnl_abs_look_viewer.AbsAssetLookViewerPanel):
                 ]
             )
             #
-            _geometry_obj_gui = self._prx_dcc_obj_tree_view_add_opt.set_item_prx_add_as(
+            _geometry_obj_gui = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as(
                 geometry_obj, mode='list'
             )
             #
