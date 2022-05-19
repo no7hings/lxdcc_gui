@@ -364,6 +364,7 @@ class PrxTreeView(
         self._prx_filter_bar = filter_bar
 
     def _set_scroll_to_pre_occurrence_match_item_(self):
+        print 'A'
         item_prxes = self._keyword_filter_item_prxes
         if item_prxes:
             idx_max, idx_min = len(item_prxes)-1, 0

@@ -1177,6 +1177,9 @@ class QtBuildThread(QtCore.QThread):
     def set_cache_fnc(self, method):
         self._cache_fnc = method
 
+    def set_mutex(self):
+        pass
+
     def set_kill(self):
         self._status = self.Status.Killed
 
@@ -1206,6 +1209,8 @@ class QtBuildThreadsRunner(QtCore.QObject):
         self._threads = []
         self._results = []
 
+        # self._mutex = QtCore.QMutex()
+
     def set_thread_create(self, cache_fnc, build_fnc, post_fnc=None):
         thread = QtBuildThread(self._widget)
         thread.set_cache_fnc(cache_fnc)
@@ -1228,8 +1233,10 @@ class QtBuildThreadsRunner(QtCore.QObject):
 
     def set_kill(self):
         [i.set_kill() for i in self._threads]
+        # self._mutex.unlock()
 
     def set_start(self):
+        # self._mutex.lock()
         self.run_started.emit()
         c_t = None
         for i_t in self._threads:
@@ -1243,6 +1250,8 @@ class QtBuildThreadsRunner(QtCore.QObject):
                 c_t.run_finished.connect(i_t.start)
             #
             c_t = i_t
+
+        # self._mutex.unlock()
 
 
 class QtBuildSignals(QtCore.QObject):

@@ -401,6 +401,14 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             rsv_objs = rsv_obj.get_rsv_entities(
                 **self._rsv_filter_opt.value
             )
+            w = utl_core.DialogWindow.set_create(
+                'List Tasks',
+                content='list all task from "{}", press "Yes" to continue'.format(rsv_obj.name),
+                status=utl_core.DialogWindow.GuiStatus.Warning,
+            )
+            result = w.get_result()
+            if result is False:
+                return
         else:
             rsv_objs = [rsv_obj]
         #
