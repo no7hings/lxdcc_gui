@@ -51,7 +51,7 @@ class W(prx_widgets.PrxToolWindow):
                 i_n.get_output_port('output').set_target(r.get_input_port('input'))
 
         c.set_node_universe(u)
-        c.set_node_show('/')
+        c.set_node_show()
 
     def test(self):
         pass

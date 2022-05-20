@@ -1381,7 +1381,7 @@ class QtNGPainter(QtPainter):
     def _set_ng_node_resize_button_draw_(self, rect, border_width, mode, is_current, is_hovered):
         self.setRenderHint(self.Antialiasing)
         if is_current is True:
-            self._set_border_color_(255, 255, 255, 255)
+            self._set_border_color_(127, 127, 127, 255)
         else:
             self._set_border_color_(63, 63, 63, 255)
         #
@@ -1392,7 +1392,7 @@ class QtNGPainter(QtPainter):
         for i in range(4):
             if 0 < i < c:
                 if i <= m:
-                    self._set_border_color_(255, 255, 255, 255)
+                    self._set_border_color_(127, 127, 127, 255)
                 else:
                     self._set_border_color_(63, 63, 63, 255)
                 self._set_border_width_(border_width)
@@ -1400,7 +1400,7 @@ class QtNGPainter(QtPainter):
                 i_p_0, i_p_1 = QtCore.QPoint(x, y+i*h/c), QtCore.QPoint(x+w, y+i*h/c)
                 self.drawLine(i_p_0, i_p_1)
 
-    def _set_ng_node_frame_head_draw_(self, rect, border_width, border_radius, is_hovered=False, is_selected=False, is_actioned=False):
+    def _set_ng_node_frame_head_draw_(self, rect, border_color, border_width, border_radius, is_hovered=False, is_selected=False, is_actioned=False):
         self.setRenderHint(self.Antialiasing)
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
@@ -1408,7 +1408,7 @@ class QtNGPainter(QtPainter):
         w_0, h_0 = w, h-border_radius-border_width
         x_1, y_1 = x, y+border_radius+border_width
         w_1, h_1 = w, h-border_radius-border_width
-        self._set_border_color_(191, 191, 191, 255)
+        self._set_border_color_(border_color)
         self._set_border_width_(border_width)
         self._set_border_join_(QtCore.Qt.MiterJoin)
         background_color = self._get_ng_node_background_color_(
@@ -1427,7 +1427,7 @@ class QtNGPainter(QtPainter):
         )
         self.drawPath(path_0+path_1)
 
-    def _set_ng_node_frame_body_draw_(self, rect, border_width, border_radius):
+    def _set_ng_node_frame_body_draw_(self, rect, border_color, border_width, border_radius):
         self.setRenderHint(self.Antialiasing)
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
@@ -1435,7 +1435,7 @@ class QtNGPainter(QtPainter):
         w_0, h_0 = w, h - border_radius - border_width
         x_1, y_1 = x, y + border_radius + border_width
         w_1, h_1 = w, h - border_radius - border_width
-        self._set_border_color_(191, 191, 191, 255)
+        self._set_border_color_(border_color)
         self._set_border_width_(border_width)
         self._set_border_join_(QtCore.Qt.MiterJoin)
         self._set_background_color_(127, 127, 127, 63)

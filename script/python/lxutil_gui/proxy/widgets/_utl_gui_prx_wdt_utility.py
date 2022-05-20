@@ -821,7 +821,7 @@ class PrxToolWindow(
         self._loading_timer_0.start(time)
         self._loading_timer_0.timeout.connect(method)
         #
-        self._loading_show_timer.start(time-100)
+        self._loading_show_timer.start(int(time*.8))
         self._loading_show_timer.timeout.connect(self.set_window_loading_show)
 
     def set_window_loading_end(self):

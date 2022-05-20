@@ -324,30 +324,32 @@ class PrxTreeView(
         self._keyword_filter_item_prxes = []
         #
         item_prxes = self.get_all_items()
-        for prx_item_tgt in item_prxes:
+        for i_prx_item_tgt in item_prxes:
             i_tag_filter_hidden_ = False
             i_keyword_filter_hidden_ = False
             if tag_filter_src_all_keys:
                 i_tag_filter_is_enable, i_tag_filter_hidden = self._get_item_tag_filter_tgt_match_args_(
-                    prx_item_tgt, tag_filter_src_all_keys
+                    i_prx_item_tgt, tag_filter_src_all_keys
                 )
                 if i_tag_filter_is_enable is True:
                     i_tag_filter_hidden_ = i_tag_filter_hidden
             #
             if filter_keyword:
                 i_keyword_filter_enable, i_keyword_filter_hidden = self._get_item_keyword_filter_match_args_(
-                    prx_item_tgt, filter_keyword
+                    i_prx_item_tgt, filter_keyword
                 )
                 if i_keyword_filter_enable is True:
                     i_keyword_filter_hidden_ = i_keyword_filter_hidden
+                    if i_keyword_filter_hidden_ is False:
+                        self._keyword_filter_item_prxes.append(i_prx_item_tgt)
             #
             if True in [i_tag_filter_hidden_, i_keyword_filter_hidden_]:
                 is_hidden = True
             else:
                 is_hidden = False
             #
-            prx_item_tgt.set_hidden(is_hidden)
-            for i in prx_item_tgt.get_ancestors():
+            i_prx_item_tgt.set_hidden(is_hidden)
+            for i in i_prx_item_tgt.get_ancestors():
                 if is_hidden is False:
                     i.set_hidden(False)
         #
@@ -364,19 +366,19 @@ class PrxTreeView(
         self._prx_filter_bar = filter_bar
 
     def _set_scroll_to_pre_occurrence_match_item_(self):
-        print 'A'
         item_prxes = self._keyword_filter_item_prxes
         if item_prxes:
             idx_max, idx_min = len(item_prxes)-1, 0
             idx = self._match_occurrence_index or 0
-            if idx == idx_min:
-                idx = idx_max
             #
             idx = max(min(idx, idx_max), 0)
             item_prx = item_prxes[idx]
             item_prx._set_filter_occurrence_(False)
             #
-            idx -= 1
+            if idx == idx_min:
+                idx = idx_max
+            else:
+                idx -= 1
             idx_pre = max(min(idx, idx_max), 0)
             item_prx_pre = item_prxes[idx_pre]
             item_prx_pre._set_filter_occurrence_(True)
@@ -392,14 +394,15 @@ class PrxTreeView(
         if item_prxes:
             idx_max, idx_min = len(item_prxes)-1, 0
             idx = self._match_occurrence_index or 0
-            if idx == idx_max:
-                idx = idx_min
             #
             idx = max(min(idx, idx_max), 0)
             item_prx = item_prxes[idx]
             item_prx._set_filter_occurrence_(False)
             #
-            idx += 1
+            if idx == idx_max:
+                idx = idx_min
+            else:
+                idx += 1
             idx_pst = max(min(idx, idx_max), 0)
             item_prx_pst = item_prxes[idx_pst]
             item_prx_pst._set_filter_occurrence_(True)

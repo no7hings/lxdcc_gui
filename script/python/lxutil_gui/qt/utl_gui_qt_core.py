@@ -1166,6 +1166,8 @@ class QtBuildThread(QtCore.QThread):
     run_started = qt_signal()
     run_finished = qt_signal()
 
+    run_failed = qt_signal()
+
     Status = bsc_configure.Status
     def __init__(self, *args, **kwargs):
         super(QtBuildThread, self).__init__(*args, **kwargs)
@@ -1187,14 +1189,20 @@ class QtBuildThread(QtCore.QThread):
         if self._status == self.Status.Waiting:
             self.run_started.emit()
             self._status = self.Status.Started
+            # noinspection PyBroadException
+            try:
+                self.cache_started.emit()
+                cache = self._cache_fnc()
+                self.cache_finished.emit()
+                #
+                self.built.emit(cache)
+            except:
+                self.run_failed.emit()
+                self._status = self.Status.Failed
             #
-            self.cache_started.emit()
-            cache = self._cache_fnc()
-            self.cache_finished.emit()
-            #
-            self.built.emit(cache)
-            self.run_finished.emit()
-            self._status = self.Status.Finished
+            finally:
+                self.run_finished.emit()
+                self._status = self.Status.Finished
 
 
 class QtBuildThreadsRunner(QtCore.QObject):

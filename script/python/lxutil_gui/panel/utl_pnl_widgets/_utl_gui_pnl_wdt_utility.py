@@ -5,7 +5,7 @@ from lxutil import utl_core
 
 from lxutil_prd import utl_prd_objects
 
-from lxutil_gui.panel import utl_gui_pnl_abstract, utl_gui_pnl_abs_utility, utl_gui_pnl_abs_render_submitter, utl_gui_pnl_abs_loader
+from lxutil_gui.panel import utl_gui_pnl_abstract, utl_gui_pnl_abs_utility, utl_gui_pnl_abs_render_submitter, utl_gui_pnl_abs_loader, utl_gui_pnl_abs_node_graph
 
 
 class SceneBuildToolPanel(utl_gui_pnl_abstract.AbsShotBuildToolPanel):
@@ -49,3 +49,9 @@ class ShotRenderSubmitter(utl_gui_pnl_abs_render_submitter.AbsShotRenderSubmitte
     OPTION_HOOK_KEY = 'tool-panels/shot-render-submitter'
     def __init__(self, hook_option=None, *args, **kwargs):
         super(ShotRenderSubmitter, self).__init__(hook_option, *args, **kwargs)
+
+
+class RezGraph(utl_gui_pnl_abs_node_graph.AbsRezGraph):
+    OPTION_HOOK_KEY = 'tool-panels/rez-graph'
+    def __init__(self, hook_option=None, *args, **kwargs):
+        super(RezGraph, self).__init__(hook_option, *args, **kwargs)
