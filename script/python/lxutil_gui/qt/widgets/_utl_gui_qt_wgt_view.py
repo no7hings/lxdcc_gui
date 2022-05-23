@@ -596,6 +596,9 @@ class QtTreeWidget(
                 and i not in self._selected_indices
             ]
 
+    def _get_items_selected_(self):
+        return [self.itemFromIndex(i) for i in self._selected_indices]
+
     def _get_items_by_keyword_filter_(self, keyword, match_case=False, match_word=False):
         lis = []
         if keyword:

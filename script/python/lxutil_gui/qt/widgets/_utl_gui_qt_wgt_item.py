@@ -2716,7 +2716,7 @@ class QtTreeWidgetItem(
         pass
         # self.setVisible(boolean)
 
-    def _set_name_(self, text, column=0):
+    def _set_name_text_(self, text, column=0):
         self.setText(column, text)
 
     def _set_tool_tip_(self, raw, column=0, as_markdown_style=False):

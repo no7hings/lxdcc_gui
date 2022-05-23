@@ -5,7 +5,7 @@ from lxutil_gui.qt.utl_gui_qt_core import *
 
 from lxutil_gui.qt import utl_gui_qt_abstract
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_view
 
 
 class _QtNGLayer(QtWidgets.QWidget):
@@ -68,6 +68,12 @@ class AbsQtBypassDef(object):
         self._bypass = boolean
 
         self._set_wgt_update_draw_()
+
+
+class AbsQtNGUniverseDef(object):
+    def _set_ng_node_universe_def_init_(self):
+        self._ng_node_universe = None
+        self._ng_node_universe_dict = {}
 
 
 class AbsQtNGDef(object):
@@ -1044,7 +1050,7 @@ class _QtNGNode(
             )
 
     def __str__(self):
-        return 'Node(path="{}")'.format(
+        return 'Node(name="{}")'.format(
             self._get_name_text_()
         )
 
@@ -1060,6 +1066,8 @@ class _QtNGGraph(
     #
     AbsQtNGGraphDef,
     AbsQtNGDrawGraphDef,
+    #
+    AbsQtNGUniverseDef
 ):
     def __init__(self, *args, **kwargs):
         super(_QtNGGraph, self).__init__(*args, **kwargs)
@@ -1084,6 +1092,8 @@ class _QtNGGraph(
         self._grid_dir_x, self._grid_dir_y = self._ng_draw_graph_grid_translate_direction_x, self._ng_draw_graph_grid_translate_direction_y
 
         self._ng_graph_node_connection = _QtNGLayer(self)
+
+        self._set_ng_node_universe_def_init_()
 
     def _set_wgt_update_draw_(self):
         self.update()
@@ -1280,10 +1290,10 @@ class _QtNGGraph(
                 key_text_width=key_text_width
             )
     # universe
-    def _set_ng_graph_universe_(self, universe):
-        self._ng_graph_universe = universe
-        nodes = self._ng_graph_universe.get_objs()
-        for i_obj in nodes:
+    def _set_ng_node_universe_(self, universe):
+        self._ng_node_universe = universe
+        obj = self._ng_node_universe.get_objs()
+        for i_obj in obj:
             i_ng_node = self._set_ng_graph_node_create_()
             i_ng_node._set_ng_node_obj_(i_obj)
             i_ng_node._set_type_text_(
@@ -1296,18 +1306,18 @@ class _QtNGGraph(
                 i_obj.type_name
             )
             i_ng_node._set_tool_tip_(['path: "{}"'.format(i_obj.path)])
-            i_obj.set_obj_gui(i_ng_node)
+            i_obj.set_gui_ng_graph_node(i_ng_node)
 
-        connections = self._ng_graph_universe.get_connections()
+        connections = self._ng_node_universe.get_connections()
         for i_connection in connections:
             i_ng_connection = self._set_ng_graph_connection_create_()
             i_obj_src = i_connection.get_source_obj()
             i_obj_tgt = i_connection.get_target_obj()
-            i_obj_src.get_obj_gui()._set_ng_node_connection_start_add_(i_ng_connection)
-            i_obj_tgt.get_obj_gui()._set_ng_node_connection_end_add_(i_ng_connection)
+            i_obj_src.get_gui_ng_graph_node()._set_ng_node_connection_start_add_(i_ng_connection)
+            i_obj_tgt.get_gui_ng_graph_node()._set_ng_node_connection_end_add_(i_ng_connection)
 
     def _set_ng_graph_show_by_universe_(self):
-        objs = self._ng_graph_universe.get_objs()
+        objs = self._ng_node_universe.get_objs()
         for i_obj in objs:
             i_ng_node = self._set_ng_graph_node_create_()
             i_ng_node._set_name_text_(
@@ -1316,15 +1326,15 @@ class _QtNGGraph(
             i_ng_node._set_icon_name_text_(
                 i_obj.type_name
             )
-            i_obj.set_obj_gui(i_ng_node)
+            i_obj.set_gui_ng_graph_node(i_ng_node)
 
-        connections = self._ng_graph_universe.get_connections()
+        connections = self._ng_node_universe.get_connections()
         for i_connection in connections:
             i_ng_connection = self._set_ng_graph_connection_create_()
             i_obj_src = i_connection.get_source_obj()
             i_obj_tgt = i_connection.get_target_obj()
-            i_obj_src.get_obj_gui()._set_ng_node_connection_start_add_(i_ng_connection)
-            i_obj_tgt.get_obj_gui()._set_ng_node_connection_end_add_(i_ng_connection)
+            i_obj_src.get_gui_ng_graph_node()._set_ng_node_connection_start_add_(i_ng_connection)
+            i_obj_tgt.get_gui_ng_graph_node()._set_ng_node_connection_end_add_(i_ng_connection)
 
     def _set_ng_graph_node_show_(self, obj_path=None):
         def frame_fnc_():
@@ -1332,11 +1342,11 @@ class _QtNGGraph(
             t.stop()
 
         if obj_path is not None:
-            objs = [self._ng_graph_universe.get_obj(obj_path)]
+            objs = [self._ng_node_universe.get_obj(obj_path)]
         else:
-            objs = self._ng_graph_universe.get_basic_source_objs()
+            objs = self._ng_node_universe.get_basic_source_objs()
         if objs:
-            ng_nodes = [i.get_obj_gui() for i in objs]
+            ng_nodes = [i.get_gui_ng_graph_node() for i in objs]
             idx = 0
             for i_ng_node in ng_nodes:
                 i_ng_node._set_ng_node_point_(
@@ -1444,8 +1454,8 @@ class _QtNGGraph(
         x, y, w, h = ng_nodes[0]._get_ng_node_geometry_()
         [rcs_fnc_(i._ng_node_obj, 0) for i in ng_nodes]
 
-        objs = [i._ng_node_obj for i in ng_nodes]
-        basic_source_objs = self._ng_graph_universe.get_basic_source_objs(objs)
+        # objs = [i._ng_node_obj for i in ng_nodes]
+        # basic_source_objs = self._ng_node_universe.get_basic_source_objs(objs)
         ys = []
         for i in ng_nodes:
             i_x, i_y, i_w, i_h = i._get_ng_node_geometry_()
@@ -1479,7 +1489,7 @@ class _QtNGGraph(
                     raise ValueError()
                 if v:
                     for i_row, i_obj_path in enumerate(v):
-                        i_obj = self._ng_graph_universe.get_obj(i_obj_path)
+                        i_obj = self._ng_node_universe.get_obj(i_obj_path)
                         i_x = s_x
                         if layout_y == 'b-t':
                             i_y = s_y-i_row*h
@@ -1488,11 +1498,11 @@ class _QtNGGraph(
                         else:
                             raise ValueError()
                         #
-                        i_ng_node = i_obj.get_obj_gui()
+                        i_ng_node = i_obj.get_gui_ng_graph_node()
                         i_ng_node._set_ng_node_point_(
                             i_x, i_y
                         )
-        return [i.get_obj_gui() for i in obj_stack]
+        return [i.get_gui_ng_graph_node() for i in obj_stack]
 
     def _sey_ng_graph_node_layout_by_nodes_(self, ng_nodes):
         if ng_nodes:
@@ -1592,3 +1602,63 @@ class _QtNGGraph(
                 contains.append(i)
 
         self._ng_graph_nodes_selected = contains
+
+
+class _QtNGTreeNode(
+    _utl_gui_qt_wgt_item.QtTreeWidgetItem
+):
+    def __init__(self, *args, **kwargs):
+        super(_QtNGTreeNode, self).__init__(*args, **kwargs)
+
+        self._ng_node_obj = None
+
+
+class _QtNGTree(
+    _utl_gui_qt_wgt_view.QtTreeWidget,
+    AbsQtNGUniverseDef
+):
+    def __init__(self, *args, **kwargs):
+        super(_QtNGTree, self).__init__(*args, **kwargs)
+        self._set_ng_node_universe_def_init_()
+        #
+        # self.itemSelectionChanged.connect(self._set_ng_graph_node_select_)
+
+    def _set_ng_node_universe_(self, universe):
+        self._ng_node_universe = universe
+        obj = self._ng_node_universe.get_objs()
+        for i_obj in obj:
+            self._set_ng_node_add_(i_obj)
+
+    def _set_ng_node_add_0_(self, obj):
+        parent = obj.get_parent()
+        item = _QtNGTreeNode()
+        obj.set_gui_ng_tree_node(item)
+        if parent is not None:
+            item_parent = parent.get_gui_ng_tree_node()
+            item_parent.addChild(item)
+        else:
+            self.addTopLevelItem(item)
+
+        item._set_name_text_(obj.name)
+        item._set_icon_name_text_(obj.type_name)
+        item._ng_node_obj = obj
+
+    def _set_ng_node_add_(self, obj):
+        if obj.get_gui_ng_tree_node() is None:
+            ancestors = obj.get_ancestors()
+            if ancestors:
+                ancestors.reverse()
+                for i_ancestor in ancestors:
+                    if i_ancestor.get_gui_ng_tree_node() is None:
+                        self._set_ng_node_add_0_(i_ancestor)
+
+            self._set_ng_node_add_0_(obj)
+
+    def _set_ng_graph_node_select_(self):
+        if self._selected_indices:
+            items = self._get_items_selected_()
+            for i in items:
+                obj = i._ng_node_obj
+                print obj.get_gui_ng_graph_node()
+        else:
+            pass
