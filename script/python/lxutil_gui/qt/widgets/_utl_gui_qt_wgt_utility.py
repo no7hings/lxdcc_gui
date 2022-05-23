@@ -1418,12 +1418,12 @@ class QtNGPainter(QtPainter):
         self._set_background_color_(background_color)
         path_0 = QtGui.QPainterPath()
         path_0.addRoundedRect(
-            QtCore.QRect(x_0, y_0, w_0, h_0),
+            QtCore.QRectF(x_0, y_0, w_0, h_0),
             border_radius, border_radius, QtCore.Qt.AbsoluteSize
         )
         path_1 = QtGui.QPainterPath()
         path_1.addRect(
-            QtCore.QRect(x_1, y_1, w_1, h_1)
+            QtCore.QRectF(x_1, y_1, w_1, h_1)
         )
         self.drawPath(path_0+path_1)
 
