@@ -89,11 +89,13 @@ class AbsRezGraph(prx_widgets.PrxToolWindow):
         r = r_c.ResolvedContext(
             packages,
             package_paths=[
-                "/l/packages/pg/prod",
-                "/l/packages/pg/dept",
-                "/l/packages/pg/third_party/app",
-                "/l/packages/pg/third_party/plugin",
-                "/l/packages/pg/third_party/ocio"
+                bsc_core.StoragePathMtd.set_map_to_platform(i) for i in [
+                    "/l/packages/pg/prod",
+                    "/l/packages/pg/dept",
+                    "/l/packages/pg/third_party/app",
+                    "/l/packages/pg/third_party/plugin",
+                    "/l/packages/pg/third_party/ocio"
+                ]
             ]
         )
 
