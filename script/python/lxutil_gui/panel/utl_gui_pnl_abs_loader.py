@@ -403,7 +403,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             )
             w = utl_core.DialogWindow.set_create(
                 'List Tasks',
-                content='list all task from "{}", press "Yes" to continue'.format(rsv_obj.name),
+                content='list all tasks from "{}", press "Yes" to continue'.format(rsv_obj.name),
                 status=utl_core.DialogWindow.GuiStatus.Warning,
             )
             result = w.get_result()

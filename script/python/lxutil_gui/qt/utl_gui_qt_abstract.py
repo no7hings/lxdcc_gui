@@ -587,9 +587,13 @@ class AbsQtTypeDef(object):
     def _set_type_def_init_(self):
         self._type_text = None
         self._type_rect = QtCore.QRect()
+        self._type_color = QtGui.QColor(127, 127, 127, 255)
 
     def _set_type_text_(self, text):
         self._type_text = text
+        self._type_color = bsc_core.TextOpt(
+            self._type_text
+        ).to_rgb()
 
     def _set_type_rect_(self, x, y, w, h):
         self._type_rect.setRect(

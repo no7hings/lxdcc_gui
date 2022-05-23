@@ -995,7 +995,7 @@ class _QtNGNode(
 
         painter._set_ng_node_frame_head_draw_(
             self._ng_node_frame_head_rect,
-            border_color=bsc_core.TextOpt(self._type_text).to_rgb(),
+            border_color=self._type_color,
             border_width=self._ng_draw_border_w,
             border_radius=self._ng_draw_border_w,
             is_hovered=self._get_is_hovered_(),
@@ -1005,7 +1005,7 @@ class _QtNGNode(
 
         painter._set_ng_node_frame_body_draw_(
             self._ng_node_frame_body_rect,
-            border_color=bsc_core.TextOpt(self._type_text).to_rgb(),
+            border_color=self._type_color,
             border_width=self._ng_draw_border_w,
             border_radius=self._ng_draw_border_w,
         )
