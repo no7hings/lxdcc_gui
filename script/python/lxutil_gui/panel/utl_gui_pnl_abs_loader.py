@@ -407,7 +407,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 status=utl_core.DialogWindow.GuiStatus.Warning,
             )
             result = w.get_result()
-            if result is False:
+            if result is not True:
                 return
         else:
             rsv_objs = [rsv_obj]

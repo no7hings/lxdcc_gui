@@ -115,6 +115,6 @@ class AssetBuilderPanel(utl_gui_pnl_abs_builder.AbsAssetBuilderPanel):
                 #
                 render_resolution=self._options_prx_node.get('render.resolution'),
                 #
-                save_scene=self._options_prx_node.get('save_scene'),
+                save_scene=self._options_prx_node.get('build_options.save_scene'),
             )
         ).set_run()
