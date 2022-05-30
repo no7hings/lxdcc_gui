@@ -1227,7 +1227,7 @@ class QtBuildThreadsRunner(QtCore.QObject):
             thread.run_finished.connect(post_fnc)
         return thread
 
-    def set_registry(self, cache_fnc, build_fnc, post_fnc=None):
+    def set_register(self, cache_fnc, build_fnc, post_fnc=None):
         thread = self.set_thread_create(cache_fnc, build_fnc, post_fnc)
         self._threads.append(thread)
         self._results.append(0)
@@ -1335,7 +1335,7 @@ class QtBuildRunnableRunner(QtCore.QObject):
             runnable._build_signals.run_finished.connect(post_fnc)
         return runnable
 
-    def set_registry(self, cache_fnc, build_fnc, post_fnc=None):
+    def set_register(self, cache_fnc, build_fnc, post_fnc=None):
         thread = self.set_thread_create(cache_fnc, build_fnc, post_fnc)
         self._threads.append(thread)
         self._results.append(0)

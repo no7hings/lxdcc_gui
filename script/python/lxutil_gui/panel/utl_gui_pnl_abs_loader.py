@@ -286,7 +286,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             t_r = utl_gui_qt_core.QtBuildThreadsRunner(self.widget)
             t_r.run_finished.connect(post_fnc_)
             for i_rsv_tag in rsv_tags:
-                t_r.set_registry(
+                t_r.set_register(
                     functools.partial(self._set_cache_add_rsv_entities_, i_rsv_tag),
                     self._set_gui_add_rsv_entities_
                 )
@@ -362,7 +362,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 )
             #
             keys = ['{}.{}'.format(step, task)]
-            self._prx_dcc_obj_tree_view_tag_filter_opt.set_registry(
+            self._prx_dcc_obj_tree_view_tag_filter_opt.set_register(
                 rsv_task_item_prx, keys
             )
             #
@@ -401,14 +401,18 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             rsv_objs = rsv_obj.get_rsv_entities(
                 **self._rsv_filter_opt.value
             )
-            w = utl_core.DialogWindow.set_create(
-                'List Tasks',
-                content='list all tasks from "{}", press "Yes" to continue'.format(rsv_obj.name),
-                status=utl_core.DialogWindow.GuiStatus.Warning,
-            )
-            result = w.get_result()
-            if result is not True:
-                return
+            c = len(rsv_objs)
+            if c > 50:
+                w = utl_core.DialogWindow.set_create(
+                    'List Tasks',
+                    content='list all tasks from "{}", press "Yes" to continue'.format(
+                        rsv_obj.name
+                    ),
+                    status=utl_core.DialogWindow.GuiStatus.Warning,
+                )
+                result = w.get_result()
+                if result is not True:
+                    return
         else:
             rsv_objs = [rsv_obj]
         #
@@ -416,7 +420,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             self._rsv_task_unit_runner = utl_gui_qt_core.QtBuildThreadsRunner(self.widget)
             self._rsv_task_unit_runner.run_finished.connect(post_fnc_)
             for i_rsv_obj in rsv_objs:
-                self._rsv_task_unit_runner.set_registry(
+                self._rsv_task_unit_runner.set_register(
                     functools.partial(self._set_cache_rsv_task_units_, i_rsv_obj),
                     self._set_gui_add_rsv_task_units_
                 )
@@ -589,7 +593,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         review_rsv_unit = rsv_task.get_rsv_unit(
             keyword='{branch}-review-file'
         )
-        movie_file_path = review_rsv_unit.get_result(
+        movie_file_path = review_rsv_unit.get_exists_result(
             version='latest'
         )
         if movie_file_path:

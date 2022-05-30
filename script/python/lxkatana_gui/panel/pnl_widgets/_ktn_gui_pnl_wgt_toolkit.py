@@ -1,6 +1,8 @@
 # coding:utf-8
 from lxbasic import bsc_core
 
+from lxkatana import ktn_core
+
 from lxutil import utl_core, utl_configure
 
 from lxutil_gui.qt import utl_gui_qt_core
@@ -83,6 +85,41 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
     def set_dcc_workspace_create(cls):
         import lxkatana.fnc.creators as ktn_fnc_creators
         ktn_fnc_creators.LookWorkspaceCreator().set_run()
+
+    def set_dcc_workspace_load(self):
+
+        task_properties = self._task_properties
+        project = task_properties.get('project')
+        r = rsv_commands.get_resolver()
+
+        rsv_task = r.get_rsv_task(
+            project=project,
+            asset='surface_workspace',
+            step='srf',
+            task='surfacing'
+        )
+
+        if rsv_task:
+            rsv_unit = rsv_task.get_rsv_unit(
+                keyword='asset-work-katana-scene-src-file'
+            )
+            file_path = rsv_unit.get_result(
+                version='latest'
+            )
+
+            ms = [
+                (ktn_dcc_objects.Scene.set_file_import, (file_path, )),
+                (ktn_dcc_objects.AssetWorkspace().set_all_executes_run, ()),
+                (ktn_dcc_objects.AssetWorkspace().set_variables_registry, ())
+            ]
+
+            with utl_core.gui_progress(maximum=len(ms)) as g_p:
+                for i_m, i_as in ms:
+                    g_p.set_update()
+                    if i_as:
+                        i_m(*i_as)
+                    else:
+                        i_m()
 
     def set_work_set_usd_import(self):
         pass

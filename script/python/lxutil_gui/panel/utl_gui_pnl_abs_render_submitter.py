@@ -702,7 +702,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 '{}.{}'.format(j_key, variants[j_key])
             )
         #
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_registry(
+        self._prx_dcc_obj_tree_view_tag_filter_opt.set_register(
             rsv_unit_prx_item, keys
         )
 

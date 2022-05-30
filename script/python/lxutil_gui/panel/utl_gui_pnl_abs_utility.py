@@ -496,19 +496,47 @@ class AbsSceneTextureManagerPanel(
             if _ is not None:
                 if _.get_is_directory():
                     descendants = tree_item_prx.get_descendants()
+                    c = len(descendants)
+                    if c > 100:
+                        w = utl_core.DialogWindow.set_create(
+                            'List all Texture(s)',
+                            content='list {} texture units from "{}", press "Yes" to continue'.format(
+                                c,
+                                _.path
+                            ),
+                            status=utl_core.DialogWindow.GuiStatus.Warning,
+                        )
+                        result = w.get_result()
+                        if result is not True:
+                            return
+                    #
                     for i_item_prx in descendants:
                         # self._obj_list_viewer_0.set_loading_update()
-                        stg_file = i_item_prx.get_gui_dcc_obj(namespace='storage-file')
-                        if stg_file is not None:
-                            if stg_file.get_is_exists() is True:
+                        i_file = i_item_prx.get_gui_dcc_obj(namespace='storage-file')
+                        if i_file is not None:
+                            if i_file.get_is_exists() is True:
                                 i_list_item_prx = self._obj_list_viewer_0.set_item_add()
-                                i_list_item_prx.set_gui_dcc_obj(stg_file, namespace='storage')
-                                set_show_fnc_(stg_file, i_list_item_prx)
+                                i_list_item_prx.set_gui_dcc_obj(i_file, namespace='storage')
+                                set_show_fnc_(i_file, i_list_item_prx)
                 else:
-                    stg_files = _.get_exists_files(with_tx=False)
-                    for stg_file in stg_files:
+                    file_units = _.get_exists_files(with_tx=False)
+                    c = len(file_units)
+                    if c > 50:
+                        w = utl_core.DialogWindow.set_create(
+                            'List all Texture-unit(s)',
+                            content='list {} texture units from "{}", press "Yes" to continue'.format(
+                                c,
+                                _.path
+                            ),
+                            status=utl_core.DialogWindow.GuiStatus.Warning,
+                        )
+                        result = w.get_result()
+                        if result is not True:
+                            return
+                    #
+                    for i_file_unit in file_units:
                         i_list_item_prx = self._obj_list_viewer_0.set_item_add()
-                        set_show_fnc_(stg_file, i_list_item_prx)
+                        set_show_fnc_(i_file_unit, i_list_item_prx)
 
     def _set_texture_references_update_(self):
         self._texture_references = None
