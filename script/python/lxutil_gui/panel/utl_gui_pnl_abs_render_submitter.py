@@ -72,6 +72,12 @@ class AbsRenderSubmitterPanel(
     ITEM_ICON_SIZE = 24, 24
     def __init__(self, hook_option=None, *args, **kwargs):
         super(AbsRenderSubmitterPanel, self).__init__(*args, **kwargs)
+        #
+        if bsc_core.ApplicationMtd.get_is_maya():
+            self._use_thread = False
+        else:
+            self._use_thread = True
+        #
         if hook_option is not None:
             self._set_render_submitter_def_init_(hook_option)
             if self._rez_beta:
@@ -364,14 +370,18 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         def build_fnc_(rsv_versions_):
             self._options_prx_node.set('version', rsv_versions_)
 
-        t = utl_gui_qt_core.QtBuildThread(self.widget)
-        t.set_cache_fnc(
-            cache_fnc_
-        )
-        t.built.connect(build_fnc_)
-        t.run_finished.connect(post_fnc_)
-        #
-        t.start()
+        if self._use_thread is True:
+            t = utl_gui_qt_core.QtBuildThread(self.widget)
+            t.set_cache_fnc(
+                cache_fnc_
+            )
+            t.built.connect(build_fnc_)
+            t.run_finished.connect(post_fnc_)
+            #
+            t.start()
+        else:
+            build_fnc_(cache_fnc_())
+            post_fnc_()
 
     def _set_options_add_rsv_shots_(self):
         def post_fnc_():
@@ -383,14 +393,18 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         def build_fnc_(rsv_shots_):
             self._options_prx_node.set('shot', rsv_shots_)
 
-        t = utl_gui_qt_core.QtBuildThread(self.widget)
-        t.set_cache_fnc(
-            cache_fnc_
-        )
-        t.built.connect(build_fnc_)
-        t.run_finished.connect(post_fnc_)
-        #
-        t.start()
+        if self._use_thread is True:
+            t = utl_gui_qt_core.QtBuildThread(self.widget)
+            t.set_cache_fnc(
+                cache_fnc_
+            )
+            t.built.connect(build_fnc_)
+            t.run_finished.connect(post_fnc_)
+            #
+            t.start()
+        else:
+            build_fnc_(cache_fnc_())
+            post_fnc_()
 
     def set_current_refresh(self):
         methods = [
@@ -598,14 +612,18 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     i_port_path, i_current_variant_name
                 )
 
-        t = utl_gui_qt_core.QtBuildThread(self.widget)
-        t.set_cache_fnc(
-            cache_fnc_
-        )
-        t.built.connect(build_fnc_)
-        t.run_finished.connect(post_fnc_)
-        #
-        t.start()
+        if self._use_thread is True:
+            t = utl_gui_qt_core.QtBuildThread(self.widget)
+            t.set_cache_fnc(
+                cache_fnc_
+            )
+            t.built.connect(build_fnc_)
+            t.run_finished.connect(post_fnc_)
+            #
+            t.start()
+        else:
+            build_fnc_(cache_fnc_())
+            post_fnc_()
 
     def _set_usd_load_shot_variant_(self, rsv_asset, rsv_shot):
         def post_fnc_():
@@ -621,14 +639,18 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         def build_fnc_(data_):
             self._usd_prx_node.set('variants.shot_asset', data_[0].keys())
 
-        t = utl_gui_qt_core.QtBuildThread(self.widget)
-        t.set_cache_fnc(
-            cache_fnc_
-        )
-        t.built.connect(build_fnc_)
-        t.run_finished.connect(post_fnc_)
-        #
-        t.start()
+        if self._use_thread is True:
+            t = utl_gui_qt_core.QtBuildThread(self.widget)
+            t.set_cache_fnc(
+                cache_fnc_
+            )
+            t.built.connect(build_fnc_)
+            t.run_finished.connect(post_fnc_)
+            #
+            t.start()
+        else:
+            build_fnc_(cache_fnc_())
+            post_fnc_()
     # renderers
     def set_renderers_refresh(self):
         self._rsv_renderer_list_view.set_clear()
@@ -677,14 +699,18 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             for i_seq, i_variants in enumerate(data_[0]):
                 self._set_gui_add_rsv_unit_(i_variants)
 
-        t = utl_gui_qt_core.QtBuildThread(self.widget)
-        t.set_cache_fnc(
-            cache_fnc_
-        )
-        t.built.connect(build_fnc_)
-        t.run_finished.connect(post_fnc_)
-        #
-        t.start()
+        if self._use_thread is True:
+            t = utl_gui_qt_core.QtBuildThread(self.widget)
+            t.set_cache_fnc(
+                cache_fnc_
+            )
+            t.built.connect(build_fnc_)
+            t.run_finished.connect(post_fnc_)
+            #
+            t.start()
+        else:
+            build_fnc_(cache_fnc_())
+            post_fnc_()
 
     def _set_gui_add_rsv_unit_(self, variants):
         def cache_fnc_():
@@ -763,8 +789,14 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                         k.replace('/', '.'), v
                     )
 
-    def _get_settings_dic_(self):
+    def _get_usd_dict_(self):
+        c = bsc_objects.Configure(value={})
+        c.set('reverse_face_vertex_enable', self._usd_prx_node.get('debuggers.reverse_face_vertex_enable'))
+        return c.get_value()
+
+    def _get_settings_dict_(self):
         dic = {}
+        #
         asset_frames = self._settings_prx_node.get('render.asset.frames')
         #
         dic['cache_asset_frames'] = asset_frames
@@ -788,7 +820,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         dic['deadline_priority'] = int(self._settings_prx_node.get('deadline.priority'))
         return dic
 
-    def _get_variables_dic_(self):
+    def _get_variables_dict_(self):
         def update_fnc(key_):
             _ks = c.get_keys('/{}/*'.format(key_))
             _key = key_mapper[key_]
@@ -831,11 +863,14 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             #
             dic['choice_scheme'] = self._options_prx_node.get('choice_scheme')
             #
-            settings_dic = self._get_settings_dic_()
-            dic.update(settings_dic)
+            usd_dict = self._get_usd_dict_()
+            dic.update(usd_dict)
             #
-            variable_dic = self._get_variables_dic_()
-            dic.update(variable_dic)
+            settings_dict = self._get_settings_dict_()
+            dic.update(settings_dict)
+            #
+            variable_dict = self._get_variables_dict_()
+            dic.update(variable_dict)
             #
             td_test_scheme = self._settings_prx_node.get(
                 'td.test_scheme'
@@ -1227,14 +1262,18 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         def build_fnc_(rsv_versions_):
             self._options_prx_node.set('version', rsv_versions_)
 
-        t = utl_gui_qt_core.QtBuildThread(self.widget)
-        t.set_cache_fnc(
-            cache_fnc_
-        )
-        t.built.connect(build_fnc_)
-        t.run_finished.connect(post_fnc_)
-        #
-        t.start()
+        if self._use_thread is True:
+            t = utl_gui_qt_core.QtBuildThread(self.widget)
+            t.set_cache_fnc(
+                cache_fnc_
+            )
+            t.built.connect(build_fnc_)
+            t.run_finished.connect(post_fnc_)
+            #
+            t.start()
+        else:
+            build_fnc_(cache_fnc_())
+            post_fnc_()
 
     def set_usd_refresh(self):
         if bsc_core.SystemMtd.get_is_linux():
@@ -1326,9 +1365,9 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
     def _get_usd_dict_(self):
         c = bsc_objects.Configure(value={})
         c.set('usd_effect_components', [i.name for i in self._usd_prx_node.get('components.effect')])
-        return c.value
+        return c.get_value()
 
-    def _get_settings_dic_(self):
+    def _get_settings_dict_(self):
         c = bsc_objects.Configure(value={})
         #
         c.set('render_look', self._settings_prx_node.get('render.look'))
@@ -1367,7 +1406,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             #
             dic['choice_scheme'] = self._options_prx_node.get('choice_scheme')
             #
-            dic.update(self._get_settings_dic_())
+            dic.update(self._get_settings_dict_())
             dic.update(self._get_usd_dict_())
 
             td_test_scheme = self._settings_prx_node.get(
