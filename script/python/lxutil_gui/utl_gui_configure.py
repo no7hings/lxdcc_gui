@@ -54,6 +54,7 @@ class ActionFlag(enum.IntEnum):
     KeyAltPress = 0x81
     KeyControlPress = 0x82
     KeyShiftPress = 0x83
+    KeyControlShiftPress = 0x84
 
 
 class State(object):

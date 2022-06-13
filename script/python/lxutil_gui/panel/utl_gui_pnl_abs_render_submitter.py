@@ -72,11 +72,7 @@ class AbsRenderSubmitterPanel(
     ITEM_ICON_SIZE = 24, 24
     def __init__(self, hook_option=None, *args, **kwargs):
         super(AbsRenderSubmitterPanel, self).__init__(*args, **kwargs)
-        #
-        if bsc_core.ApplicationMtd.get_is_maya():
-            self._use_thread = False
-        else:
-            self._use_thread = True
+        self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
         #
         if hook_option is not None:
             self._set_render_submitter_def_init_(hook_option)
@@ -370,7 +366,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         def build_fnc_(rsv_versions_):
             self._options_prx_node.set('version', rsv_versions_)
 
-        if self._use_thread is True:
+        if self._qt_thread_enable is True:
             t = utl_gui_qt_core.QtBuildThread(self.widget)
             t.set_cache_fnc(
                 cache_fnc_
@@ -393,7 +389,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         def build_fnc_(rsv_shots_):
             self._options_prx_node.set('shot', rsv_shots_)
 
-        if self._use_thread is True:
+        if self._qt_thread_enable is True:
             t = utl_gui_qt_core.QtBuildThread(self.widget)
             t.set_cache_fnc(
                 cache_fnc_
@@ -612,7 +608,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     i_port_path, i_current_variant_name
                 )
 
-        if self._use_thread is True:
+        if self._qt_thread_enable is True:
             t = utl_gui_qt_core.QtBuildThread(self.widget)
             t.set_cache_fnc(
                 cache_fnc_
@@ -639,7 +635,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         def build_fnc_(data_):
             self._usd_prx_node.set('variants.shot_asset', data_[0].keys())
 
-        if self._use_thread is True:
+        if self._qt_thread_enable is True:
             t = utl_gui_qt_core.QtBuildThread(self.widget)
             t.set_cache_fnc(
                 cache_fnc_
@@ -661,7 +657,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
     def set_variables_refresh(self):
         # self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
+        # self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
     def set_variables_load_from_scheme(self):
         scheme = self._schemes_prx_node.get('variables')
@@ -699,7 +695,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             for i_seq, i_variants in enumerate(data_[0]):
                 self._set_gui_add_rsv_unit_(i_variants)
 
-        if self._use_thread is True:
+        if self._qt_thread_enable is True:
             t = utl_gui_qt_core.QtBuildThread(self.widget)
             t.set_cache_fnc(
                 cache_fnc_
@@ -791,7 +787,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
     def _get_usd_dict_(self):
         c = bsc_objects.Configure(value={})
-        c.set('reverse_face_vertex_enable', self._usd_prx_node.get('debuggers.reverse_face_vertex_enable'))
+        c.set('usd_reverse_face_vertex_enable', self._usd_prx_node.get('debuggers.reverse_face_vertex_enable'))
         return c.get_value()
 
     def _get_settings_dict_(self):
@@ -816,6 +812,10 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         #
         dic['render_arnold_override_enable'] = self._settings_prx_node.get('render.arnold_override_enable')
         dic['render_arnold_override_aa_sample'] = self._settings_prx_node.get('render.arnold_override.aa_sample')
+        #
+        dic['light_pass_all'] = self._settings_prx_node.get('light_pass.all')
+        dic['light_pass_light_rig_1'] = self._settings_prx_node.get('light_pass.light_rig_1')
+        dic['light_pass_light_rig_2'] = self._settings_prx_node.get('light_pass.light_rig_2')
         #
         dic['deadline_priority'] = int(self._settings_prx_node.get('deadline.priority'))
         return dic
@@ -1262,7 +1262,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         def build_fnc_(rsv_versions_):
             self._options_prx_node.set('version', rsv_versions_)
 
-        if self._use_thread is True:
+        if self._qt_thread_enable is True:
             t = utl_gui_qt_core.QtBuildThread(self.widget)
             t.set_cache_fnc(
                 cache_fnc_
@@ -1357,7 +1357,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     '{}.{}'.format(j_key, i_variants[j_key]), i_prx_item
                 )
 
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
+        # self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
     
     def set_scheme_save(self):
         pass

@@ -36,11 +36,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
     ITEM_ICON_SIZE = 24, 24
     def __init__(self, session, *args, **kwargs):
         super(AbsEntitiesLoaderPanel_, self).__init__(*args, **kwargs)
-        #
-        if bsc_core.ApplicationMtd.get_is_maya():
-            self._use_thread = False
-        else:
-            self._use_thread = True
+        self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
         #
         self._rez_beta = bsc_core.EnvironMtd.get('REZ_BETA')
         #
@@ -173,13 +169,13 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
 
     def _set_obj_viewer_build_(self):
         self._rsv_obj_tree_view_0.set_header_view_create(
-            [('Name(s)', 3)],
+            [('name', 3)],
             self.get_definition_window_size()[0]*(1.0/4.0) - 24
         )
         self._rsv_obj_tree_view_0.set_single_selection()
         #
         self._filter_tree_viewer_0.set_header_view_create(
-            [('Name(s)', 3), ('Count(s)', 1)],
+            [('name', 3), ('count', 1)],
             self.get_definition_window_size()[0]*(1.0/4.0) - 24
         )
         self._filter_tree_viewer_0.set_single_selection()
@@ -282,7 +278,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         #
         rsv_tags = rsv_project.get_rsv_tags(**self._rsv_filter_opt.value)
         #
-        if self._use_thread is True:
+        if self._qt_thread_enable is True:
             t_r = utl_gui_qt_core.QtBuildThreadsRunner(self.widget)
             t_r.run_finished.connect(post_fnc_)
             for i_rsv_tag in rsv_tags:
@@ -416,7 +412,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         else:
             rsv_objs = [rsv_obj]
         #
-        if self._use_thread is True:
+        if self._qt_thread_enable is True:
             self._rsv_task_unit_runner = utl_gui_qt_core.QtBuildThreadsRunner(self.widget)
             self._rsv_task_unit_runner.run_finished.connect(post_fnc_)
             for i_rsv_obj in rsv_objs:
@@ -685,24 +681,24 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         hook_keys = self._hook_configure.get(
             'actions.assets.hooks'
         ) or []
-        return self.__get_menu_content_by_hook_keys_(
-            hook_keys, rsv_entity
+        return self._get_menu_content_by_hook_keys_(
+            self._session_dict, hook_keys, rsv_entity
         )
 
     def get_rsv_asset_menu_content(self, rsv_entity):
         hook_keys = self._hook_configure.get(
             'actions.asset.hooks'
         ) or []
-        return self.__get_menu_content_by_hook_keys_(
-            hook_keys, rsv_entity
+        return self._get_menu_content_by_hook_keys_(
+            self._session_dict, hook_keys, rsv_entity
         )
 
     def get_rsv_task_menu_content(self, rsv_task):
         hook_keys = self._hook_configure.get(
             'actions.task.hooks'
         ) or []
-        return self.__get_menu_content_by_hook_keys_(
-            hook_keys, rsv_task
+        return self._get_menu_content_by_hook_keys_(
+            self._session_dict, hook_keys, rsv_task
         )
 
     def get_rsv_task_unit_menu_content(self, rsv_task):
@@ -710,11 +706,11 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             'actions.task_unit.hooks'
         ) or []
         #
-        return self.__get_menu_content_by_hook_keys_(
-            hook_keys, rsv_task
+        return self._get_menu_content_by_hook_keys_(
+            self._session_dict, hook_keys, rsv_task
         )
-
-    def __get_menu_content_by_hook_keys_(self, hooks, *args, **kwargs):
+    @classmethod
+    def _get_menu_content_by_hook_keys_(cls, session_dict, hooks, *args, **kwargs):
         content = bsc_objects.Dict()
         for i_hook in hooks:
             if isinstance(i_hook, (str, unicode)):
@@ -726,8 +722,8 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             else:
                 raise RuntimeError()
             #
-            i_args = self.__get_rsv_unit_action_hook_args_(
-                i_hook_key, *args, **kwargs
+            i_args = cls._get_rsv_unit_action_hook_args_(
+                session_dict, i_hook_key, *args, **kwargs
             )
             if i_args:
                 i_session, i_execute_fnc = i_args
@@ -790,15 +786,15 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                         '{}.properties.execute_fnc'.format(i_gui_path), i_execute_fnc
                     )
         return content
-
-    def __get_rsv_unit_action_hook_args_(self, key, *args, **kwargs):
+    @classmethod
+    def _get_rsv_unit_action_hook_args_(cls, session_dict, key, *args, **kwargs):
         def execute_fnc():
             session._set_file_execute_(python_file_path, dict(session=session))
         #
         rsv_task = args[0]
         session_path = '{}/{}'.format(rsv_task.path, key)
-        if session_path in self._session_dict:
-            return self._session_dict[session_path]
+        if session_path in session_dict:
+            return session_dict[session_path]
         else:
             python_file_path = ssn_core.RscHookFile.get_python(key)
             yaml_file_path = ssn_core.RscHookFile.get_yaml(key)
@@ -824,5 +820,5 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                         else:
                             raise TypeError()
                         #
-                        self._session_dict[session_path] = session, execute_fnc
+                        session_dict[session_path] = session, execute_fnc
                         return session, execute_fnc

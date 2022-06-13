@@ -55,3 +55,9 @@ class RezGraph(utl_gui_pnl_abs_node_graph.AbsRezGraph):
     OPTION_HOOK_KEY = 'tool-panels/rez-graph'
     def __init__(self, hook_option=None, *args, **kwargs):
         super(RezGraph, self).__init__(hook_option, *args, **kwargs)
+
+
+class AssetLineup(utl_gui_pnl_abs_node_graph.AbsAssetLineup):
+    OPTION_HOOK_KEY = 'tool-panels/asset-lineup'
+    def __init__(self, hook_option=None, *args, **kwargs):
+        super(AssetLineup, self).__init__(hook_option, *args, **kwargs)

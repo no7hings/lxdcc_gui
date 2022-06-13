@@ -292,6 +292,9 @@ class PrxTreeItem(
 
     def get_is_checked(self, column=0):
         return [False, True][self.widget.checkState(column) == utl_gui_qt_core.QtCore.Qt.Checked]
+
+    def get_is_selected(self, column=0):
+        return self.widget.isSelected()
     # expanded
     def set_expanded(self, boolean=True, ancestors=False):
         self.widget.setExpanded(boolean)
@@ -460,7 +463,7 @@ class PrxTreeItem(
     # noinspection PyUnusedLocal
     def get_state(self, column=0):
         return self.get_gui_attribute(
-            'state', 'normal'
+            'state', default='normal'
         )
     # noinspection PyUnusedLocal
     def set_state(self, state, column=0):

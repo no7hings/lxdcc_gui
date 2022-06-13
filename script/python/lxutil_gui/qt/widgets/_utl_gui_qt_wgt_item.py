@@ -2628,7 +2628,12 @@ class QtTreeWidgetItem(
     def _get_emit_send_enable_(self):
         return self._emit_send_enable
 
-    def _set_check_state_extra_(self, column):
+    def _set_check_state_(self, boolean, column=0):
+        self.setCheckState(
+            column, [utl_gui_qt_core.QtCore.Qt.Unchecked, utl_gui_qt_core.QtCore.Qt.Checked][boolean]
+        )
+
+    def _set_check_state_extra_(self, column=0):
         if self._is_check_enable is True:
             check_state = self.checkState(column)
             descendants = self._get_descendants_()
@@ -2990,7 +2995,7 @@ class _QtListItemWidget(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract._QtIndexDef,
-    utl_gui_qt_abstract._QtImageDef,
+    utl_gui_qt_abstract.AbsQtImageDef,
     utl_gui_qt_abstract.AbsQtMovieDef,
     #
     utl_gui_qt_abstract.AbsQtMenuDef,

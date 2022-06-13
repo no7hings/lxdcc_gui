@@ -3,6 +3,8 @@ from lxutil import utl_configure
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
+import lxutil.dcc.dcc_objects as utl_dcc_objects
+
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_view
 
 from lxobj import core_objects
@@ -12,13 +14,13 @@ class W(prx_widgets.PrxToolWindow):
     def __init__(self, *args, **kwargs):
         super(W, self).__init__(*args, **kwargs)
         #
-        c = prx_widgets.PrxNGGraph()
+        c = prx_widgets.PrxNGImageGraph()
         self.set_widget_add(c)
         u = core_objects.ObjUniverse()
 
         o_t = u._get_obj_type_force_('lynxi', 'shader')
 
-        t = u._get_type_force_(u.Category.CONSTANT, u.Type.NODE)
+        t = u._get_type_force_(u.Category.CONSTANT, u.Type.STRING)
 
         r = u.get_root()
 
@@ -28,27 +30,17 @@ class W(prx_widgets.PrxToolWindow):
         r.set_output_port_create(
             t, 'output'
         )
+        d = utl_dcc_objects.OsDirectory_('/l/temp/td/dongchangbao/lineup-test')
 
-        p_n = None
-        for i in range(10):
+        for i in d.get_all_file_paths():
+            i_f = utl_dcc_objects.OsFile(i)
             i_n = o_t.set_obj_create(
-                '/test_{}'.format(i)
+                '/{}'.format(i_f.name_base)
             )
-            i_n.set_input_port_create(
-                t, 'input'
+            i_p = i_n.set_variant_port_create(
+                t, 'image'
             )
-            i_n.set_output_port_create(
-                t, 'output'
-            )
-            if p_n is not None:
-                p_n.get_input_port('input').set_source(i_n.get_output_port('output'))
-            else:
-                i_n.get_output_port('output').set_target(r.get_input_port('input'))
-            #
-            if not i % 10:
-                p_n = i_n
-            else:
-                i_n.get_output_port('output').set_target(r.get_input_port('input'))
+            i_p.set(i)
 
         c.set_universe(u)
         c.set_node_show()

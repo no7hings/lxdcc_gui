@@ -206,11 +206,11 @@ class PrxTreeView(
     def get_gui_menu_raw(self):
         return self._gui_menu_raw
 
-    def _get_view_items_(self):
-        return self.view._get_view_items_()
+    def _get_all_items_(self):
+        return self.view._get_all_items_()
 
     def get_all_items(self):
-        return [i.gui_proxy for i in self.view._get_view_items_() if hasattr(i, 'gui_proxy')]
+        return [i.gui_proxy for i in self.view._get_all_items_() if hasattr(i, 'gui_proxy')]
 
     def get_all_leaf_items(self):
         return [i.gui_proxy for i in self.view._get_all_leaf_items_()]
@@ -542,11 +542,11 @@ class PrxListView(
     def set_clear(self):
         self.view._set_clear_()
 
-    def _get_view_items_(self):
-        return self.view._get_view_items_()
+    def _get_all_items_(self):
+        return self.view._get_all_items_()
 
     def get_all_items(self):
-        return [i._get_item_widget_().gui_proxy for i in self.view._get_view_items_()]
+        return [i._get_item_widget_().gui_proxy for i in self.view._get_all_items_()]
 
     def set_loading_update(self):
         self.view._set_loading_update_()
@@ -579,3 +579,10 @@ class PrxGuideBar(
 
     def set_clear(self):
         self.widget._set_view_guide_and_choose_clear_()
+
+
+class PrxObjListView(
+    PrxListView
+):
+    def __init__(self, *args, **kwargs):
+        super(PrxObjListView, self).__init__(*args, **kwargs)

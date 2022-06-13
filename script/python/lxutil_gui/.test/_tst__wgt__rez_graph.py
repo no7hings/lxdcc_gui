@@ -29,7 +29,7 @@ class W(prx_widgets.PrxToolWindow):
         self.set_window_loading_end()
 
     def test(self):
-        self._g = prx_widgets.PrxNodeGraph()
+        self._g = prx_widgets.PrxNGGraph()
         self.set_widget_add(self._g)
         u = core_objects.ObjUniverse()
 
@@ -137,7 +137,7 @@ class W(prx_widgets.PrxToolWindow):
                 i_n_tgt.get_input_port('input')
             )
 
-        self._g.set_node_universe(u)
+        self._g.set_universe(u)
         self._g.set_node_show()
 
         menu = self.set_menu_add(

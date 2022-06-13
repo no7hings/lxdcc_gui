@@ -1,4 +1,8 @@
 # coding=utf-8
+import functools
+
+import enum
+
 import collections
 
 from lxutil_gui.qt.utl_gui_qt_core import *
@@ -6,6 +10,18 @@ from lxutil_gui.qt.utl_gui_qt_core import *
 from lxutil_gui.qt import utl_gui_qt_abstract
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_view
+
+
+class _NGLayoutFlag(enum.IntEnum):
+    Dependent = 0
+    Line = 1
+
+
+class _NGSelectionFlag(enum.IntEnum):
+    Separate = 0
+    Add = 1
+    Sub = 2
+    Invert = 3
 
 
 class _QtNGLayer(QtWidgets.QWidget):
@@ -55,6 +71,14 @@ class AbsQtActionRectSelectDef(object):
         raise NotImplementedError()
 
 
+class AbsQtActionFrameDef(object):
+    def _set_action_frame_def_init_(self, widget):
+        pass
+    # action frame select
+    def _set_action_frame_execute_(self, event):
+        raise NotImplementedError()
+
+
 class AbsQtBypassDef(object):
     def _set_bypass_def_init_(self, widget):
         self._widget = widget
@@ -71,9 +95,18 @@ class AbsQtBypassDef(object):
 
 
 class AbsQtNGUniverseDef(object):
-    def _set_ng_node_universe_def_init_(self):
+    def _set_ng_universe_def_init_(self):
         self._ng_node_universe = None
         self._ng_node_universe_dict = {}
+
+    def _set_ng_universe_(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def _set_ng_show_by_universe_(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def _set_ng_universe_node_add_(self, *args, **kwargs):
+        raise NotImplementedError()
 
 
 class AbsQtNGDef(object):
@@ -90,6 +123,7 @@ class AbsQtNGGraphDef(object):
         self._ng_graph_composite_matrix = bsc_core.Matrix33Opt.get_identity()
         #
         self._ng_graph_translate_x, self._ng_graph_translate_y = 0, 0
+        self._ng_graph_translate_x_enable, self._ng_graph_translate_y_enable = True, True
         #
         self._ng_graph_scale_x, self._ng_graph_scale_y = 1.0, 1.0
         self._ng_graph_scale_minimum_x, self._ng_graph_scale_minimum_y = 0.000001, 0.000001
@@ -112,8 +146,8 @@ class AbsQtNGGraphDef(object):
 
     def _set_wgt_update_(self):
         raise NotImplementedError()
-
-    def _set_ng_action_graph_transformation_update_(self):
+    #
+    def _set_ng_graph_transformation_update_(self):
         x_0, y_0, x_1, y_1, r_w, r_h = self._get_ng_graph_rect_args_()
         self._ng_graph_translate_x, self._ng_graph_translate_y = x_0, y_0
         self._ng_graph_scale_x, self._ng_graph_scale_y = (
@@ -132,6 +166,7 @@ class AbsQtNGGraphDef(object):
         #
         d_p = point-self._ng_graph_translate_point
         d_t_x, d_t_y = d_p.x(), d_p.y()
+        #
         self._set_ng_graph_translate_matrix_(d_t_x, d_t_y)
         self._set_ng_graph_transformation_matrix_update_()
         if point is not None:
@@ -191,6 +226,9 @@ class AbsQtNGGraphDef(object):
         x_0, y_0 = o_x_0, o_y_0
         x_1, y_1 = o_x_0+self._ng_graph_w_basic*s_x, o_y_0+self._ng_graph_h_basic*s_y
         self._set_ng_graph_points_(x_0, y_0, x_1, y_1)
+
+    def _get_ng_graph_translate_(self):
+        return self._ng_graph_translate_x, self._ng_graph_translate_y
     #
     def _get_ng_graph_scale_(self):
         return self._ng_graph_scale_x, self._ng_graph_scale_y
@@ -260,8 +298,10 @@ class AbsQtNGDrawGraphDef(object):
         )
 
 
-class AbsQtNGGraphNodesDef(object):
-    def _set_ng_graph_nodes_def_init_(self, widget):
+class AbsQtNGGraphSbjDef(object):
+    NG_NODE_CLASS = None
+    NG_CONNECTION_CLASS = None
+    def _set_ng_graph_sbj_def_init_(self, widget):
         self._widget = widget
 
         self._ng_graph_nodes = []
@@ -272,14 +312,16 @@ class AbsQtNGGraphNodesDef(object):
         
         self._ng_graph_node_current = None
 
+        self._ng_graph_selection_flag = _NGSelectionFlag.Separate
+
     def _set_wgt_update_draw_(self):
         raise NotImplementedError()
 
-    def _set_ng_graph_node_create_(self, *args, **kwargs):
+    def _set_ng_graph_sbj_node_create_(self, *args, **kwargs):
         raise NotImplementedError()
 
-    def _set_ng_graph_connection_create_(self, *args, **kwargs):
-        pass
+    def _set_ng_graph_sbj_connection_create_(self, *args, **kwargs):
+        raise NotImplementedError()
 
     def _get_ng_graph_nodes_(self):
         return self._ng_graph_nodes
@@ -304,6 +346,7 @@ class AbsQtNGGraphNodesDef(object):
         self._ng_graph_node_current = sbj
         if sbj is not None:
             self._ng_graph_node_current.raise_()
+        #
         self._set_wgt_update_draw_()
 
     def _get_ng_graph_node_current_name_text_(self):
@@ -316,6 +359,29 @@ class AbsQtNGGraphNodesDef(object):
 
         self._ng_graph_nodes_selected = []
         self._ng_graph_node_current = None
+
+    def _set_ng_graph_nodes_transformation_(self, t_x, t_y, s_x, s_y):
+        [i._set_ng_node_transformation_(t_x, t_y, s_x, s_y) for i in self._ng_graph_nodes]
+
+    def _get_ng_action_graph_selection_flag_(self):
+        pass
+    # action press
+    def _set_ng_action_graph_node_press_start_(self, sbj):
+        self._ng_graph_selection_flag = self._get_ng_action_graph_selection_flag_()
+        self._set_ng_graph_node_current_(sbj)
+
+    def _set_ng_action_graph_node_press_execute_(self, sbj):
+        if self._get_ng_graph_node_select_count_() == 0:
+            self._set_ng_action_graph_select_as_separate_(sbj)
+
+    def _set_ng_action_graph_node_press_end_(self, sbj):
+        raise NotImplementedError()
+
+    def _set_ng_graph_node_move_execute_(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def _set_ng_action_graph_select_as_separate_(self, sbj):
+        raise NotImplementedError()
 
 
 # sub object def
@@ -376,6 +442,12 @@ class AbsQtNGSbjDef(object):
         self._ng_draw_head_h = self._ng_draw_head_h_basic*s_y
         self._ng_draw_icon_w, self._ng_draw_icon_h = self._ng_draw_icon_w_basic*s_x, self._ng_draw_icon_h_basic*s_y
         self._ng_draw_button_w, self._ng_draw_button_h = self._ng_draw_button_w_basic*s_x, self._ng_draw_button_h_basic*s_y
+
+    def _get_undo_stack_(self):
+        return self._ng_sbj_graph._undo_stack
+
+    def _get_ng_graph_(self):
+        return self._ng_sbj_graph
 
 
 class AbsQtNGConnectionDef(AbsQtNGSbjDef):
@@ -452,13 +524,13 @@ class _QtNGConnection(
     def _set_wgt_update_(self):
         self._set_wgt_update_shape_()
         self._set_ng_sbj_update_draw_()
-        self._set_wgt_update_geometry_(self.rect())
+        self._set_wgt_update_draw_geometry_(self.rect())
         self._set_wgt_update_draw_()
 
     def _set_wgt_update_draw_(self):
         self.update()
 
-    def _set_wgt_update_geometry_(self, rect):
+    def _set_wgt_update_draw_geometry_(self, rect):
         def add_cubic_fnc_(p_0, p_1, index):
             c1, c2 = (
                 QtCore.QPointF((p_0.x()+p_1.x())/index, p_0.y()),
@@ -619,36 +691,41 @@ class AbsQtNGNodeDef(AbsQtNGSbjDef):
 
         self._ng_node_obj = None
 
-        self._ng_action_node_point = QtCore.QPoint(0, 0)
         self._ng_action_node_move_point_start = QtCore.QPoint(0, 0)
 
         self._ng_node_translate_x, self._ng_node_translate_y = 0, 0
+        self._ng_node_scale_x, self._ng_node_scale_y = 1.0, 1.0
+        #
+        self._ng_node_x_glb, self._ng_node_y_glb = 0.0, 0.0
+        self._ng_node_x_glb_orig, self._ng_node_y_glb_orig = 0, 0
+
         self._ng_node_w_basic, self._ng_node_h_basic = 192, 80
 
         self._ng_node_rect = QtCore.QRect(0, 0, 0, 0)
+        self._ng_node_rect_select_glb = QtCore.QRect(0, 0, 0, 0)
         self._ng_node_rect_select = QtCore.QRect(0, 0, 0, 0)
-        self._ng_node_frame_rect = QtCore.QRect(0, 0, 0, 0)
-        self._ng_node_frame_head_rect = QtCore.QRect(0, 0, 0, 0)
-        self._ng_node_frame_body_rect = QtCore.QRect(0, 0, 0, 0)
+        self._ng_node_rect_frame = QtCore.QRect(0, 0, 0, 0)
+        self._ng_node_rect_frame_head = QtCore.QRect(0, 0, 0, 0)
+        self._ng_node_rect_frame_body = QtCore.QRect(0, 0, 0, 0)
 
-        self._ng_node_input_rect = QtCore.QRect(0, 0, 0, 0)
-        self._ng_node_output_rect = QtCore.QRect(0, 0, 0, 0)
+        self._ng_node_rect_input = QtCore.QRect(0, 0, 0, 0)
+        self._ng_node_rect_output = QtCore.QRect(0, 0, 0, 0)
 
         self._ng_node_connection_starts = []
         self._ng_node_connection_ends = []
 
         self._ng_node_resize_rect = QtCore.QRect(0, 0, 0, 0)
 
+    def _set_ng_node_size_basic_(self, w, h):
+        self._ng_node_w_basic, self._ng_node_h_basic = w, h
+
+    def _get_ng_node_size_basic_(self):
+        return self._ng_node_w_basic, self._ng_node_h_basic
+
     def _set_wgt_update_(self):
         raise NotImplementedError()
 
     def _set_wgt_update_shape_(self):
-        (x, y), (w, h) = self._get_ng_node_coord_by_transformation_(), self._get_ng_node_size_by_transformation_()
-        #
-        self._ng_node_rect.setRect(
-            x, y,
-            w, h
-        )
         self._widget.setGeometry(
             self._ng_node_rect
         )
@@ -656,18 +733,18 @@ class AbsQtNGNodeDef(AbsQtNGSbjDef):
     def _set_wgt_update_draw_(self):
         raise NotImplementedError()
 
-    def _set_wgt_update_geometry_(self, rect):
+    def _set_wgt_update_draw_geometry_(self, rect):
         raise NotImplementedError()
 
     def _set_ng_node_connection_update_(self):
-        p = self._ng_node_output_rect.center()
+        p = self._ng_node_rect_output.center()
         p = self._widget.mapToParent(p)
         for i in self._ng_node_connection_starts:
             i._set_ng_connection_point_start_(
                 p
             )
             i._set_wgt_update_()
-        p = self._ng_node_input_rect.center()
+        p = self._ng_node_rect_input.center()
         p = self._widget.mapToParent(p)
         for i in self._ng_node_connection_ends:
             i._set_ng_connection_point_end_(
@@ -676,40 +753,41 @@ class AbsQtNGNodeDef(AbsQtNGSbjDef):
             i._set_wgt_update_()
 
     def _set_ng_node_update_(self):
-        x_0, y_0 = self._ng_node_rect.x(), self._ng_node_rect.y()
-        x_1, y_1 = self._ng_node_frame_rect.x(), self._ng_node_frame_rect.y()
-        w, h = self._ng_node_frame_rect.width(), self._ng_node_frame_rect.height()
-
-        self._ng_node_rect_select.setRect(
-            x_0+x_1, y_0+y_1,
+        x, y, w, h = self._get_ng_node_geometry_by_transformation_()
+        self._ng_node_rect.setRect(
+            x, y,
             w, h
         )
+        x_1, y_1 = self._ng_node_rect_select.x(), self._ng_node_rect_select.y()
+        w_1, h_1 = self._ng_node_rect_select.width(), self._ng_node_rect_select.height()
 
-    def _set_ng_node_translate_(self, x, y):
-        self._ng_node_translate_x, self._ng_node_translate_y = x, y
-        self._set_wgt_update_shape_()
+        self._ng_node_rect_select_glb.setRect(
+            x + x_1, y + y_1,
+            w_1, h_1
+        )
+
+    def _set_ng_node_transformation_(self, t_x, t_y, s_x, s_y):
+        self._ng_node_translate_x, self._ng_node_translate_y = t_x, t_y
+        self._ng_node_scale_x, self._ng_node_scale_y = s_x, s_y
 
     def _get_ng_node_translate_(self):
         return self._ng_node_translate_x, self._ng_node_translate_y
 
-    def _set_ng_node_point_(self, x, y):
-        t_x, t_y = self._get_ng_node_translate_()
-        s_x, s_y = self._get_ng_sbj_scale_()
-        self._ng_action_node_point.setX(int((x-t_x)/s_x))
-        self._ng_action_node_point.setY(int((y-t_y)/s_y))
-    #
-    def _get_ng_node_coord_by_transformation_(self):
-        t_x, t_y = self._get_ng_node_translate_()
-        s_x, s_y = self._get_ng_sbj_scale_()
-        return int(self._ng_action_node_point.x()*s_x+t_x), int(self._ng_action_node_point.y()*s_y+t_y)
-    #
-    def _get_ng_node_size_by_transformation_(self):
-        s_x, s_y = self._get_ng_sbj_scale_()
-        return self._ng_node_w_basic*s_x, self._ng_node_h_basic*s_y
+    def _get_ng_node_scale_(self):
+        return self._ng_node_scale_x, self._ng_node_scale_y
 
-    def _get_ng_node_coord_(self):
-        p = self._widget.pos()
-        return p.x(), p.y()
+    def _get_ng_node_transformation_(self):
+        return self._ng_node_translate_x, self._ng_node_translate_y, self._ng_node_scale_x, self._ng_node_scale_y
+
+    def _get_ng_node_coord_glb_update_(self, x, y):
+        t_x, t_y, s_x, s_y = self._get_ng_node_transformation_()
+        #
+        x, y = (x-t_x)/s_x, (y-t_y)/s_y
+        self._ng_node_x_glb, self._ng_node_y_glb = x, y
+
+    def _get_ng_node_geometry_by_transformation_(self):
+        t_x, t_y, s_x, s_y = self._get_ng_node_transformation_()
+        return self._ng_node_x_glb*s_x+t_x, self._ng_node_y_glb*s_y+t_y, self._ng_node_w_basic*s_x, self._ng_node_h_basic*s_y
 
     def _get_ng_node_geometry_(self):
         p = self._widget.pos()
@@ -729,25 +807,44 @@ class AbsQtNGNodeDef(AbsQtNGSbjDef):
         raise NotImplementedError()
 
     def _set_ng_action_node_press_move_start_(self, event):
-        raise NotImplementedError()
+        self._ng_action_node_move_point_start = event.globalPos()-self._widget.pos()
+        #
+        self._set_ng_node_coord_glb_orig_update_()
+        self._get_ng_graph_()._set_ng_graph_node_move_start_()
 
     def _set_ng_action_node_press_move_execute_(self, event):
         raise NotImplementedError()
 
     def _set_ng_action_node_press_move_stop_(self, event):
-        raise NotImplementedError()
+        self._get_ng_graph_()._set_ng_graph_node_move_stop_()
 
-    def _set_ng_node_move_(self, d_point, offset_point=None):
-        if not offset_point:
-            offset_point = QtCore.QPoint()
-        #
-        d_point = d_point-offset_point
-        x, y = d_point.x(), d_point.y()
-        #
+    def _set_ng_node_update_by_pos_(self, d_point, offset_point=None):
+        if offset_point is not None:
+            d_point = d_point-offset_point
+            x, y = d_point.x(), d_point.y()
+            self._set_ng_node_move_by_coord_(x, y)
+        else:
+            x, y = d_point.x(), d_point.y()
+            self._set_ng_node_move_by_coord_(x, y)
+
+    def _set_ng_node_move_by_coord_(self, x, y):
         self._widget.move(x, y)
-        # self._updateConnection()
-        #
-        self._set_ng_node_point_(x, y)
+        self._get_ng_node_coord_glb_update_(x, y)
+        self._set_ng_node_update_()
+        self._set_ng_node_connection_update_()
+    # global coord
+    def _set_ng_node_coord_glb_(self, x, y):
+        self._ng_node_x_glb, self._ng_node_y_glb = x, y
+        self._set_wgt_update_()
+
+    def _get_ng_node_coord_glb_(self):
+        return self._ng_node_x_glb, self._ng_node_y_glb
+
+    def _get_ng_node_coord_glb_orig_(self):
+        return self._ng_node_x_glb_orig, self._ng_node_y_glb_orig
+
+    def _set_ng_node_coord_glb_orig_update_(self):
+        self._ng_node_x_glb_orig, self._ng_node_y_glb_orig = self._ng_node_x_glb, self._ng_node_y_glb
 
     def _set_ng_node_connection_start_add_(self, connection):
         self._ng_node_connection_starts.append(connection)
@@ -768,6 +865,7 @@ class _QtNGNode(
     utl_gui_qt_abstract.AbsQtTypeDef,
     utl_gui_qt_abstract.AbsQtNameDef,
     utl_gui_qt_abstract.AbsQtIconDef,
+    utl_gui_qt_abstract.AbsQtImageDef,
     utl_gui_qt_abstract.AbsQtMenuDef,
     #
     AbsQtBypassDef,
@@ -795,6 +893,7 @@ class _QtNGNode(
         self._set_type_def_init_()
         self._set_name_def_init_()
         self._set_icon_def_init_()
+        self._set_image_def_init_()
         self._set_menu_def_init_()
         #
         self._set_action_def_init_(self)
@@ -806,12 +905,12 @@ class _QtNGNode(
         self._set_ng_draw_node_def_init_(self)
 
     def _set_wgt_update_(self):
+        self._set_ng_node_update_()
         self._set_wgt_update_shape_()
         self._set_ng_sbj_update_draw_()
         #
-        self._set_wgt_update_geometry_(self.rect())
+        self._set_wgt_update_draw_geometry_(self.rect())
         #
-        self._set_ng_node_update_()
         self._set_ng_node_connection_update_()
         #
         self._set_wgt_update_draw_()
@@ -819,35 +918,41 @@ class _QtNGNode(
     def _set_wgt_update_draw_(self):
         self.update()
 
-    def _set_wgt_update_geometry_(self, rect):
+    def _set_wgt_update_draw_geometry_(self, rect):
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
+
+        self._set_frame_rect_(x, y, w, h)
 
         b_w_0 = self._ng_draw_border_w
 
         c_i_r = self._ng_draw_input_r
         c_o_r = self._ng_draw_output_r
 
-        x_0, y_0 = x+b_w_0, y+b_w_0
-        w_0, h_0 = w-b_w_0*2, h-b_w_0*2
+        x_0, y_0 = x+b_w_0/2, y+b_w_0/2
+        w_0, h_0 = w-b_w_0, h-b_w_0
+        # select
+        self._ng_node_rect_select.setRect(
+            x_0, y_0, w_0, h_0
+        )
         # name
         n_x, n_y = x_0+c_i_r/2, y_0
         n_w, n_h = w_0-c_i_r, self._ng_draw_name_h
         self._set_name_rect_(
             n_x, n_y, n_w, n_h
         )
-        # frame head
+        # frame
         f_x, f_y = x_0+c_i_r/2, y_0+n_h
         f_w, f_h = w_0-c_i_r, h_0-n_h
-        self._ng_node_frame_rect.setRect(
+        self._ng_node_rect_frame.setRect(
             f_x, f_y, f_w, f_h
         )
         f_h_x, f_h_y = f_x, f_y
         f_h_w, f_h_h = f_w, self._ng_draw_head_h
-        self._ng_node_frame_head_rect.setRect(
+        self._ng_node_rect_frame_head.setRect(
             f_h_x, f_h_y, f_h_w, f_h_h
         )
-        # icon % button
+        # icon & button
         i_w, i_h = self._ng_draw_icon_w, self._ng_draw_icon_h
         self._set_icon_name_text_rect_(
             f_x+(f_h_h-i_h)/2, f_y+(f_h_h-i_h)/2, i_w, i_h
@@ -861,22 +966,22 @@ class _QtNGNode(
         # frame body
         f_b_x, f_b_y = f_x, f_y+f_h_h
         f_b_w, f_b_h = f_w, f_h-f_h_h
-        self._ng_node_frame_body_rect.setRect(
+        self._ng_node_rect_frame_body.setRect(
             f_b_x, f_b_y, f_b_w, f_b_h
         )
 
         i_x_2, i_y_2 = x_0, f_b_y
 
-        self._ng_node_input_rect.setRect(
+        self._ng_node_rect_input.setRect(
             i_x_2, i_y_2+(f_b_h-c_i_r)/2, c_i_r, c_i_r
         )
-        self._ng_node_output_rect.setRect(
-            w-b_w_0-c_o_r, i_y_2+(f_b_h-c_o_r)/2, c_o_r, c_o_r
+        self._ng_node_rect_output.setRect(
+            w-b_w_0/2-c_o_r, i_y_2+(f_b_h-c_o_r)/2, c_o_r, c_o_r
         )
 
     def _set_ng_action_update_press_click_flag_check_(self, event):
         point = event.pos()
-        if self._ng_node_frame_rect.contains(point):
+        if self._ng_node_rect_select.contains(point):
             self._set_action_flag_(
                 self.ActionFlag.NGNodePressClick
             )
@@ -886,7 +991,7 @@ class _QtNGNode(
 
     def _set_ng_action_update_press_move_flag_check_(self, event):
         point = event.pos()
-        if self._ng_node_frame_rect.contains(point):
+        if self._ng_node_rect_select.contains(point):
             self._set_action_flag_(
                 self.ActionFlag.NGNodePressMove
             )
@@ -895,39 +1000,30 @@ class _QtNGNode(
             )
 
     def _set_ng_action_node_press_start_(self, event):
-        self._ng_sbj_graph._set_ng_action_graph_press_start_(self)
+        self._ng_sbj_graph._set_ng_action_graph_node_press_start_(self)
         self._set_wgt_update_draw_()
 
     def _set_ng_action_node_press_execute_(self, event):
-        self._ng_sbj_graph._set_ng_action_graph_press_execute_(self)
+        self._ng_sbj_graph._set_ng_action_graph_node_press_execute_(self)
         self._set_wgt_update_draw_()
 
     def _set_ng_action_node_press_end_(self, event):
-        self._ng_sbj_graph._set_ng_action_graph_press_end_(self)
+        self._ng_sbj_graph._set_ng_action_graph_node_press_end_(self)
         self._set_wgt_update_draw_()
 
     def _set_action_hover_execute_(self, event):
         point = event.pos()
-        if self._ng_node_frame_rect.contains(point):
+        if self._ng_node_rect_select.contains(point):
             self._set_hovered_(True)
         else:
             self._set_hovered_(False)
 
-    def _set_ng_action_node_press_move_start_(self, event):
-        self._ng_action_node_move_point_start = event.globalPos()-self._widget.pos()
-        #
-        self._set_wgt_update_()
-
     def _set_ng_action_node_press_move_execute_(self, event):
         d_point = event.globalPos()-self._ng_action_node_move_point_start
         #
-        self._ng_sbj_graph._set_ng_graph_node_move_(
+        self._ng_sbj_graph._set_ng_graph_node_move_execute_(
             self, d_point
         )
-        self._set_wgt_update_()
-    # noinspection PyUnusedLocal
-    def _set_ng_action_node_press_move_stop_(self, event):
-        self._set_wgt_update_()
 
     def eventFilter(self, *args):
         widget, event = args
@@ -994,7 +1090,7 @@ class _QtNGNode(
         offset = 0
 
         painter._set_ng_node_frame_head_draw_(
-            self._ng_node_frame_head_rect,
+            self._ng_node_rect_frame_head,
             border_color=self._type_color,
             border_width=self._ng_draw_border_w,
             border_radius=self._ng_draw_border_w,
@@ -1004,7 +1100,7 @@ class _QtNGNode(
         )
 
         painter._set_ng_node_frame_body_draw_(
-            self._ng_node_frame_body_rect,
+            self._ng_node_rect_frame_body,
             border_color=self._type_color,
             border_width=self._ng_draw_border_w,
             border_radius=self._ng_draw_border_w,
@@ -1019,13 +1115,13 @@ class _QtNGNode(
         )
 
         painter._set_ng_node_input_draw_(
-            self._ng_node_input_rect,
+            self._ng_node_rect_input,
             border_width=self._ng_draw_border_w,
             offset=offset
         )
 
         painter._set_ng_node_output_draw_(
-            self._ng_node_output_rect,
+            self._ng_node_rect_output,
             border_width=self._ng_draw_border_w,
             offset=offset
         )
@@ -1054,21 +1150,46 @@ class _QtNGNode(
             self._get_name_text_()
         )
 
+    def __repr__(self):
+        return self.__str__()
+
+
+class NGCmdNodesMove(QtWidgets.QUndoCommand):
+    def __init__(self, data):
+        super(NGCmdNodesMove, self).__init__()
+        self._data = data
+
+    def undo(self):
+        for i, i_coord, i_coord_orig in self._data:
+            i._set_ng_node_coord_glb_(*i_coord_orig)
+            print 'node move: name="{}", coord=({}, {})'.format(i._get_name_text_(), *i_coord_orig)
+
+    def redo(self):
+        for i, i_coord, i_coord_orig in self._data:
+            i._set_ng_node_coord_glb_(*i_coord)
+            print 'node move: name="{}", coord=({}, {})'.format(i._get_name_text_(), *i_coord)
+
 
 class _QtNGGraph(
     QtWidgets.QWidget,
     #
-    utl_gui_qt_abstract.AbsQtGridDef,
-    AbsQtNGGraphNodesDef,
+    utl_gui_qt_abstract.AbsQtDrawGridDef,
+    AbsQtNGGraphSbjDef,
     #
     utl_gui_qt_abstract.AbsQtActionDef,
     AbsQtActionRectSelectDef,
+    AbsQtActionFrameDef,
     #
     AbsQtNGGraphDef,
     AbsQtNGDrawGraphDef,
     #
     AbsQtNGUniverseDef
 ):
+    NG_NODE_CLASS = _QtNGNode
+    NG_CONNECTION_CLASS = _QtNGConnection
+    #
+    NGLayoutFlag = _NGLayoutFlag
+    NGSelectionFlag = _NGSelectionFlag
     def __init__(self, *args, **kwargs):
         super(_QtNGGraph, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -1081,45 +1202,90 @@ class _QtNGGraph(
         #
         self._set_action_def_init_(self)
         self._set_action_rect_select_def_init_(self)
+        self._set_action_frame_def_init_(self)
         #
-        self._set_ng_graph_nodes_def_init_(self)
+        self._set_ng_graph_sbj_def_init_(self)
         #
         self._set_ng_graph_def_init_(self)
         self._set_ng_draw_graph_def_init_(self)
         #
-        self._set_grid_def_init_(self)
+        self._set_draw_grid_def_init_(self)
+        self._grid_border_color = 63, 63, 63, 255
         self._grid_axis_lock_x, self._grid_axis_lock_y = 1, 1
         self._grid_dir_x, self._grid_dir_y = self._ng_draw_graph_grid_translate_direction_x, self._ng_draw_graph_grid_translate_direction_y
 
-        self._ng_graph_node_connection = _QtNGLayer(self)
+        self._ng_graph_node_connection_layer = _QtNGLayer(self)
 
-        self._set_ng_node_universe_def_init_()
+        self._ng_graph_layout_flag = self.NGLayoutFlag.Dependent
+
+        self._set_ng_universe_def_init_()
+        # undo
+        self._undo_stack = QtWidgets.QUndoStack()
+        self._undo_action = self._undo_stack.createUndoAction(self, 'undo')
+        self._undo_action.setShortcut(
+            QtGui.QKeySequence(
+                QtCore.Qt.CTRL + QtCore.Qt.Key_Z
+            )
+        )
+        self.addAction(self._undo_action)
+        # redo
+        self._redo_action = self._undo_stack.createRedoAction(self, 'redo')
+        self._redo_action.setShortcut(
+            QtGui.QKeySequence(
+                QtCore.Qt.CTRL + QtCore.Qt.SHIFT + QtCore.Qt.Key_Z
+            )
+        )
+        self.addAction(self._redo_action)
+        #
+        actions = [
+            (functools.partial(self._set_ng_action_graph_layout_selection_, 'x'), 'L'),
+            (functools.partial(self._set_ng_action_graph_layout_selection_, '-height'), 'Ctrl+L'),
+            (functools.partial(self._set_ng_action_graph_layout_selection_, 'height'), 'Shift+L'),
+            (self._set_ng_action_graph_frame_, 'F'),
+            (self._set_ng_action_graph_select_all_, 'Ctrl+A')
+        ]
+        for i_fnc, i_shortcut in actions:
+            i_action = QtWidgets.QAction(self)
+            i_action.triggered.connect(
+                i_fnc
+            )
+            i_action.setShortcut(
+                QtGui.QKeySequence(
+                    i_shortcut
+                )
+            )
+            self.addAction(i_action)
+
+    def _get_undo_stack_(self):
+        return self._undo_stack
 
     def _set_wgt_update_draw_(self):
         self.update()
 
     def _set_wgt_update_(self):
-        self._set_ng_action_graph_transformation_update_()
+        self._set_ng_graph_transformation_update_()
         #
         self._set_ng_draw_graph_update_(
             self._ng_graph_translate_x, self._ng_graph_translate_y
         )
-        self._set_wgt_update_geometry_(
+        self._set_wgt_update_draw_geometry_(
             self.rect()
         )
         #
+        self._set_ng_graph_nodes_update_geometry_()
         self._set_ng_graph_nodes_update_()
 
         self._set_wgt_update_draw_()
 
-    def _set_wgt_update_geometry_(self, rect):
-        self._ng_graph_node_connection.setGeometry(
+    def _set_wgt_update_draw_geometry_(self, rect):
+        self._ng_graph_node_connection_layer.setGeometry(
             rect
         )
-        for i in self._ng_graph_nodes:
-            i._set_ng_node_translate_(
-                self._ng_graph_translate_x, self._ng_graph_translate_y
-            )
+
+    def _set_ng_graph_nodes_update_geometry_(self):
+        self._set_ng_graph_nodes_transformation_(
+            self._ng_graph_translate_x, self._ng_graph_translate_y, self._ng_graph_scale_x, self._ng_graph_scale_y
+        )
 
     def eventFilter(self, *args):
         widget, event = args
@@ -1131,22 +1297,22 @@ class _QtNGGraph(
             elif event.type() == QtCore.QEvent.Leave:
                 pass
             elif event.type() == QtCore.QEvent.KeyPress:
-                if event.key() == QtCore.Qt.Key_Control:
+                if event.modifiers() == QtCore.Qt.ControlModifier:
                     self._set_action_mdf_flag_add_(
                         self.ActionFlag.KeyControlPress
                     )
-                elif event.key() == QtCore.Qt.Key_Alt:
-                    self._set_action_mdf_flag_add_(
-                        self.ActionFlag.KeyAltPress
-                    )
-                elif event.key() == QtCore.Qt.Key_Shift:
+                elif event.modifiers() == QtCore.Qt.ShiftModifier:
                     self._set_action_mdf_flag_add_(
                         self.ActionFlag.KeyShiftPress
                     )
-                elif event.key() == QtCore.Qt.Key_F:
-                    self._set_ng_action_graph_frame_select_execute_(event)
-                elif event.key() == QtCore.Qt.Key_L:
-                    self._set_ng_action_graph_layout_select_execute_(event)
+                elif event.modifiers() == QtCore.Qt.AltModifier:
+                    self._set_action_mdf_flag_add_(
+                        self.ActionFlag.KeyAltPress
+                    )
+                elif event.modifiers() == (QtCore.Qt.ControlModifier | QtCore.Qt.ShiftModifier):
+                    self._set_action_mdf_flags_(
+                        [self.ActionFlag.KeyControlShiftPress]
+                    )
             elif event.type() == QtCore.QEvent.KeyRelease:
                 self._set_action_mdf_flag_clear_()
             elif event.type() == QtCore.QEvent.MouseButtonPress:
@@ -1290,11 +1456,11 @@ class _QtNGGraph(
                 key_text_width=key_text_width
             )
     # universe
-    def _set_ng_node_universe_(self, universe):
+    def _set_ng_universe_(self, universe):
         self._ng_node_universe = universe
         obj = self._ng_node_universe.get_objs()
         for i_obj in obj:
-            i_ng_node = self._set_ng_graph_node_create_()
+            i_ng_node = self._set_ng_graph_sbj_node_create_()
             i_ng_node._set_ng_node_obj_(i_obj)
             i_ng_node._set_type_text_(
                 i_obj.type_name
@@ -1306,86 +1472,95 @@ class _QtNGGraph(
                 i_obj.type_name
             )
             i_ng_node._set_tool_tip_(['path: "{}"'.format(i_obj.path)])
+            # i_image_file_path = i_obj.get('image')
+            # if i_image_file_path:
+            #     i_ng_node._set_image_file_path_(i_image_file_path)
+
             i_obj.set_gui_ng_graph_node(i_ng_node)
 
         connections = self._ng_node_universe.get_connections()
         for i_connection in connections:
-            i_ng_connection = self._set_ng_graph_connection_create_()
+            i_ng_connection = self._set_ng_graph_sbj_connection_create_()
             i_obj_src = i_connection.get_source_obj()
             i_obj_tgt = i_connection.get_target_obj()
             i_obj_src.get_gui_ng_graph_node()._set_ng_node_connection_start_add_(i_ng_connection)
             i_obj_tgt.get_gui_ng_graph_node()._set_ng_node_connection_end_add_(i_ng_connection)
 
-    def _set_ng_graph_show_by_universe_(self):
-        objs = self._ng_node_universe.get_objs()
-        for i_obj in objs:
-            i_ng_node = self._set_ng_graph_node_create_()
-            i_ng_node._set_name_text_(
-                i_obj.path
-            )
-            i_ng_node._set_icon_name_text_(
-                i_obj.type_name
-            )
-            i_obj.set_gui_ng_graph_node(i_ng_node)
-
-        connections = self._ng_node_universe.get_connections()
-        for i_connection in connections:
-            i_ng_connection = self._set_ng_graph_connection_create_()
-            i_obj_src = i_connection.get_source_obj()
-            i_obj_tgt = i_connection.get_target_obj()
-            i_obj_src.get_gui_ng_graph_node()._set_ng_node_connection_start_add_(i_ng_connection)
-            i_obj_tgt.get_gui_ng_graph_node()._set_ng_node_connection_end_add_(i_ng_connection)
-
-    def _set_ng_graph_node_show_(self, obj_path=None):
+    def _set_ng_show_by_universe_(self, *args, **kwargs):
         def frame_fnc_():
             self._set_ng_graph_frame_to_nodes_auto_()
             t.stop()
+
+        if args:
+            obj_path = args[0]
+        else:
+            obj_path = None
 
         if obj_path is not None:
             objs = [self._ng_node_universe.get_obj(obj_path)]
         else:
             objs = self._ng_node_universe.get_basic_source_objs()
+        #
         if objs:
             ng_nodes = [i.get_gui_ng_graph_node() for i in objs]
             idx = 0
             for i_ng_node in ng_nodes:
-                i_ng_node._set_ng_node_point_(
+                i_ng_node._set_ng_node_move_by_coord_(
                     0, idx*192
                 )
                 idx += 1
             #
-            ng_nodes_0 = self._set_ng_graph_node_layout_(
+            ng_nodes_0 = self._set_ng_graph_node_layout_by_connection_(
                 ng_nodes,
                 size=(192, 192)
             )
             ng_nodes.extend(ng_nodes_0)
             for i_ng_node in self._get_ng_graph_nodes_():
                 if i_ng_node not in ng_nodes:
-                    i_ng_node._set_ng_node_point_(
+                    i_ng_node._set_ng_node_move_by_coord_(
                         0, idx*192
                     )
                     idx += 1
 
         t = QtCore.QTimer(self)
         t.timeout.connect(frame_fnc_)
-        t.start(1000)
+        t.start(50)
 
-    def _set_ng_graph_show_(self):
-        self._set_ng_graph_node_show_()
+    def _set_ng_universe_node_add_(self, *args, **kwargs):
+        pass
+
+    def _get_ng_action_graph_selection_flag_(self):
+        flags = self._get_action_mdf_flags_()
+        if not flags:
+            return self.NGSelectionFlag.Separate
+        elif flags == [self.ActionFlag.KeyShiftPress]:
+            return self.NGSelectionFlag.Add
+        elif flags == [self.ActionFlag.KeyControlPress]:
+            return self.NGSelectionFlag.Sub
+        elif flags == [self.ActionFlag.KeyControlShiftPress]:
+            return self.NGSelectionFlag.Invert
     # frame
     @classmethod
-    def _get_ng_graph_rect_args_by_nodes_(cls, ng_nodes):
-        xs_0, ys_0 = [i._ng_node_rect_select.topLeft().x() for i in ng_nodes], [i._ng_node_rect_select.topLeft().y() for i in ng_nodes]
-        xs_1, ys_1 = [i._ng_node_rect_select.bottomRight().x() for i in ng_nodes], [i._ng_node_rect_select.bottomRight().y() for i in ng_nodes]
+    def _get_ng_graph_frame_args_(cls, ng_nodes):
+        xs_0, ys_0 = [i.x() for i in ng_nodes], [i.y() for i in ng_nodes]
+        xs_1, ys_1 = [i.x()+i.width() for i in ng_nodes], [i.y()+i.height() for i in ng_nodes]
         x_0, y_0 = min(xs_0), min(ys_0)
         x_1, y_1 = max(xs_1), max(ys_1)
         w_0, h_0 = x_1-x_0, y_1-y_0
         return x_0, y_0, x_1, y_1, w_0, h_0
+    @classmethod
+    def _get_ng_graph_layout_args_(cls, ng_nodes):
+        xs_0, ys_0 = [i.x() for i in ng_nodes], [i.y() for i in ng_nodes]
+        xs_1, ys_1 = [i.x() for i in ng_nodes], [i.y()+i.height() for i in ng_nodes]
+        x_0, y_0 = min(xs_0), min(ys_0)
+        x_1, y_1 = max(xs_1), max(ys_1)
+        w_0, h_0 = x_1-x_0, y_1-y_0
+        return x_0, y_0, x_1, y_1
 
     def _set_ng_graph_frame_translate_to_nodes_(self, ng_nodes):
         t_x, t_y = self._ng_graph_translate_x, self._ng_graph_translate_y
         o_w, o_h = self.width(), self.height()
-        x_0, y_0, x_1, y_1, w_0, h_0 = self._get_ng_graph_rect_args_by_nodes_(ng_nodes)
+        x_0, y_0, x_1, y_1, w_0, h_0 = self._get_ng_graph_frame_args_(ng_nodes)
         c_x, c_y = x_0+(x_1-x_0)/2, y_0+(y_1-y_0)/2
         x, y = o_w/2-c_x+t_x, o_h/2-c_y+t_y
         self._set_ng_graph_translate_to_(
@@ -1395,12 +1570,12 @@ class _QtNGGraph(
     def _set_ng_graph_frame_scale_to_nodes_(self, ng_nodes):
         o_s_x, o_s_y = self._ng_graph_scale_x, self._ng_graph_scale_y
         o_w, o_h = self.width(), self.height()
-        x_0, y_0, x_1, y_1, w_0, h_0 = self._get_ng_graph_rect_args_by_nodes_(ng_nodes)
+        x_0, y_0, x_1, y_1, w_0, h_0 = self._get_ng_graph_frame_args_(ng_nodes)
         #
         i_x, i_y, i_w, i_h = utl_gui_core.SizeMtd.set_fit_to(
             (w_0, h_0), (o_w, o_h)
         )
-        o_r = int(i_w*.75)
+        o_r = (i_w*.75)
         r_0 = w_0
         s_x_0, s_y_0 = float(o_r)/float(r_0), float(o_r)/float(r_0)
         s_x_0, s_y_0 = s_x_0 * o_s_x, s_y_0 * o_s_y
@@ -1427,7 +1602,7 @@ class _QtNGGraph(
         #
         self._set_ng_graph_frame_to_nodes_(ng_nodes)
     # layout
-    def _set_ng_graph_node_layout_(self, ng_nodes, size, layout=('r-l', 't-b')):
+    def _set_ng_graph_node_layout_by_connection_(self, ng_nodes, size, direction=('r-l', 't-b')):
         def rcs_fnc_(obj_, column_):
             _source_objs = obj_.get_source_objs()
             if _source_objs:
@@ -1464,7 +1639,7 @@ class _QtNGGraph(
         y_min, y_max = min(ys), max(ys)
         y = y_min+(y_max-y_min)/2
         #
-        layout_x, layout_y = layout
+        dir_x, dir_y = direction
         w, h = size
         #
         for k, v in o2c_dict.items():
@@ -1474,16 +1649,16 @@ class _QtNGGraph(
             for column, v in c2o_dict.items():
                 v = bsc_core.TextsMtd.set_sort_to(v)
                 row_count = len(v)
-                if layout_x == 'r-l':
+                if dir_x == 'r-l':
                     s_x = x-column*w*2
-                elif layout_x == 'l-r':
+                elif dir_x == 'l-r':
                     s_x = x+column*w*2
                 else:
                     raise ValueError()
                 #
-                if layout_y == 'b-t':
+                if dir_y == 'b-t':
                     s_y = y+(row_count-1)*h/2
-                elif layout_y == 't-b':
+                elif dir_y == 't-b':
                     s_y = y-(row_count-1)*h/2
                 else:
                     raise ValueError()
@@ -1491,117 +1666,263 @@ class _QtNGGraph(
                     for i_row, i_obj_path in enumerate(v):
                         i_obj = self._ng_node_universe.get_obj(i_obj_path)
                         i_x = s_x
-                        if layout_y == 'b-t':
+                        if dir_y == 'b-t':
                             i_y = s_y-i_row*h
-                        elif layout_y == 't-b':
+                        elif dir_y == 't-b':
                             i_y = s_y+i_row*h
                         else:
                             raise ValueError()
                         #
                         i_ng_node = i_obj.get_gui_ng_graph_node()
-                        i_ng_node._set_ng_node_point_(
+                        i_ng_node._set_ng_node_move_by_coord_(
                             i_x, i_y
                         )
         return [i.get_gui_ng_graph_node() for i in obj_stack]
+    @classmethod
+    def _set_ng_graph_nodes_sort_by_(cls, ng_nodes, sort_key=None):
+        """
+        :param ng_nodes:
+        :param sort_key: "x", "-x" / "height" / "-height"
+        :return:
+        """
+        keys = []
+        list_ = []
+        query_dict = {}
+        for i_ng_node in ng_nodes:
+            i_x = i_ng_node.pos().x()
+            i_width = i_ng_node.width()
+            i_height = i_ng_node._get_image_line_height_()
 
-    def _sey_ng_graph_node_layout_by_nodes_(self, ng_nodes):
-        if ng_nodes:
-            x, y, w, h = ng_nodes[0]._get_ng_node_geometry_()
-            self._set_ng_graph_node_layout_(
-                ng_nodes,
-                size=(w, w)
+            if sort_key in ['x', '-x']:
+                i_key = i_x
+            elif sort_key in ['height', '-height']:
+                i_key = i_height
+            else:
+                raise RuntimeError()
+            #
+            if i_key not in keys:
+                keys.append(i_key)
+            #
+            query_dict.setdefault(
+                i_key, []
+            ).append(
+                i_ng_node
             )
-            self._set_wgt_update_()
-    # create
-    def _set_ng_graph_node_create_(self, *args, **kwargs):
-        ng_node = _QtNGNode(self)
+        keys.sort()
+        if sort_key in ['-x', '-height']:
+            keys.reverse()
+
+        for i_key in keys:
+            i_ng_nodes = query_dict[i_key]
+            for j_ng_node in i_ng_nodes:
+                list_.append(j_ng_node)
+
+        return list_
+
+    def _set_ng_graph_node_layout_as_line_(self, ng_nodes, sort_key=None):
+        #
+        if sort_key is not None:
+            ng_nodes = self._set_ng_graph_nodes_sort_by_(
+                ng_nodes,
+                sort_key=sort_key
+            )
+
+        x_0, y_0, x_1, y_1 = self._get_ng_graph_layout_args_(ng_nodes)
+        #
+        for seq, i_ng_node in enumerate(ng_nodes):
+            i_w, i_h = i_ng_node.width(), i_ng_node.height()
+
+            y_0 = y_1-i_h
+
+            i_x, i_y = x_0, y_0
+            i_ng_node._set_ng_node_move_by_coord_(
+                i_x, i_y
+            )
+
+            x_0 += i_w
+            x_1 += i_w
+
+    def _set_ng_graph_node_layout_by_nodes_(self, ng_nodes, sort_key='x'):
+        if ng_nodes:
+            if self._ng_graph_layout_flag == self.NGLayoutFlag.Dependent:
+                x, y, w, h = ng_nodes[0]._get_ng_node_geometry_()
+                self._set_ng_graph_node_layout_by_connection_(
+                    ng_nodes,
+                    size=(w, w)
+                )
+                self._set_wgt_update_()
+            elif self._ng_graph_layout_flag == self.NGLayoutFlag.Line:
+                self._set_ng_graph_node_layout_as_line_(
+                    ng_nodes,
+                    sort_key=sort_key
+                )
+    # sbj
+    def _set_ng_graph_sbj_node_create_(self, *args, **kwargs):
+        ng_node = self.NG_NODE_CLASS(self)
         self._ng_graph_nodes.append(ng_node)
         ng_node._set_ng_sbj_graph_(self)
         return ng_node
 
-    def _set_ng_graph_connection_create_(self, *args, **kwargs):
-        ng_connection = _QtNGConnection(self._ng_graph_node_connection)
+    def _set_ng_graph_sbj_connection_create_(self, *args, **kwargs):
+        ng_connection = self.NG_CONNECTION_CLASS(self._ng_graph_node_connection_layer)
         self._ng_graph_connections.append(ng_connection)
         ng_connection._set_ng_sbj_graph_(self)
         return ng_connection
     #
-    def _set_ng_graph_node_move_(self, sbj, d_point):
+    def _set_ng_graph_node_move_start_(self):
+        [i._set_ng_node_coord_glb_orig_update_() for i in self._ng_graph_nodes_selected]
+
+    def _set_ng_graph_node_move_execute_(self, sbj, d_point):
         if sbj._get_is_selected_() is True:
-            self._set_ng_graph_node_move_as_extend_(sbj, d_point)
+            self._set_ng_graph_node_move_as_together_(sbj, d_point)
         else:
             self._set_ng_graph_node_move_as_separate_(sbj)
     #
+    def _set_ng_graph_node_move_stop_(self):
+        data = []
+        for i in self._ng_graph_nodes_selected:
+            i_coord_orig, i_coord_glb_orig = i._get_ng_node_coord_glb_(), i._get_ng_node_coord_glb_orig_()
+            if i_coord_orig != i_coord_glb_orig:
+                data.append(
+                    (i, i_coord_orig, i_coord_glb_orig)
+                )
+        if data:
+            c = NGCmdNodesMove(
+                data
+            )
+            self._undo_stack.push(c)
+    #
     def _set_ng_graph_node_move_as_separate_(self, sbj):
-        self._set_ng_graph_node_select_as_separate_(sbj)
+        self._set_ng_action_graph_select_as_separate_(sbj)
 
-    def _set_ng_graph_node_move_as_extend_(self, sbj, d_point):
+    def _set_ng_graph_node_move_as_together_(self, sbj, d_point):
         self._set_ng_graph_node_current_(sbj)
         #
         if self._ng_graph_node_current is not None:
             p_0 = self._ng_graph_node_current.pos()
             for i in self._ng_graph_nodes_selected:
                 if i != self._ng_graph_node_current:
-                    p_1 = i.pos()
-                    p = p_0-p_1
-                    i._set_ng_node_move_(d_point, p)
-                    #
-                    i._set_wgt_update_()
+                    i_p = i.pos()
+                    i_offset_point = p_0-i_p
+                    i._set_ng_node_update_by_pos_(d_point, i_offset_point)
                 else:
-                    i._set_ng_node_move_(d_point)
+                    i._set_ng_node_update_by_pos_(d_point)
     # action press
-    def _set_ng_action_graph_press_start_(self, sbj):
-        pass
-
-    def _set_ng_action_graph_press_execute_(self, sbj):
-        if self._get_ng_graph_node_select_count_() == 0:
-            self._set_ng_graph_node_select_as_separate_(sbj)
-
-    def _set_ng_action_graph_press_end_(self, sbj):
+    def _set_ng_action_graph_node_press_end_(self, sbj):
         if self._get_action_flag_is_match_(
             self.ActionFlag.NGNodePressMove
         ) is False:
-            self._set_ng_graph_node_select_as_separate_(sbj)
+            if self._ng_graph_selection_flag == self.NGSelectionFlag.Separate:
+                self._set_ng_action_graph_select_as_separate_(sbj)
+            elif self._ng_graph_selection_flag == self.NGSelectionFlag.Add:
+                self._set_ng_action_graph_select_as_add_(sbj)
+            elif self._ng_graph_selection_flag == self.NGSelectionFlag.Sub:
+                self._set_ng_action_graph_select_as_sub_(sbj)
+            elif self._ng_graph_selection_flag == self.NGSelectionFlag.Invert:
+                self._set_ng_action_graph_select_as_invert_(sbj)
     # action frame select
-    def _set_ng_action_graph_frame_select_execute_(self, event):
+    def _set_action_frame_execute_(self, event):
         self._set_ng_graph_frame_to_nodes_auto_()
-    # action layout select
-    def _set_ng_action_graph_layout_select_execute_(self, event):
-        if self._ng_graph_nodes_selected:
-            self._sey_ng_graph_node_layout_by_nodes_(self._ng_graph_nodes_selected)
 
+    def _set_ng_action_graph_frame_(self):
+        self._set_ng_graph_frame_to_nodes_auto_()
+
+    def _set_ng_action_graph_layout_selection_(self, sort_key='x'):
+        if self._ng_graph_nodes_selected:
+            self._set_ng_graph_node_move_start_()
+            #
+            self._set_ng_graph_node_layout_by_nodes_(
+                self._ng_graph_nodes_selected, sort_key
+            )
+            #
+            self._set_ng_graph_node_move_stop_()
+
+    def _set_ng_action_graph_select_all_(self):
+        for i_sbj in self._ng_graph_nodes:
+            self._set_ng_action_graph_select_as_add_(i_sbj)
     # action rect select
     def _set_action_rect_select_start_(self, event):
         super(_QtNGGraph, self)._set_action_rect_select_start_(event)
-        self._set_ng_graph_node_select_clear_()
+        #
+        self._ng_graph_selection_flag = self._get_ng_action_graph_selection_flag_()
+        # self._set_ng_graph_node_select_clear_()
 
     def _set_action_rect_select_end_(self, event):
         if self._get_action_flag_is_match_(
-                self.ActionFlag.RectSelectMove
+            self.ActionFlag.RectSelectMove
         ):
-            self._set_ng_graph_node_select_as_rect_()
-
+            if self._ng_graph_selection_flag == self.NGSelectionFlag.Separate:
+                self._set_ng_action_graph_rect_select_as_separate_()
+            elif self._ng_graph_selection_flag == self.NGSelectionFlag.Add:
+                self._set_ng_action_graph_rect_select_as_add_()
+            elif self._ng_graph_selection_flag == self.NGSelectionFlag.Sub:
+                self._set_ng_action_graph_rect_select_as_sub_()
+            elif self._ng_graph_selection_flag == self.NGSelectionFlag.Invert:
+                self._set_ng_action_graph_rect_select_as_invert_()
+        elif self._get_action_flag_is_match_(
+            self.ActionFlag.RectSelectClick
+        ):
+            self._set_ng_graph_node_select_clear_()
+        #
         self._set_wgt_update_draw_()
 
-    def _set_ng_graph_node_select_as_separate_(self, sbj):
+    def _set_ng_action_graph_select_as_separate_(self, sbj):
         self._set_ng_graph_node_select_clear_()
         #
         sbj._set_selected_(True)
         self._ng_graph_nodes_selected = [sbj]
-        #
-        self._set_ng_graph_node_current_(sbj)
 
-    def _set_ng_graph_node_select_as_rect_(self):
+    def _set_ng_action_graph_select_as_add_(self, sbj):
+        if sbj not in self._ng_graph_nodes_selected:
+            sbj._set_selected_(True)
+            self._ng_graph_nodes_selected.append(sbj)
+
+    def _set_ng_action_graph_select_as_sub_(self, sbj):
+        if sbj in self._ng_graph_nodes_selected:
+            sbj._set_selected_(False)
+            self._ng_graph_nodes_selected.remove(sbj)
+
+    def _set_ng_action_graph_select_as_invert_(self, sbj):
+        if sbj in self._ng_graph_nodes_selected:
+            sbj._set_selected_(False)
+            self._ng_graph_nodes_selected.remove(sbj)
+        elif sbj not in self._ng_graph_nodes_selected:
+            sbj._set_selected_(True)
+            self._ng_graph_nodes_selected.append(sbj)
+
+    def _set_ng_action_graph_rect_select_as_separate_(self):
         self._set_ng_graph_node_select_clear_()
         #
         contains = []
-        for i in self._ng_graph_nodes:
+        for i_sbj in self._ng_graph_nodes:
             if self._action_rect_select_rect.intersects(
-                i._ng_node_rect_select
+                i_sbj._ng_node_rect_select_glb
             ) is True:
-                i._set_selected_(True)
-                contains.append(i)
+                i_sbj._set_selected_(True)
+                contains.append(i_sbj)
 
         self._ng_graph_nodes_selected = contains
+
+    def _set_ng_action_graph_rect_select_as_add_(self):
+        for i_sbj in self._ng_graph_nodes:
+            if self._action_rect_select_rect.intersects(
+                    i_sbj._ng_node_rect_select_glb
+            ) is True:
+                self._set_ng_action_graph_select_as_add_(i_sbj)
+
+    def _set_ng_action_graph_rect_select_as_sub_(self):
+        for i_sbj in self._ng_graph_nodes:
+            if self._action_rect_select_rect.intersects(
+                    i_sbj._ng_node_rect_select_glb
+            ) is True:
+                self._set_ng_action_graph_select_as_sub_(i_sbj)
+
+    def _set_ng_action_graph_rect_select_as_invert_(self):
+        for i_sbj in self._ng_graph_nodes:
+            if self._action_rect_select_rect.intersects(
+                    i_sbj._ng_node_rect_select_glb
+            ) is True:
+                self._set_ng_action_graph_select_as_invert_(i_sbj)
 
 
 class _QtNGTreeNode(
@@ -1617,17 +1938,20 @@ class _QtNGTree(
     _utl_gui_qt_wgt_view.QtTreeWidget,
     AbsQtNGUniverseDef
 ):
-    def __init__(self, *args, **kwargs):
-        super(_QtNGTree, self).__init__(*args, **kwargs)
-        self._set_ng_node_universe_def_init_()
-        #
-        # self.itemSelectionChanged.connect(self._set_ng_graph_node_select_)
-
-    def _set_ng_node_universe_(self, universe):
+    def _set_ng_universe_(self, universe):
         self._ng_node_universe = universe
         obj = self._ng_node_universe.get_objs()
         for i_obj in obj:
-            self._set_ng_node_add_(i_obj)
+            self._set_ng_universe_node_add_(i_obj)
+
+    def _set_ng_show_by_universe_(self, *args, **kwargs):
+        pass
+
+    def __init__(self, *args, **kwargs):
+        super(_QtNGTree, self).__init__(*args, **kwargs)
+        self._set_ng_universe_def_init_()
+        #
+        # self.itemSelectionChanged.connect(self._set_ng_graph_node_select_)
 
     def _set_ng_node_add_0_(self, obj):
         parent = obj.get_parent()
@@ -1641,9 +1965,11 @@ class _QtNGTree(
 
         item._set_name_text_(obj.name)
         item._set_icon_name_text_(obj.type_name)
+
+        item._set_check_state_(True)
         item._ng_node_obj = obj
 
-    def _set_ng_node_add_(self, obj):
+    def _set_ng_universe_node_add_(self, obj):
         if obj.get_gui_ng_tree_node() is None:
             ancestors = obj.get_ancestors()
             if ancestors:
@@ -1662,3 +1988,265 @@ class _QtNGTree(
                 print obj.get_gui_ng_graph_node()
         else:
             pass
+
+
+class _QtNGImage(_QtNGNode):
+    def __init__(self, *args, **kwargs):
+        super(_QtNGImage, self).__init__(*args, **kwargs)
+
+        self._ng_draw_name_h_basic = 48
+        self._ng_draw_font_h_basic = 8
+
+        self._image_line_height = 0
+
+    def paintEvent(self, event):
+        painter = _utl_gui_qt_wgt_utility.QtNGPainter(self)
+
+        offset = 0
+
+        painter._set_ng_node_frame_draw_by_rect_(
+            self._ng_node_rect_frame,
+            border_width=self._ng_draw_border_w,
+            is_selected=self._item_is_selected,
+            is_hovered=self._is_hovered,
+            is_actioned=self._get_is_actioned_()
+        )
+
+        if self._name_text is not None:
+            text = '{}\n{}cm'.format(
+                self._name_text, self._get_image_line_height_()
+            )
+            painter._set_text_draw_by_rect_(
+                self._name_rect,
+                text,
+                font=get_font(size=self._ng_draw_font_h),
+                font_color=QtFontColor.Basic,
+                text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+                offset=offset,
+                word_warp=True
+            )
+
+        if self._image_file_path is not None:
+            painter._set_image_draw_by_rect_(
+                self._ng_node_rect_frame,
+                self._image_file_path,
+                offset=offset
+            )
+
+    def _set_wgt_update_draw_geometry_(self, rect):
+        x, y = rect.x(), rect.y()
+        w, h = rect.width(), rect.height()
+
+        b_w_0 = self._ng_draw_border_w
+
+        x_0, y_0 = x+b_w_0/2, y+b_w_0/2
+        w_0, h_0 = w-b_w_0, h-b_w_0
+
+        self._set_frame_rect_(
+            x_0, y_0, w_0, h_0
+        )
+        # select
+        self._ng_node_rect_select.setRect(
+            x_0, y_0, w_0, h_0
+        )
+        # name
+        n_x, n_y = x_0, y_0
+        n_w, n_h = w_0, self._ng_draw_name_h
+        self._set_name_rect_(
+            n_x, n_y, n_w, n_h
+        )
+        # frame
+        f_x, f_y = x_0, y_0+n_h
+        f_w, f_h = w_0, h_0-n_h
+        self._ng_node_rect_frame.setRect(
+            f_x, f_y, f_w, f_h
+        )
+
+    def _set_image_line_height_(self, h):
+        self._image_line_height = h
+
+    def _get_image_line_height_(self):
+        return self._image_line_height
+
+
+class _QtNGImageGraph(_QtNGGraph):
+    NG_NODE_CLASS = _QtNGImage
+    def __init__(self, *args, **kwargs):
+        super(_QtNGImageGraph, self).__init__(*args, **kwargs)
+
+        self._ng_graph_image_scale = 0.2
+
+        self._ng_graph_layout_flag = self.NGLayoutFlag.Line
+    # widget
+    def paintEvent(self, event):
+        painter = _utl_gui_qt_wgt_utility.QtNGPainter(self)
+        x, y = 0, 0
+        width, height = self.width(), self.height()
+
+        rect = QtCore.QRect(
+            x, y, width, height
+        )
+
+        if self._ng_draw_graph_grid_enable is True:
+            painter._set_grid_draw_(
+                rect,
+                axis_dir=(self._grid_dir_x, self._grid_dir_y),
+                grid_scale=(self._ng_graph_scale_x, self._ng_graph_scale_y),
+                grid_size=(self._grid_width, self._grid_height),
+                translate=(self._ng_draw_graph_grid_translate_x, self._ng_draw_graph_grid_translate_y),
+                grid_offset=(self._grid_offset_x, self._grid_offset_y),
+                border_color=self._grid_border_color
+            )
+
+        if self._get_action_flag_is_match_(
+            self.ActionFlag.RectSelectMove
+        ):
+            painter._set_dotted_frame_draw_(
+                self._action_rect_select_rect,
+                border_color=QtBorderColor.Selected,
+                background_color=QtBackgroundColor.Transparent
+            )
+
+    def _set_ng_universe_(self, universe):
+        self._ng_node_universe = universe
+
+        obj = self._ng_node_universe.get_objs()
+        for i_obj in obj:
+            i_image_file_path = i_obj.get('image')
+            if i_image_file_path:
+                i_ng_node = self._set_ng_graph_sbj_node_create_()
+                i_ng_node._set_ng_node_obj_(i_obj)
+                i_ng_node._set_type_text_(
+                    i_obj.type_name
+                )
+                i_ng_node._set_name_text_(
+                    i_obj.name
+                )
+                i_ng_node._set_icon_name_text_(
+                    i_obj.type_name
+                )
+
+                i_ng_node._set_image_file_path_(i_image_file_path)
+                i_w, i_h = i_ng_node._get_image_size_()
+
+                i_width, i_height = i_w*self._ng_graph_image_scale, i_h*self._ng_graph_image_scale
+                i_width -= 1
+                i_height -= 2
+                i_ng_node._set_ng_node_size_basic_(
+                    i_width, i_height+i_ng_node._ng_draw_name_h_basic
+                )
+
+                i_ng_node._set_image_line_height_(i_height)
+
+                i_ng_node._set_tool_tip_(
+                    [
+                        'path: "{}"'.format(i_obj.path),
+                        'width: "{}"'.format(i_width),
+                        'height: "{}"'.format(i_height)
+                    ]
+                )
+
+                i_obj.set_gui_ng_graph_node(i_ng_node)
+
+                if self.isHidden() is False:
+                    i_ng_node.show()
+                    i_ng_node._set_wgt_update_()
+
+    def _set_ng_show_by_universe_(self, *args, **kwargs):
+        def layout_fnc_():
+            self._set_ng_graph_node_layout_as_line_(
+                ng_nodes,
+                sort_key='-height'
+            )
+            self._set_ng_graph_frame_to_nodes_auto_()
+            #
+            l_t.stop()
+
+        objs = self._ng_node_universe.get_objs()
+        if objs:
+            ng_nodes = []
+            for i_obj in objs:
+                i_image_file_path = i_obj.get('image')
+                if i_image_file_path:
+                    i_ng_node = i_obj.get_gui_ng_graph_node()
+                    ng_nodes.append(i_ng_node)
+            #
+            if ng_nodes:
+                l_t = QtCore.QTimer(self)
+                l_t.timeout.connect(layout_fnc_)
+
+                if self.isHidden() is False:
+                    l_t.start(5)
+                else:
+                    l_t.start(100)
+
+    def _get_ng_graph_image_rect_args_(self):
+        ng_nodes = self._ng_graph_nodes
+        xs_0, ys_0 = [i.x() for i in ng_nodes], [i.y() for i in ng_nodes]
+        xs_1, ys_1 = [i.x() + i._ng_node_w_basic for i in ng_nodes], [i.y() + i._ng_node_h_basic for i in ng_nodes]
+        x_0, y_0 = min(xs_0), min(ys_0)
+        x_1, y_1 = max(xs_1), max(ys_1)
+        w_0, h_0 = x_1 - x_0, y_1 - y_0
+        return x_0, y_0, w_0, h_0
+    @classmethod
+    def _get_ng_graph_image_size_(cls, ng_nodes):
+        return sum([i._ng_node_w_basic for i in ng_nodes]), max([i._ng_node_h_basic for i in ng_nodes])
+
+    def _set_ng_graph_image_save_to_(self, file_path):
+        ng_nodes = self._ng_graph_nodes
+        scale = 10
+        m = 48
+        w, h = self._get_ng_graph_image_size_(ng_nodes)
+        w_, h_ = w*scale+m*2, h*scale+m*2
+        size = QtCore.QSize(w_, h_)
+        pixmap = QtGui.QPixmap(size)
+        pixmap.fill(QtGui.QColor(55, 55, 55, 255))
+        painter = _utl_gui_qt_wgt_utility.QtPainter(pixmap)
+        rect = pixmap.rect()
+        ng_nodes = self._set_ng_graph_nodes_sort_by_(ng_nodes, sort_key='x')
+        offset = 0
+        x_0, y_0 = rect.x()+m, rect.y()+m
+        for i_ng_node in ng_nodes:
+            i_t_h = i_ng_node._ng_draw_name_h_basic*scale
+            i_i_w, i_i_h = i_ng_node._ng_node_w_basic*scale, i_ng_node._ng_node_h_basic*scale-i_t_h
+            i_t_rect = QtCore.QRect(
+                x_0, h_-i_i_h-m-i_t_h, i_i_w, i_t_h
+            )
+            i_t_font_size = i_ng_node._ng_draw_font_h_basic*scale
+            i_t_name_text = '{}\n{}cm'.format(
+                i_ng_node._get_name_text_(),
+                i_ng_node._get_image_line_height_()
+            )
+            painter._set_text_draw_by_rect_(
+                i_t_rect,
+                i_t_name_text,
+                font=get_font(size=i_t_font_size),
+                font_color=QtFontColor.Basic,
+                text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+                offset=offset,
+                word_warp=True
+            )
+            i_i_rect = QtCore.QRect(
+                x_0, h_-i_i_h-m, i_i_w, i_i_h
+            )
+            i_image_file_path = i_ng_node._get_image_file_path_()
+            # painter.fillRect(i_i_rect, QtGui.QColor(255, 0, 255))
+            painter._set_image_draw_by_rect_(
+                i_i_rect,
+                i_image_file_path,
+                offset=offset
+            )
+            x_0 += i_i_w
+
+        painter.end()
+        pixmap.save(file_path, 'PNG')
+
+    def _set_restore_(self):
+        pass
+
+    def _set_clear_(self):
+        for i in self._ng_graph_nodes:
+            i.deleteLater()
+
+        self._ng_graph_nodes = []
+        self._ng_graph_nodes_selected = []

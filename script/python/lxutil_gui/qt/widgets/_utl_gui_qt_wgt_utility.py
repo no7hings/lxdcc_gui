@@ -1049,6 +1049,7 @@ class QtPainter(QtGui.QPainter):
             lis = []
             for i_y in range(height / grid_h):
                 pox_x_1, pox_x_2 = grid_offset_x, width
+                #
                 if axis_dir_y == -1:
                     pos_y_1 = pos_y_2 = height-grid_h*(i_y-index_y)-translate_y+grid_offset_y
                 else:
@@ -1066,7 +1067,7 @@ class QtPainter(QtGui.QPainter):
                     pox_x_1 = pox_x_2 = width-grid_w*(i_x-index_x)-translate_x+grid_offset_x
                 else:
                     pox_x_1 = pox_x_2 = grid_w*(i_x-index_x)+translate_x+grid_offset_x
-
+                #
                 pos_y_1, pos_y_2 = height, grid_offset_y
                 #
                 lis.append(
@@ -1449,6 +1450,64 @@ class QtNGPainter(QtPainter):
             border_radius, border_radius, QtCore.Qt.AbsoluteSize
         )
         self.drawPath(path_0 + path_1)
+
+    def _set_ng_node_frame_draw_by_rect_(self, rect, offset=0, border_radius=0, border_width=1, is_hovered=False, is_selected=False, is_actioned=False):
+        self.setRenderHint(self.Antialiasing)
+
+        condition = [is_hovered, is_selected]
+        if condition == [False, False]:
+            color = QtBorderColor.Transparent
+        elif condition == [True, False]:
+            color = QtBorderColor.Hovered
+        elif condition == [False, True]:
+            color = QtBorderColor.Selected
+        elif condition == [True, True]:
+            color_0 = QtBackgroundColor.Hovered
+            if is_actioned:
+                color_1 = QtBackgroundColor.Actioned
+            else:
+                color_1 = QtBackgroundColor.Selected
+            #
+            start_pos, end_pos = rect.topLeft(), rect.bottomLeft()
+            color = QtGui.QLinearGradient(start_pos, end_pos)
+            color.setColorAt(0, color_0)
+            color.setColorAt(1, color_1)
+        else:
+            raise RuntimeError()
+
+        brush = QtGui.QBrush(color)
+        pen = QtGui.QPen(brush, border_width)
+        pen.setJoinStyle(QtCore.Qt.RoundJoin)
+        self.setPen(pen)
+        self.setBrush(QtGui.QBrush(QtBorderColor.Transparent))
+
+        b_ = border_width / 2
+        if offset != 0:
+            offset_ = b_ + offset
+            rect_ = QtCore.QRect(
+                rect.x() + offset_, rect.y() + offset_,
+                rect.width() - offset_, rect.height() - offset_
+            )
+        else:
+            rect_ = rect
+        #
+        if border_radius > 0:
+            border_radius_ = b_ + border_radius
+            self.drawRoundedRect(
+                rect_,
+                border_radius_, border_radius_,
+                QtCore.Qt.AbsoluteSize
+            )
+        elif border_radius == -1:
+            border_radius = rect_.height() / 2
+            border_radius_ = b_ + border_radius
+            self.drawRoundedRect(
+                rect_,
+                border_radius_, border_radius_,
+                QtCore.Qt.AbsoluteSize
+            )
+        else:
+            self.drawRect(rect_)
 
 
 class QtIconButton(QtWidgets.QPushButton):

@@ -311,10 +311,10 @@ class _QtTabView(
         self.update()
 
     def _set_wgt_update_(self):
-        self._set_wgt_update_geometry_(self.rect())
+        self._set_wgt_update_draw_geometry_(self.rect())
         self._set_wgt_update_draw_()
 
-    def _set_wgt_update_geometry_(self, rect):
+    def _set_wgt_update_draw_geometry_(self, rect):
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
         t_w, t_h = self._tab_w, self._tab_h
@@ -811,6 +811,8 @@ class QtTreeWidget(
                 parent = self.parent()
                 if isinstance(parent, _utl_gui_qt_wgt_item._QtEntryFrame):
                     parent._set_focused_(False)
+            elif event.type() == QtCore.QEvent.Resize:
+                self._set_show_view_items_update_()
         return False
 
     def _set_item_selected_update_(self):
@@ -978,7 +980,7 @@ class QtTreeWidget(
         pass
 
     def _set_clear_(self):
-        for i in self._get_view_items_():
+        for i in self._get_all_items_():
             i._set_item_show_kill_all_()
             i._set_item_show_stop_all_()
         #
@@ -1092,7 +1094,7 @@ class QtListWidget(
     def _set_grid_size_update_(self):
         w, h = self._get_grid_size_()
         self.setGridSize(QtCore.QSize(w, h))
-        [i.setSizeHint(QtCore.QSize(w, h)) for i in self._get_view_items_()]
+        [i.setSizeHint(QtCore.QSize(w, h)) for i in self._get_all_items_()]
         self.verticalScrollBar().setSingleStep(h)
 
     def _set_grid_size_change_update_(self):
@@ -1167,7 +1169,7 @@ class QtListWidget(
     def _get_item_count_(self):
         return self.count()
 
-    def _get_view_items_(self):
+    def _get_all_items_(self):
         return [self.item(i) for i in range(self.count())]
 
     def _get_all_item_widgets_(self):
@@ -1231,7 +1233,7 @@ class QtListWidget(
         )
 
     def _set_clear_(self):
-        for i in self._get_view_items_():
+        for i in self._get_all_items_():
             i._set_item_show_kill_all_()
             i._set_item_show_stop_all_()
         #

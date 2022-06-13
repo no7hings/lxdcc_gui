@@ -2175,10 +2175,17 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
                     port.set_default(value_[-1])
         #
         elif widget_ in ['file']:
-            port = PrxFileOpenPort(
-                port_path,
-                node_widget=self.widget
-            )
+            file_mode = option.get('file_mode')
+            if file_mode == 'save':
+                port = PrxFileSavePort(
+                    port_path,
+                    node_widget=self.widget
+                )
+            else:
+                port = PrxFileOpenPort(
+                    port_path,
+                    node_widget=self.widget
+                )
             port.set(value_)
             port.set_default(value_)
         #
@@ -2202,7 +2209,8 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
                 port_path,
                 node_widget=self.widget
             )
-            port.set(value_)
+            if value_:
+                port.set(value_)
         elif widget_ in ['rsv-obj']:
             port = PrxRsvObjChoosePort(
                 port_path,

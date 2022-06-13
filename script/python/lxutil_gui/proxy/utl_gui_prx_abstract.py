@@ -81,6 +81,9 @@ class AbsPrx(object):
     def set_visible(self, boolean, **kwargs):
         self.widget.setHidden(not boolean)
 
+    def set_actions_register(self, action_data):
+        pass
+
     def __str__(self):
         return '{}(widget="{}")'.format(
             self.__class__.__name__,

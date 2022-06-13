@@ -802,7 +802,7 @@ class _QtProgressDef(object):
         return self._progress_map_value_ != 0
 
 
-class _QtImageDef(object):
+class AbsQtImageDef(object):
     def _set_image_def_init_(self):
         self._image_enable = False
         #
@@ -1074,6 +1074,9 @@ class AbsQtActionDef(object):
             self.__set_action_cursor_update_()
         #
         self._set_wgt_update_draw_()
+
+    def _set_action_mdf_flags_(self, flags):
+        self._action_mdf_flags = flags
 
     def _set_action_mdf_flag_add_(self, flag):
         if flag is not None:
@@ -2139,7 +2142,7 @@ class AbsQtItemFilterTgtDef(object):
 
 
 class AbsQtViewFilterTgtDef(object):
-    def _get_view_items_(self):
+    def _get_all_items_(self):
         raise NotImplementedError()
 
     def _set_view_filter_tgt_def_init_(self):
@@ -2147,7 +2150,7 @@ class AbsQtViewFilterTgtDef(object):
 
     def _get_view_tag_filter_tgt_statistic_raw_(self):
         dic = {}
-        items = self._get_view_items_()
+        items = self._get_all_items_()
         for i_item in items:
             enable = i_item._get_item_tag_filter_tgt_statistic_enable_()
             if enable is True:
@@ -2166,7 +2169,7 @@ class AbsQtViewFilterTgtDef(object):
         tag_filter_src_all_keys = self._get_view_tag_filter_tgt_keys_()
         self._keyword_filter_item_prxes = []
         #
-        items = self._get_view_items_()
+        items = self._get_all_items_()
         for i_item in items:
             i_tag_filter_hidden_ = False
             i_keyword_filter_hidden_ = False
@@ -2291,7 +2294,7 @@ class AbsQtItemVisibleConnectionDef(object):
 
 
 class AbsQtViewVisibleConnectionDef(object):
-    def _get_view_items_(self):
+    def _get_all_items_(self):
         raise NotImplementedError()
 
     def _set_view_visible_connection_def_init_(self):
@@ -2308,7 +2311,7 @@ class AbsQtViewVisibleConnectionDef(object):
 
     def _set_view_visible_tgt_raw_update_(self):
         dic = {}
-        items = self._get_view_items_()
+        items = self._get_all_items_()
         for i_item in items:
             i_tgt_key = i_item._get_item_visible_tgt_key_()
             if i_tgt_key is not None:
@@ -2320,7 +2323,7 @@ class AbsQtViewVisibleConnectionDef(object):
 
 
 class AbsQtViewStateDef(object):
-    def _get_view_items_(self):
+    def _get_all_items_(self):
         raise NotImplementedError()
 
     def _set_view_state_def_init_(self):
@@ -2360,7 +2363,7 @@ class AbsShowViewDef(object):
         return False
 
     def _set_show_view_items_update_(self):
-        for i_item in self._widget._get_view_items_():
+        for i_item in self._widget._get_all_items_():
             if i_item.isHidden() is False:
                 i_result = self._get_show_view_item_showable_(i_item)
                 if i_result is True:
@@ -2402,7 +2405,7 @@ class AbsQtTreeWidget(
 
         self._set_show_view_def_init_(self)
 
-    def _get_view_items_(self, column=0):
+    def _get_all_items_(self, column=0):
         def _rcs_fnc(index_):
             if index_ is None:
                 row_count = model.rowCount()
@@ -2552,11 +2555,11 @@ class AbsQtListWidget(
     def _get_viewport_size_(self):
         return self.viewport().width(), self.viewport().height()
 
-    def _get_view_items_(self):
+    def _get_all_items_(self):
         return [self.item(i) for i in range(self.count())]
 
     def _get_visible_items_(self):
-        return [i for i in self._get_view_items_() if i.isHidden() is False]
+        return [i for i in self._get_all_items_() if i.isHidden() is False]
 
     def _set_loading_update_(self):
         QtWidgets.QApplication.instance().processEvents(
@@ -2733,8 +2736,8 @@ class _QtArrayValueEntryDef(object):
             i.entry_changed.connect(fnc)
 
 
-class AbsQtGridDef(object):
-    def _set_grid_def_init_(self, widget):
+class AbsQtDrawGridDef(object):
+    def _set_draw_grid_def_init_(self, widget):
         self._widget = widget
         #
         self._grid_border_color = 71, 71, 71, 255

@@ -870,7 +870,7 @@ class _QtPieChart(
 
 class _QtHistogramChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtGridDef,
+    utl_gui_qt_abstract.AbsQtDrawGridDef,
     #
     utl_gui_qt_abstract.AbsQtTrackActionDef,
     utl_gui_qt_abstract.AbsQtZoomActionDef,
@@ -918,10 +918,10 @@ class _QtHistogramChart(
         #
         self.installEventFilter(self)
         #
-        self._set_grid_def_init_(self)
+        self._set_draw_grid_def_init_(self)
         self._grid_axis_lock_x, self._grid_axis_lock_y = 1, 1
         self._grid_dir_x, self._grid_dir_y = 1, -1
-        self._grid_offset_x, self._grid_offset_y = 20, 20
+        # self._grid_offset_x, self._grid_offset_y = 20, 20
         #
         self._set_track_action_def_init_(self)
         self._track_offset_direction_x, self._track_offset_direction_y = self._grid_dir_x, self._grid_dir_y
