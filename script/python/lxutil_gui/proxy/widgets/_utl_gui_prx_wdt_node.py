@@ -178,8 +178,8 @@ class PrxFileOpenEntry(AbsRsvTypeQtEntry):
         f = utl_gui_qt_core.QtWidgets.QFileDialog()
         s = f.getOpenFileName(
             self.widget,
-            caption='Open File',
-            dir=self.get(),
+            'Open File',
+            self.get(),
             filter=self._ext_filter
         )
         if s:
@@ -257,8 +257,8 @@ class PrxDirectoryOpenEntry(AbsRsvTypeQtEntry):
         f = utl_gui_qt_core.QtWidgets.QFileDialog()
         s = f.getExistingDirectory(
             self.widget,
-            caption='Open Directory',
-            dir=self.get(),
+            'Open Directory',
+            self.get(),
         )
         if s:
             self.set(
@@ -339,8 +339,8 @@ class PrxFileSaveEntry(AbsRsvTypeQtEntry):
         f = utl_gui_qt_core.QtWidgets.QFileDialog()
         s = f.getSaveFileName(
             self.widget,
-            caption='Save File',
-            dir=self.get(),
+            'Save File',
+            self.get(),
             filter=self._ext_filter
         )
         if s:
