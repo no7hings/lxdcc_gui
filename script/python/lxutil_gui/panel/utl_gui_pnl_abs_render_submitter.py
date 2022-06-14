@@ -1041,10 +1041,6 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             'refresh', self.set_current_refresh
         )
 
-        self._usd_prx_node.set_expanded(
-            False
-        )
-
         self._settings_prx_node.get_port('td').set_expanded(
             False
         )
@@ -1052,14 +1048,22 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         self._settings_prx_node.set(
             'submit', self.set_submit
         )
-        usd_node_collapse = self._hook_build_configure.get(
-            'node_collapse.usd'
-        ) or []
-        if usd_node_collapse:
-            for i in usd_node_collapse:
-                self._usd_prx_node.get_port(
-                    i.replace('/', '.')
-                ).set_expanded(False)
+
+        collapse_dict = {
+            'usd': self._usd_prx_node,
+            'variables': self._variables_prx_node,
+            'settings': self._settings_prx_node,
+        }
+
+        for i_k, i_v in collapse_dict.items():
+            i_c = self._hook_build_configure.get(
+                'node_collapse.{}'.format(i_k)
+            ) or []
+            if i_c:
+                for i in i_c:
+                    i_v.get_port(
+                        i.replace('/', '.')
+                    ).set_expanded(False)
 
     def _set_gui_rsv_task_unit_show_deferred_(self, prx_item, variants):
         hook_options = []

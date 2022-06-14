@@ -2005,7 +2005,7 @@ class _QtNGImage(_QtNGNode):
 
         offset = 0
 
-        painter._set_ng_node_frame_draw_by_rect_(
+        painter._set_node_frame_draw_by_rect_(
             self._ng_node_rect_frame,
             border_width=self._ng_draw_border_w,
             is_selected=self._item_is_selected,

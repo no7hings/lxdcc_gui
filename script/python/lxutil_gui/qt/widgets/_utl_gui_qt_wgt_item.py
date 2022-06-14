@@ -1282,13 +1282,13 @@ class _QtEntryFrame(
         bdr_color = [self._frame_border_color, self._selected_frame_border_color][is_selected]
         if size == 1:
             rect = QtCore.QRect(
-                pos_x, pos_y, width, height
+                pos_x+1, pos_y+1, width-2, height-2
             )
             painter._set_frame_draw_by_rect_(
                 rect,
                 border_color=bdr_color,
                 background_color=background_color,
-                border_radius=4,
+                border_radius=2,
                 # border_width=2,
             )
         elif size > 1:
@@ -1830,8 +1830,8 @@ class _QtScriptValueEntryItem(
         self._set_item_value_default_def_init_()
         #
         self._layout = QtHBoxLayout(self)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(4)
+        self._layout.setContentsMargins(2, 2, 2, 2)
+        self._layout.setSpacing(2)
         #
         self._set_item_value_entry_build_(self._item_value_type)
 
@@ -3093,17 +3093,12 @@ class _QtListItemWidget(
         #
         self._set_widget_geometry_update_()
         #
+        x, y = 0, 0
         w, h = self.width(), self.height()
         #
         offset = self._get_action_offset_()
         #
-        bkg_rect = QtCore.QRect(1, 1, w-2, h-2)
-        background_color = painter._get_item_background_color_by_rect_(
-            bkg_rect,
-            is_hovered=self._is_hovered,
-            is_selected=self._item_is_selected,
-            is_actioned=self._get_is_actioned_()
-        )
+        bkg_rect = QtCore.QRect(x+1, y+1, w-2, h-2)
         #
         item = self._get_item_()
         if item._item_show_status in [item.ShowStatus.Loading, item.ShowStatus.Waiting]:
@@ -3112,11 +3107,12 @@ class _QtListItemWidget(
                 item._item_show_loading_index
             )
         else:
-            painter._set_frame_draw_by_rect_(
+            painter._set_node_frame_draw_by_rect_(
                 bkg_rect,
-                border_color=QtBackgroundColor.Transparent,
-                background_color=background_color,
-                border_radius=1,
+                border_width=2,
+                is_selected=self._item_is_selected,
+                is_hovered=self._is_hovered,
+                is_actioned=self._get_is_actioned_(),
                 offset=offset
             )
             # icon frame

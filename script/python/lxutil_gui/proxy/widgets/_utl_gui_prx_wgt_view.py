@@ -95,7 +95,7 @@ class PrxTreeView(
     def __init__(self, *args, **kwargs):
         super(PrxTreeView, self).__init__(*args, **kwargs)
         self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
-        self._qt_layout_0.setContentsMargins(2, 2, 2, 2)
+        self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
         self._prx_tool_bar_0 = _utl_gui_prx_wdt_utility.PrxHToolBar()
         self._qt_layout_0.addWidget(self._prx_tool_bar_0.widget)
@@ -443,7 +443,7 @@ class PrxListView(
     def __init__(self, *args, **kwargs):
         super(PrxListView, self).__init__(*args, **kwargs)
         self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
-        self._qt_layout_0.setContentsMargins(2, 2, 2, 2)
+        self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
         self._prx_tool_bar_0 = _utl_gui_prx_wdt_utility.PrxHToolBar()
         self._qt_layout_0.addWidget(self._prx_tool_bar_0.widget)

@@ -296,8 +296,10 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
         self._rsv_obj_tree_view_0 = prx_widgets.PrxTreeView()
         v_s.set_widget_add(self._rsv_obj_tree_view_0)
 
+        s = prx_widgets.PrxScrollArea()
+        v_s.set_widget_add(s)
         self._options_prx_node = prx_widgets.PrxNode_('options')
-        v_s.set_widget_add(self._options_prx_node)
+        s.set_widget_add(self._options_prx_node)
         self._options_prx_node.set_ports_create_by_configure(
             self._hook_build_configure.get('node.options')
         )
