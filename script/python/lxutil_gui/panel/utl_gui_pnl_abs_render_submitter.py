@@ -25,6 +25,8 @@ import lxsession.commands as ssn_commands
 
 import lxshotgun.objects as stg_objects
 
+import lxshotgun.rsv.objects as stg_rsv_objects
+
 
 class AbsRenderSubmitterDef(object):
     OPTION_HOOK_KEY = None
@@ -123,7 +125,7 @@ class AbsRenderSubmitterPanel(
         #
         prx_expanded_group_0 = prx_widgets.PrxExpandedGroup()
         v_splitter_0.set_widget_add(prx_expanded_group_0)
-        prx_expanded_group_0.set_name('variables')
+        prx_expanded_group_0.set_name('combinations')
         prx_expanded_group_0.set_expanded(True)
         #
         self._filter_tree_viewer_0 = prx_widgets.PrxTreeView()
@@ -143,6 +145,9 @@ class AbsRenderSubmitterPanel(
         #
         self._usd_prx_node = prx_widgets.PrxNode_('usd')
         qt_layout_1.addWidget(self._usd_prx_node.widget)
+        #
+        self._variables_prx_node = prx_widgets.PrxNode_('variables')
+        qt_layout_1.addWidget(self._variables_prx_node.widget)
         #
         self._settings_prx_node = prx_widgets.PrxNode_('settings')
         qt_layout_1.addWidget(self._settings_prx_node.widget)
@@ -192,6 +197,10 @@ class AbsRenderSubmitterPanel(
             self._hook_build_configure.get('node.usd')
         )
 
+        self._variables_prx_node.set_ports_create_by_configure(
+            self._hook_build_configure.get('node.variables')
+        )
+
         self._settings_prx_node.set_ports_create_by_configure(
             self._hook_build_configure.get('node.settings')
         )
@@ -230,6 +239,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 self._rsv_task = self._resolver.get_rsv_task(
                     **self._rsv_scene_properties.value
                 )
+                self._rsv_project = self._rsv_task.get_rsv_project()
                 self._rsv_entity = self._rsv_task.get_rsv_entity()
                 self._render_movie_file_rsv_unit = self._rsv_task.get_rsv_unit(
                     keyword='{branch}-output-katana-render-video-mov-file'
@@ -261,10 +271,12 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     self.set_current_refresh()
                     #
                     self.set_settings_refresh()
+                    self.set_combinations_refresh()
+                    self.set_variables_refresh()
                 else:
                     utl_core.DialogWindow.set_create(
                         self._hook_gui_configure.get('name'),
-                        content='file="{}" camera task is non-exists, please call for TD ge more help'.format(self._file_path),
+                        content='file="{}" camera task is non-exists, please call for TD get more help'.format(self._file_path),
                         status=utl_core.DialogWindow.GuiStatus.Error,
                         #
                         yes_label='Close', yes_method=self.set_window_close,
@@ -325,7 +337,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         else:
             utl_core.DialogWindow.set_create(
                 self._hook_gui_configure.get('name'),
-                content='step="{}" is not available, please call for TD ge more help'.format(step),
+                content='step="{}" is not available, please call for TD get more help'.format(step),
                 status=utl_core.DialogWindow.GuiStatus.Error,
                 #
                 yes_label='Close', yes_method=self.set_window_close,
@@ -422,7 +434,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         #     'save', self.set_scheme_save
         # )
         self._schemes_prx_node.set_changed_connect_to(
-            'variables', self.set_variables_load_from_scheme
+            'variables', self.set_combinations_load_from_scheme
         )
         self._schemes_prx_node.set_changed_connect_to(
             'settings', self.set_settings_load_from_scheme
@@ -444,14 +456,6 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             'refresh', self.set_current_refresh
         )
 
-        self._usd_prx_node.set_expanded(
-            False
-        )
-
-        self._settings_prx_node.get_port('td').set_expanded(
-            False
-        )
-
         self._settings_prx_node.set(
             'submit', self.set_submit
         )
@@ -459,6 +463,22 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         self._settings_prx_node.set(
             'td.publish_camera', self.set_camera_publish
         )
+
+        collapse_dict = {
+            'usd': self._usd_prx_node,
+            'variables': self._variables_prx_node,
+            'settings': self._settings_prx_node,
+        }
+
+        for i_k, i_v in collapse_dict.items():
+            i_c = self._hook_build_configure.get(
+                'node_collapse.{}'.format(i_k)
+            ) or []
+            if i_c:
+                for i in i_c:
+                    i_v.get_port(
+                        i.replace('/', '.')
+                    ).set_expanded(False)
 
     def _set_gui_rsv_task_unit_show_deferred_(self, prx_item, variants):
         hook_options = []
@@ -653,13 +673,13 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
 
         self._set_renderers_add_rsv_units_()
-    # variables
-    def set_variables_refresh(self):
+    # combinations
+    def set_combinations_refresh(self):
         # self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()
         # self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
-    def set_variables_load_from_scheme(self):
+    def set_combinations_load_from_scheme(self):
         scheme = self._schemes_prx_node.get('variables')
         filter_dict = self._hook_build_configure.get(
             'scheme.variables.{}'.format(scheme)
@@ -681,8 +701,8 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
     def _set_renderers_add_rsv_units_(self):
         def post_fnc_():
-            self.set_variables_refresh()
-            self.set_variables_load_from_scheme()
+            self.set_combinations_refresh()
+            self.set_combinations_load_from_scheme()
 
         def cache_fnc_():
             return [
@@ -763,6 +783,30 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 'td.test_scheme', 'td_enable'
             )
 
+    def set_variables_refresh(self):
+        light_rig_rsv_assets = stg_rsv_objects.RsvStgProjectOpt(
+            self._rsv_project
+        ).get_standard_light_rig_rsv_assets()
+        if light_rig_rsv_assets:
+            names = [i.name for i in light_rig_rsv_assets]
+            for seq, i in enumerate(['all', 'light_rig_1', 'light_rig_2']):
+                self._variables_prx_node.set(
+                    'light_pass.{}'.format(i), names
+                )
+                self._variables_prx_node.set(
+                    'light_pass.{}'.format(i), names[seq]
+                )
+        else:
+            utl_core.DialogWindow.set_create(
+                self._hook_gui_configure.get('name'),
+                content='light-rig(s) is not found, please call for TD get more help',
+                status=utl_core.DialogWindow.GuiStatus.Error,
+                #
+                yes_label='Close', yes_method=self.set_window_close,
+                #
+                no_visible=False, cancel_visible=False,
+            )
+
     def set_settings_load_from_scheme(self):
         scheme = self._schemes_prx_node.get('settings')
 
@@ -820,7 +864,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         dic['deadline_priority'] = int(self._settings_prx_node.get('deadline.priority'))
         return dic
 
-    def _get_variables_dict_(self):
+    def _get_combinations_dict_(self):
         def update_fnc(key_):
             _ks = c.get_keys('/{}/*'.format(key_))
             _key = key_mapper[key_]
@@ -843,6 +887,13 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         for i in self._variable_keys:
             update_fnc(i)
         return dic
+
+    def _get_variables_dict_(self):
+        dic = {}
+        dic['light_pass_all'] = self._variables_prx_node.get('light_pass.all')
+        dic['light_pass_light_rig_1'] = self._variables_prx_node.get('light_pass.light_rig_1')
+        dic['light_pass_light_rig_2'] = self._variables_prx_node.get('light_pass.light_rig_2')
+        return dic
     @classmethod
     def _get_frames_(cls, frame_range, frame_step):
         pass
@@ -863,14 +914,13 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             #
             dic['choice_scheme'] = self._options_prx_node.get('choice_scheme')
             #
-            usd_dict = self._get_usd_dict_()
-            dic.update(usd_dict)
+            dic.update(self._get_usd_dict_())
             #
-            settings_dict = self._get_settings_dict_()
-            dic.update(settings_dict)
+            dic.update(self._get_settings_dict_())
             #
-            variable_dict = self._get_variables_dict_()
-            dic.update(variable_dict)
+            dic.update(self._get_combinations_dict_())
+
+            dic.update(self._get_variables_dict_())
             #
             td_test_scheme = self._settings_prx_node.get(
                 'td.test_scheme'
@@ -961,7 +1011,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         else:
             utl_core.DialogWindow.set_create(
                 self._hook_gui_configure.get('name'),
-                content='file="{}" camera cache(abc) is non-exists, please call for TD ge more help'.format(self._file_path),
+                content='file="{}" camera cache(abc) is non-exists, please call for TD get more help'.format(self._file_path),
                 status=utl_core.DialogWindow.GuiStatus.Error,
                 #
                 yes_label='Close',
@@ -980,7 +1030,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         #     'save', self.set_scheme_save
         # )
         self._schemes_prx_node.set_changed_connect_to(
-            'variables', self.set_variables_load_from_scheme
+            'variables', self.set_combinations_load_from_scheme
         )
 
         self._schemes_prx_node.set_changed_connect_to(
@@ -1002,14 +1052,13 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         self._settings_prx_node.set(
             'submit', self.set_submit
         )
-
         usd_node_collapse = self._hook_build_configure.get(
             'node_collapse.usd'
-        )
+        ) or []
         if usd_node_collapse:
             for i in usd_node_collapse:
                 self._usd_prx_node.get_port(
-                    i
+                    i.replace('/', '.')
                 ).set_expanded(False)
 
     def _set_gui_rsv_task_unit_show_deferred_(self, prx_item, variants):
@@ -1159,7 +1208,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             self.set_options_refresh,
             self.set_usd_refresh,
             self.set_renderers_refresh,
-            self.set_variables_refresh,
+            self.set_combinations_refresh,
         ]
         with utl_core.gui_progress(maximum=len(methods)) as g_p:
             for i in methods:
@@ -1168,15 +1217,15 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 if result is False:
                     break
         #
-        self.set_variables_load_from_scheme()
+        self.set_combinations_load_from_scheme()
         self.set_settings_load_from_scheme()
-
-    def set_variables_refresh(self):
+    # combinations
+    def set_combinations_refresh(self):
         # self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()
         # self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
-    def set_variables_load_from_scheme(self):
+    def set_combinations_load_from_scheme(self):
         scheme = self._schemes_prx_node.get('variables')
         dic = self._hook_build_configure.get(
             'scheme.variables.{}'.format(scheme)

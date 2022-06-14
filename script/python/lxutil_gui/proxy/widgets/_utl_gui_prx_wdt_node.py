@@ -1,5 +1,6 @@
 # coding:utf-8
 import functools
+
 import types
 
 from lxbasic import bsc_core
@@ -2188,6 +2189,9 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
                 )
             port.set(value_)
             port.set_default(value_)
+            ext_filter = option.get('ext_filter')
+            if ext_filter:
+                port.set_ext_filter(ext_filter)
         #
         elif widget_ in ['directory']:
             port = PrxDirectoryOpenPort(

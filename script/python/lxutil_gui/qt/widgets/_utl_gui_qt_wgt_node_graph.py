@@ -1,5 +1,6 @@
 # coding=utf-8
 import functools
+import os.path
 
 import enum
 
@@ -2239,7 +2240,22 @@ class _QtNGImageGraph(_QtNGGraph):
             x_0 += i_i_w
 
         painter.end()
-        pixmap.save(file_path, 'PNG')
+
+        ext = os.path.splitext(file_path)[-1]
+        if ext:
+            if ext.lower() not in ['.png', '.jpg', '.jpeg']:
+                # file_path += '.png'
+                format_ = 'PNG'
+            else:
+                format_ = str(ext[1:]).upper()
+        else:
+            # file_path += '.png'
+            format_ = 'PNG'
+
+        pixmap.save(
+            file_path,
+            format_
+        )
 
     def _set_restore_(self):
         pass

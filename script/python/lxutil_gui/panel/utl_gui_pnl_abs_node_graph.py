@@ -637,9 +637,10 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
                 content='"{}" save is completed'.format(file_path),
                 status=utl_core.DialogWindow.GuiStatus.Correct,
                 #
-                yes_label='Close',
+                yes_label='Open Folder', yes_method=bsc_core.StoragePathOpt(file_path).set_open_in_system,
+                no_label='Close',
                 #
-                no_visible=False, cancel_visible=False
+                cancel_visible=False
             )
         else:
             utl_core.DialogWindow.set_create(

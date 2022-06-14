@@ -843,7 +843,7 @@ class AbsDatabaseGeometryManagerPanel(
         _port = self._utility_node_prx.set_port_add(
             prx_widgets.PrxFileSavePort('save_usd_file', 'Save USD-file')
         )
-        _port.set_ext_filter('All USD File(s) (*.usd *.usda)')
+        _port.set_ext_filter('All USD File (*.usd *.usda)')
         # _port.set(bsc_core.SystemMtd.get_temporary_directory_path(create=True))
         _port.set_tool_tip(
             [
@@ -864,7 +864,7 @@ class AbsDatabaseGeometryManagerPanel(
         _port = self._utility_node_prx.set_port_add(
             prx_widgets.PrxFileOpenPort('open_usd_file', 'Open USD-file')
         )
-        _port.set_ext_filter('All USD File(s) (*.usd *.usda)')
+        _port.set_ext_filter('All USD File (*.usd *.usda)')
         # _port.set(bsc_core.SystemMtd.get_temporary_directory_path(create=True))
         _port.set_tool_tip(
             [

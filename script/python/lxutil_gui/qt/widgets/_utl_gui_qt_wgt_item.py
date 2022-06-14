@@ -2175,7 +2175,7 @@ class _QtHExpandItem0(
         spacing = 2
         #
         self._set_frame_rect_(
-            x+1, y+1, w-1, h-1
+            x+1, y+1, w-2, h-2
         )
         f_w, f_h = self._icon_frame_size
         i_w, i_h = self._file_icon_size
