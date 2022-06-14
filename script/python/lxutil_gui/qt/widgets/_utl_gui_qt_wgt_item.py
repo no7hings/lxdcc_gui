@@ -3093,12 +3093,17 @@ class _QtListItemWidget(
         #
         self._set_widget_geometry_update_()
         #
-        x, y = 0, 0
         w, h = self.width(), self.height()
         #
         offset = self._get_action_offset_()
         #
-        bkg_rect = QtCore.QRect(x+1, y+1, w-2, h-2)
+        bkg_rect = QtCore.QRect(1, 1, w-2, h-2)
+        background_color = painter._get_item_background_color_by_rect_(
+            bkg_rect,
+            is_hovered=self._is_hovered,
+            is_selected=self._item_is_selected,
+            is_actioned=self._get_is_actioned_()
+        )
         #
         item = self._get_item_()
         if item._item_show_status in [item.ShowStatus.Loading, item.ShowStatus.Waiting]:
@@ -3107,12 +3112,11 @@ class _QtListItemWidget(
                 item._item_show_loading_index
             )
         else:
-            painter._set_node_frame_draw_by_rect_(
+            painter._set_frame_draw_by_rect_(
                 bkg_rect,
-                border_width=2,
-                is_selected=self._item_is_selected,
-                is_hovered=self._is_hovered,
-                is_actioned=self._get_is_actioned_(),
+                border_color=QtBackgroundColor.Transparent,
+                background_color=background_color,
+                border_radius=1,
                 offset=offset
             )
             # icon frame
