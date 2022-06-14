@@ -1400,6 +1400,12 @@ class QtGridLayout(QtWidgets.QGridLayout):
         self.setSpacing(Util.LAYOUT_SPACING)
 
 
+class QtFileDialog(QtWidgets.QFileDialog):
+    def __init__(self, *args, **kwargs):
+        super(QtFileDialog, self).__init__(*args, **kwargs)
+        self.setPalette(QtDccMtd.get_qt_palette())
+
+
 class QtSectorChartDrawData(object):
     def __init__(self, data, position, size, align, side_w, mode):
         """
@@ -2266,6 +2272,7 @@ def set_window_show_standalone(window_class, **kwargs):
     exists_app = QtWidgets.QApplication.instance()
     if exists_app is None:
         app = QtWidgets.QApplication(sys.argv)
+        app.setPalette(QtDccMtd.get_qt_palette())
 
         QtUtilMtd.set_fonts_add(
             utl_gui_core.RscFontFile.get_all()

@@ -19,6 +19,8 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item,
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
+from lxutil_gui import utl_gui_core
+
 from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wgt_view
 
 
@@ -177,6 +179,8 @@ class PrxFileOpenEntry(AbsRsvTypeQtEntry):
 
     def _set_file_open_(self):
         f = utl_gui_qt_core.QtWidgets.QFileDialog()
+        options = f.Options()
+        # options |= f.DontUseNativeDialog
         s = f.getOpenFileName(
             self.widget,
             'Open File',
@@ -256,6 +260,8 @@ class PrxDirectoryOpenEntry(AbsRsvTypeQtEntry):
 
     def _set_directory_open_(self):
         f = utl_gui_qt_core.QtWidgets.QFileDialog()
+        options = f.Options()
+        # options |= f.DontUseNativeDialog
         s = f.getExistingDirectory(
             self.widget,
             'Open Directory',
@@ -338,11 +344,14 @@ class PrxFileSaveEntry(AbsRsvTypeQtEntry):
 
     def _set_file_save_(self):
         f = utl_gui_qt_core.QtWidgets.QFileDialog()
+        options = f.Options()
+        # options |= f.DontUseNativeDialog
         s = f.getSaveFileName(
             self.widget,
             'Save File',
             self.get(),
-            filter=self._ext_filter
+            filter=self._ext_filter,
+            options=options,
         )
         if s:
             _ = s[0]
@@ -1539,6 +1548,9 @@ class PrxFileSavePort(PrxConstantPort):
 
     def set_ext_filter(self, ext_filter):
         self._prx_port_entry.set_ext_filter(ext_filter)
+
+    def set_history_update(self):
+        self._prx_port_entry.set_history_update()
 
 
 class PrxRsvProjectChoosePort(PrxConstantPort):

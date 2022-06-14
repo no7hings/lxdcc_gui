@@ -634,6 +634,9 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
             self._node_graph.set_graph_save_to(
                 file_path
             )
+            self._options_prx_node.get_port(
+                'output.file'
+            ).set_history_update()
             utl_core.DialogWindow.set_create(
                 'Save Graph',
                 content='"{}" save is completed'.format(file_path),

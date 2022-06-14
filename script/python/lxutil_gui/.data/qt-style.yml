@@ -314,3 +314,10 @@ widget:
             background: rgba(<option.background.color-actioned>);
             border: 1px rgba(<option.border.color-actioned>); border-radius: 0px; border-style: solid none none none
         }
+    QFileDialog:
+        |-
+        QPushButton{
+            background: rgba(<option.background.color-basic>); 
+            color: rgba(<option.font.color-basic>);
+            border: 1px rgba(<option.border.color-basic>); border-radius: 0px; border-style: solid;
+        }
