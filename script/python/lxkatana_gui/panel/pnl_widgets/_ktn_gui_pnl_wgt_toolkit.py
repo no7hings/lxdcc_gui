@@ -122,6 +122,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
                         i_m()
 
         ktn_dcc_objects.Scene.set_frame_range(1001, 1121)
+        ktn_dcc_objects.Scene.set_current_frame(1001)
 
     def set_work_set_usd_import(self):
         pass
