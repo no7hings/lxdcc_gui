@@ -158,7 +158,7 @@ class AbsRenderSubmitterPanel(
 
     def _set_obj_viewer_build_(self):
         self._filter_tree_viewer_0.set_header_view_create(
-            [('Name(s)', 3), ('Count(s)', 1)],
+            [('name', 3), ('count', 1)],
             self.get_definition_window_size()[0]*(1.0/5.0) - 24
         )
         self._filter_tree_viewer_0.set_single_selection()
@@ -789,7 +789,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         ).get_standard_light_rig_rsv_assets()
         if light_rig_rsv_assets:
             names = [i.name for i in light_rig_rsv_assets]
-            for seq, i in enumerate(['all', 'light_rig_1', 'light_rig_2']):
+            for seq, i in enumerate(['all', 'add_1', 'add_2']):
                 self._variables_prx_node.set(
                     'light_pass.{}'.format(i), names
                 )
@@ -858,8 +858,8 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         dic['render_arnold_override_aa_sample'] = self._settings_prx_node.get('render.arnold_override.aa_sample')
         #
         dic['light_pass_all'] = self._settings_prx_node.get('light_pass.all')
-        dic['light_pass_light_rig_1'] = self._settings_prx_node.get('light_pass.light_rig_1')
-        dic['light_pass_light_rig_2'] = self._settings_prx_node.get('light_pass.light_rig_2')
+        dic['light_pass_add_1'] = self._settings_prx_node.get('light_pass.add_1')
+        dic['light_pass_add_2'] = self._settings_prx_node.get('light_pass.add_2')
         #
         dic['deadline_priority'] = int(self._settings_prx_node.get('deadline.priority'))
         return dic
@@ -891,8 +891,8 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
     def _get_variables_dict_(self):
         dic = {}
         dic['light_pass_all'] = self._variables_prx_node.get('light_pass.all')
-        dic['light_pass_light_rig_1'] = self._variables_prx_node.get('light_pass.light_rig_1')
-        dic['light_pass_light_rig_2'] = self._variables_prx_node.get('light_pass.light_rig_2')
+        dic['light_pass_add_1'] = self._variables_prx_node.get('light_pass.add_1')
+        dic['light_pass_add_2'] = self._variables_prx_node.get('light_pass.add_2')
         return dic
     @classmethod
     def _get_frames_(cls, frame_range, frame_step):

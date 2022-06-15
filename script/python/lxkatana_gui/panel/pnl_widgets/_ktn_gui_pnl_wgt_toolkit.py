@@ -121,6 +121,8 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
                     else:
                         i_m()
 
+        ktn_dcc_objects.Scene.set_frame_range(1001, 1121)
+
     def set_work_set_usd_import(self):
         pass
 
@@ -136,6 +138,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
 
     def set_work_look_ass_export(self):
         import lxkatana_fnc.scripts as ktn_fnc_scripts
+
         task_properties = self._task_properties
         ktn_fnc_scripts.set_asset_work_look_ass_export(task_properties, force=True)
 
@@ -169,7 +172,9 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
         else:
             utl_core.Log.set_module_warning_trace(
                 'work-look-ass-import',
-                u'file="{}" is non-exists'.format(work_look_ass_file_path)
+                u'file="{}" is non-exists'.format(
+                    work_look_ass_file_path
+                )
             )
     @classmethod
     def get_look_passes(cls, **kwargs):
@@ -199,14 +204,16 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
         default_value = kwargs['default_value']
         #
         if ss:
-            gp = utl_core.GuiProgressesRunner(maximum=len(ss))
+            g_p = utl_core.GuiProgressesRunner(maximum=len(ss))
             for i in ss:
-                gp.set_update()
+                g_p.set_update()
                 #
                 s = ktn_dcc_objects.AndStandardSurface(i.path)
-                s.set_port_user_data_create(data_type_name, port_name, attribute_name, default_value)
+                s.set_port_user_data_create(
+                    data_type_name, port_name, attribute_name, default_value
+                )
             #
-            gp.set_stop()
+            g_p.set_stop()
 
     def set_look_update(self, **kwargs):
         def yes_fnc_():
