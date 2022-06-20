@@ -30,7 +30,7 @@ def _set_texture_tx_load(window, item_prx):
         item_prx.set_status(status)
 
     def set_element_status_changed_update(element_statuses):
-        item_prx.set_element_statuses(element_statuses)
+        item_prx.set_statuses(element_statuses)
 
     def set_logging_update(text):
         pass

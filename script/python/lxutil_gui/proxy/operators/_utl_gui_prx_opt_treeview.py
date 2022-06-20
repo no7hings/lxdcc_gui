@@ -577,8 +577,8 @@ class PrxStgObjTreeViewAddOpt(object):
             file_tiles = obj.get_exists_files()
             if file_tiles:
                 tool_tip_ = []
-                if len(file_tiles) > 50:
-                    _ = file_tiles[:48] + file_tiles[-1:]
+                if len(file_tiles) > 10:
+                    _ = file_tiles[:8] + file_tiles[-1:]
                 else:
                     _ = file_tiles
                 #
@@ -625,6 +625,11 @@ class PrxStgTextureTreeViewAddOpt(PrxStgObjTreeViewAddOpt):
     def __init__(self, *args, **kwargs):
         super(PrxStgTextureTreeViewAddOpt, self).__init__(*args, **kwargs)
 
+        self._output_directory_path = None
+
+    def set_output_directory(self, directory_path):
+        self._output_directory_path = directory_path
+
     def _set_prx_item_show_deferred_(self, prx_item, name_use_path_prettify):
         obj = prx_item.get_gui_dcc_obj(namespace=self._dcc_namespace)
         obj_name = obj.name
@@ -640,22 +645,28 @@ class PrxStgTextureTreeViewAddOpt(PrxStgObjTreeViewAddOpt):
             u'path="{}"'.format(obj_path)
         ]
         if obj.get_is_file():
-            file_tiles = obj.get_exists_files()
+            file_tiles = obj.get_exists_files_()
             if file_tiles:
                 tool_tip_ = []
-                if len(file_tiles) > 50:
-                    _ = file_tiles[:48] + file_tiles[-1:]
+                if len(file_tiles) > 10:
+                    _ = file_tiles[:8] + ['...'] + file_tiles[-1:]
                 else:
                     _ = file_tiles
                 #
-                for file_tile in _:
-                    st_mode = file_tile.get_permission()
-                    tool_tip_.append(
-                        u'path="{}"; st-mode="{}"'.format(
-                            file_tile.path, st_mode
+                for i_file_tile in _:
+                    if isinstance(i_file_tile, (str, unicode)):
+                        tool_tip_.append(i_file_tile)
+                    else:
+                        st_mode = i_file_tile.get_permission()
+                        tool_tip_.append(
+                            u'path="{}"; st-mode="{}"'.format(
+                                i_file_tile.path, st_mode
+                            )
                         )
-                    )
+                #
+                name = '{}({})'.format(name, len(file_tiles))
                 descriptions = [tool_tip_]
+        #
         menu_raw = []
         menu_raw.extend(
             obj.get_gui_menu_raw() or []
@@ -684,8 +695,10 @@ class PrxStgTextureTreeViewAddOpt(PrxStgObjTreeViewAddOpt):
             if obj.get_is_directory() is True:
                 prx_item.set_expanded(True)
             else:
-                tx_is_exists = obj.get_tx_is_exists()
-                if tx_is_exists is True:
+                i_tx_exists = obj._get_is_exists_as_tgt_ext_by_src_(
+                    obj.path, self._output_directory_path, obj.TX_EXT
+                )
+                if i_tx_exists is True:
                     prx_item.set_state(prx_item.State.NORMAL)
                 else:
                     prx_item.set_state(prx_item.State.WARNING)

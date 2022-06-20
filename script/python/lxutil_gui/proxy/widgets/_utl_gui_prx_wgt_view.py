@@ -212,6 +212,9 @@ class PrxTreeView(
     def get_all_items(self):
         return [i.gui_proxy for i in self.view._get_all_items_() if hasattr(i, 'gui_proxy')]
 
+    def get_all_checked_items(self):
+        pass
+
     def get_all_leaf_items(self):
         return [i.gui_proxy for i in self.view._get_all_leaf_items_()]
 

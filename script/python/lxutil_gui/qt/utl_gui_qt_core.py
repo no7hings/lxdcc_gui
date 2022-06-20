@@ -24,6 +24,8 @@ from lxutil_gui import utl_gui_core
 
 import lxutil.objects as utl_objects
 
+import subprocess
+
 _pyqt5 = utl_objects.PyModule('PyQt5')
 
 if _pyqt5.get_is_exists() is True:
@@ -1168,6 +1170,8 @@ class QtBuildThread(QtCore.QThread):
 
     run_failed = qt_signal()
 
+    status_changed = qt_signal(int)
+
     Status = bsc_configure.Status
     def __init__(self, *args, **kwargs):
         super(QtBuildThread, self).__init__(*args, **kwargs)
@@ -1185,10 +1189,14 @@ class QtBuildThread(QtCore.QThread):
     def set_kill(self):
         self._status = self.Status.Killed
 
+    def set_status(self, status):
+        self._status = status
+        self.status_changed.emit(status)
+
     def run(self):
         if self._status == self.Status.Waiting:
             self.run_started.emit()
-            self._status = self.Status.Started
+            self.set_status(self.Status.Started)
             # noinspection PyBroadException
             try:
                 self.cache_started.emit()
@@ -1198,11 +1206,11 @@ class QtBuildThread(QtCore.QThread):
                 self.built.emit(cache)
             except:
                 self.run_failed.emit()
-                self._status = self.Status.Failed
+                self.set_status(self.Status.Failed)
             #
             finally:
                 self.run_finished.emit()
-                self._status = self.Status.Finished
+                self.set_status(self.Status.Finished)
 
 
 class QtBuildThreadsRunner(QtCore.QObject):
@@ -1367,6 +1375,33 @@ class QtBuildRunnableRunner(QtCore.QObject):
                 c_t._build_signals.run_finished.connect(i_t.set_start)
             #
             c_t = i_t
+
+
+class QtCmdSubProcessThread(QtCore.QThread):
+    Status = bsc_configure.Status
+    def __init__(self, *args, **kwargs):
+        super(QtCmdSubProcessThread, self).__init__(*args, **kwargs)
+        self._cmd = None
+
+        self._status = self.Status.Waiting
+
+    def set_cmd(self, cmd):
+        self._cmd = cmd
+
+    def set_status(self, status):
+        pass
+
+    def run(self):
+        if self._status == self.Status.Waiting:
+            self.set_status(self.Status.Running)
+            try:
+                results = bsc_core.SubProcessMtd.set_run_as_block(
+                    self._cmd
+                )
+                self.set_status(self.Status.Completed)
+                self.set_completed(results)
+            except subprocess.CalledProcessError:
+                self.set_status(self.Status.Error)
 
 
 class QtHBoxLayout(QtWidgets.QHBoxLayout):

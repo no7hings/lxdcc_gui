@@ -123,7 +123,7 @@ class W(prx_widgets.PrxToolWindow):
         self._sequence_chart_dict = {}
         #
         self._check_button.set_status(bsc_configure.Status.Stopped)
-        self._check_button.set_element_statuses([])
+        self._check_button.set_statuses([])
         #
         status = bsc_configure.Status.Completed
         element_statuses = []
@@ -190,7 +190,7 @@ class W(prx_widgets.PrxToolWindow):
             self._check_button.set_status(
                 status
             )
-            self._check_button.set_element_statuses(
+            self._check_button.set_statuses(
                 element_statuses
             )
 

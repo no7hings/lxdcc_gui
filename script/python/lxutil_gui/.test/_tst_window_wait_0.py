@@ -18,7 +18,7 @@ def set_status_changed_update(status):
 
 
 def set_element_status_changed_update(element_statuses):
-    w._wait_button.set_element_statuses(element_statuses)
+    w._wait_button.set_statuses(element_statuses)
 
 
 def set_logging_update(text):

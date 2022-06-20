@@ -44,7 +44,7 @@ class QtWidget(
         self.update()
 
     def paintEvent(self, event):
-        if self._get_is_status_enable_() is True:
+        if self._get_status_is_enable_() is True:
             painter = QtPainter(self)
             #
             if self._status in [
@@ -2203,7 +2203,7 @@ class _QtProgressBar(
 
     def paintEvent(self, event):
         painter = QtPainter(self)
-        if self._get_is_progress_enable_() is True:
+        if self._get_progress_is_enable_() is True:
             if self._progress_raw:
                 cur_rect = None
                 w, h = self.width(), self.height()

@@ -87,6 +87,7 @@ class AbsRezGraph(prx_widgets.PrxToolWindow):
 
     def test(self, packages):
         import rez.resolved_context as r_c
+
         u = core_objects.ObjUniverse()
 
         r_s_t = u._get_obj_type_force_('rez', 'system')

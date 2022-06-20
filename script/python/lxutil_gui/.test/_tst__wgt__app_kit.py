@@ -32,7 +32,7 @@ class AppKit(prx_widgets.PrxToolWindow):
             if i_hook_args is not None:
                 i_session, i_execute_fnc = i_hook_args
                 if i_session.get_is_loadable() is True:
-                    i_gui_option = i_session.utl_gui_configure
+                    i_gui_option = i_session.gui_configure
                     #
                     i_group_name = i_gui_option.get('group_name')
                     if i_group_name in self._list_view_dict:

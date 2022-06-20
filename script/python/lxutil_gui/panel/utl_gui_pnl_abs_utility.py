@@ -33,7 +33,7 @@ def _set_texture_tx_create(window, item_prx, texture_references, includes, force
         item_prx.set_status(status)
 
     def set_element_status_changed_update(element_statuses):
-        item_prx.set_element_statuses(element_statuses)
+        item_prx.set_statuses(element_statuses)
 
     def set_logging_update(text):
         pass
@@ -93,7 +93,7 @@ def _set_texture_jpg_create(window, item_prx, texture_references, includes, forc
         item_prx.set_status(status)
 
     def set_element_status_changed_update(element_statuses):
-        item_prx.set_element_statuses(element_statuses)
+        item_prx.set_statuses(element_statuses)
 
     def set_logging_update(text):
         pass

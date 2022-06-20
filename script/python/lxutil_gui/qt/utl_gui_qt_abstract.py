@@ -109,6 +109,7 @@ class AbsQtMenuDef(object):
 
 
 class _QtStatusDef(object):
+    Status = bsc_configure.Status
     @classmethod
     def _get_status_color_(cls, status):
         if status in [bsc_configure.Status.Failed, bsc_configure.Status.Error]:
@@ -126,7 +127,7 @@ class _QtStatusDef(object):
             h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
             color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
             hover_color = r, g, b
-        elif status in [bsc_configure.Status.Completed]:
+        elif status in [bsc_configure.Status.Completed, bsc_configure.Status.Finished]:
             r, g, b = 63, 255, 127
             h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
             color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
@@ -168,44 +169,103 @@ class _QtStatusDef(object):
     def _get_status_(self):
         return self._status
 
-    def _get_is_status_enable_(self):
+    def _get_status_is_enable_(self):
         return self._is_status_enable
 
 
-class _QtStatusesDef(object):
-    def _set_statuses_def_init_(self):
-        self._is_element_status_enable = False
+class AbsQtRateDef(object):
+    def _set_rate_def_init_(self):
+        self._rate_is_enable = False
         #
-        self._element_statuses = []
+        self._rate_statuses = []
+
+        self._rate_text = ''
         #
-        self._element_status_colors = []
-        self._hover_element_status_colors = []
+        self._rate_colors = []
+        self._hover_rate_colors = []
         #
-        self._element_status_rect = QtCore.QRect()
+        self._rate_rect = QtCore.QRect()
+
+        self._rate_finished_results = []
+
+        self._rate_start_timestamp = 0
 
     def _set_wgt_update_draw_(self):
         raise NotImplementedError()
 
-    def _set_statuses_(self, element_statuses):
-        if element_statuses:
-            self._is_element_status_enable = True
-            self._element_statuses = element_statuses
-            self._element_status_colors = []
-            self._hover_element_status_colors = []
-            for i_element_status in element_statuses:
-                color, hover_color = _QtStatusDef._get_status_color_(i_element_status)
-                self._element_status_colors.append(color)
-                self._hover_element_status_colors.append(hover_color)
+    def _set_rate_statuses_(self, statuses):
+        if statuses:
+            self._rate_is_enable = True
+            self._rate_statuses = statuses
+            self._rate_colors = []
+            self._hover_rate_colors = []
+            for i_element_status in statuses:
+                i_color, i_hover_color = _QtStatusDef._get_status_color_(i_element_status)
+                self._rate_colors.append(i_color)
+                self._hover_rate_colors.append(i_hover_color)
         else:
-            self._is_element_status_enable = False
-            self._element_statuses = []
-            self._element_status_colors = []
-            self._hover_element_status_colors = []
+            self._rate_is_enable = False
+            self._rate_statuses = []
+            self._rate_colors = []
+            self._hover_rate_colors = []
         #
         self._set_wgt_update_draw_()
 
-    def _get_is_statuses_enable_(self):
-        return self._is_element_status_enable
+    def _set_rate_status_update_at_(self, index, status):
+        color, hover_color = _QtStatusDef._get_status_color_(status)
+        self._rate_statuses[index] = status
+        self._rate_colors[index] = color
+        self._hover_rate_colors[index] = hover_color
+
+        self._set_wgt_update_draw_()
+
+    def _set_rate_initialization_(self, count, status):
+        if count > 0:
+            self._rate_is_enable = True
+            self._rate_statuses = [status]*count
+            color, hover_color = _QtStatusDef._get_status_color_(status)
+            self._rate_colors = [color]*count
+            self._hover_rate_colors = [hover_color]*count
+            self._rate_finished_results = [False]*count
+
+            self._rate_start_timestamp = bsc_core.SystemMtd.get_timestamp()
+            self._set_rate_text_update_()
+        else:
+            self._set_rate_restore_()
+
+        self._set_wgt_update_draw_()
+
+    def _set_rate_restore_(self):
+        self._rate_is_enable = False
+        self._rate_statuses = []
+        self._rate_colors = []
+        self._hover_rate_colors = []
+        self._rate_finished_results = []
+
+        self._rate_text = ''
+
+    def _set_rate_finished_at_(self, index, status):
+        self._rate_finished_results[index] = True
+        #
+        self._set_rate_text_update_()
+        #
+        self._set_wgt_update_draw_()
+
+    def _set_rate_text_update_(self):
+        cost_timestamp = bsc_core.SystemMtd.get_timestamp() - self._rate_start_timestamp
+        self._rate_text = '[{}/{}][{}]'.format(
+            sum(self._rate_finished_results), len(self._rate_finished_results),
+            bsc_core.IntegerMtd.second_to_time_prettify(cost_timestamp)
+        )
+
+    def _get_rate_is_finished_(self):
+        return sum(self._rate_finished_results) == len(self._rate_finished_results)
+
+    def _get_rate_is_enable_(self):
+        return self._rate_is_enable
+
+    def _set_rate_finished_connect_to_(self, fnc):
+        raise NotImplementedError()
 
 
 class AbsQtFrameDef(object):
@@ -798,7 +858,7 @@ class _QtProgressDef(object):
     def _set_progress_raw_(self, raw):
         self._progress_raw = raw
 
-    def _get_is_progress_enable_(self):
+    def _get_progress_is_enable_(self):
         return self._progress_map_value_ != 0
 
 

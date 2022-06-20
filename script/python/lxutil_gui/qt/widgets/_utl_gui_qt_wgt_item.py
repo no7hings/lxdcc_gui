@@ -554,7 +554,7 @@ class _QtPressItem(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract._QtStatusDef,
-    utl_gui_qt_abstract._QtStatusesDef,
+    utl_gui_qt_abstract.AbsQtRateDef,
     #
     utl_gui_qt_abstract.AbsQtIconDef,
     utl_gui_qt_abstract.AbsQtMenuDef,
@@ -571,6 +571,12 @@ class _QtPressItem(
     checked = qt_signal()
     toggled = qt_signal(bool)
     option_clicked = qt_signal()
+    #
+    status_changed = qt_signal(int)
+    #
+    rate_status_update_at = qt_signal(int, int)
+    rate_finished_at = qt_signal(int, int)
+    rate_finished = qt_signal()
     #
     QT_MENU_CLASS = _utl_gui_qt_wgt_utility.QtMenu
     def __init__(self, *args, **kwargs):
@@ -589,7 +595,7 @@ class _QtPressItem(
         #
         self._set_frame_def_init_()
         self._set_status_def_init_()
-        self._set_statuses_def_init_()
+        self._set_rate_def_init_()
         #
         self._set_icon_def_init_()
         self._set_name_def_init_()
@@ -619,6 +625,16 @@ class _QtPressItem(
         self._frame_background_color = color
         self._hovered_frame_background_color = hover_color
 
+        self.status_changed.connect(
+            self._set_status_
+        )
+        self.rate_status_update_at.connect(
+            self._set_rate_status_update_at_
+        )
+        self.rate_finished_at.connect(
+            self._set_rate_finished_at_
+        )
+
     def _set_wgt_update_draw_(self):
         self.update()
 
@@ -628,9 +644,9 @@ class _QtPressItem(
         #
         check_enable = self._get_action_check_is_enable_()
         option_click_enable = self._get_item_option_click_enable_()
-        status_enable = self._get_is_status_enable_()
-        element_status_enable = self._get_is_statuses_enable_()
-        progress_enable = self._get_is_progress_enable_()
+        status_is_enable = self._get_status_is_enable_()
+        rate_is_enable = self._get_rate_is_enable_()
+        progress_enable = self._get_progress_is_enable_()
         #
         f_w, f_h = self._icon_frame_size
         #
@@ -694,16 +710,49 @@ class _QtPressItem(
                 c_x, c_y, c_w*progress_percent, 4
             )
         #
-        if status_enable is True:
+        if status_is_enable is True:
             self._status_rect.setRect(
                 c_x, c_y, c_w, c_h
             )
         #
         e_h = 4
-        if element_status_enable is True:
-            self._element_status_rect.setRect(
+        if rate_is_enable is True:
+            self._rate_rect.setRect(
                 c_x, c_h-e_h, c_w, e_h
             )
+
+    def _set_rate_initialization_(self, count, status):
+        super(_QtPressItem, self)._set_rate_initialization_(count, status)
+        if count > 0:
+            self._set_status_(
+                self.Status.Waiting
+            )
+        else:
+            self._set_status_(
+                self.Status.Stopped
+            )
+
+        self._set_wgt_update_draw_()
+
+    def _set_rate_finished_at_(self, index, status):
+        super(_QtPressItem, self)._set_rate_finished_at_(index, status)
+        if self._get_rate_is_finished_() is True:
+            self._set_status_(
+                self.Status.Finished
+            )
+            self.rate_finished.emit()
+
+        self._set_wgt_update_draw_()
+
+    def _set_rate_finished_connect_to_(self, fnc):
+        self.rate_finished.connect(fnc)
+
+    def _set_rate_restore_(self):
+        super(_QtPressItem, self)._set_rate_restore_()
+
+        self._set_status_(
+            self.Status.Stopped
+        )
 
     def setText(self, text):
         self._name_text = text
@@ -781,7 +830,7 @@ class _QtPressItem(
             offset=offset
         )
         #
-        if self._get_is_status_enable_() is True:
+        if self._get_status_is_enable_() is True:
             status_color = [self._status_color, self._hover_status_color][self._is_hovered]
             painter._set_status_draw_by_rect_(
                 self._status_rect,
@@ -790,16 +839,16 @@ class _QtPressItem(
                 offset=offset
             )
         #
-        if self._get_is_statuses_enable_() is True:
-            status_colors = [self._element_status_colors, self._hover_element_status_colors][self._is_hovered]
+        if self._get_rate_is_enable_() is True:
+            status_colors = [self._rate_colors, self._hover_rate_colors][self._is_hovered]
             painter._set_elements_status_draw_by_rect_(
-                self._element_status_rect,
+                self._rate_rect,
                 colors=status_colors,
                 offset=offset,
                 border_radius=2,
             )
         #
-        if self._get_is_progress_enable_() is True:
+        if self._get_progress_is_enable_() is True:
             painter._set_frame_draw_by_rect_(
                 self._progress_rect,
                 border_color=QtBackgroundColor.Transparent,
@@ -834,14 +883,20 @@ class _QtPressItem(
                 )
         # name
         if self._name_text is not None:
+            name_text = self._name_text
             if self._item_is_enable is True:
                 text_color = [QtFontColor.Basic, QtFontColor.Light][self._is_hovered]
             else:
                 text_color = QtFontColor.Disable
             #
+            if self._get_rate_is_enable_() is True:
+                name_text = '{} {}'.format(
+                    self._name_text, self._rate_text
+                )
+            #
             painter._set_text_draw_by_rect_(
                 self._name_rect,
-                self._name_text,
+                text=name_text,
                 font_color=text_color,
                 font=Font.NAME,
                 offset=offset
