@@ -277,7 +277,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     utl_core.DialogWindow.set_create(
                         self._hook_gui_configure.get('name'),
                         content='file="{}" camera task is non-exists, please call for TD get more help'.format(self._file_path),
-                        status=utl_core.DialogWindow.GuiStatus.Error,
+                        status=utl_core.DialogWindow.ValidatorStatus.Error,
                         #
                         yes_label='Close', yes_method=self.set_window_close,
                         #
@@ -338,7 +338,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             utl_core.DialogWindow.set_create(
                 self._hook_gui_configure.get('name'),
                 content='step="{}" is not available, please call for TD get more help'.format(step),
-                status=utl_core.DialogWindow.GuiStatus.Error,
+                status=utl_core.DialogWindow.ValidatorStatus.Error,
                 #
                 yes_label='Close', yes_method=self.set_window_close,
                 #
@@ -800,7 +800,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             utl_core.DialogWindow.set_create(
                 self._hook_gui_configure.get('name'),
                 content='light-rig(s) is not found, please call for TD get more help',
-                status=utl_core.DialogWindow.GuiStatus.Error,
+                status=utl_core.DialogWindow.ValidatorStatus.Error,
                 #
                 yes_label='Close', yes_method=self.set_window_close,
                 #
@@ -964,7 +964,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             utl_core.DialogWindow.set_create(
                 self._hook_gui_configure.get('name'),
                 content='{} publish job is send to deadline, more information you see in deadline monitor'.format(camera_work_maya_scene_scr_file_path),
-                status=utl_core.DialogWindow.GuiStatus.Correct,
+                status=utl_core.DialogWindow.ValidatorStatus.Correct,
                 #
                 yes_label='Close',
                 #
@@ -990,7 +990,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     utl_core.DialogWindow.set_create(
                         self._hook_gui_configure.get('name'),
                         content='{} render job is send to deadline, more information you see in deadline monitor'.format(self._file_path),
-                        status=utl_core.DialogWindow.GuiStatus.Correct,
+                        status=utl_core.DialogWindow.ValidatorStatus.Correct,
                         #
                         yes_label='Close',
                         #
@@ -1001,7 +1001,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     utl_core.DialogWindow.set_create(
                         self._hook_gui_configure.get('name'),
                         content='file="{}" is already submitted or scene changed is not be save'.format(self._file_path),
-                        status=utl_core.DialogWindow.GuiStatus.Error,
+                        status=utl_core.DialogWindow.ValidatorStatus.Error,
                         #
                         yes_label='Close',
                         #
@@ -1012,7 +1012,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             utl_core.DialogWindow.set_create(
                 self._hook_gui_configure.get('name'),
                 content='file="{}" camera cache(abc) is non-exists, please call for TD get more help'.format(self._file_path),
-                status=utl_core.DialogWindow.GuiStatus.Error,
+                status=utl_core.DialogWindow.ValidatorStatus.Error,
                 #
                 yes_label='Close',
                 #
@@ -1496,7 +1496,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 utl_core.DialogWindow.set_create(
                     self._hook_gui_configure.get('name'),
                     content='{} is submit completed'.format(self._file_path),
-                    status=utl_core.DialogWindow.GuiStatus.Correct,
+                    status=utl_core.DialogWindow.ValidatorStatus.Correct,
                     #
                     yes_label='Close',
                     #
@@ -1507,7 +1507,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 utl_core.DialogWindow.set_create(
                     self._hook_gui_configure.get('name'),
                     content='file="{}" is already submitted or scene changed is not be save'.format(self._file_path),
-                    status=utl_core.DialogWindow.GuiStatus.Error,
+                    status=utl_core.DialogWindow.ValidatorStatus.Error,
                     #
                     yes_label='Close',
                     #

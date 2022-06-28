@@ -48,7 +48,7 @@ class QtWidget(
             painter = QtPainter(self)
             #
             if self._status in [
-                bsc_configure.GuiStatus.Error
+                bsc_configure.ValidatorStatus.Error
             ]:
                 pox_x, pos_y = 0, 0
                 width, height = self.width(), self.height()
@@ -64,7 +64,7 @@ class QtWidget(
                     border_radius=2
                 )
             elif self._status in [
-                bsc_configure.GuiStatus.Warning
+                bsc_configure.ValidatorStatus.Warning
             ]:
                 pox_x, pos_y = 0, 0
                 width, height = self.width(), self.height()
@@ -80,7 +80,7 @@ class QtWidget(
                     border_radius=2
                 )
             elif self._status in [
-                bsc_configure.GuiStatus.Correct
+                bsc_configure.ValidatorStatus.Correct
             ]:
                 pox_x, pos_y = 0, 0
                 width, height = self.width(), self.height()
@@ -115,7 +115,7 @@ class _QtLine(
     def paintEvent(self, event):
         painter = QtPainter(self)
 
-        x, y = 0, 0
+        x, y = 2, 0
         w, h = self.width(), self.height()
         rect = QtCore.QRect(x, y, w, h)
         painter._set_line_draw_by_rect_(

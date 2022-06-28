@@ -334,6 +334,7 @@ class Color(object):
     DISABLE = QtGui.QColor(127, 127, 127, 255)
     WARNING = QtGui.QColor(255, 255, 63, 255)
     ERROR = QtGui.QColor(255, 0, 63, 255)
+    LOCKED = QtGui.QColor(63, 127, 255, 255)
     #
     text_filter = QtGui.QColor(255, 127, 63, 255)
     text_filter_occurrence = QtGui.QColor(255, 63, 63, 255)

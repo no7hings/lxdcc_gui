@@ -181,8 +181,8 @@ class AbsSceneTextureManagerPanel(
         self._set_refresh_all_()
 
     def _set_refresh_all_(self, includes=None):
-        self._set_texture_references_update_()
-        self._set_stg_file_tree_item_prxes_refresh_(includes)
+        self._set_dcc_texture_references_update_()
+        self._set_gui_texture_refresh_(includes)
         #
         # self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()
@@ -254,7 +254,7 @@ class AbsSceneTextureManagerPanel(
         )
         #
         _port = self._tool_node_prx.set_port_add(
-            prx_widgets.PrxStatusPort('create_and_repath_to_tx', 'Create & Repath to tx(s)', join_to_next=True)
+            prx_widgets.PrxSubProcessPort('create_and_repath_to_tx', 'Create & Repath to tx(s)', join_to_next=True)
         )
         _port.set_tool_tip(
             [
@@ -283,7 +283,7 @@ class AbsSceneTextureManagerPanel(
         )
         #
         _port = self._tool_node_prx.set_port_add(
-            prx_widgets.PrxStatusPort('create_and_repath_to_jpg', 'Create & Repath to jpg(s)', join_to_next=True)
+            prx_widgets.PrxSubProcessPort('create_and_repath_to_jpg', 'Create & Repath to jpg(s)', join_to_next=True)
         )
         _port.set_tool_tip(
             [
@@ -402,7 +402,7 @@ class AbsSceneTextureManagerPanel(
             self._set_stg_file_list_item_prxes_refresh_
         )
 
-    def _set_stg_file_tree_item_prxes_refresh_(self, includes=None):
+    def _set_gui_texture_refresh_(self, includes=None):
         self._prx_stg_obj_tree_view_add_opt.set_restore()
         if self._texture_references is not None:
             if includes:
@@ -411,68 +411,66 @@ class AbsSceneTextureManagerPanel(
                 self._dcc_objs = self._texture_references.get_objs()
             #
             if self._dcc_objs:
-                g_p = utl_core.GuiProgressesRunner(maximum=len(self._dcc_objs))
-                for i_dcc_obj in self._dcc_objs:
-                    g_p.set_update()
-                    i_files = i_dcc_obj.get_file_objs()
-                    if i_files:
-                        for j_file in i_files:
-                            j_is_create, j_file_prx_item = self._prx_stg_obj_tree_view_add_opt.set_prx_item_add_as(
-                                j_file,
-                                mode='list',
-                                use_show_thread=True
-                            )
-                            if j_file_prx_item is not None:
-                                if j_is_create is True:
-                                    if j_file.get_is_exists() is True:
-                                        # tx_is_exists = j_file.get_tx_is_exists()
-                                        # if tx_is_exists is True:
-                                        #     j_file_prx_item.set_state(utl_gui_core.State.NORMAL)
-                                        # else:
-                                        #     j_file_prx_item.set_state(utl_gui_core.State.WARNING)
-                                        #
-                                        texture_color_space = j_file.get_color_space()
-                                        j_file_prx_item.set_name(
-                                            texture_color_space, self.DSC_IDX_COLORS_SPACE
-                                        )
-                                        j_file_prx_item.set_icon_by_name_text(
-                                            texture_color_space, self.DSC_IDX_COLORS_SPACE
-                                        )
-                                        #
-                                        texture_used_color_space = j_file.get_used_color_space()
-                                        j_file_prx_item.set_name(
-                                            texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
-                                        )
-                                        j_file_prx_item.set_icon_by_name_text(
-                                            texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
-                                        )
-                                #
-                                i_dcc_prx_item = self._prx_dcc_obj_tree_view_add_opt._set_prx_item_add_2_(
-                                    i_dcc_obj,
-                                    j_file_prx_item
+                with utl_core.gui_progress(maximum=len(self._dcc_objs)) as g_p:
+                    for i_dcc_obj in self._dcc_objs:
+                        g_p.set_update()
+                        i_files = i_dcc_obj.get_file_objs()
+                        if i_files:
+                            for j_file in i_files:
+                                j_is_create, j_file_prx_item = self._prx_stg_obj_tree_view_add_opt.set_prx_item_add_as(
+                                    j_file,
+                                    mode='list',
+                                    use_show_thread=True
                                 )
-                                i_dcc_obj.set_obj_gui(i_dcc_prx_item)
-                                #
-                                ext = j_file.type
-                                ext_key = 'ext.{}'.format(ext)
-                                self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
-                                    ext_key, i_dcc_prx_item
-                                )
-                                #
-                                node_color_space = i_dcc_obj.get_color_space()
-                                color_space_key = 'color-space.{}'.format(node_color_space)
-                                self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
-                                    color_space_key, i_dcc_prx_item
-                                )
-                                #
-                                i_dcc_prx_item.set_name(
-                                    node_color_space, self.DSC_IDX_USED_COLORS_SPACE
-                                )
-                                i_dcc_prx_item.set_icon_by_name_text(
-                                    node_color_space, self.DSC_IDX_USED_COLORS_SPACE
-                                )
-                #
-                g_p.set_stop()
+                                if j_file_prx_item is not None:
+                                    if j_is_create is True:
+                                        if j_file.get_is_exists() is True:
+                                            # tx_is_exists = j_file.get_is_exists_as_tx()
+                                            # if tx_is_exists is True:
+                                            #     j_file_prx_item.set_state(utl_gui_core.State.NORMAL)
+                                            # else:
+                                            #     j_file_prx_item.set_state(utl_gui_core.State.WARNING)
+                                            #
+                                            texture_color_space = j_file.get_color_space()
+                                            j_file_prx_item.set_name(
+                                                texture_color_space, self.DSC_IDX_COLORS_SPACE
+                                            )
+                                            j_file_prx_item.set_icon_by_name_text(
+                                                texture_color_space, self.DSC_IDX_COLORS_SPACE
+                                            )
+                                            #
+                                            texture_used_color_space = j_file.get_used_color_space()
+                                            j_file_prx_item.set_name(
+                                                texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
+                                            )
+                                            j_file_prx_item.set_icon_by_name_text(
+                                                texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
+                                            )
+                                    #
+                                    i_dcc_prx_item = self._prx_dcc_obj_tree_view_add_opt._set_prx_item_add_2_(
+                                        i_dcc_obj,
+                                        j_file_prx_item
+                                    )
+                                    i_dcc_obj.set_obj_gui(i_dcc_prx_item)
+                                    #
+                                    ext = j_file.type
+                                    ext_key = 'ext.{}'.format(ext)
+                                    self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
+                                        ext_key, i_dcc_prx_item
+                                    )
+                                    #
+                                    node_color_space = i_dcc_obj.get_color_space()
+                                    color_space_key = 'color-space.{}'.format(node_color_space)
+                                    self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
+                                        color_space_key, i_dcc_prx_item
+                                    )
+                                    #
+                                    i_dcc_prx_item.set_name(
+                                        node_color_space, self.DSC_IDX_USED_COLORS_SPACE
+                                    )
+                                    i_dcc_prx_item.set_icon_by_name_text(
+                                        node_color_space, self.DSC_IDX_USED_COLORS_SPACE
+                                    )
                 #
                 # self._obj_tree_viewer_0.set_items_expand_by_depth(depth=2)
 
@@ -504,7 +502,7 @@ class AbsSceneTextureManagerPanel(
                                 c,
                                 _.path
                             ),
-                            status=utl_core.DialogWindow.GuiStatus.Warning,
+                            status=utl_core.DialogWindow.ValidatorStatus.Warning,
                         )
                         result = w.get_result()
                         if result is not True:
@@ -519,7 +517,7 @@ class AbsSceneTextureManagerPanel(
                                 i_list_item_prx.set_gui_dcc_obj(i_file, namespace='storage')
                                 set_show_fnc_(i_file, i_list_item_prx)
                 else:
-                    file_units = _.get_exists_files(with_tx=False)
+                    file_units = _.get_exists_files_()
                     c = len(file_units)
                     if c > 50:
                         w = utl_core.DialogWindow.set_create(
@@ -528,7 +526,7 @@ class AbsSceneTextureManagerPanel(
                                 c,
                                 _.path
                             ),
-                            status=utl_core.DialogWindow.GuiStatus.Warning,
+                            status=utl_core.DialogWindow.ValidatorStatus.Warning,
                         )
                         result = w.get_result()
                         if result is not True:
@@ -538,7 +536,7 @@ class AbsSceneTextureManagerPanel(
                         i_list_item_prx = self._obj_list_viewer_0.set_item_add()
                         set_show_fnc_(i_file_unit, i_list_item_prx)
 
-    def _set_texture_references_update_(self):
+    def _set_dcc_texture_references_update_(self):
         self._texture_references = None
     #
     def _get_checked_dcc_objs_(self):
@@ -947,7 +945,7 @@ class AbsDatabaseGeometryManagerPanel(
         qt_layout_0.addWidget(self._hash_uv_node_prx.widget)
         #
         _port = self._hash_uv_node_prx.set_port_add(
-            prx_widgets.PrxStatusPort('geometry_unify', 'Unify Geometry by Select(s)')
+            prx_widgets.PrxSubProcessPort('geometry_unify', 'Unify Geometry by Select(s)')
         )
         _port.set(self._set_geometry_unify_run_)
         _port.set_menu_raw(
@@ -960,7 +958,7 @@ class AbsDatabaseGeometryManagerPanel(
         self.set_window_close_connect_to(self._set_geometry_unify_ddl_job_stop_)
         #
         _port = self._hash_uv_node_prx.set_port_add(
-            prx_widgets.PrxStatusPort('geometry_uv_map_assign', 'Assign Geometry UV-map By Select(s)')
+            prx_widgets.PrxSubProcessPort('geometry_uv_map_assign', 'Assign Geometry UV-map By Select(s)')
         )
         _port.set(self._set_geometry_uv_map_assign_run_)
         _port.set_menu_raw(

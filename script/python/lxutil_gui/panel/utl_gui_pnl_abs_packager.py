@@ -272,7 +272,7 @@ class AbsScenePackagerPanel(
         for file_plf_obj in os_objs:
             p.set_update()
             if file_plf_obj.get_is_file():
-                for i in file_plf_obj.get_exists_files():
+                for i in file_plf_obj.get_exists_files_():
                     i.set_copy_to(target_directory, ignore_structure)
         p.set_stop()
 
@@ -338,7 +338,7 @@ class AbsScenePackagerPanel(
                                 name_use_path_prettify=False
                             )
                             dcc_node_item_prx.set_name(
-                                stg_file.get_dcc_attribute_name(), self.DSC_IDX_PORT
+                                stg_file.get_relevant_dcc_port_path(), self.DSC_IDX_PORT
                             )
                             # filter-ext
                             filter_ext = stg_file.type

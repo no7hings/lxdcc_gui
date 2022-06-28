@@ -244,6 +244,9 @@ class QtLineEdit_(QtWidgets.QLineEdit):
     def _set_enter_enable_(self, boolean):
         self.setReadOnly(not boolean)
 
+    def _set_value_locked_(self, boolean):
+        self.setReadOnly(boolean)
+
 
 class QtTextBrowser_(QtWidgets.QTextBrowser):
     def __init__(self, *args, **kwargs):
@@ -554,7 +557,9 @@ class _QtPressItem(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract._QtStatusDef,
-    utl_gui_qt_abstract.AbsQtRateDef,
+    #
+    utl_gui_qt_abstract.AbsQtSubProcessDef,
+    utl_gui_qt_abstract.AbsQtValidatorDef,
     #
     utl_gui_qt_abstract.AbsQtIconDef,
     utl_gui_qt_abstract.AbsQtMenuDef,
@@ -595,7 +600,8 @@ class _QtPressItem(
         #
         self._set_frame_def_init_()
         self._set_status_def_init_()
-        self._set_rate_def_init_()
+        self._set_sub_process_def_init_()
+        self._set_validator_def_init_(self)
         #
         self._set_icon_def_init_()
         self._set_name_def_init_()
@@ -629,10 +635,10 @@ class _QtPressItem(
             self._set_status_
         )
         self.rate_status_update_at.connect(
-            self._set_rate_status_update_at_
+            self._set_sub_process_status_at_
         )
         self.rate_finished_at.connect(
-            self._set_rate_finished_at_
+            self._set_sub_process_finished_at_
         )
 
     def _set_wgt_update_draw_(self):
@@ -645,7 +651,8 @@ class _QtPressItem(
         check_enable = self._get_action_check_is_enable_()
         option_click_enable = self._get_item_option_click_enable_()
         status_is_enable = self._get_status_is_enable_()
-        rate_is_enable = self._get_rate_is_enable_()
+        sub_process_is_enable = self._get_sub_process_is_enable_()
+        validator_is_enable = self._get_validator_is_enable_()
         progress_enable = self._get_progress_is_enable_()
         #
         f_w, f_h = self._icon_frame_size
@@ -716,13 +723,17 @@ class _QtPressItem(
             )
         #
         e_h = 4
-        if rate_is_enable is True:
-            self._rate_rect.setRect(
+        if sub_process_is_enable is True:
+            self._sub_process_status_rect.setRect(
                 c_x, c_h-e_h, c_w, e_h
             )
+        if validator_is_enable is True:
+            self._validator_status_rect.setRect(
+                c_x, c_h - e_h, c_w, e_h
+            )
 
-    def _set_rate_initialization_(self, count, status):
-        super(_QtPressItem, self)._set_rate_initialization_(count, status)
+    def _set_sub_process_initialization_(self, count, status):
+        super(_QtPressItem, self)._set_sub_process_initialization_(count, status)
         if count > 0:
             self._set_status_(
                 self.Status.Waiting
@@ -734,9 +745,9 @@ class _QtPressItem(
 
         self._set_wgt_update_draw_()
 
-    def _set_rate_finished_at_(self, index, status):
-        super(_QtPressItem, self)._set_rate_finished_at_(index, status)
-        if self._get_rate_is_finished_() is True:
+    def _set_sub_process_finished_at_(self, index, status):
+        super(_QtPressItem, self)._set_sub_process_finished_at_(index, status)
+        if self._get_sub_process_is_finished_() is True:
             self._set_status_(
                 self.Status.Finished
             )
@@ -744,11 +755,11 @@ class _QtPressItem(
 
         self._set_wgt_update_draw_()
 
-    def _set_rate_finished_connect_to_(self, fnc):
+    def _set_sub_process_finished_connect_to_(self, fnc):
         self.rate_finished.connect(fnc)
 
-    def _set_rate_restore_(self):
-        super(_QtPressItem, self)._set_rate_restore_()
+    def _set_sub_process_restore_(self):
+        super(_QtPressItem, self)._set_sub_process_restore_()
 
         self._set_status_(
             self.Status.Stopped
@@ -839,10 +850,18 @@ class _QtPressItem(
                 offset=offset
             )
         #
-        if self._get_rate_is_enable_() is True:
-            status_colors = [self._rate_colors, self._hover_rate_colors][self._is_hovered]
+        if self._get_sub_process_is_enable_() is True:
+            status_colors = [self._sub_process_status_colors, self._hover_sub_process_status_colors][self._is_hovered]
             painter._set_elements_status_draw_by_rect_(
-                self._rate_rect,
+                self._sub_process_status_rect,
+                colors=status_colors,
+                offset=offset,
+                border_radius=2,
+            )
+        elif self._get_validator_is_enable_() is True:
+            status_colors = [self._validator_status_colors, self._hover_validator_status_colors][self._is_hovered]
+            painter._set_elements_status_draw_by_rect_(
+                self._validator_status_rect,
                 colors=status_colors,
                 offset=offset,
                 border_radius=2,
@@ -889,9 +908,9 @@ class _QtPressItem(
             else:
                 text_color = QtFontColor.Disable
             #
-            if self._get_rate_is_enable_() is True:
+            if self._get_sub_process_is_enable_() is True:
                 name_text = '{} {}'.format(
-                    self._name_text, self._rate_text
+                    self._name_text, self._sub_process_status_text
                 )
             #
             painter._set_text_draw_by_rect_(
@@ -1869,6 +1888,9 @@ class _QtConstantValueEntryItem(
         self._layout.addWidget(self._item_value_entry_widget)
         self._item_value_entry_widget._set_item_value_type_(self._item_value_type)
 
+    def _set_value_locked_(self, boolean):
+        self._item_value_entry_widget.setReadOnly(boolean)
+
 
 class _QtScriptValueEntryItem(
     _QtEntryFrame,
@@ -2593,52 +2615,70 @@ class QtTreeWidgetItem(
         )
 
     def _set_icon_state_update_(self, column=0):
-        icon = QtGui.QIcon()
-        pixmap = None
-        if self._icon_file_path is not None:
-            pixmap = QtGui.QPixmap(self._icon_file_path)
-        elif self._icon_name_text is not None:
-            pixmap = QtPixmapMtd.get_by_name(self._icon_name_text)
-        #
-        if pixmap:
-            if self._icon_state in [utl_gui_core.State.ENABLE, utl_gui_core.State.DISABLE, utl_gui_core.State.WARNING, utl_gui_core.State.ERROR]:
-                if self._icon_state == utl_gui_core.State.ENABLE:
-                    background_color = Color.ENABLE
-                elif self._icon_state == utl_gui_core.State.DISABLE:
-                    background_color = Color.DISABLE
-                elif self._icon_state == utl_gui_core.State.WARNING:
-                    background_color = Color.WARNING
-                elif self._icon_state == utl_gui_core.State.ERROR:
-                    background_color = Color.ERROR
-                else:
-                    raise TypeError()
-                #
-                painter = _utl_gui_qt_wgt_utility.QtPainter(pixmap)
-                rect = pixmap.rect()
-                x, y = rect.x(), rect.y()
-                w, h = rect.width(), rect.height()
-                #
-                border_color = QtBorderColor.Icon
-                #
-                state_rect = QtCore.QRect(
-                    x, y+h/2, w/2, h/2
-                )
-                painter._set_frame_draw_by_rect_(
-                    state_rect,
-                    border_color=border_color,
-                    background_color=background_color,
-                    border_radius=w/2
-                )
-                painter.end()
+        if column == 0:
+            icon = QtGui.QIcon()
+            pixmap = None
+            if self._icon_file_path is not None:
+                pixmap = QtGui.QPixmap(self._icon_file_path)
+            elif self._icon_name_text is not None:
+                pixmap = QtPixmapMtd.get_by_name(self._icon_name_text)
             #
-            icon.addPixmap(
-                pixmap,
-                QtGui.QIcon.Normal,
-                QtGui.QIcon.On
-            )
-            self.setIcon(column, icon)
+            if pixmap:
+                if self._icon_state in [
+                    utl_gui_core.State.ENABLE,
+                    utl_gui_core.State.DISABLE,
+                    utl_gui_core.State.WARNING,
+                    utl_gui_core.State.ERROR,
+                    utl_gui_core.State.LOCKED
+                ]:
+                    if self._icon_state == utl_gui_core.State.ENABLE:
+                        background_color = Color.ENABLE
+                    elif self._icon_state == utl_gui_core.State.DISABLE:
+                        background_color = Color.DISABLE
+                    elif self._icon_state == utl_gui_core.State.WARNING:
+                        background_color = Color.WARNING
+                    elif self._icon_state == utl_gui_core.State.ERROR:
+                        background_color = Color.ERROR
+                    elif self._icon_state == utl_gui_core.State.LOCKED:
+                        background_color = Color.LOCKED
+                    else:
+                        raise TypeError()
+                    #
+                    painter = _utl_gui_qt_wgt_utility.QtPainter(pixmap)
+                    rect = pixmap.rect()
+                    x, y = rect.x(), rect.y()
+                    w, h = rect.width(), rect.height()
+                    #
+                    border_color = QtBorderColor.Icon
+                    #
+                    state_rect = QtCore.QRect(
+                        x, y+h/2, w/2, h/2
+                    )
+                    if self._icon_state == utl_gui_core.State.LOCKED:
+                        painter._set_file_icon_draw_by_rect_(
+                            state_rect,
+                            file_path=utl_gui_core.RscIconFile.get(
+                                'state-locked'
+                            )
+                        )
+                        painter.end()
+                    else:
+                        painter._set_frame_draw_by_rect_(
+                            state_rect,
+                            border_color=border_color,
+                            background_color=background_color,
+                            border_radius=w/2
+                        )
+                        painter.end()
+                #
+                icon.addPixmap(
+                    pixmap,
+                    QtGui.QIcon.Normal,
+                    QtGui.QIcon.On
+                )
+                self.setIcon(column, icon)
 
-    def _set_state_(self, state, column):
+    def _set_state_(self, state, column=0):
         self._icon_state = state
         #
         self._set_icon_state_update_(column)
@@ -2655,6 +2695,11 @@ class QtTreeWidgetItem(
             self.setForeground(column, QtGui.QBrush(Color.WARNING))
         elif state == utl_gui_core.State.ERROR:
             self.setForeground(column, QtGui.QBrush(Color.ERROR))
+        elif state == utl_gui_core.State.LOCKED:
+            self.setForeground(column, QtGui.QBrush(Color.LOCKED))
+
+    def _set_status_(self, status, column=0):
+        pass
 
     def _set_update_(self):
         tree_widget = self.treeWidget()
@@ -2820,6 +2865,13 @@ class QtTreeWidgetItem(
         self._set_item_visible_connection_refresh_()
         if hasattr(self, 'gui_proxy'):
             self.gui_proxy.set_visible_connection_refresh()
+
+    def _set_expanded_(self, boolean, ancestors=False):
+        self.setExpanded(boolean)
+        self._set_item_show_start_auto_()
+        #
+        if ancestors is True:
+            [i._set_expanded_(boolean) for i in self._get_ancestors_()]
 
     def __str__(self):
         return '{}(names="{}")'.format(

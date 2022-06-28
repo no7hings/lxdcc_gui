@@ -181,6 +181,7 @@ class State(object):
     DISABLE = 'disable'
     WARNING = 'warning'
     ERROR = 'error'
+    LOCKED = 'locked'
 
 
 class QtStyleMtd(object):

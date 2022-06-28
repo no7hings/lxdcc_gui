@@ -546,7 +546,7 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget._set_status_(status)
 
     def set_statuses(self, element_statuses):
-        self.widget._set_rate_statuses_(element_statuses)
+        self.widget._set_sub_process_statuses_(element_statuses)
 
 
 class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):

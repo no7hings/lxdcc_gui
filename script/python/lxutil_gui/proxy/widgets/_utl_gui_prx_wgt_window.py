@@ -99,6 +99,7 @@ class AbsPrxDialogWindow(
         self._cancel_methods = []
         #
         self._result = False
+        self._kwargs = {}
 
     def _set_method_run_(self, methods):
         def debug_run_fnc_(fnc_, *args, **kwargs):
@@ -134,18 +135,24 @@ class AbsPrxDialogWindow(
 
     def set_no_run(self):
         self._result = False
+        self._kwargs = self.get_options_as_kwargs()
         self._set_method_run_(self._no_methods)
 
     def set_yes_run(self):
         self._result = True
+        self._kwargs = self.get_options_as_kwargs()
         self._set_method_run_(self._yes_methods)
 
     def set_cancel_run(self):
         self._result = False
+        self._kwargs = self.get_options_as_kwargs()
         self._set_method_run_(self._cancel_methods)
 
     def get_result(self):
         return self._result
+
+    def get_kwargs(self):
+        return self._kwargs
 
     def set_yes_visible(self, boolean):
         self._yes_button.set_visible(boolean)
@@ -255,6 +262,7 @@ class PrxDialogWindow1(AbsPrxDialogWindow):
 
     def set_yes_run(self):
         self._result = True
+        self._kwargs = self.get_options_as_kwargs()
         for i in self._yes_methods:
             i()
         #
@@ -263,6 +271,7 @@ class PrxDialogWindow1(AbsPrxDialogWindow):
 
     def set_no_run(self):
         self._result = False
+        self._kwargs = self.get_options_as_kwargs()
         for i in self._no_methods:
             i()
         #
@@ -271,6 +280,7 @@ class PrxDialogWindow1(AbsPrxDialogWindow):
 
     def set_cancel_run(self):
         self._result = None
+        self._kwargs = self.get_options_as_kwargs()
         for i in self._cancel_methods:
             i()
         #

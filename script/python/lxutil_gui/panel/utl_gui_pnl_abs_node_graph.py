@@ -641,7 +641,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
             utl_core.DialogWindow.set_create(
                 'Save Graph',
                 content='"{}" save is completed'.format(file_path),
-                status=utl_core.DialogWindow.GuiStatus.Correct,
+                status=utl_core.DialogWindow.ValidatorStatus.Correct,
                 #
                 yes_label='Open Folder', yes_method=bsc_core.StoragePathOpt(file_path).set_open_in_system,
                 no_label='Close',
@@ -652,7 +652,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
             utl_core.DialogWindow.set_create(
                 'Save Graph',
                 content='enter a file name',
-                status=utl_core.DialogWindow.GuiStatus.Warning,
+                status=utl_core.DialogWindow.ValidatorStatus.Warning,
                 #
                 yes_label='Close',
                 #

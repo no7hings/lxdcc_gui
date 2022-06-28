@@ -329,6 +329,11 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
             rsv_entity.get_obj_gui().set_loading_end()
             #
             self.set_filter_update()
+
+        def quit_fnc_():
+            t.quit()
+            t.wait()
+            t.deleteLater()
         #
         t = utl_gui_qt_core.QtBuildThread(self.widget)
         t.set_cache_fnc(
@@ -338,6 +343,8 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         t.run_finished.connect(post_fnc_)
         #
         t.start()
+
+        self.set_window_close_connect_to(quit_fnc_)
 
     def _set_gui_add_rsv_tasks_(self, rsv_tasks):
         for i_rsv_task in rsv_tasks:
@@ -404,7 +411,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                     content='list all tasks from "{}", press "Yes" to continue'.format(
                         rsv_obj.name
                     ),
-                    status=utl_core.DialogWindow.GuiStatus.Warning,
+                    status=utl_core.DialogWindow.ValidatorStatus.Warning,
                 )
                 result = w.get_result()
                 if result is not True:

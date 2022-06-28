@@ -11,5 +11,5 @@ class SceneTextureManagerPanel(utl_gui_pnl_abs_utility.AbsSceneTextureManagerPan
     def __init__(self, *args, **kwargs):
         super(SceneTextureManagerPanel, self).__init__(*args, **kwargs)
     @utl_gui_qt_core.set_prx_window_waiting
-    def _set_texture_references_update_(self):
+    def _set_dcc_texture_references_update_(self):
         self._texture_references = ktn_dcc_objects.TextureReferences()

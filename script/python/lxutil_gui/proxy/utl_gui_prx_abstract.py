@@ -18,6 +18,8 @@ class _PrxStateDef(object):
     DISABLE_STATE = utl_gui_configure.State.DISABLE
     WARNING_STATE = utl_gui_configure.State.WARNING
     ERROR_STATE = utl_gui_configure.State.ERROR
+
+    LOCKED_STATE = utl_gui_configure.State.LOCKED
     #
     State = utl_gui_configure.State
 
@@ -92,6 +94,7 @@ class AbsPrx(object):
 
 
 class AbsPrxWidget(AbsPrx):
+    ValidatorStatus = bsc_configure.ValidatorStatus
     def __init__(self, *args, **kwargs):
         super(AbsPrxWidget, self).__init__(*args, **kwargs)
         self._set_build_()
@@ -208,7 +211,7 @@ class AbsPrxWindow(AbsPrx):
 
         self._close_methods = []
         #
-        self._status = bsc_configure.GuiStatus.Normal
+        self._status = bsc_configure.ValidatorStatus.Normal
 
         self._set_build_()
 
@@ -308,7 +311,8 @@ class GuiProgress(object):
         self._value = 0
         self._label = label
         # all value map to low
-        self._map_maximum = 10
+        # self._map_maximum = 10
+        self._map_maximum = min(maximum, 100)
         self._map_value = 0
         #
         self._parent = None

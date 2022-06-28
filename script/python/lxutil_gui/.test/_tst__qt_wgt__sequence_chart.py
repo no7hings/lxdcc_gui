@@ -69,7 +69,7 @@ class W(prx_widgets.PrxToolWindow):
     def _get_check_dict_(cls, directory_path, name_pattern):
         array_dict = collections.OrderedDict()
         file_dict = collections.OrderedDict()
-        _ = bsc_core.DirectoryMtd.get_all_file_paths(directory_path)
+        _ = bsc_core.DirectoryMtd.get_all_file_paths__(directory_path)
         if _:
             g_p = utl_core.GuiProgressesRunner(
                 maximum=len(_)

@@ -324,20 +324,25 @@ class PrxDccObjTreeViewAddOpt(object):
             return prx_item
 
     def _set_prx_item_add_(self, obj, prx_item_parent, name_use_path_prettify):
+        tool_tips = [
+            'type: {}'.format(obj.type_name),
+            'path: {}'.format(obj.path)
+        ]
+        tool_tip = '\n'.join(tool_tips)
         if name_use_path_prettify is True:
             kwargs = dict(
-                name=(obj.get_path_prettify_(), obj.type),
+                name=obj.get_path_prettify_(),
                 item_class=self._prx_tree_item_cls,
                 icon=obj.icon,
-                tool_tip=obj.path,
+                tool_tip=tool_tip,
                 menu=obj.get_gui_menu_raw()
             )
         else:
             kwargs = dict(
-                name=(obj.name, obj.type),
+                name=obj.name,
                 item_class=self._prx_tree_item_cls,
                 icon=obj.icon,
-                tool_tip=obj.path,
+                tool_tip=tool_tip,
                 menu=obj.get_gui_menu_raw()
             )
         if prx_item_parent is not None:
@@ -351,7 +356,6 @@ class PrxDccObjTreeViewAddOpt(object):
         prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
         prx_item.set_expanded(True)
         prx_item.set_checked(True)
-        prx_item.set_icon_by_name_text(obj.type_name, 1)
         self._obj_add_dict[obj.path] = prx_item
         return prx_item
 
@@ -360,7 +364,11 @@ class PrxDccObjTreeViewAddOpt(object):
         if obj_key in self._obj_add_dict:
             return self._obj_add_dict[obj_key]
         else:
-            return self._set_prx_item_add_(obj, prx_item_parent, name_use_path_prettify=False)
+            return self._set_prx_item_add_(
+                obj,
+                prx_item_parent,
+                name_use_path_prettify=False
+            )
 
     def _set_prx_item_add_0_(self, obj, parent=None):
         obj_key = obj.path
@@ -489,11 +497,8 @@ class PrxStgObjTreeViewAddOpt(object):
             else:
                 prx_item_parent = None
             #
-            obj_type = obj.type
-            #
             create_kwargs = dict(
                 name='loading ...',
-                icon_name_text=obj_type,
                 item_class=self._prx_tree_item_cls,
                 filter_key=obj.path
             )
@@ -539,11 +544,23 @@ class PrxStgObjTreeViewAddOpt(object):
 
         if obj.PATHSEP in obj.path:
             root = obj.get_root()
-            self._set_prx_item_add_(obj=root, use_show_thread=use_show_thread)
+            self._set_prx_item_add_(
+                obj=root,
+                use_show_thread=use_show_thread
+            )
             directory = obj.get_parent()
-            self._set_prx_item_add_(obj=directory, parent=root, use_show_thread=use_show_thread, name_use_path_prettify=True)
+            self._set_prx_item_add_(
+                obj=directory,
+                parent=root,
+                use_show_thread=use_show_thread,
+                name_use_path_prettify=True
+            )
             #
-            return self._set_prx_item_add_(obj=obj, parent=directory, use_show_thread=use_show_thread)
+            return self._set_prx_item_add_(
+                obj=obj,
+                parent=directory,
+                use_show_thread=use_show_thread
+            )
         #
         return False, None
 
@@ -574,22 +591,28 @@ class PrxStgObjTreeViewAddOpt(object):
             u'path="{}"'.format(obj_path)
         ]
         if obj.get_is_file():
-            file_tiles = obj.get_exists_files()
+            file_tiles = obj.get_exists_files_()
             if file_tiles:
                 tool_tip_ = []
                 if len(file_tiles) > 10:
-                    _ = file_tiles[:8] + file_tiles[-1:]
+                    _ = file_tiles[:8] + ['...'] + file_tiles[-1:]
                 else:
                     _ = file_tiles
                 #
-                for file_tile in _:
-                    st_mode = file_tile.get_permission()
-                    tool_tip_.append(
-                        u'path="{}"; st-mode="{}"'.format(
-                            file_tile.path, st_mode
+                for i_file_tile in _:
+                    if isinstance(i_file_tile, (str, unicode)):
+                        tool_tip_.append(i_file_tile)
+                    else:
+                        st_mode = i_file_tile.get_permission()
+                        tool_tip_.append(
+                            u'path="{}"; st-mode="{}"'.format(
+                                i_file_tile.path, st_mode
+                            )
                         )
-                    )
+                #
+                name = '{} ({})'.format(name, len(file_tiles))
                 descriptions = [tool_tip_]
+        #
         menu_raw = []
         menu_raw.extend(
             obj.get_gui_menu_raw() or []
@@ -599,11 +622,12 @@ class PrxStgObjTreeViewAddOpt(object):
         )
         #
         prx_item.set_name(name)
+        prx_item.set_icon_by_file(obj.icon_file)
         prx_item.set_tool_tips(descriptions)
         #
         menu_raw.extend(
             [
-                ('expanded', ),
+                ('expanded',),
                 ('Expand branch', None, prx_item.set_expand_branch),
                 ('Collapse branch', None, prx_item.set_collapse_branch),
             ]
@@ -617,8 +641,27 @@ class PrxStgObjTreeViewAddOpt(object):
             prx_item.set_state(prx_item.NORMAL_STATE)
             if obj.get_is_directory() is True:
                 prx_item.set_expanded(True)
+                if obj.get_is_writeable() is False:
+                    prx_item.set_state(prx_item.LOCKED_STATE)
         #
         # self._prx_tree_view.set_loading_update()
+
+    def get_files(self):
+        list_ = []
+        for k, v in self._prx_tree_view._item_dict.items():
+            i_texture = v.get_gui_dcc_obj(namespace='storage-file')
+            if i_texture is not None:
+                list_.append(i_texture)
+        return list_
+
+    def get_checked_files(self):
+        list_ = []
+        for k, v in self._prx_tree_view._item_dict.items():
+            i_texture = v.get_gui_dcc_obj(namespace='storage-file')
+            if i_texture is not None:
+                if v.get_is_checked() is True:
+                    list_.append(i_texture)
+        return list_
 
 
 class PrxStgTextureTreeViewAddOpt(PrxStgObjTreeViewAddOpt):
@@ -664,7 +707,7 @@ class PrxStgTextureTreeViewAddOpt(PrxStgObjTreeViewAddOpt):
                             )
                         )
                 #
-                name = '{}({})'.format(name, len(file_tiles))
+                name = '{} ({})'.format(name, len(file_tiles))
                 descriptions = [tool_tip_]
         #
         menu_raw = []
@@ -676,6 +719,7 @@ class PrxStgTextureTreeViewAddOpt(PrxStgObjTreeViewAddOpt):
         )
         #
         prx_item.set_name(name)
+        prx_item.set_icon_by_file(obj.icon_file)
         prx_item.set_tool_tips(descriptions)
         #
         menu_raw.extend(
@@ -695,8 +739,8 @@ class PrxStgTextureTreeViewAddOpt(PrxStgObjTreeViewAddOpt):
             if obj.get_is_directory() is True:
                 prx_item.set_expanded(True)
             else:
-                i_tx_exists = obj._get_is_exists_as_tgt_ext_by_src_(
-                    obj.path, self._output_directory_path, obj.TX_EXT
+                i_tx_exists = obj._get_is_exists_as_tgt_ext_(
+                    obj.path, obj.TX_EXT, self._output_directory_path
                 )
                 if i_tx_exists is True:
                     prx_item.set_state(prx_item.State.NORMAL)
@@ -943,15 +987,15 @@ class PrxRsvObjTreeViewAddOpt(object):
             if use_show_thread is True:
                 prx_item.set_show_method(
                     functools.partial(
-                        self._set_prx_item_show_deferred_, prx_item
+                        self._set_prx_item_show_deferred_as_tree_mode_, prx_item
                     )
                 )
                 return True, prx_item, None
             else:
-                self._set_prx_item_show_deferred_(prx_item)
+                self._set_prx_item_show_deferred_as_tree_mode_(prx_item)
                 return True, prx_item, None
 
-    def _set_prx_item_show_deferred_(self, prx_item):
+    def _set_prx_item_show_deferred_as_tree_mode_(self, prx_item):
         def expand_by_condition_fnc_(*args):
             _prx_item = args[0]
             type_name = _prx_item.get_name(1)
@@ -1000,8 +1044,8 @@ class PrxRsvObjTreeViewAddOpt(object):
         if ancestors:
             ancestors.reverse()
             for i in ancestors:
-                ancestor_path = i.path
-                if ancestor_path not in self._obj_add_dict:
+                i_path = i.path
+                if i_path not in self._obj_add_dict:
                     i_is_create, i_item_prx, i_show_thread = self._set_prx_item_add_(i, use_show_thread=True)
                     if i_show_thread is not None:
                         show_threads.append(i_show_thread)
@@ -1010,6 +1054,9 @@ class PrxRsvObjTreeViewAddOpt(object):
         if thread is not None:
             show_threads.append(thread)
         return is_create, prx_item, show_threads
+
+    def set_prx_item_add_as_list_mode(self, obj):
+        pass
 
 
 class PrxObjTreeViewAddOpt(object):

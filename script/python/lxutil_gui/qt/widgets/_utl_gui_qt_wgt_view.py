@@ -547,23 +547,60 @@ class QtTreeWidget(
         )
 
     def _get_item_visible_children_by_index_(self, index):
-        lis = []
-        raw_count = self.model().rowCount(index)
-        for row in range(raw_count):
-            child_index = index.child(row, index.column())
-            child_item = self.itemFromIndex(child_index)
-            if child_item is not None:
-                if child_item.isHidden() is True:
+        list_ = []
+        row_count = self.model().rowCount(index)
+        for i_row in range(row_count):
+            i_index = index.child(i_row, index.column())
+            i_item = self.itemFromIndex(i_index)
+            if i_item is not None:
+                if i_item.isHidden() is True:
                     continue
-                lis.append(child_item)
-        return lis
+                list_.append(i_item)
+        return list_
+
+    def _get_item_children_by_index_(self, index):
+        list_ = []
+        row_count = self.model().rowCount(index)
+        for i_row in range(row_count):
+            i_index = index.child(i_row, index.column())
+            i_item = self.itemFromIndex(i_index)
+            if i_item is not None:
+                list_.append(i_item)
+        return list_
+
+    def _get_item_juxtaposed_by_index_(self, index):
+        parent_index = index.parent()
+        if parent_index.isValid():
+            return self._get_item_children_by_index_(parent_index)
+        else:
+            return []
+
+    def _get_all_expanded_items_(self, index):
+        def rcs_fnc_(index_):
+            _row_count = self.model().rowCount(index_)
+            for _i_row in range(_row_count):
+                _i_index = index_.child(_i_row, index_.column())
+                _i_item = self.itemFromIndex(_i_index)
+                if _i_item is not None:
+                    list_.append(_i_item)
+                    if _i_item.isExpanded() is True:
+                        rcs_fnc_(_i_index)
+
+        list_ = []
+        parent_index = index.parent()
+        if parent_index.isValid():
+            rcs_fnc_(parent_index)
+        else:
+            indices = [self.indexFromItem(self.topLevelItem(i)) for i in range(self.topLevelItemCount())]
+            [rcs_fnc_(i) for i in indices]
+        return list_
 
     def _get_item_has_visible_children_by_index_(self, index):
-        raw_count = self.model().rowCount(index)
-        for row in range(raw_count):
-            child_index = index.child(row, index.column())
-            if child_index.isValid():
-                if self.itemFromIndex(child_index).isHidden() is False:
+        row_count = self.model().rowCount(index)
+        for i_row in range(row_count):
+            i_index = index.child(i_row, index.column())
+            if i_index.isValid():
+                if self.itemFromIndex(i_index).isHidden() is False:
                     return True
         return False
 
@@ -600,7 +637,7 @@ class QtTreeWidget(
         return [self.itemFromIndex(i) for i in self._selected_indices]
 
     def _get_items_by_keyword_filter_(self, keyword, match_case=False, match_word=False):
-        lis = []
+        list_ = []
         if keyword:
             column_count = self.columnCount()
             #
@@ -627,10 +664,10 @@ class QtTreeWidget(
                     i_id = i_index.internalId()
                     if not i_id in i_ids:
                         i_ids.append(i_id)
-                        lis.append(item)
+                        list_.append(item)
         else:
             pass
-        return lis
+        return list_
 
     def drawBranches(self, painter, rect, index):
         # Get the indention level of the row
@@ -853,7 +890,7 @@ class QtTreeWidget(
                 timer.timeout.connect(fnc_)
                 timer.start(time)
         #
-        self._set_item_expand_update_at_(index)
+        self._set_item_expanded_update_at_(index)
 
     def _set_item_action_collapse_execute_at_(self, index):
         if self._is_expand_descendants:
@@ -861,6 +898,8 @@ class QtTreeWidget(
             self._set_item_extend_expanded_at__(index, False)
 
         self._set_item_collapse_at_(index)
+
+        self._set_item_expanded_update_at_(index)
 
     def _set_item_extend_expanded_at__(self, index, boolean):
         for i in range(0, index.model().rowCount(index)):
@@ -882,14 +921,8 @@ class QtTreeWidget(
         rcs_fnc_(list_, index)
         return list_
 
-    def _set_item_expand_update_at_(self, index):
-        list_ = []
-
-        item = self.itemFromIndex(index)
-        list_.extend(
-            item._get_children_()
-        )
-
+    def _set_item_expanded_update_at_(self, index):
+        list_ = self._get_all_expanded_items_(index)
         for i in list_:
             i._set_item_show_start_auto_()
 
@@ -933,21 +966,21 @@ class QtTreeWidget(
             else:
                 row_count = model.rowCount(index_)
                 if row_count == 0:
-                    lis.append(self.itemFromIndex(index_))
+                    list_.append(self.itemFromIndex(index_))
             #
-            for row in range(row_count):
+            for i_row in range(row_count):
                 if index_ is None:
-                    _index = model.index(row, column)
+                    _index = model.index(i_row, column)
                 else:
-                    _index = index_.child(row, index_.column())
+                    _index = index_.child(i_row, index_.column())
                 if _index.isValid():
                     _rcs_fnc(_index)
 
-        lis = []
+        list_ = []
         model = self.model()
 
         _rcs_fnc(None)
-        return lis
+        return list_
 
     def _get_items_by_depth_(self, depth, column=0):
         def _rcs_fnc(index_, cur_depth_):
@@ -956,21 +989,21 @@ class QtTreeWidget(
                     row_count = model.rowCount()
                 else:
                     row_count = model.rowCount(index_)
-                    lis.append(self.itemFromIndex(index_))
+                    list_.append(self.itemFromIndex(index_))
                 #
-                for row in range(row_count):
+                for i_row in range(row_count):
                     if index_ is None:
-                        _index = model.index(row, column)
+                        _index = model.index(i_row, column)
                     else:
-                        _index = index_.child(row, index_.column())
+                        _index = index_.child(i_row, index_.column())
                     #
                     if _index.isValid():
                         _rcs_fnc(_index, cur_depth_+1)
 
-        lis = []
+        list_ = []
         model = self.model()
         _rcs_fnc(None, 0)
-        return lis
+        return list_
 
     def _set_scroll_to_item_top_(self, item):
         self.scrollToItem(item, self.PositionAtTop)

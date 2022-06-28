@@ -297,9 +297,7 @@ class PrxTreeItem(
         return self.widget.isSelected()
     # expanded
     def set_expanded(self, boolean=True, ancestors=False):
-        self.widget.setExpanded(boolean)
-        if ancestors is True:
-            [i.set_expanded(boolean) for i in self.get_ancestors()]
+        self.widget._set_expanded_(boolean, ancestors)
     # expand
     def set_expand(self, ancestors=False):
         self.widget.setExpanded(True)
@@ -471,6 +469,9 @@ class PrxTreeItem(
             'state', state
         )
         self.widget._set_state_(state, column)
+
+    def set_status(self, status, column=0):
+        self.widget._set_status_(status, column)
 
     def get_view(self):
         qt_tree_view = self.widget.treeWidget()

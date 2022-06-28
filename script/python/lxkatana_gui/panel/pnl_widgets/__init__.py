@@ -13,6 +13,9 @@ from ._ktn_gui_pnl_wgt_look_viewer import *
 
 from ._ktn_gui_pnl_wgt_manager import *
 
+from ._ktn_gui_pnl_wgt_texture import *
+
+
 
 
 

@@ -147,37 +147,102 @@ class AbsRsvTypeQtEntry(utl_gui_prx_abstract.AbsPrxWidget):
         return self._use_as_storage
 
 
-class PrxFileOpenEntry(AbsRsvTypeQtEntry):
+class _PrxStorageEntry(AbsRsvTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
     QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtEnumerateValueEntryItem
-    #
-    HISTORY_KEY = 'gui.file-open'
     def __init__(self, *args, **kwargs):
-        super(PrxFileOpenEntry, self).__init__(*args, **kwargs)
+        super(_PrxStorageEntry, self).__init__(*args, **kwargs)
+        self._history_key = 'gui.storage'
+        #
+        self._ext_filter = 'All File(s) (*.*)'
         #
         self._qt_entry_widget._set_item_entry_enable_(True)
         #
-        self._file_open_or_save_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
-        self.set_button_add(self._file_open_or_save_button)
-        self._file_open_or_save_button.set_name('open file')
-        self._file_open_or_save_button.set_icon_name('file/file')
-        self._file_open_or_save_button.set_tool_tip(
+        self._open_or_save_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
+        self.set_button_add(self._open_or_save_button)
+        self._open_or_save_button.set_name('open file')
+        self._open_or_save_button.set_icon_name('file/file')
+        self._open_or_save_button.set_tool_tip(
             [
                 '"LMB-click" to open file by "dialog"'
             ]
         )
-        self._file_open_or_save_button.set_press_clicked_connect_to(self._set_file_open_or_save_)
+        self._open_or_save_button.set_press_clicked_connect_to(self._set_open_or_save_)
         #
-        self._ext_filter = 'All File(s) (*.*)'
-        #
-        self.set_history_update()
+        # self.set_history_update()
         #
         self._qt_entry_widget._set_item_choose_changed_connect_to_(self.set_history_update)
 
     def set_ext_filter(self, ext_filter):
         self._ext_filter = ext_filter
 
-    def _set_file_open_or_save_(self):
+    def get_ext_filter(self):
+        return self._ext_filter
+
+    def set_history_key(self, key):
+        self._history_key = key
+        self.set('')
+        self.set_history_update()
+        self.set_show_history_latest()
+
+    def get_history_key(self):
+        return self._history_key
+
+    def _set_open_or_save_(self):
+        raise NotImplementedError()
+
+    def get(self):
+        return self._qt_entry_widget._get_item_value_()
+
+    def set(self, raw=None, **kwargs):
+        self._qt_entry_widget._set_item_value_(raw)
+
+    def set_default(self, raw, **kwargs):
+        self._qt_entry_widget._set_item_value_default_(raw)
+
+    def get_is_default(self):
+        return self._qt_entry_widget._get_item_value_is_default_()
+
+    def set_changed_connect_to(self, fnc):
+        self._qt_entry_widget._set_item_entry_changed_connect_to_(fnc)
+    #
+    def set_history_update(self):
+        path = self._qt_entry_widget._get_item_value_()
+        if bsc_core.StoragePathOpt(path).get_is_exists() is True:
+            utl_core.History.set_append(
+                self._history_key,
+                path
+            )
+        #
+        histories = utl_core.History.get(
+            self._history_key
+        )
+        if histories:
+            histories.reverse()
+        #
+        self._qt_entry_widget._set_item_values_(
+            histories
+        )
+
+    def set_show_history_latest(self):
+        _ = utl_core.History.get_latest(self._history_key)
+        if _:
+            self._qt_entry_widget._set_item_value_(_)
+
+
+class PrxFileOpenEntry(_PrxStorageEntry):
+    def __init__(self, *args, **kwargs):
+        super(PrxFileOpenEntry, self).__init__(*args, **kwargs)
+        self._open_or_save_button.set_name('open file')
+        self._open_or_save_button.set_icon_name('file/file')
+        self._open_or_save_button.set_tool_tip(
+            [
+                '"LMB-click" to open file by "dialog"'
+            ]
+        )
+        self.set_history_key('gui.file-open')
+
+    def _set_open_or_save_(self):
         f = utl_gui_qt_core.QtWidgets.QFileDialog()
         options = f.Options()
         # options |= f.DontUseNativeDialog
@@ -195,69 +260,42 @@ class PrxFileOpenEntry(AbsRsvTypeQtEntry):
                 )
                 self.set_history_update()
 
-    def get(self):
-        return self._qt_entry_widget._get_item_value_()
 
-    def set(self, raw=None, **kwargs):
-        self._qt_entry_widget._set_item_value_(raw)
-
-    def set_default(self, raw, **kwargs):
-        self._qt_entry_widget._set_item_value_default_(raw)
-
-    def get_is_default(self):
-        return self._qt_entry_widget._get_item_value_is_default_()
-
-    def set_changed_connect_to(self, fnc):
-        self._qt_entry_widget._set_item_entry_changed_connect_to_(fnc)
-    #
-    def set_history_update(self):
-        path = self._qt_entry_widget._get_item_value_()
-        if bsc_core.StoragePathOpt(path).get_is_exists() is True:
-            utl_core.History.set_append(
-                self.HISTORY_KEY,
-                path
-            )
-        #
-        histories = utl_core.History.get(
-            self.HISTORY_KEY
-        )
-        if histories:
-            histories.reverse()
-            #
-            self._qt_entry_widget._set_item_values_(
-                histories
-            )
-
-    def set_show_history_latest(self):
-        _ = utl_core.History.get_latest(self.HISTORY_KEY)
-        if _:
-            self._qt_entry_widget._set_item_value_(_)
-
-
-class PrxFileSaveEntry(PrxFileOpenEntry):
-    HISTORY_KEY = 'gui.file-save'
+class PrxFileSaveEntry(_PrxStorageEntry):
     def __init__(self, *args, **kwargs):
         super(PrxFileSaveEntry, self).__init__(*args, **kwargs)
-        self._file_open_or_save_button.set_name('save file')
-        self._file_open_or_save_button.set_tool_tip(
+        self._open_or_save_button.set_name('save file')
+        self._open_or_save_button.set_icon_name('file/file')
+        self._open_or_save_button.set_tool_tip(
             [
                 '"LMB-click" to save file by "dialog"'
             ]
         )
+        self.set_history_key('gui.file-save')
+
+    def _set_open_or_save_(self):
+        f = utl_gui_qt_core.QtWidgets.QFileDialog()
+        options = f.Options()
+        # options |= f.DontUseNativeDialog
+        s = f.getSaveFileName(
+            self.widget,
+            'Save File',
+            self.get(),
+            filter=self._ext_filter,
+            options=options,
+        )
+        if s:
+            _ = s[0]
+            if _:
+                self.set(
+                    s[0]
+                )
+                self.set_history_update()
 
 
-class PrxDirectoryOpenEntry(AbsRsvTypeQtEntry):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtEnumerateValueEntryItem
-    #
-    HISTORY_KEY = 'gui.directory-open'
+class PrxDirectoryOpenEntry(_PrxStorageEntry):
     def __init__(self, *args, **kwargs):
         super(PrxDirectoryOpenEntry, self).__init__(*args, **kwargs)
-        #
-        self._qt_entry_widget._set_item_entry_enable_(True)
-        #
-        self._open_or_save_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
-        self.set_button_add(self._open_or_save_button)
         self._open_or_save_button.set_name('open directory')
         self._open_or_save_button.set_icon_name('file/folder')
         self._open_or_save_button.set_tool_tip(
@@ -265,18 +303,9 @@ class PrxDirectoryOpenEntry(AbsRsvTypeQtEntry):
                 '"LMB-click" to open directory by "dialog"'
             ]
         )
-        self._open_or_save_button.set_press_clicked_connect_to(self._set_directory_open_or_save_)
-        #
-        self._ext_filter = 'All File(s) (*.*)'
-        #
-        self.set_history_update()
-        #
-        self._qt_entry_widget._set_item_choose_changed_connect_to_(self.set_history_update)
+        self.set_history_key('gui.directory-open')
 
-    def set_ext_filter(self, ext_filter):
-        self._ext_filter = ext_filter
-
-    def _set_directory_open_or_save_(self):
+    def _set_open_or_save_(self):
         f = utl_gui_qt_core.QtWidgets.QFileDialog()
         options = f.Options()
         # options |= f.DontUseNativeDialog
@@ -291,57 +320,20 @@ class PrxDirectoryOpenEntry(AbsRsvTypeQtEntry):
             )
             self.set_history_update()
 
-    def get(self):
-        return self._qt_entry_widget._get_item_value_()
 
-    def set(self, raw=None, **kwargs):
-        self._qt_entry_widget._set_item_value_(raw)
-
-    def set_default(self, raw, **kwargs):
-        self._qt_entry_widget._set_item_value_default_(raw)
-
-    def get_is_default(self):
-        return self._qt_entry_widget._get_item_value_is_default_()
-
-    def set_changed_connect_to(self, fnc):
-        self._qt_entry_widget._set_item_entry_changed_connect_to_(fnc)
-    #
-    def set_history_update(self):
-        path = self._qt_entry_widget._get_item_value_()
-        if bsc_core.StoragePathOpt(path).get_is_exists() is True:
-            utl_core.History.set_append(
-                self.HISTORY_KEY,
-                path
-            )
-        #
-        histories = utl_core.History.get(
-            self.HISTORY_KEY
-        )
-        if histories:
-            histories.reverse()
-            #
-            self._qt_entry_widget._set_item_values_(
-                histories
-            )
-
-    def set_show_history_latest(self):
-        _ = utl_core.History.get_latest(self.HISTORY_KEY)
-        if _:
-            self._qt_entry_widget._set_item_value_(_)
-
-
-class PrxDirectorySaveEntry(PrxDirectoryOpenEntry):
-    HISTORY_KEY = 'gui.directory-save'
+class PrxDirectorySaveEntry(_PrxStorageEntry):
     def __init__(self, *args, **kwargs):
         super(PrxDirectorySaveEntry, self).__init__(*args, **kwargs)
         self._open_or_save_button.set_name('save directory')
+        self._open_or_save_button.set_icon_name('file/folder')
         self._open_or_save_button.set_tool_tip(
             [
                 '"LMB-click" to save directory by "dialog"'
             ]
         )
+        self.set_history_key('gui.directory-save')
 
-    def _set_directory_open_or_save_(self):
+    def _set_open_or_save_(self):
         f = utl_gui_qt_core.QtWidgets.QFileDialog()
         options = f.Options()
         # options |= f.DontUseNativeDialog
@@ -556,6 +548,9 @@ class PrxConstantEntry(AbsRsvTypeQtEntry):
 
     def get_range(self):
         return self._qt_entry_widget._get_value_range_()
+
+    def set_locked(self, boolean):
+        self._qt_entry_widget._set_value_locked_(boolean)
 
 
 class PrxChooseEntry_(AbsRsvTypeQtEntry):
@@ -818,11 +813,11 @@ class PrxButtonEntry(AbsRsvTypeQtEntry):
         self._qt_entry_widget._set_menu_raw_(raw)
 
 
-class PrxProcessEntry(AbsRsvTypeQtEntry):
+class PrxSubProcessEntry(AbsRsvTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
     QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtPressItem
     def __init__(self, *args, **kwargs):
-        super(PrxProcessEntry, self).__init__(*args, **kwargs)
+        super(PrxSubProcessEntry, self).__init__(*args, **kwargs)
         self._stop_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self.set_button_add(self._stop_button)
         self._stop_button.set_name('Stop Process')
@@ -854,6 +849,28 @@ class PrxProcessEntry(AbsRsvTypeQtEntry):
         self._stop_button.widget.press_clicked.connect(
             lambda *args, **kwargs: self._set_fnc_debug_run_(fnc)
         )
+
+
+class PrxValidatorEntry(AbsRsvTypeQtEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtPressItem
+    def __init__(self, *args, **kwargs):
+        super(PrxValidatorEntry, self).__init__(*args, **kwargs)
+
+    def get(self):
+        return None
+    @utl_modifiers.set_method_exception_catch
+    def _set_fnc_debug_run_(self, fnc):
+        fnc()
+
+    def set(self, raw=None, **kwargs):
+        if isinstance(raw, (types.MethodType, types.FunctionType)):
+            self._qt_entry_widget.clicked.connect(
+                lambda *args, **_kwargs: self._set_fnc_debug_run_(raw)
+            )
+
+    def set_menu_raw(self, raw):
+        self._qt_entry_widget._set_menu_raw_(raw)
 
 
 class AbsRsvTypeEntry(utl_gui_prx_abstract.AbsPrxWidget):
@@ -1463,6 +1480,9 @@ class PrxConstantPort(AbsPrxTypePort):
     def __init__(self, *args, **kwargs):
         super(PrxConstantPort, self).__init__(*args, **kwargs)
 
+    def set_locked(self, boolean):
+        self._prx_port_entry.set_locked(boolean)
+
 
 class PrxTextPort(PrxConstantPort):
     ENTRY_CLASS = PrxTextEntry
@@ -1495,19 +1515,10 @@ class PrxFloatPort(PrxConstantPort):
         super(PrxFloatPort, self).__init__(*args, **kwargs)
 
 
-class PrxFileOpenPort(PrxConstantPort):
-    ENTRY_CLASS = PrxFileOpenEntry
+class _PrxStoragePort(PrxConstantPort):
+    ENTRY_CLASS = _PrxStorageEntry
     def __init__(self, *args, **kwargs):
-        super(PrxFileOpenPort, self).__init__(*args, **kwargs)
-
-    def set_ext_filter(self, ext_filter):
-        self._prx_port_entry.set_ext_filter(ext_filter)
-
-
-class PrxDirectoryOpenPort(PrxConstantPort):
-    ENTRY_CLASS = PrxDirectoryOpenEntry
-    def __init__(self, *args, **kwargs):
-        super(PrxDirectoryOpenPort, self).__init__(*args, **kwargs)
+        super(_PrxStoragePort, self).__init__(*args, **kwargs)
 
     def set_ext_filter(self, ext_filter):
         self._prx_port_entry.set_ext_filter(ext_filter)
@@ -1515,23 +1526,32 @@ class PrxDirectoryOpenPort(PrxConstantPort):
     def set_show_history_latest(self):
         self._prx_port_entry.set_show_history_latest()
 
+    def set_history_key(self, key):
+        self._prx_port_entry.set_history_key(key)
 
-class PrxDirectorySavePort(PrxDirectoryOpenPort):
-    ENTRY_CLASS = PrxDirectorySaveEntry
+
+class PrxFileOpenPort(_PrxStoragePort):
+    ENTRY_CLASS = PrxFileOpenEntry
     def __init__(self, *args, **kwargs):
-        super(PrxDirectorySavePort, self).__init__(*args, **kwargs)
+        super(PrxFileOpenPort, self).__init__(*args, **kwargs)
 
 
-class PrxFileSavePort(PrxConstantPort):
+class PrxFileSavePort(_PrxStoragePort):
     ENTRY_CLASS = PrxFileSaveEntry
     def __init__(self, *args, **kwargs):
         super(PrxFileSavePort, self).__init__(*args, **kwargs)
 
-    def set_ext_filter(self, ext_filter):
-        self._prx_port_entry.set_ext_filter(ext_filter)
 
-    def set_history_update(self):
-        self._prx_port_entry.set_history_update()
+class PrxDirectoryOpenPort(_PrxStoragePort):
+    ENTRY_CLASS = PrxDirectoryOpenEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxDirectoryOpenPort, self).__init__(*args, **kwargs)
+
+
+class PrxDirectorySavePort(_PrxStoragePort):
+    ENTRY_CLASS = PrxDirectorySaveEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxDirectorySavePort, self).__init__(*args, **kwargs)
 
 
 class PrxRsvProjectChoosePort(PrxConstantPort):
@@ -1541,6 +1561,9 @@ class PrxRsvProjectChoosePort(PrxConstantPort):
 
     def get_histories(self):
         return self.entry_widget.get_histories()
+
+    def set_show_history_latest(self):
+        self._prx_port_entry.set_show_history_latest()
 
 
 class PrxSchemChoosePort(PrxConstantPort):
@@ -1649,13 +1672,13 @@ class PrxButtonPort(AbsPrxTypePort):
         self._prx_port_entry._qt_entry_widget._set_status_(status)
 
 
-class PrxStatusPort(AbsPrxTypePort):
+class PrxSubProcessPort(AbsPrxTypePort):
     ENABLE_CLASS = _PrxPortStatus
     LABEL_CLASS = _PrxPortLabel
     LABEL_HIDED = True
-    ENTRY_CLASS = PrxProcessEntry
+    ENTRY_CLASS = PrxSubProcessEntry
     def __init__(self, *args, **kwargs):
-        super(PrxStatusPort, self).__init__(*args, **kwargs)
+        super(PrxSubProcessPort, self).__init__(*args, **kwargs)
         self.label_widget.widget._set_name_text_('')
         self._prx_port_entry._qt_entry_widget._set_name_text_(
             self.label
@@ -1675,15 +1698,15 @@ class PrxStatusPort(AbsPrxTypePort):
         widget.status_changed.emit(status)
 
     def set_statuses(self, statuses):
-        self._prx_port_entry._qt_entry_widget._set_rate_statuses_(statuses)
+        self._prx_port_entry._qt_entry_widget._set_sub_process_statuses_(statuses)
 
     def set_initialization(self, count, status):
-        self._prx_port_entry._qt_entry_widget._set_rate_initialization_(count, status)
+        self._prx_port_entry._qt_entry_widget._set_sub_process_initialization_(count, status)
 
     def set_restore(self):
-        self._prx_port_entry._qt_entry_widget._set_rate_restore_()
+        self._prx_port_entry._qt_entry_widget._set_sub_process_restore_()
 
-    def set_status_update_at(self, index, status):
+    def set_status_at(self, index, status):
         widget = self._prx_port_entry._qt_entry_widget
         widget.rate_status_update_at.emit(index, status)
 
@@ -1693,7 +1716,7 @@ class PrxStatusPort(AbsPrxTypePort):
 
     def set_finished_connect_to(self, fnc):
         widget = self._prx_port_entry._qt_entry_widget
-        widget._set_rate_finished_connect_to_(fnc)
+        widget._set_sub_process_finished_connect_to_(fnc)
 
     def set_stop_connect_to(self, fnc):
         self._prx_port_entry.set_stop_connect_to(fnc)
@@ -1704,6 +1727,34 @@ class PrxStatusPort(AbsPrxTypePort):
 
     def get_is_stopped(self):
         return self._is_stopped
+
+
+class PrxValidatorPort(AbsPrxTypePort):
+    ENABLE_CLASS = _PrxPortStatus
+    LABEL_CLASS = _PrxPortLabel
+    LABEL_HIDED = True
+    ENTRY_CLASS = PrxValidatorEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxValidatorPort, self).__init__(*args, **kwargs)
+        self.label_widget.widget._set_name_text_('')
+        self._prx_port_entry._qt_entry_widget._set_name_text_(
+            self.label
+        )
+
+    def set_name(self, text):
+        self._prx_port_entry._qt_entry_widget._set_name_text_(text)
+
+    def set_status(self, status):
+        self._prx_port_entry._qt_entry_widget._set_status_(status)
+
+    def set_statuses(self, statuses):
+        self._prx_port_entry._qt_entry_widget._set_validator_statuses_(statuses)
+
+    def set_restore(self):
+        self._prx_port_entry._qt_entry_widget._set_validator_restore_()
+
+    def set_status_at(self, index, status):
+        self._prx_port_entry._qt_entry_widget._set_validator_status_at_(index, status)
 
 
 class PrxRsvObjChoosePort(AbsPrxTypePort):
@@ -2151,6 +2202,9 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
                 port_path,
                 node_widget=self.widget
             )
+            lock = option.get('lock') or False
+            if lock is True:
+                port.set_locked(True)
             port.set(value_)
             port.set_default(value_)
         elif widget_ in ['integer']:
@@ -2225,8 +2279,8 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
                 port.set_ext_filter(ext_filter)
         #
         elif widget_ in ['directory']:
-            open_or_save = option.get('open_or_save')
-            if open_or_save == 'save':
+            open_or_save_ = option.get('open_or_save')
+            if open_or_save_ == 'save':
                 port = PrxDirectorySavePort(
                     port_path,
                     node_widget=self.widget
@@ -2236,8 +2290,17 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
                     port_path,
                     node_widget=self.widget
                 )
+            #
+            history_key_ = option.get('history_key')
+            if history_key_:
+                port.set_history_key(history_key_)
+
             port.set(value_)
             port.set_default(value_)
+
+            show_history_latest = option.get('show_history_latest')
+            if show_history_latest:
+                port.set_show_history_latest()
         #
         elif widget_ in ['button']:
             port = PrxButtonPort(
@@ -2246,8 +2309,14 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             )
             port.set(value_)
 
-        elif widget_ in ['status_button']:
-            port = PrxStatusPort(
+        elif widget_ in ['sub_process_button']:
+            port = PrxSubProcessPort(
+                port_path,
+                node_widget=self.widget
+            )
+            port.set(value_)
+        elif widget_ in ['validator_button']:
+            port = PrxValidatorPort(
                 port_path,
                 node_widget=self.widget
             )
@@ -2260,6 +2329,10 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             )
             if value_:
                 port.set(value_)
+
+            show_history_latest = option.get('show_history_latest')
+            if show_history_latest:
+                port.set_show_history_latest()
         elif widget_ in ['rsv-obj']:
             port = PrxRsvObjChoosePort(
                 port_path,
