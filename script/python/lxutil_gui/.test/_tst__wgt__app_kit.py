@@ -24,7 +24,7 @@ class AppKit(prx_widgets.PrxToolWindow):
             'rsv-panels/asset-loader',
             'rsv-panels/asset-batcher',
             'rsv-panels/shot-loader',
-            'tool-panels/texture-tx-converter'
+            'tool-panels/texture-converter'
         ]:
             i_hook_args = ssn_commands.get_hook_args(
                 i_key

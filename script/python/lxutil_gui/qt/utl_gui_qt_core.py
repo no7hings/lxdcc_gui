@@ -373,6 +373,8 @@ class Color(object):
                 return _
             elif isinstance(_, (tuple, list)):
                 return cls._to_qt_color_(*_)
+            else:
+                raise TypeError()
         else:
             return cls._to_qt_color_(*args)
     @classmethod
@@ -385,6 +387,49 @@ class Color(object):
         else:
             raise TypeError()
         return QtGui.QColor(r, g, b, a)
+    @classmethod
+    def _get_rgb_(cls, *args):
+        if len(args) == 1:
+            _ = args[0]
+            if isinstance(_, QtGui.QColor):
+                return _.red(), _.green(), _.blue()
+            elif isinstance(_, (tuple, list)):
+                return cls._to_rgb_(*_)
+            else:
+                return 0, 0, 0
+        else:
+            return cls._to_rgb_(*args)
+    @classmethod
+    def _to_rgb_(cls, *args):
+        if len(args) == 3:
+            r, g, b = args
+        elif len(args) == 4:
+            r, g, b, a = args
+        else:
+            raise TypeError()
+        return r, g, b
+    @classmethod
+    def _get_rgba_(cls, *args):
+        if len(args) == 1:
+            _ = args[0]
+            if isinstance(_, QtGui.QColor):
+                return _.red(), _.green(), _.blue(), _.alpha()
+            elif isinstance(_, (tuple, list)):
+                return cls._to_rgba_(*_)
+            else:
+                return 0, 0, 0, 0
+        else:
+            return cls._to_rgba_(*args)
+    @classmethod
+    def _to_rgba_(cls, *args):
+        if len(args) == 3:
+            r, g, b = args
+            a = 255
+        elif len(args) == 4:
+            r, g, b, a = args
+        else:
+            raise TypeError()
+        return r, g, b, a
 
 
 class QtBorderColor(object):
@@ -1376,33 +1421,6 @@ class QtBuildRunnableRunner(QtCore.QObject):
                 c_t._build_signals.run_finished.connect(i_t.set_start)
             #
             c_t = i_t
-
-
-class QtCmdSubProcessThread(QtCore.QThread):
-    Status = bsc_configure.Status
-    def __init__(self, *args, **kwargs):
-        super(QtCmdSubProcessThread, self).__init__(*args, **kwargs)
-        self._cmd = None
-
-        self._status = self.Status.Waiting
-
-    def set_cmd(self, cmd):
-        self._cmd = cmd
-
-    def set_status(self, status):
-        pass
-
-    def run(self):
-        if self._status == self.Status.Waiting:
-            self.set_status(self.Status.Running)
-            try:
-                results = bsc_core.SubProcessMtd.set_run_as_block(
-                    self._cmd
-                )
-                self.set_status(self.Status.Completed)
-                self.set_completed(results)
-            except subprocess.CalledProcessError:
-                self.set_status(self.Status.Error)
 
 
 class QtHBoxLayout(QtWidgets.QHBoxLayout):

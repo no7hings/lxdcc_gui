@@ -279,10 +279,19 @@ class AbsQtSubProcessDef(object):
         self._set_wgt_update_draw_()
 
     def _set_sub_process_text_update_(self):
-        cost_timestamp = bsc_core.SystemMtd.get_timestamp() - self._sub_process_start_timestamp
-        self._sub_process_status_text = '[{}/{}][{}]'.format(
-            sum(self._sub_process_finished_results), len(self._sub_process_finished_results),
-            bsc_core.IntegerMtd.second_to_time_prettify(cost_timestamp)
+        finished_value = sum(self._sub_process_finished_results)
+        finished_maximum = len(self._sub_process_finished_results)
+        #
+        costed_timestamp = bsc_core.SystemMtd.get_timestamp() - self._sub_process_start_timestamp
+        if finished_value > 0:
+            estimated_timestamp = (costed_timestamp/finished_value)*finished_maximum
+        else:
+            estimated_timestamp = 0
+        #
+        self._sub_process_status_text = '[{}/{}][{}/{}]'.format(
+            finished_value, finished_maximum,
+            bsc_core.IntegerMtd.second_to_time_prettify(costed_timestamp),
+            bsc_core.IntegerMtd.second_to_time_prettify(estimated_timestamp)
         )
 
     def _get_sub_process_is_finished_(self):
@@ -1569,9 +1578,9 @@ class _QtItemOptionPressActionDef(object):
         return False
 
 
-class AbsQtItemActionChooseDef(object):
+class AbsQtActionChooseDef(object):
     choose_changed = qt_signal()
-    def _set_item_action_choose_def_init_(self):
+    def _set_action_choose_def_init_(self):
         self._choose_expand_icon_file_path = utl_core.Icon.get('choose_expand')
         self._choose_collapse_icon_file_path = utl_core.Icon.get('choose_collapse')
         #
@@ -1609,17 +1618,25 @@ class AbsQtItemActionChooseDef(object):
         self.choose_changed.connect(fnc)
 
 
-class _QtItemEntryActionDef(object):
-    def _set_item_entry_def_init_(self):
+class AbsQtEntryDef(object):
+    def _set_entry_def_init_(self, widget):
         self._entry_enable = False
 
-    def _set_item_entry_enable_(self, boolean):
+    def _set_entry_enable_(self, boolean):
         self._entry_enable = boolean
 
-    def _set_item_entry_finished_connect_to_(self, fnc):
+    def _set_entry_use_as_storage_(self, boolean):
         pass
 
-    def _set_item_entry_changed_connect_to_(self, fnc):
+    def _set_entry_finished_connect_to_(self, fnc):
+        pass
+
+    def _set_entry_changed_connect_to_(self, fnc):
+        pass
+
+
+class AbsQtActionEntryDef(object):
+    def _set_action_entry_def_init_(self, widget):
         pass
 
 
@@ -2754,10 +2771,10 @@ class AbsQtItemValueTypeConstantEntryDef(object):
     def _get_item_value_(self):
         return self._item_value_entry_widget._get_item_value_()
 
-    def _set_item_entry_finished_connect_to_(self, fnc):
+    def _set_entry_finished_connect_to_(self, fnc):
         self._item_value_entry_widget.entry_finished.connect(fnc)
 
-    def _set_item_entry_changed_connect_to_(self, fnc):
+    def _set_entry_changed_connect_to_(self, fnc):
         self._item_value_entry_widget.entry_changed.connect(fnc)
 
     def _set_item_value_entry_enable_(self, boolean):
@@ -2870,7 +2887,7 @@ class _QtArrayValueEntryDef(object):
     def _get_item_value_is_default_(self):
         return tuple(self._get_item_value_()) == tuple(self._get_item_value_default_())
 
-    def _set_item_entry_changed_connect_to_(self, fnc):
+    def _set_entry_changed_connect_to_(self, fnc):
         for i in self._value_entry_widgets:
             i.entry_changed.connect(fnc)
 

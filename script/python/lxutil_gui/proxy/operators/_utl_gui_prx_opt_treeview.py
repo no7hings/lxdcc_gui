@@ -420,6 +420,15 @@ class PrxDccObjTreeViewAddOpt(object):
         #
         return self._set_dag_dcc_obj_gui_add_(obj)
 
+    def get_checked_dcc_objs(self):
+        list_ = []
+        for k, v in self._prx_tree_view._item_dict.items():
+            i_texture = v.get_gui_dcc_obj(namespace=self._dcc_namespace)
+            if i_texture is not None:
+                if v.get_is_checked() is True:
+                    list_.append(i_texture)
+        return list_
+
 
 class PrxStgObjTreeViewAddOpt(object):
     def __init__(self, prx_tree_view, prx_tree_item_cls):

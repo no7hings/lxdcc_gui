@@ -521,18 +521,19 @@ class QtPainter(QtGui.QPainter):
         self._set_border_width_(1)
         #
         if background_color is not None:
-            background_color_ = background_color
-            # background_qt_color_ = Color._get_qt_color_(background_color_)
-            text_color_ = QtFontColor.Basic
+            background_rgb = Color._get_rgb_(background_color)
+            background_color_ = Color._get_qt_color_(background_color)
         else:
-            background_color_ = bsc_core.TextOpt(text).to_rgb()
-            t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(*background_color_)
-            t_r = QtGui.qGray(t_r, t_g, t_b)
-            if t_r >= 127:
-                t_r_1 = 223
-            else:
-                t_r_1 = 63
-            text_color_ = QtGui.QColor(t_r_1, t_r_1, t_r_1)
+            background_rgb = bsc_core.TextOpt(text).to_rgb()
+            background_color_ = Color._get_qt_color_(background_rgb)
+        t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(*background_rgb)
+        t_r = QtGui.qGray(t_r, t_g, t_b)
+        if t_r >= 127:
+            t_r_1 = 223
+        else:
+            t_r_1 = 63
+        #
+        text_color_ = QtGui.QColor(t_r_1, t_r_1, t_r_1)
 
         if text_color is not None:
             text_color_ = text_color

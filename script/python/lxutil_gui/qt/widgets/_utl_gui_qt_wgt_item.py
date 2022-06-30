@@ -909,7 +909,7 @@ class _QtPressItem(
                 text_color = QtFontColor.Disable
             #
             if self._get_sub_process_is_enable_() is True:
-                name_text = '{} {}'.format(
+                name_text = '{} - {}'.format(
                     self._name_text, self._sub_process_status_text
                 )
             #
@@ -2048,8 +2048,10 @@ class _QtEnumerateValueEntryItem(
     utl_gui_qt_abstract.AbsQtItemValueEnumerateEntryDef,
     utl_gui_qt_abstract.AbsQtItemValueDefaultDef,
     #
-    utl_gui_qt_abstract.AbsQtItemActionChooseDef,
-    utl_gui_qt_abstract._QtItemEntryActionDef,
+    utl_gui_qt_abstract.AbsQtEntryDef,
+    #
+    utl_gui_qt_abstract.AbsQtActionChooseDef,
+    utl_gui_qt_abstract.AbsQtActionEntryDef,
 ):
     QT_VALUE_ENTRY_CLASS = QtLineEdit_
     CHOOSE_DROP_FRAME_CLASS = _QtItemChooseDropFrame
@@ -2077,7 +2079,10 @@ class _QtEnumerateValueEntryItem(
         self._set_item_value_enumerate_entry_def_init_()
         self._set_item_value_default_def_init_()
         #
-        self._set_item_action_choose_def_init_()
+        self._set_entry_def_init_(self)
+        #
+        self._set_action_entry_def_init_(self)
+        self._set_action_choose_def_init_()
         #
         self._layout = QtHBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -2135,13 +2140,16 @@ class _QtEnumerateValueEntryItem(
         widget = self.CHOOSE_DROP_FRAME_CLASS(self)
         widget._set_drop_start_()
 
-    def _set_item_entry_enable_(self, boolean):
+    def _set_entry_enable_(self, boolean):
         self._item_value_entry_widget._set_enter_enable_(boolean)
 
-    def _set_item_entry_finished_connect_to_(self, fnc):
+    def _set_entry_use_as_storage_(self, boolean):
+        self._item_value_entry_widget._set_use_as_storage_(boolean)
+
+    def _set_entry_finished_connect_to_(self, fnc):
         self._item_value_entry_widget.entry_finished.connect(fnc)
 
-    def _set_item_entry_changed_connect_to_(self, fnc):
+    def _set_entry_changed_connect_to_(self, fnc):
         self._item_value_entry_widget.entry_changed.connect(fnc)
 
 
@@ -3932,7 +3940,7 @@ class _QtItemGuideRect(
     utl_gui_qt_abstract._QtPathDef,
     utl_gui_qt_abstract.AbsQtFrameDef,
     #
-    utl_gui_qt_abstract.AbsQtItemActionChooseDef,
+    utl_gui_qt_abstract.AbsQtActionChooseDef,
 ):
     def _set_wgt_update_draw_(self):
         pass
@@ -3943,7 +3951,7 @@ class _QtItemGuideRect(
         self._set_name_def_init_()
         self._set_path_def_init_()
         self._set_frame_def_init_()
-        self._set_item_action_choose_def_init_()
+        self._set_action_choose_def_init_()
         #
         self._set_icon_file_path_(
             self._choose_collapse_icon_file_path
