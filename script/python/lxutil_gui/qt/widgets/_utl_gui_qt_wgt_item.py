@@ -1342,8 +1342,8 @@ class _QtEntryFrame(
     utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract._QtStatusDef,
 ):
-    def _get_action_is_enable_(self):
-        pass
+    # def _get_action_is_enable_(self):
+    #     pass
 
     def _set_wgt_update_draw_(self):
         self.update()

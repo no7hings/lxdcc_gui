@@ -69,6 +69,10 @@ class AbsTextureWorkspace(object):
 
         self._rsv_task = rsv_task
 
+        self._layer = None
+
+        self._version = None
+
         self._work_texture_base_directory_rsv_unit = self._rsv_task.get_rsv_unit(
             keyword='asset-work-texture-base-dir'
         )
@@ -91,7 +95,7 @@ class AbsTextureWorkspace(object):
 
     def set_create_at(self, layer, version):
         if version == 'new':
-            version = self._work_texture_directory_rsv_unit.get_new_version()
+            version = self.get_new_version()
         #
         self.set_layer(layer)
         self.set_version(version)
@@ -103,7 +107,7 @@ class AbsTextureWorkspace(object):
             self.get_src_directory_path_at(layer, version)
         )
         bsc_core.StoragePathMtd.set_directory_create(
-            self.get_tgt_directory_path_at(layer, version)
+            self.get_tx_directory_path_at(layer, version)
         )
 
     def set_lock_at(self, layer, version):
@@ -120,10 +124,16 @@ class AbsTextureWorkspace(object):
         )
 
     def get_latest_version(self):
-        return self._work_texture_directory_rsv_unit.get_latest_version()
+        layer = self.get_current_layer()
+        return self._work_texture_directory_rsv_unit.get_latest_version(
+            extend_variants=dict(layer=layer)
+        )
 
     def get_new_version(self):
-        return self._work_texture_directory_rsv_unit.get_new_version()
+        layer = self.get_current_layer()
+        return self._work_texture_directory_rsv_unit.get_new_version(
+            extend_variants=dict(layer=layer)
+        )
 
     def set_load(self, layer, version):
         self.set_layer(layer)
@@ -147,7 +157,7 @@ class AbsTextureWorkspace(object):
             extend_variants=dict(layer=layer)
         )
 
-    def get_tgt_directory_path_at(self, layer, version):
+    def get_tx_directory_path_at(self, layer, version):
         return self._work_texture_tx_directory_rsv_unit.get_result(
             version=version,
             extend_variants=dict(layer=layer)
@@ -166,7 +176,7 @@ class AbsTextureWorkspace(object):
     def get_current_tx_directory_path(self):
         layer = self.get_current_layer()
         version = self.get_current_version()
-        return self.get_tgt_directory_path_at(layer, version)
+        return self.get_tx_directory_path_at(layer, version)
 
     def get_data(self):
         dict_ = collections.OrderedDict()
@@ -217,16 +227,22 @@ class AbsTextureWorkspace(object):
         return dict_
 
     def get_current_layer(self):
-        return self._get_dcc_layer_()
+        return self._layer
 
     def set_layer(self, layer):
-        self._set_dcc_layer_(layer)
+        self._layer = layer
 
     def set_version(self, version):
-        self._set_dcc_version_(version)
+        self._version = version
 
     def get_current_version(self):
-        return self._get_dcc_version_()
+        return self._version
+
+    def get_all_versions(self):
+        layer = self.get_current_layer()
+        return self._work_texture_directory_rsv_unit.get_all_versions(
+            extend_variants=dict(layer=layer)
+        )
 
     def _set_dcc_version_(self, version):
         raise NotImplementedError()
@@ -382,11 +398,11 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
         )
 
         self._workspace_options_prx_node.set(
-            'control.new_version', self._set_workspace_version_new_
+            'control.update_version', self._set_workspace_version_update_execute_
         )
 
         self._workspace_options_prx_node.set(
-            'texture.pull/execute', self._set_workspace_texture_pull_
+            'texture.pull.execute', self._set_workspace_texture_pull_execute_
         )
 
         self._workspace_options_prx_node.set(
@@ -430,165 +446,147 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
 
     def _set_texture_workspace_update_(self):
         self._texture_workspace = self.TEXTURE_WORKSPACE_CLS(self._rsv_task)
-
-        # current_layer = self._texture_workspace.get_current_layer()
         current_layer = 'main'
-        current_version = self._texture_workspace.get_latest_version()
-        #
-        # if current_layer is None:
-        #     current_layer, current_version = self._get_workspace_install_args_()
-        # else:
-        #     self._set_workspace_version_unlocked_(current_layer, current_version)
-        #     current_version = self._texture_workspace.get_current_version()
+        self._texture_workspace.set_layer(current_layer)
+        if self._set_workspace_check_(current_layer) is True:
+            self._texture_workspace.set_version(
+                self._texture_workspace.get_latest_version()
+            )
+            self._workspace_options_prx_node.set(
+                'control.layer', self._texture_workspace.get_current_layer()
+            )
+            self._workspace_options_prx_node.set(
+                'control.version', self._texture_workspace.get_current_version()
+            )
 
-        self._workspace_options_prx_node.set(
-            'control.layer', current_layer
-        )
-        self._workspace_options_prx_node.set(
-            'control.version', current_version
-        )
+            self._workspace_options_prx_node.set(
+                'resolver.task', self._rsv_task.path
+            )
+            #
+            self._set_wsp_directory_update_()
 
-        self._workspace_options_prx_node.set(
-            'resolver.task', self._rsv_task.path
-        )
-        #
-        self._set_workspace_directory_update_()
+            self._set_wsp_pull_update_()
 
-    def _get_workspace_install_args_(self):
-        def update_version_fnc_():
-            _layer = n.get('layer')
-            _versions = c.get(_layer)
-            n.set('version', _versions)
-
+    def _set_workspace_check_(self, current_layer):
         def yes_fnc_():
-            _layer = n.get('layer')
-            _version = n.get('version')
-            if _version == 'new':
-                self._texture_workspace.set_create_at(
-                    _layer, _version
-                )
-            else:
-                self._texture_workspace.set_load(
-                    _layer, _version
-                )
+            self._texture_workspace.set_create_at(
+                current_layer, 'new'
+            )
 
-        data = self._texture_workspace.get_used_data()
+        self._is_disable = True
 
-        c = bsc_objects.Configure(value=data)
-
-        w = utl_core.DialogWindow.set_create(
-            self._session.gui_name,
-            content='workspace is not install, choose "layer" and "version", press "confirm" to continue',
-            status=utl_core.DialogWindow.ValidatorStatus.Warning,
-            #
-            options_configure=self._build_configure.get('node.dialog_0'),
-            #
-            yes_label='confirm',
-            #
-            yes_method=yes_fnc_,
-            #
-            no_visible=False,
-            show=False
+        directory_path = self._texture_workspace.get_directory_path_at(
+            current_layer, 'latest'
         )
-
-        n = w.get_options_node()
-
-        layers = c.get_top_keys()
-
-        n.set('layer', layers)
-        n.set('layer', layers[0])
-        main_versions = c.get('main')
-        n.set('version', main_versions)
-        n.set('version', main_versions[0])
-
-        n.get_port('layer').set_changed_connect_to(update_version_fnc_)
-
-        w.set_window_show()
-
-        result = w.get_result()
-        kwargs = w.get_kwargs()
-        if result is True:
-            return kwargs['layer'], kwargs['version']
+        if directory_path:
+            return True
         else:
-            self._is_disable = True
-            self.set_window_close()
-            return None, None
-
-    def _set_workspace_version_unlocked_(self, layer, version):
-        def yes_fnc_():
-            _layer = n.get('layer')
-            _version = n.get('version')
-            if _version == 'new':
-                self._texture_workspace.set_create_at(
-                    _layer, _version
-                )
-            else:
-                self._texture_workspace.set_load(
-                    _layer, _version
-                )
-
-        is_locked = self._texture_workspace.get_is_read_only_at(layer, version)
-        if is_locked is True:
-            data = self._texture_workspace.get_used_data()
-
-            c = bsc_objects.Configure(value=data)
-
             w = utl_core.DialogWindow.set_create(
                 self._session.gui_name,
-                content='current version "{}" is locked, choose "layer" and "version", press "confirm" to continue'.format(
-                    version
-                ),
+                content='workspace is not install, press "confirm" to continue',
                 status=utl_core.DialogWindow.ValidatorStatus.Warning,
-                #
-                options_configure=self._build_configure.get('node.dialog_0'),
                 #
                 yes_label='confirm',
                 #
                 yes_method=yes_fnc_,
                 #
                 no_visible=False,
-                show=False
+                # show=False
             )
-
-            n = w.get_options_node()
-
-            n.set('layer', [layer])
-            n.set('layer', layer)
-            main_versions = c.get(layer)
-            n.set('version', main_versions)
-            n.set('version', main_versions[0])
-
-            w.set_window_show()
-
             result = w.get_result()
-            kwargs = w.get_kwargs()
             if result is True:
-                pass
+                return True
             else:
                 self._is_disable = True
                 self.set_window_close()
 
-    def _get_workspace_version_new_(self, layer, version):
+    def _set_workspace_version_update_execute_(self):
         def yes_fnc_():
             self._texture_workspace.set_lock_at(
-                layer, version
+                layer, current_version
             )
-            _layer = n.get('layer')
-            _version = n.get('version')
             self._texture_workspace.set_create_at(
-                _layer, _version
+                layer, nxt_version
             )
-            _collection_enable = n.get('collection_enable')
 
-            if _collection_enable is True:
-                self._set_textures_copy_and_repath_()
+            time.sleep(2)
+            self.set_refresh_all()
+
+        layer = self._texture_workspace.get_current_layer()
+        current_version = self._texture_workspace.get_current_version()
+        nxt_version = self._texture_workspace.get_new_version()
 
         w = utl_core.DialogWindow.set_create(
             self._session.gui_name,
-            content='create a new version, press "confirm" to continue',
+            content='update version "{}" to "{}" in layer "{}", press "confirm" to continue'.format(
+                current_version, nxt_version, layer
+            ),
             status=utl_core.DialogWindow.ValidatorStatus.Warning,
             #
-            options_configure=self._build_configure.get('node.dialog_2'),
+            yes_label='confirm',
+            #
+            yes_method=yes_fnc_,
+            #
+            no_visible=False,
+            # show=False
+        )
+        result = w.get_result()
+
+    def _set_workspace_texture_pull_execute_(self):
+        def yes_fnc_():
+            _n = w.get_options_node()
+            _replace_enable = _n.get('replace_enable')
+            _with_src = _n.get('with_src')
+            _with_tx = _n.get('with_tx')
+
+            _directory_path_base = self._texture_workspace.get_base_directory_path()
+
+            _directory_path_src_0 = self._texture_workspace.get_src_directory_path_at(
+                layer, form_version
+            )
+            _directory_path_tx_0 = self._texture_workspace.get_tx_directory_path_at(
+                layer, form_version
+            )
+
+            _directory_path_src_1 = self._texture_workspace.get_src_directory_path_at(
+                layer, current_version
+            )
+            _directory_path_tx_1 = self._texture_workspace.get_tx_directory_path_at(
+                layer, current_version
+            )
+
+            if _with_src is True:
+                self._set_texture_copy_(
+                    _directory_path_base,
+                    _directory_path_src_0,
+                    _directory_path_src_1,
+                    _replace_enable
+                )
+
+            if _with_tx is True:
+                self._set_texture_copy_(
+                    _directory_path_base,
+                    _directory_path_tx_0,
+                    _directory_path_tx_1,
+                    _replace_enable
+                )
+
+        layer = self._texture_workspace.get_current_layer()
+
+        form_version = self._workspace_options_prx_node.get(
+            'texture.pull.version'
+        )
+
+        current_version = self._texture_workspace.get_current_version()
+
+        w = utl_core.DialogWindow.set_create(
+            self._session.gui_name,
+            content='pull texture from version "{}" to "{}", press "confirm" to continue'.format(
+                form_version, current_version
+            ),
+            status=utl_core.DialogWindow.ValidatorStatus.Warning,
+            #
+            options_configure=self._build_configure.get('node.pull'),
             #
             yes_label='confirm',
             #
@@ -598,26 +596,33 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
             show=False
         )
 
-        n = w.get_options_node()
-
-        n.set('layer', [layer])
-        n.set('layer', layer)
-        n.set('version', ['new'])
-        n.set('version', 'new')
-
         w.set_window_show()
 
-        result = w.get_result()
-
-    def _set_workspace_texture_pull_(self):
-        pass
-
-    def _set_workspace_directory_update_(self):
-        layer = self._dcc_options_prx_node.get(
-            'workspace.layer'
+    def _set_texture_copy_(self, texture_path_base, texture_path_0, texture_path_1, _replace_enable):
+        file_paths_src = bsc_core.DirectoryMtd.get_file_paths__(
+            texture_path_0
         )
-        version = self._dcc_options_prx_node.get(
-            'workspace.version'
+        if file_paths_src:
+            with utl_core.gui_progress(maximum=len(file_paths_src)) as g_p:
+                for i_file_path in file_paths_src:
+                    g_p.set_update()
+
+                    i_texture_src = utl_dcc_objects.OsTexture(
+                        i_file_path
+                    )
+
+                    i_texture_src.set_copy_as_src(
+                        directory_path_src=texture_path_base,
+                        directory_path_tgt=texture_path_1,
+                        replace=_replace_enable
+                    )
+
+    def _set_wsp_directory_update_(self):
+        layer = self._workspace_options_prx_node.get(
+            'control.layer'
+        )
+        version = self._workspace_options_prx_node.get(
+            'control.version'
         )
         self._workspace_options_prx_node.set(
             'texture.directory.base', self._texture_workspace.get_base_directory_path()
@@ -629,21 +634,28 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
             )
         )
         self._workspace_options_prx_node.set(
-            'texture.directory.tx', self._texture_workspace.get_tgt_directory_path_at(
+            'texture.directory.tx', self._texture_workspace.get_tx_directory_path_at(
                 layer,
                 version
             )
         )
 
-    def _set_workspace_version_new_(self):
-        layer = self._texture_workspace.get_current_layer()
-        pre_version = self._texture_workspace.get_current_version()
-        self._get_workspace_version_new_(layer, pre_version)
-        current_version = self._texture_workspace.get_current_version()
-        if pre_version != current_version:
-            # sleep wait for locked
-            time.sleep(2)
-            self.set_refresh_all()
+    def _set_wsp_pull_update_(self):
+        layer = self._workspace_options_prx_node.get(
+            'control.layer'
+        )
+        version = self._workspace_options_prx_node.get(
+            'control.version'
+        )
+
+        self._workspace_options_prx_node.set(
+            'texture.pull.layer', [layer]
+        )
+        versions = self._texture_workspace.get_all_versions()
+        versions.remove(version)
+        self._workspace_options_prx_node.set(
+            'texture.pull.version', versions
+        )
 
     def set_refresh_all(self):
         self._set_dcc_scene_update_()
@@ -1047,27 +1059,27 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
                     i_output_directory_path
                 )
 
-                print i_file_path, i_output_directory_path
+                # print i_file_path, i_output_directory_path
 
-                # i_cmd = utl_dcc_objects.OsTexture._get_unit_tx_create_cmd_by_src_force_(
-                #     i_file_path,
-                #     search_directory_path=i_output_directory_path,
-                # )
-                # if button.get_is_stopped():
-                #     break
-                # #
-                # if i_cmd:
-                #     bsc_core.CmdSubProcessThread.set_wait()
-                #     i_t = bsc_core.CmdSubProcessThread.set_start(i_cmd, i_index)
-                #     i_t.status_changed.set_connect_to(status_update_at_fnc_)
-                #     i_t.finished.set_connect_to(finished_fnc_)
-                # else:
-                #     status_update_at_fnc_(
-                #         i_index, bsc_configure.Status.Completed
-                #     )
-                #     finished_fnc_(
-                #         i_index, bsc_configure.Status.Completed
-                #     )
+                i_cmd = utl_dcc_objects.OsTexture._get_unit_tx_create_cmd_by_src_force_(
+                    i_file_path,
+                    search_directory_path=i_output_directory_path,
+                )
+                if button.get_is_stopped():
+                    break
+                #
+                if i_cmd:
+                    bsc_core.CmdSubProcessThread.set_wait()
+                    i_t = bsc_core.CmdSubProcessThread.set_start(i_cmd, i_index)
+                    i_t.status_changed.set_connect_to(status_update_at_fnc_)
+                    i_t.finished.set_connect_to(finished_fnc_)
+                else:
+                    status_update_at_fnc_(
+                        i_index, bsc_configure.Status.Completed
+                    )
+                    finished_fnc_(
+                        i_index, bsc_configure.Status.Completed
+                    )
 
         def quit_fnc_():
             button.set_stopped()
