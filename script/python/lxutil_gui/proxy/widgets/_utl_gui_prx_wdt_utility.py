@@ -469,10 +469,13 @@ class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget.clicked.connect(fnc)
 
     def set_click(self):
-        self.widget._set_press_click_emit_send_()
+        self.widget._set_action_press_click_emit_send_()
 
     def set_tool_tip(self, *args, **kwargs):
         self.widget._set_tool_tip_(*args, **kwargs)
+
+    def set_action_enable(self, boolean):
+        self._qt_widget._set_action_enable_(boolean)
 
 
 class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
@@ -540,7 +543,7 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget.option_clicked.connect(fnc)
 
     def set_click(self):
-        self.widget._set_press_click_emit_send_()
+        self.widget._set_action_press_click_emit_send_()
 
     def set_status(self, status):
         self.widget._set_status_(status)
@@ -628,8 +631,8 @@ class PrxToolWindow(
         #
         self.set_show_menu_raw(
             [
-                ('Log', None, self.set_log_unit_show),
-                ('Help', None, self.set_help_unit_show)
+                ('log', None, self.set_log_unit_show),
+                ('help', None, self.set_help_unit_show)
             ]
         )
 
@@ -639,7 +642,7 @@ class PrxToolWindow(
         self._qt_menu_bar_0 = _utl_gui_qt_wgt_utility.QtMenuBar()
         self._qt_widget.setMenuBar(self._qt_menu_bar_0)
         self._menu_0 = PrxMenu(self._qt_menu_bar_0)
-        self._menu_0.set_name('Show(s)')
+        self._menu_0.set_name('show')
         self._qt_menu_bar_0.addMenu(self._menu_0.widget)
         #
         self._qt_central_widget = _utl_gui_qt_wgt_utility.QtWidget()
@@ -719,7 +722,7 @@ class PrxToolWindow(
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
         #
         content_widget_0 = ContentWidget()
-        content_widget_0.set_name('Log(s)')
+        content_widget_0.set_name('log')
         qt_layout_0.addWidget(content_widget_0.widget)
         content_widget_0.set_close_connect_to(fnc_)
         #
@@ -735,7 +738,7 @@ class PrxToolWindow(
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
         #
         content_widget_0 = ContentWidget()
-        content_widget_0.set_name('Help(s)')
+        content_widget_0.set_name('help')
         qt_layout_0.addWidget(content_widget_0.widget)
         content_widget_0.set_close_connect_to(fnc_)
         #
@@ -908,6 +911,36 @@ class PrxToolWindow(
     def set_print_add_use_thread(self, text):
         text_browser = self.get_log_text_browser()
         text_browser.set_print_add_use_thread(text)
+
+
+class PrxSessionWindow(PrxToolWindow):
+    def __init__(self, session, *args, **kwargs):
+        super(PrxSessionWindow, self).__init__(*args, **kwargs)
+        self._session = session
+        self._session.set_configure_reload()
+        self._session = session
+        self._session.set_configure_reload()
+        if self._session.get_rez_beta() is True:
+            self.set_window_title('[BETA] {}'.format(self._session.gui_configure.get('name')))
+        else:
+            self.set_window_title(self._session.gui_configure.get('name'))
+        #
+        self.set_definition_window_size(self._session.gui_configure.get('size'))
+
+        self.set_loading_start(
+            time=1000,
+            method=self._setup_fnc_
+        )
+    @property
+    def session(self):
+        return self._session
+
+    def _setup_fnc_(self):
+        self.set_all_setup()
+        self.set_window_loading_end()
+
+    def set_all_setup(self):
+        raise NotImplementedError()
 
 
 class PrxFramelessWindow(

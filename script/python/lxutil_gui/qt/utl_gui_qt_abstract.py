@@ -1202,6 +1202,7 @@ class _QtChartDef(object):
 
 class AbsQtActionDef(object):
     ActionFlag = utl_gui_configure.ActionFlag
+    ActionState = bsc_configure.ActionState
     def _set_wgt_update_draw_(self):
         raise NotImplementedError()
 
@@ -1209,7 +1210,23 @@ class AbsQtActionDef(object):
         self._widget = widget
         self._action_flag = None
         #
+        self._action_is_enable = True
+        #
         self._action_mdf_flags = []
+
+        self._action_state = self.ActionState.Normal
+        self._action_state_rect = QtCore.QRect()
+
+    def _set_action_enable_(self, boolean):
+        self._action_is_enable = boolean
+        if boolean is False:
+            self._action_state = self.ActionState.Disable
+        else:
+            self._action_state = self.ActionState.Enable
+        self._set_wgt_update_draw_()
+
+    def _get_action_is_enable_(self):
+        return self._action_is_enable
 
     def _set_action_flag_(self, flag):
         if flag is not None:
@@ -1345,20 +1362,19 @@ class AbsQtActionDef(object):
             return 2
         return 0
 
+    def _set_action_state_(self, state):
+        self._action_flag = state
+
+    def _get_action_state_(self):
+        return self._action_state
+
 
 class AbsQtActionHoverDef(object):
     def _set_wgt_update_draw_(self):
         raise NotImplementedError()
 
     def _set_action_hover_def_init_(self):
-        self._item_is_enable = True
         self._is_hovered = False
-
-    def _set_action_enable_(self, boolean):
-        self._item_is_enable = boolean
-
-    def _get_action_is_enable_(self):
-        return self._item_is_enable
 
     def _set_hovered_(self, boolean):
         self._is_hovered = boolean
@@ -1389,11 +1405,11 @@ class AbsQtActionPressDef(object):
     ActionFlag = utl_gui_configure.ActionFlag
     def _set_action_press_def_init_(self):
         self._press_is_enable = True
-        self._press_is_clicked = False
+        self._action_is_pressed = False
         #
-        self._press_rect = QtCore.QRect()
+        self._action_press_rect = QtCore.QRect()
 
-        self._press_db_clicked_methods = []
+        self._action_press_db_clicked_methods = []
 
     def _set_wgt_update_draw_(self):
         raise NotImplementedError()
@@ -1412,26 +1428,26 @@ class AbsQtActionPressDef(object):
             return self._press_is_enable
         return False
 
-    def _set_pressed_(self, boolean):
-        self._press_is_clicked = boolean
+    def _set_action_pressed_(self, boolean):
+        self._action_is_pressed = boolean
 
     def _get_is_pressed_(self):
-        return self._press_is_clicked
+        return self._action_is_pressed
 
-    def _set_press_click_emit_send_(self):
+    def _set_action_press_click_emit_send_(self):
         self.clicked.emit()
         self.press_clicked.emit()
 
-    def _set_press_db_click_emit_send_(self):
+    def _set_action_press_db_click_emit_send_(self):
         self.press_db_clicked.emit()
 
-    def _get_is_press_click_flag_(self):
+    def _get_action_press_flag_is_click_(self):
         return self._get_action_flag_is_match_(
             self.ActionFlag.PressClick
         )
 
-    def _set_press_db_clicked_method_add_(self, fnc):
-        self._press_db_clicked_methods.append(fnc)
+    def _set_action_press_db_clicked_method_add_(self, fnc):
+        self._action_press_db_clicked_methods.append(fnc)
 
 
 class AbsQtActionCheckDef(object):

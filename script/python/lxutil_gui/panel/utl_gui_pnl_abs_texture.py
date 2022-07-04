@@ -365,6 +365,10 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
         )
 
         self._options_prx_node.set(
+            'workspace.pull', self._set_pull_
+        )
+
+        self._options_prx_node.set(
             'extra.collection_to_current_version', self._set_textures_copy_and_repath_
         )
 
@@ -578,6 +582,9 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
         w.set_window_show()
 
         result = w.get_result()
+
+    def _set_pull_(self):
+        pass
 
     def _set_workspace_directory_update_(self):
         layer = self._options_prx_node.get(

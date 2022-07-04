@@ -1279,10 +1279,9 @@ class _QtGuideBar(
     QtWidgets.QWidget,
     #
     utl_gui_qt_abstract.AbsQtMenuDef,
+    #
     utl_gui_qt_abstract.AbsQtActionDef,
-    #
     utl_gui_qt_abstract.AbsQtActionHoverDef,
-    #
     utl_gui_qt_abstract.AbsQtActionPressDef,
     utl_gui_qt_abstract.AbsQtItemEntryActionDef,
     #
@@ -1359,8 +1358,8 @@ class _QtGuideBar(
                 self.update()
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 if event.button() == QtCore.Qt.LeftButton:
-                    if self._get_is_press_click_flag_() is True:
-                        self._set_press_click_emit_send_()
+                    if self._get_action_press_flag_is_click_() is True:
+                        self._set_action_press_click_emit_send_()
                         self._set_view_guide_item_clicked_emit_send_()
                     elif self._get_is_choose_flag_() is True:
                         self._set_guide_choose_item_drop_at_(self._guide_choose_current_index)

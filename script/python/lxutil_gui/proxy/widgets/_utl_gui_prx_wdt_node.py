@@ -229,6 +229,14 @@ class _PrxStorageEntry(AbsRsvTypeQtEntry):
         if _:
             self._qt_entry_widget._set_item_value_(_)
 
+    def set_locked(self, boolean):
+        self._qt_entry_widget._set_entry_enable_(
+            not boolean
+        )
+        self._open_or_save_button.set_action_enable(
+            not boolean
+        )
+
 
 class PrxFileOpenEntry(_PrxStorageEntry):
     def __init__(self, *args, **kwargs):
@@ -550,7 +558,7 @@ class PrxConstantEntry(AbsRsvTypeQtEntry):
         return self._qt_entry_widget._get_value_range_()
 
     def set_locked(self, boolean):
-        self._qt_entry_widget._set_value_locked_(boolean)
+        self._qt_entry_widget._set_entry_enable_(not boolean)
 
 
 class PrxChooseEntry_(AbsRsvTypeQtEntry):
@@ -2303,6 +2311,10 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             ext_filter = option.get('ext_filter')
             if ext_filter:
                 port.set_ext_filter(ext_filter)
+
+            lock = option.get('lock') or False
+            if lock is True:
+                port.set_locked(True)
         #
         elif widget_ in ['directory']:
             open_or_save_ = option.get('open_or_save')
@@ -2327,6 +2339,10 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             show_history_latest = option.get('show_history_latest')
             if show_history_latest:
                 port.set_show_history_latest()
+
+            lock = option.get('lock') or False
+            if lock is True:
+                port.set_locked(True)
         #
         elif widget_ in ['button']:
             port = PrxButtonPort(
