@@ -269,6 +269,7 @@ class _QtTabView(
     AbsQtItemsDef,
     utl_gui_qt_abstract.AbsQtWgtDef,
 ):
+    current_changed = qt_signal()
     def __init__(self, *args, **kwargs):
         super(_QtTabView, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -357,8 +358,13 @@ class _QtTabView(
         self._set_wgt_update_draw_()
 
     def _set_item_current_index_(self, index):
-        self._item_index_current = index
-        self._set_wgt_update_()
+        if index != self._item_index_current:
+            self._item_index_current = index
+            self._set_wgt_update_()
+            self.current_changed.emit()
+
+    def _set_item_current_changed_connect_to_(self, fnc):
+        self.current_changed.connect(fnc)
 
     def _set_action_hover_execute_(self, event):
         point = event.pos()
@@ -370,6 +376,9 @@ class _QtTabView(
                 break
 
         self._set_wgt_update_draw_()
+
+    def _get_current_name_text_(self):
+        return self._item_name_texts[self._item_index_current]
 
     def eventFilter(self, *args):
         widget, event = args

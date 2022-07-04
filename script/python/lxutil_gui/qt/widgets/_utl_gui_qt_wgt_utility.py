@@ -579,8 +579,8 @@ class QtPainter(QtGui.QPainter):
             get_font(size=t_f_s, italic=True)
         )
         self.drawText(
-            text_rect_0,
-            QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
+            frame_rect,
+            QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
             str(text[0]).capitalize()
         )
 

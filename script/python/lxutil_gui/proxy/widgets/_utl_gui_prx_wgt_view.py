@@ -65,6 +65,12 @@ class PrxTabView(utl_gui_prx_abstract.AbsPrxWidget):
         #
         self.widget._set_item_add_(qt_widget, *args, **kwargs)
 
+    def get_current_name(self):
+        return self.widget._get_current_name_text_()
+
+    def set_current_changed_connect_to(self, fnc):
+        self.widget._set_item_current_changed_connect_to_(fnc)
+
 
 class AbsPrxViewDef(object):
     @property

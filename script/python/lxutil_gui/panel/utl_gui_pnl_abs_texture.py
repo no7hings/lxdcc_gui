@@ -119,6 +119,9 @@ class AbsTextureWorkspace(object):
             'td_grp'
         )
 
+    def get_latest_version(self):
+        return self._work_texture_directory_rsv_unit.get_latest_version()
+
     def get_new_version(self):
         return self._work_texture_directory_rsv_unit.get_new_version()
 
@@ -316,8 +319,26 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
         )
 
     def _set_tool_panel_setup_(self):
+        self._tab_view = prx_widgets.PrxTabView()
+        self.set_widget_add(self._tab_view)
+
+        s_0 = prx_widgets.PrxScrollArea()
+        self._tab_view.set_item_add(
+            s_0,
+            name='workspace',
+            icon_name_text='workspace',
+        )
+
+        s_1 = prx_widgets.PrxScrollArea()
+
+        self._tab_view.set_item_add(
+            s_1,
+            name='dcc',
+            icon_name_text='workspace',
+        )
+
         self._viewer_group = prx_widgets.PrxExpandedGroup()
-        self.set_widget_add(self._viewer_group)
+        s_1.set_widget_add(self._viewer_group)
         self._viewer_group.set_name('textures')
         self._viewer_group.set_expanded(True)
         #
@@ -348,43 +369,47 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
             self._tree_view_selection_opt.set_select
         )
 
-        self._options_prx_node = prx_widgets.PrxNode_('options')
-        self.set_widget_add(self._options_prx_node)
-        self._options_prx_node.set_ports_create_by_configure(
-            self._session.configure.get('build.node.options'),
+        self._workspace_options_prx_node = prx_widgets.PrxNode_('options')
+        s_0.set_widget_add(self._workspace_options_prx_node)
+        self._workspace_options_prx_node.set_ports_create_by_configure(
+            self._session.configure.get('build.node.workspace_options'),
         )
 
-        # self._options_prx_node.get_port(
-        #     'workspace.version'
-        # ).set_changed_connect_to(
-        #     self._set_workspace_directory_update_
-        # )
-
-        self._options_prx_node.set(
-            'workspace.new_version', self._set_workspace_version_new_
+        self._dcc_options_prx_node = prx_widgets.PrxNode_('options')
+        s_1.set_widget_add(self._dcc_options_prx_node)
+        self._dcc_options_prx_node.set_ports_create_by_configure(
+            self._session.configure.get('build.node.dcc_options'),
         )
 
-        self._options_prx_node.set(
-            'workspace.pull', self._set_pull_
+        self._workspace_options_prx_node.set(
+            'control.new_version', self._set_workspace_version_new_
         )
 
-        self._options_prx_node.set(
+        self._workspace_options_prx_node.set(
+            'texture.pull/execute', self._set_workspace_texture_pull_
+        )
+
+        self._workspace_options_prx_node.set(
+            'texture.create.execute', self._set_tx_create_from_workspace_
+        )
+
+        self._dcc_options_prx_node.set(
             'extra.collection_to_current_version', self._set_textures_copy_and_repath_
         )
 
-        self._options_prx_node.set(
+        self._dcc_options_prx_node.set(
             'texture.repath_to_src', self._set_textures_repath_to_src_
         )
 
-        self._options_prx_node.set(
+        self._dcc_options_prx_node.set(
             'texture.repath_to_tx', self._set_textures_repath_to_tgt_
         )
 
-        self._options_prx_node.set(
-            'texture.create_tx', self._set_tx_create_
+        self._dcc_options_prx_node.set(
+            'texture.create_tx', self._set_tx_create_from_dcc_
         )
 
-        self._options_prx_node.set(
+        self._dcc_options_prx_node.set(
             'refresh', self._set_gui_refresh_
         )
 
@@ -406,24 +431,25 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
     def _set_texture_workspace_update_(self):
         self._texture_workspace = self.TEXTURE_WORKSPACE_CLS(self._rsv_task)
 
-        current_layer = self._texture_workspace.get_current_layer()
-        current_version = self._texture_workspace.get_current_version()
+        # current_layer = self._texture_workspace.get_current_layer()
+        current_layer = 'main'
+        current_version = self._texture_workspace.get_latest_version()
+        #
+        # if current_layer is None:
+        #     current_layer, current_version = self._get_workspace_install_args_()
+        # else:
+        #     self._set_workspace_version_unlocked_(current_layer, current_version)
+        #     current_version = self._texture_workspace.get_current_version()
 
-        if current_layer is None:
-            current_layer, current_version = self._get_workspace_install_args_()
-        else:
-            self._set_workspace_version_unlocked_(current_layer, current_version)
-            current_version = self._texture_workspace.get_current_version()
-
-        self._options_prx_node.set(
-            'workspace.layer', current_layer
+        self._workspace_options_prx_node.set(
+            'control.layer', current_layer
         )
-        self._options_prx_node.set(
-            'workspace.version', current_version
+        self._workspace_options_prx_node.set(
+            'control.version', current_version
         )
 
-        self._options_prx_node.set(
-            'workspace.task', self._rsv_task.path
+        self._workspace_options_prx_node.set(
+            'resolver.task', self._rsv_task.path
         )
         #
         self._set_workspace_directory_update_()
@@ -583,27 +609,27 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
 
         result = w.get_result()
 
-    def _set_pull_(self):
+    def _set_workspace_texture_pull_(self):
         pass
 
     def _set_workspace_directory_update_(self):
-        layer = self._options_prx_node.get(
+        layer = self._dcc_options_prx_node.get(
             'workspace.layer'
         )
-        version = self._options_prx_node.get(
+        version = self._dcc_options_prx_node.get(
             'workspace.version'
         )
-        self._options_prx_node.set(
-            'workspace.directory.base', self._texture_workspace.get_base_directory_path()
+        self._workspace_options_prx_node.set(
+            'texture.directory.base', self._texture_workspace.get_base_directory_path()
         )
-        self._options_prx_node.set(
-            'workspace.directory.src', self._texture_workspace.get_src_directory_path_at(
+        self._workspace_options_prx_node.set(
+            'texture.directory.src', self._texture_workspace.get_src_directory_path_at(
                 layer,
                 version
             )
         )
-        self._options_prx_node.set(
-            'workspace.directory.tx', self._texture_workspace.get_tgt_directory_path_at(
+        self._workspace_options_prx_node.set(
+            'texture.directory.tx', self._texture_workspace.get_tgt_directory_path_at(
                 layer,
                 version
             )
@@ -637,7 +663,9 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
                 self._set_gui_refresh_()
 
     def _set_gui_refresh_(self):
-        if self._is_disable is False:
+        tab_current_name = self._tab_view.get_current_name()
+        # print tab_current_name
+        if self._is_disable is False and tab_current_name == 'dcc':
             self._set_dcc_texture_references_update_()
             self._set_dcc_objs_update_()
             #
@@ -648,7 +676,8 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
 
     def _set_collapse_update_(self):
         collapse_dict = {
-            'options': self._options_prx_node,
+            'workspace_options': self._workspace_options_prx_node,
+            'dcc_options': self._dcc_options_prx_node,
         }
         for i_k, i_v in collapse_dict.items():
             i_c = self._build_configure.get(
@@ -691,13 +720,13 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
         src_texture_directory_path = self._texture_workspace.get_current_src_directory_path()
         tgt_texture_directory_path = self._texture_workspace.get_current_tx_directory_path()
 
-        collection_port = self._options_prx_node.get_port('extra.collection_to_current_version')
+        collection_port = self._dcc_options_prx_node.get_port('extra.collection_to_current_version')
         collection_statuses = [bsc_configure.ValidatorStatus.Normal]*c
 
-        repath_src_port = self._options_prx_node.get_port('texture.repath_to_src')
+        repath_src_port = self._dcc_options_prx_node.get_port('texture.repath_to_src')
         repath_src_statuses = [bsc_configure.ValidatorStatus.Normal]*c
 
-        repath_tgt_port = self._options_prx_node.get_port('texture.repath_to_tx')
+        repath_tgt_port = self._dcc_options_prx_node.get_port('texture.repath_to_tx')
         repath_tgt_statuses = [bsc_configure.ValidatorStatus.Normal]*c
         for i_index, i_texture_any in enumerate(textures):
             i_prx_item = i_texture_any.get_obj_gui()
@@ -794,8 +823,8 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
         )
 
     def _set_textures_copy_and_repath_(self):
-        collection_replace_enable = self._options_prx_node.get('extra.collection_replace_enable')
-        collection_locked_enable = self._options_prx_node.get('extra.collection_locked_enable')
+        collection_replace_enable = self._dcc_options_prx_node.get('extra.collection_replace_enable')
+        collection_locked_enable = self._dcc_options_prx_node.get('extra.collection_locked_enable')
         # base
         base_texture_directory_path = self._texture_workspace.get_base_directory_path()
         # src + tx
@@ -916,8 +945,40 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
                             )
 
         self._set_gui_refresh_()
+
+    def _set_tx_create_data_update_from_workspace_(self, force_enable, directory_path_src, directory_path_tx):
+        self._create_data = []
+
+        ext_tgt = '.tx'
+
+        file_paths_src = bsc_core.DirectoryMtd.get_file_paths__(
+            directory_path_src
+        )
+        if file_paths_src:
+            with utl_core.gui_progress(maximum=len(file_paths_src)) as g_p:
+                for i_file_path in file_paths_src:
+                    g_p.set_update()
+
+                    i_texture_src = utl_dcc_objects.OsTexture(
+                        i_file_path
+                    )
+                    if i_texture_src.ext != ext_tgt:
+                        if force_enable is True:
+                            self._create_data.append(
+                                (i_texture_src.path, directory_path_tx)
+                            )
+                        else:
+                            if i_texture_src.get_is_exists_as_tgt_ext(
+                                ext_tgt,
+                                directory_path_tx
+                            ) is False:
+                                self._create_data.append(
+                                    (i_texture_src.path, directory_path_tx)
+                                )
+        else:
+            pass
     #
-    def _set_tx_create_data_update_(self, force_enable):
+    def _set_tx_create_data_update_1_(self, force_enable):
         self._create_data = []
 
         contents = []
@@ -972,7 +1033,7 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
         else:
             return True
 
-    def _set_tx_create_by_data_(self, button):
+    def _set_tx_create_by_data_(self, button, post_fnc=None):
         def finished_fnc_(index, status, results):
             button.set_finished_at(index, status)
             # print '\n'.join(results)
@@ -986,25 +1047,27 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
                     i_output_directory_path
                 )
 
-                i_cmd = utl_dcc_objects.OsTexture._get_unit_tx_create_cmd_by_src_force_(
-                    i_file_path,
-                    search_directory_path=i_output_directory_path,
-                )
-                if button.get_is_stopped():
-                    break
-                #
-                if i_cmd:
-                    bsc_core.CmdSubProcessThread.set_wait()
-                    i_t = bsc_core.CmdSubProcessThread.set_start(i_cmd, i_index)
-                    i_t.status_changed.set_connect_to(status_update_at_fnc_)
-                    i_t.finished.set_connect_to(finished_fnc_)
-                else:
-                    status_update_at_fnc_(
-                        i_index, bsc_configure.Status.Completed
-                    )
-                    finished_fnc_(
-                        i_index, bsc_configure.Status.Completed
-                    )
+                print i_file_path, i_output_directory_path
+
+                # i_cmd = utl_dcc_objects.OsTexture._get_unit_tx_create_cmd_by_src_force_(
+                #     i_file_path,
+                #     search_directory_path=i_output_directory_path,
+                # )
+                # if button.get_is_stopped():
+                #     break
+                # #
+                # if i_cmd:
+                #     bsc_core.CmdSubProcessThread.set_wait()
+                #     i_t = bsc_core.CmdSubProcessThread.set_start(i_cmd, i_index)
+                #     i_t.status_changed.set_connect_to(status_update_at_fnc_)
+                #     i_t.finished.set_connect_to(finished_fnc_)
+                # else:
+                #     status_update_at_fnc_(
+                #         i_index, bsc_configure.Status.Completed
+                #     )
+                #     finished_fnc_(
+                #         i_index, bsc_configure.Status.Completed
+                #     )
 
         def quit_fnc_():
             button.set_stopped()
@@ -1029,10 +1092,10 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
                 run_fnc_
             )
             t.start()
-
-            t.run_finished.connect(
-                self._set_gui_refresh_
-            )
+            if post_fnc is not None:
+                t.run_finished.connect(
+                    post_fnc
+                )
 
             self.set_window_close_connect_to(quit_fnc_)
         else:
@@ -1056,13 +1119,30 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
         else:
             return True
 
-    def _set_tx_create_(self):
-        force_enable = self._options_prx_node.get('texture.create_tx_force_enable')
-        button = self._options_prx_node.get_port('texture.create_tx')
+    def _set_tx_create_from_workspace_(self):
+        directory_path_src = self._workspace_options_prx_node.get('texture.directory.src')
+        directory_path_tx = self._workspace_options_prx_node.get('texture.directory.tx')
+
+        force_enable = self._workspace_options_prx_node.get('texture.create.force_enable')
+        button = self._workspace_options_prx_node.get_port('texture.create.execute')
+        method_args = [
+            (self._set_tx_create_data_update_from_workspace_, (force_enable, directory_path_src, directory_path_tx)),
+            (self._set_tx_create_by_data_, (button, self._set_gui_refresh_))
+        ]
+        with utl_core.gui_progress(maximum=len(method_args)) as g_p:
+            for i_fnc, i_args in method_args:
+                g_p.set_update()
+                i_result = i_fnc(*i_args)
+                if i_result is False:
+                    break
+
+    def _set_tx_create_from_dcc_(self):
+        force_enable = self._dcc_options_prx_node.get('texture.create_tx_force_enable')
+        button = self._dcc_options_prx_node.get_port('texture.create_tx')
 
         method_args = [
-            (self._set_tx_create_data_update_, (force_enable, )),
-            (self._set_tx_create_by_data_, (button,))
+            (self._set_tx_create_data_update_1_, (force_enable, )),
+            (self._set_tx_create_by_data_, (button, self._set_gui_refresh_))
         ]
         with utl_core.gui_progress(maximum=len(method_args)) as g_p:
             for i_fnc, i_args in method_args:
