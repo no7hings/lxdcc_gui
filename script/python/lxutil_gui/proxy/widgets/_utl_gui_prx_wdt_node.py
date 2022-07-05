@@ -579,12 +579,18 @@ class PrxChooseEntry_(AbsRsvTypeQtEntry):
         if isinstance(raw, (tuple, list)):
             self._qt_entry_widget._set_item_values_(raw)
             if raw:
-                self._qt_entry_widget._set_item_value_(raw[-1])
+                self.set(raw[-1])
+                self.set_default(raw[-1])
         elif isinstance(raw, (str, unicode)):
             self._qt_entry_widget._set_item_value_(raw)
+        elif isinstance(raw, (int, float)):
+            self._qt_entry_widget._set_item_value_by_index_(int(raw))
 
     def set_default(self, raw, **kwargs):
-        self._qt_entry_widget._set_item_value_default_(raw)
+        if isinstance(raw, (str, unicode)):
+            self._qt_entry_widget._set_item_value_default_(raw)
+        elif isinstance(raw, (int, float)):
+            self._qt_entry_widget._set_item_value_default_by_index_(raw)
 
     def get_default(self):
         return self._qt_entry_widget._get_item_value_default_()
@@ -2286,9 +2292,13 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             port.set(value_)
             #
             current_ = option.get('current')
+            current_index_ = option.get('current_index')
             if current_ is not None:
                 port.set(current_)
                 port.set_default(current_)
+            elif current_index_ is not None:
+                port.set(current_index_)
+                port.set_default(current_index_)
             else:
                 if value_:
                     port.set(value_[-1])

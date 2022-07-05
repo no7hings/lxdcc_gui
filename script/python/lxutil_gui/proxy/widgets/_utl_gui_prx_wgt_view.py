@@ -483,10 +483,10 @@ class PrxListView(
             utl_core.Icon.get(['list_mode', 'grid_mode'][self.view._get_is_grid_mode_()])
         )
 
-    def set_list_mode(self):
+    def set_view_list_mode(self):
         self.view._set_list_mode_()
 
-    def set_grid_mode(self):
+    def set_view_grid_mode(self):
         self.view._set_grid_mode_()
     #
     def set_item_frame_size(self, w, h):

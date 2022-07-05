@@ -2824,6 +2824,11 @@ class AbsQtItemValueEnumerateEntryDef(object):
     def _set_item_value_default_(self, value):
         self._item_value_default = value
 
+    def _set_item_value_default_by_index_(self, index):
+        self._set_item_value_default_(
+            self._get_item_value_at_(index)
+        )
+
     def _get_item_value_default_(self):
         return self._item_value_default
 
@@ -2843,8 +2848,16 @@ class AbsQtItemValueEnumerateEntryDef(object):
         self._item_value_entry_widget._set_item_value_(value)
         self._set_wgt_update_()
 
+    def _set_item_value_by_index_(self, index):
+        self._set_item_value_(
+            self._get_item_value_at_(index)
+        )
+
     def _get_item_value_(self):
         return self._item_value_entry_widget._get_item_value_()
+
+    def _get_item_value_at_(self, index):
+        return self._values[index]
 
     def _set_item_value_clear_(self):
         self._values = []
