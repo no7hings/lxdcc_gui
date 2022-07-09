@@ -69,7 +69,7 @@ class AbsTextureWorkspace(object):
 
         self._rsv_task = rsv_task
 
-        self._layer = None
+        self._variant = None
 
         self._version = None
 
@@ -93,50 +93,43 @@ class AbsTextureWorkspace(object):
         self._configure_file_path = self.get_configure_file_path()
         self._configure_file_opt = bsc_core.StorageFileOpt(self._configure_file_path)
 
-    def set_create_at(self, layer, version):
+    def set_create_at(self, variant, version):
         if version == 'new':
             version = self.get_new_version()
         #
-        self.set_layer(layer)
+        self.set_variant(variant)
         self.set_version(version)
         #
         bsc_core.StoragePathMtd.set_directory_create(
-            self.get_directory_path_at(layer, version)
+            self.get_directory_path_at(variant, version)
         )
         bsc_core.StoragePathMtd.set_directory_create(
-            self.get_src_directory_path_at(layer, version)
+            self.get_src_directory_path_at(variant, version)
         )
         bsc_core.StoragePathMtd.set_directory_create(
-            self.get_tx_directory_path_at(layer, version)
+            self.get_tx_directory_path_at(variant, version)
         )
 
-    def set_lock_at(self, layer, version):
-        directory_path = self.get_directory_path_at(layer, version)
+    def set_lock_at(self, variant, version):
+        directory_path = self.get_directory_path_at(variant, version)
         rsv_methods.PathGroupPermission(
             directory_path
-        ).set_read_only(
-            'srf_grp'
-        )
-        rsv_methods.PathGroupPermission(
-            directory_path
-        ).set_read_only(
-            'td_grp'
-        )
+        ).set_all_read_only()
 
     def get_latest_version(self):
-        layer = self.get_current_layer()
+        variant = self.get_current_variant()
         return self._work_texture_directory_rsv_unit.get_latest_version(
-            extend_variants=dict(layer=layer)
+            extend_variants=dict(variant=variant)
         )
 
     def get_new_version(self):
-        layer = self.get_current_layer()
+        variant = self.get_current_variant()
         return self._work_texture_directory_rsv_unit.get_new_version(
-            extend_variants=dict(layer=layer)
+            extend_variants=dict(variant=variant)
         )
 
-    def set_load(self, layer, version):
-        self.set_layer(layer)
+    def set_load(self, variant, version):
+        self.set_variant(variant)
         self.set_version(version)
 
     def get_configure_file_path(self):
@@ -145,38 +138,38 @@ class AbsTextureWorkspace(object):
             result = self._work_texture_configure_file_rsv_unit.get_result(version='new')
         return result
 
-    def get_directory_path_at(self, layer, version):
+    def get_directory_path_at(self, variant, version):
         return self._work_texture_directory_rsv_unit.get_result(
             version=version,
-            extend_variants=dict(layer=layer)
+            extend_variants=dict(variant=variant)
         )
 
-    def get_src_directory_path_at(self, layer, version):
+    def get_src_directory_path_at(self, variant, version):
         return self._work_texture_src_directory_rsv_unit.get_result(
             version=version,
-            extend_variants=dict(layer=layer)
+            extend_variants=dict(variant=variant)
         )
 
-    def get_tx_directory_path_at(self, layer, version):
+    def get_tx_directory_path_at(self, variant, version):
         return self._work_texture_tx_directory_rsv_unit.get_result(
             version=version,
-            extend_variants=dict(layer=layer)
+            extend_variants=dict(variant=variant)
         )
 
     def get_current_directory_path(self):
-        layer = self.get_current_layer()
+        variant = self.get_current_variant()
         version = self.get_current_version()
-        return self.get_directory_path_at(layer, version)
+        return self.get_directory_path_at(variant, version)
 
     def get_current_src_directory_path(self):
-        layer = self.get_current_layer()
+        variant = self.get_current_variant()
         version = self.get_current_version()
-        return self.get_src_directory_path_at(layer, version)
+        return self.get_src_directory_path_at(variant, version)
 
     def get_current_tx_directory_path(self):
-        layer = self.get_current_layer()
+        variant = self.get_current_variant()
         version = self.get_current_version()
-        return self.get_tx_directory_path_at(layer, version)
+        return self.get_tx_directory_path_at(variant, version)
 
     def get_data(self):
         dict_ = collections.OrderedDict()
@@ -186,9 +179,9 @@ class AbsTextureWorkspace(object):
                 i_properties = self._work_texture_directory_rsv_unit.get_properties_by_result(
                     i_result
                 )
-                i_layer = i_properties.get('layer')
+                i_variant = i_properties.get('variant')
                 i_version = i_properties.get('version')
-                dict_.setdefault(i_layer, []).append(i_version)
+                dict_.setdefault(i_variant, []).append(i_version)
             for k, v in dict_.items():
                 dict_.setdefault(
                     k, []
@@ -208,12 +201,12 @@ class AbsTextureWorkspace(object):
                 i_properties = self._work_texture_directory_rsv_unit.get_properties_by_result(
                     i_result
                 )
-                i_layer = i_properties.get('layer')
+                i_variant = i_properties.get('variant')
                 i_version = i_properties.get('version')
-                if i_layer not in dict_:
-                    dict_[i_layer] = []
+                if i_variant not in dict_:
+                    dict_[i_variant] = []
                 if is_locked is False:
-                    dict_.setdefault(i_layer, []).append(i_version)
+                    dict_.setdefault(i_variant, []).append(i_version)
             #
             for k, v in dict_.items():
                 if len(v) == 0:
@@ -226,11 +219,11 @@ class AbsTextureWorkspace(object):
             ).append('new')
         return dict_
 
-    def get_current_layer(self):
-        return self._layer
+    def get_current_variant(self):
+        return self._variant
 
-    def set_layer(self, layer):
-        self._layer = layer
+    def set_variant(self, variant):
+        self._variant = variant
 
     def set_version(self, version):
         self._version = version
@@ -239,9 +232,9 @@ class AbsTextureWorkspace(object):
         return self._version
 
     def get_all_versions(self):
-        layer = self.get_current_layer()
+        variant = self.get_current_variant()
         return self._work_texture_directory_rsv_unit.get_all_versions(
-            extend_variants=dict(layer=layer)
+            extend_variants=dict(variant=variant)
         )
 
     def _set_dcc_version_(self, version):
@@ -250,10 +243,10 @@ class AbsTextureWorkspace(object):
     def _get_dcc_version_(self):
         raise NotImplementedError()
 
-    def _set_dcc_layer_(self, layer):
+    def _set_dcc_variant_(self, variant):
         raise NotImplementedError()
 
-    def _get_dcc_layer_(self):
+    def _get_dcc_variant_(self):
         raise NotImplementedError()
 
     def _set_dcc_directory_(self, directory):
@@ -293,8 +286,8 @@ class AbsTextureWorkspace(object):
             self.get_current_directory_path()
         )
 
-    def get_is_read_only_at(self, layer, version):
-        directory_path = self.get_directory_path_at(layer, version)
+    def get_is_read_only_at(self, variant, version):
+        directory_path = self.get_directory_path_at(variant, version)
         return self.get_is_read_only(directory_path)
 
 
@@ -402,7 +395,7 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
         )
 
         self._workspace_options_prx_node.set(
-            'texture.pull.execute', self._set_workspace_texture_pull_execute_
+            'extra.pull.execute', self._set_workspace_texture_pull_execute_
         )
 
         self._workspace_options_prx_node.set(
@@ -446,14 +439,14 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
 
     def _set_texture_workspace_update_(self):
         self._texture_workspace = self.TEXTURE_WORKSPACE_CLS(self._rsv_task)
-        current_layer = 'main'
-        self._texture_workspace.set_layer(current_layer)
-        if self._set_workspace_check_(current_layer) is True:
+        current_variant = 'main'
+        self._texture_workspace.set_variant(current_variant)
+        if self._set_workspace_check_(current_variant) is True:
             self._texture_workspace.set_version(
                 self._texture_workspace.get_latest_version()
             )
             self._workspace_options_prx_node.set(
-                'control.layer', self._texture_workspace.get_current_layer()
+                'control.variant', self._texture_workspace.get_current_variant()
             )
             self._workspace_options_prx_node.set(
                 'control.version', self._texture_workspace.get_current_version()
@@ -467,16 +460,16 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
 
             self._set_wsp_pull_update_()
 
-    def _set_workspace_check_(self, current_layer):
+    def _set_workspace_check_(self, current_variant):
         def yes_fnc_():
             self._texture_workspace.set_create_at(
-                current_layer, 'new'
+                current_variant, 'new'
             )
 
         self._is_disable = True
 
         directory_path = self._texture_workspace.get_directory_path_at(
-            current_layer, 'latest'
+            current_variant, 'latest'
         )
         if directory_path:
             return True
@@ -503,34 +496,95 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
     def _set_workspace_version_update_execute_(self):
         def yes_fnc_():
             self._texture_workspace.set_lock_at(
-                layer, current_version
+                variant, current_version
             )
             self._texture_workspace.set_create_at(
-                layer, nxt_version
+                variant, next_version
+            )
+            # pull
+            _replace_enable = n.get('pull.replace_enable')
+            _with_src = n.get('pull.with_src')
+            _with_tx = n.get('pull.with_tx')
+
+            _variant = n.get('pull.variant')
+            _from_version = n.get('pull.version')
+            _to_version = next_version
+
+            self._set_wsp_texture_pull_(
+                _variant, _from_version, _to_version,
+                _replace_enable,
+                _with_src, _with_tx
             )
 
             time.sleep(2)
             self.set_refresh_all()
 
-        layer = self._texture_workspace.get_current_layer()
+        variant = self._texture_workspace.get_current_variant()
         current_version = self._texture_workspace.get_current_version()
-        nxt_version = self._texture_workspace.get_new_version()
+        next_version = self._texture_workspace.get_new_version()
 
         w = utl_core.DialogWindow.set_create(
             self._session.gui_name,
-            content='update version "{}" to "{}" in layer "{}", press "confirm" to continue'.format(
-                current_version, nxt_version, layer
+            content='update version "{}" to "{}" in variant "{}", press "confirm" to continue'.format(
+                current_version, next_version, variant
             ),
             status=utl_core.DialogWindow.ValidatorStatus.Warning,
+            #
+            options_configure=self._build_configure.get('node.update_version'),
             #
             yes_label='confirm',
             #
             yes_method=yes_fnc_,
             #
             no_visible=False,
-            # show=False
+            show=False
         )
-        result = w.get_result()
+
+        n = w.get_options_node()
+
+        variant = self._workspace_options_prx_node.get(
+            'control.variant'
+        )
+        version = self._workspace_options_prx_node.get(
+            'control.version'
+        )
+
+        n.set(
+            'pull.variant', [variant]
+        )
+        versions = self._texture_workspace.get_all_versions()
+        # versions.remove(version)
+        n.set(
+            'pull.version', versions
+        )
+
+        w.set_window_show()
+
+    def _set_wsp_texture_pull_(self, from_variant, from_version, to_version, replace_enable, with_src, with_tx):
+        directory_path_src_0 = self._texture_workspace.get_src_directory_path_at(
+            from_variant, from_version
+        )
+        directory_path_tx_0 = self._texture_workspace.get_tx_directory_path_at(
+            from_variant, from_version
+        )
+
+        directory_path_src_1 = self._texture_workspace.get_src_directory_path_at(
+            from_variant, to_version
+        )
+        directory_path_tx_1 = self._texture_workspace.get_tx_directory_path_at(
+            from_variant, to_version
+        )
+
+        method_args = [
+            (self._set_texture_pull_as_link_, with_src, (directory_path_src_0, directory_path_src_1, replace_enable)),
+            (self._set_texture_pull_as_link_, with_tx, (directory_path_tx_0, directory_path_tx_1, replace_enable))
+        ]
+
+        with utl_core.gui_progress(maximum=len(method_args)) as g_p:
+            for i_method, i_enable, i_args in method_args:
+                g_p.set_update()
+                if i_enable is True:
+                    i_method(*i_args)
 
     def _set_workspace_texture_pull_execute_(self):
         def yes_fnc_():
@@ -539,42 +593,16 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
             _with_src = _n.get('with_src')
             _with_tx = _n.get('with_tx')
 
-            _directory_path_base = self._texture_workspace.get_base_directory_path()
+            _to_version = current_version
 
-            _directory_path_src_0 = self._texture_workspace.get_src_directory_path_at(
-                layer, form_version
-            )
-            _directory_path_tx_0 = self._texture_workspace.get_tx_directory_path_at(
-                layer, form_version
+            self._set_wsp_texture_pull_(
+                from_variant, from_version, _to_version,
+                _replace_enable, _with_src, _with_tx
             )
 
-            _directory_path_src_1 = self._texture_workspace.get_src_directory_path_at(
-                layer, current_version
-            )
-            _directory_path_tx_1 = self._texture_workspace.get_tx_directory_path_at(
-                layer, current_version
-            )
-
-            if _with_src is True:
-                self._set_texture_copy_(
-                    _directory_path_base,
-                    _directory_path_src_0,
-                    _directory_path_src_1,
-                    _replace_enable
-                )
-
-            if _with_tx is True:
-                self._set_texture_copy_(
-                    _directory_path_base,
-                    _directory_path_tx_0,
-                    _directory_path_tx_1,
-                    _replace_enable
-                )
-
-        layer = self._texture_workspace.get_current_layer()
-
-        form_version = self._workspace_options_prx_node.get(
-            'texture.pull.version'
+        from_variant = self._texture_workspace.get_current_variant()
+        from_version = self._workspace_options_prx_node.get(
+            'extra.pull.version'
         )
 
         current_version = self._texture_workspace.get_current_version()
@@ -582,7 +610,7 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
         w = utl_core.DialogWindow.set_create(
             self._session.gui_name,
             content='pull texture from version "{}" to "{}", press "confirm" to continue'.format(
-                form_version, current_version
+                from_version, current_version
             ),
             status=utl_core.DialogWindow.ValidatorStatus.Warning,
             #
@@ -597,10 +625,10 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
         )
 
         w.set_window_show()
-
-    def _set_texture_copy_(self, texture_path_base, texture_path_0, texture_path_1, _replace_enable):
+    @classmethod
+    def _set_texture_pull_as_link_(cls, directory_path_src, directory_path_tgt, _replace_enable):
         file_paths_src = bsc_core.DirectoryMtd.get_file_paths__(
-            texture_path_0
+            directory_path_src
         )
         if file_paths_src:
             with utl_core.gui_progress(maximum=len(file_paths_src)) as g_p:
@@ -611,15 +639,13 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
                         i_file_path
                     )
 
-                    i_texture_src.set_copy_as_src(
-                        directory_path_src=texture_path_base,
-                        directory_path_tgt=texture_path_1,
-                        replace=_replace_enable
+                    i_texture_src.set_link_to_directory(
+                        directory_path_tgt
                     )
 
     def _set_wsp_directory_update_(self):
-        layer = self._workspace_options_prx_node.get(
-            'control.layer'
+        variant = self._workspace_options_prx_node.get(
+            'control.variant'
         )
         version = self._workspace_options_prx_node.get(
             'control.version'
@@ -629,32 +655,32 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
         )
         self._workspace_options_prx_node.set(
             'texture.directory.src', self._texture_workspace.get_src_directory_path_at(
-                layer,
+                variant,
                 version
             )
         )
         self._workspace_options_prx_node.set(
             'texture.directory.tx', self._texture_workspace.get_tx_directory_path_at(
-                layer,
+                variant,
                 version
             )
         )
 
     def _set_wsp_pull_update_(self):
-        layer = self._workspace_options_prx_node.get(
-            'control.layer'
+        variant = self._workspace_options_prx_node.get(
+            'control.variant'
         )
         version = self._workspace_options_prx_node.get(
             'control.version'
         )
 
         self._workspace_options_prx_node.set(
-            'texture.pull.layer', [layer]
+            'extra.pull.variant', [variant]
         )
         versions = self._texture_workspace.get_all_versions()
         versions.remove(version)
         self._workspace_options_prx_node.set(
-            'texture.pull.version', versions
+            'extra.pull.version', versions
         )
 
     def set_refresh_all(self):
@@ -1028,7 +1054,7 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
                                     )
         else:
             contents = [
-                'non-texture(s) to converted, you can click refresh and try again'
+                'all texture-tx is newest'
             ]
         #
         if contents:

@@ -22,14 +22,14 @@ class TextureWorkspace(utl_gui_pnl_abs_texture.AbsTextureWorkspace):
             'lynxi.workspace.texture.version'
         )
 
-    def _set_dcc_layer_(self, layer):
+    def _set_dcc_variant_(self, variant):
         ktn_core.WorkspaceSettings().set(
-            'lynxi.workspace.texture.layer', layer
+            'lynxi.workspace.texture.variant', variant
         )
 
-    def _get_dcc_layer_(self):
+    def _get_dcc_variant_(self):
         return ktn_core.WorkspaceSettings().get(
-            'lynxi.workspace.texture.layer'
+            'lynxi.workspace.texture.variant'
         )
 
 
