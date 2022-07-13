@@ -472,7 +472,7 @@ class AbsWorkTextureManager(prx_widgets.PrxSessionWindow):
 
     def _set_texture_workspace_update_(self):
         self._version_controller = _VersionController(self._rsv_task)
-        current_variant = 'td'
+        current_variant = 'main'
         self._version_controller.set_current_variant(current_variant)
         if self._set_workspace_check_(current_variant) is True:
             self._workspace_options_prx_node.set(
