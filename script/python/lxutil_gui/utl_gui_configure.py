@@ -64,6 +64,7 @@ class State(object):
     WARNING = 'warning'
     ERROR = 'error'
     LOCKED = 'locked'
+    LOST = 'lost'
 
 
 class Html(object):

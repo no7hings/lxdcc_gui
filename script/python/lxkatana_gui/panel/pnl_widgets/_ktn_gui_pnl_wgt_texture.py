@@ -55,3 +55,16 @@ class WorkTextureManager(utl_gui_pnl_abs_texture.AbsWorkTextureManager):
     def _set_dcc_scene_update_(self):
         self._file_path = ktn_dcc_objects.Scene.get_current_file_path()
 
+
+class TextureManager(utl_gui_pnl_abs_texture.AbsDccTextureManager):
+    DCC_SELECTION_CLS = ktn_dcc_objects.Selection
+    DCC_NAMESPACE = 'maya'
+    def __init__(self, *args, **kwargs):
+        super(TextureManager, self).__init__(*args, **kwargs)
+
+    def _set_dcc_texture_references_update_(self):
+        self._dcc_texture_references = ktn_dcc_objects.TextureReferences()
+
+    def _set_dcc_objs_update_(self):
+        if self._dcc_texture_references is not None:
+            self._dcc_objs = self._dcc_texture_references.get_objs()

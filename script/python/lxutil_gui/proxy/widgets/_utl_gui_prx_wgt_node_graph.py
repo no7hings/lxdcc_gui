@@ -18,7 +18,7 @@ class PrxNGGraph(
         self._qt_layout_0.setSpacing(2)
         self._prx_tool_bar_0 = _utl_gui_prx_wdt_utility.PrxHToolBar()
         self._qt_layout_0.addWidget(self._prx_tool_bar_0.widget)
-        self._prx_tool_bar_0.set_border_radius(4)
+        self._prx_tool_bar_0.set_border_radius(1)
         #
         self._prx_filer_bar_0 = _utl_gui_prx_wdt_utility.PrxFilterBar()
         self._prx_tool_bar_0.set_widget_add(self._prx_filer_bar_0)
@@ -56,7 +56,7 @@ class PrxNGTree(
         self._qt_layout_0.setSpacing(2)
         self._prx_tool_bar_0 = _utl_gui_prx_wdt_utility.PrxHToolBar()
         self._qt_layout_0.addWidget(self._prx_tool_bar_0.widget)
-        self._prx_tool_bar_0.set_border_radius(4)
+        self._prx_tool_bar_0.set_border_radius(1)
         #
         self._prx_filer_bar_0 = _utl_gui_prx_wdt_utility.PrxFilterBar()
         self._prx_tool_bar_0.set_widget_add(self._prx_filer_bar_0)
@@ -89,7 +89,7 @@ class PrxNGImageGraph(
         self._qt_layout_0.setSpacing(2)
         self._prx_tool_bar_0 = _utl_gui_prx_wdt_utility.PrxHToolBar()
         self._qt_layout_0.addWidget(self._prx_tool_bar_0.widget)
-        self._prx_tool_bar_0.set_border_radius(4)
+        self._prx_tool_bar_0.set_border_radius(1)
         #
         self._prx_filer_bar_0 = _utl_gui_prx_wdt_utility.PrxFilterBar()
         self._prx_tool_bar_0.set_widget_add(self._prx_filer_bar_0)

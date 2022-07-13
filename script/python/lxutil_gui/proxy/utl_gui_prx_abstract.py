@@ -196,11 +196,15 @@ class AbsPrxWindow(AbsPrx):
     def __init__(self, *args, **kwargs):
         super(AbsPrxWindow, self).__init__(*args, **kwargs)
         main_window = utl_gui_qt_core.QtDccMtd.get_qt_main_window()
-        # print main_window.font()
-        if main_window != self.widget:
-            self.widget.setParent(
-                main_window, utl_gui_qt_core.QtCore.Qt.Window
-            )
+        if kwargs.get('parent'):
+            pass
+        else:
+            # print main_window.font()
+            if main_window != self.widget:
+                self.widget.setParent(
+                    main_window, utl_gui_qt_core.QtCore.Qt.Window
+                )
+        #
         self._definition_window_size = 480, 320
         #
         self.widget.setBaseSize(
@@ -274,6 +278,11 @@ class AbsPrxWindow(AbsPrx):
 
     def set_status(self, status):
         self._status = status
+
+    def set_refresh_action_create(self, fnc):
+        self._qt_widget._set_window_shortcut_action_create_(
+            fnc, 'F5'
+        )
 
 
 class AbsWidgetContentDef(object):

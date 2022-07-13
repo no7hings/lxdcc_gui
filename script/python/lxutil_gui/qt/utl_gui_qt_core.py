@@ -334,7 +334,8 @@ class Color(object):
     DISABLE = QtGui.QColor(127, 127, 127, 255)
     WARNING = QtGui.QColor(255, 255, 63, 255)
     ERROR = QtGui.QColor(255, 0, 63, 255)
-    LOCKED = QtGui.QColor(63, 127, 255, 255)
+    LOCKED = QtGui.QColor(127, 127, 255, 255)
+    LOST = QtGui.QColor(127, 127, 127, 255)
     #
     text_filter = QtGui.QColor(255, 127, 63, 255)
     text_filter_occurrence = QtGui.QColor(255, 63, 63, 255)
@@ -471,6 +472,9 @@ class QtBorderColor(object):
 
     Button = QtGui.QColor(
         *utl_gui_core.QtStyleMtd.get_border('color-button')
+    )
+    ButtonDisable = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_border('color-button-disable')
     )
 
 
@@ -1107,6 +1111,9 @@ class QtDccMtd(utl_abstract.AbsDccMtd):
             return QtUtilMtd.get_qt_palette()
         else:
             return QtUtilMtd.get_qt_palette(tool_tip=True)
+    @classmethod
+    def get_qt_current_window(cls):
+        return QtWidgets.QApplication.activeWindow()
 
 
 class QtTreeMtd(object):

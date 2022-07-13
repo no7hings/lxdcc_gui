@@ -21,9 +21,10 @@ option:
         #
         color-item-loading: '31, 31, 31, 63'
         #
-        color-button: '113, 113, 113, 255'
+        color-button: '111, 111, 111, 255'
         color-button-hovered: '151, 151, 151'
         color-button-disable: '79, 79, 79, 255'
+        #
         color-tool-tip: '255, 255, 191, 255'
     #
     border:
@@ -35,6 +36,10 @@ option:
         color-light-hover: '111, 111, 111, 255'
         #
         color-button: '95, 95, 95, 255'
+        color-button-hovered: '143, 143, 151'
+        color-button-disable: '71, 71, 71, 255'
+        #
+        color-tool-tip: '255, 255, 191, 255'
         #
         color-hovered: '255, 127, 63, 255'
         color-selected: '63, 127, 255, 255'
@@ -197,7 +202,7 @@ widget:
             background: rgba(<option.background.color-dark>); 
             color: rgba(<option.font.color-basic>);
             border: 1px rgba(<option.border.color-basic>); border-radius: 0px; border-style: solid; 
-            padding: 2px 2px 2px 2px;
+            padding: 0px, 0px, 2px, 2px; margin: 0px, 0px, 2px, 2px;
         }
         QHeaderView::section:checked{
             background: rgba(<option.background.color-dark>);

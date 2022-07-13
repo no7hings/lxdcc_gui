@@ -515,7 +515,7 @@ class _QtIconPressItem(
                         pass
                 #
                 painter._set_svg_image_draw_by_rect_(
-                    self._file_icon_rect,
+                    self._icon_file_path_rect,
                     icon_file_path,
                     offset=offset
                 )
@@ -561,7 +561,7 @@ class _QtIconPressItem(
             self._icon_frame_rect.setRect(
                 _x, _y, f_w, f_h
             )
-            self._file_icon_rect.setRect(
+            self._icon_file_path_rect.setRect(
                 _x + (f_w - i_f_w) / 2, _y + (f_h - i_f_h) / 2, i_f_w, i_f_h
             )
             self._color_icon_rect.setRect(
@@ -573,7 +573,7 @@ class _QtIconPressItem(
             _x += f_h
             _w -= f_w
 
-        s_w, s_h = w/2, w/2
+        s_w, s_h = w*.5, w*.5
         self._action_state_rect.setRect(
             x, y+h-s_h, s_w, s_h
         )
@@ -705,7 +705,7 @@ class _QtPressItem(
             c_w -= f_w
         #
         if self._icon_is_enable is True:
-            self._file_icon_rect.setRect(
+            self._icon_file_path_rect.setRect(
                 _x + (f_w - i_f_w) / 2, _y + (f_h - i_f_h) / 2, i_f_w, i_f_h
             )
             self._color_icon_rect.setRect(
@@ -856,7 +856,7 @@ class _QtPressItem(
             border_color = [self._frame_border_color, self._hovered_frame_border_color][self._is_hovered]
             background_color = [self._frame_background_color, self._hovered_frame_background_color][self._is_hovered]
         else:
-            border_color = QtBackgroundColor.ButtonDisable
+            border_color = QtBorderColor.ButtonDisable
             background_color = QtBackgroundColor.ButtonDisable
         #
         painter._set_frame_draw_by_rect_(
@@ -912,7 +912,7 @@ class _QtPressItem(
         if self._icon_is_enable is True:
             if self._icon_file_path is not None:
                 painter._set_svg_image_draw_by_rect_(
-                    self._file_icon_rect, self._icon_file_path, offset=offset
+                    self._icon_file_path_rect, self._icon_file_path, offset=offset
                 )
             elif self._color_icon_rgb is not None:
                 painter._set_color_icon_draw_(
@@ -1733,29 +1733,33 @@ class _QtItemChooseDropFrame(
 
     def _set_drop_start_(self):
         parent = self.parent()
-        content_name_texts = parent._get_item_values_()
-        if isinstance(content_name_texts, (tuple, list)):
+        name_texts = parent._get_item_values_()
+        icon_file_paths = parent._get_item_value_icon_file_paths_()
+        if isinstance(name_texts, (tuple, list)):
             press_pos = self._get_drop_pos_(parent)
             width, height = self._get_drop_size_(parent)
             #
             current_name_text = parent._get_item_value_()
-            #
-            for seq, i_name_text in enumerate(content_name_texts):
-                item_widget = _QtHItem()
-                item = QtListWidgetItem()
-                item.setSizeHint(QtCore.QSize(self._item_width, self._item_height))
+            for index, i_name_text in enumerate(name_texts):
+                i_item_widget = _QtHItem()
+                i_item = QtListWidgetItem()
+                i_item.setSizeHint(QtCore.QSize(self._item_width, self._item_height))
                 #
-                self._list_widget.addItem(item)
-                self._list_widget.setItemWidget(item, item_widget)
-                item._set_item_show_connect_()
+                self._list_widget.addItem(i_item)
+                self._list_widget.setItemWidget(i_item, i_item_widget)
+                i_item._set_item_show_connect_()
                 #
                 if i_name_text:
-                    item_widget._set_name_text_(i_name_text)
-                    item_widget._set_icon_name_text_(i_name_text[0])
+                    i_item_widget._set_name_text_(i_name_text)
+                    i_icon_file_path = icon_file_paths[index]
+                    if i_icon_file_path is not None:
+                        i_item_widget._set_icon_file_path_(i_icon_file_path)
+                    else:
+                        i_item_widget._set_icon_name_text_(i_name_text[0])
                 #
-                item_widget._set_index_(seq)
+                i_item_widget._set_index_(index)
                 if current_name_text == i_name_text:
-                    item.setSelected(True)
+                    i_item.setSelected(True)
             #
             self.setFocus(QtCore.Qt.PopupFocusReason)
             #
@@ -2081,7 +2085,7 @@ class _QtEnumerateValueEntryItem(
     #
     utl_gui_qt_abstract.AbsQtActionDef,
     #
-    utl_gui_qt_abstract.AbsQtItemValueEnumerateEntryDef,
+    utl_gui_qt_abstract.AbsQtValueEnumerateEntryDef,
     utl_gui_qt_abstract.AbsQtItemValueDefaultDef,
     #
     utl_gui_qt_abstract.AbsQtActionChooseDef,
@@ -2110,7 +2114,7 @@ class _QtEnumerateValueEntryItem(
         super(_QtEnumerateValueEntryItem, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
         #
-        self._set_item_value_enumerate_entry_def_init_()
+        self._set_value_enumerate_entry_def_init_()
         self._set_item_value_default_def_init_()
         #
         self._set_entry_def_init_(self)
@@ -2305,7 +2309,7 @@ class _QtHExpandItem0(
         )
         f_w, f_h = self._icon_frame_size
         i_w, i_h = self._file_icon_size
-        self._set_file_icon_rect_(
+        self._set_icon_file_path_rect_(
             x + (f_w - i_w) / 2, y + (f_h - i_h) / 2, i_w, i_h
         )
         #
@@ -2359,7 +2363,7 @@ class _QtHExpandItem0(
         )
         # file-icon
         painter._set_file_icon_draw_by_rect_(
-            self._file_icon_rect,
+            self._icon_file_path_rect,
             self._icon_file_path,
             offset=offset
         )
@@ -2472,7 +2476,7 @@ class _QtHExpandItem1(
         )
         # icon
         painter._set_file_icon_draw_by_rect_(
-            rect=self._file_icon_rect,
+            rect=self._icon_file_path_rect,
             file_path=self._icon_file_path,
             offset=offset
         )
@@ -2519,19 +2523,19 @@ class _QtHExpandItem1(
         w, h = self.width(), self.height()
         #
         self._set_frame_rect_(
-            x, y, w-1, h-1
+            x+1, y+1, w-2, h-2
         )
         #
         f_w, f_h = 12, 12
         i_w, i_h = 8, 8
         #
         if self._item_expand_direction == self.EXPAND_TOP_TO_BOTTOM:
-            self._set_file_icon_rect_(
+            self._set_icon_file_path_rect_(
                 x+(f_w-i_w) / 2, y+(f_h-i_h) / 2,
                 i_w, i_h
             )
         elif self._item_expand_direction == self.EXPAND_BOTTOM_TO_TOP:
-            self._set_file_icon_rect_(
+            self._set_icon_file_path_rect_(
                 x+(f_w-i_w) / 2, y+h-f_h+(f_h-i_h) / 2,
                 i_w, i_h
             )
@@ -2557,6 +2561,15 @@ class AbsQtItemDagLoading(object):
             self._loading_item = None
 
 
+class _QtTreeSignals(
+    QtCore.QObject
+):
+    visible = qt_signal(bool)
+    expanded = qt_signal()
+    press_db_clicked = qt_signal(object, int)
+    press_clicked = qt_signal(object, int)
+
+
 class QtTreeWidgetItem(
     QtWidgets.QTreeWidgetItem,
     AbsQtItemDagLoading,
@@ -2573,8 +2586,6 @@ class QtTreeWidgetItem(
     #
     utl_gui_qt_abstract.AbsQtItemVisibleConnectionDef,
 ):
-    visible = qt_signal(bool)
-    expanded = qt_signal()
     def __init__(self, *args, **kwargs):
         super(QtTreeWidgetItem, self).__init__(*args, **kwargs)
         self.setFlags(
@@ -2582,7 +2593,7 @@ class QtTreeWidgetItem(
         )
         #
         self._set_item_dag_loading_def_init_(self)
-        self._set_show_item_def_init_()
+        self._set_show_item_def_init_(self)
         #
         self._is_check_enable = True
         self._emit_send_enable = False
@@ -2598,6 +2609,8 @@ class QtTreeWidgetItem(
         self._set_visible_def_init_()
         #
         self._set_item_visible_connection_def_init_()
+
+        self._signals = _QtTreeSignals()
 
     def _set_child_add_(self):
         item = self.__class__()
@@ -2678,7 +2691,8 @@ class QtTreeWidgetItem(
                     utl_gui_core.State.DISABLE,
                     utl_gui_core.State.WARNING,
                     utl_gui_core.State.ERROR,
-                    utl_gui_core.State.LOCKED
+                    utl_gui_core.State.LOCKED,
+                    utl_gui_core.State.LOST
                 ]:
                     if self._icon_state == utl_gui_core.State.ENABLE:
                         background_color = Color.ENABLE
@@ -2690,6 +2704,8 @@ class QtTreeWidgetItem(
                         background_color = Color.ERROR
                     elif self._icon_state == utl_gui_core.State.LOCKED:
                         background_color = Color.LOCKED
+                    elif self._icon_state == utl_gui_core.State.LOST:
+                        background_color = Color.LOST
                     else:
                         raise TypeError()
                     #
@@ -2700,14 +2716,23 @@ class QtTreeWidgetItem(
                     #
                     border_color = QtBorderColor.Icon
                     #
+                    s_w, s_h = w*.5, h*.5
                     state_rect = QtCore.QRect(
-                        x, y+h/2, w/2, h/2
+                        x, y+h-s_h, s_w, s_h
                     )
                     if self._icon_state == utl_gui_core.State.LOCKED:
                         painter._set_file_icon_draw_by_rect_(
                             state_rect,
                             file_path=utl_gui_core.RscIconFile.get(
-                                'state-disable'
+                                'state-locked'
+                            )
+                        )
+                        painter.end()
+                    elif self._icon_state == utl_gui_core.State.LOST:
+                        painter._set_file_icon_draw_by_rect_(
+                            state_rect,
+                            file_path=utl_gui_core.RscIconFile.get(
+                                'state-lost'
                             )
                         )
                         painter.end()
@@ -2746,6 +2771,8 @@ class QtTreeWidgetItem(
             self.setForeground(column, QtGui.QBrush(Color.ERROR))
         elif state == utl_gui_core.State.LOCKED:
             self.setForeground(column, QtGui.QBrush(Color.LOCKED))
+        elif state == utl_gui_core.State.LOST:
+            self.setForeground(column, QtGui.QBrush(Color.LOST))
 
     def _set_status_(self, status, column=0):
         pass
@@ -2882,7 +2909,11 @@ class QtTreeWidgetItem(
             else:
                 raise TypeError()
             #
-            self._set_tool_tip_text_(_, column, as_markdown_style)
+            self._set_tool_tip_text_(
+                _,
+                column,
+                as_markdown_style
+            )
 
     def _set_tool_tip_text_(self, text, column=0, markdown_style=False):
         if hasattr(self, 'setToolTip'):
@@ -2892,8 +2923,10 @@ class QtTreeWidgetItem(
                 # noinspection PyCallingNonCallable
                 self.setToolTip(column, html)
             else:
+                name_text = self._get_name_text_()
+                name_text = name_text.replace('<', '&lt;').replace('>', '&gt;')
                 html = '<html>\n<body>\n'
-                html += '<h3>{}</h3>\n'.format(self._get_name_text_())
+                html += '<h3>{}</h3>\n'.format(name_text)
                 for i in text.split('\n'):
                     html += '<ul>\n<li><i>{}</i></li>\n</ul>\n'.format(i)
                 html += '</body>\n</html>'
@@ -2949,7 +2982,7 @@ class QtListWidgetItem(
         self.setFlags(
             QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled
         )
-        self._set_show_item_def_init_()
+        self._set_show_item_def_init_(self)
         #
         self._visible_tgt_key = None
         self._set_item_filter_tgt_def_init_()
@@ -3081,7 +3114,7 @@ class _QtHItem(
             background_color=background_color,
             border_radius=1
         )
-        # name-icon
+        # icon
         if self._icon_name_is_enable is True:
             if self._icon_name_text is not None:
                 painter._set_icon_name_text_draw_by_rect_(
@@ -3090,6 +3123,12 @@ class _QtHItem(
                     background_color=background_color,
                     # offset=0,
                     border_radius=2,
+                    border_width=2
+                )
+            elif self._icon_file_path is not None:
+                painter._set_file_icon_draw_by_rect_(
+                    rect=self._icon_file_path_rect,
+                    file_path=self._icon_file_path,
                 )
         #
         if self._name_text is not None:
@@ -3137,6 +3176,12 @@ class _QtHItem(
                     x+(f_w-i_c_w) / 2, y+(f_h-i_c_h) / 2, i_c_w, i_c_h
                 )
                 i_x += f_w+spacing
+            elif self._icon_file_path is not None:
+                i_c_w, i_c_h = self._icon_name_size
+                self._set_icon_file_path_rect_(
+                    x + (f_w - i_c_w) / 2, y + (f_h - i_c_h) / 2, i_c_w, i_c_h
+                )
+                i_x += f_w + spacing
         #
         self._set_name_rect_(
             i_x, i_y, i_w-24, i_h

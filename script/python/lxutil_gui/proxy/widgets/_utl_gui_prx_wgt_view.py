@@ -1,6 +1,8 @@
 # coding:utf-8
 import collections
 
+from lxbasic import bsc_core
+
 from lxutil_gui.qt import utl_gui_qt_core
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_view, _utl_gui_qt_wgt_item
@@ -105,7 +107,7 @@ class PrxTreeView(
         self._qt_layout_0.setSpacing(2)
         self._prx_tool_bar_0 = _utl_gui_prx_wdt_utility.PrxHToolBar()
         self._qt_layout_0.addWidget(self._prx_tool_bar_0.widget)
-        self._prx_tool_bar_0.set_border_radius(4)
+        self._prx_tool_bar_0.set_border_radius(1)
         self._prx_filer_bar_0 = _utl_gui_prx_wdt_utility.PrxFilterBar()
         self._prx_tool_bar_0.set_widget_add(self._prx_filer_bar_0)
         #
@@ -438,6 +440,9 @@ class PrxTreeView(
     def set_view_update(self):
         self.view.update()
 
+    def set_refresh_connect_to(self, fnc):
+        self._qt_view.f5_key_pressed.connect(fnc)
+
 
 class PrxListView(
     utl_gui_prx_abstract.AbsPrxWidget,
@@ -456,7 +461,7 @@ class PrxListView(
         self._qt_layout_0.setSpacing(2)
         self._prx_tool_bar_0 = _utl_gui_prx_wdt_utility.PrxHToolBar()
         self._qt_layout_0.addWidget(self._prx_tool_bar_0.widget)
-        self._prx_tool_bar_0.set_border_radius(4)
+        self._prx_tool_bar_0.set_border_radius(1)
         self._view_mode_swap_button = _utl_gui_qt_wgt_item._QtIconPressItem()
         self._view_mode_swap_button._set_icon_file_path_(utl_core.Icon.get('grid_mode'))
         self._view_mode_swap_button.clicked.connect(self.set_view_mode_swap)
@@ -559,6 +564,45 @@ class PrxListView(
 
     def set_loading_update(self):
         self.view._set_loading_update_()
+
+
+class PrxTextureView(PrxListView):
+    def __init__(self, *args, **kwargs):
+        super(PrxTextureView, self).__init__(*args, **kwargs)
+        self.set_item_frame_size(128, 128)
+        self.set_item_icon_frame_draw_enable(True)
+        self.set_item_name_frame_draw_enable(True)
+        self.set_item_image_frame_draw_enable(True)
+
+    def set_textures(self, textures):
+        for i_texture in textures:
+            for j_texture_unit in i_texture.get_exists_files_():
+                self._set_texture_show_(self.set_item_add(), j_texture_unit)
+
+    def _set_texture_show_(self, prx_item, texture_unit):
+        def cache_fnc_():
+            return [
+                prx_item, texture_unit
+            ]
+
+        def build_fnc_(data):
+            self._set_texture_show_deferred_(data)
+
+        prx_item.set_show_fnc(
+            cache_fnc_, build_fnc_
+        )
+
+    def _set_texture_show_deferred_(self, data):
+        prx_item, texture_unit = data
+        show_info_dict = collections.OrderedDict(
+            [
+                ('name', texture_unit.name),
+            ]
+        )
+        image_file_path, image_sub_process_cmds = bsc_core.ImageOpt(texture_unit.path).get_thumbnail_create_args()
+        prx_item.set_image(image_file_path)
+        prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
+        prx_item.set_name_dict(show_info_dict)
 
 
 class PrxGuideBar(

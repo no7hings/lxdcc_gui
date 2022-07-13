@@ -553,10 +553,13 @@ class PrxTreeItem(
         #     self._loading_item_prx = None
         #     view.set_loading_item_remove(self._loading_item_prx)
 
-        self.widget._set_item_dag_loading_end_()
+        self._qt_widget._set_item_dag_loading_end_()
 
     def set_show_method(self, method):
         self.widget._set_item_show_method_(method)
+
+    def set_press_db_clicked_connect_to(self, fnc):
+        self._qt_widget._signals.press_db_clicked.connect(fnc)
 
     def __str__(self):
         return '{}(names={})'.format(

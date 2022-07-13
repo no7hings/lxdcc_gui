@@ -936,7 +936,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
     def get_file_is_changed(self):
         # file_path_src = self._file_path
         # file_path_tgt = self._output_scene_file_rsv_unit.get_result('latest')
-        # return not bsc_core.StorageFileOpt(file_path_src).get_is_same_timestamp_to(file_path_tgt)
+        # return not bsc_core.StorageFileOpt(file_path_src).get_timestamp_is_same_to(file_path_tgt)
         return True
 
     @utl_gui_qt_core.set_prx_window_waiting
@@ -1476,7 +1476,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
     def get_file_is_changed(self):
         file_path_src = self._file_path
         file_path_tgt = self._output_scene_file_rsv_unit.get_result('latest')
-        # return not bsc_core.StorageFileOpt(file_path_src).get_is_same_timestamp_to(file_path_tgt)
+        # return not bsc_core.StorageFileOpt(file_path_src).get_timestamp_is_same_to(file_path_tgt)
         return True
 
     @utl_gui_qt_core.set_prx_window_waiting

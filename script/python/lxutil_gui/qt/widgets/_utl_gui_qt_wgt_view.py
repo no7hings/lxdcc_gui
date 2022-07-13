@@ -476,6 +476,7 @@ class QtTreeWidget(
     filter_changed = qt_signal()
     #
     ctrl_f_key_pressed = qt_signal()
+    f5_key_pressed = qt_signal()
     f_key_pressed = qt_signal()
     #
     item_expanded = qt_signal(str)
@@ -548,6 +549,19 @@ class QtTreeWidget(
         self.horizontalScrollBar().setStyleSheet(
             utl_gui_core.QtStyleMtd.get('QScrollBar')
         )
+
+        self.itemDoubleClicked.connect(
+            self._set_item_db_clicked_emit_send_
+        )
+        self.itemClicked.connect(
+            self._set_item_clicked_emit_send_
+        )
+    @classmethod
+    def _set_item_db_clicked_emit_send_(cls, item, column):
+        item._signals.press_db_clicked.emit(item, column)
+    @classmethod
+    def _set_item_clicked_emit_send_(cls, item, column):
+        item._signals.press_clicked.emit(item, column)
 
     def _set_size_policy_height_fixed_mode_(self):
         self.setSizePolicy(
@@ -824,13 +838,9 @@ class QtTreeWidget(
         QtTreeMtd._set_item_row_draw_(painter, option, index)
 
     def keyPressEvent(self, event):
+        # override space action
         if event.key() == QtCore.Qt.Key_Space:
             pass
-        elif event.key() == QtCore.Qt.Key_F:
-            if QtWidgets.QApplication.keyboardModifiers() == QtCore.Qt.ControlModifier:
-                self.ctrl_f_key_pressed.emit()
-            else:
-                self.f_key_pressed.emit()
         else:
             super(QtTreeWidget, self).keyPressEvent(event)
 
@@ -846,7 +856,14 @@ class QtTreeWidget(
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 pass
             elif event.type() == QtCore.QEvent.KeyPress:
-                pass
+                if event.key() == QtCore.Qt.Key_F and event.modifiers() == QtCore.Qt.ControlModifier:
+                    self.ctrl_f_key_pressed.emit()
+                elif event.key() == QtCore.Qt.Key_F:
+                    self.f_key_pressed.emit()
+                elif event.key() == QtCore.Qt.Key_Space:
+                    pass
+                elif event.key() == QtCore.Qt.Key_F5:
+                    self.f5_key_pressed.emit()
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 parent = self.parent()
@@ -1442,7 +1459,7 @@ class _QtGuideBar(
                     )
                 #
                 painter._set_file_icon_draw_by_rect_(
-                    i_item._file_icon_rect,
+                    i_item._icon_file_path_rect,
                     file_path=i_item._get_icon_file_path_(),
                     offset=i_icon_offset
                 )
@@ -1519,7 +1536,7 @@ class _QtGuideBar(
             i_item._set_icon_frame_rect_(
                 i_x, i_y, i_f_w, i_f_h
             )
-            i_item._set_file_icon_rect_(
+            i_item._set_icon_file_path_rect_(
                 i_x+(i_f_w-i_i_w)/2, i_y+(i_f_h-i_i_h)/2, i_i_w, i_i_h
             )
             i_x += i_f_w + spacing

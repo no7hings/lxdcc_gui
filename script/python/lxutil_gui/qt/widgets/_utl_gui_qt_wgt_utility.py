@@ -563,15 +563,9 @@ class QtPainter(QtGui.QPainter):
             self.drawRect(frame_rect)
         #
         self._set_border_color_(text_color_)
-        # self._set_border_width_(border_width)
         #
         r = min(w, h)
         t_f_s = int(r*.675)
-        t_o = 0
-        text_rect_0 = QtCore.QRect(
-            x+(w-t_f_s)/2+t_o, y+(h-t_f_s)/2,
-            t_f_s, t_f_s
-        )
         #
         t_f_s = max(t_f_s, 1)
         #
@@ -1977,6 +1971,13 @@ class QtMainWindow(
         close_timer = QtCore.QTimer(self)
         close_timer.timeout.connect(self._set_close_)
         close_timer.start(time)
+
+    def _set_window_shortcut_action_create_(self, fnc, shortcut):
+        action = QtWidgets.QAction(self)
+        action.triggered.connect(fnc)
+        action.setShortcut(QtGui.QKeySequence(shortcut))
+        action.setShortcutContext(QtCore.Qt.WindowShortcut)
+        self.addAction(action)
 
 
 class QtDialog(

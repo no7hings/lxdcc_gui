@@ -153,6 +153,7 @@ class _PrxStorageEntry(AbsRsvTypeQtEntry):
     def __init__(self, *args, **kwargs):
         super(_PrxStorageEntry, self).__init__(*args, **kwargs)
         self._history_key = 'gui.storage'
+        self._history_icon_file_path = utl_gui_core.RscIconFile.get('history')
         #
         self._ext_filter = 'All File(s) (*.*)'
         #
@@ -221,7 +222,7 @@ class _PrxStorageEntry(AbsRsvTypeQtEntry):
             histories.reverse()
         #
         self._qt_entry_widget._set_item_values_(
-            histories
+            histories, self._history_icon_file_path
         )
 
     def set_show_history_latest(self):
@@ -584,7 +585,12 @@ class PrxChooseEntry_(AbsRsvTypeQtEntry):
         elif isinstance(raw, (str, unicode)):
             self._qt_entry_widget._set_item_value_(raw)
         elif isinstance(raw, (int, float)):
-            self._qt_entry_widget._set_item_value_by_index_(int(raw))
+            self._qt_entry_widget._set_item_value_at_(int(raw))
+
+    def set_icon_file_as_value(self, value, file_path):
+        self._qt_entry_widget._set_item_value_icon_file_path_as_value_(
+            value, file_path
+        )
 
     def set_default(self, raw, **kwargs):
         if isinstance(raw, (str, unicode)):
@@ -1264,6 +1270,10 @@ class AbsPrxPortDef(object):
         return self._port_path
     port_path = property(get_port_path)
 
+    def get_group_path(self):
+        return '.'.join(self.get_port_path().split('.')[:-1])
+    group_path = property(get_group_path)
+
     def get_label(self):
         return self._label
     label = property(get_label)
@@ -1504,6 +1514,9 @@ class AbsPrxTypePort(AbsPrxPortDef):
             self._custom_widget = widget
             return self._custom_widget
 
+    def set_locked(self, *args, **kwargs):
+        pass
+
 
 class PrxConstantPort(AbsPrxTypePort):
     ENABLE_CLASS = _PrxPortStatus
@@ -1644,6 +1657,9 @@ class PrxEnumeratePort_(AbsPrxTypePort):
     def get_enumerate_strings(self):
         return self._prx_port_entry.get_enumerate_strings()
 
+    def set_icon_file_as_value(self, value, file_path):
+        self._prx_port_entry.set_icon_file_as_value(value, file_path)
+
 
 class PrxScriptPort(AbsPrxTypePort):
     ENABLE_CLASS = _PrxPortStatus
@@ -1702,6 +1718,9 @@ class PrxButtonPort(AbsPrxTypePort):
 
     def set_status(self, status):
         self._prx_port_entry._qt_entry_widget._set_status_(status)
+
+    def set_locked(self, boolean):
+        self._prx_port_entry._qt_entry_widget._set_action_enable_(not boolean)
 
 
 class PrxSubProcessPort(AbsPrxTypePort):
@@ -1950,6 +1969,7 @@ class PrxGroupPort_(
         self._prx_widget.set_widget_add(qt_line)
         self._port_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_line)
         self._port_layout.setContentsMargins(8, 0, 0, 0)
+        self._port_layout.setSpacing(2)
         #
         self._port_stack = self.PORT_STACK_CLASS()
         # default use -1
@@ -2176,26 +2196,24 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         return self._prx_port_root
 
     def set_port_add(self, port):
-        root_port = self.get_port_root()
-
-        port_path = port.get_port_path()
-        _ = port_path.split('.')
-        group_names = _[:-1]
-
-        current_group_port = root_port
-        for i_group_name in group_names:
-            i_group_port = current_group_port.get_child(i_group_name)
-            if i_group_port is None:
-                i_group_port = current_group_port.set_child_group_create(i_group_name)
-                self._set_port_register_(i_group_port)
-
-            current_group_port = i_group_port
-
-        group_port = current_group_port
-        # print group_port, group_port.get_children_()
-        #
+        group = self._set_group_create_(port.get_group_path())
         self._set_port_register_(port)
-        return group_port.set_child_add(port)
+        return group.set_child_add(port)
+
+    def _set_group_create_(self, group_path):
+        root_port = self.get_port_root()
+        current_group = root_port
+        if group_path:
+            group_names = group_path.split('.')
+
+            for i_group_name in group_names:
+                i_group_port = current_group.get_child(i_group_name)
+                if i_group_port is None:
+                    i_group_port = current_group.set_child_group_create(i_group_name)
+                    self._set_port_register_(i_group_port)
+                #
+                current_group = i_group_port
+        return current_group
 
     def _set_port_register_(self, port):
         port._set_node_(self)
@@ -2227,11 +2245,18 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_port_create_by_option(self, port_path, option):
         widget_ = option['widget']
-        key_ = option.get('key')
         label_ = option.get('label')
-        value_ = option['value']
+        #
+        if widget_ in ['group']:
+            group = self._set_group_create_(port_path)
+            group.set_label(label_)
+            return
+        #
+        key_ = option.get('key')
+        value_ = option.get('value')
         enable_ = option.get('enable')
         tool_tip_ = option.get('tool_tip')
+        lock_ = option.get('lock') or False
         #
         join_to_next_ = option.get('join_to_next') or False
 
@@ -2321,10 +2346,6 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             ext_filter = option.get('ext_filter')
             if ext_filter:
                 port.set_ext_filter(ext_filter)
-
-            lock = option.get('lock') or False
-            if lock is True:
-                port.set_locked(True)
         #
         elif widget_ in ['directory']:
             open_or_save_ = option.get('open_or_save')
@@ -2428,6 +2449,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         port.set_use_enable(enable_)
         port.set_tool_tip(tool_tip_)
         port.set_join_to_next(join_to_next_)
+        port.set_locked(lock_)
 
         self.set_port_add(port)
 

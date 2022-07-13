@@ -1,8 +1,6 @@
 # coding:utf-8
 import collections
 
-import functools
-
 import time
 
 import copy
@@ -17,21 +15,13 @@ from lxutil_gui.qt import utl_gui_qt_core
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
-from lxobj import core_objects
-
-import lxbasic.objects as bsc_objects
-
 import lxutil_gui.proxy.operators as utl_prx_operators
 
 import lxsession.commands as ssn_commands
 
 import lxresolver.commands as rsv_commands
 
-from lxsession import ssn_core
-
-import lxsession.objects as ssn_objects
-
-import lxutil_gui.proxy.operators as prx_operators
+import lxdeadline.objects as ddl_objects
 
 from lxutil_gui import utl_gui_core
 
@@ -233,7 +223,7 @@ class AbsTextureWorkspace(object):
 
     def get_all_versions(self):
         variant = self.get_current_variant()
-        return self._work_texture_directory_rsv_unit.get_all_versions(
+        return self._work_texture_directory_rsv_unit.get_all_exists_versions(
             extend_variants=dict(variant=variant)
         )
 
@@ -291,25 +281,137 @@ class AbsTextureWorkspace(object):
         return self.get_is_read_only(directory_path)
 
 
-class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
+class _VersionController(object):
+    def __init__(self, rsv_task):
+        self._resolver = rsv_commands.get_resolver()
+
+        self._rsv_task = rsv_task
+
+        self._variant = None
+
+        self._version = None
+
+        self._work_texture_directory_rsv_unit = self._rsv_task.get_rsv_unit(
+            keyword='asset-work-texture-dir'
+        )
+        self._work_texture_src_directory_rsv_unit = self._rsv_task.get_rsv_unit(
+            keyword='asset-work-texture-src-dir'
+        )
+        self._work_texture_tx_directory_rsv_unit = self._rsv_task.get_rsv_unit(
+            keyword='asset-work-texture-tx-dir'
+        )
+
+    def get_directory_path_at(self, variant, version):
+        return self._work_texture_directory_rsv_unit.get_result(
+            version=version,
+            extend_variants=dict(variant=variant)
+        )
+
+    def get_src_directory_path_at(self, variant, version):
+        return self._work_texture_src_directory_rsv_unit.get_result(
+            version=version,
+            extend_variants=dict(variant=variant)
+        )
+
+    def get_tx_directory_path_at(self, variant, version):
+        return self._work_texture_tx_directory_rsv_unit.get_result(
+            version=version,
+            extend_variants=dict(variant=variant)
+        )
+
+    def set_version_create_at(self, variant, version):
+        if version == 'new':
+            version = self.get_new_version_at(variant)
+        #
+        bsc_core.StoragePathMtd.set_directory_create(
+            self.get_directory_path_at(variant, version)
+        )
+        bsc_core.StoragePathMtd.set_directory_create(
+            self.get_src_directory_path_at(variant, version)
+        )
+        bsc_core.StoragePathMtd.set_directory_create(
+            self.get_tx_directory_path_at(variant, version)
+        )
+
+        utl_core.Log.set_module_result_trace(
+            'version create',
+            'variant="{}", version="{}"'.format(
+                variant, version
+            )
+        )
+
+    def set_version_lock_at(self, variant, version):
+        directory_path = self.get_directory_path_at(variant, version)
+        #
+        rsv_methods.PathGroupPermission(
+            directory_path
+        ).set_all_read_only()
+        #
+        utl_core.Log.set_module_result_trace(
+            'version lock',
+            'variant="{}", version="{}"'.format(
+                variant, version
+            )
+        )
+
+    def set_current_variant(self, variant):
+        self._variant = variant
+
+    def set_current_version(self, version):
+        self._version = version
+
+    def get_current_variant(self):
+        return self._variant
+
+    def get_current_version(self):
+        return self._version
+
+    def get_latest_version_at(self, variant):
+        return self._work_texture_directory_rsv_unit.get_latest_version(
+            extend_variants=dict(variant=variant)
+        )
+
+    def get_new_version_at(self, variant):
+        return self._work_texture_directory_rsv_unit.get_new_version(
+            extend_variants=dict(variant=variant)
+        )
+
+    def get_all_versions_at(self, variant):
+        return self._work_texture_directory_rsv_unit.get_all_exists_versions(
+            extend_variants=dict(variant=variant)
+        )
+
+    def get_all_locked_versions_at(self, variant):
+        matches = self._work_texture_directory_rsv_unit.get_all_exists_matches(
+            extend_variants=dict(variant=variant)
+        )
+        list_ = []
+        for i in matches:
+            i_result, i_variants = i
+            if bsc_core.StoragePathMtd.get_is_writeable(i_result) is False:
+                list_.append(i_variants['version'])
+        return list_
+
+    def get_all_unlocked_versions_at(self, variant):
+        matches = self._work_texture_directory_rsv_unit.get_all_exists_matches(
+            extend_variants=dict(variant=variant)
+        )
+        list_ = []
+        for i in matches:
+            i_result, i_variants = i
+            if bsc_core.StoragePathMtd.get_is_writeable(i_result) is True:
+                list_.append(i_variants['version'])
+        return list_
+
+
+class AbsWorkTextureManager(prx_widgets.PrxSessionWindow):
     DCC_NAMESPACE = None
     DCC_SELECTION_CLS = None
     TEXTURE_WORKSPACE_CLS = None
     def __init__(self, session, *args, **kwargs):
-        super(AbsWorkTextureManager, self).__init__(*args, **kwargs)
-        self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
-        #
-        self._session = session
-        self._session.set_configure_reload()
-        # noinspection PyUnresolvedReferences
-        self._gui_configure = self._session.gui_configure
-        self._build_configure = self._session.configure.get_content('build')
-        if self._session.get_rez_beta() is True:
-            self.set_window_title('[BETA] {}'.format(self._gui_configure.get('name')))
-        else:
-            self.set_window_title(self._gui_configure.get('name'))
-        self.set_definition_window_size(self._gui_configure.get('size'))
+        super(AbsWorkTextureManager, self).__init__(session, *args, **kwargs)
 
+    def set_variants_restore(self):
         self._dcc_texture_references = None
         self._dcc_objs = []
 
@@ -318,16 +420,8 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
         self._is_disable = False
 
         self._file_path = None
-        self._texture_configure = None
 
-        self._dcc_workspace_version = None
-
-        self.set_loading_start(
-            time=1000,
-            method=self._set_tool_panel_setup_
-        )
-
-    def _set_tool_panel_setup_(self):
+    def set_all_setup(self):
         self._tab_view = prx_widgets.PrxTabView()
         self.set_widget_add(self._tab_view)
 
@@ -338,88 +432,27 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
             icon_name_text='workspace',
         )
 
-        s_1 = prx_widgets.PrxScrollArea()
-
-        self._tab_view.set_item_add(
-            s_1,
-            name='dcc',
-            icon_name_text='workspace',
-        )
-
-        self._viewer_group = prx_widgets.PrxExpandedGroup()
-        s_1.set_widget_add(self._viewer_group)
-        self._viewer_group.set_name('textures')
-        self._viewer_group.set_expanded(True)
-        #
-        self._tree_view = prx_widgets.PrxTreeView()
-        self._viewer_group.set_widget_add(self._tree_view)
-        self._tree_view.set_header_view_create(
-            [('name', 4), ('description', 2)],
-            self.get_definition_window_size()[0] - 32
-        )
-        self._tree_view.set_single_selection()
-        #
-        self._texture_add_opt = utl_prx_operators.PrxStgObjTreeViewAddOpt(
-            prx_tree_view=self._tree_view,
-            prx_tree_item_cls=prx_widgets.PrxStgObjTreeItem,
-        )
-        self._dcc_obj_add_opt = utl_prx_operators.PrxDccObjTreeViewAddOpt(
-            prx_tree_view=self._tree_view,
-            prx_tree_item_cls=prx_widgets.PrxDccObjTreeItem,
-            dcc_namespace=self.DCC_NAMESPACE
-        )
-        #
-        self._tree_view_selection_opt = utl_prx_operators.PrxDccObjTreeViewSelectionOpt(
-            prx_tree_view=self._tree_view,
-            dcc_selection_cls=self.DCC_SELECTION_CLS,
-            dcc_namespace=self.DCC_NAMESPACE
-        )
-        self._tree_view.set_item_select_changed_connect_to(
-            self._tree_view_selection_opt.set_select
-        )
-
         self._workspace_options_prx_node = prx_widgets.PrxNode_('options')
         s_0.set_widget_add(self._workspace_options_prx_node)
         self._workspace_options_prx_node.set_ports_create_by_configure(
             self._session.configure.get('build.node.workspace_options'),
         )
 
-        self._dcc_options_prx_node = prx_widgets.PrxNode_('options')
-        s_1.set_widget_add(self._dcc_options_prx_node)
-        self._dcc_options_prx_node.set_ports_create_by_configure(
-            self._session.configure.get('build.node.dcc_options'),
+        self._workspace_options_prx_node.set(
+            'control.new_version', self._set_wsp_version_new_execute_
+        )
+        self._workspace_options_prx_node.get_port(
+            'control.version'
+        ).set_changed_connect_to(
+            self._set_wsp_texture_directories_update_
         )
 
         self._workspace_options_prx_node.set(
-            'control.update_version', self._set_workspace_version_update_execute_
+            'texture.create.execute', self._set_wsp_tx_create_execute_
         )
 
         self._workspace_options_prx_node.set(
-            'extra.pull.execute', self._set_workspace_texture_pull_execute_
-        )
-
-        self._workspace_options_prx_node.set(
-            'texture.create.execute', self._set_tx_create_from_workspace_
-        )
-
-        self._dcc_options_prx_node.set(
-            'extra.collection_to_current_version', self._set_textures_copy_and_repath_
-        )
-
-        self._dcc_options_prx_node.set(
-            'texture.repath_to_src', self._set_textures_repath_to_src_
-        )
-
-        self._dcc_options_prx_node.set(
-            'texture.repath_to_tx', self._set_textures_repath_to_tgt_
-        )
-
-        self._dcc_options_prx_node.set(
-            'texture.create_tx', self._set_tx_create_from_dcc_
-        )
-
-        self._dcc_options_prx_node.set(
-            'refresh', self._set_gui_refresh_
+            'texture.create.execute_us_deadline', self._set_wsp_tx_create_execute_by_deadline_
         )
 
         self._set_collapse_update_()
@@ -438,37 +471,31 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
         self._file_path = None
 
     def _set_texture_workspace_update_(self):
-        self._texture_workspace = self.TEXTURE_WORKSPACE_CLS(self._rsv_task)
-        current_variant = 'main'
-        self._texture_workspace.set_variant(current_variant)
+        self._version_controller = _VersionController(self._rsv_task)
+        current_variant = 'td'
+        self._version_controller.set_current_variant(current_variant)
         if self._set_workspace_check_(current_variant) is True:
-            self._texture_workspace.set_version(
-                self._texture_workspace.get_latest_version()
-            )
-            self._workspace_options_prx_node.set(
-                'control.variant', self._texture_workspace.get_current_variant()
-            )
-            self._workspace_options_prx_node.set(
-                'control.version', self._texture_workspace.get_current_version()
-            )
-
             self._workspace_options_prx_node.set(
                 'resolver.task', self._rsv_task.path
             )
-            #
-            self._set_wsp_directory_update_()
 
-            self._set_wsp_pull_update_()
+            self._workspace_options_prx_node.set(
+                'control.variant', current_variant
+            )
+
+            self._set_wsp_versions_update_()
+            #
+            self._set_wsp_texture_directories_update_()
 
     def _set_workspace_check_(self, current_variant):
         def yes_fnc_():
-            self._texture_workspace.set_create_at(
+            self._version_controller.set_version_create_at(
                 current_variant, 'new'
             )
 
         self._is_disable = True
 
-        directory_path = self._texture_workspace.get_directory_path_at(
+        directory_path = self._version_controller.get_directory_path_at(
             current_variant, 'latest'
         )
         if directory_path:
@@ -476,7 +503,9 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
         else:
             w = utl_core.DialogWindow.set_create(
                 self._session.gui_name,
-                content='workspace is not install, press "confirm" to continue',
+                content='workspace is not install in variant "{}", press "confirm" to continue'.format(
+                    current_variant
+                ),
                 status=utl_core.DialogWindow.ValidatorStatus.Warning,
                 #
                 yes_label='confirm',
@@ -484,7 +513,8 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
                 yes_method=yes_fnc_,
                 #
                 no_visible=False,
-                # show=False
+                # show=False,
+                parent=self.widget
             )
             result = w.get_result()
             if result is True:
@@ -493,140 +523,87 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
                 self._is_disable = True
                 self.set_window_close()
 
-    def _set_workspace_version_update_execute_(self):
+    def _set_wsp_version_new_execute_(self):
         def yes_fnc_():
-            self._texture_workspace.set_lock_at(
-                variant, current_version
-            )
-            self._texture_workspace.set_create_at(
+            self._version_controller.set_version_create_at(
                 variant, next_version
             )
-            # pull
-            _replace_enable = n.get('pull.replace_enable')
-            _with_src = n.get('pull.with_src')
-            _with_tx = n.get('pull.with_tx')
 
-            _variant = n.get('pull.variant')
-            _from_version = n.get('pull.version')
+            _variant = variant
+            _from_version = n.get('version')
             _to_version = next_version
 
             self._set_wsp_texture_pull_(
                 _variant, _from_version, _to_version,
-                _replace_enable,
-                _with_src, _with_tx
+            )
+
+            self._version_controller.set_version_lock_at(
+                _variant, _from_version
             )
 
             time.sleep(2)
             self.set_refresh_all()
 
-        variant = self._texture_workspace.get_current_variant()
-        current_version = self._texture_workspace.get_current_version()
-        next_version = self._texture_workspace.get_new_version()
+        variant = self._workspace_options_prx_node.get('control.variant')
+        next_version = self._version_controller.get_new_version_at(variant)
 
         w = utl_core.DialogWindow.set_create(
             self._session.gui_name,
-            content='update version "{}" to "{}" in variant "{}", press "confirm" to continue'.format(
-                current_version, next_version, variant
+            content=u'create new version "{}" in variant "{}" and pull textures from choose version ( lock choose version ), press "confirm" to continue'.format(
+                next_version, variant
             ),
             status=utl_core.DialogWindow.ValidatorStatus.Warning,
             #
-            options_configure=self._build_configure.get('node.update_version'),
+            options_configure=self._session.configure.get('build.node.new_version'),
             #
             yes_label='confirm',
             #
             yes_method=yes_fnc_,
             #
             no_visible=False,
-            show=False
+            show=False,
+            #
+            parent=self.widget
         )
 
         n = w.get_options_node()
+        v_p = n.get_port('version')
+        all_versions = self._version_controller.get_all_versions_at(variant)
+        all_locked_versions = self._version_controller.get_all_locked_versions_at(variant)
 
-        variant = self._workspace_options_prx_node.get(
-            'control.variant'
+        v_p.set(
+            all_versions
         )
-        version = self._workspace_options_prx_node.get(
-            'control.version'
-        )
-
-        n.set(
-            'pull.variant', [variant]
-        )
-        versions = self._texture_workspace.get_all_versions()
-        # versions.remove(version)
-        n.set(
-            'pull.version', versions
-        )
+        [v_p.set_icon_file_as_value(i, utl_gui_core.RscIconFile.get('lock')) for i in all_locked_versions]
 
         w.set_window_show()
 
-    def _set_wsp_texture_pull_(self, from_variant, from_version, to_version, replace_enable, with_src, with_tx):
-        directory_path_src_0 = self._texture_workspace.get_src_directory_path_at(
+    def _set_wsp_texture_pull_(self, from_variant, from_version, to_version):
+        directory_path_src_0 = self._version_controller.get_src_directory_path_at(
             from_variant, from_version
         )
-        directory_path_tx_0 = self._texture_workspace.get_tx_directory_path_at(
+        directory_path_tx_0 = self._version_controller.get_tx_directory_path_at(
             from_variant, from_version
         )
 
-        directory_path_src_1 = self._texture_workspace.get_src_directory_path_at(
+        directory_path_src_1 = self._version_controller.get_src_directory_path_at(
             from_variant, to_version
         )
-        directory_path_tx_1 = self._texture_workspace.get_tx_directory_path_at(
+        directory_path_tx_1 = self._version_controller.get_tx_directory_path_at(
             from_variant, to_version
         )
 
         method_args = [
-            (self._set_texture_pull_as_link_, with_src, (directory_path_src_0, directory_path_src_1, replace_enable)),
-            (self._set_texture_pull_as_link_, with_tx, (directory_path_tx_0, directory_path_tx_1, replace_enable))
+            (self._set_wsp_texture_pull_as_link_, (directory_path_src_0, directory_path_src_1)),
+            (self._set_wsp_texture_pull_as_link_, (directory_path_tx_0, directory_path_tx_1))
         ]
 
         with utl_core.gui_progress(maximum=len(method_args)) as g_p:
-            for i_method, i_enable, i_args in method_args:
+            for i_method, i_args in method_args:
                 g_p.set_update()
-                if i_enable is True:
-                    i_method(*i_args)
-
-    def _set_workspace_texture_pull_execute_(self):
-        def yes_fnc_():
-            _n = w.get_options_node()
-            _replace_enable = _n.get('replace_enable')
-            _with_src = _n.get('with_src')
-            _with_tx = _n.get('with_tx')
-
-            _to_version = current_version
-
-            self._set_wsp_texture_pull_(
-                from_variant, from_version, _to_version,
-                _replace_enable, _with_src, _with_tx
-            )
-
-        from_variant = self._texture_workspace.get_current_variant()
-        from_version = self._workspace_options_prx_node.get(
-            'extra.pull.version'
-        )
-
-        current_version = self._texture_workspace.get_current_version()
-
-        w = utl_core.DialogWindow.set_create(
-            self._session.gui_name,
-            content='pull texture from version "{}" to "{}", press "confirm" to continue'.format(
-                from_version, current_version
-            ),
-            status=utl_core.DialogWindow.ValidatorStatus.Warning,
-            #
-            options_configure=self._build_configure.get('node.pull'),
-            #
-            yes_label='confirm',
-            #
-            yes_method=yes_fnc_,
-            #
-            no_visible=False,
-            show=False
-        )
-
-        w.set_window_show()
+                i_method(*i_args)
     @classmethod
-    def _set_texture_pull_as_link_(cls, directory_path_src, directory_path_tgt, _replace_enable):
+    def _set_wsp_texture_pull_as_link_(cls, directory_path_src, directory_path_tgt):
         file_paths_src = bsc_core.DirectoryMtd.get_file_paths__(
             directory_path_src
         )
@@ -634,7 +611,7 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
             with utl_core.gui_progress(maximum=len(file_paths_src)) as g_p:
                 for i_file_path in file_paths_src:
                     g_p.set_update()
-
+                    #
                     i_texture_src = utl_dcc_objects.OsTexture(
                         i_file_path
                     )
@@ -643,30 +620,18 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
                         directory_path_tgt
                     )
 
-    def _set_wsp_directory_update_(self):
+    def _set_wsp_versions_update_(self):
         variant = self._workspace_options_prx_node.get(
             'control.variant'
         )
-        version = self._workspace_options_prx_node.get(
-            'control.version'
+        unlocked_versions = self._version_controller.get_all_unlocked_versions_at(
+            variant
         )
         self._workspace_options_prx_node.set(
-            'texture.directory.base', self._texture_workspace.get_base_directory_path()
-        )
-        self._workspace_options_prx_node.set(
-            'texture.directory.src', self._texture_workspace.get_src_directory_path_at(
-                variant,
-                version
-            )
-        )
-        self._workspace_options_prx_node.set(
-            'texture.directory.tx', self._texture_workspace.get_tx_directory_path_at(
-                variant,
-                version
-            )
+            'control.version', unlocked_versions
         )
 
-    def _set_wsp_pull_update_(self):
+    def _set_wsp_texture_directories_update_(self):
         variant = self._workspace_options_prx_node.get(
             'control.variant'
         )
@@ -675,12 +640,16 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
         )
 
         self._workspace_options_prx_node.set(
-            'extra.pull.variant', [variant]
+            'texture.directory.source', self._version_controller.get_src_directory_path_at(
+                variant,
+                version
+            )
         )
-        versions = self._texture_workspace.get_all_versions()
-        versions.remove(version)
         self._workspace_options_prx_node.set(
-            'extra.pull.version', versions
+            'texture.directory.target', self._version_controller.get_tx_directory_path_at(
+                variant,
+                version
+            )
         )
 
     def set_refresh_all(self):
@@ -698,291 +667,22 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
 
                 self._set_texture_workspace_update_()
 
-                self._set_gui_refresh_()
-
-    def _set_gui_refresh_(self):
-        tab_current_name = self._tab_view.get_current_name()
-        # print tab_current_name
-        if self._is_disable is False and tab_current_name == 'dcc':
-            self._set_dcc_texture_references_update_()
-            self._set_dcc_objs_update_()
-            #
-            self._set_gui_texture_refresh_()
-
     def _set_version_new_(self):
         pass
 
     def _set_collapse_update_(self):
         collapse_dict = {
             'workspace_options': self._workspace_options_prx_node,
-            'dcc_options': self._dcc_options_prx_node,
         }
         for i_k, i_v in collapse_dict.items():
-            i_c = self._build_configure.get(
-                'node_collapse.{}'.format(i_k)
+            i_c = self._session.configure.get(
+                'build.node_collapse.{}'.format(i_k)
             ) or []
             if i_c:
                 for i in i_c:
                     i_v.get_port(
                         i.replace('/', '.')
                     ).set_expanded(False)
-
-    def _set_gui_texture_refresh_(self):
-        self._texture_add_opt.set_restore()
-
-        if self._dcc_objs:
-            with utl_core.gui_progress(maximum=len(self._dcc_objs)) as g_p:
-                for i_dcc_obj in self._dcc_objs:
-                    g_p.set_update()
-
-                    i_files = i_dcc_obj.get_file_objs()
-                    if i_files:
-                        for j_file in i_files:
-                            j_is_create, j_file_prx_item = self._texture_add_opt.set_prx_item_add_as(
-                                j_file,
-                                mode='list',
-                                use_show_thread=True
-                            )
-                            if j_file_prx_item is not None:
-                                i_dcc_prx_item = self._dcc_obj_add_opt._set_prx_item_add_2_(
-                                    i_dcc_obj,
-                                    j_file_prx_item
-                                )
-                                i_dcc_obj.set_obj_gui(i_dcc_prx_item)
-
-        self._set_gui_texture_validator_()
-
-    def _set_gui_texture_validator_(self):
-        textures = self._texture_add_opt.get_files()
-        c = len(textures)
-        src_texture_directory_path = self._texture_workspace.get_current_src_directory_path()
-        tgt_texture_directory_path = self._texture_workspace.get_current_tx_directory_path()
-
-        collection_port = self._dcc_options_prx_node.get_port('extra.collection_to_current_version')
-        collection_statuses = [bsc_configure.ValidatorStatus.Normal]*c
-
-        repath_src_port = self._dcc_options_prx_node.get_port('texture.repath_to_src')
-        repath_src_statuses = [bsc_configure.ValidatorStatus.Normal]*c
-
-        repath_tgt_port = self._dcc_options_prx_node.get_port('texture.repath_to_tx')
-        repath_tgt_statuses = [bsc_configure.ValidatorStatus.Normal]*c
-        for i_index, i_texture_any in enumerate(textures):
-            i_prx_item = i_texture_any.get_obj_gui()
-            #
-            i_descriptions = []
-            #
-            i_texture_any_directory_path = i_texture_any.directory.path
-            i_directory_args = self._texture_workspace.get_search_directory_args(
-                i_texture_any_directory_path
-            )
-            if i_directory_args:
-                i_texture_src, i_texture_tgt = i_texture_any.get_args_as_tx_by_directory_args(i_directory_args)
-            else:
-                i_texture_src, i_texture_tgt = i_texture_any.get_args_as_tx()
-            #
-            if i_texture_src is None:
-                i_descriptions.append(
-                    u'src is non-exists'
-                )
-                repath_src_statuses[i_index] = i_prx_item.ValidatorStatus.Error
-            else:
-                if i_texture_any == i_texture_src:
-                    repath_src_statuses[i_index] = i_prx_item.ValidatorStatus.Correct
-                    #
-                    if i_texture_any_directory_path == src_texture_directory_path:
-                        collection_statuses[i_index] = bsc_configure.ValidatorStatus.Correct
-                    else:
-                        if i_directory_args:
-                            collection_statuses[i_index] = bsc_configure.ValidatorStatus.Locked
-                            i_descriptions.append(
-                                u'version is locked'
-                            )
-                        else:
-                            collection_statuses[i_index] = bsc_configure.ValidatorStatus.Warning
-                            i_descriptions.append(
-                                u'src is non-collection'
-                            )
-                else:
-                    repath_src_statuses[i_index] = i_prx_item.ValidatorStatus.Warning
-
-            if i_texture_tgt.get_is_exists() is False:
-                i_descriptions.append(
-                    u'tx is non-exists'
-                )
-                repath_tgt_statuses[i_index] = i_prx_item.ValidatorStatus.Error
-            else:
-                if i_texture_any == i_texture_tgt:
-                    repath_tgt_statuses[i_index] = i_prx_item.ValidatorStatus.Correct
-                    #
-                    if i_texture_any_directory_path == tgt_texture_directory_path:
-                        collection_statuses[i_index] = bsc_configure.ValidatorStatus.Correct
-                    else:
-                        if i_directory_args:
-                            collection_statuses[i_index] = bsc_configure.ValidatorStatus.Locked
-                            i_descriptions.append(
-                                u'version is locked'
-                            )
-                        else:
-                            collection_statuses[i_index] = bsc_configure.ValidatorStatus.Warning
-                            i_descriptions.append(
-                                u'tx is non-collection'
-                            )
-                else:
-                    repath_tgt_statuses[i_index] = i_prx_item.ValidatorStatus.Warning
-
-            if i_texture_src is not None and i_texture_tgt is not None:
-                if i_texture_src.get_is_exists_as_tx(i_texture_tgt.directory.path) is False:
-                    i_descriptions.append(
-                        u'tx need update'
-                    )
-                    repath_tgt_statuses[i_index] = i_prx_item.ValidatorStatus.Error
-
-            i_prx_item.set_name(
-                u', '.join(i_descriptions), 1
-            )
-
-            if i_descriptions:
-                i_prx_item.set_state(
-                    utl_gui_core.State.WARNING, 1
-                )
-            else:
-                i_prx_item.set_state(
-                    utl_gui_core.State.NORMAL, 1
-                )
-
-        collection_port.set_statuses(
-            collection_statuses
-        )
-        repath_src_port.set_statuses(
-            repath_src_statuses
-        )
-        repath_tgt_port.set_statuses(
-            repath_tgt_statuses
-        )
-
-    def _set_textures_copy_and_repath_(self):
-        collection_replace_enable = self._dcc_options_prx_node.get('extra.collection_replace_enable')
-        collection_locked_enable = self._dcc_options_prx_node.get('extra.collection_locked_enable')
-        # base
-        base_texture_directory_path = self._texture_workspace.get_base_directory_path()
-        # src + tx
-        src_texture_directory_path = self._texture_workspace.get_current_src_directory_path()
-        tgt_texture_directory_path = self._texture_workspace.get_current_tx_directory_path()
-        textures = self._texture_add_opt.get_checked_files()
-        with utl_core.gui_progress(maximum=len(textures)) as g_p:
-            for i_texture_any in self._texture_add_opt.get_checked_files():
-                g_p.set_update()
-                #
-                i_texture_prx_item = i_texture_any.get_obj_gui()
-                i_dcc_obj_prx_items = i_texture_prx_item.get_children()
-                #
-                i_texture_any_directory_path = i_texture_any.directory.path
-                i_directory_args = self._texture_workspace.get_search_directory_args(
-                    i_texture_any_directory_path
-                )
-                # check is in used version
-                if i_directory_args:
-                    i_texture_src, i_texture_tgt = i_texture_any.get_args_as_tx_by_directory_args(i_directory_args)
-                    if collection_locked_enable is False:
-                        continue
-                else:
-                    i_texture_src, i_texture_tgt = i_texture_any.get_args_as_tx()
-                #
-                if i_texture_src is not None:
-                    i_texture_src.set_copy_as_src(
-                        directory_path_src=base_texture_directory_path,
-                        directory_path_tgt=src_texture_directory_path,
-                        replace=collection_replace_enable
-                    )
-                #
-                if i_texture_tgt is not None:
-                    i_texture_tgt.set_copy_as_src(
-                        directory_path_src=base_texture_directory_path,
-                        directory_path_tgt=tgt_texture_directory_path,
-                        replace=collection_replace_enable
-                    )
-                #
-                i_port_path = i_texture_any.get_relevant_dcc_port_path()
-                i_texture_path_any_new = None
-                # get new path
-                if i_texture_any.get_ext_is_tx():
-                    if i_texture_tgt is not None:
-                        i_texture_path_any_new = bsc_core.StorageFileOpt(
-                            i_texture_tgt.path
-                        ).set_directory_repath_to(tgt_texture_directory_path).get_path()
-                else:
-                    if i_texture_src is not None:
-                        i_texture_path_any_new = bsc_core.StorageFileOpt(
-                            i_texture_src.path
-                        ).set_directory_repath_to(src_texture_directory_path).get_path()
-                # repath node path
-                for j_dcc_obj_prx_item in i_dcc_obj_prx_items:
-                    if j_dcc_obj_prx_item.get_is_checked() is True:
-                        j_dcc_obj = j_dcc_obj_prx_item.get_gui_dcc_obj(namespace=self.DCC_NAMESPACE)
-                        #
-                        self._dcc_texture_references.set_obj_repath_to(
-                            j_dcc_obj, i_port_path, i_texture_path_any_new
-                        )
-
-        self._set_gui_refresh_()
-
-    def _set_textures_repath_to_src_(self):
-        textures = self._texture_add_opt.get_checked_files()
-        with utl_core.gui_progress(maximum=len(textures)) as g_p:
-            for i_texture_any in self._texture_add_opt.get_checked_files():
-                g_p.set_update()
-                #
-                i_texture_prx_item = i_texture_any.get_obj_gui()
-                i_dcc_obj_prx_items = i_texture_prx_item.get_children()
-                #
-                i_texture_any_directory_path = i_texture_any.directory.path
-                i_directory_args = self._texture_workspace.get_search_directory_args(
-                    i_texture_any_directory_path
-                )
-                if i_directory_args:
-                    i_texture_src, i_texture_tgt = i_texture_any.get_args_as_tx_by_directory_args(i_directory_args)
-                else:
-                    i_texture_src, i_texture_tgt = i_texture_any.get_args_as_tx()
-
-                if i_texture_src is not None:
-                    i_port_path = i_texture_any.get_relevant_dcc_port_path()
-                    for j_dcc_obj_prx_item in i_dcc_obj_prx_items:
-                        if j_dcc_obj_prx_item.get_is_checked() is True:
-                            j_dcc_obj = j_dcc_obj_prx_item.get_gui_dcc_obj(namespace=self.DCC_NAMESPACE)
-                            self._dcc_texture_references.set_obj_repath_to(
-                                j_dcc_obj, i_port_path, i_texture_src.path
-                            )
-
-        self._set_gui_refresh_()
-
-    def _set_textures_repath_to_tgt_(self):
-        textures = self._texture_add_opt.get_checked_files()
-        with utl_core.gui_progress(maximum=len(textures)) as g_p:
-            for i_texture_any in self._texture_add_opt.get_checked_files():
-                g_p.set_update()
-                #
-                i_texture_prx_item = i_texture_any.get_obj_gui()
-                i_dcc_obj_prx_items = i_texture_prx_item.get_children()
-                #
-                i_texture_any_directory_path = i_texture_any.directory.path
-                i_directory_args = self._texture_workspace.get_search_directory_args(
-                    i_texture_any_directory_path
-                )
-                if i_directory_args:
-                    i_texture_src, i_texture_tgt = i_texture_any.get_args_as_tx_by_directory_args(i_directory_args)
-                else:
-                    i_texture_src, i_texture_tgt = i_texture_any.get_args_as_tx()
-
-                if i_texture_tgt is not None:
-                    i_port_path = i_texture_any.get_relevant_dcc_port_path()
-                    for j_dcc_obj_prx_item in i_dcc_obj_prx_items:
-                        if j_dcc_obj_prx_item.get_is_checked() is True:
-                            j_dcc_obj = j_dcc_obj_prx_item.get_gui_dcc_obj(namespace=self.DCC_NAMESPACE)
-                            self._dcc_texture_references.set_obj_repath_to(
-                                j_dcc_obj, i_port_path, i_texture_tgt.path
-                            )
-
-        self._set_gui_refresh_()
 
     def _set_tx_create_data_update_from_workspace_(self, force_enable, directory_path_src, directory_path_tx):
         self._create_data = []
@@ -996,7 +696,7 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
             with utl_core.gui_progress(maximum=len(file_paths_src)) as g_p:
                 for i_file_path in file_paths_src:
                     g_p.set_update()
-
+                    #
                     i_texture_src = utl_dcc_objects.OsTexture(
                         i_file_path
                     )
@@ -1015,61 +715,6 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
                                 )
         else:
             pass
-    #
-    def _set_tx_create_data_update_1_(self, force_enable):
-        self._create_data = []
-
-        contents = []
-        textures = self._texture_add_opt.get_checked_files()
-        if textures:
-            with utl_core.gui_progress(maximum=len(textures)) as g_p:
-                for i_texture_any in textures:
-                    g_p.set_update()
-                    #
-                    i_texture_any_directory_path = i_texture_any.directory.path
-                    i_directory_args = self._texture_workspace.get_search_directory_args(
-                        i_texture_any_directory_path
-                    )
-                    if i_directory_args:
-                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_tx_by_directory_args(i_directory_args)
-                    else:
-                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_tx()
-                    #
-                    if i_texture_src is not None:
-                        i_texture_src_units = i_texture_src.get_exists_files_()
-                        i_output_directory_path = i_texture_tgt.directory.path
-                        for j_texture_src_unit in i_texture_src_units:
-                            if force_enable is True:
-                                self._create_data.append(
-                                    (j_texture_src_unit.path, i_output_directory_path)
-                                )
-                            else:
-                                if j_texture_src_unit._get_unit_is_exists_as_tgt_ext_by_src_(
-                                    j_texture_src_unit.path,
-                                    ext_tgt=j_texture_src_unit.TX_EXT,
-                                    search_directory_path=i_output_directory_path,
-                                ) is False:
-                                    self._create_data.append(
-                                        (j_texture_src_unit.path, i_output_directory_path)
-                                    )
-        else:
-            contents = [
-                'all texture-tx is newest'
-            ]
-        #
-        if contents:
-            utl_core.DialogWindow.set_create(
-                self._session.gui_name,
-                content=u'\n'.join(contents),
-                status=utl_core.DialogWindow.ValidatorStatus.Warning,
-                #
-                yes_label='Close',
-                #
-                no_visible=False, cancel_visible=False
-            )
-            return False
-        else:
-            return True
 
     def _set_tx_create_by_data_(self, button, post_fnc=None):
         def finished_fnc_(index, status, results):
@@ -1140,7 +785,7 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
             button.set_restore()
 
             contents = [
-                'non-texture(s) to converted, you can click refresh and try again'
+                'non-texture(s) to create, you can click refresh and try again'
             ]
 
         if contents:
@@ -1151,44 +796,752 @@ class AbsWorkTextureManager(prx_widgets.PrxToolWindow):
                 #
                 yes_label='Close',
                 #
-                no_visible=False, cancel_visible=False
+                no_visible=False, cancel_visible=False,
+                #
+                parent=self.widget
             )
             return False
         else:
             return True
 
-    def _set_tx_create_from_workspace_(self):
-        directory_path_src = self._workspace_options_prx_node.get('texture.directory.src')
-        directory_path_tx = self._workspace_options_prx_node.get('texture.directory.tx')
+    def _set_wsp_tx_create_execute_(self):
+        directory_path_src = self._workspace_options_prx_node.get('texture.directory.source')
+        directory_path_tx = self._workspace_options_prx_node.get('texture.directory.target')
 
         force_enable = self._workspace_options_prx_node.get('texture.create.force_enable')
         button = self._workspace_options_prx_node.get_port('texture.create.execute')
         method_args = [
             (self._set_tx_create_data_update_from_workspace_, (force_enable, directory_path_src, directory_path_tx)),
-            (self._set_tx_create_by_data_, (button, self._set_gui_refresh_))
+            (self._set_tx_create_by_data_, (button, ))
         ]
         with utl_core.gui_progress(maximum=len(method_args)) as g_p:
             for i_fnc, i_args in method_args:
                 g_p.set_update()
+                #
                 i_result = i_fnc(*i_args)
                 if i_result is False:
                     break
 
-    def _set_tx_create_from_dcc_(self):
-        force_enable = self._dcc_options_prx_node.get('texture.create_tx_force_enable')
-        button = self._dcc_options_prx_node.get_port('texture.create_tx')
+    def _set_wsp_tx_create_execute_by_deadline_(self):
+        directory_path = self._workspace_options_prx_node.get('texture.directory.source')
+        directory_path_tgt = self._workspace_options_prx_node.get('texture.directory.target')
+        ext_tgt = '.tx'
 
+        j_option_opt = bsc_core.KeywordArgumentsOpt(
+            option=dict(
+                option_hook_key='methods/texture/texture-convert',
+                directory=directory_path,
+                output_directory=directory_path_tgt,
+                target_ext=ext_tgt,
+                width=None,
+                #
+                td_enable=self._session.get_td_enable(),
+                rez_beta=self._session.get_rez_beta(),
+            )
+        )
+        #
+        session = ssn_commands.set_option_hook_execute_by_deadline(
+            option=j_option_opt.to_string()
+        )
+        ddl_job_id = session.get_ddl_job_id()
+        utl_core.DialogWindow.set_create(
+            self._session.gui_name,
+            content='texture-convert job is send to deadline job-id is "{}", more information you see in deadline monitor'.format(
+                ddl_job_id
+            ),
+            status=utl_core.DialogWindow.ValidatorStatus.Correct,
+            #
+            yes_label='Close',
+            #
+            no_visible=False, cancel_visible=False,
+            use_exec=False
+        )
+
+    #     self._geometry_unify_ddl_job_process = ddl_objects.DdlJobProcess(ddl_job_id)
+    #     if self._geometry_unify_ddl_job_process is not None:
+    #         self._geometry_unify_ddl_job_process.processing.set_connect_to(
+    #             self._set_geometry_unify_ddl_job_processing_
+    #         )
+    #         self._geometry_unify_ddl_job_process.status_changed.set_connect_to(
+    #             self._set_geometry_unify_ddl_job_status_changed_
+    #         )
+    #         self._geometry_unify_ddl_job_process.set_start()
+    #
+    # def _set_geometry_unify_ddl_job_processing_(self, running_time_cost):
+    #     if self._geometry_unify_ddl_job_process is not None:
+    #         port = self._workspace_options_prx_node.get_port('texture.create.execute_us_deadline')
+    #         port.set_name(
+    #             'execute us deadline [ {} {} ]'.format(
+    #                 str(self._geometry_unify_ddl_job_process.get_status()),
+    #                 bsc_core.IntegerMtd.second_to_time_prettify(running_time_cost)
+    #             )
+    #         )
+    #
+    # def _set_geometry_unify_ddl_job_status_changed_(self, status):
+    #     if self._geometry_unify_ddl_job_process is not None:
+    #         port = self._workspace_options_prx_node.get_port('texture.create.execute_us_deadline')
+    #         port.set_status(status)
+    #         status = str(status).split('.')[-1]
+    #         port.set_name(
+    #             'execute us deadline [ {} ]'.format(status)
+    #         )
+
+
+class AbsDccTextureManager(prx_widgets.PrxSessionWindow):
+    DCC_NAMESPACE = None
+    DCC_SELECTION_CLS = None
+    def __init__(self, session, *args, **kwargs):
+        super(AbsDccTextureManager, self).__init__(session, *args, **kwargs)
+
+    def set_variants_restore(self):
+        self._create_data = []
+
+    def set_all_setup(self):
+        self._tab_view = prx_widgets.PrxTabView()
+        self.set_widget_add(self._tab_view)
+
+        s_a_0 = prx_widgets.PrxScrollArea()
+        self._tab_view.set_item_add(
+            s_a_0,
+            name='dcc',
+            icon_name_text='dcc',
+        )
+
+        e_p_0 = prx_widgets.PrxExpandedGroup()
+        s_a_0.set_widget_add(e_p_0)
+        h_s_0 = prx_widgets.PrxHSplitter()
+        e_p_0.set_widget_add(h_s_0)
+        e_p_0.set_name('textures')
+        e_p_0.set_expanded(True)
+        #
+        self._tree_view_filter = prx_widgets.PrxTreeView()
+        self._tree_view_filter.set_single_selection()
+        self._tree_view_filter.set_header_view_create(
+            [('name', 3), ('count', 1)],
+            self.get_definition_window_size()[0]*(2.0/6.0)-32
+        )
+        h_s_0.set_widget_add(self._tree_view_filter)
+        #
+        self._tree_view = prx_widgets.PrxTreeView()
+        h_s_0.set_widget_add(self._tree_view)
+        self._tree_view.set_header_view_create(
+            [('name', 4), ('description', 2)],
+            self.get_definition_window_size()[0]*(4.0/6.0)-32
+        )
+        h_s_0.set_stretches(
+            [2, 4]
+        )
+        #
+        self._texture_add_opt = utl_prx_operators.PrxStgObjTreeViewAddOpt(
+            prx_tree_view=self._tree_view,
+            prx_tree_item_cls=prx_widgets.PrxStgObjTreeItem,
+        )
+        self._dcc_obj_add_opt = utl_prx_operators.PrxDccObjTreeViewAddOpt(
+            prx_tree_view=self._tree_view,
+            prx_tree_item_cls=prx_widgets.PrxDccObjTreeItem,
+            dcc_namespace=self.DCC_NAMESPACE
+        )
+        #
+        self._tree_view_selection_opt = utl_prx_operators.PrxDccObjTreeViewSelectionOpt(
+            prx_tree_view=self._tree_view,
+            dcc_selection_cls=self.DCC_SELECTION_CLS,
+            dcc_namespace=self.DCC_NAMESPACE
+        )
+        self._tree_view.set_item_select_changed_connect_to(
+            self._tree_view_selection_opt.set_select
+        )
+
+        self._tree_view_filter_opt = utl_prx_operators.PrxDccObjTreeViewTagFilterOpt(
+            prx_tree_view_src=self._tree_view_filter,
+            prx_tree_view_tgt=self._tree_view,
+            prx_tree_item_cls=prx_widgets.PrxObjTreeItem
+        )
+        self.set_refresh_action_create(self._set_gui_refresh_)
+        #
+        self._options_prx_node = prx_widgets.PrxNode_('options')
+        s_a_0.set_widget_add(self._options_prx_node)
+        self._options_prx_node.set_ports_create_by_configure(
+            self._session.configure.get('build.node.options'),
+        )
+
+        self._options_prx_node.set(
+            'target.create.execute', self._set_target_create_execute_
+        )
+
+        self._options_prx_node.set(
+            'target.repath.to_source', self._set_repath_to_src_
+        )
+        self._options_prx_node.set(
+            'target.repath.to_target', self._set_repath_to_tgt_
+        )
+
+        self._options_prx_node.set(
+            'search.execute', self._set_search_execute_
+        )
+
+        self._options_prx_node.set(
+            'collection.execute', self._set_collection_execute_
+        )
+
+        self._options_prx_node.set(
+            'refresh', self._set_gui_refresh_
+        )
+
+        self._set_collapse_update_()
+
+        self.set_refresh_all()
+
+    def set_refresh_all(self):
+        self._set_gui_refresh_()
+
+    def _set_collapse_update_(self):
+        collapse_dict = {
+            'options': self._options_prx_node,
+        }
+        for i_k, i_v in collapse_dict.items():
+            i_c = self._session.configure.get(
+                'build.node_collapse.{}'.format(i_k)
+            ) or []
+            i_v.set_ports_collapse(i_c)
+
+    def _set_dcc_texture_references_update_(self):
+        self._dcc_texture_references = None
+
+    def _set_dcc_objs_update_(self):
+        self._dcc_objs = []
+
+    def _set_gui_refresh_(self):
+        self._set_dcc_texture_references_update_()
+        self._set_dcc_objs_update_()
         method_args = [
-            (self._set_tx_create_data_update_1_, (force_enable, )),
-            (self._set_tx_create_by_data_, (button, self._set_gui_refresh_))
+            (self._set_gui_textures_refresh_, ()),
+            (self._set_gui_textures_validator_, ())
         ]
         with utl_core.gui_progress(maximum=len(method_args)) as g_p:
             for i_fnc, i_args in method_args:
                 g_p.set_update()
+                i_fnc(*i_args)
+
+    def _set_gui_textures_refresh_(self):
+        self._texture_add_opt.set_restore()
+        self._tree_view_filter_opt.set_restore()
+
+        if self._dcc_objs:
+            with utl_core.gui_progress(maximum=len(self._dcc_objs)) as g_p:
+                for i_dcc_obj in self._dcc_objs:
+                    g_p.set_update()
+                    #
+                    i_files = i_dcc_obj.get_file_objs()
+                    if i_files:
+                        j_keys = []
+                        for j_file in i_files:
+                            j_is_create, j_file_prx_item = self._texture_add_opt.set_prx_item_add_as(
+                                j_file,
+                                mode='list',
+                                use_show_thread=True
+                            )
+                            if j_is_create is True:
+                                j_file_prx_item.set_press_db_clicked_connect_to(
+                                    self._set_detail_show_
+                                )
+                            if j_file_prx_item is not None:
+                                i_dcc_prx_item = self._dcc_obj_add_opt._set_prx_item_add_2_(
+                                    i_dcc_obj,
+                                    j_file_prx_item
+                                )
+                                i_dcc_obj.set_obj_gui(i_dcc_prx_item)
+                                j_keys.append('format.{}'.format(j_file.type_name))
+                        #
+                        self._tree_view_filter_opt.set_register(
+                            i_dcc_prx_item, j_keys
+                        )
+
+    def _set_gui_textures_validator_(self):
+        textures = self._texture_add_opt.get_files()
+        c = len(textures)
+
+        ext_tgt = self._options_prx_node.get('target.extension')
+        scheme = self._options_prx_node.get('scheme')
+
+        repath_src_port = self._options_prx_node.get_port('target.repath.to_source')
+        repath_src_statuses = [bsc_configure.ValidatorStatus.Normal]*c
+
+        repath_tgt_port = self._options_prx_node.get_port('target.repath.to_target')
+        repath_tgt_statuses = [bsc_configure.ValidatorStatus.Normal]*c
+        with utl_core.gui_progress(maximum=len(textures)) as g_p:
+            for i_index, i_texture_any in enumerate(textures):
+                g_p.set_update()
+
+                i_texture_prx_item = i_texture_any.get_obj_gui()
+                #
+                i_descriptions = []
+
+                i_directory_args = self._get_directory_args_(i_texture_any, ext_tgt)
+                if i_directory_args:
+                    i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args)
+                    if i_texture_src is not None:
+                        if i_texture_src.get_is_exists() is True:
+                            if i_texture_src.get_is_writeable() is True:
+                                if i_texture_any == i_texture_src:
+                                    repath_src_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Correct
+                            else:
+                                repath_src_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Locked
+                        else:
+                            i_descriptions.append(
+                                u'source is non-exists'
+                            )
+                            repath_src_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Error
+                    #
+                    if i_texture_tgt is not None:
+                        if i_texture_tgt.get_is_exists() is True:
+                            if i_texture_tgt.get_is_writeable() is True:
+                                if i_texture_any == i_texture_tgt:
+                                    repath_tgt_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Correct
+                            else:
+                                repath_tgt_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Locked
+                        else:
+                            i_descriptions.append(
+                                u'target is non-exists'
+                            )
+                            repath_tgt_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Error
+                    #
+                    if i_texture_src is not None and i_texture_tgt is not None:
+                        if i_texture_src.get_is_exists() is True and i_texture_tgt.get_is_exists() is True:
+                            if i_texture_src.get_timestamp_is_same_to(i_texture_tgt) is False:
+                                i_descriptions.append(
+                                    u'target is changed'
+                                )
+                                repath_tgt_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Warning
+
+                i_texture_prx_item.set_name(
+                    u', '.join(i_descriptions), 1
+                )
+
+        repath_src_port.set_statuses(
+            repath_src_statuses
+        )
+        repath_tgt_port.set_statuses(
+            repath_tgt_statuses
+        )
+    @classmethod
+    def _get_directory_args_(cls, texture_any, ext_tgt):
+        if texture_any.directory.get_path_is_matched('*/{}'.format(ext_tgt[1:])) is True:
+            directory_path_src = (texture_any.directory.get_as_new_name('src')).path
+            directory_path_tgt = texture_any.directory.path
+            return directory_path_src, directory_path_tgt
+        elif texture_any.directory.get_path_is_matched('*/src') is True:
+            directory_path_src = texture_any.directory.path
+            directory_path_tgt = texture_any.directory.get_as_new_name(ext_tgt[1:]).path
+            return directory_path_src, directory_path_tgt
+        else:
+            directory_path_src = texture_any.directory.path
+            directory_path_tgt = texture_any.directory.path
+            return directory_path_src, directory_path_tgt
+
+    def _set_target_create_data_update_(self, ext_tgt, scheme, force_enable):
+        contents = []
+        #
+        self._create_data = []
+        textures = self._texture_add_opt.get_checked_files()
+        if textures:
+            with utl_core.gui_progress(maximum=len(textures)) as g_p:
+                for i_texture_any in self._texture_add_opt.get_checked_files():
+                    g_p.set_update()
+                    #
+                    if i_texture_any.get_is_readable() is False:
+                        continue
+
+                    i_directory_args = self._get_directory_args_(i_texture_any, ext_tgt)
+                    if i_directory_args:
+                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args)
+                        if i_texture_src is not None:
+                            i_texture_src_units = i_texture_src.get_exists_files_()
+                            i_output_directory_path = i_texture_tgt.directory.path
+                            for j_texture_src_unit in i_texture_src_units:
+                                if force_enable is True:
+                                    self._create_data.append(
+                                        (j_texture_src_unit.path, i_output_directory_path)
+                                    )
+                                else:
+                                    if j_texture_src_unit._get_unit_is_exists_as_tgt_ext_by_src_(
+                                            j_texture_src_unit.path,
+                                            ext_tgt=ext_tgt,
+                                            search_directory_path=i_output_directory_path,
+                                    ) is False:
+                                        self._create_data.append(
+                                            (j_texture_src_unit.path, i_output_directory_path)
+                                        )
+        else:
+            contents.append(
+                u'checked some node and retry'
+            )
+
+        if contents:
+            utl_core.DialogWindow.set_create(
+                self._session.gui_name,
+                content=u'\n'.join(contents),
+                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                #
+                yes_label='Close',
+                #
+                no_visible=False, cancel_visible=False,
+                #
+                parent=self.widget
+            )
+            return False
+
+    def _set_target_create_by_data_(self, button, post_fnc=None):
+        def finished_fnc_(index, status, results):
+            button.set_finished_at(index, status)
+            print '\n'.join(results)
+
+        def status_update_at_fnc_(index, status):
+            button.set_status_at(index, status)
+
+        def run_fnc_():
+            for i_index, (i_file_path, i_output_directory_path) in enumerate(self._create_data):
+                bsc_core.StoragePathMtd.set_directory_create(
+                    i_output_directory_path
+                )
+
+                i_cmd = utl_dcc_objects.OsTexture._get_unit_tx_create_cmd_by_src_force_(
+                    i_file_path,
+                    search_directory_path=i_output_directory_path,
+                )
+                if button.get_is_stopped():
+                    break
+                #
+                if i_cmd:
+                    bsc_core.CmdSubProcessThread.set_wait()
+                    i_t = bsc_core.CmdSubProcessThread.set_start(i_cmd, i_index)
+                    i_t.status_changed.set_connect_to(status_update_at_fnc_)
+                    i_t.finished.set_connect_to(finished_fnc_)
+                else:
+                    status_update_at_fnc_(
+                        i_index, bsc_configure.Status.Completed
+                    )
+                    finished_fnc_(
+                        i_index, bsc_configure.Status.Completed
+                    )
+
+        def quit_fnc_():
+            button.set_stopped()
+            #
+            time.sleep(1)
+            #
+            t.quit()
+            t.wait()
+            t.deleteLater()
+
+        contents = []
+        if self._create_data:
+            button.set_stopped(False)
+
+            c = len(self._create_data)
+
+            button.set_status(bsc_configure.Status.Waiting)
+            button.set_initialization(c, bsc_configure.Status.Waiting)
+
+            t = utl_gui_qt_core.QtMethodThread(self.widget)
+            t.set_method_add(
+                run_fnc_
+            )
+            t.start()
+            if post_fnc is not None:
+                t.run_finished.connect(
+                    post_fnc
+                )
+
+            self.set_window_close_connect_to(quit_fnc_)
+        else:
+            button.set_restore()
+
+            contents = [
+                'non-texture(s) to create, you can click refresh and try again'
+            ]
+
+        if contents:
+            utl_core.DialogWindow.set_create(
+                self._session.gui_name,
+                content=u'\n'.join(contents),
+                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                #
+                yes_label='Close',
+                #
+                no_visible=False, cancel_visible=False,
+                #
+                parent=self.widget
+            )
+            return False
+        else:
+            return True
+
+    def _set_target_create_execute_(self):
+        force_enable = self._options_prx_node.get('target.create.force_enable')
+        ext_tgt = self._options_prx_node.get('target.extension')
+        scheme = self._options_prx_node.get('scheme')
+        button = self._options_prx_node.get_port('target.create.execute')
+        method_args = [
+            (self._set_target_create_data_update_, (ext_tgt, scheme, force_enable)),
+            (self._set_target_create_by_data_, (button, self._set_gui_refresh_))
+        ]
+        with utl_core.gui_progress(maximum=len(method_args)) as g_p:
+            for i_fnc, i_args in method_args:
+                g_p.set_update()
+                #
                 i_result = i_fnc(*i_args)
                 if i_result is False:
                     break
 
+    def _set_repath_to_src_(self):
+        contents = []
+        ext_tgt = self._options_prx_node.get('target.extension')
+        scheme = self._options_prx_node.get('scheme')
+        #
+        textures = self._texture_add_opt.get_checked_files()
+        if textures:
+            with utl_core.gui_progress(maximum=len(textures)) as g_p:
+                for i_texture_any in self._texture_add_opt.get_checked_files():
+                    g_p.set_update()
 
-class AbsTextureManager(prx_widgets.PrxToolWindow):
-    pass
+                    i_texture_prx_item = i_texture_any.get_obj_gui()
+
+                    i_directory_args = self._get_directory_args_(i_texture_any, ext_tgt)
+                    if i_directory_args:
+                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args)
+                        if i_texture_src is not None:
+                            if i_texture_src.get_is_exists() is True:
+                                i_dcc_obj_prx_items = i_texture_prx_item.get_children()
+                                i_port_path = i_texture_any.get_relevant_dcc_port_path()
+                                for j_dcc_obj_prx_item in i_dcc_obj_prx_items:
+                                    if j_dcc_obj_prx_item.get_is_checked() is True:
+                                        j_dcc_obj = j_dcc_obj_prx_item.get_gui_dcc_obj(namespace=self.DCC_NAMESPACE)
+                                        #
+                                        self._dcc_texture_references.set_obj_repath_to(
+                                            j_dcc_obj, i_port_path, i_texture_src.path
+                                        )
+                #
+                self._set_gui_refresh_()
+                return True
+        else:
+            contents.append(
+                u'checked some node and retry'
+            )
+
+        if contents:
+            utl_core.DialogWindow.set_create(
+                self._session.gui_name,
+                content=u'\n'.join(contents),
+                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                #
+                yes_label='Close',
+                #
+                no_visible=False, cancel_visible=False,
+                #
+                parent=self.widget
+            )
+            return False
+
+    def _set_repath_to_tgt_(self):
+        contents = []
+        ext_tgt = self._options_prx_node.get('target.extension')
+        scheme = self._options_prx_node.get('scheme')
+        #
+        textures = self._texture_add_opt.get_checked_files()
+        if textures:
+            with utl_core.gui_progress(maximum=len(textures)) as g_p:
+                for i_texture_any in self._texture_add_opt.get_checked_files():
+                    g_p.set_update()
+
+                    i_texture_prx_item = i_texture_any.get_obj_gui()
+
+                    i_directory_args = self._get_directory_args_(i_texture_any, ext_tgt)
+                    if i_directory_args:
+                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args)
+                        if i_texture_tgt.get_is_exists() is True:
+                            i_dcc_obj_prx_items = i_texture_prx_item.get_children()
+                            i_port_path = i_texture_any.get_relevant_dcc_port_path()
+                            for j_dcc_obj_prx_item in i_dcc_obj_prx_items:
+                                if j_dcc_obj_prx_item.get_is_checked() is True:
+                                    j_dcc_obj = j_dcc_obj_prx_item.get_gui_dcc_obj(namespace=self.DCC_NAMESPACE)
+                                    #
+                                    self._dcc_texture_references.set_obj_repath_to(
+                                        j_dcc_obj, i_port_path, i_texture_tgt.path
+                                    )
+                #
+                self._set_gui_refresh_()
+                return True
+        else:
+            contents.append(
+                u'checked some node and retry'
+            )
+
+        if contents:
+            utl_core.DialogWindow.set_create(
+                self._session.gui_name,
+                content=u'\n'.join(contents),
+                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                #
+                yes_label='Close',
+                #
+                no_visible=False, cancel_visible=False,
+                #
+                parent=self.widget
+            )
+            return False
+
+    def _set_search_execute_(self):
+        contents = []
+        #
+        directory_path_tgt = self._options_prx_node.get('search.directory')
+        below_enable = self._options_prx_node.get('search.below_enable')
+        ignore_exists = self._options_prx_node.get('search.ignore_exists')
+        if directory_path_tgt:
+            textures = self._texture_add_opt.get_checked_files()
+            if textures:
+                search_opt = bsc_core.StgFileSearchOpt(
+                    ignore_name_case=self._options_prx_node.get('search.ignore_name_case'),
+                    ignore_ext_case=self._options_prx_node.get('search.ignore_ext_case'),
+                    ignore_ext=self._options_prx_node.get('search.ignore_ext')
+                )
+                search_opt.set_search_directory_append(directory_path_tgt, below_enable)
+                with utl_core.gui_progress(maximum=len(textures)) as g_p:
+                    for i_texture_any in self._texture_add_opt.get_checked_files():
+                        g_p.set_update()
+                        #
+                        if ignore_exists is True:
+                            if i_texture_any.get_is_exists() is True:
+                                continue
+
+                        if i_texture_any.directory.path == directory_path_tgt:
+                            continue
+
+                        i_texture_prx_item = i_texture_any.get_obj_gui()
+                        i_result = search_opt.get_result(i_texture_any.path)
+                        if i_result:
+                            i_dcc_obj_prx_items = i_texture_prx_item.get_children()
+                            i_port_path = i_texture_any.get_relevant_dcc_port_path()
+                            for j_dcc_obj_prx_item in i_dcc_obj_prx_items:
+                                if j_dcc_obj_prx_item.get_is_checked() is True:
+                                    j_dcc_obj = j_dcc_obj_prx_item.get_gui_dcc_obj(namespace=self.DCC_NAMESPACE)
+                                    #
+                                    self._dcc_texture_references.set_obj_repath_to(
+                                        j_dcc_obj, i_port_path, i_result
+                                    )
+
+                self._set_gui_refresh_()
+                return True
+            else:
+                contents.append(
+                    u'checked some node and retry'
+                )
+        else:
+            contents.append(
+                u'choose or entry a directory and retry'
+            )
+        #
+        if contents:
+            utl_core.DialogWindow.set_create(
+                self._session.gui_name,
+                content=u'\n'.join(contents),
+                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                #
+                yes_label='Close',
+                #
+                no_visible=False, cancel_visible=False,
+                #
+                parent=self.widget
+            )
+            return False
+
+    def _set_collection_execute_(self):
+        contents = []
+        #
+        directory_path_tgt = self._options_prx_node.get('collection.directory')
+        mode = self._options_prx_node.get('collection.mode')
+        replace_enable = self._options_prx_node.get('collection.replace_enable')
+        repath_enable = self._options_prx_node.get('collection.repath_enable')
+        if directory_path_tgt:
+            textures = self._texture_add_opt.get_checked_files()
+            if textures:
+                with utl_core.gui_progress(maximum=len(textures)) as g_p:
+                    for i_texture_any in self._texture_add_opt.get_checked_files():
+                        g_p.set_update()
+                        #
+                        if i_texture_any.directory.path == directory_path_tgt:
+                            continue
+
+                        if i_texture_any.get_is_readable() is False:
+                            continue
+
+                        i_texture_prx_item = i_texture_any.get_obj_gui()
+                        if mode == 'copy':
+                            for j in i_texture_any.get_exists_files_():
+                                j.set_copy_to_directory(
+                                    directory_path_tgt, replace=replace_enable
+                                )
+                        elif mode == 'link':
+                            for j in i_texture_any.get_exists_files_():
+                                j.set_link_to_directory(
+                                    directory_path_tgt, replace=replace_enable
+                                )
+
+                        if repath_enable is True:
+                            i_dcc_obj_prx_items = i_texture_prx_item.get_children()
+                            i_port_path = i_texture_any.get_relevant_dcc_port_path()
+                            for j_dcc_obj_prx_item in i_dcc_obj_prx_items:
+                                if j_dcc_obj_prx_item.get_is_checked() is True:
+                                    j_dcc_obj = j_dcc_obj_prx_item.get_gui_dcc_obj(namespace=self.DCC_NAMESPACE)
+                                    #
+                                    i_texture_tgt = i_texture_any.get_target_file(
+                                        directory_path_tgt
+                                    )
+                                    if i_texture_tgt.get_is_exists() is True:
+                                        self._dcc_texture_references.set_obj_repath_to(
+                                            j_dcc_obj, i_port_path, i_texture_tgt.path
+                                        )
+                    #
+                    self._set_gui_refresh_()
+                    return True
+            else:
+                contents.append(
+                    u'checked some node and retry'
+                )
+        #
+        else:
+            contents.append(
+                u'choose a directory and retry'
+            )
+        if contents:
+            utl_core.DialogWindow.set_create(
+                self._session.gui_name,
+                content=u'\n'.join(contents),
+                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                #
+                yes_label='Close',
+                #
+                no_visible=False, cancel_visible=False,
+                #
+                parent=self.widget
+            )
+            return False
+
+    def _set_detail_show_(self, item, column):
+        texture = self._texture_add_opt.get_file(item)
+        w = utl_core.DialogWindow.set_create(
+            self._session.gui_name,
+            window_size=(480, 480),
+            #
+            yes_visible=False, no_visible=False,
+            tip_visible=False,
+            show=False,
+            #
+            parent=self.widget
+        )
+
+        v = prx_widgets.PrxTextureView()
+        w.set_customize_widget_add(v)
+
+        v.set_textures([texture])
+
+        w.set_window_show()

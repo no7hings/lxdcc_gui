@@ -936,8 +936,14 @@ class PrxSessionWindow(PrxToolWindow):
         return self._session
 
     def _setup_fnc_(self):
+        self.set_variants_restore()
+
         self.set_all_setup()
+
         self.set_window_loading_end()
+
+    def set_variants_restore(self):
+        pass
 
     def set_all_setup(self):
         raise NotImplementedError()

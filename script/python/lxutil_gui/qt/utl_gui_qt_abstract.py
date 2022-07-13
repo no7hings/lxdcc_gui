@@ -154,7 +154,7 @@ class _QtStatusDef(object):
             color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
             hover_color = r, g, b
         elif status in [bsc_configure.ValidatorStatus.Locked]:
-            r, g, b = 63, 127, 255
+            r, g, b = 127, 127, 255
             h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
             color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
             hover_color = r, g, b
@@ -519,7 +519,7 @@ class AbsQtIconDef(object):
         self._icon_name_text = None
         #
         self._icon_frame_rect = QtCore.QRect()
-        self._file_icon_rect = QtCore.QRect()
+        self._icon_file_path_rect = QtCore.QRect()
         self._color_icon_rect = QtCore.QRect()
         self._icon_name_text_rect = QtCore.QRect()
         #
@@ -581,13 +581,13 @@ class AbsQtIconDef(object):
             x, y, w, h
         )
 
-    def _set_file_icon_rect_(self, x, y, w, h):
-        self._file_icon_rect.setRect(
+    def _set_icon_file_path_rect_(self, x, y, w, h):
+        self._icon_file_path_rect.setRect(
             x, y, w, h
         )
 
     def _get_file_icon_rect_(self):
-        return self._file_icon_rect
+        return self._icon_file_path_rect
 
 
 class _QtIconsDef(object):
@@ -819,8 +819,10 @@ class AbsQtNameDef(object):
                 # noinspection PyCallingNonCallable
                 self.setToolTip(html)
             else:
+                name_text = self._name_text
+                name_text = name_text.replace('<', '&lt;').replace('>', '&gt;')
                 html = '<html>\n<body>\n'
-                html += '<h3>{}</h3>\n'.format(self._name_text)
+                html += '<h3>{}</h3>\n'.format(name_text)
                 for i in text.split('\n'):
                     html += '<ul>\n<li><i>{}</i></li>\n</ul>\n'.format(i)
                 html += '</body>\n</html>'
@@ -1147,8 +1149,10 @@ class AbsQtNamesDef(object):
                 # noinspection PyCallingNonCallable
                 self.setToolTip(html)
             else:
+                name_text = self._get_name_text_()
+                name_text = name_text.replace('<', '&lt;').replace('>', '&gt;')
                 html = '<html>\n<body>\n'
-                html += '<h3>{}</h3>\n'.format(self._get_name_text_())
+                html += '<h3>{}</h3>\n'.format(name_text)
                 for i in text.split('\n'):
                     html += '<ul>\n<li><i>{}</i></li>\n</ul>\n'.format(i)
                 html += '</body>\n</html>'
@@ -1895,7 +1899,9 @@ class AbsShowItemDef(
     def _get_item_widget_(self):
         raise NotImplementedError()
 
-    def _set_show_item_def_init_(self):
+    def _set_show_item_def_init_(self, widget):
+        #
+        self._widget = widget
         #
         if bsc_core.ApplicationMtd.get_is_maya():
             self._item_show_use_thread = False
@@ -2044,6 +2050,7 @@ class AbsShowItemDef(
 
     def _set_item_show_image_fnc_start_(self):
         if self._item_show_image_status == self.ShowStatus.Waiting:
+            self._item_show_image_status = self.ShowStatus.Loading
             if self._item_show_use_thread is True:
                 self._item_show_image_thread = self._set_build_item_runnable_create_(
                     self._item_show_image_cache_fnc,
@@ -2057,8 +2064,6 @@ class AbsShowItemDef(
                     self._item_show_image_cache_fnc()
                 )
                 self._set_item_show_image_fnc_stop_()
-            #
-            self._item_show_image_status = self.ShowStatus.Loading
 
     def _set_item_show_image_fnc_stop_(self):
         if self._item_show_image_file_path is not None:
@@ -2107,7 +2112,11 @@ class AbsShowItemDef(
 
     def _set_item_show_image_stop_loading_(self):
         self._item_show_image_loading_timer.stop()
-        # self._set_wgt_update_draw_()
+        # noinspection PyBroadException
+        try:
+            self._set_wgt_update_draw_()
+        except:
+            pass
 
     def _set_item_show_start_all_(self, force=False):
         self._set_item_show_start_(force=force)
@@ -2797,14 +2806,15 @@ class AbsQtItemValueTypeConstantEntryDef(object):
         pass
 
 
-class AbsQtItemValueEnumerateEntryDef(object):
+class AbsQtValueEnumerateEntryDef(object):
     QT_VALUE_ENTRY_CLASS = None
-    def _set_item_value_enumerate_entry_def_init_(self):
+    def _set_value_enumerate_entry_def_init_(self):
         self._item_value_type = str
         #
         self._item_value_default = None
         #
         self._values = []
+        self._value_icon_file_paths = []
         #
         self._item_value_entry_widget = None
 
@@ -2832,13 +2842,18 @@ class AbsQtItemValueEnumerateEntryDef(object):
     def _get_item_value_default_(self):
         return self._item_value_default
 
-    def _set_item_values_(self, values):
+    def _set_item_values_(self, values, icon_file_path=None):
+        c = len(values)
         self._values = values
+        self._value_icon_file_paths = [icon_file_path]*c
         self._item_value_entry_widget._set_completer_values_(values)
         self._set_wgt_update_()
 
     def _get_item_values_(self):
         return self._values
+
+    def _get_item_value_icon_file_paths_(self):
+        return self._value_icon_file_paths
 
     def _set_item_value_append_(self, value):
         self._values.append(value)
@@ -2848,10 +2863,27 @@ class AbsQtItemValueEnumerateEntryDef(object):
         self._item_value_entry_widget._set_item_value_(value)
         self._set_wgt_update_()
 
-    def _set_item_value_by_index_(self, index):
+    def _set_item_value_at_(self, index):
         self._set_item_value_(
             self._get_item_value_at_(index)
         )
+
+    def _get_item_value_index_(self, value):
+        if value in self._values:
+            return self._values.index(value)
+
+    def _set_item_value_icon_file_path_at_(self, index, file_path):
+        self._value_icon_file_paths[index] = file_path
+
+    def _get_item_value_icon_file_path_at_(self, index):
+        return self._value_icon_file_paths[index]
+
+    def _set_item_value_icon_file_path_as_value_(self, value, file_path):
+        index = self._get_item_value_index_(value)
+        if index is not None:
+            self._set_item_value_icon_file_path_at_(
+                self._get_item_value_index_(value), file_path
+            )
 
     def _get_item_value_(self):
         return self._item_value_entry_widget._get_item_value_()

@@ -612,10 +612,11 @@ class PrxStgObjTreeViewAddOpt(object):
                     if isinstance(i_file_tile, (str, unicode)):
                         tool_tip_.append(i_file_tile)
                     else:
-                        st_mode = i_file_tile.get_permission()
+                        readable = i_file_tile.get_is_readable()
+                        writeable = i_file_tile.get_is_writeable()
                         tool_tip_.append(
-                            u'path="{}"; st-mode="{}"'.format(
-                                i_file_tile.path, st_mode
+                            u'path="{}"; readable={}; writeable={}'.format(
+                                i_file_tile.path, readable, writeable
                             )
                         )
                 #
@@ -632,26 +633,35 @@ class PrxStgObjTreeViewAddOpt(object):
         #
         prx_item.set_name(name)
         prx_item.set_icon_by_file(obj.icon_file)
-        prx_item.set_tool_tips(descriptions)
         #
         menu_raw.extend(
             [
                 ('expanded',),
-                ('Expand branch', None, prx_item.set_expand_branch),
-                ('Collapse branch', None, prx_item.set_collapse_branch),
+                ('expand branch', None, prx_item.set_expand_branch),
+                ('collapse branch', None, prx_item.set_collapse_branch),
+                ('permission', ),
+                ('unlock', None, None),
             ]
         )
         prx_item.set_gui_menu_raw(menu_raw)
         prx_item.set_menu_content(obj.get_gui_menu_content())
         #
-        if obj.get_is_exists() is False:
-            prx_item.set_state(prx_item.DISABLE_STATE)
+        if obj.get_is_root() is False:
+            if obj.get_is_exists() is False:
+                prx_item.set_state(prx_item.State.LOST)
+            elif obj.get_is_writeable() is False:
+                prx_item.set_state(prx_item.State.LOCKED)
+            else:
+                prx_item.set_state(prx_item.NORMAL_STATE)
+                if obj.get_is_directory() is True:
+                    prx_item.set_expanded(True)
         else:
-            prx_item.set_state(prx_item.NORMAL_STATE)
-            if obj.get_is_directory() is True:
-                prx_item.set_expanded(True)
-                if obj.get_is_writeable() is False:
-                    prx_item.set_state(prx_item.LOCKED_STATE)
+            prx_item.set_expanded(True)
+
+            # if obj.get_is_writeable() is False:
+            #     prx_item.set_state(prx_item.State.LOCKED)
+
+        prx_item.set_tool_tips(descriptions)
         #
         # self._prx_tree_view.set_loading_update()
 
@@ -671,6 +681,9 @@ class PrxStgObjTreeViewAddOpt(object):
                 if v.get_is_checked() is True:
                     list_.append(i_texture)
         return list_
+    @staticmethod
+    def get_file(item):
+        return item.gui_proxy.get_gui_dcc_obj(namespace='storage-file')
 
 
 class PrxStgTextureTreeViewAddOpt(PrxStgObjTreeViewAddOpt):

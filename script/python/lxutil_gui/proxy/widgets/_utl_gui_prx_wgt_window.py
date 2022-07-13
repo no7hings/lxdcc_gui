@@ -208,6 +208,9 @@ class AbsPrxDialogWindow(
         self._tip_group.set_visible(True)
         self._tip_group.set_expanded(True)
 
+    def set_tip_visible(self, boolean):
+        self._tip_group.set_visible(boolean)
+
     def set_options_group_enable(self):
         self._options_prx_node.set_visible(True)
         self._options_prx_node.set_expanded(True)
