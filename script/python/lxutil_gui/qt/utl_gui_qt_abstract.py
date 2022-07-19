@@ -112,13 +112,23 @@ class _QtStatusDef(object):
     Status = bsc_configure.Status
     @classmethod
     def _get_sub_process_status_color_(cls, status):
-        if status in [bsc_configure.Status.Failed, bsc_configure.Status.Error]:
+        if status in [bsc_configure.Status.Started]:
+            r, g, b = 255, 255, 255
+            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
+            hover_color = r, g, b
+        elif status in [bsc_configure.Status.Failed, bsc_configure.Status.Error]:
             r, g, b = 255, 0, 63
             h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
             color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
             hover_color = r, g, b
-        elif status in [bsc_configure.Status.Started, bsc_configure.Status.Waiting]:
+        elif status in [bsc_configure.Status.Waiting]:
             r, g, b = 255, 127, 63
+            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
+            hover_color = r, g, b
+        elif status in [bsc_configure.Status.Suspended]:
+            r, g, b = 255, 255, 63
             h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
             color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
             hover_color = r, g, b
@@ -127,7 +137,7 @@ class _QtStatusDef(object):
             h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
             color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
             hover_color = r, g, b
-        elif status in [bsc_configure.Status.Completed, bsc_configure.Status.Finished]:
+        elif status in [bsc_configure.Status.Completed]:
             r, g, b = 63, 255, 127
             h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
             color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
@@ -178,6 +188,7 @@ class _QtStatusDef(object):
 
     def _set_status_(self, status):
         self._is_status_enable = True
+        #
         self._status = status
         #
         if status in [bsc_configure.Status.Running]:
@@ -204,7 +215,7 @@ class AbsQtSubProcessDef(object):
         self._sub_process_is_enable = False
         #
         self._sub_process_statuses = []
-
+                
         self._sub_process_status_text = ''
         #
         self._sub_process_status_colors = []
@@ -214,26 +225,53 @@ class AbsQtSubProcessDef(object):
 
         self._sub_process_finished_results = []
 
-        self._sub_process_start_timestamp = 0
+        self._sub_process_timestamp_started = 0
+        self._sub_process_timestamp_costed = 0
+        #
+        self._sub_process_finished_timestamp_estimated = 0
+
+        self._sub_process_finished_value = 0
+        self._sub_process_finished_maximum = 0
+
+        self._sub_process_status_text_format_0 = '[{value}/{maximum}][{costed_time}]'
+        self._sub_process_status_text_format_1 = '[{value}/{maximum}][{costed_time}/{estimated_time}]'
+
+        # self._sub_process_timer = QtCore.QTimer(self)
 
     def _set_wgt_update_draw_(self):
         raise NotImplementedError()
 
+    def _set_sub_process_initialization_(self, count, status):
+        if count > 0:
+            self._sub_process_is_enable = True
+            self._sub_process_statuses = [status] * count
+            color, hover_color = _QtStatusDef._get_sub_process_status_color_(status)
+            self._sub_process_status_colors = [color]*count
+            self._hover_sub_process_status_colors = [hover_color]*count
+            self._sub_process_finished_results = [False]*count
+
+            self._sub_process_timestamp_started = bsc_core.SystemMtd.get_timestamp()
+        else:
+            self._set_sub_process_restore_()
+
+        self._set_wgt_update_draw_()
+
     def _set_sub_process_statuses_(self, statuses):
         if statuses:
+            count = len(statuses)
             self._sub_process_is_enable = True
             self._sub_process_statuses = statuses
             self._sub_process_status_colors = []
             self._hover_sub_process_status_colors = []
-            for i_element_status in statuses:
-                i_color, i_hover_color = _QtStatusDef._get_sub_process_status_color_(i_element_status)
+            for i_status in statuses:
+                i_color, i_hover_color = _QtStatusDef._get_sub_process_status_color_(i_status)
                 self._sub_process_status_colors.append(i_color)
                 self._hover_sub_process_status_colors.append(i_hover_color)
+
+            self._sub_process_finished_results = [False] * count
+            self._sub_process_timestamp_started = bsc_core.SystemMtd.get_timestamp()
         else:
-            self._sub_process_is_enable = False
-            self._sub_process_statuses = []
-            self._sub_process_status_colors = []
-            self._hover_sub_process_status_colors = []
+            self._set_sub_process_restore_()
         #
         self._set_wgt_update_draw_()
 
@@ -244,22 +282,6 @@ class AbsQtSubProcessDef(object):
         self._sub_process_status_colors[index] = color
         self._hover_sub_process_status_colors[index] = hover_color
         #
-        self._set_wgt_update_draw_()
-
-    def _set_sub_process_initialization_(self, count, status):
-        if count > 0:
-            self._sub_process_is_enable = True
-            self._sub_process_statuses = [status]*count
-            color, hover_color = _QtStatusDef._get_sub_process_status_color_(status)
-            self._sub_process_status_colors = [color]*count
-            self._hover_sub_process_status_colors = [hover_color]*count
-            self._sub_process_finished_results = [False]*count
-
-            self._sub_process_start_timestamp = bsc_core.SystemMtd.get_timestamp()
-            self._set_sub_process_text_update_()
-        else:
-            self._set_sub_process_restore_()
-
         self._set_wgt_update_draw_()
 
     def _set_sub_process_restore_(self):
@@ -274,25 +296,39 @@ class AbsQtSubProcessDef(object):
     def _set_sub_process_finished_at_(self, index, status):
         self._sub_process_finished_results[index] = True
         #
-        self._set_sub_process_text_update_()
+        self._set_sub_process_finished_update_()
         #
         self._set_wgt_update_draw_()
 
-    def _set_sub_process_text_update_(self):
-        finished_value = sum(self._sub_process_finished_results)
-        finished_maximum = len(self._sub_process_finished_results)
+    def _set_sub_process_finished_update_(self):
+        self._sub_process_finished_value = sum(self._sub_process_finished_results)
+        self._sub_process_finished_maximum = len(self._sub_process_finished_results)
         #
-        costed_timestamp = bsc_core.SystemMtd.get_timestamp() - self._sub_process_start_timestamp
-        if finished_value > 0:
-            estimated_timestamp = (costed_timestamp/finished_value)*finished_maximum
+        self._sub_process_timestamp_costed = bsc_core.SystemMtd.get_timestamp()-self._sub_process_timestamp_started
+        if self._sub_process_finished_value > 1:
+            self._sub_process_finished_timestamp_estimated = (self._sub_process_timestamp_costed/self._sub_process_finished_value)*self._sub_process_finished_maximum
         else:
-            estimated_timestamp = 0
-        #
-        self._sub_process_status_text = '[{}/{}][{}/{}]'.format(
-            finished_value, finished_maximum,
-            bsc_core.IntegerMtd.second_to_time_prettify(costed_timestamp),
-            bsc_core.IntegerMtd.second_to_time_prettify(estimated_timestamp)
+            self._sub_process_finished_timestamp_estimated = 0
+
+    def _set_sub_process_update_draw_(self):
+        self._sub_process_timestamp_costed = bsc_core.SystemMtd.get_timestamp()-self._sub_process_timestamp_started
+        self._set_wgt_update_draw_()
+
+    def _get_sub_process_status_text_(self):
+        kwargs = dict(
+            value=self._sub_process_finished_value,
+            maximum=self._sub_process_finished_maximum,
+            costed_time=bsc_core.IntegerMtd.second_to_time_prettify(self._sub_process_timestamp_costed),
+            estimated_time=bsc_core.IntegerMtd.second_to_time_prettify(self._sub_process_finished_timestamp_estimated),
         )
+        if int(self._sub_process_finished_timestamp_estimated) > 0:
+            return self._sub_process_status_text_format_1.format(
+                **kwargs
+            )
+        else:
+            return self._sub_process_status_text_format_0.format(
+                **kwargs
+            )
 
     def _get_sub_process_is_finished_(self):
         return sum(self._sub_process_finished_results) == len(self._sub_process_finished_results)
@@ -404,27 +440,32 @@ class AbsQtFrameDef(object):
         self._frame_border_radius = radius
 
 
-class AbsQtDropDef(object):
-    def _set_drop_def_init_(self, widget):
+class AbsQtPopupDef(object):
+    def _set_popup_def_init_(self, widget):
         self._widget = widget
-        self._drop_region = 0
-        self._drop_side = 2
-        self._drop_margin = 8
-        self._drop_shadow_radius = 4
+        self._popup_region = 0
+        self._popup_side = 2
+        self._popup_margin = 8
+        self._popup_shadow_radius = 4
+
+        self._popup_target_entry = None
+        self._popup_target_entry_frame = None
+
+        self._popup_is_activated = False
     @classmethod
-    def _get_drop_pos_(cls, widget):
-        rect = widget.rect()
-        # p = QtCore.QPoint(rect.right(), rect.center().y())
-        p = widget.mapToGlobal(rect.bottomLeft())
-        return p.x(), p.y()+1
-    @classmethod
-    def _get_drop_press_point_(cls, widget, rect=None):
+    def _get_popup_press_point_(cls, widget, rect=None):
         if rect is None:
             rect = widget.rect()
         # p = QtCore.QPoint(rect.right(), rect.center().y())
         return widget.mapToGlobal(rect.center())
     @classmethod
-    def _get_drop_size_(cls, widget):
+    def _get_popup_pos_(cls, widget):
+        rect = widget.rect()
+        # p = QtCore.QPoint(rect.right(), rect.center().y())
+        p = widget.mapToGlobal(rect.bottomLeft())
+        return p.x(), p.y()+1
+    @classmethod
+    def _get_popup_size_(cls, widget):
         rect = widget.rect()
         return rect.width(), rect.height()
 
@@ -434,26 +475,33 @@ class AbsQtDropDef(object):
     def _set_widget_geometry_update_(self):
         pass
 
-    def _set_drop_start_(self, *args, **kwargs):
+    def _set_popup_start_(self, *args, **kwargs):
         raise NotImplementedError()
 
-    def _set_drop_close_(self):
+    def _set_popup_close_(self):
         self._widget.close()
         self._widget.deleteLater()
 
-    def _set_drop_end_(self, *args, **kwargs):
+    def _set_popup_end_(self, *args, **kwargs):
         raise NotImplementedError()
 
-    def _set_drop_fnc_0_(self, press_point, press_rect, desktop_rect, view_width, view_height):
+    def _set_popup_activated_(self, boolean):
+        self._popup_is_activated = boolean
+        if boolean is True:
+            self._widget.show()
+        else:
+            self._widget.hide()
+
+    def _set_popup_fnc_0_(self, press_point, press_rect, desktop_rect, view_width, view_height):
         press_x, press_y = press_point.x(), press_point.y()
         press_w, press_h = press_rect.width(), press_rect.height()
         #
         width_maximum = desktop_rect.width()
         height_maximum = desktop_rect.height()
         #
-        side = self._drop_side
-        margin = self._drop_margin
-        shadow_radius = self._drop_shadow_radius
+        side = self._popup_side
+        margin = self._popup_margin
+        shadow_radius = self._popup_shadow_radius
         #
         o_x = 0
         o_y = 0
@@ -467,7 +515,7 @@ class AbsQtDropDef(object):
             maximum_size=(width_maximum, height_maximum),
             offset=(o_x, o_y)
         )
-        self._drop_region = region
+        self._popup_region = region
         #
         if region in [0, 1]:
             y_ = r_y-side+press_h/2
@@ -489,7 +537,7 @@ class AbsQtDropDef(object):
         self._widget.show()
         self._set_wgt_update_draw_()
 
-    def _set_drop_fnc_(self, pos, size):
+    def _set_popup_fnc_(self, pos, size):
         x, y = pos
         w, h = size
         # desktop_rect = get_qt_desktop_rect()
@@ -502,6 +550,77 @@ class AbsQtDropDef(object):
         self._widget.show()
         #
         self._widget.update()
+
+    def _set_popup_target_entry_(self, widget):
+        self._popup_target_entry = widget
+        self._popup_target_entry.installEventFilter(self._widget)
+
+    def _set_popup_target_entry_frame_(self, widget):
+        self._popup_target_entry_frame = widget
+
+    def _set_popup_scroll_to_pre_(self):
+        pass
+
+    def _set_popup_scroll_to_next_(self):
+        pass
+
+
+class AbsQtValueDef(object):
+    def _set_value_def_init_(self, widget):
+        self._widget = widget
+        self._value_validation_fnc = None
+
+        self._value_type = None
+        self._value = None
+
+    def _set_value_validation_fnc_(self, fnc):
+        self._value_validation_fnc = fnc
+
+    def _value_validation_fnc_(self, value):
+        if self._value_validation_fnc is not None:
+            return self._value_validation_fnc(value)
+        return True
+
+
+class AbsQtValuesDef(object):
+    def _set_values_def_init_(self, widget):
+        self._widget = widget
+        self._values = []
+
+    def _set_values_append_(self, value):
+        if value not in self._values:
+            self._values.append(value)
+            return True
+        return False
+
+    def _set_values_remove_(self, value):
+        if value in self._values:
+            self._values.remove(value)
+            return True
+        return False
+
+    def _get_values_(self):
+        return self._values
+
+
+class AbsQtEntryDef(object):
+    def _set_entry_def_init_(self, widget):
+        self._widget = widget
+        #
+        self._entry_is_enable = False
+
+    def _set_entry_enable_(self, boolean):
+        self._entry_is_enable = boolean
+
+
+class AbsQtEntryDropDef(object):
+    def _set_entry_drop_def_init_(self, widget):
+        self._widget = widget
+
+        self._entry_drop_is_enable = False
+
+    def _set_entry_drop_enable_(self, boolean):
+        self._entry_drop_is_enable = boolean
 
 
 class AbsQtIconDef(object):
@@ -519,14 +638,14 @@ class AbsQtIconDef(object):
         self._icon_name_text = None
         #
         self._icon_frame_rect = QtCore.QRect()
-        self._icon_file_path_rect = QtCore.QRect()
-        self._color_icon_rect = QtCore.QRect()
-        self._icon_name_text_rect = QtCore.QRect()
+        self._icon_file_draw_rect = QtCore.QRect()
+        self._icon_color_draw_rect = QtCore.QRect()
+        self._icon_name_draw_rect = QtCore.QRect()
         #
         self._icon_frame_size = 20, 20
-        self._file_icon_size = 16, 16
+        self._icon_file_draw_size = 16, 16
         self._color_icon_size = 12, 12
-        self._icon_name_size = 14, 14
+        self._icon_name_draw_size = 12, 12
 
     def _set_icon_enable_(self, boolean):
         self._icon_is_enable = boolean
@@ -546,7 +665,7 @@ class AbsQtIconDef(object):
         self._icon_frame_size = w, h
 
     def _set_file_icon_size_(self, w, h):
-        self._file_icon_size = w, h
+        self._icon_file_draw_size = w, h
 
     def _get_icon_file_path_(self):
         if self._icon_is_enable is True:
@@ -563,12 +682,12 @@ class AbsQtIconDef(object):
         self._set_wgt_update_draw_()
 
     def _set_color_icon_rect_(self, x, y, w, h):
-        self._color_icon_rect.setRect(
+        self._icon_color_draw_rect.setRect(
             x, y, w, h
         )
 
     def _set_icon_name_text_rect_(self, x, y, w, h):
-        self._icon_name_text_rect.setRect(
+        self._icon_name_draw_rect.setRect(
             x, y, w, h
         )
 
@@ -582,12 +701,12 @@ class AbsQtIconDef(object):
         )
 
     def _set_icon_file_path_rect_(self, x, y, w, h):
-        self._icon_file_path_rect.setRect(
+        self._icon_file_draw_rect.setRect(
             x, y, w, h
         )
 
     def _get_file_icon_rect_(self):
-        return self._icon_file_path_rect
+        return self._icon_file_draw_rect
 
 
 class _QtIconsDef(object):
@@ -692,11 +811,11 @@ class _QtIconsDef(object):
         self._icon_frame_draw_enable = boolean
 
 
-class _QtIndexDef(object):
+class AbsQtIndexDef(object):
     def _set_index_def_init_(self):
         self._index_enable = False
         self._index = 0
-        self._index_text = '1'
+        self._index_text = None
         self._index_text_color = QtFontColor.Dark
         self._index_text_font = Font.INDEX
         self._index_text_option = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
@@ -748,6 +867,7 @@ class AbsQtNameDef(object):
     def _set_name_def_init_(self):
         self._name_enable = False
         self._name_text = None
+        self._name_text_orig = None
         self._name_text_font = Font.NAME
         self._name_color = QtFontColor.Basic
         self._hover_name_color = QtFontColor.Light
@@ -819,10 +939,11 @@ class AbsQtNameDef(object):
                 # noinspection PyCallingNonCallable
                 self.setToolTip(html)
             else:
-                name_text = self._name_text
-                name_text = name_text.replace('<', '&lt;').replace('>', '&gt;')
                 html = '<html>\n<body>\n'
-                html += '<h3>{}</h3>\n'.format(name_text)
+                name_text = self._name_text
+                if name_text:
+                    name_text = name_text.replace('<', '&lt;').replace('>', '&gt;')
+                    html += '<h3>{}</h3>\n'.format(name_text)
                 for i in text.split('\n'):
                     html += '<ul>\n<li><i>{}</i></li>\n</ul>\n'.format(i)
                 html += '</body>\n</html>'
@@ -837,6 +958,12 @@ class AbsQtNameDef(object):
 
     def _set_name_font_(self):
         pass
+
+    def _set_name_text_orig_(self, text):
+        self._name_text_orig = text
+
+    def _get_name_text_orig_(self):
+        return self._name_text_orig
 
 
 class AbsQtRgbaDef(object):
@@ -861,7 +988,7 @@ class AbsQtRgbaDef(object):
         return self._color_rect
 
 
-class _QtPathDef(object):
+class AbsQtPathDef(object):
     def _set_wgt_update_draw_(self):
         raise NotImplementedError()
 
@@ -890,11 +1017,11 @@ class _QtProgressDef(object):
     def _set_progress_def_init_(self):
         self._progress_height = 2
         #
-        self._progress_maximum_value = 0
+        self._progress_maximum = 0
         self._progress_value = 0
         #
-        self._progress_map_maximum_ = 10
-        self._progress_map_value_ = 0
+        self._progress_map_maximum = 10
+        self._progress_map_value = 0
         #
         self._progress_rect = QtCore.QRect()
         #
@@ -912,22 +1039,28 @@ class _QtProgressDef(object):
         )
 
     def _set_progress_maximum_(self, value):
-        self._progress_maximum_value = value
+        self._progress_maximum = value
 
     def _set_progress_map_maximum_(self, value):
-        self._progress_map_maximum_ = value
+        self._progress_map_maximum = value
 
     def _set_progress_value_(self, value):
         self._progress_value = value
         #
-        if self._progress_map_maximum_ > 1:
+        if self._progress_map_maximum > 1:
             map_value = int(
-                bsc_core.RangeMtd.set_map_to((1, self._progress_maximum_value), (1, self._progress_map_maximum_), self._progress_value)
+                bsc_core.RangeMtd.set_map_to(
+                    (1, self._progress_maximum), (1, self._progress_map_maximum),
+                    self._progress_value
+                )
             )
-            if map_value != self._progress_map_value_:
-                self._progress_map_value_ = map_value
-                #
-                self._set_progress_run_()
+            self._set_progress_map_value_(map_value)
+
+    def _set_progress_map_value_(self, map_value):
+        if map_value != self._progress_map_value:
+            self._progress_map_value = map_value
+            #
+            self._set_progress_run_()
 
     def _set_progress_update_(self):
         self._set_progress_value_(self._progress_value+1)
@@ -938,13 +1071,13 @@ class _QtProgressDef(object):
         self._set_wgt_update_draw_()
 
     def _get_progress_percent_(self):
-        return float(self._progress_map_value_) / float(self._progress_map_maximum_)
+        return float(self._progress_map_value) / float(self._progress_map_maximum)
 
     def _set_progress_raw_(self, raw):
         self._progress_raw = raw
 
     def _get_progress_is_enable_(self):
-        return self._progress_map_value_ != 0
+        return self._progress_map_value != 0
 
 
 class AbsQtImageDef(object):
@@ -1638,25 +1771,67 @@ class AbsQtActionChooseDef(object):
         self.choose_changed.connect(fnc)
 
 
-class AbsQtEntryDef(object):
-    def _set_entry_def_init_(self, widget):
-        self._entry_enable = False
+class AbsQtValueEntryDef(object):
+    def _set_value_entry_def_init_(self, widget):
+        self._widget = widget
+        self._value_entry_is_enable = False
+        self._value_entry_drop_is_enable = False
+        self._value_entry_completion_fnc = None
 
-    def _set_entry_enable_(self, boolean):
-        self._entry_enable = boolean
+    def _set_value_entry_enable_(self, boolean):
+        self._value_entry_is_enable = boolean
 
-    def _set_entry_use_as_storage_(self, boolean):
+    def _set_value_entry_drop_enable_(self, boolean):
         pass
 
-    def _set_entry_finished_connect_to_(self, fnc):
+    def _set_value_entry_filter_fnc_(self, fnc):
         pass
 
-    def _set_entry_changed_connect_to_(self, fnc):
+    def _set_value_entry_use_as_storage_(self, boolean):
         pass
+
+    def _set_value_entry_finished_connect_to_(self, fnc):
+        pass
+
+    def _set_value_entry_changed_connect_to_(self, fnc):
+        pass
+
+    def _set_value_entry_completion_gain_fnc_(self, fnc):
+        self._value_entry_completion_fnc = fnc
+
+    def _get_value_entry_completion_data_(self):
+        if self._value_entry_completion_fnc is not None:
+            return self._value_entry_completion_fnc() or []
+        return []
 
 
 class AbsQtActionEntryDef(object):
     def _set_action_entry_def_init_(self, widget):
+        pass
+
+
+class AbsQtEntryHistoryDef(object):
+    def _set_entry_history_def_init_(self, widget):
+        self._entry_history_key = None
+        self._entry_history_value_filter_fnc = None
+
+    def _set_entry_history_filter_fnc_(self, fnc):
+        self._entry_history_value_filter_fnc = fnc
+
+    def _get_entry_history_value_is_valid_(self, value):
+        if self._entry_history_value_filter_fnc is not None:
+            return self._entry_history_value_filter_fnc(value)
+        return True
+
+    def _set_entry_history_key_(self, key):
+        self._entry_history_key = key
+
+        self._set_entry_history_update_()
+
+    def _set_entry_history_update_(self):
+        pass
+
+    def _set_entry_history_show_latest_(self):
         pass
 
 
@@ -1718,7 +1893,7 @@ class AbsQtGuideChooseActionDef(object):
 
     def _set_guide_choose_item_drop_at_(self, index=0):
         widget = self.CHOOSE_DROP_FRAME_CLASS(self)
-        widget._set_drop_start_(
+        widget._set_popup_start_(
             index
         )
 
@@ -2181,7 +2356,7 @@ class AbsQtItemEntryActionDef(object):
 
 class AbsQtViewSelectActionDef(object):
     def _set_view_select_action_def_init_(self):
-        self._pre_selected_item = None
+        self._pre_selected_items = []
 
     def _set_view_item_selected_(self, item, boolean):
         raise NotImplementedError()
@@ -2693,7 +2868,9 @@ class AbsQtListWidget(
         return self.selectedItems()
 
     def _set_item_widget_selected_(self, item, boolean):
-        self.itemWidget(item)._set_selected_(boolean)
+        item_widget = self.itemWidget(item)
+        if item_widget:
+            item_widget._set_selected_(boolean)
     # select
     def _get_selected_item_widgets_(self):
         return [self.itemWidget(i) for i in self.selectedItems()]
@@ -2707,14 +2884,13 @@ class AbsQtListWidget(
         pass
 
     def _set_item_widget_selected_update_(self):
-        if self._pre_selected_item is not None:
-            self._set_item_widget_selected_(self._pre_selected_item, False)
+        if self._pre_selected_items:
+            [self._set_item_widget_selected_(i, False) for i in self._pre_selected_items]
         #
         selected_items = self._get_selected_items_()
         if selected_items:
-            item = selected_items[-1]
-            self._set_item_widget_selected_(item, True)
-            self._pre_selected_item = item
+            [self._set_item_widget_selected_(i, True) for i in selected_items]
+            self._pre_selected_items = selected_items
     # scroll
     def _set_scroll_to_item_top_(self, item):
         self.scrollToItem(item, self.PositionAtTop)
@@ -2739,6 +2915,15 @@ class AbsQtListWidget(
     def _get_all_items_(self):
         return [self.item(i) for i in range(self.count())]
 
+    def _get_all_item_widgets_(self):
+        return [self.itemWidget(self.item(i)) for i in range(self.count())]
+
+    def _set_all_items_selected_(self, boolean):
+        for i in range(self.count()):
+            i_item = self.item(i)
+            i_item.setSelected(boolean)
+            self.itemWidget(i_item)._set_selected_(boolean)
+
     def _get_visible_items_(self):
         return [i for i in self._get_all_items_() if i.isHidden() is False]
 
@@ -2746,6 +2931,58 @@ class AbsQtListWidget(
         QtWidgets.QApplication.instance().processEvents(
             QtCore.QEventLoop.ExcludeUserInputEvents
         )
+
+    def _set_clear_(self):
+        self._pre_selected_items = []
+        #
+        self.clear()
+
+    def _set_scroll_to_pre_item_(self):
+        items = self._get_all_items_()
+        if items:
+            selected_indices = self.selectedIndexes()
+            if selected_indices:
+                idx = selected_indices[0].row()
+                idx_max, idx_min = len(items)-1, 0
+                #
+                idx = max(min(idx, idx_max), 0)
+                #
+                if idx == idx_min:
+                    idx = idx_max
+                else:
+                    idx -= 1
+                idx_pre = max(min(idx, idx_max), 0)
+                item_pre = items[idx_pre]
+                item_pre.setSelected(True)
+                self._set_scroll_to_item_top_(item_pre)
+            else:
+                items[0].setSelected(True)
+                return
+
+    def _set_scroll_to_next_item_(self):
+        items = self._get_all_items_()
+        if items:
+            selected_indices = self.selectedIndexes()
+            if selected_indices:
+                idx = selected_indices[-1].row()
+                idx_max, idx_min = len(items) - 1, 0
+                #
+                idx = max(min(idx, idx_max), 0)
+                if idx == idx_max:
+                    idx = idx_min
+                else:
+                    idx += 1
+                idx_pst = max(min(idx, idx_max), 0)
+                item_next = items[idx_pst]
+                item_next.setSelected(True)
+                self._set_scroll_to_item_top_(item_next)
+            else:
+                items[0].setSelected(True)
+                return
+
+    def _set_item_widget_delete_(self, item):
+        item_widget = self.itemWidget(item)
+        item_widget.deleteLater()
 
 
 class AbsQtItemValueDefaultDef(object):
@@ -2774,8 +3011,11 @@ class AbsQtItemValueTypeConstantEntryDef(object):
         #
         self._item_value_entry_widget = None
 
-    def _set_item_value_entry_build_(self, value_type):
+    def _set_value_entry_widget_build_(self, value_type):
         pass
+
+    def _get_value_entry_widget_(self):
+        return self._item_value_entry_widget
 
     def _set_item_value_type_(self, value_type):
         self._item_value_type = value_type
@@ -2796,10 +3036,10 @@ class AbsQtItemValueTypeConstantEntryDef(object):
     def _get_item_value_(self):
         return self._item_value_entry_widget._get_item_value_()
 
-    def _set_entry_finished_connect_to_(self, fnc):
+    def _set_value_entry_finished_connect_to_(self, fnc):
         self._item_value_entry_widget.entry_finished.connect(fnc)
 
-    def _set_entry_changed_connect_to_(self, fnc):
+    def _set_value_entry_changed_connect_to_(self, fnc):
         self._item_value_entry_widget.entry_changed.connect(fnc)
 
     def _set_item_value_entry_enable_(self, boolean):
@@ -2821,8 +3061,14 @@ class AbsQtValueEnumerateEntryDef(object):
     def _set_wgt_update_(self):
         raise NotImplementedError()
 
-    def _set_item_value_entry_build_(self, value_type):
+    def _set_value_entry_widget_build_(self, value_type):
         pass
+
+    def _get_value_entry_widget_(self):
+        return self._item_value_entry_widget
+
+    def _set_value_entry_drop_enable_(self, boolean):
+        self._item_value_entry_widget._set_entry_drop_enable_(boolean)
 
     def _set_item_value_type_(self, value_type):
         self._item_value_type = value_type
@@ -2908,7 +3154,7 @@ class _QtArrayValueEntryDef(object):
         self._value = []
         self._value_entry_widgets = []
 
-    def _set_item_value_entry_build_(self, value_size, value_type):
+    def _set_value_entry_widget_build_(self, value_size, value_type):
         pass
 
     def _set_item_value_type_(self, value_type):
@@ -2920,7 +3166,7 @@ class _QtArrayValueEntryDef(object):
         return self._item_value_type
 
     def _set_value_size_(self, size):
-        self._set_item_value_entry_build_(size, self._item_value_type)
+        self._set_value_entry_widget_build_(size, self._item_value_type)
 
     def _get_value_size_(self):
         return len(self._value_entry_widgets)
@@ -2948,7 +3194,7 @@ class _QtArrayValueEntryDef(object):
     def _get_item_value_is_default_(self):
         return tuple(self._get_item_value_()) == tuple(self._get_item_value_default_())
 
-    def _set_entry_changed_connect_to_(self, fnc):
+    def _set_value_entry_changed_connect_to_(self, fnc):
         for i in self._value_entry_widgets:
             i.entry_changed.connect(fnc)
 
@@ -3065,3 +3311,19 @@ class AbsQtZoomActionDef(object):
         )
         #
         self._set_wgt_update_draw_()
+
+
+class AbsQtDeleteDef(object):
+    def _set_delete_def_init_(self, widget):
+        self._widget = widget
+        #
+        self._delete_is_enable = False
+        self._delete_draw_rect = QtCore.QRect()
+
+    def _set_delete_enable_(self, boolean):
+        self._delete_is_enable = boolean
+
+    def _set_delete_draw_rect_(self, x, y, w, h):
+        self._delete_draw_rect.setRect(
+            x, y, w, h
+        )

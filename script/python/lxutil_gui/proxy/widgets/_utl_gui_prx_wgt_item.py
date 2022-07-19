@@ -180,18 +180,10 @@ class PrxTreeItem(
         return self._qt_widget
 
     def set_name(self, text, column=0):
-        if text is not None:
-            if isinstance(text, (tuple, list)):
-                if len(text) > 1:
-                    _ = '; '.join(('{}.{}'.format(seq+1, i) for seq, i in enumerate(text)))
-                elif len(text) == 1:
-                    _ = text[0]
-                else:
-                    _ = ''
-            else:
-                _ = unicode(text)
-            self.widget.setText(column, _)
-            self.widget.setFont(column, utl_gui_qt_core.Font.NAME)
+        self.widget._set_name_text_(text, column)
+
+    def set_name_orig(self, text):
+        self.widget._set_name_text_orig_(text)
 
     def get_name(self, column=0):
         return self.widget.text(column)
@@ -352,8 +344,8 @@ class PrxTreeItem(
     def set_visible(self, boolean, ancestors=False):
         self.set_hidden(not boolean, ancestors=ancestors)
 
-    def get_is_visible(self):
-        pass
+    def get_is_visible(self, ancestors=False):
+        return not self.widget._get_is_hidden_(ancestors=ancestors)
 
     def set_force_hidden(self, boolean):
         self.set_gui_attribute('force_hidden', boolean)
@@ -831,3 +823,7 @@ class PrxListItem(
 
     def __repr__(self):
         return self.__str__()
+
+
+class PrxMediaItem(object):
+    pass

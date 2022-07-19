@@ -1,6 +1,4 @@
 # coding=utf-8
-import math
-#
 from lxutil_gui.qt.utl_gui_qt_core import *
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_chart
@@ -10,9 +8,18 @@ from lxutil_gui.qt import utl_gui_qt_abstract
 from lxutil_gui.qt import utl_gui_qt_core
 
 
-class QtLineEdit_(QtWidgets.QLineEdit):
+class QtLineEdit_(
+    QtWidgets.QLineEdit,
+    utl_gui_qt_abstract.AbsQtValueDef,
+    #
+    utl_gui_qt_abstract.AbsQtEntryDef,
+    utl_gui_qt_abstract.AbsQtEntryDropDef,
+):
     entry_changed = qt_signal()
+    user_entry_changed = qt_signal()
     entry_finished = qt_signal()
+    up_key_pressed = qt_signal()
+    down_key_pressed = qt_signal()
     def __init__(self, *args, **kwargs):
         super(QtLineEdit_, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -30,11 +37,16 @@ class QtLineEdit_(QtWidgets.QLineEdit):
         self._minimum = 0
         #
         self.returnPressed.connect(self._set_enter_finished_emit_send_)
+        self.textEdited.connect(self._set_user_enter_changed_emit_send_)
         self.textChanged.connect(self._set_enter_changed_emit_send_)
         #
         self.setStyleSheet(
             utl_gui_core.QtStyleMtd.get('QLineEdit')
         )
+        self._set_value_def_init_(self)
+        self._set_entry_def_init_(self)
+        self._set_entry_drop_def_init_(self)
+        self.setAcceptDrops(self._entry_drop_is_enable)
 
     def _set_action_wheel_update_(self, event):
         if self._item_value_type in [int, float]:
@@ -64,7 +76,33 @@ class QtLineEdit_(QtWidgets.QLineEdit):
                 self._set_value_completion_()
             elif event.type() == QtCore.QEvent.Wheel:
                 self._set_action_wheel_update_(event)
+            elif event.type() == QtCore.QEvent.KeyPress:
+                if event.key() == QtCore.Qt.Key_Up:
+                    self.up_key_pressed.emit()
+                if event.key() == QtCore.Qt.Key_Down:
+                    self.down_key_pressed.emit()
         return False
+
+    def _set_entry_drop_enable_(self, boolean):
+        super(QtLineEdit_, self)._set_entry_drop_enable_(boolean)
+        self.setAcceptDrops(boolean)
+
+    def _set_action_drop_execute_(self, event):
+        data = event.mimeData()
+        if data.hasUrls():
+            urls = event.mimeData().urls()
+            if urls:
+                value = urls[0].toLocalFile()
+                if self._value_validation_fnc_(value):
+                    self._set_item_value_(value)
+                    return True
+        return False
+
+    def dropEvent(self, event):
+        if self._set_action_drop_execute_(event) is True:
+            event.accept()
+        else:
+            event.ignore()
 
     def contextMenuEvent(self, event):
         menu_raw = [
@@ -106,6 +144,10 @@ class QtLineEdit_(QtWidgets.QLineEdit):
     def _set_enter_changed_emit_send_(self):
         # noinspection PyUnresolvedReferences
         self.entry_changed.emit()
+
+    def _set_user_enter_changed_emit_send_(self):
+        # noinspection PyUnresolvedReferences
+        self.user_entry_changed.emit()
 
     def _set_value_completion_(self):
         if self._item_value_type in [int, float]:
@@ -257,6 +299,374 @@ class QtLineEdit_(QtWidgets.QLineEdit):
     def _set_enter_enable_(self, boolean):
         self.setReadOnly(not boolean)
 
+    def _set_focused_(self, boolean):
+        if boolean is True:
+            self.setFocus(
+                QtCore.Qt.MouseFocusReason
+            )
+        else:
+            self.setFocus(
+                QtCore.Qt.NoFocusReason
+            )
+
+
+class _QtHItem(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtIndexDef,
+    utl_gui_qt_abstract.AbsQtTypeDef,
+    utl_gui_qt_abstract.AbsQtIconDef,
+    utl_gui_qt_abstract.AbsQtNameDef,
+    utl_gui_qt_abstract.AbsQtPathDef,
+    #
+    utl_gui_qt_abstract.AbsQtMenuDef,
+    #
+    utl_gui_qt_abstract.AbsQtDeleteDef,
+    # action
+    utl_gui_qt_abstract.AbsQtActionDef,
+    utl_gui_qt_abstract.AbsQtActionHoverDef,
+    utl_gui_qt_abstract.AbsQtActionPressDef,
+    utl_gui_qt_abstract.AbsQtActionSelectDef,
+):
+    def __init__(self, *args, **kwargs):
+        super(_QtHItem, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        #
+        self._set_frame_def_init_()
+        self._set_index_def_init_()
+        self._set_type_def_init_()
+        self._set_icon_def_init_()
+        self._icon_name_is_enable = True
+        self._set_name_def_init_()
+        self._set_path_def_init_()
+        #
+        self._set_menu_def_init_()
+        #
+        self._set_delete_def_init_(self)
+        #
+        self._set_action_hover_def_init_()
+        self._set_action_def_init_(self)
+        self._set_action_press_def_init_()
+        self._set_action_select_def_init_()
+        #
+        self._frame_background_color = QtBackgroundColor.Light
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            self._set_action_hover_filter_execute_(event)
+            #
+            if event.type() == QtCore.QEvent.Resize:
+                self.update()
+            elif event.type() == QtCore.QEvent.MouseButtonPress:
+                if event.button() == QtCore.Qt.RightButton:
+                    self._set_menu_show_()
+                elif event.button() == QtCore.Qt.LeftButton:
+                    self.clicked.emit()
+                #
+                self._is_hovered = True
+                self.update()
+        return False
+
+    def paintEvent(self, event):
+        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        #
+        self._set_widget_geometry_update_()
+        #
+        background_color = painter._get_item_background_color_by_rect_(
+            self._frame_rect,
+            is_hovered=self._is_hovered,
+            is_selected=self._item_is_selected
+        )
+        painter._set_frame_draw_by_rect_(
+            self._frame_rect,
+            border_color=QtBackgroundColor.Transparent,
+            background_color=background_color,
+            border_radius=1
+        )
+        # icon
+        if self._icon_name_is_enable is True:
+            if self._icon_name_text is not None:
+                painter._set_icon_name_text_draw_by_rect_(
+                    self._icon_name_draw_rect,
+                    self._icon_name_text,
+                    background_color=background_color,
+                    # offset=0,
+                    border_radius=2,
+                    border_width=2
+                )
+            elif self._icon_file_path is not None:
+                painter._set_file_icon_draw_by_rect_(
+                    rect=self._icon_file_draw_rect,
+                    file_path=self._icon_file_path,
+                )
+        #
+        if self._name_text is not None:
+            painter._set_text_draw_by_rect_(
+                self._name_rect,
+                self._name_text,
+                font_color=self._name_color,
+                font=self._name_text_font,
+                text_option=self._name_text_option,
+                is_hovered=self._is_hovered,
+                is_selected=self._item_is_selected,
+            )
+        #
+        if self._index_text is not None:
+            painter._set_text_draw_by_rect_(
+                self._index_rect,
+                self._get_index_text_(),
+                font_color=self._index_text_color,
+                font=self._index_text_font,
+                text_option=self._index_text_option
+            )
+
+    def _set_wgt_update_draw_(self):
+        self.update()
+
+    def _set_widget_geometry_update_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        #
+        side = 2
+        spacing = 2
+        f_w, f_h = self._icon_frame_size
+        i_f_w, i_f_h = self._icon_file_draw_size
+        #
+        i_x, i_y = x+side, y
+        i_w, i_h = w-side*2, h
+        #
+        self._set_frame_rect_(
+            x, y, w, h
+        )
+        if self._icon_name_is_enable is True:
+            if self._icon_name_text is not None:
+                i_c_w, i_c_h = self._icon_name_draw_size
+                self._set_icon_name_text_rect_(
+                    x+(f_w-i_c_w) / 2, y+(f_h-i_c_h) / 2, i_c_w, i_c_h
+                )
+                i_x += f_w+spacing
+            elif self._icon_file_path is not None:
+                i_c_w, i_c_h = self._icon_name_draw_size
+                self._set_icon_file_path_rect_(
+                    x + (f_w - i_c_w) / 2, y + (f_h - i_c_h) / 2, i_c_w, i_c_h
+                )
+                i_x += f_w+spacing
+        #
+        self._set_name_rect_(
+            i_x, i_y, i_w-24, i_h
+        )
+        #
+        self._set_index_rect_(
+            i_x, i_y, i_w-24, i_h
+        )
+
+
+class _QtListWidget(
+    utl_gui_qt_abstract.AbsQtListWidget,
+    #
+    utl_gui_qt_abstract.AbsQtValueDef,
+    utl_gui_qt_abstract.AbsQtValuesDef,
+    #
+    utl_gui_qt_abstract.AbsQtEntryDef,
+    utl_gui_qt_abstract.AbsQtEntryDropDef,
+):
+    def __init__(self, *args, **kwargs):
+        super(_QtListWidget, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setSelectionMode(self.ExtendedSelection)
+        #
+        self._item_width, self._item_height = 20, 20
+        #
+        self._set_value_def_init_(self)
+        self._set_values_def_init_(self)
+        #
+        self._set_entry_def_init_(self)
+        self._set_entry_drop_def_init_(self)
+
+        self.setAcceptDrops(self._entry_drop_is_enable)
+
+        self._set_shortcut_register_()
+
+    def contextMenuEvent(self, event):
+        if self._entry_is_enable is True:
+            menu_raw = [
+                ('basic',),
+                ('copy', None, (True, self._set_action_copy_, False), QtGui.QKeySequence.Copy),
+                ('paste', None, (True, self._set_action_paste_, False), QtGui.QKeySequence.Paste),
+                ('cut', None, (True, self._set_action_cut_, False), QtGui.QKeySequence.Cut),
+                ('extend',),
+                ('select all', None, (True, self._set_action_select_all_, False), QtGui.QKeySequence.SelectAll),
+            ]
+        else:
+            menu_raw = [
+                ('basic',),
+                ('copy', None, (True, self._set_action_copy_, False), QtGui.QKeySequence.Copy),
+                ('extend',),
+                ('select all', None, (True, self._set_action_select_all_, False), QtGui.QKeySequence.SelectAll)
+            ]
+        #
+        if menu_raw:
+            self._qt_menu = _utl_gui_qt_wgt_utility.QtMenu(self)
+            self._qt_menu._set_menu_raw_(menu_raw)
+            self._qt_menu._set_show_()
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.KeyPress:
+                if event.key() == QtCore.Qt.Key_Control:
+                    self._action_control_flag = True
+            elif event.type() == QtCore.QEvent.KeyRelease:
+                if event.key() == QtCore.Qt.Key_Control:
+                    self._action_control_flag = False
+                elif event.key() == QtCore.Qt.Key_Delete:
+                    self._set_action_delete_execute_(event)
+            elif event.type() == QtCore.QEvent.Wheel:
+                pass
+                # self._set_action_wheel_update_(event)
+            elif event.type() == QtCore.QEvent.Resize:
+                pass
+                # self._set_show_view_items_update_()
+            elif event.type() == QtCore.QEvent.FocusIn:
+                self._is_focused = True
+                parent = self.parent()
+                if isinstance(parent, _QtEntryFrame):
+                    parent._set_focused_(True)
+            elif event.type() == QtCore.QEvent.FocusOut:
+                self._is_focused = False
+                parent = self.parent()
+                if isinstance(parent, _QtEntryFrame):
+                    parent._set_focused_(False)
+        if widget == self.verticalScrollBar():
+            pass
+        return False
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls:
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasUrls:
+            # event.setDropAction(QtCore.Qt.CopyAction)
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        self._set_action_drop_execute_(event)
+
+    def _set_shortcut_register_(self):
+        actions = [
+            (self._set_action_copy_, 'Ctrl+C'),
+            (self._set_action_paste_, 'Ctrl+V'),
+            (self._set_action_cut_, 'Ctrl+X'),
+            (self._set_action_select_all_, 'Ctrl+A')
+        ]
+        for i_fnc, i_shortcut in actions:
+            i_action = QtWidgets.QAction(self)
+            i_action.triggered.connect(
+                i_fnc
+            )
+            i_action.setShortcut(
+                QtGui.QKeySequence(
+                    i_shortcut
+                )
+            )
+            i_action.setShortcutContext(
+                QtCore.Qt.WidgetShortcut
+            )
+            self.addAction(i_action)
+
+    def _set_action_copy_(self):
+        selected_item_widgets = self._get_selected_item_widgets_()
+        if selected_item_widgets:
+            values = [i._get_name_text_() for i in selected_item_widgets]
+            QtWidgets.QApplication.clipboard().setText(
+                '\n'.join(values)
+            )
+
+    def _set_action_paste_(self):
+        text = QtWidgets.QApplication.clipboard().text()
+        if text:
+            values = [i.strip() for i in text.split('\n')]
+            [self._set_values_append_(i) for i in values]
+
+    def _set_action_cut_(self):
+        selected_item_widgets = self._get_selected_item_widgets_()
+        if selected_item_widgets:
+            values = [i._get_name_text_() for i in selected_item_widgets]
+            QtWidgets.QApplication.clipboard().setText(
+                '\n'.join(values)
+            )
+            [self._set_values_remove_(i) for i in values]
+
+    def _set_action_select_all_(self):
+        self._set_all_items_selected_(True)
+
+    def _get_selected_item_widgets_(self):
+        return [self.itemWidget(i) for i in self.selectedItems()]
+
+    def _set_entry_drop_enable_(self, boolean):
+        super(_QtListWidget, self)._set_entry_drop_enable_(boolean)
+        self.setAcceptDrops(boolean)
+        # self.setDragDropMode(self.DropOnly)
+        # self.setDropIndicatorShown(True)
+
+    def _set_action_drop_execute_(self, event):
+        data = event.mimeData()
+        if data.hasUrls():
+            urls = event.mimeData().urls()
+            if urls:
+                for i_url in urls:
+                    i_value = i_url.toLocalFile()
+                    if self._value_validation_fnc_(i_value):
+                        self._set_values_append_(i_value)
+
+    def _set_action_delete_execute_(self, event):
+        selected_item_widgets = self._get_selected_item_widgets_()
+        if selected_item_widgets:
+            for i in selected_item_widgets:
+                i_value = i._get_name_text_()
+                self._set_values_remove_(i_value)
+
+    def _set_values_remove_(self, value):
+        if value:
+            if self._entry_is_enable is True:
+                if value in self._values:
+                    index = self._values.index(value)
+                    self._values.remove(value)
+                    #
+                    item = self.item(index)
+                    self._set_item_widget_delete_(item)
+                    self.takeItem(index)
+
+                print self._values
+
+    def _set_values_append_(self, value):
+        if value:
+            if self._entry_is_enable is True:
+                if value not in self._values:
+                    self._values.append(value)
+                    #
+                    item_widget = _QtHItem()
+                    item = QtListWidgetItem()
+                    item.setSizeHint(QtCore.QSize(self._item_width, self._item_height))
+                    #
+                    self.addItem(item)
+                    self.setItemWidget(item, item_widget)
+
+                    item_widget._set_name_text_(value)
+                    item_widget._set_icon_name_text_(value)
+
+        print self._values
+
+    def _set_values_(self, values):
+        pass
+
 
 class QtTextBrowser_(QtWidgets.QTextBrowser):
     def __init__(self, *args, **kwargs):
@@ -324,21 +734,21 @@ class QtTextBrowser_(QtWidgets.QTextBrowser):
 
     def contextMenuEvent(self, event):
         menu_raw = [
-            ('Basic', ),
-            ('Copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
-            ('Paste', None, (True, self.paste, False), QtGui.QKeySequence.Paste),
-            ('Cut', None, (True, self.cut, False), QtGui.QKeySequence.Cut),
-            ('Extend', ),
-            ('Undo', None, (True, self.undo, False), QtGui.QKeySequence.Undo),
-            ('Redo', None, (True, self.redo, False), QtGui.QKeySequence.Redo),
-            ('Select All', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll),
+            ('basic', ),
+            ('copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
+            ('paste', None, (True, self.paste, False), QtGui.QKeySequence.Paste),
+            ('cut', None, (True, self.cut, False), QtGui.QKeySequence.Cut),
+            ('extend', ),
+            ('undo', None, (True, self.undo, False), QtGui.QKeySequence.Undo),
+            ('redo', None, (True, self.redo, False), QtGui.QKeySequence.Redo),
+            ('select all', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll),
         ]
         if self.isReadOnly():
             menu_raw = [
-                ('Basic',),
-                ('Copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
-                ('Extend', ),
-                ('Select All', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll)
+                ('basic',),
+                ('copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
+                ('extend', ),
+                ('select all', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll)
             ]
         #
         if menu_raw:
@@ -483,7 +893,7 @@ class _QtIconPressItem(
 
     def paintEvent(self, event):
         w, h = self.width(), self.height()
-        i_w, i_h = self._file_icon_size
+        i_w, i_h = self._icon_file_draw_size
         painter = _utl_gui_qt_wgt_utility.QtPainter(self)
         self._set_widget_geometry_update_()
 
@@ -515,19 +925,19 @@ class _QtIconPressItem(
                         pass
                 #
                 painter._set_svg_image_draw_by_rect_(
-                    self._icon_file_path_rect,
+                    self._icon_file_draw_rect,
                     icon_file_path,
                     offset=offset
                 )
             elif self._color_icon_rgb is not None:
                 painter._set_color_icon_draw_(
-                    self._color_icon_rect,
+                    self._icon_color_draw_rect,
                     self._color_icon_rgb,
                     offset=offset
                 )
             elif self._icon_name_text is not None:
                 painter._set_icon_name_text_draw_by_rect_(
-                    self._icon_name_text_rect,
+                    self._icon_name_draw_rect,
                     self._icon_name_text,
                     offset=offset,
                     border_radius=2,
@@ -550,9 +960,9 @@ class _QtIconPressItem(
         #
         f_w, f_h = self._icon_frame_size
         #
-        i_f_w, i_f_h = self._file_icon_size
+        i_f_w, i_f_h = self._icon_file_draw_size
         i_c_w, i_c_h = self._color_icon_size
-        i_n_w, i_n_h = self._icon_name_size
+        i_n_w, i_n_h = self._icon_name_draw_size
         # check
         _w, _h = w, h
         _x, _y = x, y
@@ -561,13 +971,13 @@ class _QtIconPressItem(
             self._icon_frame_rect.setRect(
                 _x, _y, f_w, f_h
             )
-            self._icon_file_path_rect.setRect(
+            self._icon_file_draw_rect.setRect(
                 _x + (f_w - i_f_w) / 2, _y + (f_h - i_f_h) / 2, i_f_w, i_f_h
             )
-            self._color_icon_rect.setRect(
+            self._icon_color_draw_rect.setRect(
                 _x + (f_w - i_c_w) / 2, _y + (f_h - i_c_h) / 2, i_c_w, i_c_h
             )
-            self._icon_name_text_rect.setRect(
+            self._icon_name_draw_rect.setRect(
                 _x + (f_w - i_n_w) / 2, _y + (f_h - i_n_h) / 2, i_n_w, i_n_h
             )
             _x += f_h
@@ -667,6 +1077,10 @@ class _QtPressItem(
             self._set_sub_process_finished_at_
         )
 
+        self._rate_timer = QtCore.QTimer(self)
+
+        self._rate_timer.timeout.connect(self._set_sub_process_update_draw_)
+
     def _set_wgt_update_draw_(self):
         self.update()
 
@@ -683,9 +1097,9 @@ class _QtPressItem(
         #
         f_w, f_h = self._icon_frame_size
         #
-        i_f_w, i_f_h = self._file_icon_size
+        i_f_w, i_f_h = self._icon_file_draw_size
         i_c_w, i_c_h = self._color_icon_size
-        i_n_w, i_n_h = self._icon_name_size
+        i_n_w, i_n_h = self._icon_name_draw_size
         #
         _w, _h = w, h
         _x, _y = x, y
@@ -705,13 +1119,13 @@ class _QtPressItem(
             c_w -= f_w
         #
         if self._icon_is_enable is True:
-            self._icon_file_path_rect.setRect(
+            self._icon_file_draw_rect.setRect(
                 _x + (f_w - i_f_w) / 2, _y + (f_h - i_f_h) / 2, i_f_w, i_f_h
             )
-            self._color_icon_rect.setRect(
+            self._icon_color_draw_rect.setRect(
                 _x + (f_w - i_c_w) / 2, _y + (f_h - i_c_h) / 2, i_c_w, i_c_h
             )
-            self._icon_name_text_rect.setRect(
+            self._icon_name_draw_rect.setRect(
                 _x + (f_w - i_n_w) / 2, _y + (f_h - i_n_h) / 2, i_n_w, i_n_h
             )
             _x += f_h
@@ -762,22 +1176,25 @@ class _QtPressItem(
         super(_QtPressItem, self)._set_sub_process_initialization_(count, status)
         if count > 0:
             self._set_status_(
-                self.Status.Waiting
+                self.Status.Started
             )
-        else:
-            self._set_status_(
-                self.Status.Stopped
-            )
-
-        self._set_wgt_update_draw_()
+            self._rate_timer.start(1000)
 
     def _set_sub_process_finished_at_(self, index, status):
         super(_QtPressItem, self)._set_sub_process_finished_at_(index, status)
+        # check is finished
         if self._get_sub_process_is_finished_() is True:
-            self._set_status_(
-                self.Status.Finished
-            )
+            if self.Status.Failed in self._sub_process_statuses:
+                self._set_status_(
+                    self.Status.Failed
+                )
+            else:
+                self._set_status_(
+                    self.Status.Completed
+                )
             self.rate_finished.emit()
+
+            self._rate_timer.stop()
 
         self._set_wgt_update_draw_()
 
@@ -912,15 +1329,15 @@ class _QtPressItem(
         if self._icon_is_enable is True:
             if self._icon_file_path is not None:
                 painter._set_svg_image_draw_by_rect_(
-                    self._icon_file_path_rect, self._icon_file_path, offset=offset
+                    self._icon_file_draw_rect, self._icon_file_path, offset=offset
                 )
             elif self._color_icon_rgb is not None:
                 painter._set_color_icon_draw_(
-                    self._color_icon_rect, self._color_icon_rgb, offset=offset
+                    self._icon_color_draw_rect, self._color_icon_rgb, offset=offset
                 )
             elif self._icon_name_text is not None:
                 painter._set_icon_name_text_draw_by_rect_(
-                    self._icon_name_text_rect,
+                    self._icon_name_draw_rect,
                     self._icon_name_text,
                     offset=offset,
                     border_radius=2,
@@ -936,7 +1353,7 @@ class _QtPressItem(
             #
             if self._get_sub_process_is_enable_() is True:
                 name_text = '{} - {}'.format(
-                    self._name_text, self._sub_process_status_text
+                    self._name_text, self._get_sub_process_status_text_()
                 )
             #
             painter._set_text_draw_by_rect_(
@@ -948,7 +1365,11 @@ class _QtPressItem(
             )
         # option
         if self._get_item_option_click_enable_() is True:
-            painter._set_svg_image_draw_by_rect_(self._option_click_icon_rect, self._option_icon_file_path, offset=offset)
+            painter._set_svg_image_draw_by_rect_(
+                self._option_click_icon_rect,
+                self._option_icon_file_path,
+                offset=offset
+            )
 
 
 class _QtCheckItem(
@@ -997,7 +1418,7 @@ class _QtCheckItem(
         w, h = self.width(), self.height()
         spacing = 2
         f_w, f_h = self._icon_frame_size
-        i_w, i_h = self._file_icon_size
+        i_w, i_h = self._icon_file_draw_size
         #
         self._set_frame_rect_(
             x, y, w-1, h-1
@@ -1136,204 +1557,23 @@ class _QtStatusItem(
         is_hovered = self._get_is_hovered_()
         #
         if self._get_item_is_checked_():
+            background_color = [(255, 255, 63), (255, 127, 63)][is_hovered]
             painter._set_icon_name_text_draw_by_rect_(
-                rect=self._color_icon_rect,
+                rect=self._icon_color_draw_rect,
                 text='l',
-                background_color=(255, 255, 63),
+                background_color=background_color,
                 offset=offset,
                 is_hovered=is_hovered
             )
         else:
+            background_color = [(71, 71, 71), (255, 127, 63)][is_hovered]
             painter._set_icon_name_text_draw_by_rect_(
-                rect=self._color_icon_rect,
+                rect=self._icon_color_draw_rect,
                 text='d',
-                background_color=(71, 71, 71),
+                background_color=background_color,
                 offset=offset,
                 is_hovered=is_hovered
             )
-
-
-class _QtFilterBar(QtWidgets.QWidget):
-    BTN_FRAME_SIZE = 18, 18
-    BTN_ICON_SIZE = 16, 16
-    #
-    entry_changed = qt_signal()
-    preOccurrenceClicked = qt_signal()
-    nextOccurrenceClicked = qt_signal()
-    def __init__(self, *args, **kwargs):
-        super(_QtFilterBar, self).__init__(*args, **kwargs)
-        qt_layout_0 = QtHBoxLayout(self)
-        qt_layout_0.setContentsMargins(*[0]*4)
-        qt_layout_0.setSpacing(2)
-        qt_layout_0.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        #
-        self._result_label = _utl_gui_qt_wgt_utility.QtLabel()
-        qt_layout_0.addWidget(self._result_label)
-        self._result_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        #
-        self._qt_entry_frame_0 = _QtEntryFrame()
-        self._qt_entry_frame_0.setMaximumWidth(240)
-        qt_layout_0.addWidget(self._qt_entry_frame_0)
-        qt_layout_1 = QtHBoxLayout(self._qt_entry_frame_0)
-        qt_layout_1.setContentsMargins(*[0]*4)
-        qt_layout_1.setSpacing(2)
-        #
-        self._header_button = _QtIconPressItem()
-        qt_layout_1.addWidget(self._header_button)
-        self._header_button._set_icon_file_path_(
-            utl_core.Icon.get(
-                'search'
-            )
-        )
-        #
-        self._header_button._set_menu_raw_(
-            [
-                ('Option(s)', None, None),
-                (),
-                ('History(s)', None, None)
-            ]
-        )
-        #
-        self._qt_entry_0 = QtLineEdit_()
-        qt_layout_1.addWidget(self._qt_entry_0)
-        self._qt_entry_frame_0.setFocusProxy(self._qt_entry_0)
-        #
-        self.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
-        )
-        self._qt_entry_0.textChanged.connect(self._set_enter_changed_emit_send_)
-        #
-        self._entry_clear_button = _QtIconPressItem()
-        qt_layout_1.addWidget(self._entry_clear_button)
-        self._entry_clear_button.hide()
-        self._entry_clear_button._set_icon_file_path_(
-            utl_core.Icon.get(
-                'entry_clear'
-            )
-        )
-        self._entry_clear_button.clicked.connect(self._set_entry_clear_)
-        #
-        self._match_case_button = _QtIconPressItem()
-        self._match_case_button.hide()
-        qt_layout_0.addWidget(self._match_case_button)
-        self._match_case_button.setFocusProxy(self._qt_entry_0)
-        self._match_case_button.clicked.connect(self._set_match_case_swap_)
-        self._match_case_icon_names = 'match_case_off', 'match_case_on'
-        self._is_match_case = False
-        #
-        self._match_word_button = _QtIconPressItem()
-        self._match_word_button.hide()
-        qt_layout_0.addWidget(self._match_word_button)
-        self._match_word_button.setFocusProxy(self._qt_entry_0)
-        self._match_word_button.clicked.connect(self._set_match_word_swap_)
-        self._match_word_icon_names = 'match_word_off', 'match_word_on'
-        self._is_match_word = False
-        #
-        self._pre_occurrence_button = _QtIconPressItem()
-        qt_layout_0.addWidget(self._pre_occurrence_button)
-        self._pre_occurrence_button._set_icon_file_path_(
-            utl_core.Icon.get(
-                'pre_occurrence'
-            )
-        )
-        self._pre_occurrence_button.clicked.connect(self._set_pre_occurrence_emit_send_)
-        #
-        self._next_occurrence_button = _QtIconPressItem()
-        qt_layout_0.addWidget(self._next_occurrence_button)
-        self._next_occurrence_button._set_icon_file_path_(
-            utl_core.Icon.get(
-                'next_occurrence'
-            )
-        )
-        self._next_occurrence_button.clicked.connect(self._set_next_occurrence_emit_send_)
-        #
-        self._result_count = None
-        self._result_index = None
-        #
-        self._set_update_()
-    #
-    def _set_update_(self):
-        self._match_case_button._set_icon_file_path_(
-            utl_core.Icon.get(self._match_case_icon_names[self._is_match_case])
-        )
-        #
-        self._match_word_button._set_icon_file_path_(
-            utl_core.Icon.get(self._match_word_icon_names[self._is_match_word])
-        )
-        #
-        self._qt_entry_0.setPlaceholderText(
-            ' and '.join([i for i in [[None, 'Match-case'][self._is_match_case], [None, 'Match-word'][self._is_match_word]] if i])
-        )
-
-    def _set_match_case_swap_(self):
-        self._is_match_case = not self._is_match_case
-        self._set_update_()
-        self._set_enter_changed_emit_send_()
-
-    def _set_match_word_swap_(self):
-        self._is_match_word = not self._is_match_word
-        self._set_update_()
-        self._set_enter_changed_emit_send_()
-
-    def _get_qt_entry_(self):
-        return self._qt_entry_0
-
-    def _set_entry_clear_(self):
-        self._qt_entry_0.clear()
-        self._set_enter_changed_emit_send_()
-
-    def _get_is_match_case_(self):
-        return self._is_match_case
-
-    def _get_is_match_word_(self):
-        return self._is_match_word
-
-    def _set_enter_changed_emit_send_(self):
-        # noinspection PyUnresolvedReferences
-        self.entry_changed.emit()
-        self._set_entry_clear_button_visible_update_()
-
-    def _set_entry_clear_button_visible_update_(self):
-        self._entry_clear_button.setVisible(
-            not not self._qt_entry_0.text()
-        )
-
-    def _set_pre_occurrence_emit_send_(self):
-        # noinspection PyUnresolvedReferences
-        self.preOccurrenceClicked.emit()
-
-    def _set_next_occurrence_emit_send_(self):
-        # noinspection PyUnresolvedReferences
-        self.nextOccurrenceClicked.emit()
-
-    def _set_result_count_(self, value):
-        self._result_count = value
-        self._result_index = None
-        self._set_result_update_()
-
-    def _set_result_index_(self, value):
-        self._result_index = value
-        self._set_result_update_()
-
-    def _set_result_update_(self):
-        if self._result_count is not None:
-            if self._result_index is not None:
-                self._result_label.setText('{} / {}'.format(self._result_index+1, self._result_count))
-            else:
-                self._result_label.setText('{} results'.format(self._result_count))
-        else:
-            self._result_label.setText('')
-
-    def _set_result_clear_(self):
-        self._result_count = None
-        self._result_index = None
-        self._set_result_update_()
-
-    def _set_entry_focus_(self, boolean):
-        if boolean is True:
-            self._qt_entry_0.setFocus(QtCore.Qt.MouseFocusReason)
-        else:
-            self._qt_entry_0.clearFocus()
 
 
 class _QtEntryFrame(
@@ -1414,7 +1654,7 @@ class _QtEntryFrame(
 
     def _set_focused_(self, boolean):
         self._is_focused = boolean
-        self.update()
+        self._set_wgt_update_draw_()
 
     def _set_entry_count_(self, size):
         self._entry_count = size
@@ -1443,7 +1683,7 @@ class _QtEnumerateConstantEntry(QtWidgets.QComboBox):
                 'QComboBox::drop-down{{width=16px;height=16p}}'
                 'QComboBox::down-arrow{{border-image: none;image: url({0});width=16px;height=16px}}'
             ).format(
-                utl_core.Icon.get('arrow_down'),
+                utl_gui_core.RscIconFile.get('arrow_down'),
             )
         )
 
@@ -1479,14 +1719,23 @@ class _QtChooseDropView(utl_gui_qt_abstract.AbsQtListWidget):
     def paintEvent(self, event):
         pass
 
+    def _get_maximum_height_(self, count_maximum):
+        rects = [self.visualItemRect(self.item(i)) for i in range(self.count())[:count_maximum]]
+        if rects:
+            rect = rects[-1]
+            y = rect.y()
+            h = rect.height()
+            return y+h+1+4
+        return 20
 
-class _QtItemGuideChooseDropFrame(
+
+class _QtPopupGuideFrame(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
-    utl_gui_qt_abstract.AbsQtDropDef,
+    utl_gui_qt_abstract.AbsQtPopupDef,
 ):
     def __init__(self, *args, **kwargs):
-        super(_QtItemGuideChooseDropFrame, self).__init__(*args, **kwargs)
+        super(_QtPopupGuideFrame, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
         self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -1495,7 +1744,7 @@ class _QtItemGuideChooseDropFrame(
         self.setPalette(QtDccMtd.get_qt_palette())
         #
         self._set_frame_def_init_()
-        self._set_drop_def_init_(self)
+        self._set_popup_def_init_(self)
         #
         self.setFocusProxy(self.parent())
         #
@@ -1526,10 +1775,10 @@ class _QtItemGuideChooseDropFrame(
         #
         painter._set_popup_frame_draw_(
             bck_rect,
-            margin=self._drop_margin,
-            side=self._drop_side,
-            shadow_radius=self._drop_shadow_radius,
-            region=self._drop_region,
+            margin=self._popup_margin,
+            side=self._popup_side,
+            shadow_radius=self._popup_shadow_radius,
+            region=self._popup_region,
             border_color=self._selected_frame_border_color,
             background_color=self._frame_background_color,
         )
@@ -1538,21 +1787,21 @@ class _QtItemGuideChooseDropFrame(
         widget, event = args
         if widget == self.parent():
             if event.type() == QtCore.QEvent.MouseButtonPress:
-                self._set_drop_close_()
+                self._set_popup_close_()
             elif event.type() == QtCore.QEvent.WindowDeactivate:
-                self._set_drop_close_()
+                self._set_popup_close_()
         elif widget == self:
             if event.type() == QtCore.QEvent.Close:
-                self._set_drop_end_()
+                self._set_popup_end_()
         return False
 
     def _set_wgt_update_draw_(self):
         self.update()
 
     def _set_widget_geometry_update_(self):
-        side = self._drop_side
-        margin = self._drop_margin
-        shadow_radius = self._drop_shadow_radius
+        side = self._popup_side
+        margin = self._popup_margin
+        shadow_radius = self._popup_shadow_radius
         #
         x, y = 0, 0
         w, h = self.width(), self.height()
@@ -1564,7 +1813,7 @@ class _QtItemGuideChooseDropFrame(
         )
         self._list_widget.updateGeometries()
 
-    def _set_drop_start_(self, index):
+    def _set_popup_start_(self, index):
         parent = self.parent()
         content_name_texts = parent._get_guide_choose_item_content_name_texts_at_(index)
         if isinstance(content_name_texts, (tuple, list)):
@@ -1594,7 +1843,7 @@ class _QtItemGuideChooseDropFrame(
             #
             self.setFocus(QtCore.Qt.PopupFocusReason)
             #
-            self._set_drop_fnc_0_(
+            self._set_popup_fnc_0_(
                 press_pos, press_rect,
                 desktop_rect,
                 self._get_maximum_width_(content_name_texts),
@@ -1606,10 +1855,10 @@ class _QtItemGuideChooseDropFrame(
             self._list_widget._set_scroll_to_selected_item_top_()
             #
             self._list_widget.itemClicked.connect(
-                self._set_drop_close_
+                self._set_popup_close_
             )
 
-    def _set_drop_end_(self):
+    def _set_popup_end_(self):
         if self._choose_index is not None:
             parent = self.parent()
             selected_item_widget = self._list_widget._get_selected_item_widget_()
@@ -1652,22 +1901,21 @@ class _QtItemGuideChooseDropFrame(
         return y+h+1+4
 
 
-class _QtItemChooseDropFrame(
+class _QtPopupChooseFrame(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
-    utl_gui_qt_abstract.AbsQtDropDef,
+    utl_gui_qt_abstract.AbsQtPopupDef,
 ):
     def __init__(self, *args, **kwargs):
-        super(_QtItemChooseDropFrame, self).__init__(*args, **kwargs)
-        self.installEventFilter(self)
-        self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
+        super(_QtPopupChooseFrame, self).__init__(*args, **kwargs)
+        self.setWindowFlags(QtCore.Qt.ToolTip | QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
         #
         self._set_frame_def_init_()
-        self._set_drop_def_init_(self)
+        self._set_popup_def_init_(self)
         #
-        self.setFocusProxy(self.parent())
+        self.setFocusProxy(self._popup_target_entry)
         #
         self._list_widget = _QtChooseDropView(self)
         #
@@ -1676,6 +1924,9 @@ class _QtItemChooseDropFrame(
         self._list_widget.setGridSize(QtCore.QSize(self._item_width, self._item_height))
         self._list_widget.setSpacing(2)
         self._list_widget.setUniformItemSizes(True)
+        self._list_widget.itemClicked.connect(
+            self._set_popup_end_
+        )
         #
         self._choose_index = None
         #
@@ -1700,23 +1951,18 @@ class _QtItemChooseDropFrame(
 
     def eventFilter(self, *args):
         widget, event = args
-        if widget == self.parent():
-            if event.type() == QtCore.QEvent.MouseButtonPress:
-                self._set_drop_close_()
-            elif event.type() == QtCore.QEvent.WindowDeactivate:
-                self._set_drop_close_()
-        elif widget == self:
-            if event.type() == QtCore.QEvent.Close:
-                self._set_drop_end_()
+        if widget == self._popup_target_entry:
+            if event.type() == QtCore.QEvent.FocusOut:
+                self._set_popup_activated_(False)
         return False
 
     def _set_wgt_update_draw_(self):
         self.update()
 
     def _set_widget_geometry_update_(self):
-        side = self._drop_side
-        margin = self._drop_margin
-        shadow_radius = self._drop_shadow_radius
+        side = self._popup_side
+        margin = self._popup_margin
+        shadow_radius = self._popup_shadow_radius
         #
         x, y = 0, 0
         w, h = self.width(), self.height()
@@ -1731,14 +1977,156 @@ class _QtItemChooseDropFrame(
         )
         self._list_widget.updateGeometries()
 
-    def _set_drop_start_(self):
+    def _set_popup_scroll_to_pre_(self):
+        if self._popup_is_activated is True:
+            self._list_widget._set_scroll_to_pre_item_()
+
+    def _set_popup_scroll_to_next_(self):
+        if self._popup_is_activated is True:
+            self._list_widget._set_scroll_to_next_item_()
+
+    def _set_popup_start_(self):
+        if self._popup_is_activated is False:
+            parent = self.parent()
+            self._list_widget._set_clear_()
+            name_texts = parent._get_item_values_()
+            icon_file_paths = parent._get_item_value_icon_file_paths_()
+            if isinstance(name_texts, (tuple, list)):
+                current_name_text = parent._get_item_value_()
+                for index, i_name_text in enumerate(name_texts):
+                    i_item_widget = _QtHItem()
+                    i_item = QtListWidgetItem()
+                    i_item.setSizeHint(QtCore.QSize(self._item_width, self._item_height))
+                    #
+                    self._list_widget.addItem(i_item)
+                    self._list_widget.setItemWidget(i_item, i_item_widget)
+                    i_item._set_item_show_connect_()
+                    #
+                    i_item_widget._set_name_text_(i_name_text)
+                    i_item_widget._set_index_(index)
+                    i_icon_file_path = icon_file_paths[index]
+                    if i_icon_file_path is not None:
+                        i_item_widget._set_icon_file_path_(i_icon_file_path)
+                    else:
+                        i_item_widget._set_icon_name_text_(i_name_text[0])
+                    #
+                    if current_name_text == i_name_text:
+                        i_item.setSelected(True)
+                #
+                press_pos = self._get_popup_pos_(self._popup_target_entry_frame)
+                width, height = self._get_popup_size_(self._popup_target_entry_frame)
+                height_max = self._list_widget._get_maximum_height_(self._item_count_maximum)
+                self._set_popup_fnc_(
+                    press_pos,
+                    (width, height_max)
+                )
+                #
+                self._list_widget._set_scroll_to_selected_item_top_()
+                #
+                self._popup_target_entry._set_focused_(True)
+
+                self._popup_is_activated = True
+
+    def _set_popup_end_(self):
         parent = self.parent()
-        name_texts = parent._get_item_values_()
-        icon_file_paths = parent._get_item_value_icon_file_paths_()
-        if isinstance(name_texts, (tuple, list)):
-            press_pos = self._get_drop_pos_(parent)
-            width, height = self._get_drop_size_(parent)
-            #
+        selected_item_widget = self._list_widget._get_selected_item_widget_()
+        if selected_item_widget:
+            name_text = selected_item_widget._get_name_text_()
+            parent._set_item_value_(name_text)
+            parent._set_item_choose_changed_emit_send_()
+        #
+        self._set_popup_activated_(False)
+
+
+class _QtPopupCompletionFrame(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtPopupDef,
+):
+    def __init__(self, *args, **kwargs):
+        super(_QtPopupCompletionFrame, self).__init__(*args, **kwargs)
+        self.setWindowFlags(QtCore.Qt.ToolTip | QtCore.Qt.FramelessWindowHint)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        #
+        self._set_frame_def_init_()
+        self._set_popup_def_init_(self)
+        #
+        self.setFocusProxy(self._popup_target_entry)
+        #
+        self._list_widget = _QtChooseDropView(self)
+        #
+        self._item_count_maximum = 20
+        self._item_width, self._item_height = 20, 20
+        self._list_widget.setGridSize(QtCore.QSize(self._item_width, self._item_height))
+        self._list_widget.setSpacing(2)
+        self._list_widget.setUniformItemSizes(True)
+        self._list_widget.itemClicked.connect(
+            self._set_popup_end_
+        )
+        #
+        self._choose_index = None
+        #
+        self._frame_border_color = QtBackgroundColor.Light
+        self._hovered_frame_border_color = QtBackgroundColor.Hovered
+        self._selected_frame_border_color = QtBackgroundColor.Selected
+        #
+        self._frame_background_color = QtBackgroundColor.Dark
+
+    def paintEvent(self, event):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        #
+        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        #
+        painter._set_frame_draw_by_rect_(
+            self._frame_rect,
+            border_color=self._selected_frame_border_color,
+            background_color=self._frame_background_color,
+            border_radius=4
+        )
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self._popup_target_entry:
+            if event.type() == QtCore.QEvent.FocusOut:
+                self._set_popup_activated_(False)
+        return False
+
+    def _set_widget_geometry_update_(self):
+        side = self._popup_side
+        margin = self._popup_margin
+        shadow_radius = self._popup_shadow_radius
+        #
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        v_x, v_y = x+margin+side+1, y+margin+side+1
+        v_w, v_h = w-margin*2-side*2-shadow_radius-2, h-margin*2-side*2-shadow_radius - 2
+        #
+        self._frame_rect.setRect(
+            x, y, w, h
+        )
+        self._list_widget.setGeometry(
+            x+1, y+1, w-2, h-2
+        )
+        self._list_widget.updateGeometries()
+
+    def _set_wgt_update_draw_(self):
+        self.update()
+
+    def _set_popup_scroll_to_pre_(self):
+        if self._popup_is_activated is True:
+            self._list_widget._set_scroll_to_pre_item_()
+
+    def _set_popup_scroll_to_next_(self):
+        if self._popup_is_activated is True:
+            self._list_widget._set_scroll_to_next_item_()
+
+    def _set_popup_start_(self, *args, **kwargs):
+        parent = self.parent()
+        self._list_widget._set_clear_()
+        name_texts = parent._get_value_entry_completion_data_()
+        if name_texts:
             current_name_text = parent._get_item_value_()
             for index, i_name_text in enumerate(name_texts):
                 i_item_widget = _QtHItem()
@@ -1749,56 +2137,42 @@ class _QtItemChooseDropFrame(
                 self._list_widget.setItemWidget(i_item, i_item_widget)
                 i_item._set_item_show_connect_()
                 #
-                if i_name_text:
-                    i_item_widget._set_name_text_(i_name_text)
-                    i_icon_file_path = icon_file_paths[index]
-                    if i_icon_file_path is not None:
-                        i_item_widget._set_icon_file_path_(i_icon_file_path)
-                    else:
-                        i_item_widget._set_icon_name_text_(i_name_text[0])
-                #
+                i_item_widget._set_name_text_(i_name_text)
                 i_item_widget._set_index_(index)
+
                 if current_name_text == i_name_text:
                     i_item.setSelected(True)
-            #
-            self.setFocus(QtCore.Qt.PopupFocusReason)
-            #
-            self._set_drop_fnc_(
-                press_pos,
-                (width, self._get_maximum_height_())
-            )
-            #
-            self._list_widget._set_scroll_to_selected_item_top_()
-            #
-            self._list_widget.itemClicked.connect(
-                self._set_drop_close_
-            )
-            parent._set_focused_(True)
 
-    def _set_drop_end_(self):
+            press_pos = self._get_popup_pos_(parent)
+            width, height = self._get_popup_size_(parent)
+            height_max = self._list_widget._get_maximum_height_(self._item_count_maximum)
+
+            self._set_popup_fnc_(
+                press_pos,
+                (width, height_max)
+            )
+
+            self._list_widget._set_scroll_to_selected_item_top_()
+
+            self._popup_target_entry._set_focused_(True)
+
+            self._popup_is_activated = True
+
+    def _set_popup_end_(self, *args, **kwargs):
         parent = self.parent()
         selected_item_widget = self._list_widget._get_selected_item_widget_()
         if selected_item_widget:
             name_text = selected_item_widget._get_name_text_()
             parent._set_item_value_(name_text)
             parent._set_item_choose_changed_emit_send_()
-        #
-        parent._set_focused_(False)
 
-    def _get_maximum_height_(self):
-        rects = [self._list_widget.visualItemRect(self._list_widget.item(i)) for i in range(self._list_widget.count())[:self._item_count_maximum]]
-        if rects:
-            rect = rects[-1]
-            y = rect.y()
-            h = rect.height()
-            return y+h+1+4
-        return 20
+        self._set_popup_activated_(False)
 
 
 class _QtItemRgbaChooseDropFrame(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
-    utl_gui_qt_abstract.AbsQtDropDef,
+    utl_gui_qt_abstract.AbsQtPopupDef,
 ):
     def _set_wgt_update_draw_(self):
         self.update()
@@ -1813,7 +2187,7 @@ class _QtItemRgbaChooseDropFrame(
         self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
         #
         self._set_frame_def_init_()
-        self._set_drop_def_init_(self)
+        self._set_popup_def_init_(self)
         #
         self._frame_border_color = QtBackgroundColor.Light
         self._hovered_frame_border_color = QtBackgroundColor.Hovered
@@ -1826,12 +2200,12 @@ class _QtItemRgbaChooseDropFrame(
         widget, event = args
         if widget == self.parent():
             if event.type() == QtCore.QEvent.MouseButtonPress:
-                self._set_drop_close_()
+                self._set_popup_close_()
             elif event.type() == QtCore.QEvent.WindowDeactivate:
-                self._set_drop_close_()
+                self._set_popup_close_()
         elif widget == self:
             if event.type() == QtCore.QEvent.Close:
-                self._set_drop_end_()
+                self._set_popup_end_()
             elif event.type() == QtCore.QEvent.Resize:
                 self._set_widget_geometry_update_()
             elif event.type() == QtCore.QEvent.Show:
@@ -1849,18 +2223,18 @@ class _QtItemRgbaChooseDropFrame(
         #
         painter._set_popup_frame_draw_(
             bck_rect,
-            margin=self._drop_margin,
-            side=self._drop_side,
-            shadow_radius=self._drop_shadow_radius,
-            region=self._drop_region,
+            margin=self._popup_margin,
+            side=self._popup_side,
+            shadow_radius=self._popup_shadow_radius,
+            region=self._popup_region,
             border_color=self._selected_frame_border_color,
             background_color=self._frame_background_color,
         )
 
     def _set_widget_geometry_update_(self):
-        side = self._drop_side
-        margin = self._drop_margin
-        shadow_radius = self._drop_shadow_radius
+        side = self._popup_side
+        margin = self._popup_margin
+        shadow_radius = self._popup_shadow_radius
         #
         x, y = 0, 0
         w, h = self.width(), self.height()
@@ -1872,12 +2246,12 @@ class _QtItemRgbaChooseDropFrame(
         )
         self._chart.update()
 
-    def _set_drop_start_(self):
+    def _set_popup_start_(self):
         parent = self.parent()
         press_rect = parent._get_color_rect_()
-        press_point = self._get_drop_press_point_(parent, press_rect)
+        press_point = self._get_popup_press_point_(parent, press_rect)
         desktop_rect = get_qt_desktop_rect()
-        self._set_drop_fnc_0_(
+        self._set_popup_fnc_0_(
             press_point,
             press_rect,
             desktop_rect,
@@ -1886,7 +2260,7 @@ class _QtItemRgbaChooseDropFrame(
         self._chart._set_color_rgba_(*parent._get_color_rgba_())
         parent._set_focused_(True)
 
-    def _set_drop_end_(self, *args, **kwargs):
+    def _set_popup_end_(self, *args, **kwargs):
         r, g, b, a = self._chart._get_color_rgba_()
         self.parent()._set_color_rgba_(r, g, b, a)
 
@@ -1894,7 +2268,7 @@ class _QtItemRgbaChooseDropFrame(
 class _QtConstantValueEntryItem(
     _QtEntryFrame,
     #
-    utl_gui_qt_abstract.AbsQtEntryDef,
+    utl_gui_qt_abstract.AbsQtValueEntryDef,
     #
     utl_gui_qt_abstract.AbsQtItemValueTypeConstantEntryDef,
     utl_gui_qt_abstract.AbsQtItemValueDefaultDef,
@@ -1905,25 +2279,25 @@ class _QtConstantValueEntryItem(
     def __init__(self, *args, **kwargs):
         super(_QtConstantValueEntryItem, self).__init__(*args, **kwargs)
         #
-        self._set_entry_def_init_(self)
+        self._set_value_entry_def_init_(self)
         #
         self._set_item_value_type_constant_entry_def_init_()
         self._set_item_value_default_def_init_()
         #
-        self._layout = QtHBoxLayout(self)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(4)
+        self._entry_layout = QtHBoxLayout(self)
+        self._entry_layout.setContentsMargins(0, 0, 0, 0)
+        self._entry_layout.setSpacing(4)
         #
-        self._set_item_value_entry_build_(self._item_value_type)
+        self._set_value_entry_widget_build_(self._item_value_type)
 
-    def _set_item_value_entry_build_(self, value_type):
+    def _set_value_entry_widget_build_(self, value_type):
         self._item_value_type = value_type
         #
         self._item_value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
-        self._layout.addWidget(self._item_value_entry_widget)
+        self._entry_layout.addWidget(self._item_value_entry_widget)
         self._item_value_entry_widget._set_item_value_type_(self._item_value_type)
 
-    def _set_entry_enable_(self, boolean):
+    def _set_value_entry_enable_(self, boolean):
         self._item_value_entry_widget.setReadOnly(not boolean)
 
 
@@ -1941,11 +2315,11 @@ class _QtScriptValueEntryItem(
         self._set_item_value_type_constant_entry_def_init_()
         self._set_item_value_default_def_init_()
         #
-        self._layout = QtHBoxLayout(self)
-        self._layout.setContentsMargins(2, 2, 2, 2)
-        self._layout.setSpacing(2)
+        self._entry_layout = QtHBoxLayout(self)
+        self._entry_layout.setContentsMargins(2, 2, 2, 2)
+        self._entry_layout.setSpacing(2)
         #
-        self._set_item_value_entry_build_(self._item_value_type)
+        self._set_value_entry_widget_build_(self._item_value_type)
 
     def _set_size_policy_height_fixed_mode_(self):
         self._item_value_entry_widget.setSizePolicy(
@@ -1953,12 +2327,12 @@ class _QtScriptValueEntryItem(
             QtWidgets.QSizePolicy.Minimum
         )
 
-    def _set_item_value_entry_build_(self, value_type):
+    def _set_value_entry_widget_build_(self, value_type):
         self._item_value_type = value_type
         #
         self._item_value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
         # self._item_value_entry_widget.setReadOnly(False)
-        self._layout.addWidget(self._item_value_entry_widget)
+        self._entry_layout.addWidget(self._item_value_entry_widget)
 
     def _set_item_value_entry_enable_(self, boolean):
         self._item_value_entry_widget.setReadOnly(not boolean)
@@ -2000,17 +2374,17 @@ class _QtRgbaValueEntryItem(
         self._set_item_value_type_constant_entry_def_init_()
         self._set_item_value_default_def_init_()
         #
-        self._layout = QtHBoxLayout(self)
-        self._layout.setContentsMargins(20, 0, 0, 0)
-        self._layout.setSpacing(4)
+        self._entry_layout = QtHBoxLayout(self)
+        self._entry_layout.setContentsMargins(20, 0, 0, 0)
+        self._entry_layout.setSpacing(4)
         #
-        self._set_item_value_entry_build_(self._item_value_type)
+        self._set_value_entry_widget_build_(self._item_value_type)
 
-    def _set_item_value_entry_build_(self, value_type):
+    def _set_value_entry_widget_build_(self, value_type):
         self._item_value_type = value_type
         #
         self._item_value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
-        self._layout.addWidget(self._item_value_entry_widget)
+        self._entry_layout.addWidget(self._item_value_entry_widget)
         self._item_value_entry_widget._set_item_value_type_(self._item_value_type)
 
     def _set_widget_geometry_update_(self):
@@ -2071,7 +2445,7 @@ class _QtRgbaValueEntryItem(
 
     def _set_color_choose_drop_(self):
         widget = self.CHOOSE_DROP_FRAME_CLASS(self)
-        widget._set_drop_start_()
+        widget._set_popup_start_()
 
     def _set_focused_(self, boolean):
         self._is_focused = boolean
@@ -2081,18 +2455,27 @@ class _QtRgbaValueEntryItem(
 class _QtEnumerateValueEntryItem(
     _QtEntryFrame,
     #
-    utl_gui_qt_abstract.AbsQtEntryDef,
-    #
-    utl_gui_qt_abstract.AbsQtActionDef,
+    utl_gui_qt_abstract.AbsQtValueEntryDef,
     #
     utl_gui_qt_abstract.AbsQtValueEnumerateEntryDef,
     utl_gui_qt_abstract.AbsQtItemValueDefaultDef,
     #
-    utl_gui_qt_abstract.AbsQtActionChooseDef,
+    utl_gui_qt_abstract.AbsQtActionDef,
+    #
     utl_gui_qt_abstract.AbsQtActionEntryDef,
+    utl_gui_qt_abstract.AbsQtActionChooseDef,
 ):
     QT_VALUE_ENTRY_CLASS = QtLineEdit_
-    CHOOSE_DROP_FRAME_CLASS = _QtItemChooseDropFrame
+    #
+    CHOOSE_DROP_FRAME_CLASS = _QtPopupChooseFrame
+    COMPLETION_DROP_FRAME_CLASS = _QtPopupCompletionFrame
+    def __set_value_choose_popup_(self):
+        # widget = self.CHOOSE_DROP_FRAME_CLASS(self)
+        self._entry_choose_drop_frame._set_popup_start_()
+
+    def __set_value_completion_popup_(self):
+        self._entry_completion_drop_frame._set_popup_start_()
+
     def _set_wgt_update_(self):
         values = self._get_item_values_()
         if values:
@@ -2117,35 +2500,14 @@ class _QtEnumerateValueEntryItem(
         self._set_value_enumerate_entry_def_init_()
         self._set_item_value_default_def_init_()
         #
-        self._set_entry_def_init_(self)
+        self._set_value_entry_def_init_(self)
         #
         self._set_action_def_init_(self)
         #
         self._set_action_entry_def_init_(self)
         self._set_action_choose_def_init_()
         #
-        self._layout = QtHBoxLayout(self)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(4)
-        #
-        self._set_item_value_entry_build_(self._item_value_type)
-        self._item_value_entry_widget._set_enter_enable_(False)
-        #
-        self._text_label = _QtTextItem()
-        self._layout.addWidget(self._text_label)
-        self._text_label._set_name_color_(QtFontColor.Disable)
-        self._text_label.hide()
-        #
-        self._drop_button = _QtIconPressItem()
-        self._layout.addWidget(self._drop_button)
-        self._drop_button._set_icon_file_path_(
-            utl_core.Icon.get('down')
-        )
-        self._drop_button._set_icon_frame_size_(16, 16)
-        self._drop_button._set_file_icon_size_(12, 12)
-        self._drop_button.press_clicked.connect(
-            self._set_item_choose_drop_
-        )
+        self._set_value_entry_widget_build_(self._item_value_type)
 
     def eventFilter(self, *args):
         widget, event = args
@@ -2172,30 +2534,87 @@ class _QtEnumerateValueEntryItem(
                 # set value before
                 self._set_item_choose_changed_emit_send_()
 
-    def _set_item_value_entry_build_(self, value_type):
+    def _set_value_entry_widget_build_(self, value_type):
         self._item_value_type = value_type
         #
+        self._entry_layout = QtHBoxLayout(self)
+        self._entry_layout.setContentsMargins(0, 0, 0, 0)
+        self._entry_layout.setSpacing(4)
+        #
         self._item_value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
-        self._layout.addWidget(self._item_value_entry_widget)
+        self._entry_layout.addWidget(self._item_value_entry_widget)
         self._item_value_entry_widget._set_item_value_type_(self._item_value_type)
+        self._item_value_entry_widget._set_enter_enable_(False)
+        self._item_value_entry_widget.user_entry_changed.connect(
+            self.__set_value_completion_popup_
+        )
+        #
+        self._text_label = _QtTextItem()
+        self._entry_layout.addWidget(self._text_label)
+        self._text_label._set_name_color_(QtFontColor.Disable)
+        self._text_label.hide()
+        #
+        self._entry_popup_button = _QtIconPressItem()
+        self._entry_layout.addWidget(self._entry_popup_button)
+        self._entry_popup_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get('down')
+        )
+        self._entry_popup_button._set_icon_frame_size_(16, 16)
+        self._entry_popup_button._set_file_icon_size_(12, 12)
+        self._entry_popup_button.press_clicked.connect(
+            self.__set_value_choose_popup_
+        )
+        #
+        self._entry_choose_drop_frame = self.CHOOSE_DROP_FRAME_CLASS(self)
+        self._entry_choose_drop_frame._set_popup_target_entry_(self._item_value_entry_widget)
+        self._entry_choose_drop_frame._set_popup_target_entry_frame_(self)
+        self._entry_choose_drop_frame.hide()
+        self._item_value_entry_widget.up_key_pressed.connect(
+            self._entry_choose_drop_frame._set_popup_scroll_to_pre_
+        )
+        self._item_value_entry_widget.down_key_pressed.connect(
+            self._entry_choose_drop_frame._set_popup_scroll_to_next_
+        )
+        self._item_value_entry_widget.entry_finished.connect(
+            self._entry_choose_drop_frame._set_popup_end_
+        )
+        #
+        self._entry_completion_drop_frame = self.COMPLETION_DROP_FRAME_CLASS(self)
+        self._entry_completion_drop_frame._set_popup_target_entry_(self._item_value_entry_widget)
+        self._entry_completion_drop_frame._set_popup_target_entry_frame_(self)
+        self._entry_completion_drop_frame.hide()
+        self._item_value_entry_widget.up_key_pressed.connect(
+            self._entry_completion_drop_frame._set_popup_scroll_to_pre_
+        )
+        self._item_value_entry_widget.down_key_pressed.connect(
+            self._entry_completion_drop_frame._set_popup_scroll_to_next_
+        )
+        self._item_value_entry_widget.entry_finished.connect(
+            self._entry_completion_drop_frame._set_popup_end_
+        )
 
-    def _set_item_choose_drop_(self):
-        widget = self.CHOOSE_DROP_FRAME_CLASS(self)
-        widget._set_drop_start_()
-
-    def _set_entry_enable_(self, boolean):
+    def _set_value_entry_enable_(self, boolean):
         self._item_value_entry_widget._set_enter_enable_(boolean)
-        self._drop_button.setHidden(not boolean)
+        self._entry_popup_button.setHidden(not boolean)
         self._text_label.setHidden(not boolean)
 
-    def _set_entry_use_as_storage_(self, boolean):
+    def _set_value_entry_drop_enable_(self, boolean):
+        self._item_value_entry_widget._set_entry_drop_enable_(boolean)
+
+    def _set_value_entry_filter_fnc_(self, fnc):
+        self._item_value_entry_widget._set_value_validation_fnc_(fnc)
+
+    def _set_value_entry_use_as_storage_(self, boolean):
         self._item_value_entry_widget._set_use_as_storage_(boolean)
 
-    def _set_entry_finished_connect_to_(self, fnc):
+    def _set_value_entry_finished_connect_to_(self, fnc):
         self._item_value_entry_widget.entry_finished.connect(fnc)
 
-    def _set_entry_changed_connect_to_(self, fnc):
+    def _set_value_entry_changed_connect_to_(self, fnc):
         self._item_value_entry_widget.entry_changed.connect(fnc)
+
+    def _set_entry_drop_button_icon_file_path_(self, file_path):
+        self._entry_popup_button._set_icon_file_path_(file_path)
 
 
 class _QtArrayValueEntryItem(
@@ -2210,25 +2629,323 @@ class _QtArrayValueEntryItem(
         #
         self._set_array_value_entry_def_init_()
         #
-        self._layout = QtHBoxLayout(self)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(8)
+        self._entry_layout = QtHBoxLayout(self)
+        self._entry_layout.setContentsMargins(0, 0, 0, 0)
+        self._entry_layout.setSpacing(8)
         #
-        self._set_item_value_entry_build_(2, self._item_value_type)
+        self._set_value_entry_widget_build_(2, self._item_value_type)
 
-    def _set_item_value_entry_build_(self, value_size, value_type):
+    def _set_value_entry_widget_build_(self, value_size, value_type):
         self._item_value_type = value_type
         #
         self._value_entry_widgets = []
-        set_qt_layout_clear(self._layout)
+        set_qt_layout_clear(self._entry_layout)
         #
         self._set_entry_count_(value_size)
         if value_size:
             for i in range(value_size):
                 _i_value_entry_widget = QtLineEdit_()
                 _i_value_entry_widget._set_item_value_type_(self._item_value_type)
-                self._layout.addWidget(_i_value_entry_widget)
+                self._entry_layout.addWidget(_i_value_entry_widget)
                 self._value_entry_widgets.append(_i_value_entry_widget)
+
+
+class _QtValuesEntryItem(
+    _QtEntryFrame,
+    utl_gui_qt_abstract.AbsQtValueEntryDef,
+):
+    QT_VALUE_ENTRY_CLASS = _QtListWidget
+    def __init__(self, *args, **kwargs):
+        super(_QtValuesEntryItem, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self._set_value_entry_def_init_(self)
+        self._set_value_entry_widget_build_(str)
+
+    def _set_value_entry_widget_build_(self, value_type):
+        self._item_value_type = value_type
+
+        self._entry_layout = QtHBoxLayout(self)
+        self._entry_layout.setContentsMargins(2, 2, 2, 2)
+        self._entry_layout.setSpacing(2)
+        #
+        self._item_value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
+        self._entry_layout.addWidget(self._item_value_entry_widget)
+
+    def _set_value_entry_enable_(self, boolean):
+        self._item_value_entry_widget._set_entry_enable_(boolean)
+
+    def _set_value_entry_drop_enable_(self, boolean):
+        self._item_value_entry_widget._set_entry_drop_enable_(boolean)
+
+
+class _QtFilterBar(
+    QtWidgets.QWidget,
+    #
+    utl_gui_qt_abstract.AbsQtValueEnumerateEntryDef,
+    #
+    utl_gui_qt_abstract.AbsQtActionEntryDef,
+    utl_gui_qt_abstract.AbsQtActionChooseDef,
+    #
+    utl_gui_qt_abstract.AbsQtEntryHistoryDef,
+):
+    BTN_FRAME_SIZE = 18, 18
+    BTN_ICON_SIZE = 16, 16
+    #
+    entry_changed = qt_signal()
+    preOccurrenceClicked = qt_signal()
+    nextOccurrenceClicked = qt_signal()
+    #
+    QT_VALUE_ENTRY_CLASS = QtLineEdit_
+    #
+    CHOOSE_DROP_FRAME_CLASS = _QtPopupChooseFrame
+    COMPLETION_DROP_FRAME_CLASS = _QtPopupCompletionFrame
+    def _set_wgt_update_(self):
+        self.update()
+
+    def __init__(self, *args, **kwargs):
+        super(_QtFilterBar, self).__init__(*args, **kwargs)
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
+        )
+        qt_layout_0 = QtHBoxLayout(self)
+        qt_layout_0.setContentsMargins(*[0]*4)
+        qt_layout_0.setSpacing(2)
+        qt_layout_0.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        #
+        self._set_value_enumerate_entry_def_init_()
+        #
+        self._set_action_choose_def_init_()
+        self._set_action_entry_def_init_(self)
+        #
+        self._result_label = _utl_gui_qt_wgt_utility.QtLabel()
+        qt_layout_0.addWidget(self._result_label)
+        self._result_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        #
+        self._entry_frame = _QtEntryFrame()
+        self._entry_frame.setMaximumWidth(240)
+        qt_layout_0.addWidget(self._entry_frame)
+        #
+        self._set_value_entry_widget_build_(str)
+        #
+        self._match_case_button = _QtIconPressItem()
+        self._match_case_button.hide()
+        qt_layout_0.addWidget(self._match_case_button)
+        self._match_case_button.setFocusProxy(self._item_value_entry_widget)
+        self._match_case_button.clicked.connect(self._set_match_case_swap_)
+        self._match_case_icon_names = 'match_case_off', 'match_case_on'
+        self._is_match_case = False
+        #
+        self._match_word_button = _QtIconPressItem()
+        self._match_word_button.hide()
+        qt_layout_0.addWidget(self._match_word_button)
+        self._match_word_button.setFocusProxy(self._item_value_entry_widget)
+        self._match_word_button.clicked.connect(self._set_match_word_swap_)
+        self._match_word_icon_names = 'match_word_off', 'match_word_on'
+        self._is_match_word = False
+        #
+        self._pre_occurrence_button = _QtIconPressItem()
+        qt_layout_0.addWidget(self._pre_occurrence_button)
+        self._pre_occurrence_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get(
+                'pre_occurrence'
+            )
+        )
+        self._pre_occurrence_button.clicked.connect(self._set_pre_occurrence_emit_send_)
+        #
+        self._next_occurrence_button = _QtIconPressItem()
+        qt_layout_0.addWidget(self._next_occurrence_button)
+        self._next_occurrence_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get(
+                'next_occurrence'
+            )
+        )
+        self._next_occurrence_button.clicked.connect(self._set_next_occurrence_emit_send_)
+        #
+        self._set_entry_history_def_init_(self)
+        #
+        self._result_count = None
+        self._result_index = None
+        #
+        self._set_update_()
+    #
+    def _set_update_(self):
+        self._match_case_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get(self._match_case_icon_names[self._is_match_case])
+        )
+        #
+        self._match_word_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get(self._match_word_icon_names[self._is_match_word])
+        )
+        #
+        self._item_value_entry_widget.setPlaceholderText(
+            ' and '.join([i for i in [[None, 'Match-case'][self._is_match_case], [None, 'Match-word'][self._is_match_word]] if i])
+        )
+
+    def _set_match_case_swap_(self):
+        self._is_match_case = not self._is_match_case
+        self._set_update_()
+        self._set_enter_changed_emit_send_()
+
+    def _set_match_word_swap_(self):
+        self._is_match_word = not self._is_match_word
+        self._set_update_()
+        self._set_enter_changed_emit_send_()
+
+    def _get_qt_entry_(self):
+        return self._item_value_entry_widget
+
+    def _set_entry_clear_(self):
+        self._item_value_entry_widget.clear()
+        self._set_enter_changed_emit_send_()
+
+    def _get_is_match_case_(self):
+        return self._is_match_case
+
+    def _get_is_match_word_(self):
+        return self._is_match_word
+
+    def _set_enter_changed_emit_send_(self):
+        # noinspection PyUnresolvedReferences
+        self.entry_changed.emit()
+        self._set_entry_clear_button_visible_update_()
+
+    def _set_entry_clear_button_visible_update_(self):
+        self._entry_clear_button.setVisible(
+            not not self._item_value_entry_widget.text()
+        )
+
+    def _set_pre_occurrence_emit_send_(self):
+        # noinspection PyUnresolvedReferences
+        self.preOccurrenceClicked.emit()
+
+    def _set_next_occurrence_emit_send_(self):
+        # noinspection PyUnresolvedReferences
+        self.nextOccurrenceClicked.emit()
+
+    def _set_result_count_(self, value):
+        self._result_count = value
+        self._result_index = None
+        self._set_result_update_()
+
+    def _set_result_index_(self, value):
+        self._result_index = value
+        self._set_result_update_()
+
+    def _set_result_update_(self):
+        if self._result_count is not None:
+            if self._result_index is not None:
+                self._result_label.setText('{} / {}'.format(self._result_index+1, self._result_count))
+            else:
+                self._result_label.setText('{} results'.format(self._result_count))
+        else:
+            self._result_label.setText('')
+
+    def _set_result_clear_(self):
+        self._result_count = None
+        self._result_index = None
+        self._set_result_update_()
+
+    def _set_entry_focus_(self, boolean):
+        self._item_value_entry_widget._set_focused_(boolean)
+
+    def _set_value_entry_widget_build_(self, value_type):
+        self._item_value_type = value_type
+        self._entry_layout = QtHBoxLayout(self._entry_frame)
+        self._entry_layout.setContentsMargins(*[0]*4)
+        self._entry_layout.setSpacing(2)
+        #
+        self._header_button = _QtIconPressItem()
+        self._header_button._set_icon_frame_size_(16, 16)
+        self._header_button._set_file_icon_size_(12, 12)
+        self._entry_layout.addWidget(self._header_button)
+        self._header_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get(
+                'search'
+            )
+        )
+        #
+        self._header_button._set_menu_raw_(
+            [
+                ('option', None, None),
+                (),
+                ('history', None, None)
+            ]
+        )
+        #
+        self._item_value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
+        self._entry_layout.addWidget(self._item_value_entry_widget)
+        #
+        self._item_value_entry_widget.entry_changed.connect(self._set_enter_changed_emit_send_)
+        self._item_value_entry_widget.entry_finished.connect(self._set_entry_history_update_)
+        #
+        self._entry_clear_button = _QtIconPressItem()
+        self._entry_clear_button._set_icon_frame_size_(16, 16)
+        self._entry_clear_button._set_file_icon_size_(12, 12)
+        self._entry_layout.addWidget(self._entry_clear_button)
+        self._entry_clear_button.hide()
+        self._entry_clear_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get(
+                'entry_clear'
+            )
+        )
+        self._entry_clear_button.clicked.connect(self._set_entry_clear_)
+        #
+        self._entry_history_choose_drop_button = _QtIconPressItem()
+        self._entry_layout.addWidget(self._entry_history_choose_drop_button)
+        #
+        self._entry_history_choose_drop_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get('history')
+        )
+        self._entry_history_choose_drop_button._set_icon_frame_size_(16, 16)
+        self._entry_history_choose_drop_button._set_file_icon_size_(12, 12)
+        self._entry_history_choose_drop_button.press_clicked.connect(
+            self.__set_value_choose_popup_
+        )
+        self._entry_history_choose_drop_button.hide()
+        #
+        self._entry_history_choose_drop_frame = self.CHOOSE_DROP_FRAME_CLASS(self)
+        self._entry_history_choose_drop_frame._set_popup_target_entry_(self._item_value_entry_widget)
+        self._entry_history_choose_drop_frame._set_popup_target_entry_frame_(self._entry_frame)
+        self._item_value_entry_widget.up_key_pressed.connect(
+            self._entry_history_choose_drop_frame._set_popup_scroll_to_pre_
+        )
+        self._item_value_entry_widget.down_key_pressed.connect(
+            self._entry_history_choose_drop_frame._set_popup_scroll_to_next_
+        )
+        self._item_value_entry_widget.entry_finished.connect(
+            self._entry_history_choose_drop_frame._set_popup_end_
+        )
+        self._entry_history_choose_drop_frame.hide()
+
+    def __set_value_choose_popup_(self):
+        self._entry_history_choose_drop_frame._set_popup_start_()
+
+    def _set_entry_history_key_(self, key):
+        super(_QtFilterBar, self)._set_entry_history_key_(key)
+        #
+        self._entry_history_choose_drop_button.show()
+
+    def _set_entry_history_update_(self):
+        if self._entry_history_key is not None:
+            value = self._get_item_value_()
+            if value:
+                if self._get_entry_history_value_is_valid_(value) is True:
+                    utl_core.History.set_append(
+                        self._entry_history_key,
+                        value
+                    )
+            #
+            histories = utl_core.History.get(
+                self._entry_history_key
+            )
+            if histories:
+                histories.reverse()
+            #
+            histories = [i for i in histories if self._get_entry_history_value_is_valid_(i) is True]
+            #
+            self._set_item_values_(
+                histories
+            )
 
 
 class _QtHExpandItem0(
@@ -2308,7 +3025,7 @@ class _QtHExpandItem0(
             x+1, y+1, w-2, h-2
         )
         f_w, f_h = self._icon_frame_size
-        i_w, i_h = self._file_icon_size
+        i_w, i_h = self._icon_file_draw_size
         self._set_icon_file_path_rect_(
             x + (f_w - i_w) / 2, y + (f_h - i_h) / 2, i_w, i_h
         )
@@ -2316,9 +3033,9 @@ class _QtHExpandItem0(
         x += f_w + spacing
         if self._icon_name_is_enable is True:
             if self._icon_name_text is not None:
-                i_w, i_h = self._icon_name_size
+                i_w, i_h = self._icon_name_draw_size
                 self._set_icon_name_text_rect_(
-                    x+(f_w-i_w) / 2, y+(f_h-i_h) / 2, i_w, i_h
+                    x+(f_w-i_w)/2, y+(f_h-i_h)/2, i_w, i_h
                 )
                 x += f_w+spacing
         #
@@ -2363,7 +3080,7 @@ class _QtHExpandItem0(
         )
         # file-icon
         painter._set_file_icon_draw_by_rect_(
-            self._icon_file_path_rect,
+            self._icon_file_draw_rect,
             self._icon_file_path,
             offset=offset
         )
@@ -2371,7 +3088,7 @@ class _QtHExpandItem0(
         if self._icon_name_is_enable is True:
             if self._icon_name_text is not None:
                 painter._set_icon_name_text_draw_by_rect_(
-                    self._icon_name_text_rect,
+                    self._icon_name_draw_rect,
                     self._icon_name_text,
                     # background_color=background_color,
                     offset=offset,
@@ -2476,7 +3193,7 @@ class _QtHExpandItem1(
         )
         # icon
         painter._set_file_icon_draw_by_rect_(
-            rect=self._icon_file_path_rect,
+            rect=self._icon_file_draw_rect,
             file_path=self._icon_file_path,
             offset=offset
         )
@@ -2541,6 +3258,19 @@ class _QtHExpandItem1(
             )
 
 
+class _QtVExpandItem1(
+    _QtHExpandItem1
+):
+    def __init__(self, *args, **kwargs):
+        super(_QtVExpandItem1, self).__init__(*args, **kwargs)
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding
+        )
+        self._item_expand_icon_file_path_0 = utl_gui_core.RscIconFile.get('qt-style/arrow-right')
+        self._item_expand_icon_file_path_1 = utl_gui_core.RscIconFile.get('qt-style/arrow-down')
+        self._item_expand_icon_file_path_2 = utl_gui_core.RscIconFile.get('qt-style/arrow-left')
+
+
 class AbsQtItemDagLoading(object):
     def _set_item_dag_loading_def_init_(self, widget):
         self._widget = widget
@@ -2573,6 +3303,9 @@ class _QtTreeSignals(
 class QtTreeWidgetItem(
     QtWidgets.QTreeWidgetItem,
     AbsQtItemDagLoading,
+    #
+    utl_gui_qt_abstract.AbsQtNameDef,
+    #
     utl_gui_qt_abstract.AbsQtIconDef,
     utl_gui_qt_abstract.AbsShowItemDef,
     utl_gui_qt_abstract.AbsQtMenuDef,
@@ -2598,6 +3331,7 @@ class QtTreeWidgetItem(
         self._is_check_enable = True
         self._emit_send_enable = False
         #
+        self._set_name_def_init_()
         self._set_icon_def_init_()
         self._set_menu_def_init_()
         #
@@ -2898,7 +3632,19 @@ class QtTreeWidgetItem(
         # self.setVisible(boolean)
 
     def _set_name_text_(self, text, column=0):
-        self.setText(column, text)
+        if text is not None:
+            if isinstance(text, (tuple, list)):
+                if len(text) > 1:
+                    _ = '; '.join(('{}.{}'.format(seq+1, i) for seq, i in enumerate(text)))
+                elif len(text) == 1:
+                    _ = text[0]
+                else:
+                    _ = ''
+            else:
+                _ = unicode(text)
+            #
+            self.setText(column, _)
+            self.setFont(column, utl_gui_qt_core.Font.NAME)
 
     def _set_tool_tip_(self, raw, column=0, as_markdown_style=False):
         if raw is not None:
@@ -2923,10 +3669,15 @@ class QtTreeWidgetItem(
                 # noinspection PyCallingNonCallable
                 self.setToolTip(column, html)
             else:
-                name_text = self._get_name_text_()
-                name_text = name_text.replace('<', '&lt;').replace('>', '&gt;')
+                name_text_orig = self._get_name_text_orig_()
+                if name_text_orig is not None:
+                    text = name_text_orig
+                else:
+                    text = self._get_name_text_()
+                #
+                text = text.replace('<', '&lt;').replace('>', '&gt;')
                 html = '<html>\n<body>\n'
-                html += '<h3>{}</h3>\n'.format(name_text)
+                html += '<h3>{}</h3>\n'.format(text)
                 for i in text.split('\n'):
                     html += '<ul>\n<li><i>{}</i></li>\n</ul>\n'.format(i)
                 html += '</body>\n</html>'
@@ -3047,155 +3798,10 @@ class QtListWidgetItem(
         self._get_item_widget_().setVisible(boolean)
 
 
-class _QtHItem(
-    QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameDef,
-    utl_gui_qt_abstract._QtIndexDef,
-    utl_gui_qt_abstract.AbsQtTypeDef,
-    utl_gui_qt_abstract.AbsQtIconDef,
-    utl_gui_qt_abstract.AbsQtNameDef,
-    utl_gui_qt_abstract._QtPathDef,
-    # action
-    utl_gui_qt_abstract.AbsQtActionDef,
-    utl_gui_qt_abstract.AbsQtActionHoverDef,
-    utl_gui_qt_abstract.AbsQtActionPressDef,
-    utl_gui_qt_abstract.AbsQtActionSelectDef,
-):
-    def __init__(self, *args, **kwargs):
-        super(_QtHItem, self).__init__(*args, **kwargs)
-        self.installEventFilter(self)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        #
-        self._set_frame_def_init_()
-        self._set_index_def_init_()
-        self._set_type_def_init_()
-        self._set_icon_def_init_()
-        self._icon_name_is_enable = True
-        self._set_name_def_init_()
-        self._set_path_def_init_()
-        #
-        self._set_action_hover_def_init_()
-        self._set_action_def_init_(self)
-        self._set_action_press_def_init_()
-        self._set_action_select_def_init_()
-        #
-        self._frame_background_color = QtBackgroundColor.Light
-
-    def eventFilter(self, *args):
-        widget, event = args
-        if widget == self:
-            self._set_action_hover_filter_execute_(event)
-            #
-            if event.type() == QtCore.QEvent.Resize:
-                self.update()
-            elif event.type() == QtCore.QEvent.MouseButtonPress:
-                if event.button() == QtCore.Qt.RightButton:
-                    self._set_menu_show_()
-                elif event.button() == QtCore.Qt.LeftButton:
-                    self.clicked.emit()
-                #
-                self._is_hovered = True
-                self.update()
-        return False
-
-    def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
-        #
-        self._set_widget_geometry_update_()
-        #
-        background_color = painter._get_item_background_color_by_rect_(
-            self._frame_rect,
-            is_hovered=self._is_hovered,
-            is_selected=self._item_is_selected
-        )
-        painter._set_frame_draw_by_rect_(
-            self._frame_rect,
-            border_color=QtBackgroundColor.Transparent,
-            background_color=background_color,
-            border_radius=1
-        )
-        # icon
-        if self._icon_name_is_enable is True:
-            if self._icon_name_text is not None:
-                painter._set_icon_name_text_draw_by_rect_(
-                    self._icon_name_text_rect,
-                    self._icon_name_text,
-                    background_color=background_color,
-                    # offset=0,
-                    border_radius=2,
-                    border_width=2
-                )
-            elif self._icon_file_path is not None:
-                painter._set_file_icon_draw_by_rect_(
-                    rect=self._icon_file_path_rect,
-                    file_path=self._icon_file_path,
-                )
-        #
-        if self._name_text is not None:
-            painter._set_text_draw_by_rect_(
-                self._name_rect,
-                self._name_text,
-                font_color=self._name_color,
-                font=self._name_text_font,
-                text_option=self._name_text_option,
-                is_hovered=self._is_hovered,
-                is_selected=self._item_is_selected,
-            )
-        #
-        if self._index is not None:
-            painter._set_text_draw_by_rect_(
-                self._index_rect,
-                self._get_index_text_(),
-                font_color=self._index_text_color,
-                font=self._index_text_font,
-                text_option=self._index_text_option
-            )
-
-    def _set_wgt_update_draw_(self):
-        self.update()
-
-    def _set_widget_geometry_update_(self):
-        x, y = 0, 0
-        w, h = self.width(), self.height()
-        #
-        side = 2
-        spacing = 2
-        f_w, f_h = self._icon_frame_size
-        i_f_w, i_f_h = self._file_icon_size
-        #
-        i_x, i_y = x+side, y
-        i_w, i_h = w-side*2, h
-        #
-        self._set_frame_rect_(
-            x, y, w, h
-        )
-        if self._icon_name_is_enable is True:
-            if self._icon_name_text is not None:
-                i_c_w, i_c_h = self._icon_name_size
-                self._set_icon_name_text_rect_(
-                    x+(f_w-i_c_w) / 2, y+(f_h-i_c_h) / 2, i_c_w, i_c_h
-                )
-                i_x += f_w+spacing
-            elif self._icon_file_path is not None:
-                i_c_w, i_c_h = self._icon_name_size
-                self._set_icon_file_path_rect_(
-                    x + (f_w - i_c_w) / 2, y + (f_h - i_c_h) / 2, i_c_w, i_c_h
-                )
-                i_x += f_w + spacing
-        #
-        self._set_name_rect_(
-            i_x, i_y, i_w-24, i_h
-        )
-        #
-        self._set_index_rect_(
-            i_x, i_y, i_w, i_h
-        )
-
-
 class _QtListItemWidget(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
-    utl_gui_qt_abstract._QtIndexDef,
+    utl_gui_qt_abstract.AbsQtIndexDef,
     utl_gui_qt_abstract.AbsQtImageDef,
     utl_gui_qt_abstract.AbsQtMovieDef,
     #
@@ -3718,7 +4324,9 @@ class _AbsQtSplitterHandle(
         #
         self._swap_button = _QtIconPressItem()
         #
-        self._swap_button._set_icon_file_path_(utl_core.Icon.get(self._swap_icon_name))
+        self._swap_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get(self._swap_icon_name)
+        )
         self._swap_button._set_icon_frame_size_(*self._contract_frame_size)
         self._swap_button._set_file_icon_size_(*self._contract_icon_size)
         self._swap_button.setMaximumSize(*self._contract_frame_size)
@@ -3902,10 +4510,14 @@ class _AbsQtSplitterHandle(
 
     def _set_contract_buttons_update_(self):
         icon_name_l = [self._contract_icon_name_l, self._contract_icon_name_r][self._is_contract_l]
-        self._contract_l_button._set_icon_file_path_(utl_core.Icon.get(icon_name_l))
+        self._contract_l_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get(icon_name_l)
+        )
         self._contract_l_button.update()
         icon_name_r = [self._contract_icon_name_r, self._contract_icon_name_l][self._is_contract_r]
-        self._contract_r_button._set_icon_file_path_(utl_core.Icon.get(icon_name_r))
+        self._contract_r_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get(icon_name_r)
+        )
         self._contract_r_button.update()
 
     def _set_update_(self):
@@ -3976,10 +4588,10 @@ class _QtWindowHead(
         #
         self._close_button = _QtIconPressItem(self)
         self._close_button._set_icon_file_path_(
-            utl_core.Icon.get('close')
+            utl_gui_core.RscIconFile.get('close')
         )
         self._close_button._set_hover_icon_file_path_(
-            utl_core.Icon.get('close_hover')
+            utl_gui_core.RscIconFile.get('close_hover')
         )
         #
         self._close_button.press_clicked.connect(
@@ -4023,7 +4635,7 @@ class _QtItemGuideRect(
     utl_gui_qt_abstract.AbsQtIconDef,
     utl_gui_qt_abstract.AbsQtTypeDef,
     utl_gui_qt_abstract.AbsQtNameDef,
-    utl_gui_qt_abstract._QtPathDef,
+    utl_gui_qt_abstract.AbsQtPathDef,
     utl_gui_qt_abstract.AbsQtFrameDef,
     #
     utl_gui_qt_abstract.AbsQtActionChooseDef,

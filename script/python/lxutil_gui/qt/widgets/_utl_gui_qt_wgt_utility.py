@@ -512,14 +512,6 @@ class QtPainter(QtGui.QPainter):
             w, h
         )
         #
-        if is_hovered is True:
-            border_color = QtBorderColor.IconHovered
-        else:
-            border_color = QtBorderColor.Icon
-        #
-        self._set_border_color_(border_color)
-        self._set_border_width_(1)
-        #
         if background_color is not None:
             background_rgb = Color._get_rgb_(background_color)
             background_color_ = Color._get_qt_color_(background_color)
@@ -539,6 +531,7 @@ class QtPainter(QtGui.QPainter):
             text_color_ = text_color
         #
         self._set_background_color_(background_color_)
+        self._set_border_color_(text_color_)
         self._set_border_width_(border_width)
         #
         b_ = border_width / 2
@@ -561,8 +554,6 @@ class QtPainter(QtGui.QPainter):
             )
         else:
             self.drawRect(frame_rect)
-        #
-        self._set_border_color_(text_color_)
         #
         r = min(w, h)
         t_f_s = int(r*.675)
@@ -648,7 +639,7 @@ class QtPainter(QtGui.QPainter):
         #
         gradient_color = QtGui.QLinearGradient(rect_.topLeft(), rect_.bottomLeft())
         gradient_color.setColorAt(0, self._get_qt_color_(color))
-        gradient_color.setColorAt(.75, QtBackgroundColor.Transparent)
+        gradient_color.setColorAt(.5, QtBackgroundColor.Transparent)
         self._set_background_color_(gradient_color)
         #
         if border_radius > 0:
@@ -1207,7 +1198,7 @@ class QtPainter(QtGui.QPainter):
         self.drawRect(rect)
 
     def _set_tab_button_draw_(self, rect, name_text, icon_name_text=None, border_width=1, offset=0, is_hovered=False, is_current=False):
-        self._set_border_color_(47, 47, 47, 255)
+        self._set_border_color_(55, 55, 55, 255)
         self._set_border_width_(border_width)
         a = 255
         if is_current:
@@ -1253,6 +1244,7 @@ class QtPainter(QtGui.QPainter):
             ]
         #
         self._set_path_draw_by_coords_(coords)
+        #
         i_f_x, i_f_y = x_0+r, y_0
         i_f_w, i_f_h = h_0, h_0
         i_w, i_h = 12, 12
@@ -1516,7 +1508,7 @@ class QtIconButton(QtWidgets.QPushButton):
         self._icon_file_path = None
         self._color_icon_rgb = None
         #
-        self._file_icon_size = 16, 16
+        self._icon_file_draw_size = 16, 16
         self._color_icon_size = 8, 8
         self._frame_size = 20, 20
         self._is_hovered = False
@@ -1558,7 +1550,7 @@ class QtIconButton(QtWidgets.QPushButton):
     def paintEvent(self, event):
         w, h = self.width(), self.height()
         f_w, f_h = self._frame_size
-        i_w, i_h = self._file_icon_size
+        i_w, i_h = self._icon_file_draw_size
         painter = QtPainter(self)
         #
         f_x, f_y = (w-i_w) / 2, (h-i_h) / 2
@@ -2088,7 +2080,7 @@ class _QtSpacer(QtWidgets.QWidget):
 class QtStyledItemDelegate(QtWidgets.QStyledItemDelegate):
     def __init__(self, parent=None):
         super(QtStyledItemDelegate, self).__init__(parent)
-        self._file_icon_size = QtCore.QSize(20, 20)
+        self._icon_file_draw_size = QtCore.QSize(20, 20)
 
     def paint(self, painter, option, index):
         _ = index.data(QtCore.Qt.DisplayRole)
@@ -2297,7 +2289,7 @@ class _AbsQtSplitterHandle(QtWidgets.QWidget):
         layout.setSpacing(0)
         self._contract_l_button = QtIconButton()
         self._contract_l_button._frame_size = self._contract_frame_size
-        self._contract_l_button._file_icon_size = self._contract_icon_size
+        self._contract_l_button._icon_file_draw_size = self._contract_icon_size
         self._contract_l_button.setMaximumSize(*self._contract_frame_size)
         self._contract_l_button.setMinimumSize(*self._contract_frame_size)
         layout.addWidget(self._contract_l_button)
@@ -2310,7 +2302,7 @@ class _AbsQtSplitterHandle(QtWidgets.QWidget):
         #
         self._swap_button._icon_file_path = utl_core.Icon.get(self._swap_icon_name)
         self._swap_button._frame_size = self._contract_frame_size
-        self._swap_button._file_icon_size = self._contract_icon_size
+        self._swap_button._icon_file_draw_size = self._contract_icon_size
         self._swap_button.setMaximumSize(*self._contract_frame_size)
         self._swap_button.setMinimumSize(*self._contract_frame_size)
         layout.addWidget(self._swap_button)
@@ -2321,7 +2313,7 @@ class _AbsQtSplitterHandle(QtWidgets.QWidget):
         #
         self._contract_r_button = QtIconButton()
         self._contract_r_button._frame_size = self._contract_frame_size
-        self._contract_r_button._file_icon_size = self._contract_icon_size
+        self._contract_r_button._icon_file_draw_size = self._contract_icon_size
         self._contract_r_button.setMaximumSize(*self._contract_frame_size)
         self._contract_r_button.setMinimumSize(*self._contract_frame_size)
         layout.addWidget(self._contract_r_button)

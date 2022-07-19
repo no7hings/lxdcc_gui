@@ -105,11 +105,11 @@ class PrxTreeView(
         self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
         self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
-        self._prx_tool_bar_0 = _utl_gui_prx_wdt_utility.PrxHToolBar()
-        self._qt_layout_0.addWidget(self._prx_tool_bar_0.widget)
-        self._prx_tool_bar_0.set_border_radius(1)
+        self._prx_h_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
+        self._qt_layout_0.addWidget(self._prx_h_tool_bar.widget)
+        self._prx_h_tool_bar.set_border_radius(1)
         self._prx_filer_bar_0 = _utl_gui_prx_wdt_utility.PrxFilterBar()
-        self._prx_tool_bar_0.set_widget_add(self._prx_filer_bar_0)
+        self._prx_h_tool_bar.set_widget_add(self._prx_filer_bar_0)
         #
         self._loading_index = 0
         self._loading_show_index = 0
@@ -165,7 +165,7 @@ class PrxTreeView(
             )
 
     def set_filter_start(self):
-        self._prx_tool_bar_0.set_expanded(True)
+        self._prx_h_tool_bar.set_expanded(True)
         self._prx_filer_bar_0.set_entry_focus(True)
 
     def get_tool_bar(self):
@@ -443,6 +443,9 @@ class PrxTreeView(
     def set_refresh_connect_to(self, fnc):
         self._qt_view.f5_key_pressed.connect(fnc)
 
+    def set_filter_history_key(self, key):
+        self._prx_filter_bar.set_history_key(key)
+
 
 class PrxListView(
     utl_gui_prx_abstract.AbsPrxWidget,
@@ -459,16 +462,16 @@ class PrxListView(
         self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
         self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
-        self._prx_tool_bar_0 = _utl_gui_prx_wdt_utility.PrxHToolBar()
-        self._qt_layout_0.addWidget(self._prx_tool_bar_0.widget)
-        self._prx_tool_bar_0.set_border_radius(1)
+        self._prx_h_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
+        self._qt_layout_0.addWidget(self._prx_h_tool_bar.widget)
+        self._prx_h_tool_bar.set_border_radius(1)
         self._view_mode_swap_button = _utl_gui_qt_wgt_item._QtIconPressItem()
         self._view_mode_swap_button._set_icon_file_path_(utl_core.Icon.get('grid_mode'))
         self._view_mode_swap_button.clicked.connect(self.set_view_mode_swap)
-        self._prx_tool_bar_0.set_widget_add(self._view_mode_swap_button)
+        self._prx_h_tool_bar.set_widget_add(self._view_mode_swap_button)
         #
         self._prx_filer_bar_0 = _utl_gui_prx_wdt_utility.PrxFilterBar()
-        self._prx_tool_bar_0.set_widget_add(self._prx_filer_bar_0)
+        self._prx_h_tool_bar.set_widget_add(self._prx_filer_bar_0)
         # add custom menu
         self._qt_view = self.QT_VIEW_CLASS()
         self._qt_layout_0.addWidget(self._qt_view)
@@ -566,9 +569,9 @@ class PrxListView(
         self.view._set_loading_update_()
 
 
-class PrxTextureView(PrxListView):
+class PrxImageView(PrxListView):
     def __init__(self, *args, **kwargs):
-        super(PrxTextureView, self).__init__(*args, **kwargs)
+        super(PrxImageView, self).__init__(*args, **kwargs)
         self.set_item_frame_size(128, 128)
         self.set_item_icon_frame_draw_enable(True)
         self.set_item_name_frame_draw_enable(True)
@@ -594,15 +597,21 @@ class PrxTextureView(PrxListView):
 
     def _set_texture_show_deferred_(self, data):
         prx_item, texture_unit = data
+
+        info = texture_unit.get_info()
         show_info_dict = collections.OrderedDict(
             [
                 ('name', texture_unit.name),
+                ('size', '{width} x {height}'.format(**info)),
             ]
         )
         image_file_path, image_sub_process_cmds = bsc_core.ImageOpt(texture_unit.path).get_thumbnail_create_args()
         prx_item.set_image(image_file_path)
         prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
         prx_item.set_name_dict(show_info_dict)
+        prx_item.set_tool_tip(
+            ['{}={}'.format(k, v) for k, v in info.items()]
+        )
 
 
 class PrxGuideBar(

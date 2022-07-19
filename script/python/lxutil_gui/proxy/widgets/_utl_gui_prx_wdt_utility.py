@@ -168,8 +168,8 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
         )
 
     def _set_build_(self):
-        self._bar_height = 24
-        self._bar_height_min = 12
+        self._bar_width, self._bar_height = 24, 24
+        self._bar_width_min, self._bar_height_min = 12, 12
         #
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
@@ -199,14 +199,14 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
 
     def _set_item_expand_update_(self):
         if self.get_is_expanded() is True:
-            self._head.setMaximumSize(self._bar_height_min, self._bar_height)
-            self._head.setMinimumSize(self._bar_height_min, self._bar_height_min)
+            self._head.setMaximumSize(self._bar_width_min, self._bar_height)
+            self._head.setMinimumSize(self._bar_width_min, self._bar_height)
             #
             self.widget.setMaximumHeight(self._bar_height)
             self.widget.setMinimumHeight(self._bar_height)
         else:
             self._head.setMaximumSize(166667, self._bar_height_min)
-            self._head.setMinimumSize(self._bar_height_min, self._bar_height_min)
+            self._head.setMinimumSize(self._bar_width_min, self._bar_height_min)
             #
             self.widget.setMaximumHeight(self._bar_height_min)
             self.widget.setMinimumHeight(self._bar_height_min)
@@ -249,6 +249,64 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_border_radius(self, radius):
         self._head._set_frame_border_radius_(radius)
+
+
+class PrxVToolBar(PrxHToolBar):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
+    def __init__(self, *args, **kwargs):
+        super(PrxVToolBar, self).__init__(*args, **kwargs)
+        #
+        self.widget.setSizePolicy(
+            utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum,
+            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding
+        )
+
+    def _set_build_(self):
+        self._bar_width, self._bar_height = 24, 24
+        self._bar_width_min, self._bar_height_min = 12, 12
+        #
+        qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
+        qt_layout_0.setContentsMargins(*[0]*4)
+        qt_layout_0.setSpacing(2)
+        qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
+        # header
+        self._head = _utl_gui_qt_wgt_item._QtVExpandItem1()
+        qt_layout_0.addWidget(self._head)
+        self._head.expand_toggled.connect(self.set_expanded)
+        self._head.setToolTip('LMB-click to expand "on" / "off"')
+        #
+        qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
+        qt_layout_0.addWidget(qt_widget_1)
+        qt_layout_1 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_1)
+        qt_layout_1.setContentsMargins(0, 0, 0, 0)
+        qt_layout_1.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignHCenter)
+        self._qt_layout_0 = qt_layout_1
+        #
+        self._view = qt_widget_1
+        #
+        self._set_item_expand_update_()
+        #
+        self._view.setSizePolicy(
+            utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum,
+            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding
+        )
+
+    def _set_item_expand_update_(self):
+        if self.get_is_expanded() is True:
+            self._head.setMaximumSize(self._bar_width, self._bar_height_min)
+            self._head.setMinimumSize(self._bar_width, self._bar_height_min)
+            #
+            self.widget.setMaximumWidth(self._bar_width)
+            self.widget.setMinimumWidth(self._bar_width)
+        else:
+            self._head.setMaximumSize(self._bar_width_min, 166667)
+            self._head.setMinimumSize(self._bar_width_min, self._bar_height_min)
+            #
+            self.widget.setMaximumWidth(self._bar_width_min)
+            self.widget.setMinimumWidth(self._bar_width_min)
+        #
+        self._view.setVisible(self.get_is_expanded())
+        self._head._set_item_expand_update_()
 
 
 class Window(utl_gui_prx_abstract.AbsPrxWindow):
@@ -522,7 +580,7 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget.setMinimumWidth(w)
 
     def set_icon_size(self, w, h):
-        self.widget._file_icon_size = w, h
+        self.widget._icon_file_draw_size = w, h
 
     def set_name(self, text):
         self.widget._set_name_text_(text)
@@ -546,10 +604,19 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget._set_action_press_click_emit_send_()
 
     def set_status(self, status):
-        self.widget._set_status_(status)
+        self.widget.status_changed.emit(status)
+
+    def set_status_at(self, index, status):
+        self.widget.rate_status_update_at.emit(index, status)
 
     def set_statuses(self, element_statuses):
         self.widget._set_sub_process_statuses_(element_statuses)
+
+    def set_finished_at(self, index, status):
+        self.widget.rate_finished_at.emit(index, status)
+
+    def set_initialization(self, count, status=bsc_configure.Status.Started):
+        self.widget._set_sub_process_initialization_(count, status)
 
 
 class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):
@@ -586,6 +653,12 @@ class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_entry_focus(self, boolean):
         self.widget._set_entry_focus_(boolean)
+
+    def set_history_key(self, key):
+        self._qt_widget._set_entry_history_key_(key)
+
+    def set_history_filter_fnc(self, fnc):
+        pass
 
 
 class PrxEntryItem(utl_gui_prx_abstract.AbsPrxWidget):

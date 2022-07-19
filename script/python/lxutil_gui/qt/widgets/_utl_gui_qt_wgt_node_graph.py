@@ -1139,7 +1139,7 @@ class _QtNGNode(
 
         if self._icon_name_text is not None:
             painter._set_icon_name_text_draw_by_rect_(
-                self._icon_name_text_rect,
+                self._icon_name_draw_rect,
                 text=self._icon_name_text,
                 offset=offset,
                 border_width=self._ng_draw_border_w,

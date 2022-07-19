@@ -579,14 +579,15 @@ class PrxStgObjTreeViewAddOpt(object):
             ancestors.reverse()
             #
             for i_ancestor in ancestors:
-                ancestor_path = i_ancestor.path
-                if ancestor_path not in self._obj_add_dict:
+                i_ancestor_path = i_ancestor.path
+                if i_ancestor_path not in self._obj_add_dict:
                     self._set_dag_dcc_obj_gui_add_(i_ancestor)
         #
         return self._set_dag_dcc_obj_gui_add_(obj)
 
     def _set_prx_item_show_deferred_(self, prx_item, name_use_path_prettify):
         obj = prx_item.get_gui_dcc_obj(namespace=self._dcc_namespace)
+        name_orig = obj.path
         obj_name = obj.name
         obj_path = obj.path
         obj_type = obj.type
@@ -631,6 +632,7 @@ class PrxStgObjTreeViewAddOpt(object):
             obj.get_gui_extend_menu_raw() or []
         )
         #
+        prx_item.set_name_orig(name_orig)
         prx_item.set_name(name)
         prx_item.set_icon_by_file(obj.icon_file)
         #
@@ -670,7 +672,8 @@ class PrxStgObjTreeViewAddOpt(object):
         for k, v in self._prx_tree_view._item_dict.items():
             i_texture = v.get_gui_dcc_obj(namespace='storage-file')
             if i_texture is not None:
-                list_.append(i_texture)
+                if v.get_is_visible() is True:
+                    list_.append(i_texture)
         return list_
 
     def get_checked_files(self):
@@ -678,7 +681,7 @@ class PrxStgObjTreeViewAddOpt(object):
         for k, v in self._prx_tree_view._item_dict.items():
             i_texture = v.get_gui_dcc_obj(namespace='storage-file')
             if i_texture is not None:
-                if v.get_is_checked() is True:
+                if v.get_is_visible() is True and v.get_is_checked() is True:
                     list_.append(i_texture)
         return list_
     @staticmethod
@@ -920,10 +923,10 @@ class PrxDccObjTreeViewAddOpt1(object):
         if ancestors:
             ancestors.reverse()
             #
-            for ancestor in ancestors:
-                ancestor_path = ancestor.path
-                if ancestor_path not in self._obj_add_dict:
-                    self._set_dag_dcc_obj_gui_add_(ancestor)
+            for i_ancestor in ancestors:
+                i_ancestor_path = i_ancestor.path
+                if i_ancestor_path not in self._obj_add_dict:
+                    self._set_dag_dcc_obj_gui_add_(i_ancestor)
         #
         return self._set_dag_dcc_obj_gui_add_(obj)
 

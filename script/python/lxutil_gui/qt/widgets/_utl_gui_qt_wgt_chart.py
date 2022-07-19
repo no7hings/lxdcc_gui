@@ -349,7 +349,7 @@ class _QtColorChooseChart(
     def _set_resize_action_run_(self, size):
         pass
     #
-    def _get_drop_pos_(self, xPos, yPos, width, height):
+    def _get_popup_pos_(self, xPos, yPos, width, height):
         point = self._color_point
         pos0 = self._color_center_coord
         #

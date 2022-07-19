@@ -16,11 +16,13 @@ from lxutil_gui.proxy import utl_gui_prx_abstract
 
 class AbsPrxDialogWindow(
     utl_gui_prx_abstract.AbsPrxWindow,
-    utl_gui_prx_abstract.AbsPrxWaitingDef
+    utl_gui_prx_abstract.AbsPrxWaitingDef,
+    utl_gui_prx_abstract.AbsPrxProgressesDef,
 ):
     QT_WIDGET_CLASS = None
     BUTTON_WIDTH = 120
     WAITING_CHART_CLASS = _utl_gui_qt_wgt_chart._QtWaitingChart
+    PROGRESS_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtProgressBar
     def __init__(self, *args, **kwargs):
         super(AbsPrxDialogWindow, self).__init__(*args, **kwargs)
         self.widget.setWindowFlags(
@@ -39,6 +41,9 @@ class AbsPrxDialogWindow(
     def _set_build_(self):
         self._set_central_layout_create_()
         self._set_waiting_def_init_()
+        qt_progress_bar = self.PROGRESS_WIDGET_CLASS()
+        self._set_progresses_def_init_(qt_progress_bar)
+        self._central_layout.addWidget(qt_progress_bar)
         #
         self._customize_widget = _utl_gui_qt_wgt_utility.QtWidget()
         self._central_layout.addWidget(self._customize_widget)
@@ -462,20 +467,18 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
         )
 
 
-class PrxWaitWindow(utl_gui_prx_abstract.AbsPrxWindow):
-    STATUS_STARED = 'started'
-    STATUS_COMPLETED = 'completed'
-    STATUS_FAILED = 'failed'
-    #
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtDialog
+class PrxDdlMonitorWindow(utl_gui_prx_abstract.AbsPrxWindow):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtMainWindow
     def __init__(self, *args, **kwargs):
-        super(PrxWaitWindow, self).__init__(*args, **kwargs)
-
-        self._t = utl_gui_qt_core.QtPrintSignals()
-        self._t.added.connect(self.set_content_add)
+        super(PrxDdlMonitorWindow, self).__init__(*args, **kwargs)
+        self.widget.setWindowFlags(
+            _utl_gui_qt_wgt_utility.QtCore.Qt.Window | _utl_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
+        )
 
     def _set_build_(self):
-        self._central_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
+        w = _utl_gui_qt_wgt_utility.QtWidget()
+        self._qt_widget.setCentralWidget(w)
+        self._central_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(w)
         #
         self._tip_text_browser = _utl_gui_prx_wdt_utility.PrxTextBrowser()
         self._central_layout.addWidget(self._tip_text_browser.widget)
@@ -485,169 +488,19 @@ class PrxWaitWindow(utl_gui_prx_abstract.AbsPrxWindow):
         #
         self._button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
         #
-        qt_spacer_0 = _utl_gui_qt_wgt_utility._QtSpacer()
-        self._button_layout.addWidget(qt_spacer_0)
-        #
-        self._wait_button = _utl_gui_prx_wdt_utility.PrxPressItem()
-        self._button_layout.addWidget(self._wait_button.widget)
-        self._wait_button.set_name('Waiting ...')
-        self._wait_button.set_icon_by_name_text('Waiting')
-        self._wait_button.set_width(320)
-        self._wait_button.set_press_clicked_connect_to(self._set_run_)
-        #
-        self._cost_second = 0
-        self._cost_time = '00:00:00'
-        self._wait_running_timer = utl_gui_qt_core.QtCore.QTimer(self.widget)
-        self._status = None
-        #
-        self._wait_description = None
-        self._next_description = None
-        #
-        self._completed_pre_method = None
-        self._completed_post_method = None
-        self._failed_pre_method = None
-        self._failed_post_method = None
+        self._status_button = _utl_gui_prx_wdt_utility.PrxPressItem()
+        self._button_layout.addWidget(self._status_button.widget)
+        self._status_button.set_name('process')
+        self._status_button.set_icon_by_name_text('process')
 
-    def set_content(self, text):
-        self._tip_text_browser.set_content(text)
-        utl_gui_qt_core.QtWidgets.QApplication.instance().processEvents(
-            utl_gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
-        )
+    def get_status_button(self):
+        return self._status_button
 
-    def set_content_add(self, text):
-        self._tip_text_browser.set_add(text)
+    def set_logging(self, *args):
+        self._tip_text_browser.set_print_add_use_thread(*args)
 
-    def set_start(self):
-        self._status = self.STATUS_STARED
-        self.set_content_add(
-            '"{wait}" is "{status}".'.format(
-                **dict(
-                    wait=self._wait_description,
-                    status=self._status
-                )
-            )
-        )
-        self._wait_running_timer.timeout.connect(
-            self._set_status_update_
-        )
-        self._wait_running_timer.start(1000)
+    def set_status_at(self, *args):
+        self._status_button.set_status_at(*args)
 
-        self.set_window_title('Wait for "{}"'.format(self._wait_description))
-
-    def set_wait_description(self, text):
-        self._wait_description = text
-
-    def set_next_description(self, text):
-        self._next_description = text
-
-    def set_completed_update_method(self, method):
-        self._completed_pre_method = method
-
-    def set_completed_post_method(self, method):
-        self._completed_post_method = method
-
-    def _set_completed_post_run_(self):
-        if self._completed_post_method is not None:
-            self._completed_post_method()
-        #
-        self.set_window_close()
-
-    def set_failed_update_method(self, method):
-        self._failed_pre_method = method
-
-    def set_failed_post_method(self, method):
-        self._failed_post_method = method
-
-    def _set_failed_post_run_(self):
-        if self._failed_post_method is not None:
-            self._failed_post_method()
-        #
-        self.set_window_close()
-
-    def get_is_completed(self):
-        if self._completed_pre_method is not None:
-            return self._completed_pre_method()
-
-    def get_is_failed(self):
-        if self._failed_pre_method is not None:
-            return self._failed_pre_method()
-
-    def _set_run_(self):
-        if self._status == self.STATUS_STARED:
-            self.set_content_add(
-                '"{}" is "{}", please wait.'.format(
-                    self._wait_description,
-                    self.STATUS_STARED
-                )
-            )
-        if self._status == self.STATUS_COMPLETED:
-            self._set_completed_post_run_()
-        elif self._status == self.STATUS_FAILED:
-            self._set_failed_post_run_()
-
-    def _set_status_update_(self):
-        is_completed = self.get_is_completed()
-        is_failed = self.get_is_failed()
-        if is_completed is not None:
-            if is_completed is True:
-                self._set_completed_status_()
-            else:
-                if is_failed is not None:
-                    if is_failed is True:
-                        self._set_failed_status_()
-                    else:
-                        self._cost_second += 1
-                        self._cost_time = bsc_core.IntegerMtd.second_to_time_prettify(self._cost_second)
-                        self._wait_button.set_name(
-                            'Waiting [ {} ]'.format(bsc_core.IntegerMtd.second_to_time_prettify(self._cost_second))
-                        )
-        else:
-            raise RuntimeError(
-                'complete method is non-definition'
-            )
-
-    def _set_completed_status_(self):
-        self._status = self.STATUS_COMPLETED
-        self.set_content_add(
-            '"{wait}" is "{status}", cost {time}, press "Next" to "{next}".'.format(
-                **dict(
-                    wait=self._wait_description,
-                    next=self._next_description,
-                    status=self._status,
-                    time=self._cost_time
-                )
-            )
-        )
-        self._wait_button.set_name(
-            'Next'
-        )
-        self._wait_button.set_icon_by_name_text('Next')
-        self._wait_button.set_status(
-            self._status
-        )
-        #
-        self._wait_running_timer.stop()
-
-    def _set_failed_status_(self):
-        self._status = self.STATUS_FAILED
-        self.set_content_add(
-            '"{wait}" is "{status}", cost {time}, press "Close".'.format(
-                **dict(
-                    wait=self._wait_description,
-                    status=self._status,
-                    time=self._cost_time
-                )
-            )
-        )
-        self._wait_button.set_name(
-            'Close'
-        )
-        self._wait_button.set_icon_by_name_text('Close')
-        self._wait_button.set_status(
-            self._status
-        )
-        #
-        self._wait_running_timer.stop()
-
-    def set_print_add_use_thread(self, text):
-        self._tip_text_browser.set_print_add_use_thread(text)
+    def set_finished_at(self, *args):
+        self._status_button.set_finished_at(*args)

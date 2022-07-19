@@ -1118,6 +1118,8 @@ class QtListWidget(
                 parent = self.parent()
                 if isinstance(parent, _utl_gui_qt_wgt_item._QtEntryFrame):
                     parent._set_focused_(False)
+            elif event.type() == QtCore.QEvent.Drop:
+                print 'AAAA'
         if widget == self.verticalScrollBar():
             pass
         return False
@@ -1296,7 +1298,7 @@ class QtListWidget(
             i._set_item_show_kill_all_()
             i._set_item_show_stop_all_()
         #
-        self._pre_selected_item = None
+        self._pre_selected_items = []
         #
         self.clear()
 
@@ -1315,7 +1317,7 @@ class _QtGuideBar(
     utl_gui_qt_abstract.AbsQtGuideChooseActionDef,
 ):
     CHOOSE_RECT_CLS = _utl_gui_qt_wgt_item._QtItemGuideRect
-    CHOOSE_DROP_FRAME_CLASS = _utl_gui_qt_wgt_item._QtItemGuideChooseDropFrame
+    CHOOSE_DROP_FRAME_CLASS = _utl_gui_qt_wgt_item._QtPopupGuideFrame
     def __init__(self, *args, **kwargs):
         super(_QtGuideBar, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -1459,7 +1461,7 @@ class _QtGuideBar(
                     )
                 #
                 painter._set_file_icon_draw_by_rect_(
-                    i_item._icon_file_path_rect,
+                    i_item._icon_file_draw_rect,
                     file_path=i_item._get_icon_file_path_(),
                     offset=i_icon_offset
                 )

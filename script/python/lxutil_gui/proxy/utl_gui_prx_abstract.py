@@ -127,7 +127,6 @@ class AbsPrxViewDef(object):
     #
     def set_item_select_changed_connect_to(self, fnc):
         self.view.itemSelectionChanged.connect(fnc)
-
     # select
     def _get_selected_items_(self):
         return self.view.selectedItems()
@@ -312,7 +311,6 @@ class AbsWidgetContentDef(object):
 
 
 class GuiProgress(object):
-    MAXIMUM_UPDATE_VALUE = 100
     def __init__(self, proxy, qt_progress, maximum, label=None):
         self._proxy = proxy
         self._qt_progress = qt_progress
@@ -320,7 +318,6 @@ class GuiProgress(object):
         self._value = 0
         self._label = label
         # all value map to low
-        # self._map_maximum = 10
         self._map_maximum = min(maximum, 100)
         self._map_value = 0
         #
@@ -371,7 +368,9 @@ class GuiProgress(object):
             #
             if self._maximum > 1:
                 map_value = int(
-                    bsc_core.RangeMtd.set_map_to((1, self._maximum), (1, self._map_maximum), self._value)
+                    bsc_core.RangeMtd.set_map_to(
+                        (1, self._maximum), (1, self._map_maximum), self._value
+                    )
                 )
                 if map_value != self._map_value:
                     self._map_value = map_value
@@ -384,6 +383,8 @@ class GuiProgress(object):
             self._qt_progress._set_progress_stop_()
             self._value = 0
             self._maximum = 0
+            self._map_value = 0
+            self._map_maximum = 0
             self._is_stop = True
 
     def set_raise(self):
@@ -419,21 +420,27 @@ class GuiProgress(object):
         if self.get_qt_progress() is not None:
             if self.get_is_root() is True:
                 descendants = self.get_descendants()
-                raw = [(0, 1, self._get_percent_(), self.label)]
-                maximums, values = [self.maximum], [self.value]
+                raw = [(0, 1, self._get_percent_(), self._label)]
+                maximums, values = [self._maximum], [self._value]
+                map_maximums, map_values = [self._map_maximum], [self._map_value]
                 for i_descendant in descendants:
-                    maximums.append(i_descendant.maximum)
-                    values.append(i_descendant.value)
+                    maximums.append(i_descendant._maximum)
+                    values.append(i_descendant._value)
+                    #
+                    map_maximums.append(i_descendant._map_maximum)
+                    map_values.append(i_descendant._map_value)
+                    #
                     raw.append(
-                        (i_descendant._sub_start, i_descendant._sub_end, i_descendant._get_percent_(), i_descendant.label)
+                        (i_descendant._sub_start, i_descendant._sub_end, i_descendant._get_percent_(), i_descendant._label)
                     )
                 #
                 maximum, value = sum(maximums), sum(values)
+                map_maximum, map_value = sum(map_maximums), sum(map_values)
                 #
                 self._qt_progress._set_progress_raw_(raw)
                 #
                 self._qt_progress._set_progress_maximum_(maximum)
-                self._qt_progress._set_progress_map_maximum_(self._map_maximum)
+                self._qt_progress._set_progress_map_maximum_(map_maximum)
                 self._qt_progress._set_progress_value_(value)
 
     def get_root(self):
@@ -468,14 +475,20 @@ class GuiProgress(object):
     def __repr__(self):
         return self.__str__()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.set_stop()
+
 
 class AbsPrxProgressesDef(object):
     PROGRESS_CLASS = GuiProgress
+    PROGRESS_WIDGET_CLASS = None
     def _set_progresses_def_init_(self, qt_progress_bar):
         self._qt_progress_bar = qt_progress_bar
         #
         self._current_progress = None
-        self._progress_maximum_value = 100
     #
     def set_progress_create(self, maximum, label=None):
         p = self.PROGRESS_CLASS(

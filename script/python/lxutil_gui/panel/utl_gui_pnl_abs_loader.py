@@ -103,6 +103,9 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         h_s.set_widget_add(v_s)
         self._rsv_obj_tree_view_0 = prx_widgets.PrxTreeView()
         v_s.set_widget_add(self._rsv_obj_tree_view_0)
+        self._rsv_obj_tree_view_0.set_filter_history_key(
+            'filter.{}-task'.format(self._session.name)
+        )
         #
         self._filter_tree_viewer_0 = prx_widgets.PrxTreeView()
         v_s.set_widget_add(self._filter_tree_viewer_0)
@@ -622,12 +625,10 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 execute_fnc
             )
             image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
-
+            rsv_task_unit_gui.set_image(image_file_path)
             rsv_task_unit_gui.set_movie_enable(True)
             if image_sub_process_cmds is not None:
                 rsv_task_unit_gui.set_image_show_args(image_file_path, image_sub_process_cmds)
-            else:
-                rsv_task_unit_gui.set_image(image_file_path)
         else:
             show_info_dict['update'] = 'N/a'
             rsv_task_unit_gui.set_image(
