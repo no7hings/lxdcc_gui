@@ -999,6 +999,9 @@ class _AbsPrxTypeEntry(utl_gui_prx_abstract.AbsPrxWidget):
     def set(self, raw=None, **kwargs):
         raise NotImplementedError()
 
+    def get_default(self):
+        return None
+
     def set_default(self, raw=None, **kwargs):
         pass
 
@@ -1009,6 +1012,9 @@ class _AbsPrxTypeEntry(utl_gui_prx_abstract.AbsPrxWidget):
         pass
 
     def set_changed_connect_to(self, fnc):
+        pass
+
+    def set_locked(self, boolean):
         pass
 
 
