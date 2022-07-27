@@ -9,6 +9,7 @@ import lxresolver.commands as rsv_commands
 class TestWindow(utl_prx_widgets.PrxToolWindow):
     def __init__(self, *args, **kwargs):
         super(TestWindow, self).__init__(*args, **kwargs)
+        self.set_definition_window_size([640, 480])
         self._test_()
 
     def _test_(self):
@@ -18,13 +19,46 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
         n = utl_prx_widgets.PrxNode_('root')
         self.set_widget_add(n)
         p = n.set_port_add(
-            utl_prx_widgets.PrxDirectoryOpenPort(
-                'test_0'
+            utl_prx_widgets.PrxEnumeratePort_(
+                'test_enumerate'
+            )
+        )
+        p.set(['a', 'b'])
+        p = n.set_port_add(
+            utl_prx_widgets.PrxDirectorySavePort(
+                'test_directory_save'
             )
         )
         p = n.set_port_add(
-            utl_prx_widgets.PrxMediasPort(
-                'test_1'
+            utl_prx_widgets.PrxFloatArrayPort(
+                'test_float_array'
+            )
+        )
+        p = n.set_port_add(
+            utl_prx_widgets.PrxFilesOpenPort(
+                'test_files_open'
+            )
+        )
+        p.set_history_key('filter.test-files')
+        p.set(
+            ['/home/dongchangbao/Desktop/app-kit.desktop']
+        )
+        p.set_use_enable(True)
+        p = n.set_port_add(
+            utl_prx_widgets.PrxDirectoriesOpenPort(
+                'test_directories_open'
+            )
+        )
+
+        p = n.set_port_add(
+            utl_prx_widgets.PrxMediasOpenPort(
+                'test_medias_open'
+            )
+        )
+
+        p = n.set_port_add(
+            utl_prx_widgets.PrxScriptPort(
+                'test_script'
             )
         )
         # p.set(

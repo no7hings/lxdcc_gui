@@ -385,7 +385,7 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
         widget = _utl_gui_qt_wgt_item._QtScriptValueEntryItem()
         qt_layout_0.addWidget(widget)
-        self._qt_text_browser_0 = widget._item_value_entry_widget
+        self._qt_text_browser_0 = widget._value_entry_widget
 
     def set_markdown_file_open(self, file_path):
         if file_path:
@@ -515,7 +515,14 @@ class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget._set_name_text_(*args, **kwargs)
 
     def set_icon_name(self, icon_name):
-        self.widget._set_icon_file_path_(utl_core.Icon.get(icon_name))
+        self.widget._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get(icon_name)
+        )
+
+    def set_sub_icon_name(self, icon_name):
+        self.widget._set_sub_icon_file_path_(
+            utl_gui_core.RscIconFile.get(icon_name)
+        )
 
     def set_icon_by_name_text(self, text):
         self.widget._set_icon_name_text_(text)
@@ -566,7 +573,7 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget.update()
 
     def set_icon_by_color(self, color):
-        self.widget._color_icon_rgb = color
+        self.widget._icon_color_rgb = color
         self.widget._icon_is_enable = True
         self.widget.update()
 
@@ -1038,3 +1045,26 @@ class PrxWindow(
     def __init__(self, *args, **kwargs):
         super(PrxWindow, self).__init__(*args, **kwargs)
 
+
+class PrxScreenshotFrame(
+    utl_gui_prx_abstract.AbsPrxWidget
+):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtScreenshotFrame
+    def __init__(self, *args, **kwargs):
+        main_window = utl_gui_qt_core.QtDccMtd.get_qt_main_window()
+        super(PrxScreenshotFrame, self).__init__(main_window, *args, **kwargs)
+
+    def set_start(self):
+        self._qt_widget._set_screenshot_start_()
+
+    def set_started_connect_to(self, fnc):
+        self._qt_widget.screenshot_started.connect(fnc)
+
+    def set_finished_connect_to(self, fnc):
+        self._qt_widget.screenshot_finished.connect(fnc)
+
+    def set_accepted_connect_to(self, fnc):
+        self._qt_widget.screenshot_accepted.connect(fnc)
+    @classmethod
+    def set_save_to(cls, geometry, file_path):
+        cls.QT_WIDGET_CLASS._set_screenshot_save_to_(geometry, file_path)

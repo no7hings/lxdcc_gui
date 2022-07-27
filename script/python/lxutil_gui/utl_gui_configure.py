@@ -57,6 +57,33 @@ class ActionFlag(enum.IntEnum):
     KeyControlShiftPress = 0x84
 
 
+class RectRegion(enum.IntEnum):
+    Unknown = 0
+    Top = 1
+    Bottom = 2
+    Left = 3
+    Right = 4
+    TopLeft = 5
+    TopRight = 6
+    BottomLeft = 7
+    BottomRight = 8
+    Inside = 9
+    Outside = 10
+
+
+class AlignRegion(enum.IntEnum):
+    Unknown = 0
+    Top = 1
+    Bottom = 2
+    Left = 3
+    Right = 4
+    TopLeft = 5
+    TopRight = 6
+    BottomLeft = 7
+    BottomRight = 8
+    Center = 9
+
+
 class State(object):
     NORMAL = 'normal'
     ENABLE = 'enable'

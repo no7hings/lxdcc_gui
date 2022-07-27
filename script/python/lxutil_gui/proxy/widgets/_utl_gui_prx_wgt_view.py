@@ -98,7 +98,7 @@ class PrxTreeView(
     #
     utl_gui_prx_abstract.AbsPrxViewVisibleConnectionDef,
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item._QtEntryFrame
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtEntryFrame
     QT_VIEW_CLASS = _utl_gui_qt_wgt_view.QtTreeWidget
     def __init__(self, *args, **kwargs):
         super(PrxTreeView, self).__init__(*args, **kwargs)
@@ -455,7 +455,7 @@ class PrxListView(
     #
     utl_gui_prx_abstract.AbsPrxViewVisibleConnectionDef,
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item._QtEntryFrame
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtEntryFrame
     QT_VIEW_CLASS = _utl_gui_qt_wgt_view.QtListWidget
     def __init__(self, *args, **kwargs):
         super(PrxListView, self).__init__(*args, **kwargs)

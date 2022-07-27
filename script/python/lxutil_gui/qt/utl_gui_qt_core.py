@@ -1453,6 +1453,9 @@ class QtVBoxLayout(QtWidgets.QVBoxLayout):
             QtCore.Qt.AlignTop
         )
 
+    def _set_contents_margins_clear_(self):
+        self.setContentsMargins(0, 0, 0, 0)
+
 
 class QtGridLayout(QtWidgets.QGridLayout):
     def __init__(self, *args, **kwargs):

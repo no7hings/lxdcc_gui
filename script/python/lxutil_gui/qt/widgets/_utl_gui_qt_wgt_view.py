@@ -65,7 +65,7 @@ class _AbsQtSplitter(QtWidgets.QWidget):
 
     def _set_update_(self):
         self._set_update_by_size_()
-        self._set_widget_geometry_update_()
+        self._set_wgt_update_geometry_()
 
     def _set_update_by_size_(self):
         ss = self._size_dict
@@ -89,7 +89,7 @@ class _AbsQtSplitter(QtWidgets.QWidget):
             else:
                 raise TypeError()
 
-    def _set_widget_geometry_update_(self):
+    def _set_wgt_update_geometry_(self):
         w, h = self.width(), self.height()
         c = len(self._handle_list)
         h_f_w = self.HANDLE_WIDTH
@@ -867,12 +867,12 @@ class QtTreeWidget(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_item._QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_utility._QtEntryFrame):
                     parent._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_item._QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_utility._QtEntryFrame):
                     parent._set_focused_(False)
             elif event.type() == QtCore.QEvent.Resize:
                 self._set_show_view_items_update_()
@@ -1111,12 +1111,12 @@ class QtListWidget(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_item._QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_utility._QtEntryFrame):
                     parent._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_item._QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_utility._QtEntryFrame):
                     parent._set_focused_(False)
             elif event.type() == QtCore.QEvent.Drop:
                 print 'AAAA'
@@ -1237,7 +1237,7 @@ class QtListWidget(
         return [self.itemWidget(self.item(i)) for i in range(self.count())]
 
     def _set_all_item_widgets_update_(self):
-        [(i._set_frame_size_(*self._item_frame_size), i._set_widget_geometry_update_()) for i in self._get_all_item_widgets_()]
+        [(i._set_frame_size_(*self._item_frame_size), i._set_wgt_update_geometry_()) for i in self._get_all_item_widgets_()]
 
     def _set_view_mode_swap_(self):
         if self._get_is_grid_mode_() is True:
@@ -1251,7 +1251,7 @@ class QtListWidget(
     def _set_item_widget_add_(self, item_widget, *args, **kwargs):
         view = self
         #
-        item = _utl_gui_qt_wgt_item.QtListWidgetItem('', view)
+        item = _utl_gui_qt_wgt_utility.QtListWidgetItem('', view)
         item.setSizeHint(QtCore.QSize(*self._grid_size))
         item.gui_proxy = item_widget.gui_proxy
         #
@@ -1317,7 +1317,7 @@ class _QtGuideBar(
     utl_gui_qt_abstract.AbsQtGuideChooseActionDef,
 ):
     CHOOSE_RECT_CLS = _utl_gui_qt_wgt_item._QtItemGuideRect
-    CHOOSE_DROP_FRAME_CLASS = _utl_gui_qt_wgt_item._QtPopupGuideFrame
+    CHOOSE_DROP_FRAME_CLASS = _utl_gui_qt_wgt_utility._QtPopupGuideFrame
     def __init__(self, *args, **kwargs):
         super(_QtGuideBar, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -1353,10 +1353,10 @@ class _QtGuideBar(
                 self._set_view_item_geometries_update_()
                 self.update()
             elif event.type() == QtCore.QEvent.Enter:
-                self._is_hovered = True
+                self._action_is_hovered = True
                 self.update()
             elif event.type() == QtCore.QEvent.Leave:
-                self._is_hovered = False
+                self._action_is_hovered = False
                 self._set_guide_choose_current_clear_()
                 self._set_view_guide_current_clear_()
                 self.update()
@@ -1396,7 +1396,7 @@ class _QtGuideBar(
                 #
                 self._set_action_flag_clear_()
                 #
-                self._is_hovered = False
+                self._action_is_hovered = False
                 self.update()
             #
             elif event.type() == QtCore.QEvent.FocusIn:
@@ -1460,7 +1460,7 @@ class _QtGuideBar(
                         offset=name_offset
                     )
                 #
-                painter._set_file_icon_draw_by_rect_(
+                painter._set_icon_file_draw_by_rect_(
                     i_item._icon_file_draw_rect,
                     file_path=i_item._get_icon_file_path_(),
                     offset=i_icon_offset
@@ -1478,7 +1478,7 @@ class _QtGuideBar(
                 #
                 i_name_text = i_item._name_text
                 painter._set_text_draw_by_rect_(
-                    i_item._name_rect,
+                    i_item._name_draw_rect,
                     text=i_name_text,
                     text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                     font=get_font(size=12),
@@ -1538,7 +1538,7 @@ class _QtGuideBar(
             i_item._set_icon_frame_rect_(
                 i_x, i_y, i_f_w, i_f_h
             )
-            i_item._set_icon_file_path_rect_(
+            i_item._set_icon_file_draw_rect_(
                 i_x+(i_f_w-i_i_w)/2, i_y+(i_f_h-i_i_h)/2, i_i_w, i_i_h
             )
             i_x += i_f_w + spacing

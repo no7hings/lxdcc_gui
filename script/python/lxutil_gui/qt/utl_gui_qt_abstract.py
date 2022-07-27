@@ -3,6 +3,8 @@ import collections
 import copy
 import os
 
+import enum
+
 import fnmatch
 
 from lxbasic import bsc_configure
@@ -401,9 +403,12 @@ class AbsQtFrameDef(object):
         #
         self._frame_border_radius = 0
         #
-        self._frame_rect = QtCore.QRect()
-        self._frame_size = 20, 20
         self._frame_draw_enable = False
+        self._frame_draw_rect = QtCore.QRect()
+        self._frame_draw_margins = 0, 0, 0, 0
+        self._frame_size = 20, 20
+
+        self._frame_draw_rects = [QtCore.QRect()]
 
     def _set_wgt_update_draw_(self):
         raise NotImplementedError()
@@ -423,12 +428,12 @@ class AbsQtFrameDef(object):
         return self._frame_background_color
 
     def _set_frame_rect_(self, x, y, w, h):
-        self._frame_rect.setRect(
+        self._frame_draw_rect.setRect(
             x, y, w, h
         )
 
     def _get_frame_rect_(self):
-        return self._frame_rect
+        return self._frame_draw_rect
 
     def _set_frame_size_(self, w, h):
         self._frame_size = w, h
@@ -438,6 +443,37 @@ class AbsQtFrameDef(object):
 
     def _set_frame_border_radius_(self, radius):
         self._frame_border_radius = radius
+
+
+class AbsQtResizeDef(object):
+    def _set_resize_def_init_(self, widget):
+        self._widget = widget
+
+        self._resize_is_enable = False
+        self._resize_draw_rect = QtCore.QRect()
+
+        self._resize_icon_file_path = utl_gui_core.RscIconFile.get('swap_h')
+        self._resize_icon_file_draw_size = 16, 8
+        self._resize_icon_file_draw_rect = QtCore.QRect()
+
+        self._resize_point_start = QtCore.QPoint()
+        self._resize_value_temp = 0
+
+        self._resize_target = None
+        self._resize_minimum = 20
+        self._resize_maximum = 960
+
+    def _set_resize_enable_(self, boolean):
+        self._resize_is_enable = boolean
+
+    def _set_resize_target_(self, widget):
+        self._resize_target = widget
+
+    def _set_resize_minimum_(self, value):
+        self._resize_minimum = value
+
+    def _set_resize_maximum_(self, value):
+        self._resize_maximum = value
 
 
 class AbsQtPopupDef(object):
@@ -462,6 +498,12 @@ class AbsQtPopupDef(object):
     def _get_popup_pos_(cls, widget):
         rect = widget.rect()
         # p = QtCore.QPoint(rect.right(), rect.center().y())
+        p = widget.mapToGlobal(rect.topLeft())
+        return p.x(), p.y()
+    @classmethod
+    def _get_popup_pos_0_(cls, widget):
+        rect = widget.rect()
+        # p = QtCore.QPoint(rect.right(), rect.center().y())
         p = widget.mapToGlobal(rect.bottomLeft())
         return p.x(), p.y()+1
     @classmethod
@@ -472,7 +514,7 @@ class AbsQtPopupDef(object):
     def _set_wgt_update_draw_(self):
         raise NotImplementedError()
 
-    def _set_widget_geometry_update_(self):
+    def _set_wgt_update_geometry_(self):
         pass
 
     def _set_popup_start_(self, *args, **kwargs):
@@ -532,7 +574,7 @@ class AbsQtPopupDef(object):
             width_, height_
         )
         #
-        self._set_widget_geometry_update_()
+        self._set_wgt_update_geometry_()
         #
         self._widget.show()
         self._set_wgt_update_draw_()
@@ -545,7 +587,7 @@ class AbsQtPopupDef(object):
             x, y,
             w, h
         )
-        self._set_widget_geometry_update_()
+        self._set_wgt_update_geometry_()
         #
         self._widget.show()
         #
@@ -576,7 +618,7 @@ class AbsQtValueDef(object):
     def _set_value_validation_fnc_(self, fnc):
         self._value_validation_fnc = fnc
 
-    def _value_validation_fnc_(self, value):
+    def _get_value_is_valid_(self, value):
         if self._value_validation_fnc is not None:
             return self._value_validation_fnc(value)
         return True
@@ -607,10 +649,25 @@ class AbsQtEntryDef(object):
     def _set_entry_def_init_(self, widget):
         self._widget = widget
         #
+        self._entry_frame = None
+        #
         self._entry_is_enable = False
+        #
+        self._entry_use_as_storage = False
 
     def _set_entry_enable_(self, boolean):
         self._entry_is_enable = boolean
+
+    def _set_entry_frame_(self, widget):
+        self._entry_frame = widget
+
+    def _get_entry_frame_(self):
+        if self._entry_frame is not None:
+            return self._entry_frame
+        return self._widget.parent()
+
+    def _set_entry_use_as_storage_(self, boolean):
+        self._entry_use_as_storage = boolean
 
 
 class AbsQtEntryDropDef(object):
@@ -629,22 +686,26 @@ class AbsQtIconDef(object):
 
     def _set_icon_def_init_(self):
         self._icon_is_enable = False
-        self._icon_name_is_enable = False
         #
         self._icon_file_path = None
+        self._sub_icon_file_path = None
+        self._icon_file_is_enable = False
         self._hover_icon_file_path = None
         #
-        self._color_icon_rgb = None
+        self._icon_color_rgb = None
         self._icon_name_text = None
+        self._icon_name_is_enable = False
         #
         self._icon_frame_rect = QtCore.QRect()
         self._icon_file_draw_rect = QtCore.QRect()
+        self._sub_icon_file_draw_rect = QtCore.QRect()
         self._icon_color_draw_rect = QtCore.QRect()
         self._icon_name_draw_rect = QtCore.QRect()
         #
         self._icon_frame_size = 20, 20
         self._icon_file_draw_size = 16, 16
-        self._color_icon_size = 12, 12
+        self._sub_icon_file_draw_size = 8, 8
+        self._icon_color_draw_size = 12, 12
         self._icon_name_draw_size = 12, 12
 
     def _set_icon_enable_(self, boolean):
@@ -656,6 +717,10 @@ class AbsQtIconDef(object):
     def _set_icon_file_path_(self, file_path):
         self._icon_is_enable = True
         self._icon_file_path = file_path
+        self._set_wgt_update_draw_()
+
+    def _set_sub_icon_file_path_(self, file_path):
+        self._sub_icon_file_path = file_path
         self._set_wgt_update_draw_()
 
     def _set_hover_icon_file_path_(self, file_path):
@@ -673,7 +738,7 @@ class AbsQtIconDef(object):
 
     def _set_color_icon_rgb_(self, rgb):
         self._icon_is_enable = True
-        self._color_icon_rgb = rgb
+        self._icon_color_rgb = rgb
         self._set_wgt_update_draw_()
 
     def _set_icon_name_text_(self, text):
@@ -686,7 +751,7 @@ class AbsQtIconDef(object):
             x, y, w, h
         )
 
-    def _set_icon_name_text_rect_(self, x, y, w, h):
+    def _set_icon_name_draw_rect_(self, x, y, w, h):
         self._icon_name_draw_rect.setRect(
             x, y, w, h
         )
@@ -700,7 +765,7 @@ class AbsQtIconDef(object):
             x, y, w, h
         )
 
-    def _set_icon_file_path_rect_(self, x, y, w, h):
+    def _set_icon_file_draw_rect_(self, x, y, w, h):
         self._icon_file_draw_rect.setRect(
             x, y, w, h
         )
@@ -864,19 +929,28 @@ class AbsQtTypeDef(object):
 
 
 class AbsQtNameDef(object):
+    AlignRegion = utl_gui_configure.AlignRegion
     def _set_name_def_init_(self):
         self._name_enable = False
         self._name_text = None
         self._name_text_orig = None
         self._name_text_font = Font.NAME
+        #
+        self._name_align = self.AlignRegion.Center
+        #
         self._name_color = QtFontColor.Basic
         self._hover_name_color = QtFontColor.Light
         self._name_text_option = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
         #
         self._name_width = 160
         #
+        self._name_frame_size = 20, 20
+        self._name_draw_size = 16, 16
         self._name_frame_rect = QtCore.QRect()
-        self._name_rect = QtCore.QRect()
+        self._name_draw_rect = QtCore.QRect()
+
+    def _set_name_align_(self, align):
+        self._name_align = align
 
     def _set_name_color_(self, color):
         self._name_color = color
@@ -914,12 +988,12 @@ class AbsQtNameDef(object):
         )
 
     def _set_name_rect_(self, x, y, w, h):
-        self._name_rect.setRect(
+        self._name_draw_rect.setRect(
             x, y, w, h
         )
 
     def _get_name_rect_(self):
-        return self._name_rect
+        return self._name_draw_rect
 
     def _set_tool_tip_(self, raw, as_markdown_style=False):
         if isinstance(raw, (tuple, list)):
@@ -1011,7 +1085,7 @@ class _QtProgressDef(object):
     def _set_wgt_update_draw_(self):
         raise NotImplementedError()
 
-    def _set_widget_geometry_update_(self):
+    def _set_wgt_update_geometry_(self):
         pass
 
     def _set_progress_def_init_(self):
@@ -1031,7 +1105,7 @@ class _QtProgressDef(object):
         self._progress_height = value
 
     def _set_progress_run_(self):
-        self._set_widget_geometry_update_()
+        self._set_wgt_update_geometry_()
         self._set_wgt_update_draw_()
         #
         QtWidgets.QApplication.instance().processEvents(
@@ -1435,9 +1509,10 @@ class AbsQtActionDef(object):
             ]:
                 self._widget.setCursor(
                     QtGui.QCursor(
-                        QtGui.QPixmap(
-                            utl_gui_core.RscIconFile.get('system/split-h')
-                        )
+                        QtCore.Qt.SplitHCursor
+                        # QtGui.QPixmap(
+                        #     utl_gui_core.RscIconFile.get('system/split-h')
+                        # )
                     )
                 )
             elif self._action_flag in [
@@ -1447,9 +1522,10 @@ class AbsQtActionDef(object):
             ]:
                 self._widget.setCursor(
                     QtGui.QCursor(
-                        QtGui.QPixmap(
-                            utl_gui_core.RscIconFile.get('system/split-v')
-                        )
+                        QtCore.Qt.SplitVCursor
+                        # QtGui.QPixmap(
+                        #     utl_gui_core.RscIconFile.get('system/split-v')
+                        # )
                     )
                 )
             elif self._action_flag in [
@@ -1511,21 +1587,21 @@ class AbsQtActionHoverDef(object):
         raise NotImplementedError()
 
     def _set_action_hover_def_init_(self):
-        self._is_hovered = False
+        self._action_is_hovered = False
 
-    def _set_hovered_(self, boolean):
-        self._is_hovered = boolean
+    def _set_action_hovered_(self, boolean):
+        self._action_is_hovered = boolean
         #
         self._set_wgt_update_draw_()
 
     def _get_is_hovered_(self):
-        return self._is_hovered
+        return self._action_is_hovered
 
     def _set_action_hover_filter_execute_(self, event):
         if event.type() == QtCore.QEvent.Enter:
-            self._set_hovered_(True)
+            self._set_action_hovered_(True)
         elif event.type() == QtCore.QEvent.Leave:
-            self._set_hovered_(False)
+            self._set_action_hovered_(False)
 
     def _set_action_hover_execute_(self, event):
         pass
@@ -1731,9 +1807,9 @@ class _QtItemOptionPressActionDef(object):
         return False
 
 
-class AbsQtActionChooseDef(object):
+class AbsQtChooseDef(object):
     choose_changed = qt_signal()
-    def _set_action_choose_def_init_(self):
+    def _set_choose_def_init_(self):
         self._choose_expand_icon_file_path = utl_core.Icon.get('choose_expand')
         self._choose_collapse_icon_file_path = utl_core.Icon.get('choose_collapse')
         #
@@ -1741,33 +1817,45 @@ class AbsQtActionChooseDef(object):
         #
         self._rect = QtCore.QRect()
         #
-        self._item_choose_is_dropped = False
+        self._choose_is_activated = False
         #
         self._item_choose_content_raw = None
-        self._item_choose_name_texts = []
+        self._choose_values = []
+        self._choose_icon_file_paths = []
         self._item_choose_path_texts = []
 
-    def _get_item_choose_is_dropped_(self):
-        return self._item_choose_is_dropped
+    def _get_choose_is_activated_(self):
+        return self._choose_is_activated
 
-    def _set_item_choose_dropped_(self, boolean):
-        self._item_choose_is_dropped = boolean
+    def _set_choose_activated_(self, boolean):
+        self._choose_is_activated = boolean
 
     def _set_item_choose_content_raw_(self, raw):
         self._item_choose_content_raw = raw
         if isinstance(raw, (tuple, list)):
-            self._item_choose_name_texts = list(raw)
+            self._choose_values = list(raw)
 
-    def _set_item_choose_content_name_texts_(self, contents):
-        self._item_choose_name_texts = contents
+    def _set_choose_values_(self, values, icon_file_path=None):
+        c = len(values)
+        self._choose_values = values
+        self._choose_icon_file_paths = [icon_file_path]*c
 
-    def _get_item_choose_content_name_texts_(self):
-        return self._item_choose_name_texts
+    def _get_choose_values_(self):
+        return self._choose_values
 
-    def _set_item_choose_changed_emit_send_(self):
+    def _get_choose_current_(self):
+        pass
+
+    def _set_choose_current_(self, value):
+        pass
+
+    def _get_choose_icon_file_paths_(self):
+        return self._choose_icon_file_paths
+
+    def _set_choose_changed_emit_send_(self):
         self.choose_changed.emit()
 
-    def _set_item_choose_changed_connect_to_(self, fnc):
+    def _set_choose_changed_connect_to_(self, fnc):
         self.choose_changed.connect(fnc)
 
 
@@ -1776,6 +1864,7 @@ class AbsQtValueEntryDef(object):
         self._widget = widget
         self._value_entry_is_enable = False
         self._value_entry_drop_is_enable = False
+        #
         self._value_entry_completion_fnc = None
 
     def _set_value_entry_enable_(self, boolean):
@@ -1804,6 +1893,12 @@ class AbsQtValueEntryDef(object):
             return self._value_entry_completion_fnc() or []
         return []
 
+    def _set_value_entry_widget_build_(self, *args, **kwargs):
+        pass
+
+    def _get_value_entry_widget_(self):
+        pass
+
 
 class AbsQtActionEntryDef(object):
     def _set_action_entry_def_init_(self, widget):
@@ -1812,18 +1907,25 @@ class AbsQtActionEntryDef(object):
 
 class AbsQtEntryHistoryDef(object):
     def _set_entry_history_def_init_(self, widget):
+        self._widget = widget
+        self._entry_history_is_enable = False
         self._entry_history_key = None
-        self._entry_history_value_filter_fnc = None
+        self.entry_history_value_validation_fnc = None
 
-    def _set_entry_history_filter_fnc_(self, fnc):
-        self._entry_history_value_filter_fnc = fnc
+    def _set_entry_history_enable_(self, boolean):
+        self._entry_history_is_enable = boolean
+
+    def _set_entry_history_validation_fnc_(self, fnc):
+        self.entry_history_value_validation_fnc = fnc
 
     def _get_entry_history_value_is_valid_(self, value):
-        if self._entry_history_value_filter_fnc is not None:
-            return self._entry_history_value_filter_fnc(value)
+        if self.entry_history_value_validation_fnc is not None:
+            return self.entry_history_value_validation_fnc(value)
         return True
 
     def _set_entry_history_key_(self, key):
+        self._entry_history_is_enable = True
+        #
         self._entry_history_key = key
 
         self._set_entry_history_update_()
@@ -1886,10 +1988,10 @@ class AbsQtGuideChooseActionDef(object):
         self._get_guide_choose_item_at_(index)._set_item_choose_content_raw_(raw)
     #
     def _set_guide_choose_item_content_name_texts_at_(self, texts, index=0):
-        self._get_guide_choose_item_at_(index)._set_item_choose_content_name_texts_(texts)
+        self._get_guide_choose_item_at_(index)._set_choose_values_(texts)
     #
     def _get_guide_choose_item_content_name_texts_at_(self, index=0):
-        return self._get_guide_choose_item_at_(index)._get_item_choose_content_name_texts_()
+        return self._get_guide_choose_item_at_(index)._get_choose_values_()
 
     def _set_guide_choose_item_drop_at_(self, index=0):
         widget = self.CHOOSE_DROP_FRAME_CLASS(self)
@@ -1899,11 +2001,11 @@ class AbsQtGuideChooseActionDef(object):
 
     def _set_guide_choose_item_expanded_at_(self, boolean, index=0):
         item = self._get_guide_choose_item_at_(index)
-        item._set_item_choose_dropped_(boolean)
+        item._set_choose_activated_(boolean)
 
     def _get_guide_choose_item_is_expanded_at_(self, index=0):
         item = self._get_guide_choose_item_at_(index)
-        return item._get_item_choose_is_dropped_()
+        return item._get_choose_is_activated_()
 
     def _set_guide_choose_item_expand_at_(self, index=0):
         self._set_guide_choose_item_expanded_at_(True, index)
@@ -2933,6 +3035,10 @@ class AbsQtListWidget(
         )
 
     def _set_clear_(self):
+        for i in self._get_all_items_():
+            i._set_item_show_kill_all_()
+            i._set_item_show_stop_all_()
+        #
         self._pre_selected_items = []
         #
         self.clear()
@@ -2984,6 +3090,22 @@ class AbsQtListWidget(
         item_widget = self.itemWidget(item)
         item_widget.deleteLater()
 
+    def _set_item_delete_(self, item):
+        print item.index()
+
+    def _set_focused_(self, boolean):
+        if boolean is True:
+            self.setFocus(
+                QtCore.Qt.MouseFocusReason
+            )
+        else:
+            self.setFocus(
+                QtCore.Qt.NoFocusReason
+            )
+
+    def _get_item_current_(self):
+        return self.currentItem()
+
 
 class AbsQtItemValueDefaultDef(object):
     def _set_item_value_default_def_init_(self):
@@ -3009,38 +3131,38 @@ class AbsQtItemValueTypeConstantEntryDef(object):
         #
         self._item_value_default = None
         #
-        self._item_value_entry_widget = None
+        self._value_entry_widget = None
 
     def _set_value_entry_widget_build_(self, value_type):
         pass
 
     def _get_value_entry_widget_(self):
-        return self._item_value_entry_widget
+        return self._value_entry_widget
 
     def _set_item_value_type_(self, value_type):
         self._item_value_type = value_type
-        self._item_value_entry_widget._set_item_value_type_(value_type)
+        self._value_entry_widget._set_item_value_type_(value_type)
 
     def _set_use_as_frames_(self):
-        self._item_value_entry_widget._set_use_as_frames_()
+        self._value_entry_widget._set_use_as_frames_()
 
     def _set_use_as_rgba_(self):
-        self._item_value_entry_widget._set_use_as_rgba_()
+        self._value_entry_widget._set_use_as_rgba_()
 
     def _get_item_value_type_(self):
         return self._item_value_type
 
     def _set_item_value_(self, value):
-        self._item_value_entry_widget._set_item_value_(value)
+        self._value_entry_widget._set_item_value_(value)
 
     def _get_item_value_(self):
-        return self._item_value_entry_widget._get_item_value_()
+        return self._value_entry_widget._get_item_value_()
 
     def _set_value_entry_finished_connect_to_(self, fnc):
-        self._item_value_entry_widget.entry_finished.connect(fnc)
+        self._value_entry_widget.entry_finished.connect(fnc)
 
     def _set_value_entry_changed_connect_to_(self, fnc):
-        self._item_value_entry_widget.entry_changed.connect(fnc)
+        self._value_entry_widget.entry_changed.connect(fnc)
 
     def _set_item_value_entry_enable_(self, boolean):
         pass
@@ -3056,7 +3178,8 @@ class AbsQtValueEnumerateEntryDef(object):
         self._values = []
         self._value_icon_file_paths = []
         #
-        self._item_value_entry_widget = None
+        self._value_entry_widget = None
+        self._value_index_visible = True
 
     def _set_wgt_update_(self):
         raise NotImplementedError()
@@ -3065,14 +3188,14 @@ class AbsQtValueEnumerateEntryDef(object):
         pass
 
     def _get_value_entry_widget_(self):
-        return self._item_value_entry_widget
+        return self._value_entry_widget
 
     def _set_value_entry_drop_enable_(self, boolean):
-        self._item_value_entry_widget._set_entry_drop_enable_(boolean)
+        self._value_entry_widget._set_entry_drop_enable_(boolean)
 
     def _set_item_value_type_(self, value_type):
         self._item_value_type = value_type
-        self._item_value_entry_widget._set_item_value_type_(value_type)
+        self._value_entry_widget._set_item_value_type_(value_type)
 
     def _get_item_value_type_(self):
         return self._item_value_type
@@ -3092,7 +3215,6 @@ class AbsQtValueEnumerateEntryDef(object):
         c = len(values)
         self._values = values
         self._value_icon_file_paths = [icon_file_path]*c
-        self._item_value_entry_widget._set_completer_values_(values)
         self._set_wgt_update_()
 
     def _get_item_values_(self):
@@ -3106,7 +3228,7 @@ class AbsQtValueEnumerateEntryDef(object):
         self._set_wgt_update_()
 
     def _set_item_value_(self, value):
-        self._item_value_entry_widget._set_item_value_(value)
+        self._value_entry_widget._set_item_value_(value)
         self._set_wgt_update_()
 
     def _set_item_value_at_(self, index):
@@ -3132,14 +3254,14 @@ class AbsQtValueEnumerateEntryDef(object):
             )
 
     def _get_item_value_(self):
-        return self._item_value_entry_widget._get_item_value_()
+        return self._value_entry_widget._get_item_value_()
 
     def _get_item_value_at_(self, index):
         return self._values[index]
 
     def _set_item_value_clear_(self):
         self._values = []
-        self._item_value_entry_widget._set_item_value_clear_()
+        self._value_entry_widget._set_item_value_clear_()
 
     def _get_item_value_is_default_(self):
         return self._get_item_value_() == self._get_item_value_default_()
@@ -3319,6 +3441,11 @@ class AbsQtDeleteDef(object):
         #
         self._delete_is_enable = False
         self._delete_draw_rect = QtCore.QRect()
+        #
+        self._delete_icon_file_draw_size = 12, 12
+        self._delete_is_hovered = False
+        self._delete_icon_file_path = utl_gui_core.RscIconFile.get('close')
+        self._hover_delete_icon_file_path = utl_gui_core.RscIconFile.get('close-hover')
 
     def _set_delete_enable_(self, boolean):
         self._delete_is_enable = boolean
@@ -3327,3 +3454,283 @@ class AbsQtDeleteDef(object):
         self._delete_draw_rect.setRect(
             x, y, w, h
         )
+
+    def _get_delete_icon_file_path_(self):
+        return [self._delete_icon_file_path, self._hover_delete_icon_file_path][self._delete_is_hovered]
+
+
+class AbsQtHelpDef(object):
+    def _set_help_def_init_(self, widget):
+        self._widget = widget
+
+        self._help_text_is_enable = False
+        #
+        self._help_text_draw_size = 480, 240
+        self._help_frame_draw_rect = QtCore.QRect()
+        self._help_draw_rect = QtCore.QRect()
+        self._help_text = ''
+
+    def _set_help_text_(self, text):
+        self._help_text = text
+
+
+class AbsQtScreenshotDef(object):
+    class Mode(enum.IntEnum):
+        Started = 0
+        New = 1
+        Edit = 2
+        Stopped = 3
+
+    RectRegion = utl_gui_configure.RectRegion
+
+    CURSOR_MAPPER = {
+        RectRegion.Unknown: QtCore.Qt.ArrowCursor,
+        RectRegion.Top: QtCore.Qt.SizeVerCursor,
+        RectRegion.Bottom: QtCore.Qt.SizeVerCursor,
+        RectRegion.Left: QtCore.Qt.SizeHorCursor,
+        RectRegion.Right: QtCore.Qt.SizeHorCursor,
+        RectRegion.TopLeft: QtCore.Qt.SizeFDiagCursor,
+        RectRegion.TopRight: QtCore.Qt.SizeBDiagCursor,
+        RectRegion.BottomLeft: QtCore.Qt.SizeBDiagCursor,
+        RectRegion.BottomRight: QtCore.Qt.SizeFDiagCursor,
+        RectRegion.Inside: QtCore.Qt.SizeAllCursor,
+    }
+
+    screenshot_started = qt_signal()
+    screenshot_finished = qt_signal()
+    screenshot_accepted = qt_signal(list)
+    CACHE = 0, 0, 0, 0
+    def _set_screenshot_def_init_(self, widget):
+        self._widget = widget
+
+        self._screenshot_mode = self.Mode.Started
+        self._screenshot_is_modify = False
+
+        self._screenshot_file_path = None
+
+        self._screenshot_rect = QtCore.QRect()
+
+        self._screenshot_is_activated = False
+        #
+        self._screenshot_point_start = QtCore.QPoint()
+        #
+        self._screenshot_rect_point_start = QtCore.QPoint()
+        self._screenshot_rect_point_start_offset = [0, 0]
+        self._screenshot_rect_point_start_offset_temp = [0, 0]
+        self._screenshot_rect_point_end = QtCore.QPoint()
+        self._screenshot_rect_point_end_offset = [0, 0]
+        self._screenshot_rect_point_end_offset_temp = [0, 0]
+
+        self._screenshot_rect_region_edit = self.RectRegion.Unknown
+
+        self._screenshot_modify_gap = 8
+
+    def _set_action_screenshot_press_start_(self, event):
+        self._screenshot_point_start = event.pos()
+        if self._screenshot_mode == self.Mode.Started:
+            self._screenshot_mode = self.Mode.New
+
+        self._widget.update()
+
+    def _set_action_screenshot_press_execute_(self, event):
+        p = event.pos()
+        if self._screenshot_mode == self.Mode.New:
+            self._screenshot_rect_point_start.setX(self._screenshot_point_start.x())
+            self._screenshot_rect_point_start.setY(self._screenshot_point_start.y())
+            self._screenshot_rect_point_end = event.pos()
+        elif self._screenshot_mode == self.Mode.Edit:
+            d_p = p - self._screenshot_point_start
+            d_p_x, d_p_y = d_p.x(), d_p.y()
+            o_x_0, o_y_0 = self._screenshot_rect_point_start_offset_temp
+            o_x_1, o_y_1 = self._screenshot_rect_point_end_offset_temp
+            if self._screenshot_rect_region_edit == self.RectRegion.Inside:
+                self._screenshot_rect_point_start_offset[0] = o_x_0+d_p_x
+                self._screenshot_rect_point_start_offset[1] = o_y_0+d_p_y
+                self._screenshot_rect_point_end_offset[0] = o_x_1+d_p_x
+                self._screenshot_rect_point_end_offset[1] = o_y_1+d_p_y
+            elif self._screenshot_rect_region_edit == self.RectRegion.Top:
+                self._screenshot_rect_point_start_offset[1] = o_y_0+d_p_y
+            elif self._screenshot_rect_region_edit == self.RectRegion.Bottom:
+                self._screenshot_rect_point_end_offset[1] = o_y_1+d_p_y
+            elif self._screenshot_rect_region_edit == self.RectRegion.Left:
+                self._screenshot_rect_point_start_offset[0] = o_x_0+d_p_x
+            elif self._screenshot_rect_region_edit == self.RectRegion.Right:
+                self._screenshot_rect_point_end_offset[0] = o_x_1+d_p_x
+            elif self._screenshot_rect_region_edit == self.RectRegion.TopLeft:
+                self._screenshot_rect_point_start_offset[0] = o_x_0+d_p_x
+                self._screenshot_rect_point_start_offset[1] = o_y_0+d_p_y
+            elif self._screenshot_rect_region_edit == self.RectRegion.TopRight:
+                self._screenshot_rect_point_start_offset[1] = o_y_0+d_p_y
+                self._screenshot_rect_point_end_offset[0] = o_x_1+d_p_x
+            elif self._screenshot_rect_region_edit == self.RectRegion.BottomLeft:
+                self._screenshot_rect_point_start_offset[0] = o_x_0+d_p_x
+                self._screenshot_rect_point_end_offset[1] = o_y_1+d_p_y
+            elif self._screenshot_rect_region_edit == self.RectRegion.BottomRight:
+                self._screenshot_rect_point_end_offset[0] = o_x_1+d_p_x
+                self._screenshot_rect_point_end_offset[1] = o_y_1+d_p_y
+
+        self._set_screenshot_update_geometry_()
+        self._widget.update()
+
+    def _set_action_screenshot_hover_execute_(self, event):
+        if self._screenshot_mode == self.Mode.Edit:
+            pos = event.pos()
+
+            x, y = self._screenshot_rect.x(), self._screenshot_rect.y()
+            w, h = self._screenshot_rect.width(), self._screenshot_rect.height()
+
+            m_x, m_y = pos.x(), pos.y()
+
+            self._screenshot_rect_region_edit = self._get_rect_region_(
+                m_x, m_y, x, y, w, h, 8
+            )
+            cursor = self.CURSOR_MAPPER[self._screenshot_rect_region_edit]
+
+            self._widget.setCursor(QtGui.QCursor(cursor))
+
+    def _set_action_screenshot_press_stop_(self, event):
+        if self._screenshot_mode == self.Mode.New:
+            if self._screenshot_rect_point_start != self._screenshot_rect_point_end:
+                self._screenshot_mode = self.Mode.Edit
+        elif self._screenshot_mode == self.Mode.Edit:
+            self._screenshot_rect_point_start_offset_temp[0] = self._screenshot_rect_point_start_offset[0]
+            self._screenshot_rect_point_start_offset_temp[1] = self._screenshot_rect_point_start_offset[1]
+            self._screenshot_rect_point_end_offset_temp[0] = self._screenshot_rect_point_end_offset[0]
+            self._screenshot_rect_point_end_offset_temp[1] = self._screenshot_rect_point_end_offset[1]
+
+        self._widget.update()
+
+    def _set_screenshot_update_geometry_(self):
+        x, y = 0, 0
+        w, h = self._widget.width(), self._widget.height()
+
+        x_0, y_0 = self._screenshot_rect_point_start.x(), self._screenshot_rect_point_start.y()
+        x_1, y_1 = self._screenshot_rect_point_end.x(), self._screenshot_rect_point_end.y()
+
+        o_x_0, o_y_0 = self._screenshot_rect_point_start_offset
+        o_x_1, o_y_1 = self._screenshot_rect_point_end_offset
+
+        x_0 += o_x_0
+        y_0 += o_y_0
+        x_1 += o_x_1
+        y_1 += o_y_1
+
+        s_x, s_y = min(x_0, x_1), min(y_0, y_1)
+        s_w, s_h = abs(x_1-x_0), abs(y_1-y_0)
+
+        self._screenshot_rect.setRect(
+            s_x, s_y, s_w, s_h
+        )
+
+        t_w, t_h = self._help_text_draw_size
+
+        t_t_w, t_t_h = t_w-48, t_h-48
+
+        self._help_frame_draw_rect.setRect(
+            x+(w-t_w)/2, y+(h-t_h)/2, t_w, t_h
+        )
+        self._help_draw_rect.setRect(
+            x+(w-t_t_w)/2, y+(h-t_t_h)/2, t_t_w, t_t_h
+        )
+
+    def _set_screenshot_cancel_(self):
+        self.screenshot_finished.emit()
+        self._widget.close()
+        self._widget.deleteLater()
+
+    def _set_screenshot_accept_(self):
+        def fnc_():
+            self._timer.stop()
+            x, y, w, h = self._get_screenshot_accept_geometry_()
+            self.screenshot_finished.emit()
+            self.screenshot_accepted.emit([x, y, w, h])
+            self._widget.close()
+            self._widget.deleteLater()
+
+        self._screenshot_mode = self.Mode.Stopped
+        self._widget.hide()
+
+        AbsQtScreenshotDef.CACHE = self._get_screenshot_accept_geometry_()
+
+        self._timer = QtCore.QTimer(self._widget)
+        self._timer.timeout.connect(
+            fnc_
+        )
+
+        self._timer.start(100)
+
+    def _set_screenshot_start_(self):
+        self.screenshot_started.emit()
+        self._widget.setGeometry(
+            QtWidgets.QApplication.desktop().rect()
+        )
+        self._widget.show()
+        self._widget.setCursor(
+            QtGui.QCursor(QtCore.Qt.CrossCursor)
+        )
+    @classmethod
+    def _get_rect_region_(cls, m_x, m_y, x, y, w, h, gap):
+        # top
+        if x+gap < m_x < x+w-gap and y-gap < m_y < y+gap:
+            return cls.RectRegion.Top
+        # bottom
+        elif x+gap < m_x < x+w-gap and y+h-gap < m_y < y+h+gap:
+            return cls.RectRegion.Bottom
+        # left
+        elif x-gap < m_x < x+gap and y+gap < m_y < y+h-gap:
+            return cls.RectRegion.Left
+        # right
+        elif x+w-gap < m_x < x+w+gap and y+gap < m_y < y+h-gap:
+            return cls.RectRegion.Right
+        # top left
+        elif x-gap < m_x < x+gap and y-gap < m_y < y+gap:
+            return cls.RectRegion.TopLeft
+        # top right
+        elif x+w-gap <= m_x <= x+w+gap and y-gap <= m_y <= y+gap:
+            return cls.RectRegion.TopRight
+        # bottom left
+        elif x-gap < m_x < x+gap and y+h-gap < m_y < y+h+gap:
+            return cls.RectRegion.BottomLeft
+        # bottom right
+        elif x+w-gap < m_x < x+w+gap and y+h-gap < m_y < y+h+gap:
+            return cls.RectRegion.BottomRight
+        # inside
+        elif x+gap < m_x < x+w-gap and y+gap < m_y < y+h-gap:
+            return cls.RectRegion.Inside
+        else:
+            return cls.RectRegion.Unknown
+
+    def _get_screenshot_accept_geometry_(self):
+        x, y = self._widget.x(), self._widget.y()
+
+        rect_0 = self._screenshot_rect
+        x_0, y_0, w_0, h_0 = rect_0.x(), rect_0.y(), rect_0.width(), rect_0.height()
+        return x+x_0, y+y_0, w_0, h_0
+    @classmethod
+    def _set_screenshot_save_to_(cls, geometry, file_path):
+        bsc_core.StorageFileOpt(file_path).set_directory_create()
+        rect = QtCore.QRect(*geometry)
+
+        app = QtWidgets.QApplication
+
+        s = app.primaryScreen().grabWindow(
+            app.desktop().winId()
+        )
+        s.copy(rect).save(file_path)
+
+    def _get_screenshot_pixmap_(self):
+        x, y = self._widget.x(), self._widget.y()
+
+        rect_0 = self._screenshot_rect
+        x_0, y_0, w_0, h_0 = rect_0.x(), rect_0.y(), rect_0.width(), rect_0.height()
+
+        rect_1 = QtCore.QRect(
+            x+x_0, y+y_0, w_0, h_0
+        )
+
+        app = QtWidgets.QApplication
+
+        s = app.primaryScreen().grabWindow(
+            app.desktop().winId()
+        )
+        return s.copy(rect_1)

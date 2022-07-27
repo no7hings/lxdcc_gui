@@ -26,31 +26,6 @@ from lxutil_gui import utl_gui_core
 import lxresolver.methods as rsv_methods
 
 
-class TextureConfigure(object):
-    def __init__(self, file_path):
-        self._file_path_opt = bsc_core.StorageFileOpt(file_path)
-        if self._file_path_opt.get_is_exists() is True:
-            self._dict = self._file_path_opt.set_read()
-        else:
-            self._dict = collections.OrderedDict()
-            self.set_update()
-
-    def set_version(self, scene_file_path, version):
-        key = bsc_core.StoragePathMtd.set_map_to_linux(scene_file_path)
-        self._dict[key] = version
-        self.set_update()
-
-    def get_current_version(self, scene_file_path):
-        key = bsc_core.StoragePathMtd.set_map_to_linux(scene_file_path)
-        if key in self._dict:
-            return self._dict[key]
-
-    def set_update(self):
-        self._file_path_opt.set_write(
-            self._dict
-        )
-
-
 class AbsTextureWorkspace(object):
     def __init__(self, rsv_task):
         self._resolver = rsv_commands.get_resolver()
@@ -1007,7 +982,12 @@ class AbsDccTextureManager(prx_widgets.PrxSessionWindow):
                 i_directory_args = self._get_default_directory_args_(i_texture_any, ext_tgt)
                 if i_directory_args:
                     i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args)
-                    if i_texture_src is not None:
+                    if i_texture_src.ext == ext_tgt:
+                        i_descriptions.append(
+                            u'source is non-exists'
+                        )
+                        repath_src_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Error
+                    else:
                         if i_texture_src.get_is_exists() is True:
                             if i_texture_src.get_is_writeable() is True:
                                 if i_texture_any == i_texture_src:
@@ -1020,26 +1000,24 @@ class AbsDccTextureManager(prx_widgets.PrxSessionWindow):
                             )
                             repath_src_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Error
                     #
-                    if i_texture_tgt is not None:
-                        if i_texture_tgt.get_is_exists() is True:
-                            if i_texture_tgt.get_is_writeable() is True:
-                                if i_texture_any == i_texture_tgt:
-                                    repath_tgt_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Correct
-                            else:
-                                repath_tgt_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Locked
+                    if i_texture_tgt.get_is_exists() is True:
+                        if i_texture_tgt.get_is_writeable() is True:
+                            if i_texture_any == i_texture_tgt:
+                                repath_tgt_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Correct
                         else:
-                            i_descriptions.append(
-                                u'target is non-exists'
-                            )
-                            repath_tgt_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Error
+                            repath_tgt_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Locked
+                    else:
+                        i_descriptions.append(
+                            u'target is non-exists'
+                        )
+                        repath_tgt_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Error
                     #
-                    if i_texture_src is not None and i_texture_tgt is not None:
-                        if i_texture_src.get_is_exists() is True and i_texture_tgt.get_is_exists() is True:
-                            if i_texture_src.get_timestamp_is_same_to(i_texture_tgt) is False:
-                                i_descriptions.append(
-                                    u'target is changed'
-                                )
-                                repath_tgt_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Warning
+                    if i_texture_src.get_is_exists() is True and i_texture_tgt.get_is_exists() is True:
+                        if i_texture_src.get_timestamp_is_same_to(i_texture_tgt) is False:
+                            i_descriptions.append(
+                                u'target is changed'
+                            )
+                            repath_tgt_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Warning
 
                 i_texture_prx_item.set_name(
                     u', '.join(i_descriptions), 1

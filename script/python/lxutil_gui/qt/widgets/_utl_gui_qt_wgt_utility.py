@@ -297,7 +297,7 @@ class QtPainter(QtGui.QPainter):
         #
         self.device()
 
-    def _set_file_icon_draw_by_rect_(self, rect, file_path, offset=0):
+    def _set_icon_file_draw_by_rect_(self, rect, file_path, offset=0):
         if file_path:
             if file_path.endswith('.svg'):
                 self._set_svg_image_draw_by_rect_(rect, file_path, offset=offset)
@@ -1336,6 +1336,22 @@ class QtPainter(QtGui.QPainter):
         else:
             self.drawRect(rect_)
 
+    def _set_screenshot_draw_by_rect_(self, rect_0, rect_1, border_color, background_color):
+        path_0 = QtGui.QPainterPath()
+        path_0.addRect(rect_0)
+
+        path_1 = QtGui.QPainterPath()
+        path_1.addRect(rect_1)
+
+        path_2 = path_0-path_1
+
+        self._set_background_color_(background_color)
+        self._set_border_color_(border_color)
+        self._set_border_width_(2)
+        self._set_border_style_(QtCore.Qt.DashLine)
+        #
+        self.drawPath(path_2)
+
 
 class QtNGPainter(QtPainter):
     def __init__(self, *args, **kwargs):
@@ -1506,12 +1522,12 @@ class QtIconButton(QtWidgets.QPushButton):
         self.setMinimumSize(20, 20)
         #
         self._icon_file_path = None
-        self._color_icon_rgb = None
+        self._icon_color_rgb = None
         #
         self._icon_file_draw_size = 16, 16
-        self._color_icon_size = 8, 8
+        self._icon_color_draw_size = 8, 8
         self._frame_size = 20, 20
-        self._is_hovered = False
+        self._action_is_hovered = False
         #
         self.installEventFilter(self)
         #
@@ -1536,13 +1552,13 @@ class QtIconButton(QtWidgets.QPushButton):
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Enter:
-                self._is_hovered = True
+                self._action_is_hovered = True
                 self.update()
             elif event.type() == QtCore.QEvent.Leave:
-                self._is_hovered = False
+                self._action_is_hovered = False
                 self.update()
             elif event.type() == QtCore.QEvent.MouseButtonPress:
-                self._is_hovered = True
+                self._action_is_hovered = True
                 self._set_menu_show_()
                 self.update()
         return False
@@ -1556,7 +1572,7 @@ class QtIconButton(QtWidgets.QPushButton):
         f_x, f_y = (w-i_w) / 2, (h-i_h) / 2
         #
         bkg_rect = QtCore.QRect(1, 1, w-1, h-1)
-        bkg_color = [QtBackgroundColor.Transparent, QtBackgroundColor.Hovered][self._is_hovered]
+        bkg_color = [QtBackgroundColor.Transparent, QtBackgroundColor.Hovered][self._action_is_hovered]
         painter._set_frame_draw_by_rect_(
             bkg_rect,
             border_color=bkg_color,
@@ -1566,7 +1582,7 @@ class QtIconButton(QtWidgets.QPushButton):
         if self._icon_file_path is not None:
             icn = QtCore.QRect(f_x, f_y, i_w, i_h)
             painter._set_svg_image_draw_by_rect_(icn, self._icon_file_path)
-        elif self._color_icon_rgb is not None:
+        elif self._icon_color_rgb is not None:
             pass
 
 
@@ -1883,6 +1899,9 @@ class QtScrollArea(QtWidgets.QScrollArea):
         self.horizontalScrollBar().setStyleSheet(
             utl_gui_core.QtStyleMtd.get('QScrollBar')
         )
+
+    def keyPressEvent(self, event):
+        pass
 
 
 class QtThreadDef(object):
@@ -2325,20 +2344,20 @@ class _AbsQtSplitterHandle(QtWidgets.QWidget):
         self._set_contract_buttons_update_()
         #
         self.installEventFilter(self)
-        self._is_hovered = False
+        self._action_is_hovered = False
 
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Enter:
-                self._is_hovered = True
+                self._action_is_hovered = True
                 if self._get_orientation_() == QtCore.Qt.Horizontal:
                     self.setCursor(QtCore.Qt.SplitHCursor)
                 elif self._get_orientation_() == QtCore.Qt.Vertical:
                     self.setCursor(QtCore.Qt.SplitVCursor)
                 self._set_update_()
             elif event.type() == QtCore.QEvent.Leave:
-                self._is_hovered = False
+                self._action_is_hovered = False
                 self.setCursor(QtCore.Qt.ArrowCursor)
                 self._set_update_()
             elif event.type() == QtCore.QEvent.MouseMove:
@@ -2485,7 +2504,7 @@ class _AbsQtSplitter(QtWidgets.QWidget):
 
     def _set_update_(self):
         self._set_update_by_size_()
-        self._set_widget_geometry_update_()
+        self._set_wgt_update_geometry_()
 
     def _set_update_by_size_(self):
         ss = self._size_dict
@@ -2508,7 +2527,7 @@ class _AbsQtSplitter(QtWidgets.QWidget):
             else:
                 raise TypeError()
 
-    def _set_widget_geometry_update_(self):
+    def _set_wgt_update_geometry_(self):
         w, h = self.width(), self.height()
         c = len(self._handle_list)
         for idx in range(c):
@@ -2670,3 +2689,1074 @@ class QtHSplitter(QtWidgets.QSplitter):
 class QtFileDialog(QtWidgets.QFileDialog):
     def __init__(self, *args, **kwargs):
         super(QtFileDialog, self).__init__(*args, **kwargs)
+
+
+class QtListWidgetItem(
+    QtWidgets.QListWidgetItem,
+    utl_gui_qt_abstract.AbsShowItemDef,
+    #
+    utl_gui_qt_abstract.AbsQtItemFilterTgtDef,
+    #
+    utl_gui_qt_abstract.AbsQtItemStateDef,
+    #
+    utl_gui_qt_abstract.AbsQtDagDef,
+    utl_gui_qt_abstract.AbsQtVisibleDef,
+    #
+    utl_gui_qt_abstract.AbsQtItemVisibleConnectionDef,
+):
+    def __init__(self, *args, **kwargs):
+        super(QtListWidgetItem, self).__init__(*args, **kwargs)
+        self.setFlags(
+            QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled
+        )
+        self._set_show_item_def_init_(self)
+        #
+        self._visible_tgt_key = None
+        self._set_item_filter_tgt_def_init_()
+        #
+        self._set_item_state_def_init_()
+        #
+        self._set_dag_def_init_()
+        self._set_visible_def_init_()
+        #
+        self._set_item_visible_connection_def_init_()
+
+    def setData(self, role, value):
+        if role == QtCore.Qt.CheckStateRole:
+            pass
+        super(QtListWidgetItem, self).setData(role, value)
+
+    def _get_item_is_hidden_(self):
+        return self.isHidden()
+
+    def _set_wgt_update_draw_(self):
+        item_widget = self._get_item_widget_()
+        if item_widget is not None:
+            item_widget.update()
+
+    def _set_item_widget_(self, widget):
+        list_widget = self.listWidget()
+        list_widget.setItemWidget(self, widget)
+
+    def _get_item_widget_(self):
+        list_widget = self.listWidget()
+        return list_widget.itemWidget(self)
+
+    def _set_visible_tgt_key_(self, key):
+        self._visible_tgt_key = key
+
+    def _get_visible_tgt_key_(self):
+        return self._visible_tgt_key
+    # show
+    def _set_view_(self, widget):
+        self._list_widget = widget
+
+    def _set_item_show_connect_(self):
+        self._set_item_show_def_setup_(self.listWidget())
+
+    def _get_item_keyword_filter_tgt_keys_(self):
+        item_widget = self._get_item_widget_()
+        if item_widget is not None:
+            item_widget._get_name_texts_()
+        return []
+
+    def _get_view_(self):
+        return self.listWidget()
+
+    def _get_item_is_viewport_show_able_(self):
+        item = self
+        view = self.listWidget()
+        #
+        self._set_item_show_start_loading_()
+        return view._get_show_view_item_showable_(item)
+
+    def _set_item_widget_visible_(self, boolean):
+        item_widget = self._get_item_widget_()
+        if item_widget is not None:
+            self._get_item_widget_().setVisible(boolean)
+
+
+class _QtHItem(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtIndexDef,
+    utl_gui_qt_abstract.AbsQtTypeDef,
+    utl_gui_qt_abstract.AbsQtIconDef,
+    utl_gui_qt_abstract.AbsQtNameDef,
+    utl_gui_qt_abstract.AbsQtPathDef,
+    #
+    utl_gui_qt_abstract.AbsQtMenuDef,
+    #
+    utl_gui_qt_abstract.AbsQtDeleteDef,
+    # action
+    utl_gui_qt_abstract.AbsQtActionDef,
+    utl_gui_qt_abstract.AbsQtActionHoverDef,
+    utl_gui_qt_abstract.AbsQtActionPressDef,
+    utl_gui_qt_abstract.AbsQtActionSelectDef,
+):
+    delete_press_clicked = qt_signal()
+    def __init__(self, *args, **kwargs):
+        super(_QtHItem, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setMouseTracking(True)
+        #
+        self._set_frame_def_init_()
+        self._set_index_def_init_()
+        self._set_type_def_init_()
+        self._set_icon_def_init_()
+        self._set_name_def_init_()
+        self._set_path_def_init_()
+        #
+        self._set_menu_def_init_()
+        #
+        self._set_delete_def_init_(self)
+        #
+        self._set_action_hover_def_init_()
+        self._set_action_def_init_(self)
+        self._set_action_press_def_init_()
+        self._set_action_select_def_init_()
+        #
+        self._frame_background_color = QtBackgroundColor.Light
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.Enter:
+                self._set_action_hovered_(True)
+            elif event.type() == QtCore.QEvent.Leave:
+                self._set_action_hovered_(False)
+                self._delete_is_hovered = False
+            elif event.type() == QtCore.QEvent.Resize:
+                self.update()
+            elif event.type() == QtCore.QEvent.MouseButtonPress:
+                if event.button() == QtCore.Qt.RightButton:
+                    self._set_menu_show_()
+                elif event.button() == QtCore.Qt.LeftButton:
+                    if self._delete_is_hovered:
+                        pass
+                    else:
+                        self.clicked.emit()
+                #
+                self._action_is_hovered = True
+                self.update()
+            elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                if event.button() == QtCore.Qt.LeftButton:
+                    if self._delete_is_hovered:
+                        self.delete_press_clicked.emit()
+            elif event.type() == QtCore.QEvent.MouseMove:
+                self._set_action_hover_execute_(event)
+        return False
+
+    def paintEvent(self, event):
+        painter = QtPainter(self)
+        #
+        self._set_wgt_update_geometry_()
+        #
+        background_color = painter._get_item_background_color_by_rect_(
+            self._frame_draw_rect,
+            is_hovered=self._action_is_hovered,
+            is_selected=self._item_is_selected
+        )
+        painter._set_frame_draw_by_rect_(
+            self._frame_draw_rect,
+            border_color=QtBackgroundColor.Transparent,
+            background_color=background_color,
+            border_radius=1
+        )
+        # icon
+        if self._icon_name_text is not None:
+            painter._set_icon_name_text_draw_by_rect_(
+                self._icon_name_draw_rect,
+                self._icon_name_text,
+                background_color=background_color,
+                # offset=0,
+                border_radius=2,
+                border_width=2
+            )
+        if self._icon_file_path is not None:
+            painter._set_icon_file_draw_by_rect_(
+                rect=self._icon_file_draw_rect,
+                file_path=self._icon_file_path,
+            )
+        #
+        if self._name_text is not None:
+            painter._set_text_draw_by_rect_(
+                self._name_draw_rect,
+                self._name_text,
+                font_color=self._name_color,
+                font=self._name_text_font,
+                text_option=self._name_text_option,
+                is_hovered=self._action_is_hovered,
+                is_selected=self._item_is_selected,
+            )
+        #
+        if self._index_text is not None:
+            painter._set_text_draw_by_rect_(
+                self._index_rect,
+                self._get_index_text_(),
+                font_color=self._index_text_color,
+                font=self._index_text_font,
+                text_option=self._index_text_option
+            )
+
+        if self._delete_is_enable is True:
+            painter._set_icon_file_draw_by_rect_(
+                rect=self._delete_draw_rect,
+                file_path=self._get_delete_icon_file_path_(),
+            )
+
+    def _set_action_hover_execute_(self, event):
+        p = event.pos()
+        self._delete_is_hovered = False
+        if self._delete_is_enable is True:
+            if self._delete_draw_rect.contains(p):
+                self._delete_is_hovered = True
+        #
+        self._set_wgt_update_draw_()
+
+    def _set_wgt_update_draw_(self):
+        self.update()
+
+    def _set_wgt_update_geometry_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        #
+        spacing = 2
+        f_w, f_h = self._icon_frame_size
+        #
+        i_x, i_y = x, y
+        i_w, i_h = w, h
+        #
+        self._set_frame_rect_(
+            x, y, w, h
+        )
+        if self._icon_file_path is not None:
+            i_f_w, i_f_h = self._icon_file_draw_size
+            self._set_icon_file_draw_rect_(
+                x+(f_w-i_f_w)/2, y+(f_h-i_f_h)/2, i_f_w, i_f_h
+            )
+            i_x += f_w+spacing
+            i_w -= f_w+spacing
+        #
+        if self._icon_name_text is not None:
+            i_n_w, i_n_h = self._icon_name_draw_size
+            self._set_icon_name_draw_rect_(
+                x+(f_w-i_n_w)/2, y+(f_h-i_n_h)/2, i_n_w, i_n_h
+            )
+            i_x += f_w+spacing
+            i_w -= f_w+spacing
+        #
+        if self._delete_is_enable is True:
+            i_f_w, i_f_h = self._delete_icon_file_draw_size
+            self._set_delete_draw_rect_(
+                x+(f_w-i_f_w)/2+w-f_w, y+(f_h-i_f_h)/2, i_f_w, i_f_h
+            )
+            i_w -= f_w+spacing
+        #
+        self._set_name_rect_(
+            i_x, i_y, i_w, i_h
+        )
+        #
+        self._set_index_rect_(
+            i_x, i_y, i_w, i_h
+        )
+
+
+class _QtPopupListView(utl_gui_qt_abstract.AbsQtListWidget):
+    def __init__(self, *args, **kwargs):
+        super(_QtPopupListView, self).__init__(*args, **kwargs)
+        self.setDragDropMode(QtWidgets.QListWidget.DragOnly)
+        self.setDragEnabled(False)
+        self.setSelectionMode(QtWidgets.QListWidget.SingleSelection)
+        self.setResizeMode(QtWidgets.QListWidget.Adjust)
+        self.setViewMode(QtWidgets.QListWidget.ListMode)
+        self.setPalette(QtDccMtd.get_qt_palette())
+
+    def paintEvent(self, event):
+        pass
+
+    def _get_maximum_height_(self, count_maximum):
+        rects = [self.visualItemRect(self.item(i)) for i in range(self.count())[:count_maximum]]
+        if rects:
+            rect = rects[-1]
+            y = rect.y()
+            h = rect.height()
+            return y+h+1+4
+        return 20
+
+
+class _QtPopupChooseFrame(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtPopupDef,
+):
+    def __init__(self, *args, **kwargs):
+        super(_QtPopupChooseFrame, self).__init__(*args, **kwargs)
+        self.setWindowFlags(QtCore.Qt.ToolTip | QtCore.Qt.FramelessWindowHint)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        #
+        self._set_frame_def_init_()
+        self._set_popup_def_init_(self)
+        #
+        self.setFocusProxy(self._popup_target_entry)
+        #
+        self._list_widget = _QtPopupListView(self)
+        #
+        self._item_count_maximum = 20
+        self._item_width, self._item_height = 20, 20
+        self._list_widget.setGridSize(QtCore.QSize(self._item_width, self._item_height))
+        self._list_widget.setSpacing(2)
+        self._list_widget.setUniformItemSizes(True)
+        self._list_widget.itemClicked.connect(
+            self._set_popup_end_
+        )
+        #
+        self._choose_index = None
+        #
+        self._frame_border_color = QtBackgroundColor.Light
+        self._hovered_frame_border_color = QtBackgroundColor.Hovered
+        self._selected_frame_border_color = QtBackgroundColor.Hovered
+        #
+        self._frame_background_color = QtBackgroundColor.Dark
+
+    def paintEvent(self, event):
+        painter = QtPainter(self)
+        #
+        painter._set_frame_draw_by_rect_(
+            self._frame_draw_rect,
+            border_color=self._selected_frame_border_color,
+            background_color=self._frame_background_color,
+            border_radius=4
+        )
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self._popup_target_entry:
+            if event.type() == QtCore.QEvent.FocusOut:
+                self._set_popup_activated_(False)
+        return False
+
+    def _set_wgt_update_draw_(self):
+        self.update()
+
+    def _set_wgt_update_geometry_(self):
+        side = self._popup_side
+        margin = self._popup_margin
+        shadow_radius = self._popup_shadow_radius
+        #
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        v_x, v_y = x+margin+side+1, y+margin+side+1
+        v_w, v_h = w-margin*2-side*2-shadow_radius-2, h-margin*2-side*2-shadow_radius - 2
+        #
+        self._frame_draw_rect.setRect(
+            x+1, y+1, w-2, h-2
+        )
+        self._list_widget.setGeometry(
+            x+1, y+1, w-2, h-2
+        )
+        self._list_widget.updateGeometries()
+
+    def _set_popup_scroll_to_pre_(self):
+        if self._popup_is_activated is True:
+            self._list_widget._set_scroll_to_pre_item_()
+
+    def _set_popup_scroll_to_next_(self):
+        if self._popup_is_activated is True:
+            self._list_widget._set_scroll_to_next_item_()
+
+    def _set_popup_start_(self):
+        if self._popup_is_activated is False:
+            parent = self.parent()
+            self._list_widget._set_clear_()
+            name_texts = parent._get_choose_values_()
+            icon_file_paths = parent._get_choose_icon_file_paths_()
+            if isinstance(name_texts, (tuple, list)):
+                current_name_text = parent._get_choose_current_()
+                for index, i_name_text in enumerate(name_texts):
+                    i_item_widget = _QtHItem()
+                    i_item = QtListWidgetItem()
+                    i_item.setSizeHint(QtCore.QSize(self._item_width, self._item_height))
+                    #
+                    self._list_widget.addItem(i_item)
+                    self._list_widget.setItemWidget(i_item, i_item_widget)
+                    i_item._set_item_show_connect_()
+                    #
+                    i_item_widget._set_name_text_(i_name_text)
+                    i_item_widget._set_index_(index)
+                    i_icon_file_path = icon_file_paths[index]
+                    if i_icon_file_path is not None:
+                        i_item_widget._set_icon_file_path_(i_icon_file_path)
+                    else:
+                        i_item_widget._set_icon_name_text_(i_name_text[0])
+                    #
+                    if current_name_text == i_name_text:
+                        i_item.setSelected(True)
+                #
+                press_pos = self._get_popup_pos_(self._popup_target_entry_frame)
+                width, height = self._get_popup_size_(self._popup_target_entry_frame)
+                height_max = self._list_widget._get_maximum_height_(self._item_count_maximum)
+                height_frame = self._popup_target_entry_frame.height()
+                self._set_popup_fnc_(
+                    press_pos,
+                    (width, max(height_max, height_frame))
+                )
+                #
+                self._list_widget._set_scroll_to_selected_item_top_()
+                #
+                self._popup_target_entry._set_focused_(True)
+
+                self._popup_is_activated = True
+
+    def _set_popup_end_(self):
+        parent = self.parent()
+        selected_item_widget = self._list_widget._get_selected_item_widget_()
+        if selected_item_widget:
+            name_text = selected_item_widget._get_name_text_()
+            parent._set_choose_current_(name_text)
+            parent._set_choose_changed_emit_send_()
+        #
+        self._set_popup_activated_(False)
+
+
+class _QtPopupCompletionFrame(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtPopupDef,
+):
+    def __init__(self, *args, **kwargs):
+        super(_QtPopupCompletionFrame, self).__init__(*args, **kwargs)
+        self.setWindowFlags(QtCore.Qt.ToolTip | QtCore.Qt.FramelessWindowHint)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        #
+        self._set_frame_def_init_()
+        self._set_popup_def_init_(self)
+        #
+        self.setFocusProxy(self._popup_target_entry)
+        #
+        self._list_widget = _QtPopupListView(self)
+        #
+        self._item_count_maximum = 20
+        self._item_width, self._item_height = 20, 20
+        self._list_widget.setGridSize(QtCore.QSize(self._item_width, self._item_height))
+        self._list_widget.setSpacing(2)
+        self._list_widget.setUniformItemSizes(True)
+        self._list_widget.itemClicked.connect(
+            self._set_popup_end_
+        )
+        #
+        self._choose_index = None
+        #
+        self._frame_border_color = QtBackgroundColor.Light
+        self._hovered_frame_border_color = QtBackgroundColor.Hovered
+        self._selected_frame_border_color = QtBackgroundColor.Hovered
+        #
+        self._frame_background_color = QtBackgroundColor.Dark
+
+    def paintEvent(self, event):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        #
+        painter = QtPainter(self)
+        #
+        painter._set_frame_draw_by_rect_(
+            self._frame_draw_rect,
+            border_color=self._selected_frame_border_color,
+            background_color=self._frame_background_color,
+            border_radius=4
+        )
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self._popup_target_entry:
+            if event.type() == QtCore.QEvent.FocusOut:
+                self._set_popup_activated_(False)
+        return False
+
+    def _set_wgt_update_geometry_(self):
+        side = self._popup_side
+        margin = self._popup_margin
+        shadow_radius = self._popup_shadow_radius
+        #
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        v_x, v_y = x+margin+side+1, y+margin+side+1
+        v_w, v_h = w-margin*2-side*2-shadow_radius-2, h-margin*2-side*2-shadow_radius - 2
+        #
+        self._frame_draw_rect.setRect(
+            x, y, w, h
+        )
+        self._list_widget.setGeometry(
+            x+1, y+1, w-2, h-2
+        )
+        self._list_widget.updateGeometries()
+
+    def _set_wgt_update_draw_(self):
+        self.update()
+
+    def _set_popup_scroll_to_pre_(self):
+        if self._popup_is_activated is True:
+            self._list_widget._set_scroll_to_pre_item_()
+
+    def _set_popup_scroll_to_next_(self):
+        if self._popup_is_activated is True:
+            self._list_widget._set_scroll_to_next_item_()
+
+    def _set_popup_start_(self, *args, **kwargs):
+        parent = self.parent()
+        self._list_widget._set_clear_()
+        name_texts = parent._get_value_entry_completion_data_()
+        if name_texts:
+            current_name_text = parent._get_item_value_()
+            for index, i_name_text in enumerate(name_texts):
+                i_item_widget = _QtHItem()
+                i_item = QtListWidgetItem()
+                i_item.setSizeHint(QtCore.QSize(self._item_width, self._item_height))
+                #
+                self._list_widget.addItem(i_item)
+                self._list_widget.setItemWidget(i_item, i_item_widget)
+                i_item._set_item_show_connect_()
+                #
+                i_item_widget._set_name_text_(i_name_text)
+                i_item_widget._set_index_(index)
+                #
+                if current_name_text == i_name_text:
+                    i_item.setSelected(True)
+
+            press_pos = self._get_popup_pos_0_(parent)
+            width, height = self._get_popup_size_(parent)
+            height_max = self._list_widget._get_maximum_height_(self._item_count_maximum)
+
+            self._set_popup_fnc_(
+                press_pos,
+                (width, height_max)
+            )
+
+            self._list_widget._set_scroll_to_selected_item_top_()
+
+            self._popup_target_entry._set_focused_(True)
+
+            self._popup_is_activated = True
+
+    def _set_popup_end_(self, *args, **kwargs):
+        parent = self.parent()
+        selected_item_widget = self._list_widget._get_selected_item_widget_()
+        if selected_item_widget:
+            name_text = selected_item_widget._get_name_text_()
+            parent._set_item_value_(name_text)
+            parent._set_choose_changed_emit_send_()
+
+        self._set_popup_activated_(False)
+
+
+class _QtPopupGuideFrame(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtPopupDef,
+):
+    def __init__(self, *args, **kwargs):
+        super(_QtPopupGuideFrame, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        #
+        self.setPalette(QtDccMtd.get_qt_palette())
+        #
+        self._set_frame_def_init_()
+        self._set_popup_def_init_(self)
+        #
+        self.setFocusProxy(self.parent())
+        #
+        self._list_widget = _QtPopupListView(self)
+        #
+        self._item_count_maximum = 20
+        self._item_width, self._item_height = 20, 20
+        self._list_widget.setGridSize(QtCore.QSize(self._item_width, self._item_height))
+        self._list_widget.setSpacing(2)
+        self._list_widget.setUniformItemSizes(True)
+        #
+        self._choose_index = None
+        #
+        self._frame_border_color = QtBackgroundColor.Light
+        self._hovered_frame_border_color = QtBackgroundColor.Hovered
+        self._selected_frame_border_color = QtBackgroundColor.Selected
+        #
+        self._frame_background_color = QtBackgroundColor.Dark
+
+    def paintEvent(self, event):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        #
+        bck_rect = QtCore.QRect(
+            x, y, w-1, h-1
+        )
+        painter = QtPainter(self)
+        #
+        painter._set_popup_frame_draw_(
+            bck_rect,
+            margin=self._popup_margin,
+            side=self._popup_side,
+            shadow_radius=self._popup_shadow_radius,
+            region=self._popup_region,
+            border_color=self._selected_frame_border_color,
+            background_color=self._frame_background_color,
+        )
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self.parent():
+            if event.type() == QtCore.QEvent.MouseButtonPress:
+                self._set_popup_close_()
+            elif event.type() == QtCore.QEvent.WindowDeactivate:
+                self._set_popup_close_()
+        elif widget == self:
+            if event.type() == QtCore.QEvent.Close:
+                self._set_popup_end_()
+        return False
+
+    def _set_wgt_update_draw_(self):
+        self.update()
+
+    def _set_wgt_update_geometry_(self):
+        side = self._popup_side
+        margin = self._popup_margin
+        shadow_radius = self._popup_shadow_radius
+        #
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        v_x, v_y = x+margin+side+1, y+margin+side+1
+        v_w, v_h = w-margin*2-side*2-shadow_radius-2, h-margin*2-side*2-shadow_radius - 2
+        #
+        self._list_widget.setGeometry(
+            v_x, v_y, v_w, v_h
+        )
+        self._list_widget.updateGeometries()
+
+    def _set_popup_start_(self, index):
+        parent = self.parent()
+        content_name_texts = parent._get_guide_choose_item_content_name_texts_at_(index)
+        if isinstance(content_name_texts, (tuple, list)):
+            desktop_rect = get_qt_desktop_rect()
+            #
+            press_pos = parent._get_guide_choose_item_point_at_(index)
+            press_rect = parent._get_guide_choose_item_rect_at_(index)
+            #
+            current_name_text = parent._get_view_guide_item_name_text_at_(index)
+            #
+            for seq, i_name_text in enumerate(content_name_texts):
+                item_widget = _QtHItem()
+                item = QtListWidgetItem()
+                item.setSizeHint(QtCore.QSize(self._item_width, self._item_height))
+                #
+                self._list_widget.addItem(item)
+                self._list_widget.setItemWidget(item, item_widget)
+                item._set_item_show_connect_()
+                #
+                if i_name_text:
+                    item_widget._set_name_text_(i_name_text)
+                    item_widget._set_icon_name_text_(i_name_text[0])
+                #
+                item_widget._set_index_(seq)
+                if current_name_text == i_name_text:
+                    item.setSelected(True)
+            #
+            self.setFocus(QtCore.Qt.PopupFocusReason)
+            #
+            self._set_popup_fnc_0_(
+                press_pos, press_rect,
+                desktop_rect,
+                self._get_maximum_width_(content_name_texts),
+                self._get_maximum_height_()
+            )
+            self._choose_index = index
+            parent._set_guide_choose_item_expand_at_(index)
+            #
+            self._list_widget._set_scroll_to_selected_item_top_()
+            #
+            self._list_widget.itemClicked.connect(
+                self._set_popup_close_
+            )
+
+    def _set_popup_end_(self):
+        if self._choose_index is not None:
+            parent = self.parent()
+            selected_item_widget = self._list_widget._get_selected_item_widget_()
+            if selected_item_widget:
+                name_text = selected_item_widget._get_name_text_()
+                path_text = parent._get_view_guide_item_path_text_at_(
+                    self._choose_index
+                )
+                path_opt = bsc_core.DccPathDagOpt(path_text)
+                path_opt.set_name(name_text)
+                #
+                parent._set_view_guide_item_name_text_at_(
+                    name_text,
+                    self._choose_index
+                )
+                parent._set_view_guide_item_path_text_at_(
+                    str(path_opt),
+                    self._choose_index
+                )
+                parent._set_view_item_geometries_update_()
+            #
+            parent._set_guide_choose_item_collapse_at_(self._choose_index)
+            parent._set_view_guide_current_index_(self._choose_index)
+            parent._set_view_guide_item_clicked_emit_send_()
+            parent._set_view_guide_current_clear_()
+
+    def _get_maximum_width_(self, texts):
+        count = len(texts)
+        texts.append(str(count))
+        _ = max([self.fontMetrics().width(i) for i in texts]) + 32
+        if count > self._item_count_maximum:
+            return _ + 24
+        return _
+
+    def _get_maximum_height_(self):
+        rects = [self._list_widget.visualItemRect(self._list_widget.item(i)) for i in range(self._list_widget.count())[:self._item_count_maximum]]
+        rect = rects[-1]
+        y = rect.y()
+        h = rect.height()
+        return y+h+1+4
+
+
+class _QtEntryFrame(
+    QtWidgets.QWidget,
+    #
+    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract._QtStatusDef,
+):
+    # def _get_action_is_enable_(self):
+    #     pass
+
+    def _set_wgt_update_draw_(self):
+        self.update()
+
+    def __init__(self, *args, **kwargs):
+        super(_QtEntryFrame, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        #
+        self._action_is_hovered = False
+        self._is_focused = False
+        self._entry_count = 1
+        #
+        self._set_status_def_init_()
+        self._set_frame_def_init_()
+        #
+        self._frame_border_color = QtBackgroundColor.Light
+        self._hovered_frame_border_color = QtBackgroundColor.Hovered
+        self._selected_frame_border_color = QtBackgroundColor.Selected
+        #
+        self._frame_background_color = QtBackgroundColor.Dark
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.Resize:
+                self._set_wgt_update_geometry_()
+                self._set_wgt_update_draw_()
+        return False
+
+    def paintEvent(self, event):
+        width, height = self.width(), self.height()
+        #
+        painter = QtPainter(self)
+        #
+        is_hovered = self._action_is_hovered
+        is_selected = self._is_focused
+        background_color = self._frame_background_color
+        bdr_color = [self._frame_border_color, self._selected_frame_border_color][is_selected]
+        for i_rect in self._frame_draw_rects:
+            painter._set_frame_draw_by_rect_(
+                i_rect,
+                border_color=bdr_color,
+                background_color=background_color,
+                border_radius=2,
+                # border_width=2,
+            )
+
+    def _set_focused_(self, boolean):
+        self._is_focused = boolean
+        self._set_wgt_update_draw_()
+
+    def _set_entry_count_(self, size):
+        self._entry_count = size
+        self._frame_draw_rects = [QtCore.QRect() for i in range(size)]
+
+    def _set_wgt_update_geometry_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        # int left， int top， int right， int bottom
+        m_l, m_t, m_r, m_b = self._frame_draw_margins
+        spacing = 2
+
+        c = self._entry_count
+
+        f_x, f_y = x+m_l+1, y+m_t+1
+        f_w, f_h = w-m_l-m_r-2, h-m_t-m_b-2
+        if c > 1:
+            f_d = f_w / c
+            for i in range(c):
+                if i == 0:
+                    self._frame_draw_rects[i].setRect(
+                        f_x+i*f_d, f_y, f_d - spacing, f_h
+                    )
+                elif (i+1) == c:
+                    self._frame_draw_rects[i].setRect(
+                        f_x+i*f_d+(spacing*i), f_y, f_d-spacing, f_h
+                    )
+                else:
+                    self._frame_draw_rects[i].setRect(
+                        f_x+i*f_d+(spacing*i), f_y, f_d-spacing, f_h
+                    )
+        else:
+            self._frame_draw_rects[0].setRect(
+                f_x, f_y, f_w, f_h
+            )
+
+    def _set_size_policy_height_fixed_mode_(self):
+        self._value_entry_widget.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Minimum
+        )
+
+
+class _QtVResizeFrame(
+    QtWidgets.QWidget,
+    #
+    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtResizeDef,
+    #
+    utl_gui_qt_abstract.AbsQtActionDef,
+    utl_gui_qt_abstract.AbsQtActionHoverDef,
+    utl_gui_qt_abstract.AbsQtActionPressDef,
+):
+    press_clicked = qt_signal()
+    def _set_wgt_update_draw_(self):
+        self.update()
+
+    def _set_wgt_update_geometry_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        #
+        self._resize_draw_rect.setRect(
+            x+1, y+1, w-2, h-2
+        )
+        i_w, i_h = self._resize_icon_file_draw_size
+        self._resize_icon_file_draw_rect.setRect(
+            x+(w-i_w)/2, y+(h-i_h)/2, i_w, i_h
+        )
+
+        self._frame_draw_rect.setRect(
+            x+1, y+1, w-2, h-2
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(_QtVResizeFrame, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
+        )
+        self.setMaximumHeight(10)
+        self.setMinimumHeight(10)
+        #
+        self._set_frame_def_init_()
+        self._set_resize_def_init_(self)
+
+        self._set_action_def_init_(self)
+        self._set_action_hover_def_init_()
+        self._set_action_press_def_init_()
+        #
+        self._hovered_frame_border_color = QtBorderColor.Button
+        self._hovered_frame_background_color = QtBackgroundColor.Button
+
+        self._actioned_frame_border_color = QtBorderColor.Actioned
+        self._actioned_frame_background_color = QtBackgroundColor.Actioned
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.Enter:
+                self._set_action_hovered_(True)
+                self._set_action_flag_(
+                    self.ActionFlag.SplitVHover
+                )
+            elif event.type() == QtCore.QEvent.Leave:
+                self._set_action_hovered_(False)
+                self._set_action_flag_clear_()
+            elif event.type() == QtCore.QEvent.Resize:
+                self._set_wgt_update_geometry_()
+                self._set_wgt_update_draw_()
+            elif event.type() == QtCore.QEvent.MouseButtonPress:
+                self._set_action_flag_(
+                    self.ActionFlag.SplitVClick
+                )
+                self._set_action_resize_move_start_(event)
+                self._set_action_pressed_(True)
+            elif event.type() == QtCore.QEvent.MouseMove:
+                self._set_action_flag_(
+                    self.ActionFlag.SplitVMove
+                )
+                self._set_action_resize_move_execute_(event)
+            elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                self._set_action_resize_move_stop_(event)
+                self._set_action_pressed_(False)
+                self._set_action_flag_clear_()
+        return False
+
+    def paintEvent(self, event):
+        painter = QtPainter(self)
+        if self._action_is_enable is True:
+            condition = self._action_is_hovered, self._action_is_pressed
+            if condition == (False, False):
+                border_color = QtBackgroundColor.Transparent
+                background_color = QtBackgroundColor.Transparent
+            elif condition == (False, True):
+                border_color = self._actioned_frame_border_color
+                background_color = self._actioned_frame_background_color
+            elif condition == (True, True):
+                border_color = self._actioned_frame_border_color
+                background_color = self._actioned_frame_background_color
+            elif condition == (True, False):
+                border_color = self._hovered_frame_border_color
+                background_color = self._hovered_frame_background_color
+            else:
+                raise SyntaxError()
+        else:
+            border_color = QtBackgroundColor.ButtonDisable
+            background_color = QtBackgroundColor.ButtonDisable
+
+        painter._set_frame_draw_by_rect_(
+            rect=self._frame_draw_rect,
+            border_color=border_color,
+            background_color=background_color,
+            border_radius=2,
+        )
+        painter._set_icon_file_draw_by_rect_(
+            rect=self._resize_icon_file_draw_rect,
+            file_path=self._resize_icon_file_path,
+        )
+
+    def _set_action_resize_move_start_(self, event):
+        self._resize_point_start = event.pos()
+
+    def _set_action_resize_move_execute_(self, event):
+        if self._resize_target is not None:
+            p = event.pos() - self._resize_point_start
+            d_h = p.y()
+            h_0 = self._resize_target.minimumHeight()
+            h_1 = h_0+d_h
+            if self._resize_minimum+10 <= h_1 <= self._resize_maximum+10:
+                self._resize_target.setMinimumHeight(h_1)
+                self._resize_target.setMaximumHeight(h_1)
+
+    def _set_action_resize_move_stop_(self, event):
+        pass
+
+
+class _QtScreenshotFrame(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtScreenshotDef,
+    utl_gui_qt_abstract.AbsQtHelpDef,
+    #
+    utl_gui_qt_abstract.AbsQtActionDef,
+    utl_gui_qt_abstract.AbsQtActionHoverDef,
+    utl_gui_qt_abstract.AbsQtActionPressDef,
+):
+    def _set_wgt_update_draw_(self):
+        self.update()
+
+    def _set_wgt_update_geometry_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        #
+        self._frame_draw_rect.setRect(
+            x-1, y-1, w+2, h+2
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(_QtScreenshotFrame, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setWindowModality(QtCore.Qt.ApplicationModal)
+        self.setMouseTracking(True)
+        self.setWindowFlags(
+            QtCore.Qt.Popup
+            | QtCore.Qt.FramelessWindowHint
+            | QtCore.Qt.WindowStaysOnTopHint
+        )
+
+        self._set_frame_def_init_()
+        self._set_screenshot_def_init_(self)
+        self._set_help_def_init_(self)
+
+        self._set_action_def_init_(self)
+        self._set_action_hover_def_init_()
+        self._set_action_press_def_init_()
+
+        self._help_text_draw_size = 480, 240
+        self._help_text = (
+            u'"LMB-click" and "LMB-move" to create screenshot,\n'
+            u'"LMB-double-click" or "Enter Key-press" to accept\n'
+            u'"Escape Key-press" to cancel'
+        )
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.Resize:
+                self._set_screenshot_update_geometry_()
+                self._set_wgt_update_geometry_()
+                self._set_wgt_update_draw_()
+            elif event.type() == QtCore.QEvent.MouseButtonPress:
+                self._set_action_screenshot_press_start_(event)
+            elif event.type() == QtCore.QEvent.MouseButtonDblClick:
+                self._set_screenshot_accept_()
+            elif event.type() == QtCore.QEvent.MouseMove:
+                if event.buttons() == QtCore.Qt.LeftButton:
+                    self._set_action_screenshot_press_execute_(event)
+                else:
+                    self._set_action_screenshot_hover_execute_(event)
+            elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                self._set_action_screenshot_press_stop_(event)
+            elif event.type() == QtCore.QEvent.KeyPress:
+                if event.key() in [QtCore.Qt.Key_Return, QtCore.Qt.Key_Enter]:
+                    self._set_screenshot_accept_()
+                elif event.key() == QtCore.Qt.Key_Escape:
+                    self._set_screenshot_cancel_()
+        return False
+
+    def paintEvent(self, event):
+        if self._screenshot_mode != self.Mode.Stopped:
+            painter = QtPainter(self)
+
+            painter._set_screenshot_draw_by_rect_(
+                rect_0=self._frame_draw_rect,
+                rect_1=self._screenshot_rect,
+                border_color=(63, 127, 255),
+                background_color=(0, 0, 0, 127)
+            )
+
+            if self._screenshot_mode == self.Mode.Started:
+                painter._set_frame_draw_by_rect_(
+                    rect=self._help_frame_draw_rect,
+                    border_color=(0, 0, 0),
+                    background_color=(0, 0, 0, 127)
+                )
+                painter._set_text_draw_by_rect_(
+                    rect=self._help_draw_rect,
+                    text=self._help_text,
+                    font=get_font(12),
+                    text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop,
+                    word_warp=True
+                )

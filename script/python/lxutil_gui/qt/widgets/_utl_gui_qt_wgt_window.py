@@ -44,7 +44,7 @@ class _QtWindow(
         self._set_widget_geometries_update_()
         #
         painter._set_frame_draw_by_rect_(
-            self._frame_rect,
+            self._frame_draw_rect,
             background_color=self._frame_background_color,
             border_color=self._frame_border_color
         )

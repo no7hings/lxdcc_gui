@@ -955,7 +955,7 @@ class _QtNGNode(
         )
         # icon & button
         i_w, i_h = self._ng_draw_icon_w, self._ng_draw_icon_h
-        self._set_icon_name_text_rect_(
+        self._set_icon_name_draw_rect_(
             f_x+(f_h_h-i_h)/2, f_y+(f_h_h-i_h)/2, i_w, i_h
         )
         # button
@@ -1015,9 +1015,9 @@ class _QtNGNode(
     def _set_action_hover_execute_(self, event):
         point = event.pos()
         if self._ng_node_rect_select.contains(point):
-            self._set_hovered_(True)
+            self._set_action_hovered_(True)
         else:
-            self._set_hovered_(False)
+            self._set_action_hovered_(False)
 
     def _set_ng_action_node_press_move_execute_(self, event):
         d_point = event.globalPos()-self._ng_action_node_move_point_start
@@ -1129,7 +1129,7 @@ class _QtNGNode(
 
         if self._name_text is not None:
             painter._set_text_draw_by_rect_(
-                self._name_rect,
+                self._name_draw_rect,
                 self._name_text,
                 font=get_font(size=self._ng_draw_font_h),
                 font_color=QtFontColor.Basic,
@@ -1371,12 +1371,12 @@ class _QtNGGraph(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_item._QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_utility._QtEntryFrame):
                     parent._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_item._QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_utility._QtEntryFrame):
                     parent._set_focused_(False)
         return False
 
@@ -2009,7 +2009,7 @@ class _QtNGImage(_QtNGNode):
             self._ng_node_rect_frame,
             border_width=self._ng_draw_border_w,
             is_selected=self._item_is_selected,
-            is_hovered=self._is_hovered,
+            is_hovered=self._action_is_hovered,
             is_actioned=self._get_is_actioned_()
         )
 
@@ -2018,7 +2018,7 @@ class _QtNGImage(_QtNGNode):
                 self._name_text, self._get_image_line_height_()
             )
             painter._set_text_draw_by_rect_(
-                self._name_rect,
+                self._name_draw_rect,
                 text,
                 font=get_font(size=self._ng_draw_font_h),
                 font_color=QtFontColor.Basic,

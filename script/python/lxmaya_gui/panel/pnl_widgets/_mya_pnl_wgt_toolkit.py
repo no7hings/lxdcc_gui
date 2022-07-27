@@ -431,7 +431,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
     def set_work_look_ass_export(self):
         import lxmaya_fnc.scripts as mya_fnc_scripts
         task_properties = self._task_properties
-        mya_fnc_scripts.set_asset_look_ass_export(task_properties)
+        mya_fnc_scripts.set_asset_look_ass_export(task_properties, force=True)
 
     def set_work_look_yml_export(self):
         import lxmaya_fnc.scripts as mya_fnc_scripts
