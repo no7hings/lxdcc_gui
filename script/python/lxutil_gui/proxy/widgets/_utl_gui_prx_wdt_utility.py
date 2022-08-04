@@ -1001,7 +1001,7 @@ class PrxSessionWindow(PrxToolWindow):
         self._session = session
         self._session.set_configure_reload()
         if self._session.get_td_enable() is True:
-            self.set_window_title('[ALPHA] {}'.format(self._session.gui_configure.get('name')))
+            self.set_window_title('[TD] {}'.format(self._session.gui_configure.get('name')))
         elif self._session.get_rez_beta() is True:
             self.set_window_title('[BETA] {}'.format(self._session.gui_configure.get('name')))
         else:

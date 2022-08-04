@@ -576,6 +576,7 @@ class QtTextBrowser_(
         super(QtTextBrowser_, self).__init__(*args, **kwargs)
         self.setWordWrapMode(QtGui.QTextOption.WordWrap)
         self.installEventFilter(self)
+        self.setAcceptRichText(False)
         # self.setWordWrapMode(QtGui.QTextOption.NoWrap)
         #
         self.setFont(Font.CONTENT)
@@ -670,6 +671,9 @@ class QtTextBrowser_(
             )
         else:
             self.setText('')
+
+    def paste(self):
+        print QtWidgets.QApplication.clipboard().text()
 
 
 class _QtTextItem(
@@ -3239,12 +3243,12 @@ class QtTreeWidgetItem(
                 else:
                     title_text = self._get_name_text_()
                 #
-                title_text = title_text.replace('<', '&lt;').replace('>', '&gt;')
-                html = '<html>\n<body>\n'
-                html += '<h3>{}</h3>\n'.format(title_text)
+                title_text = title_text.replace(u'<', u'&lt;').replace(u'>', u'&gt;')
+                html = u'<html>\n<body>\n'
+                html += u'<h3>{}</h3>\n'.format(title_text)
                 for i in text.split('\n'):
-                    html += '<ul>\n<li><i>{}</i></li>\n</ul>\n'.format(i)
-                html += '</body>\n</html>'
+                    html += u'<ul>\n<li><i>{}</i></li>\n</ul>\n'.format(i)
+                html += u'</body>\n</html>'
                 # noinspection PyCallingNonCallable
                 self.setToolTip(column, html)
 
