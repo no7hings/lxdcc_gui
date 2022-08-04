@@ -27,7 +27,7 @@ class _QtColorChooseChart(
                     _i_sub_points = utl_gui_core.ChartMethod.get_regular_polygon_points(
                         x, y, side_count, subRadius-1, side=0
                     )
-                    _i_color_path = _utl_gui_qt_wgt_utility.QtPainterPath()
+                    _i_color_path = QtPainterPath()
                     _i_color_path._set_points_add_(_i_sub_points)
                     #
                     angle = utl_gui_core.ChartMethod.get_angle_by_coord(x, y, pos_x, pos_y)
@@ -76,7 +76,7 @@ class _QtColorChooseChart(
         points_main = utl_gui_core.ChartMethod.get_regular_polygon_points(
             pos_x, pos_y, side_count, mainRadius, subRadius / 2
         )
-        color_path_main = _utl_gui_qt_wgt_utility.QtPainterPath()
+        color_path_main = QtPainterPath()
         color_path_main._set_points_add_(points_main)
         #
         x_count = int(count * .75)
@@ -123,7 +123,7 @@ class _QtColorChooseChart(
     def paintEvent(self, event):
         self._color_path_dict = {}
         #
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         # painter.begin(self)  # for pyside2
         painter.setRenderHint(painter.Antialiasing)
         #
@@ -503,7 +503,7 @@ class _QtWaitingChart(
         return False
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         painter._set_border_color_(0, 0, 0, 0)
         painter._set_antialiasing_()
 
@@ -594,7 +594,7 @@ class _QtSectorChart(
         return False
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         # painter.begin(self)  # for pyside2
         painter.setRenderHint(painter.Antialiasing)
         #
@@ -668,7 +668,7 @@ class _QtRadarChart(
         return False
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         # painter.begin(self)  # for pyside2
         painter.setRenderHint(painter.Antialiasing)
         if self._chart_draw_data is not None:
@@ -831,7 +831,7 @@ class _QtPieChart(
         #
         radius = min(width, height)
         #
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         painter.setRenderHint(painter.Antialiasing)
         if self._basic_data:
             current_shadow_path = None
@@ -1005,7 +1005,7 @@ class _QtHistogramChart(
         #
         value_scale_x, value_scale_y = self._zoom_scale_x, self._zoom_scale_y
         #
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         rect = QtCore.QRect(
             x, y, width, height
         )
@@ -1185,7 +1185,7 @@ class _QtSequenceChart(
         spacing = 4
         name_w = self._name_width
         #
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         #
         painter.setFont(get_font())
         #

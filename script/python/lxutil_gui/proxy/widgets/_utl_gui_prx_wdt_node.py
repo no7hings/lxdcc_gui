@@ -205,8 +205,8 @@ class _PrxStgObjEntry(AbsRsvTypeQtEntry):
 
     def set_history_key(self, key):
         self._history_key = key
+        #
         self.set_history_update()
-        self.set_history_show_latest()
 
     def get_history_key(self):
         return self._history_key

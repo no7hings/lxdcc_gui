@@ -39,7 +39,7 @@ class _QtWindow(
         )
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         #
         self._set_widget_geometries_update_()
         #

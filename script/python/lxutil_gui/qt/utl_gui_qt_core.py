@@ -1,6 +1,9 @@
 # coding:utf-8
 import functools
+
 import glob
+
+import os
 
 import sys
 #
@@ -2075,6 +2078,1450 @@ class ApplicationOpt(object):
             self._instance.processEvents()
 
 
+class QtPainterPath(QtGui.QPainterPath):
+    def __init__(self, *args):
+        super(QtPainterPath, self).__init__(*args)
+        self.setFillRule(QtCore.Qt.WindingFill)
+    #
+    def _set_points_add_(self, points):
+        points_ = [QtCore.QPointF(x, y) for x, y in points]
+        self.addPolygon(QtGui.QPolygonF(points_))
+
+
+class QtPainter(QtGui.QPainter):
+    @classmethod
+    def _get_qt_color_(cls, *args):
+        if len(args) == 1:
+            _ = args[0]
+            if isinstance(_, (QtGui.QColor, QtGui.QLinearGradient, QtGui.QConicalGradient)):
+                return _
+            elif isinstance(_, (tuple, list)):
+                return cls._to_qt_color_(*_)
+        else:
+            return cls._to_qt_color_(*args)
+    @classmethod
+    def _to_qt_color_(cls, *args):
+        if len(args) == 3:
+            r, g, b = args
+            a = 255
+        elif len(args) == 4:
+            r, g, b, a = args
+        else:
+            raise TypeError()
+        return QtGui.QColor(r, g, b, a)
+    #
+    def __init__(self, *args, **kwargs):
+        super(QtPainter, self).__init__(*args, **kwargs)
+
+    def _set_popup_frame_draw_(self, rect, margin, side, shadow_radius, region, border_color, background_color):
+        x, y = rect.x(), rect.y()
+        #
+        w, h = rect.width(), rect.height()
+        #
+        _s = shadow_radius
+        #
+        f_x, f_y = x+margin+side, y+margin+side
+        f_w, f_h = w-margin*2-_s-side*2, h-margin*2-_s-side*2
+        # frame
+        path1 = QtGui.QPainterPath()
+        path1.addRect(QtCore.QRectF(f_x, f_y, f_w, f_h))
+        path2 = QtGui.QPainterPath()
+        # shadow
+        path1_ = QtGui.QPainterPath()
+        path1_.addRect(QtCore.QRectF(f_x+_s-1, f_y+_s-1, f_w, f_h))
+        path2_ = QtGui.QPainterPath()
+        #
+        x1, x2, x3 = f_x+margin, f_x+margin*2, f_x+margin*3
+        _x1, _x2, _x3 = f_x+f_w-margin*3, f_x+f_w-margin*2, f_x+f_w-margin
+        #
+        y1, y2, y3 = f_y+1, f_y-margin+1, f_y+1
+        _y1, _y2, _y3 = f_y+f_h-1, f_y+f_h+margin-1, f_y+f_h-1
+        if region == 0:
+            path2.addPolygon(QtGui.QPolygonF([QtCore.QPointF(x1, y1), QtCore.QPointF(x2, y2), QtCore.QPointF(x3, y3)]))
+            path2_.addPolygon(QtGui.QPolygonF([QtCore.QPointF(x1+_s, y1+_s), QtCore.QPointF(x2+_s, y2+_s), QtCore.QPointF(x3+_s, y3+_s)]))
+        elif region == 1:
+            path2.addPolygon(QtGui.QPolygonF([QtCore.QPointF(_x1, y1), QtCore.QPointF(_x2, y2), QtCore.QPointF(_x3, y3)]))
+            path2_.addPolygon(QtGui.QPolygonF([QtCore.QPointF(_x1+_s, y1+_s), QtCore.QPointF(_x2+_s, y2+_s), QtCore.QPointF(_x3+_s, y3+_s)]))
+        elif region == 2:
+            path2.addPolygon(QtGui.QPolygonF([QtCore.QPointF(x1, _y1), QtCore.QPointF(x2, _y2), QtCore.QPointF(x3, _y3)]))
+            path2_.addPolygon(QtGui.QPolygonF([QtCore.QPointF(x1+_s, _y1+_s), QtCore.QPointF(x2+_s, _y2+_s), QtCore.QPointF(x3+_s, _y3+_s)]))
+        else:
+            path2.addPolygon(QtGui.QPolygonF([QtCore.QPointF(_x1, _y1), QtCore.QPointF(_x2, _y2), QtCore.QPointF(_x3, _y3)]))
+            path2_.addPolygon(QtGui.QPolygonF([QtCore.QPointF(_x1+_s, _y1+_s), QtCore.QPointF(_x2+_s, _y2+_s), QtCore.QPointF(_x3+_s, _y3+_s)]))
+        #
+        self._set_border_color_(0, 0, 0, 64)
+        self._set_background_color_(0, 0, 0, 64)
+        shadowPath = path1_+path2_
+        self.drawPath(shadowPath)
+        #
+        self._set_border_color_(border_color)
+        self._set_background_color_(background_color)
+        framePath = path1+path2
+        self.drawPath(framePath)
+
+    def _set_font_color_(self, *args):
+        self._set_border_color_(*args)
+
+    def _set_border_color_(self, *args):
+        qt_color = Color._get_qt_color_(*args)
+        pen = QtGui.QPen(qt_color)
+        pen.setCapStyle(QtCore.Qt.RoundCap)
+        pen.setJoinStyle(QtCore.Qt.RoundJoin)
+        self.setPen(pen)
+
+    def _set_border_style_(self, style):
+        pen = self.pen()
+        pen.setStyle(style)
+        self.setPen(pen)
+
+    def _set_border_color_alpha_(self, alpha):
+        color = self.pen().color()
+        color.setAlpha(alpha)
+        self.setPen(QtGui.QPen(color))
+
+    def _get_border_color_(self):
+        return self.pen().color()
+
+    def _set_background_color_(self, *args):
+        qt_color = Color._get_qt_color_(*args)
+        self.setBrush(QtGui.QBrush(qt_color))
+
+    def _get_background_color_(self):
+        return self.brush().color()
+
+    def _set_background_style_(self, style):
+        brush = self.brush()
+        brush.setStyle(style)
+        self.setBrush(brush)
+
+    def _set_background_brush_(self, brush):
+        self.setBrush(brush)
+
+    def _get_font_(self):
+        return self.font()
+
+    def _set_font_(self, font):
+        self.setFont(font)
+
+    def _set_border_width_(self, size):
+        pen = self.pen()
+        pen.setWidth(size)
+        self.setPen(pen)
+
+    def _set_border_join_(self, join):
+        pen = self.pen()
+        pen.setJoinStyle(join)
+        self.setPen(pen)
+
+    def _set_pixmap_draw_by_rect_(self, rect, pixmap, offset=0, enable=True):
+        if offset != 0:
+            rect_ = QtCore.QRect(
+                rect.x() + offset, rect.y() + offset,
+                rect.width() - offset, rect.height() - offset
+            )
+        else:
+            rect_ = rect
+        #
+        rect_size = rect.size()
+        # QtGui.QPixmap()
+        new_pixmap = pixmap.scaled(
+            rect_size,
+            QtCore.Qt.KeepAspectRatio,
+            QtCore.Qt.SmoothTransformation
+        )
+        if enable is False:
+            new_pixmap = QtPixmapMtd._to_gray_(new_pixmap)
+        #
+        self.drawPixmap(
+            rect_,
+            new_pixmap
+        )
+        #
+        self.device()
+
+    def _set_icon_file_draw_by_rect_(self, rect, file_path, offset=0):
+        if file_path:
+            if file_path.endswith('.svg'):
+                self._set_svg_image_draw_by_rect_(rect, file_path, offset=offset)
+            else:
+                if offset != 0:
+                    rect_ = QtCore.QRect(
+                        rect.x()+offset, rect.y()+offset,
+                        rect.width()-offset, rect.height()-offset
+                    )
+                else:
+                    rect_ = rect
+                #
+                rect_size = rect.size()
+                image = QtGui.QImage(file_path)
+                new_image = image.scaled(
+                    rect_size,
+                    QtCore.Qt.KeepAspectRatio,
+                    QtCore.Qt.SmoothTransformation
+                )
+                pixmap = QtGui.QPixmap(new_image)
+                self.drawPixmap(
+                    rect_,
+                    pixmap
+                )
+                #
+                self.device()
+
+    def _set_any_image_draw_by_rect_(self, rect, file_path, offset=0):
+        if file_path:
+            if os.path.isfile(file_path):
+                if file_path.endswith('.svg'):
+                    self._set_svg_image_draw_by_rect_(rect, file_path, offset)
+                elif file_path.endswith('.exr'):
+                    self._set_exr_image_draw_by_rect_(rect, file_path, offset)
+                elif file_path.endswith('.mov'):
+                    self._set_mov_image_draw_by_rect_(rect, file_path, offset)
+                else:
+                    self._set_image_draw_by_rect_(rect, file_path, offset)
+
+    def _set_image_draw_by_rect_(self, rect, file_path, offset):
+        if offset != 0:
+            rect_ = QtCore.QRect(
+                rect.x() + offset, rect.y() + offset,
+                rect.width() - offset, rect.height() - offset
+            )
+        else:
+            rect_ = rect
+        #
+        rect_size = rect_.size()
+        image = QtGui.QImage(file_path)
+        new_image = image.scaled(
+            rect_size,
+            QtCore.Qt.IgnoreAspectRatio,
+            QtCore.Qt.SmoothTransformation
+        )
+        pixmap = QtGui.QPixmap(new_image)
+        self.drawPixmap(
+            rect_,
+            pixmap
+        )
+        #
+        self.device()
+
+    def _set_antialiasing_(self):
+        self.setRenderHint(self.Antialiasing)
+
+    def _set_loading_draw_by_rect_(self, rect, loading_index):
+        self.setRenderHint(self.Antialiasing)
+        self._set_border_color_(QtBackgroundColor.ItemLoading)
+        self._set_background_color_(QtBackgroundColor.ItemLoading)
+        # self._set_background_style_(QtCore.Qt.FDiagPattern)
+        x, y = rect.x(), rect.y()
+        w, h = rect.width(), rect.height()
+        self.drawRect(rect)
+        process_frame = QtCore.QRect(
+            x+8, h/2-10, w-16, 20
+        )
+        # self._set_border_color_(255, 255, 255)
+        # self._set_background_color_(255, 255, 255, 63)
+        # self.drawRoundedRect(
+        #     process_frame,
+        #     10, 10,
+        #     QtCore.Qt.AbsoluteSize
+        # )
+        #
+        self._set_font_(Font.LOADING)
+        self._set_border_color_(QtFontColor.Basic)
+        self.drawText(
+            process_frame,
+            QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+            'loading .{}'.format('.'*(loading_index % 3))
+        )
+
+    def _set_svg_image_draw_by_rect_(self, rect, file_path, offset=0):
+        rectF = QtCore.QRectF(
+            rect.x()+offset, rect.y()+offset,
+            rect.width()-offset, rect.height()-offset
+        )
+        svg_render = QtSvg.QSvgRenderer(file_path)
+        svg_render.render(self, rectF)
+        #
+        self.device()
+
+    def _set_exr_image_draw_by_rect_(self, rect, file_path, offset=0):
+        rect_ = QtCore.QRect(
+            rect.x()+offset, rect.y()+offset,
+            rect.width()-offset, rect.height()-offset
+        )
+        #
+        thumbnail_file_path = bsc_core.ImageOpt(file_path).get_thumbnail()
+        rect_size = rect.size()
+        image = QtGui.QImage(thumbnail_file_path)
+        new_image = image.scaled(
+            rect_size,
+            QtCore.Qt.IgnoreAspectRatio,
+            QtCore.Qt.SmoothTransformation
+        )
+        pixmap = QtGui.QPixmap(new_image)
+        self.drawPixmap(
+            rect_,
+            pixmap
+        )
+        #
+        self.device()
+
+    def _set_mov_image_draw_by_rect_(self, rect, file_path, offset=0):
+        rect_ = QtCore.QRect(
+            rect.x() + offset, rect.y() + offset,
+            rect.width() - offset, rect.height() - offset
+        )
+        #
+        thumbnail_file_path = bsc_core.VedioOpt(file_path).get_thumbnail()
+        rect_size = rect.size()
+        image = QtGui.QImage(thumbnail_file_path)
+        new_image = image.scaled(
+            rect_size,
+            QtCore.Qt.IgnoreAspectRatio,
+            QtCore.Qt.SmoothTransformation
+        )
+        pixmap = QtGui.QPixmap(new_image)
+        self.drawPixmap(
+            rect_,
+            pixmap
+        )
+        #
+        self.device()
+
+    def _set_movie_play_button_draw_by_rect_(self, rect, scale=1.0, offset=0, border_width=4, is_hovered=False, is_selected=False, is_actioned=False):
+        b_ = border_width / 2
+        if offset != 0:
+            offset_ = b_ + offset
+            rect_ = QtCore.QRect(
+                rect.x() + offset_, rect.y() + offset_,
+                rect.width() - offset_, rect.height() - offset_
+            )
+        else:
+            rect_ = rect
+        #
+        x, y = rect_.x(), rect_.y()
+        width = rect_.width()
+        height = rect_.height()
+        #
+        r_ = height*scale
+        x_, y_ = (width - r_)/2 + x, (height - r_)/2 + y
+        #
+        ellipse_rect = QtCore.QRect(x_-4, y_-4, r_+8, r_+8)
+        points = [
+            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x_, y_), radius=r_, angle=90),
+            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x_, y_), radius=r_, angle=210),
+            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x_, y_), radius=r_, angle=330),
+            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x_, y_), radius=r_, angle=90)
+        ]
+        #
+        self._set_background_color_(QtBackgroundColor.Transparent)
+        border_color = self._get_item_border_color_(ellipse_rect, is_hovered, is_selected, is_actioned)
+        self._set_border_color_(border_color)
+        self._set_border_color_alpha_(127)
+        #
+        self._set_border_width_(border_width)
+        self.setRenderHint(self.Antialiasing)
+        self.drawEllipse(ellipse_rect)
+        self._set_path_draw_by_coords_(points)
+
+    def _set_path_draw_by_coords_(self, points):
+        path = QtPainterPath()
+        path._set_points_add_(points)
+        self.drawPath(path)
+        return path
+
+    def _set_color_icon_draw_(self, rect, color, offset=0):
+        r, g, b = color
+        border_color = QtBorderColor.Icon
+        self._set_border_width_(1)
+        self._set_border_color_(border_color)
+        self._set_background_color_(r, g, b, 255)
+        #
+        rect_ = QtCore.QRect(
+            rect.x()+offset, rect.y()+offset,
+            rect.width()-offset, rect.height()-offset
+        )
+
+        self.drawRect(rect_)
+
+    def _set_icon_name_text_draw_by_rect_(self, rect, text, border_color=None, background_color=None, text_color=None, offset=0, border_radius=0, border_width=1, is_hovered=False, is_enable=True):
+        self.setRenderHint(self.Antialiasing)
+        #
+        x, y = rect.x()+offset, rect.y()+offset
+        w, h = rect.width()-offset, rect.height()-offset
+        #
+        frame_rect = QtCore.QRect(
+            x, y,
+            w, h
+        )
+        #
+        if background_color is not None:
+            background_rgb = Color._get_rgb_(background_color)
+            background_color_ = Color._get_qt_color_(background_color)
+        else:
+            background_rgb = bsc_core.TextOpt(text).to_rgb()
+            background_color_ = Color._get_qt_color_(background_rgb)
+        t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(*background_rgb)
+        t_r = QtGui.qGray(t_r, t_g, t_b)
+        if t_r >= 127:
+            t_r_1 = 223
+        else:
+            t_r_1 = 63
+        #
+        text_color_ = QtGui.QColor(t_r_1, t_r_1, t_r_1)
+
+        if text_color is not None:
+            text_color_ = text_color
+        #
+        self._set_background_color_(background_color_)
+        self._set_border_color_(text_color_)
+        self._set_border_width_(border_width)
+        #
+        b_ = border_width / 2
+        if border_radius > 0:
+            border_radius_ = b_+border_radius
+            self.setRenderHint(self.Antialiasing)
+            self.drawRoundedRect(
+                frame_rect,
+                border_radius_, border_radius_,
+                QtCore.Qt.AbsoluteSize
+            )
+        elif border_radius == -1:
+            border_radius = frame_rect.height()/2
+            border_radius_ = b_+border_radius
+            self.setRenderHint(self.Antialiasing)
+            self.drawRoundedRect(
+                frame_rect,
+                border_radius_, border_radius_,
+                QtCore.Qt.AbsoluteSize
+            )
+        else:
+            self.drawRect(frame_rect)
+        #
+        r = min(w, h)
+        t_f_s = int(r*.675)
+        #
+        t_f_s = max(t_f_s, 1)
+        #
+        self._set_font_(
+            get_font(size=t_f_s, italic=True)
+        )
+        self.drawText(
+            frame_rect,
+            QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+            str(text[0]).capitalize()
+        )
+
+    def set_image_draw_highlight(self, rect, file_path, color=None):
+        pixmap = QtGui.QPixmap(file_path)
+        mask_bitmap = QtGui.QBitmap(file_path)
+        mask = mask_bitmap.createHeuristicMask()
+        pixmap.fill(color)
+        pixmap.setMask(mask)
+        #
+        self.drawPixmap(
+            rect, pixmap
+        )
+
+    def _set_frame_draw_by_rect_(self, rect, border_color, background_color, background_style=None, offset=0, border_radius=0, border_width=1):
+        self.setRenderHint(self.Antialiasing)
+        self._set_border_color_(border_color)
+        self._set_border_width_(border_width)
+        self._set_background_color_(background_color)
+        if background_style is not None:
+            self._set_background_style_(background_style)
+        #
+        b_ = border_width/2
+        if offset != 0:
+            offset_ = b_+offset
+            rect_ = QtCore.QRect(
+                rect.x()+offset_, rect.y()+offset_,
+                rect.width()-offset_, rect.height()-offset_
+            )
+        else:
+            rect_ = rect
+        #
+        if border_radius > 0:
+            border_radius_ = b_+border_radius
+            self.drawRoundedRect(
+                rect_,
+                border_radius_, border_radius_,
+                QtCore.Qt.AbsoluteSize
+            )
+        elif border_radius == -1:
+            border_radius = rect_.height()/2
+            border_radius_ = b_+border_radius
+            self.drawRoundedRect(
+                rect_,
+                border_radius_, border_radius_,
+                QtCore.Qt.AbsoluteSize
+            )
+        else:
+            self.drawRect(rect_)
+
+    def _set_line_draw_by_rect_(self, rect, border_color, background_color, border_width=1):
+        self._set_border_color_(border_color)
+        self._set_border_width_(border_width)
+        self._set_background_color_(background_color)
+        #
+        line = QtCore.QLine(
+            rect.topLeft(), rect.bottomLeft()
+        )
+        self.drawLine(line)
+
+    def _set_status_draw_by_rect_(self, rect, color, offset=0, border_radius=0):
+        self._set_border_color_(QtBackgroundColor.Transparent)
+        #
+        if offset != 0:
+            rect_ = QtCore.QRect(
+                rect.x() + offset, rect.y() + offset,
+                rect.width() - offset, rect.height() - offset
+            )
+        else:
+            rect_ = rect
+        #
+        gradient_color = QtGui.QLinearGradient(rect_.topLeft(), rect_.bottomLeft())
+        gradient_color.setColorAt(0, self._get_qt_color_(color))
+        gradient_color.setColorAt(.5, QtBackgroundColor.Transparent)
+        self._set_background_color_(gradient_color)
+        #
+        if border_radius > 0:
+            self.setRenderHint(self.Antialiasing)
+            self.drawRoundedRect(
+                rect_,
+                border_radius, border_radius,
+                QtCore.Qt.AbsoluteSize
+            )
+        else:
+            self.drawRect(rect_)
+
+    def _set_elements_status_draw_by_rect_(self, rect, colors, offset=0, border_radius=0):
+        if colors:
+            if offset != 0:
+                rect_ = QtCore.QRect(
+                    rect.x() + offset, rect.y() + offset,
+                    rect.width() - offset, rect.height() - offset
+                )
+            else:
+                rect_ = rect
+            #
+            gradient_color = QtGui.QLinearGradient(rect_.topLeft(), rect_.topRight())
+            c = len(colors)
+            for seq, color in enumerate(colors):
+                _ = float(seq) / float(c)
+                index = max(min(_, 1), 0)
+                gradient_color.setColorAt(index, self._get_qt_color_(color))
+            #
+            self._set_background_color_(gradient_color)
+            #
+            if border_radius > 0:
+                self.setRenderHint(self.Antialiasing)
+                self.drawRoundedRect(
+                    rect_,
+                    border_radius, border_radius,
+                    QtCore.Qt.AbsoluteSize
+                )
+            else:
+                self.drawRect(rect_)
+
+    def _set_text_draw_by_rect_(self, rect, text, font_color=None, font=None, offset=0, text_option=None, word_warp=False, is_hovered=False, is_selected=False):
+        if font_color is not None:
+            self._set_border_color_(font_color)
+        else:
+            self._set_border_color_(QtFontColor.Basic)
+        #
+        if is_hovered is True or is_selected is True:
+            self._set_border_color_(QtFontColor.Hovered)
+        #
+        if offset != 0:
+            rect_ = QtCore.QRect(
+                rect.x()+offset, rect.y()+offset,
+                rect.width()-offset, rect.height()-offset
+            )
+        else:
+            rect_ = rect
+        #
+        if text_option is not None:
+            text_option_ = text_option
+        else:
+            text_option_ = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
+        #
+        if font is not None:
+            self._set_font_(font)
+        else:
+            self._set_font_(get_font())
+        #
+        text_option__ = QtGui.QTextOption(
+            text_option_
+        )
+        if word_warp is True:
+            text_ = text
+            text_option__.setWrapMode(
+                text_option__.WrapAtWordBoundaryOrAnywhere
+            )
+        else:
+            text_option__.setUseDesignMetrics(True)
+            text_ = self.fontMetrics().elidedText(
+                text,
+                QtCore.Qt.ElideLeft,
+                rect.width(),
+                QtCore.Qt.TextShowMnemonic
+            )
+        #
+        rect_f_ = QtCore.QRectF(
+            rect_.x(), rect_.y(),
+            rect_.width(), rect_.height()
+        )
+        self.drawText(
+            rect_f_,
+            text_,
+            text_option__,
+        )
+
+    def _set_text_draw_by_rect_use_key_value_(self, rect, key_text, value_text, key_text_width, key_color=None, value_color=None, offset=0, is_hovered=False, is_selected=False):
+        if key_color is not None:
+            key_color_ = key_color
+        else:
+            key_color_ = QtFontColor.KeyBasic
+        #
+        if value_color is not None:
+            value_color_ = value_color
+        else:
+            value_color_ = QtFontColor.ValueBasic
+        #
+        if is_hovered is True or is_selected is True:
+            key_color_ = QtFontColor.KeyHovered
+            value_color_ = QtFontColor.ValueHovered
+        #
+        sep_text = ':'
+        sep_text_width = 8
+        #
+        x, y = rect.x() + offset, rect.y() + offset
+        w, h = rect.width() - offset, rect.height() - offset
+        # key
+        self._set_font_color_(key_color_)
+        key_text_rect = QtCore.QRect(
+            x, y, key_text_width, h
+        )
+        key_text_option = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+        self._set_font_(Font.NameTextKey)
+        self.drawText(
+            key_text_rect,
+            key_text_option,
+            key_text,
+        )
+        # sep
+        sep_text_rect = QtCore.QRect(
+            x+key_text_width, y, sep_text_width, h
+        )
+        sep_text_option = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
+        self.drawText(
+            sep_text_rect,
+            sep_text_option,
+            sep_text,
+        )
+        # value
+        self._set_font_color_(value_color_)
+        value_text_rect_f = QtCore.QRectF(
+            x+key_text_width+sep_text_width, y, w-sep_text_width-key_text_width, h
+        )
+        qt_value_text_option = QtGui.QTextOption()
+        qt_value_text_option.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        qt_value_text_option.setUseDesignMetrics(True)
+        value_text_ = self.fontMetrics().elidedText(
+            value_text,
+            QtCore.Qt.ElideLeft,
+            value_text_rect_f.width(),
+            QtCore.Qt.TextShowMnemonic
+        )
+        self._set_font_(Font.NameTextValue)
+        self.drawText(
+            value_text_rect_f,
+            value_text_,
+            qt_value_text_option,
+        )
+
+    def set_button_draw(self, rect, background_color, border_color, border_radius=4, border_width=1, border_style='solid'):
+        self._set_background_color_(background_color)
+        self._set_border_color_(border_color)
+        #
+        p0, p1, p2, p3 = rect.topLeft(), rect.bottomLeft(), rect.bottomRight(), rect.topRight()
+        w, h = rect.width(), rect.height()
+        cx, cy = p0.x()+w / 2, p0.y()+h / 2
+        #
+        angles = []
+        for p in [p0, p1, p2, p3]:
+            a = self.mtd_raw_position_2d.toAngle(
+                position0=(p.x(), p.y()),
+                position1=(cx, cy)
+            )
+            angles.append(a)
+        #
+        br, bb, bg, ba = border_color.red(), border_color.green(), border_color.blue(), border_color.alpha()
+        br0, bb0, bg0, ba0 = min(br * 1.25, 255), min(bb * 1.25, 255), min(bg * 1.25, 255), ba
+        br1, bb1, bg1, ba1 = min(br * 1.5, 255), min(bb * 1.5, 255), min(bg * 1.5, 255), ba
+        br3, bb3, bg3, ba3 = min(br * .875, 255), min(bb * .875, 255), min(bg * .875, 255), ba
+        br4, bb4, bg4, ba4 = min(br * .725, 255), min(bb * .725, 255), min(bg * .725, 255), ba
+        self.setBorderRgba((0, 0, 0, 0))
+        if border_style == 'solid':
+            self._set_border_color_(border_color)
+            self.drawRoundedRect(
+                rect,
+                border_radius, border_radius,
+                QtCore.Qt.AbsoluteSize
+            )
+        else:
+            if border_style == 'outset':
+                a = 90
+            elif border_style == 'inset':
+                a = -90
+            else:
+                a = 90
+            color = QtGui.QConicalGradient(cx, cy, a)
+            color.setColorAt(0, QtGui.QColor(br0, bb0, bg0, ba0))
+            for seq, a in enumerate(angles):
+                p = float(a) / float(360)
+                if seq == 0:
+                    color.setColorAt(p, QtGui.QColor(br1, bb1, bg1, ba1))
+                elif seq == 1:
+                    color.setColorAt(p-.0125, QtGui.QColor(br1, bb1, bg1, ba1))
+                    color.setColorAt(p, QtGui.QColor(br4, bb4, bg4, ba4))
+                elif seq == 2:
+                    color.setColorAt(p, QtGui.QColor(br4, bb4, bg4, ba4))
+                elif seq == 3:
+                    color.setColorAt(p-.0125, QtGui.QColor(br3, bb3, bg3, ba3))
+                    color.setColorAt(p, QtGui.QColor(br0, bb0, bg0, ba0))
+            color.setColorAt(1, QtGui.QColor(br0, bb0, bg0, ba0))
+            #
+            brush = QtGui.QBrush(color)
+            self.setBrush(brush)
+            self.drawRoundedRect(rect, border_radius, border_radius, QtCore.Qt.AbsoluteSize)
+        #
+        rect_ = QtCore.QRect(p0.x()+border_width, p0.y()+border_width, w-border_width * 2, h-border_width * 2)
+        self._set_background_color_(background_color)
+        self.drawRoundedRect(
+            rect_,
+            border_radius-border_width, border_radius-border_width,
+            QtCore.Qt.AbsoluteSize
+        )
+    @classmethod
+    def _get_item_background_color_1_by_rect_(cls, rect, is_hovered=False, is_actioned=False):
+        condition = [is_hovered, is_actioned]
+        if condition == [False, False]:
+            return QtBackgroundColor.Transparent
+        elif condition == [False, True]:
+            return QtBackgroundColor.Actioned
+        elif condition == [True, False]:
+            return QtBackgroundColor.Hovered
+        elif condition == [True, True]:
+            color_0 = QtBackgroundColor.Hovered
+            color_1 = QtBackgroundColor.Actioned
+            start_pos, end_pos = rect.topLeft(), rect.bottomLeft()
+            color = QtGui.QLinearGradient(start_pos, end_pos)
+            color.setColorAt(0, color_0)
+            color.setColorAt(1, color_1)
+            return color
+    @classmethod
+    def _get_item_background_color_by_rect_(cls, rect, is_hovered=False, is_selected=False, is_actioned=False, default_background_color=None):
+        condition = [is_hovered, is_selected]
+        if condition == [False, False]:
+            if default_background_color is not None:
+                return default_background_color
+            return QtBackgroundColor.Transparent
+        elif condition == [False, True]:
+            return QtBackgroundColor.Selected
+        elif condition == [True, False]:
+            if is_actioned:
+                color_0 = QtBackgroundColor.Hovered
+                color_1 = QtBackgroundColor.Actioned
+                start_pos, end_pos = rect.topLeft(), rect.bottomLeft()
+                color = QtGui.QLinearGradient(start_pos, end_pos)
+                color.setColorAt(0, color_0)
+                color.setColorAt(1, color_1)
+                return color
+            return QtBackgroundColor.Hovered
+        elif condition == [True, True]:
+            color_0 = QtBackgroundColor.Hovered
+            if is_actioned:
+                color_1 = QtBackgroundColor.Actioned
+            else:
+                color_1 = QtBackgroundColor.Selected
+            #
+            start_pos, end_pos = rect.topLeft(), rect.bottomLeft()
+            color = QtGui.QLinearGradient(start_pos, end_pos)
+            color.setColorAt(0, color_0)
+            color.setColorAt(1, color_1)
+            return color
+    @classmethod
+    def _get_item_border_color_(cls, rect, is_hovered=False, is_selected=False, is_actioned=False):
+        if is_actioned:
+            return QtBackgroundColor.Actioned
+        if is_hovered:
+            return QtBackgroundColor.Hovered
+        elif is_selected:
+            return QtBackgroundColor.Selected
+        return QtBackgroundColor.White
+
+    def _set_sector_chart_draw_(self, chart_draw_data, background_color, border_color, hover_point):
+        if chart_draw_data is not None:
+            basic_data = chart_draw_data['basic']
+            for i in basic_data:
+                (
+                    i_background_rgba, i_border_rgba,
+                    i_total_path, i_occupy_path,
+                    i_text_point, i_text_line, i_text_ellipse, i_text
+                ) = i
+                #
+                self._set_background_color_(background_color)
+                self._set_border_color_(border_color)
+                self._set_background_style_(QtCore.Qt.FDiagPattern)
+                self.drawPath(i_total_path)
+                #
+                i_r, i_g, i_b, i_a = i_background_rgba
+                self._set_background_color_(
+                    [(i_r, i_g, i_b, 96), (i_r, i_g, i_b, 255)][i_total_path.contains(hover_point) or i_text_ellipse.contains(hover_point)]
+                )
+                self._set_border_color_(i_border_rgba)
+                self.drawPath(i_occupy_path)
+                #
+                self.drawPolyline(i_text_line)
+                self.drawEllipse(i_text_ellipse)
+                #
+                self.drawText(i_text_point, i_text)
+
+    def _set_histogram_draw_(self, rect, value_array, value_scale, value_offset, label, grid_scale, grid_size, grid_offset, translate, current_index, mode):
+        maximum = max(value_array)
+        spacing = 2
+        if maximum:
+            pos_x, pos_y = rect.x(), rect.y()
+            width, height = rect.width(), rect.height()
+            value_offset_x, value_offset_y = value_offset
+            #
+            label_x, label_y = label
+            #
+            grid_scale_x, grid_scale_y = grid_scale
+            grid_offset_x, grid_offset_y = grid_offset
+            translate_x, translate_y = translate
+            value_scale_x, value_scale_y = value_scale
+            #
+            grid_w, grid_h = grid_size
+            column_w = grid_w / grid_scale_x
+            #
+            minimum_h = grid_w / grid_scale_y
+            #
+            current_x, current_y = None, None
+            for i_index, i_value in enumerate(value_array):
+                i_color_percent = float(i_value) / float(maximum)
+                #
+                i_r, i_g, i_b = bsc_core.ColorMtd.hsv2rgb(140 * i_color_percent, 1, 1)
+                #
+                self._set_background_color_(i_r, i_g, i_b, 255)
+                self._set_border_color_(i_r, i_g, i_b, 255)
+                #
+                i_value_percent = float(i_value) / float(value_scale_y)
+                i_pos_x = pos_x + column_w * i_index + grid_offset_x + translate_x + 1
+                i_pos_y = (height - minimum_h * i_value_percent * grid_scale_y - grid_offset_y + translate_y)
+                # filter visible
+                if grid_offset_x <= i_pos_x <= width:
+                    i_w, i_h = column_w - spacing, (minimum_h * i_value_percent) * grid_scale_y
+                    i_rect = QtCore.QRect(
+                        i_pos_x, i_pos_y,
+                        i_w, i_h
+                    )
+                    self.drawRect(i_rect)
+                    #
+                    if i_index == current_index:
+                        current_x = i_index + value_offset_x
+                        current_y = i_value + value_offset_y
+                        #
+                        self._set_background_color_(0, 0, 0, 0)
+                        self._set_border_color_(223, 223, 223, 255)
+                        #
+                        selection_rect = QtCore.QRect(
+                            i_pos_x, 0,
+                            column_w - 2, height - grid_offset_y
+                        )
+                        #
+                        self.drawRect(selection_rect)
+            #
+            if current_x is not None and current_y is not None:
+                current_label_rect = QtCore.QRect(
+                    grid_offset_x + 8, 0 + 8,
+                    width, height
+                )
+                #
+                self._set_border_color_(223, 223, 223, 255)
+                self._set_font_(get_font(size=12, weight=75))
+                #
+                self.drawText(
+                    current_label_rect,
+                    QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop,
+                    '{2} ( {0} )\r\n{3} ( {1} )'.format(
+                        label_x, label_y,
+                        current_x,
+                        bsc_core.IntegerMtd.get_prettify_(current_y, mode=mode)
+                    )
+                )
+
+    def _set_grid_draw_(self, rect, axis_dir, grid_size, grid_scale, translate, grid_offset, border_color):
+        def set_branch_draw_fnc_(lines, axis_index, scale):
+            for seq, line_points in enumerate(lines):
+                # if (seq - axis_index)/scale % 10 == 0:
+                #     self._set_border_width_(2)
+                # else:
+                #     self._set_border_width_(1)
+                self.drawLine(*line_points)
+        #
+        def get_lines_h_fnc_():
+            lis = []
+            for i_y in range(height / grid_h):
+                pox_x_1, pox_x_2 = grid_offset_x, width
+                #
+                if axis_dir_y == -1:
+                    pos_y_1 = pos_y_2 = height-grid_h*(i_y-index_y)-translate_y+grid_offset_y
+                else:
+                    pos_y_1 = pos_y_2 = grid_h*(i_y-index_y)+translate_y+grid_offset_y
+                #
+                lis.append(
+                    (QtCore.QPointF(pox_x_1, pos_y_1), QtCore.QPointF(pox_x_2, pos_y_2))
+                )
+            return lis
+        #
+        def get_lines_v_fnc_():
+            lis = []
+            for i_x in range(width / grid_h):
+                if axis_dir_x == -1:
+                    pox_x_1 = pox_x_2 = width-grid_w*(i_x-index_x)-translate_x+grid_offset_x
+                else:
+                    pox_x_1 = pox_x_2 = grid_w*(i_x-index_x)+translate_x+grid_offset_x
+                #
+                pos_y_1, pos_y_2 = height, grid_offset_y
+                #
+                lis.append(
+                    (QtCore.QPointF(pox_x_1, pos_y_1), QtCore.QPointF(pox_x_2, pos_y_2))
+                )
+            return lis
+        #
+        width, height = rect.width(), rect.height()
+        grid_w, grid_h = grid_size
+        grid_scale_x, grid_scale_y = grid_scale
+        axis_dir_x, axis_dir_y = axis_dir
+        #
+        translate_x, translate_y = translate
+        grid_offset_x, grid_offset_y = grid_offset
+        index_x = translate_x/grid_w
+        index_y = translate_y/grid_w
+        #
+        lines_h, lines_v = get_lines_h_fnc_(), get_lines_v_fnc_()
+        #
+        self._set_background_color_(0, 0, 0, 0)
+        self._set_border_color_(border_color)
+        #
+        set_branch_draw_fnc_(lines_h, index_y, grid_scale_y)
+        set_branch_draw_fnc_(lines_v, index_x, grid_scale_x)
+
+    def _set_grid_mark_draw_(self, rect, axis_dir, grid_size, translate, grid_offset, grid_scale, grid_value_offset, grid_border_color, grid_value_show_mode):
+        def set_branch_draw_fnc_(points, axis_index, scale, value_offset):
+            for seq, i_point in enumerate(points):
+                if (seq - axis_index) % 5 == 0:
+                    value = (seq - axis_index)/scale+value_offset
+                    text = bsc_core.IntegerMtd.get_prettify_(
+                        value,
+                        grid_value_show_mode
+                    )
+                    self.drawText(
+                        i_point, text
+                    )
+        #
+        def get_h_points():
+            lis = []
+            for i_x in range(width/grid_w):
+                if axis_dir_x == -1:
+                    i_p_x = width-grid_w*(i_x-index_x)-translate_x+grid_offset_x
+                else:
+                    i_p_x = grid_w*(i_x-index_x)+translate_x+grid_offset_x
+                #
+                if axis_dir_y == -1:
+                    i_p_y = height
+                else:
+                    i_p_y = text_h
+                #
+                lis.append(
+                    QtCore.QPointF(i_p_x, i_p_y)
+                )
+            #
+            return lis
+        #
+        def get_v_points():
+            lis = []
+            for i_y in range(height/grid_h):
+                if axis_dir_x == -1:
+                    i_p_x = width-text_h
+                else:
+                    i_p_x = 0
+                #
+                if axis_dir_y == -1:
+                    i_p_y = height-grid_h*(i_y-index_y)-translate_y+grid_offset_y
+                else:
+                    i_p_y = grid_h*(i_y-index_y)+translate_y+grid_offset_y
+                #
+                lis.append(
+                    QtCore.QPointF(i_p_x, i_p_y)
+                )
+            #
+            return lis
+        #
+        width, height = rect.width(), rect.height()
+        grid_w, grid_h = grid_size
+        #
+        axis_dir_x, axis_dir_y = axis_dir
+        translate_x, translate_y = translate
+        grid_offset_x, grid_offset_y = grid_offset
+        value_scale_x, value_scale_y = grid_scale
+        value_offset_x, value_offset_y = grid_value_offset
+        index_x = translate_x/grid_w
+        index_y = translate_y/grid_h
+        #
+        self._set_border_color_(grid_border_color)
+        self._set_font_(get_font(size=6))
+        text_h = self.fontMetrics().height()
+        points_h, points_v = get_h_points(), get_v_points()
+        #
+        set_branch_draw_fnc_(
+            points_h, index_x, value_scale_x, value_offset_x
+        )
+        set_branch_draw_fnc_(
+            points_v, index_y, value_scale_y, value_offset_y
+        )
+
+    def _set_grid_axis_draw_(self, rect, axis_dir, translate, grid_offset, grid_axis_lock, grid_border_colors):
+        width, height = rect.width(), rect.height()
+        axis_dir_x, axis_dir_y = axis_dir
+        #
+        translate_x, translate_y = translate
+        grid_offset_x, grid_offset_y = grid_offset
+        grid_axis_lock_x, grid_axis_lock_y = grid_axis_lock
+        if grid_axis_lock_y:
+            if axis_dir_y == -1:
+                h_y_0 = height-grid_offset_y-1
+            else:
+                h_y_0 = 0
+        else:
+            h_y_0 = height-grid_offset_y-translate_y-1
+        #
+        points_h = (
+            QtCore.QPointF(grid_offset_x, h_y_0),
+            QtCore.QPointF(width, h_y_0)
+        )
+        #
+        if grid_axis_lock_x:
+            v_x_0 = 0+grid_offset_x
+        else:
+            v_x_0 = grid_offset_x+translate_x
+        #
+        points_v = (
+            QtCore.QPointF(v_x_0, -grid_offset_y),
+            QtCore.QPointF(v_x_0, height-grid_offset_y))
+
+        #
+        border_color_x, border_color_y = grid_border_colors
+        self._set_background_color_(0, 0, 0, 0)
+        self._set_border_color_(border_color_x)
+        self.drawLine(points_h[0], points_h[1])
+        #
+        self._set_border_color_(border_color_y)
+        self.drawLine(points_v[0], points_v[1])
+
+    def _set_dotted_frame_draw_(self, rect, border_color, background_color, border_width=2):
+        self._set_background_color_(background_color)
+        self._set_border_color_(border_color)
+        self._set_border_width_(2)
+        self._set_border_style_(QtCore.Qt.DashLine)
+        #
+        self.drawRect(rect)
+
+    def _set_tab_button_draw_(self, rect, name_text, icon_name_text=None, border_width=1, offset=0, is_hovered=False, is_current=False):
+        self._set_border_color_(55, 55, 55, 255)
+        self._set_border_width_(border_width)
+        a = 255
+        if is_current:
+            color = QtGui.QColor(63, 63, 63, a)
+        else:
+            color = QtGui.QColor(95, 95, 95, a)
+        #
+        if is_hovered is True:
+            color_hovered = QtGui.QColor(127, 127, 127, a)
+        else:
+            color_hovered = color
+        #
+        start_coord, end_coord = rect.topLeft(), rect.bottomLeft()
+        l_color = QtGui.QLinearGradient(start_coord, end_coord)
+        l_color.setColorAt(0, color_hovered)
+        l_color.setColorAt(0.5, color)
+        self._set_background_color_(l_color)
+        #
+        b_ = border_width / 2
+        if offset != 0:
+            offset_ = b_ + offset
+            rect_ = QtCore.QRect(
+                rect.x() + offset_, rect.y() + offset_,
+                rect.width() - offset_, rect.height() - offset_
+            )
+        else:
+            rect_ = rect
+        #
+        x, y = rect_.x(), rect_.y()
+        w, h = rect_.width(), rect_.height()
+        r = h
+        s = 4
+        x_0, y_0 = x, y+2
+        w_0, h_0 = w+r, h-2
+
+        if is_current is True:
+            coords = [
+                (x_0, y_0 + h_0), (x_0 + h_0, y_0), (x_0 + w_0 - h_0, y_0), (x_0 + w_0, y_0 + h_0), (x_0, y_0 + h_0)
+            ]
+        else:
+            coords = [
+                (x_0, y_0 + h_0), (x_0 + h_0, y_0), (x_0 + w_0 - h_0, y_0), (x_0 + w_0, y_0 + h_0), (x_0, y_0 + h_0)
+            ]
+        #
+        self._set_path_draw_by_coords_(coords)
+        #
+        i_f_x, i_f_y = x_0+r, y_0
+        i_f_w, i_f_h = h_0, h_0
+        i_w, i_h = 12, 12
+        t_x = i_f_x+s
+        t_w = w
+        if icon_name_text is not None:
+            icon_rect = QtCore.QRect(
+                i_f_x+s, i_f_y+(i_f_h-i_h)/2, i_w, i_h
+            )
+            t_x += i_w+s
+            t_w -= i_f_w
+
+            self._set_icon_name_text_draw_by_rect_(
+                icon_rect,
+                icon_name_text,
+                border_radius=i_h/2
+            )
+        #
+        if name_text is not None:
+            text_rect = QtCore.QRect(
+                t_x, y_0, t_w, h_0
+            )
+            text_option = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+            self._set_font_(
+                get_font(size=10)
+            )
+            self._set_font_color_(255, 255, 255, 255)
+            self.drawText(
+                text_rect,
+                text_option,
+                name_text,
+            )
+
+    def _set_node_frame_draw_by_rect_(self, rect, offset=0, border_radius=0, border_width=1, is_hovered=False, is_selected=False, is_actioned=False):
+        self.setRenderHint(self.Antialiasing)
+
+        condition = [is_hovered, is_selected]
+        if condition == [False, False]:
+            color = QtBorderColor.Transparent
+        elif condition == [True, False]:
+            color = QtBorderColor.Hovered
+        elif condition == [False, True]:
+            color = QtBorderColor.Selected
+        elif condition == [True, True]:
+            color_0 = QtBackgroundColor.Hovered
+            if is_actioned:
+                color_1 = QtBackgroundColor.Actioned
+            else:
+                color_1 = QtBackgroundColor.Selected
+            #
+            start_pos, end_pos = rect.topLeft(), rect.bottomLeft()
+            color = QtGui.QLinearGradient(start_pos, end_pos)
+            color.setColorAt(0, color_0)
+            color.setColorAt(1, color_1)
+        else:
+            raise RuntimeError()
+
+        brush = QtGui.QBrush(color)
+        pen = QtGui.QPen(brush, border_width)
+        pen.setJoinStyle(QtCore.Qt.RoundJoin)
+        self.setPen(pen)
+        self.setBrush(QtGui.QBrush(QtBorderColor.Transparent))
+
+        b_ = border_width / 2
+        if offset != 0:
+            offset_ = b_ + offset
+            rect_ = QtCore.QRect(
+                rect.x() + offset_, rect.y() + offset_,
+                rect.width() - offset_, rect.height() - offset_
+            )
+        else:
+            rect_ = rect
+        #
+        if border_radius > 0:
+            border_radius_ = b_ + border_radius
+            self.drawRoundedRect(
+                rect_,
+                border_radius_, border_radius_,
+                QtCore.Qt.AbsoluteSize
+            )
+        elif border_radius == -1:
+            border_radius = rect_.height() / 2
+            border_radius_ = b_ + border_radius
+            self.drawRoundedRect(
+                rect_,
+                border_radius_, border_radius_,
+                QtCore.Qt.AbsoluteSize
+            )
+        else:
+            self.drawRect(rect_)
+
+    def _set_screenshot_draw_by_rect_(self, rect_0, rect_1, border_color, background_color):
+        path_0 = QtGui.QPainterPath()
+        path_0.addRect(rect_0)
+
+        path_1 = QtGui.QPainterPath()
+        path_1.addRect(rect_1)
+
+        path_2 = path_0-path_1
+
+        self._set_background_color_(background_color)
+        self._set_border_color_(border_color)
+        self._set_border_width_(2)
+        self._set_border_style_(QtCore.Qt.DashLine)
+        #
+        self.drawPath(path_2)
+
+
+class QtNGPainter(QtPainter):
+    def __init__(self, *args, **kwargs):
+        super(QtNGPainter, self).__init__(*args, **kwargs)
+    @classmethod
+    def _get_ng_node_background_color_(cls, rect, is_hovered=False, is_selected=False, is_actioned=False):
+        condition = [is_hovered, is_selected]
+        a = 255
+        color_hovered = QtGui.QColor(255, 127, 63, a)
+        color_selected = QtGui.QColor(63, 127, 255, a)
+        color_actioned = QtGui.QColor(63, 255, 127, a)
+        color = QtGui.QColor(191, 191, 191, a)
+        if condition == [False, False]:
+            return color
+        elif condition == [False, True]:
+            return color_selected
+        elif condition == [True, False]:
+            if is_actioned:
+                color_0 = color_hovered
+                color_1 = color_actioned
+                start_coord, end_coord = rect.topLeft(), rect.bottomLeft()
+                l_color = QtGui.QLinearGradient(start_coord, end_coord)
+                l_color.setColorAt(0, color_0)
+                l_color.setColorAt(1, color_1)
+                return l_color
+            return color_hovered
+        elif condition == [True, True]:
+            color_0 = color_hovered
+            if is_actioned:
+                color_1 = color_actioned
+            else:
+                color_1 = color_selected
+            #
+            start_coord, end_coord = rect.topLeft(), rect.bottomLeft()
+            l_color = QtGui.QLinearGradient(start_coord, end_coord)
+            l_color.setColorAt(0, color_0)
+            l_color.setColorAt(1, color_1)
+            return l_color
+
+    def _set_ng_node_input_draw_(self, rect, border_width, offset):
+        self.setRenderHint(self.Antialiasing)
+        self._set_border_color_(191, 191, 191, 255)
+        self._set_border_width_(border_width)
+        self._set_background_color_(63, 255, 127, 255)
+        #
+        b_ = border_width / 2
+        if offset != 0:
+            offset_ = b_ + offset
+            rect_ = QtCore.QRect(
+                rect.x() + offset_, rect.y() + offset_,
+                rect.width() - offset_, rect.height() - offset_
+            )
+        else:
+            rect_ = rect
+        #
+        self.drawRect(rect_)
+
+    def _set_ng_node_output_draw_(self, rect, border_width, offset):
+        self.setRenderHint(self.Antialiasing)
+        self._set_border_color_(191, 191, 191, 255)
+        self._set_border_width_(border_width)
+        self._set_background_color_(255, 63, 31, 255)
+        #
+        b_ = border_width / 2
+        if offset != 0:
+            offset_ = b_ + offset
+            rect_ = QtCore.QRect(
+                rect.x() + offset_, rect.y() + offset_,
+                rect.width() - offset_, rect.height() - offset_
+            )
+        else:
+            rect_ = rect
+        #
+        x, y = rect_.x(), rect_.y()
+        w, h = rect_.width(), rect_.height()
+        #
+        r = h
+        coords = [
+            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=90),
+            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=210),
+            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=330),
+            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=90)
+        ]
+        #
+        self._set_path_draw_by_coords_(coords)
+
+    def _set_ng_node_resize_button_draw_(self, rect, border_width, mode, is_current, is_hovered):
+        self.setRenderHint(self.Antialiasing)
+        if is_current is True:
+            self._set_border_color_(127, 127, 127, 255)
+        else:
+            self._set_border_color_(63, 63, 63, 255)
+        #
+        x, y = rect.x(), rect.y()
+        w, h = rect.width(), rect.height()
+        c = 4
+        m = mode
+        for i in range(4):
+            if 0 < i < c:
+                if i <= m:
+                    self._set_border_color_(127, 127, 127, 255)
+                else:
+                    self._set_border_color_(63, 63, 63, 255)
+                self._set_border_width_(border_width)
+                self._set_background_color_(0, 0, 0, 0)
+                i_p_0, i_p_1 = QtCore.QPoint(x, y+i*h/c), QtCore.QPoint(x+w, y+i*h/c)
+                self.drawLine(i_p_0, i_p_1)
+
+    def _set_ng_node_frame_head_draw_(self, rect, border_color, border_width, border_radius, is_hovered=False, is_selected=False, is_actioned=False):
+        self.setRenderHint(self.Antialiasing)
+        x, y = rect.x(), rect.y()
+        w, h = rect.width(), rect.height()
+        x_0, y_0 = x, y
+        w_0, h_0 = w, h-border_radius-border_width
+        x_1, y_1 = x, y+border_radius+border_width
+        w_1, h_1 = w, h-border_radius-border_width
+        self._set_border_color_(border_color)
+        self._set_border_width_(border_width)
+        self._set_border_join_(QtCore.Qt.MiterJoin)
+        background_color = self._get_ng_node_background_color_(
+            rect,
+            is_hovered, is_selected, is_actioned
+        )
+        self._set_background_color_(background_color)
+        path_0 = QtGui.QPainterPath()
+        path_0.addRoundedRect(
+            QtCore.QRectF(x_0, y_0, w_0, h_0),
+            border_radius, border_radius, QtCore.Qt.AbsoluteSize
+        )
+        path_1 = QtGui.QPainterPath()
+        path_1.addRect(
+            QtCore.QRectF(x_1, y_1, w_1, h_1)
+        )
+        self.drawPath(path_0+path_1)
+
+    def _set_ng_node_frame_body_draw_(self, rect, border_color, border_width, border_radius):
+        self.setRenderHint(self.Antialiasing)
+        x, y = rect.x(), rect.y()
+        w, h = rect.width(), rect.height()
+        x_0, y_0 = x, y
+        w_0, h_0 = w, h - border_radius - border_width
+        x_1, y_1 = x, y + border_radius + border_width
+        w_1, h_1 = w, h - border_radius - border_width
+        self._set_border_color_(border_color)
+        self._set_border_width_(border_width)
+        self._set_border_join_(QtCore.Qt.MiterJoin)
+        self._set_background_color_(127, 127, 127, 63)
+        path_0 = QtGui.QPainterPath()
+        path_0.addRect(
+            QtCore.QRectF(x_0, y_0, w_0, h_0)
+        )
+        path_1 = QtGui.QPainterPath()
+        path_1.addRoundedRect(
+            QtCore.QRectF(x_1, y_1, w_1, h_1),
+            border_radius, border_radius, QtCore.Qt.AbsoluteSize
+        )
+        self.drawPath(path_0 + path_1)
+
+
+class QtImageMtd(object):
+    @classmethod
+    def test(cls):
+        r, g, b, a = 47, 47, 47, 255
+        w, h = 2048, 2048
+        g_w, g_h = w, 48
+        pixmap = QtGui.QPixmap(QtCore.QSize(w, h))
+        pixmap.fill(QtGui.QColor(r, g, b, a))
+        painter = QtPainter(pixmap)
+
+        file_path = '/data/f/test_rvio/test_guide.png'
+
+        guide_data = [
+            ('primary', 8),
+            ('object-color', 8),
+            ('wire', 8),
+            ('density', 8)
+        ]
+        max_c = sum([i[1] for i in guide_data])
+        border_rgb = 255, 255, 255
+        i_x_0, i_y_0 = 0, h-g_h
+        for i in guide_data:
+            i_text, i_c = i
+            i_background_rgb = bsc_core.TextOpt(i_text).to_rgb()
+            # background
+            i_p = i_c/float(max_c)
+            i_x_1, i_y_1 = int(i_x_0+i_p*w), h-1
+            i_g_w = w*i_p
+            i_g_rect = QtCore.QRect(
+                i_x_0, i_y_0, i_g_w, g_h
+            )
+
+            painter._set_border_color_(*border_rgb)
+            painter._set_background_color_(*i_background_rgb)
+            painter.drawRect(
+                i_g_rect
+            )
+
+            painter._set_font_(get_font(g_h*.8))
+
+            i_t_r, i_t_g, i_t_b = bsc_core.ColorMtd.get_complementary_rgb(*i_background_rgb)
+            i_t_r = QtGui.qGray(i_t_r, i_t_g, i_t_b )
+            if i_t_r >= 127:
+                i_t_r_ = 223
+            else:
+                i_t_r_ = 63
+            #
+            i_t_r__ = QtGui.QColor(i_t_r_, i_t_r_, i_t_r_)
+
+            i_text_option = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
+
+            painter._set_border_color_(i_t_r__)
+            painter.drawText(
+                i_g_rect,
+                i_text_option,
+                i_text,
+            )
+
+            i_x_0 = i_x_1
+
+        painter.end()
+
+        format_ = 'png'
+        pixmap.save(
+            file_path,
+            format_
+        )
+
+
 def set_gui_proxy_set_print(gui_proxy, text):
     if hasattr(gui_proxy, 'set_print_add_use_thread'):
         gui_proxy.set_print_add_use_thread(text)
@@ -2353,3 +3800,9 @@ def set_window_show_standalone(window_class, **kwargs):
     else:
         prx_window = window_class(**kwargs)
         prx_window.set_window_show()
+
+
+if __name__ == '__main__':
+    # app = QtWidgets.QApplication(sys.argv)
+    QtImageMtd.test()
+    # sys.exit(app.exec_())

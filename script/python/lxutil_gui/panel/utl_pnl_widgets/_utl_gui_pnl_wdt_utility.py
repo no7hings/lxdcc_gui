@@ -5,7 +5,7 @@ from lxutil import utl_core
 
 from lxutil_prd import utl_prd_objects
 
-from lxutil_gui.panel import utl_gui_pnl_abstract, utl_gui_pnl_abs_utility, utl_gui_pnl_abs_render_submitter, utl_gui_pnl_abs_loader, utl_gui_pnl_abs_node_graph
+from lxutil_gui.panel import utl_gui_pnl_abstract, utl_gui_pnl_abs_utility, utl_gui_pnl_abs_render_submitter, utl_gui_pnl_abs_loader, utl_gui_pnl_abs_node_graph, utl_gui_pnl_abs_publish
 
 
 class SceneBuildToolPanel(utl_gui_pnl_abstract.AbsShotBuildToolPanel):
@@ -61,3 +61,8 @@ class AssetLineup(utl_gui_pnl_abs_node_graph.AbsAssetLineup):
     OPTION_HOOK_KEY = 'tool-panels/asset-lineup'
     def __init__(self, hook_option=None, *args, **kwargs):
         super(AssetLineup, self).__init__(hook_option, *args, **kwargs)
+
+
+class AssetPublish(utl_gui_pnl_abs_publish.AbsAssetPublish):
+    def __init__(self, session, *args, **kwargs):
+        super(AssetPublish, self).__init__(session, *args, **kwargs)

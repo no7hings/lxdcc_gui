@@ -54,7 +54,7 @@ class _AbsQtSplitter(QtWidgets.QWidget):
         self._set_update_()
 
     def paintEvent(self, event):
-        # painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        # painter = QtPainter(self)
         # painter._set_background_color_(255, 0, 0)
         # painter.drawRect(
         #     QtCore.QRect(
@@ -428,7 +428,7 @@ class _QtTabView(
         return False
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
 
         painter.setRenderHints(
             painter.Antialiasing
@@ -1141,7 +1141,7 @@ class QtListWidget(
                 self._set_all_item_widgets_update_()
 
     def paintEvent(self, event):
-        # painter = _utl_gui_qt_wgt_utility.QtPainter(self.viewport())
+        # painter = QtPainter(self.viewport())
         # for i in self._item_rects:
         #     painter._set_frame_draw_by_rect_(
         #         i, border_color=(255, 0, 0), background_color=QtBackgroundColor.Transparent
@@ -1406,7 +1406,7 @@ class _QtGuideBar(
         return False
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         bdr_color = [Color.ENTRY_BORDER_ENTRY_OFF, Color.ENTRY_BORDER_ENTRY_ON][self._item_is_entered]
         bkg_color = [Color.ENTRY_BACKGROUND_ENTRY_OFF, Color.ENTRY_BACKGROUND_ENTRY_ON][self._item_is_entered]
         painter._set_frame_draw_by_rect_(

@@ -413,7 +413,7 @@ class AbsWorkTextureManager(prx_widgets.PrxSessionWindow):
 
     def _set_texture_workspace_update_(self):
         self._version_controller = _VersionController(self._rsv_task)
-        current_variant = 'td'
+        current_variant = 'main'
         self._version_controller.set_current_variant(current_variant)
         if self._set_workspace_check_(current_variant) is True:
             self._workspace_options_prx_node.set(
@@ -1508,7 +1508,7 @@ class AbsDccTextureManager(prx_widgets.PrxSessionWindow):
         texture = self._texture_add_opt.get_file(item)
         w = utl_core.DialogWindow.set_create(
             self._session.gui_name,
-            window_size=(480, 480),
+            window_size=(512, 512),
             #
             yes_visible=False, no_visible=False,
             tip_visible=False,

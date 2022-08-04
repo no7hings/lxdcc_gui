@@ -659,7 +659,7 @@ class _QtNGConnection(
         return False
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtNGPainter(self)
+        painter = QtNGPainter(self)
 
         painter.setRenderHints(
             painter.Antialiasing
@@ -1086,7 +1086,7 @@ class _QtNGNode(
         return False
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtNGPainter(self)
+        painter = QtNGPainter(self)
 
         offset = 0
 
@@ -1381,7 +1381,7 @@ class _QtNGGraph(
         return False
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtNGPainter(self)
+        painter = QtNGPainter(self)
         x, y = 0, 0
         width, height = self.width(), self.height()
 
@@ -2001,7 +2001,7 @@ class _QtNGImage(_QtNGNode):
         self._image_line_height = 0
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtNGPainter(self)
+        painter = QtNGPainter(self)
 
         offset = 0
 
@@ -2080,7 +2080,7 @@ class _QtNGImageGraph(_QtNGGraph):
         self._ng_graph_layout_flag = self.NGLayoutFlag.Line
     # widget
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtNGPainter(self)
+        painter = QtNGPainter(self)
         x, y = 0, 0
         width, height = self.width(), self.height()
 
@@ -2202,7 +2202,7 @@ class _QtNGImageGraph(_QtNGGraph):
         size = QtCore.QSize(w_, h_)
         pixmap = QtGui.QPixmap(size)
         pixmap.fill(QtGui.QColor(55, 55, 55, 255))
-        painter = _utl_gui_qt_wgt_utility.QtPainter(pixmap)
+        painter = QtPainter(pixmap)
         rect = pixmap.rect()
         ng_nodes = self._set_ng_graph_nodes_sort_by_(ng_nodes, sort_key='x')
         offset = 0

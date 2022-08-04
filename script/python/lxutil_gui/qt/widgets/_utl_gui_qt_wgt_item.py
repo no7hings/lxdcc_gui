@@ -129,7 +129,7 @@ class QtLineEdit_(
             menu_raw.extend(
                 [
                     ('system',),
-                    ('show in system', None, (True, self._set_open_in_system_, False), QtGui.QKeySequence.Open)
+                    ('show in system', 'file/folder', (True, self._set_open_in_system_, False), QtGui.QKeySequence.Open)
                 ]
             )
         #
@@ -357,7 +357,7 @@ class _QtListWidget(
         item_current = self._get_item_current_()
         if item_current:
             menu_raw.append(
-                ('show in system', None, (True, self._set_open_in_system_, False), QtGui.QKeySequence.Open)
+                ('show in system', 'file/folder', (True, self._set_open_in_system_, False), QtGui.QKeySequence.Open)
             )
         #
         if menu_raw:
@@ -719,7 +719,7 @@ class _QtTextItem(
         return False
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         self._set_wgt_update_geometry_()
         # name
         if self._name_text is not None:
@@ -846,7 +846,7 @@ class _QtIconPressItem(
     def paintEvent(self, event):
         w, h = self.width(), self.height()
         i_w, i_h = self._icon_file_draw_size
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         self._set_wgt_update_geometry_()
 
         if self._get_action_is_enable_() is True:
@@ -1183,7 +1183,7 @@ class _QtPressItem(
         return False
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         self._set_wgt_update_geometry_()
         #
         offset = self._get_action_offset_()
@@ -1374,7 +1374,7 @@ class _QtCheckItem(
         return False
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         #
         self._set_wgt_update_geometry_()
         #
@@ -1468,7 +1468,7 @@ class _QtStatusItem(
         return False
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         #
         self._set_wgt_update_geometry_()
         #
@@ -1614,7 +1614,7 @@ class _QtItemRgbaChooseDropFrame(
         bck_rect = QtCore.QRect(
             x, y, w - 1, h - 1
         )
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         #
         painter._set_popup_frame_draw_(
             bck_rect,
@@ -1740,6 +1740,9 @@ class _QtScriptValueEntryItem(
     def _get_resize_frame_(self):
         return self._resize_frame
 
+    def _set_value_entry_enable_(self, boolean):
+        pass
+
 
 class _QtRgbaValueEntryItem(
     _utl_gui_qt_wgt_utility._QtEntryFrame,
@@ -1836,7 +1839,7 @@ class _QtRgbaValueEntryItem(
     def paintEvent(self, event):
         super(_QtRgbaValueEntryItem, self).paintEvent(self)
         #
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         self._set_wgt_update_geometry_()
         # name
         if self._color_rgba is not None:
@@ -1856,6 +1859,9 @@ class _QtRgbaValueEntryItem(
     def _set_focused_(self, boolean):
         self._is_focused = boolean
         self.update()
+
+    def _set_value_entry_enable_(self, boolean):
+        pass
 
 
 class _QtEnumerateValueEntryItem(
@@ -2089,6 +2095,9 @@ class _QtArrayValueEntryItem(
                 _i_value_entry_widget._set_item_value_type_(self._item_value_type)
                 self._value_entry_layout.addWidget(_i_value_entry_widget)
                 self._value_entry_widgets.append(_i_value_entry_widget)
+
+    def _set_value_entry_enable_(self, boolean):
+        pass
 
 
 class _QtValuesEntryItem(
@@ -2615,7 +2624,7 @@ class _QtHExpandItem0(
         return False
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         #
         self._set_wgt_update_geometry_()
         #
@@ -2730,7 +2739,7 @@ class _QtHExpandItem1(
         self.update()
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         #
         self._set_wgt_update_geometry_()
         #
@@ -2998,7 +3007,7 @@ class QtTreeWidgetItem(
                     else:
                         raise TypeError()
                     #
-                    painter = _utl_gui_qt_wgt_utility.QtPainter(pixmap)
+                    painter = QtPainter(pixmap)
                     rect = pixmap.rect()
                     x, y = rect.x(), rect.y()
                     w, h = rect.width(), rect.height()
@@ -3226,13 +3235,13 @@ class QtTreeWidgetItem(
             else:
                 name_text_orig = self._get_name_text_orig_()
                 if name_text_orig is not None:
-                    text = name_text_orig
+                    title_text = name_text_orig
                 else:
-                    text = self._get_name_text_()
+                    title_text = self._get_name_text_()
                 #
-                text = text.replace('<', '&lt;').replace('>', '&gt;')
+                title_text = title_text.replace('<', '&lt;').replace('>', '&gt;')
                 html = '<html>\n<body>\n'
-                html += '<h3>{}</h3>\n'.format(text)
+                html += '<h3>{}</h3>\n'.format(title_text)
                 for i in text.split('\n'):
                     html += '<ul>\n<li><i>{}</i></li>\n</ul>\n'.format(i)
                 html += '</body>\n</html>'
@@ -3368,7 +3377,7 @@ class _QtListItemWidget(
         return False
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         #
         self._set_wgt_update_geometry_()
         #
@@ -3885,7 +3894,7 @@ class _AbsQtSplitterHandle(
         return False
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         #
         self._set_wgt_update_geometry_()
         #
@@ -4073,7 +4082,7 @@ class _QtWindowHead(
         self._orientation = QtCore.Qt.Horizontal
 
     def paintEvent(self, event):
-        painter = _utl_gui_qt_wgt_utility.QtPainter(self)
+        painter = QtPainter(self)
         #
         self._set_widget_geometries_update_()
         #

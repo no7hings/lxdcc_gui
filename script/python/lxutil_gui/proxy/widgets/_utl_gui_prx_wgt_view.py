@@ -572,7 +572,7 @@ class PrxListView(
 class PrxImageView(PrxListView):
     def __init__(self, *args, **kwargs):
         super(PrxImageView, self).__init__(*args, **kwargs)
-        self.set_item_frame_size(128, 128)
+        self.set_item_frame_size(225, 256)
         self.set_item_icon_frame_draw_enable(True)
         self.set_item_name_frame_draw_enable(True)
         self.set_item_image_frame_draw_enable(True)

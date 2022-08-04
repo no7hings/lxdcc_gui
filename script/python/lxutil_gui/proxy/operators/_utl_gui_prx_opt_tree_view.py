@@ -587,7 +587,7 @@ class PrxStgObjTreeViewAddOpt(object):
 
     def _set_prx_item_show_deferred_(self, prx_item, name_use_path_prettify):
         obj = prx_item.get_gui_dcc_obj(namespace=self._dcc_namespace)
-        name_orig = obj.path
+        name_orig = obj.name
         obj_name = obj.name
         obj_path = obj.path
         obj_type = obj.type
