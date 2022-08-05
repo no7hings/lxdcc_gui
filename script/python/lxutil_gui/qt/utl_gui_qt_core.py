@@ -2203,6 +2203,17 @@ class QtPainter(QtGui.QPainter):
     def _set_font_(self, font):
         self.setFont(font)
 
+    def _set_font_size_(self, size):
+        f = self.font()
+        f.setPointSize(size)
+        self.setFont(f)
+
+    def _set_font_option_(self, size, weight):
+        f = self.font()
+        f.setPointSize(size)
+        f.setWeight(weight)
+        self.setFont(f)
+
     def _set_border_width_(self, size):
         pen = self.pen()
         pen.setWidth(size)
@@ -2677,14 +2688,37 @@ class QtPainter(QtGui.QPainter):
             text_option__,
         )
 
-    def _set_text_draw_by_rect_use_key_value_(self, rect, key_text, value_text, key_text_width, key_color=None, value_color=None, offset=0, is_hovered=False, is_selected=False):
-        if key_color is not None:
-            key_color_ = key_color
+    def _set_text_draw_by_rect_use_dict_(self, rect, text_dict, text_size, text_weight, text_color):
+        x, y = rect.x(), rect.y()
+        w, h = rect.width(), rect.height()
+        self._set_font_option_(text_size, text_weight)
+        ss = [self.fontMetrics().width(i) for i in text_dict.keys()]
+        text_height = int(text_size*1.5)
+        text_spacing = int(text_size*.2)
+        t_w = max(ss) + text_size/2
+        for seq, (k, v) in enumerate(text_dict.items()):
+            i_rect = QtCore.QRect(x, y+seq*(text_height+text_spacing), w, text_height)
+            self._set_text_draw_by_rect_use_key_value_(
+                rect=i_rect,
+                key_text=k,
+                value_text=v,
+                key_text_width=t_w,
+                key_text_size=text_size, value_text_size=text_size,
+                key_text_weight=text_weight, value_text_weight=text_weight,
+                key_text_color=text_color, value_text_color=text_color,
+            )
+
+    def _set_radar_chart_draw_by_rect_(self, rect, chart_data):
+        pass
+
+    def _set_text_draw_by_rect_use_key_value_(self, rect, key_text, value_text, key_text_width, key_text_size=8, value_text_size=8, key_text_weight=50, value_text_weight=50, key_text_color=None, value_text_color=None, offset=0, is_hovered=False, is_selected=False):
+        if key_text_color is not None:
+            key_color_ = key_text_color
         else:
             key_color_ = QtFontColor.KeyBasic
         #
-        if value_color is not None:
-            value_color_ = value_color
+        if value_text_color is not None:
+            value_color_ = value_text_color
         else:
             value_color_ = QtFontColor.ValueBasic
         #
@@ -2693,7 +2727,7 @@ class QtPainter(QtGui.QPainter):
             value_color_ = QtFontColor.ValueHovered
         #
         sep_text = ':'
-        sep_text_width = 8
+        sep_text_width = key_text_size
         #
         x, y = rect.x() + offset, rect.y() + offset
         w, h = rect.width() - offset, rect.height() - offset
@@ -2703,7 +2737,10 @@ class QtPainter(QtGui.QPainter):
             x, y, key_text_width, h
         )
         key_text_option = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
-        self._set_font_(Font.NameTextKey)
+        key_text_font = Font.NameTextKey
+        key_text_font.setPointSize(key_text_size)
+        key_text_font.setWeight(key_text_weight)
+        self._set_font_(key_text_font)
         self.drawText(
             key_text_rect,
             key_text_option,
@@ -2733,7 +2770,10 @@ class QtPainter(QtGui.QPainter):
             value_text_rect_f.width(),
             QtCore.Qt.TextShowMnemonic
         )
-        self._set_font_(Font.NameTextValue)
+        value_text_font = Font.NameTextValue
+        value_text_font.setPointSize(value_text_size)
+        value_text_font.setWeight(value_text_weight)
+        self._set_font_(value_text_font)
         self.drawText(
             value_text_rect_f,
             value_text_,
@@ -3453,75 +3493,6 @@ class QtNGPainter(QtPainter):
         self.drawPath(path_0 + path_1)
 
 
-class QtImageMtd(object):
-    @classmethod
-    def test(cls):
-        r, g, b, a = 47, 47, 47, 255
-        w, h = 2048, 2048
-        g_w, g_h = w, 48
-        pixmap = QtGui.QPixmap(QtCore.QSize(w, h))
-        pixmap.fill(QtGui.QColor(r, g, b, a))
-        painter = QtPainter(pixmap)
-
-        file_path = '/data/f/test_rvio/test_guide.png'
-
-        guide_data = [
-            ('primary', 8),
-            ('object-color', 8),
-            ('wire', 8),
-            ('density', 8)
-        ]
-        max_c = sum([i[1] for i in guide_data])
-        border_rgb = 255, 255, 255
-        i_x_0, i_y_0 = 0, h-g_h
-        for i in guide_data:
-            i_text, i_c = i
-            i_background_rgb = bsc_core.TextOpt(i_text).to_rgb()
-            # background
-            i_p = i_c/float(max_c)
-            i_x_1, i_y_1 = int(i_x_0+i_p*w), h-1
-            i_g_w = w*i_p
-            i_g_rect = QtCore.QRect(
-                i_x_0, i_y_0, i_g_w, g_h
-            )
-
-            painter._set_border_color_(*border_rgb)
-            painter._set_background_color_(*i_background_rgb)
-            painter.drawRect(
-                i_g_rect
-            )
-
-            painter._set_font_(get_font(g_h*.8))
-
-            i_t_r, i_t_g, i_t_b = bsc_core.ColorMtd.get_complementary_rgb(*i_background_rgb)
-            i_t_r = QtGui.qGray(i_t_r, i_t_g, i_t_b )
-            if i_t_r >= 127:
-                i_t_r_ = 223
-            else:
-                i_t_r_ = 63
-            #
-            i_t_r__ = QtGui.QColor(i_t_r_, i_t_r_, i_t_r_)
-
-            i_text_option = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
-
-            painter._set_border_color_(i_t_r__)
-            painter.drawText(
-                i_g_rect,
-                i_text_option,
-                i_text,
-            )
-
-            i_x_0 = i_x_1
-
-        painter.end()
-
-        format_ = 'png'
-        pixmap.save(
-            file_path,
-            format_
-        )
-
-
 def set_gui_proxy_set_print(gui_proxy, text):
     if hasattr(gui_proxy, 'set_print_add_use_thread'):
         gui_proxy.set_print_add_use_thread(text)
@@ -3802,7 +3773,111 @@ def set_window_show_standalone(window_class, **kwargs):
         prx_window.set_window_show()
 
 
+class QtPixmapDrawer(object):
+    @classmethod
+    def test(cls):
+        r, g, b, a = 47, 47, 47, 255
+        w, h = 2048, 2048
+        g_w, g_h = w, 48
+        pixmap = QtGui.QPixmap(QtCore.QSize(w, h))
+        pixmap.fill(QtGui.QColor(r, g, b, a))
+        painter = QtPainter(pixmap)
+
+        file_path = '/data/f/test_rvio/test_guide_1.png'
+
+        guide_data = [
+            ('primary', 8),
+            ('object-color', 8),
+            ('wire', 8),
+            ('density', 8)
+        ]
+        max_c = sum([i[1] for i in guide_data])
+        border_rgb = 255, 255, 255
+        i_x_0, i_y_0 = 0, h-g_h
+        for i in guide_data:
+            i_text, i_c = i
+            i_background_rgb = bsc_core.TextOpt(i_text).to_rgb()
+            # background
+            i_p = i_c/float(max_c)
+            i_x_1, i_y_1 = int(i_x_0+i_p*w), h-1
+            i_g_w = w*i_p
+            i_g_rect = QtCore.QRect(
+                i_x_0, i_y_0, i_g_w, g_h
+            )
+
+            painter._set_border_color_(*border_rgb)
+            painter._set_background_color_(*i_background_rgb)
+            painter.drawRect(
+                i_g_rect
+            )
+
+            painter._set_font_(get_font(g_h*.8))
+
+            i_t_r, i_t_g, i_t_b = bsc_core.ColorMtd.get_complementary_rgb(*i_background_rgb)
+            i_t_r = QtGui.qGray(i_t_r, i_t_g, i_t_b )
+            if i_t_r >= 127:
+                i_t_r_ = 223
+            else:
+                i_t_r_ = 63
+            #
+            i_t_r__ = QtGui.QColor(i_t_r_, i_t_r_, i_t_r_)
+
+            i_text_option = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
+
+            painter._set_border_color_(i_t_r__)
+            painter.drawText(
+                i_g_rect,
+                i_text_option,
+                i_text,
+            )
+
+            i_x_0 = i_x_1
+
+        painter.end()
+
+        format_ = 'png'
+        pixmap.save(
+            file_path,
+            format_
+        )
+    @classmethod
+    def get_image_by_data(cls, data, file_path):
+        x, y = 0, 0
+        w, h = data.get('image.size')
+
+        pixmap = QtGui.QPixmap(QtCore.QSize(w, h))
+        r, g, b, a = data.get('image.background')
+        pixmap.fill(QtGui.QColor(r, g, b, a))
+
+        painter = QtPainter(pixmap)
+
+        if data.get('draw.text'):
+            text_content = data.get('draw.text.content')
+            text_size = data.get('draw.text.size')
+            text_weight = data.get('draw.text.weight')
+            text_color = data.get('draw.text.color')
+            text_rect = QtCore.QRect(x, y, w/2, h/2)
+            if isinstance(text_content, dict):
+                painter._set_text_draw_by_rect_use_dict_(
+                    text_rect, text_content, text_size, text_weight, text_color
+                )
+
+        painter.end()
+
+        format_ = os.path.splitext(file_path)[-1][1:]
+
+        pixmap.save(
+            file_path,
+            format_
+        )
+
+
 if __name__ == '__main__':
-    # app = QtWidgets.QApplication(sys.argv)
-    QtImageMtd.test()
-    # sys.exit(app.exec_())
+    import lxbasic.objects as bsc_objects
+    app = QtWidgets.QApplication(sys.argv)
+    d = bsc_objects.Configure(
+        value='/data/e/myworkspace/td/lynxi/script/python/lxutil_gui/qt/.test/_tst__draw_data.yml'
+    )
+    QtPixmapDrawer.get_image_by_data(d, '/data/f/test_rvio/test_2.png')
+    app.exit(0)
+    sys.exit(0)

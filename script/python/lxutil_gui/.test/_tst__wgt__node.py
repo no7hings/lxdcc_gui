@@ -9,7 +9,7 @@ import lxresolver.commands as rsv_commands
 class TestWindow(utl_prx_widgets.PrxToolWindow):
     def __init__(self, *args, **kwargs):
         super(TestWindow, self).__init__(*args, **kwargs)
-        self.set_definition_window_size([640, 480])
+        self.set_definition_window_size([640, 640])
         self._test_()
 
     def _test_(self):

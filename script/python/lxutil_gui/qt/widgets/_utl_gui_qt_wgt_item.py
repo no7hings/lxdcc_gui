@@ -576,7 +576,7 @@ class QtTextBrowser_(
         super(QtTextBrowser_, self).__init__(*args, **kwargs)
         self.setWordWrapMode(QtGui.QTextOption.WordWrap)
         self.installEventFilter(self)
-        self.setAcceptRichText(False)
+        # self.setAcceptRichText(False)
         # self.setWordWrapMode(QtGui.QTextOption.NoWrap)
         #
         self.setFont(Font.CONTENT)
@@ -672,8 +672,9 @@ class QtTextBrowser_(
         else:
             self.setText('')
 
-    def paste(self):
-        print QtWidgets.QApplication.clipboard().text()
+    def insertFromMimeData(self, data):
+        if data.text():
+            self.setText(data.text())
 
 
 class _QtTextItem(
