@@ -3850,13 +3850,13 @@ class QtPixmapDrawer(object):
         pixmap.fill(QtGui.QColor(r, g, b, a))
 
         painter = QtPainter(pixmap)
-
+        m = 48
         if data.get('draw.text'):
             text_content = data.get('draw.text.content')
             text_size = data.get('draw.text.size')
             text_weight = data.get('draw.text.weight')
             text_color = data.get('draw.text.color')
-            text_rect = QtCore.QRect(x, y, w/2, h/2)
+            text_rect = QtCore.QRect(x+m, y+m, w/2, h/2)
             if isinstance(text_content, dict):
                 painter._set_text_draw_by_rect_use_dict_(
                     text_rect, text_content, text_size, text_weight, text_color

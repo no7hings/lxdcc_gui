@@ -4,7 +4,7 @@ image:
 #
 draw:
     text:
-        content: {location: '/master/hi', aov: 'primary'}
-        size: 32
+        content: {location: '/master/hi', aov: 'ass_density'}
+        size: 48
         weight: 75
         color: [0, 0, 0, 255]
