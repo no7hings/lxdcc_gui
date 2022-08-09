@@ -483,6 +483,7 @@ class AbsQtPopupDef(object):
         self._popup_side = 2
         self._popup_margin = 8
         self._popup_shadow_radius = 4
+        self._popup_offset = 0, 0
 
         self._popup_target_entry = None
         self._popup_target_entry_frame = None
@@ -494,12 +495,13 @@ class AbsQtPopupDef(object):
             rect = widget.rect()
         # p = QtCore.QPoint(rect.right(), rect.center().y())
         return widget.mapToGlobal(rect.center())
-    @classmethod
-    def _get_popup_pos_(cls, widget):
+
+    def _get_popup_pos_(self, widget):
         rect = widget.rect()
         # p = QtCore.QPoint(rect.right(), rect.center().y())
         p = widget.mapToGlobal(rect.topLeft())
-        return p.x(), p.y()
+        o_x, o_y = self._popup_offset
+        return p.x()+o_x, p.y()+o_y
     @classmethod
     def _get_popup_pos_0_(cls, widget):
         rect = widget.rect()
@@ -599,6 +601,9 @@ class AbsQtPopupDef(object):
 
     def _set_popup_target_entry_frame_(self, widget):
         self._popup_target_entry_frame = widget
+
+    def _set_popup_offset_(self, x, y):
+        self._popup_offset = x, y
 
     def _set_popup_scroll_to_pre_(self):
         pass

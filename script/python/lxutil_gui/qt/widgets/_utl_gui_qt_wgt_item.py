@@ -1859,6 +1859,7 @@ class _QtRgbaValueEntryItem(
 
     def _set_color_choose_drop_(self):
         widget = self.CHOOSE_DROP_FRAME_CLASS(self)
+        # widget._set_popup_offset_(0, 22)
         widget._set_popup_start_()
 
     def _set_focused_(self, boolean):
@@ -2000,6 +2001,7 @@ class _QtEnumerateValueEntryItem(
         )
         #
         self._value_entry_choose_frame = self.CHOOSE_DROP_FRAME_CLASS(self)
+        # self._value_entry_choose_frame._set_popup_offset_(0, 22)
         self._value_entry_choose_frame._set_popup_target_entry_(self._value_entry_widget)
         self._value_entry_choose_frame._set_popup_target_entry_frame_(self)
         self._value_entry_choose_frame.hide()
@@ -2014,6 +2016,7 @@ class _QtEnumerateValueEntryItem(
         )
         #
         self._value_entry_completion_frame = self.COMPLETION_DROP_FRAME_CLASS(self)
+        # self._value_entry_completion_frame._set_popup_offset_(0, 22)
         self._value_entry_completion_frame._set_popup_target_entry_(self._value_entry_widget)
         self._value_entry_completion_frame._set_popup_target_entry_frame_(self)
         self._value_entry_completion_frame.hide()
@@ -2167,6 +2170,7 @@ class _QtValuesEntryItem(
         )
         #
         self._value_entry_choose_frame = self.CHOOSE_DROP_FRAME_CLASS(self)
+        # self._value_entry_choose_frame._set_popup_offset_(0, 22)
         self._value_entry_choose_frame._set_popup_target_entry_(self._value_entry_widget)
         self._value_entry_choose_frame._set_popup_target_entry_frame_(self)
         self._value_entry_choose_frame.hide()
@@ -2473,6 +2477,7 @@ class _QtFilterBar(
         self._history_button.hide()
         #
         self._entry_history_choose_drop_frame = self.CHOOSE_DROP_FRAME_CLASS(self)
+        # self._entry_history_choose_drop_frame._set_popup_offset_(0, 22)
         self._entry_history_choose_drop_frame._set_popup_target_entry_(self._value_entry_widget)
         self._entry_history_choose_drop_frame._set_popup_target_entry_frame_(self._entry_frame)
         self._value_entry_widget.up_key_pressed.connect(
