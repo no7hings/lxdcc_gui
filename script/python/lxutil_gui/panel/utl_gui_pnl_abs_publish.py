@@ -50,6 +50,14 @@ class AbsAssetPublish(prx_widgets.PrxSessionWindow):
             self._session.configure.get('build.node.publish_options'),
         )
 
+        option_hook_opt = self._session.option_opt
+        file_path = option_hook_opt.get('file')
+
+        if file_path:
+            self._publish_options_prx_node.set(
+                'scene_file', file_path
+            )
+
         self._stg_connector = self._session.get_shotgun_connector()
 
         version_types = self._stg_connector.get_stg_all_version_types()
@@ -57,3 +65,6 @@ class AbsAssetPublish(prx_widgets.PrxSessionWindow):
         self._publish_options_prx_node.set(
             'shotgun.version_type', version_types
         )
+
+    def set_refresh_all(self):
+        scene_file_path = self._publish_options_prx_node.get('scene_file')

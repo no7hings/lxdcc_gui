@@ -2669,6 +2669,14 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             ext_filter = option.get('ext_filter')
             if ext_filter:
                 port.set_ext_filter(ext_filter)
+            #
+            show_history_latest = option.get('show_history_latest')
+            if show_history_latest:
+                port.set_history_show_latest()
+
+            lock = option.get('lock') or False
+            if lock is True:
+                port.set_locked(True)
         #
         elif widget_ in ['directory']:
             open_or_save_ = option.get('open_or_save')
