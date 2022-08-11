@@ -212,6 +212,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         self._rsv_uint_list_view_0.set_item_select_changed_connect_to(
             self._set_guide_bar_update_
         )
+        self._rsv_uint_list_view_0.set_refresh_connect_to(self._set_gui_rsv_task_units_refresh_by_selection_)
         #
         self._prx_obj_guide_bar.set_item_clicked_connect_to(self._set_rsv_obj_select_)
         # self._prx_obj_guide_bar.set_item_changed_connect_to(self._set_rsv_obj_select_)
@@ -614,12 +615,12 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 ).to_string()
             )
             #
+            movie_file_opt = bsc_core.StorageFileOpt(movie_file_path)
             show_info_dict['update'] = bsc_core.TimeMtd.to_prettify_by_timestamp(
-                bsc_core.StorageFileOpt(
-                    movie_file_path
-                ).get_modify_timestamp(),
+                movie_file_opt.get_modify_timestamp(),
                 language=1
             )
+            show_info_dict['user'] = movie_file_opt.get_user()
             #
             rsv_task_unit_gui.set_press_db_clicked_connect_to(
                 execute_fnc
@@ -631,6 +632,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                 rsv_task_unit_gui.set_image_show_args(image_file_path, image_sub_process_cmds)
         else:
             show_info_dict['update'] = 'N/a'
+            show_info_dict['user'] = 'N/a'
             rsv_task_unit_gui.set_image(
                 utl_gui_core.RscIconFile.get('image_loading_failed')
             )

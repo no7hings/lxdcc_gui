@@ -1058,6 +1058,8 @@ class QtStyledItemDelegate(QtWidgets.QStyledItemDelegate):
 class QtListWidget(
     utl_gui_qt_abstract.AbsQtListWidget
 ):
+    ctrl_f_key_pressed = qt_signal()
+    f5_key_pressed = qt_signal()
     def __init__(self, *args, **kwargs):
         super(QtListWidget, self).__init__(*args, **kwargs)
         qt_palette = QtDccMtd.get_qt_palette()
@@ -1095,11 +1097,31 @@ class QtListWidget(
         #
         self._action_control_flag = False
 
+    def _set_action_wheel_update_(self, event):
+        if self._action_control_flag is True:
+            delta = event.angleDelta().y()
+            step = 4
+            pre_item_frame_w, pre_item_frame_h = self._item_frame_size
+            if delta > 0:
+                item_frame_w = pre_item_frame_w+step
+            else:
+                item_frame_w = pre_item_frame_w-step
+            #
+            item_frame_w = max(min(item_frame_w, 480), 28)
+            if item_frame_w != pre_item_frame_w:
+                item_frame_h = int(float(pre_item_frame_h)/float(pre_item_frame_w)*item_frame_w)
+                self._set_item_frame_size_(item_frame_w, item_frame_h)
+                self._set_all_item_widgets_update_()
+
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.KeyPress:
-                if event.key() == QtCore.Qt.Key_Control:
+                if event.key() == QtCore.Qt.Key_F and event.modifiers() == QtCore.Qt.ControlModifier:
+                    self.ctrl_f_key_pressed.emit()
+                elif event.key() == QtCore.Qt.Key_F5:
+                    self.f5_key_pressed.emit()
+                elif event.key() == QtCore.Qt.Key_Control:
                     self._action_control_flag = True
             elif event.type() == QtCore.QEvent.KeyRelease:
                 if event.key() == QtCore.Qt.Key_Control:
@@ -1123,22 +1145,6 @@ class QtListWidget(
         if widget == self.verticalScrollBar():
             pass
         return False
-
-    def _set_action_wheel_update_(self, event):
-        if self._action_control_flag is True:
-            delta = event.angleDelta().y()
-            step = 4
-            pre_item_frame_w, pre_item_frame_h = self._item_frame_size
-            if delta > 0:
-                item_frame_w = pre_item_frame_w+step
-            else:
-                item_frame_w = pre_item_frame_w-step
-            #
-            item_frame_w = max(min(item_frame_w, 480), 28)
-            if item_frame_w != pre_item_frame_w:
-                item_frame_h = int(float(pre_item_frame_h)/float(pre_item_frame_w)*item_frame_w)
-                self._set_item_frame_size_(item_frame_w, item_frame_h)
-                self._set_all_item_widgets_update_()
 
     def paintEvent(self, event):
         # painter = QtPainter(self.viewport())

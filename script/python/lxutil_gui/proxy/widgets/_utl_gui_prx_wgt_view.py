@@ -568,6 +568,9 @@ class PrxListView(
     def set_loading_update(self):
         self.view._set_loading_update_()
 
+    def set_refresh_connect_to(self, fnc):
+        self._qt_view.f5_key_pressed.connect(fnc)
+
 
 class PrxImageView(PrxListView):
     def __init__(self, *args, **kwargs):
