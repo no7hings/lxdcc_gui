@@ -504,8 +504,8 @@ class AbsSceneMethodRunnerPanel(
         if self._rsv_scene_properties is not None:
             # self._set_properties_update_()
             #
-            if utl_core.System.get_user_name() == 'dongchangbao':
-                utl_core.Environ.set_td_enable(True)
+            # if utl_core.System.get_user_name() == 'dongchangbao':
+            #     utl_core.Environ.set_td_enable(True)
             #
             self._methods_loader = utl_fnc_objects.TaskMethodsLoader(self._rsv_scene_properties)
             entity_path = self._methods_loader.get_entity_obj_path()

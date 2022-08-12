@@ -167,7 +167,7 @@ class _PrxStgObjEntry(AbsRsvTypeQtEntry):
         self._history_key = 'gui.storage'
         # self._history_icon_file_path = utl_gui_core.RscIconFile.get('history')
         #
-        self._ext_filter = 'All File(s) (*.*)'
+        self._ext_filter = 'All File (*.*)'
         #
         self._qt_entry_widget._set_value_entry_enable_(True)
         self._qt_entry_widget._set_value_entry_drop_enable_(True)
@@ -430,9 +430,8 @@ class _PrxStgObjsEntry(AbsRsvTypeQtEntry):
         self._qt_entry_widget._get_resize_frame_()._set_resize_minimum_(42)
         self._qt_entry_widget._set_size_policy_height_fixed_mode_()
         self._qt_entry_widget._get_value_entry_widget_()._set_entry_use_as_storage_(True)
-        self._qt_entry_widget._get_value_entry_widget_()._set_value_validation_fnc_(
-            self._value_validation_fnc_
-        )
+        self._qt_entry_widget._get_value_entry_widget_()._set_value_validation_fnc_(self._value_validation_fnc_)
+        self._qt_entry_widget._get_value_entry_widget_().entry_added.connect(self.set_history_update)
         self._qt_entry_widget._set_value_entry_choose_button_icon_file_path_(
             utl_gui_core.RscIconFile.get('history')
         )
@@ -440,7 +439,7 @@ class _PrxStgObjsEntry(AbsRsvTypeQtEntry):
         self.widget.setMaximumHeight(92)
         self.widget.setMinimumHeight(92)
 
-        self._ext_filter = 'All File(s) (*.*)'
+        self._ext_filter = 'All File (*.*)'
 
         self._open_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self._qt_entry_widget._set_value_entry_button_add_(self._open_button.widget)
@@ -456,6 +455,9 @@ class _PrxStgObjsEntry(AbsRsvTypeQtEntry):
     def _set_open_(self):
         raise NotImplementedError()
 
+    def set_ext_filter(self, ext_filter):
+        self._ext_filter = ext_filter
+
     def set_append(self, raw):
         self._qt_entry_widget._set_values_append_(
             raw
@@ -467,12 +469,12 @@ class _PrxStgObjsEntry(AbsRsvTypeQtEntry):
         )
 
     def get(self):
-        pass
+        return self._qt_entry_widget._get_values_()
 
     def set_history_key(self, key):
         self._history_key = key
         self.set_history_update()
-        self.set_history_show_latest()
+        # self.set_history_show_latest()
 
     def _value_validation_fnc_(self, value):
         return True
@@ -593,16 +595,22 @@ class PrxMediasOpenEntry(_PrxStgObjsEntry):
                 '"LMB-click" create file by "screenshot"'
             ]
         )
-        self.set_history_key('gui.medias-open')
+        # self.set_history_key('gui.medias-open')
 
     def _set_open_(self):
         f = utl_gui_qt_core.QtWidgets.QFileDialog()
         options = f.Options()
         # options |= f.DontUseNativeDialog
+        _ = self.get()
+        if _:
+            d = _[0]
+        else:
+            d = ''
+
         s = f.getOpenFileNames(
             self.widget,
             'Open Files',
-            self.get(),
+            d,
             filter=self._ext_filter
         )
         if s:
@@ -635,6 +643,51 @@ class PrxMediasOpenEntry(_PrxStgObjsEntry):
         if value:
             return os.path.isfile(value)
         return False
+
+
+class PrxValuesEntry(AbsRsvTypeQtEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtValuesEntryItem
+    def __init__(self, *args, **kwargs):
+        super(PrxValuesEntry, self).__init__(*args, **kwargs)
+        self._history_key = 'gui.storages'
+        #
+        self._qt_entry_widget._set_value_entry_drop_enable_(True)
+        self._qt_entry_widget._set_value_entry_enable_(True)
+        self._qt_entry_widget._get_resize_frame_()._set_resize_target_(self.widget)
+        self._qt_entry_widget._get_resize_frame_()._set_resize_minimum_(42)
+        self._qt_entry_widget._set_size_policy_height_fixed_mode_()
+        self._qt_entry_widget._set_value_entry_choose_button_icon_file_path_(
+            utl_gui_core.RscIconFile.get('history')
+        )
+
+        self.widget.setMaximumHeight(92)
+        self.widget.setMinimumHeight(92)
+
+        self._add_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
+        self._qt_entry_widget._set_value_entry_button_add_(self._add_button.widget)
+        self._add_button.set_press_clicked_connect_to(self._set_add_)
+        self._add_button.set_name('add')
+        self._add_button.set_icon_name('add')
+        self._add_button.set_tool_tip(
+            [
+                '"LMB-click" add a value'
+            ]
+        )
+
+    def _set_add_(self):
+        pass
+
+    def get(self):
+        pass
+
+    def set(self, raw=None, **kwargs):
+        pass
+
+    def set_append(self, value):
+        self._qt_entry_widget._set_values_append_(
+            value
+        )
 
 
 class PrxRsvProjectChooseEntry(AbsRsvTypeQtEntry):
@@ -2151,6 +2204,21 @@ class PrxMediasOpenPort(AbsPrxTypePort):
     def __init__(self, *args, **kwargs):
         super(PrxMediasOpenPort, self).__init__(*args, **kwargs)
 
+    def set_ext_filter(self, ext_filter):
+        self._prx_port_entry.set_ext_filter(ext_filter)
+
+
+class PrxValuesPort(AbsPrxTypePort):
+    ENABLE_CLASS = _PrxPortStatus
+    LABEL_CLASS = _PrxPortLabel
+    LABEL_HIDED = False
+    ENTRY_CLASS = PrxValuesEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxValuesPort, self).__init__(*args, **kwargs)
+
+    def set_append(self, value):
+        self._prx_port_entry.set_append(value)
+
 
 class PrxComponentsPort(AbsPrxTypePort):
     ENABLE_CLASS = _PrxPortStatus
@@ -2707,6 +2775,33 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
                 port.set_locked(True)
         elif widget_ in ['directories']:
             port = PrxDirectoriesOpenPort(
+                port_path,
+                node_widget=self.widget
+            )
+        #
+        elif widget_ in ['medias']:
+            port = PrxMediasOpenPort(
+                port_path,
+                node_widget=self.widget
+            )
+            #
+            history_key_ = option.get('history_key')
+            if history_key_:
+                port.set_history_key(history_key_)
+
+            # port.set(value_)
+            # port.set_default(value_)
+
+            ext_filter = option.get('ext_filter')
+            if ext_filter:
+                port.set_ext_filter(ext_filter)
+
+            lock = option.get('lock') or False
+            if lock is True:
+                port.set_locked(True)
+        #
+        elif widget_ in ['values']:
+            port = PrxValuesPort(
                 port_path,
                 node_widget=self.widget
             )

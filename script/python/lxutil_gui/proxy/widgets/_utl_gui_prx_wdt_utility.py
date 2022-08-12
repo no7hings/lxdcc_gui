@@ -1024,6 +1024,13 @@ class PrxSessionWindow(PrxToolWindow):
 
         self.set_window_loading_end()
 
+    def _set_collapse_update_(self, collapse_dict):
+        for i_k, i_v in collapse_dict.items():
+            i_c = self._session.configure.get(
+                'build.node_collapse.{}'.format(i_k)
+            ) or []
+            i_v.set_ports_collapse(i_c)
+
     def set_variants_restore(self):
         pass
 

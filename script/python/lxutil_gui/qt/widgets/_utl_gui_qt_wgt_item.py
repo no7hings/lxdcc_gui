@@ -271,11 +271,10 @@ class QtLineEdit_(
 
     def _set_item_value_(self, value):
         if value is not None:
-            self.setText(
-                str(
-                    self._item_value_type(value)
-                ).encode("UTF8")
-            )
+            value = self._item_value_type(value)
+            if isinstance(value, unicode):
+                value = value.encode('utf-8')
+            self.setText(value)
         else:
             self.setText('')
 
@@ -318,6 +317,8 @@ class _QtListWidget(
     utl_gui_qt_abstract.AbsQtEntryDef,
     utl_gui_qt_abstract.AbsQtEntryDropDef,
 ):
+    entry_changed = qt_signal()
+    entry_added = qt_signal()
     def __init__(self, *args, **kwargs):
         super(_QtListWidget, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -540,8 +541,8 @@ class _QtListWidget(
             if self._entry_is_enable is True:
                 if value not in self._values:
                     self._values.append(value)
-                    #
                     self._set_item_add_(value)
+                    self.entry_added.emit()
 
         # print self._values
 
@@ -1698,11 +1699,21 @@ class _QtConstantValueEntryItem(
         self._value_entry_widget._set_item_value_type_(self._item_value_type)
 
     def _set_value_entry_enable_(self, boolean):
+        super(_QtConstantValueEntryItem, self)._set_value_entry_enable_(boolean)
+
         self._value_entry_widget.setReadOnly(not boolean)
+
+        self._frame_background_color = [
+            QtBackgroundColor.Basic, QtBackgroundColor.Dark
+        ][boolean]
+        self._set_wgt_update_draw_()
 
 
 class _QtScriptValueEntryItem(
     _utl_gui_qt_wgt_utility._QtEntryFrame,
+    #
+    utl_gui_qt_abstract.AbsQtValueEntryDef,
+    #
     utl_gui_qt_abstract.AbsQtItemValueTypeConstantEntryDef,
     utl_gui_qt_abstract.AbsQtItemValueDefaultDef,
 ):
@@ -1746,7 +1757,14 @@ class _QtScriptValueEntryItem(
         return self._resize_frame
 
     def _set_value_entry_enable_(self, boolean):
-        pass
+        super(_QtScriptValueEntryItem, self)._set_value_entry_enable_(boolean)
+
+        self._value_entry_widget.setReadOnly(not boolean)
+
+        self._frame_background_color = [
+            QtBackgroundColor.Basic, QtBackgroundColor.Dark
+        ][boolean]
+        self._set_wgt_update_draw_()
 
 
 class _QtRgbaValueEntryItem(
@@ -1897,17 +1915,18 @@ class _QtEnumerateValueEntryItem(
     def _set_wgt_update_(self):
         values = self._get_item_values_()
         if values:
-            value = self._get_item_value_()
-            if value in values:
-                self._value_index_label.show()
-                maximum = len(values)
-                value = values.index(value)+1
-                text = '{}/{}'.format(value, maximum)
-                self._value_index_label._set_name_text_(text)
-                width = self._value_index_label._get_name_text_draw_width_(text)
-                self._value_index_label.setMinimumWidth(width+4)
-            else:
-                self._value_index_label.hide()
+            if self._value_entry_is_enable is True:
+                value = self._get_item_value_()
+                if value in values:
+                    self._value_index_label.show()
+                    maximum = len(values)
+                    value = values.index(value)+1
+                    text = '{}/{}'.format(value, maximum)
+                    self._value_index_label._set_name_text_(text)
+                    width = self._value_index_label._get_name_text_draw_width_(text)
+                    self._value_index_label.setMinimumWidth(width+4)
+                else:
+                    self._value_index_label.hide()
         else:
             self._value_index_label.hide()
 
@@ -2031,9 +2050,16 @@ class _QtEnumerateValueEntryItem(
         )
 
     def _set_value_entry_enable_(self, boolean):
+        super(_QtEnumerateValueEntryItem, self)._set_value_entry_enable_(boolean)
+
         self._value_entry_widget._set_enter_enable_(boolean)
         self._choose_button.setHidden(not boolean)
         self._value_index_label.setHidden(not boolean)
+
+        self._frame_background_color = [
+            QtBackgroundColor.Basic, QtBackgroundColor.Dark
+        ][boolean]
+        self._set_wgt_update_draw_()
 
     def _set_value_entry_drop_enable_(self, boolean):
         self._value_entry_widget._set_entry_drop_enable_(boolean)
@@ -2113,8 +2139,6 @@ class _QtValuesEntryItem(
     #
     utl_gui_qt_abstract.AbsQtValueEntryDef,
     utl_gui_qt_abstract.AbsQtChooseDef,
-    #
-    utl_gui_qt_abstract.AbsQtEntryHistoryDef,
 ):
     QT_VALUE_ENTRY_CLASS = _QtListWidget
     #
@@ -2132,7 +2156,6 @@ class _QtValuesEntryItem(
         #
         self._set_value_entry_def_init_(self)
         self._set_choose_def_init_()
-        self._set_entry_history_def_init_(self)
         #
         self._set_value_entry_widget_build_(str)
 
@@ -2191,7 +2214,14 @@ class _QtValuesEntryItem(
         return self._value_entry_widget
 
     def _set_value_entry_enable_(self, boolean):
+        super(_QtValuesEntryItem, self)._set_value_entry_enable_(boolean)
+
         self._value_entry_widget._set_entry_enable_(boolean)
+
+        self._frame_background_color = [
+            QtBackgroundColor.Basic, QtBackgroundColor.Dark
+        ][boolean]
+        self._set_wgt_update_draw_()
 
     def _set_value_entry_drop_enable_(self, boolean):
         self._value_entry_widget._set_entry_drop_enable_(boolean)
@@ -2216,26 +2246,6 @@ class _QtValuesEntryItem(
 
     def _set_value_entry_use_as_storage_(self, boolean):
         self._value_entry_widget._set_entry_use_as_storage_(boolean)
-
-    def _set_entry_history_key_(self, key):
-        super(_QtValuesEntryItem, self)._set_entry_history_key_(key)
-        #
-        self._choose_button.show()
-
-    def _set_entry_history_update_(self):
-        if self._entry_history_key is not None:
-            #
-            histories = utl_core.History.get(
-                self._entry_history_key
-            )
-            if histories:
-                histories.reverse()
-            #
-            histories = [i for i in histories if self._get_entry_history_value_is_valid_(i) is True]
-            #
-            self._set_choose_values_(
-                histories
-            )
 
     def _set_value_entry_choose_button_icon_file_path_(self, file_path):
         self._choose_button._set_icon_file_path_(file_path)

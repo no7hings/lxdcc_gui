@@ -55,16 +55,93 @@ class AbsAssetPublish(prx_widgets.PrxSessionWindow):
 
         if file_path:
             self._publish_options_prx_node.set(
-                'scene_file', file_path
+                'resolver.scene_file', file_path
             )
 
         self._stg_connector = self._session.get_shotgun_connector()
 
-        version_types = self._stg_connector.get_stg_all_version_types()
+        self._publish_options_prx_node.get_port(
+            'shotgun.version.type'
+        ).set_changed_connect_to(
+            self._set_shotgun_version_status_update_
+        )
 
         self._publish_options_prx_node.set(
-            'shotgun.version_type', version_types
+            'resolver.load', self.set_refresh_all
+        )
+
+        # version_types = self._stg_connector.get_stg_all_version_types()
+        #
+        # self._publish_options_prx_node.set(
+        #     'shotgun.version.type', version_types
+        # )
+
+        # version_statuses = self._stg_connector.get_stg_all_version_status()
+        #
+        # self._publish_options_prx_node.set(
+        #     'shotgun.version.status', version_statuses
+        # )
+
+        self._publish_options_prx_node.set(
+            'check_and_repair', self._set_check_and_repair_run_
+        )
+
+        self._set_collapse_update_(
+            collapse_dict={
+                'options': self._publish_options_prx_node,
+            }
+        )
+
+        self.set_refresh_all()
+
+        self._publish_options_prx_node.get_port(
+            'customize.to'
+        ).set_append(
+            'test'
         )
 
     def set_refresh_all(self):
-        scene_file_path = self._publish_options_prx_node.get('scene_file')
+        scene_file_path = self._publish_options_prx_node.get('resolver.scene_file')
+        r = rsv_commands.get_resolver()
+        if scene_file_path:
+            rsv_scene_properties = r.get_rsv_scene_properties_by_any_scene_file_path(scene_file_path)
+            self._rsv_task = r.get_rsv_task(**rsv_scene_properties.value)
+
+            self._publish_options_prx_node.set(
+                'resolver.task', self._rsv_task.path
+            )
+
+            self._stg_task_query = self._stg_connector.get_stg_task_query(
+                **rsv_scene_properties.value
+            )
+
+            self._set_shotgun_task_update_()
+
+    def _set_shotgun_version_status_update_(self):
+        version_type = self._publish_options_prx_node.get('shotgun.version.type')
+        version_status_mapper = dict(
+            daily='rev',
+            check='pub',
+            downstream='pub'
+        )
+        version_status = version_status_mapper[version_type]
+        self._publish_options_prx_node.set(
+            'shotgun.version.status', version_status
+        )
+
+    def _set_shotgun_task_update_(self):
+        task_status = self._stg_task_query.get('sg_status_list')
+
+        self._publish_options_prx_node.set(
+            'shotgun.task.status', task_status
+        )
+
+        task_assignees = self._stg_task_query.get('task_assignees')
+        if task_assignees:
+            self._publish_options_prx_node.set(
+                'shotgun.task.assignees',
+                ', '.join([self._stg_connector.get_stg_user_query(**i).get('name') for i in task_assignees])
+            )
+
+    def _set_check_and_repair_run_(self):
+        print self._publish_options_prx_node.get_as_kwargs()

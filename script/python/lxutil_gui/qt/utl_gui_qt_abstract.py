@@ -3093,7 +3093,8 @@ class AbsQtListWidget(
 
     def _set_item_widget_delete_(self, item):
         item_widget = self.itemWidget(item)
-        item_widget.deleteLater()
+        if item_widget:
+            item_widget.deleteLater()
 
     def _set_item_delete_(self, item):
         print item.index()

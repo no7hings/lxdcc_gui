@@ -396,7 +396,11 @@ class AbsWorkTextureManager(prx_widgets.PrxSessionWindow):
             'texture.create.execute_us_deadline', self._set_wsp_tx_create_execute_by_deadline_
         )
 
-        self._set_collapse_update_()
+        self._set_collapse_update_(
+            collapse_dict={
+                'workspace_options': self._workspace_options_prx_node,
+            }
+        )
 
         self.set_window_loading_end()
 
@@ -610,20 +614,6 @@ class AbsWorkTextureManager(prx_widgets.PrxSessionWindow):
 
     def _set_version_new_(self):
         pass
-
-    def _set_collapse_update_(self):
-        collapse_dict = {
-            'workspace_options': self._workspace_options_prx_node,
-        }
-        for i_k, i_v in collapse_dict.items():
-            i_c = self._session.configure.get(
-                'build.node_collapse.{}'.format(i_k)
-            ) or []
-            if i_c:
-                for i in i_c:
-                    i_v.get_port(
-                        i.replace('/', '.')
-                    ).set_expanded(False)
 
     def _set_tx_create_data_update_from_workspace_(self, force_enable, directory_path_src, directory_path_tx):
         self._create_data = []
@@ -891,22 +881,16 @@ class AbsDccTextureManager(prx_widgets.PrxSessionWindow):
             'refresh', self._set_gui_refresh_
         )
 
-        self._set_collapse_update_()
+        self._set_collapse_update_(
+            collapse_dict={
+                'options': self._options_prx_node,
+            }
+        )
 
         self.set_refresh_all()
 
     def set_refresh_all(self):
         self._set_gui_refresh_()
-
-    def _set_collapse_update_(self):
-        collapse_dict = {
-            'options': self._options_prx_node,
-        }
-        for i_k, i_v in collapse_dict.items():
-            i_c = self._session.configure.get(
-                'build.node_collapse.{}'.format(i_k)
-            ) or []
-            i_v.set_ports_collapse(i_c)
 
     def _set_dcc_texture_references_update_(self):
         self._dcc_texture_references = None

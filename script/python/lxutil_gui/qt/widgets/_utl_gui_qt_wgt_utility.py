@@ -1661,6 +1661,9 @@ class _QtPopupChooseFrame(
         if widget == self._popup_target_entry:
             if event.type() == QtCore.QEvent.FocusOut:
                 self._set_popup_activated_(False)
+            elif event.type() == QtCore.QEvent.KeyPress:
+                if event.key() == QtCore.Qt.Key_Escape:
+                    self._set_popup_activated_(False)
         return False
 
     def _set_wgt_update_draw_(self):
@@ -1697,43 +1700,44 @@ class _QtPopupChooseFrame(
             parent = self.parent()
             self._list_widget._set_clear_()
             name_texts = parent._get_choose_values_()
-            icon_file_paths = parent._get_choose_icon_file_paths_()
-            if isinstance(name_texts, (tuple, list)):
-                current_name_text = parent._get_choose_current_()
-                for index, i_name_text in enumerate(name_texts):
-                    i_item_widget = _QtHItem()
-                    i_item = QtListWidgetItem()
-                    i_item.setSizeHint(QtCore.QSize(self._item_width, self._item_height))
+            if name_texts:
+                if isinstance(name_texts, (tuple, list)):
+                    icon_file_paths = parent._get_choose_icon_file_paths_()
+                    current_name_text = parent._get_choose_current_()
+                    for index, i_name_text in enumerate(name_texts):
+                        i_item_widget = _QtHItem()
+                        i_item = QtListWidgetItem()
+                        i_item.setSizeHint(QtCore.QSize(self._item_width, self._item_height))
+                        #
+                        self._list_widget.addItem(i_item)
+                        self._list_widget.setItemWidget(i_item, i_item_widget)
+                        i_item._set_item_show_connect_()
+                        #
+                        i_item_widget._set_name_text_(i_name_text)
+                        i_item_widget._set_index_(index)
+                        i_icon_file_path = icon_file_paths[index]
+                        if i_icon_file_path is not None:
+                            i_item_widget._set_icon_file_path_(i_icon_file_path)
+                        else:
+                            i_item_widget._set_icon_name_text_(i_name_text[0])
+                        #
+                        if current_name_text == i_name_text:
+                            i_item.setSelected(True)
                     #
-                    self._list_widget.addItem(i_item)
-                    self._list_widget.setItemWidget(i_item, i_item_widget)
-                    i_item._set_item_show_connect_()
+                    press_pos = self._get_popup_pos_(self._popup_target_entry_frame)
+                    width, height = self._get_popup_size_(self._popup_target_entry_frame)
+                    height_max = self._list_widget._get_maximum_height_(self._item_count_maximum)
+                    height_frame = self._popup_target_entry_frame.height()
+                    self._set_popup_fnc_(
+                        press_pos,
+                        (width, height_max)
+                    )
                     #
-                    i_item_widget._set_name_text_(i_name_text)
-                    i_item_widget._set_index_(index)
-                    i_icon_file_path = icon_file_paths[index]
-                    if i_icon_file_path is not None:
-                        i_item_widget._set_icon_file_path_(i_icon_file_path)
-                    else:
-                        i_item_widget._set_icon_name_text_(i_name_text[0])
+                    self._list_widget._set_scroll_to_selected_item_top_()
                     #
-                    if current_name_text == i_name_text:
-                        i_item.setSelected(True)
-                #
-                press_pos = self._get_popup_pos_(self._popup_target_entry_frame)
-                width, height = self._get_popup_size_(self._popup_target_entry_frame)
-                height_max = self._list_widget._get_maximum_height_(self._item_count_maximum)
-                height_frame = self._popup_target_entry_frame.height()
-                self._set_popup_fnc_(
-                    press_pos,
-                    (width, max(height_max, height_frame))
-                )
-                #
-                self._list_widget._set_scroll_to_selected_item_top_()
-                #
-                self._popup_target_entry._set_focused_(True)
+                    self._popup_target_entry._set_focused_(True)
 
-                self._popup_is_activated = True
+                    self._popup_is_activated = True
 
     def _set_popup_end_(self):
         parent = self.parent()
