@@ -26,7 +26,7 @@ class AbsPrxDialogWindow(
     def __init__(self, *args, **kwargs):
         super(AbsPrxDialogWindow, self).__init__(*args, **kwargs)
         self.widget.setWindowFlags(
-            _utl_gui_qt_wgt_utility.QtCore.Qt.Window | _utl_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
+            _utl_gui_qt_wgt_utility.QtCore.Qt.Tool | _utl_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
         )
         self.widget.setWindowModality(
             _utl_gui_qt_wgt_utility.QtCore.Qt.WindowModal

@@ -690,6 +690,33 @@ class PrxValuesEntry(AbsRsvTypeQtEntry):
         )
 
 
+class PrxValuesChooseEntry(AbsRsvTypeQtEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtValuesChooseEntryItem
+    def __init__(self, *args, **kwargs):
+        super(PrxValuesChooseEntry, self).__init__(*args, **kwargs)
+        self._qt_entry_widget._set_value_entry_drop_enable_(True)
+        self._qt_entry_widget._set_value_entry_enable_(True)
+        self._qt_entry_widget._get_resize_frame_()._set_resize_target_(self.widget)
+        self._qt_entry_widget._get_resize_frame_()._set_resize_minimum_(42)
+        self._qt_entry_widget._set_size_policy_height_fixed_mode_()
+
+        self.widget.setMaximumHeight(92)
+        self.widget.setMinimumHeight(92)
+
+    def _set_add_(self):
+        pass
+
+    def get(self):
+        pass
+
+    def set(self, raw=None, **kwargs):
+        pass
+
+    def set_append(self, value):
+        pass
+
+
 class PrxRsvProjectChooseEntry(AbsRsvTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
     QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtEnumerateValueEntryItem
@@ -2220,6 +2247,18 @@ class PrxValuesPort(AbsPrxTypePort):
         self._prx_port_entry.set_append(value)
 
 
+class PrxValuesChoosePort(AbsPrxTypePort):
+    ENABLE_CLASS = _PrxPortStatus
+    LABEL_CLASS = _PrxPortLabel
+    LABEL_HIDED = False
+    ENTRY_CLASS = PrxValuesChooseEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxValuesChoosePort, self).__init__(*args, **kwargs)
+
+    def set_append(self, value):
+        self._prx_port_entry.set_append(value)
+
+
 class PrxComponentsPort(AbsPrxTypePort):
     ENABLE_CLASS = _PrxPortStatus
     LABEL_CLASS = _PrxPortLabel
@@ -2802,6 +2841,11 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         #
         elif widget_ in ['values']:
             port = PrxValuesPort(
+                port_path,
+                node_widget=self.widget
+            )
+        elif widget_ in ['values_choose']:
+            port = PrxValuesChoosePort(
                 port_path,
                 node_widget=self.widget
             )

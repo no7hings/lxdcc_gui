@@ -1803,6 +1803,9 @@ class _QtPopupCompletionFrame(
         if widget == self._popup_target_entry:
             if event.type() == QtCore.QEvent.FocusOut:
                 self._set_popup_activated_(False)
+            elif event.type() == QtCore.QEvent.KeyPress:
+                if event.key() == QtCore.Qt.Key_Escape:
+                    self._set_popup_activated_(False)
         return False
 
     def _set_wgt_update_geometry_(self):

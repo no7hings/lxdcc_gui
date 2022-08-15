@@ -274,6 +274,8 @@ class QtLineEdit_(
             value = self._item_value_type(value)
             if isinstance(value, unicode):
                 value = value.encode('utf-8')
+            else:
+                value = str(value)
             self.setText(value)
         else:
             self.setText('')
@@ -2197,15 +2199,6 @@ class _QtValuesEntryItem(
         self._value_entry_choose_frame._set_popup_target_entry_(self._value_entry_widget)
         self._value_entry_choose_frame._set_popup_target_entry_frame_(self)
         self._value_entry_choose_frame.hide()
-        # self._value_entry_widget.up_key_pressed.connect(
-        #     self._value_entry_choose_frame._set_popup_scroll_to_pre_
-        # )
-        # self._value_entry_widget.down_key_pressed.connect(
-        #     self._value_entry_choose_frame._set_popup_scroll_to_next_
-        # )
-        # self._value_entry_widget.entry_finished.connect(
-        #     self._value_entry_choose_frame._set_popup_end_
-        # )
 
         self._resize_frame = _utl_gui_qt_wgt_utility._QtVResizeFrame()
         self._main_layout.addWidget(self._resize_frame)
@@ -2252,6 +2245,57 @@ class _QtValuesEntryItem(
 
     def _set_choose_current_(self, value):
         self._set_values_append_(value)
+
+    def _get_resize_frame_(self):
+        return self._resize_frame
+
+
+class _QtValuesChooseEntryItem(
+    _utl_gui_qt_wgt_utility._QtEntryFrame,
+    #
+    utl_gui_qt_abstract.AbsQtValueEntryDef,
+):
+    QT_VALUE_ENTRY_CLASS = _QtListWidget
+    def __init__(self, *args, **kwargs):
+        super(_QtValuesChooseEntryItem, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        #
+        self._frame_draw_margins = 0, 0, 0, 10
+        #
+        self._set_value_entry_def_init_(self)
+        #
+        self._set_value_entry_widget_build_(str)
+
+    def _set_value_entry_widget_build_(self, value_type):
+        self._item_value_type = value_type
+
+        self._main_layout = QtVBoxLayout(self)
+        self._main_layout.setContentsMargins(0, 0, 0, 0)
+        self._main_layout.setSpacing(0)
+        entry_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+        self._main_layout.addWidget(entry_widget)
+        #
+        self._value_entry_layout = QtHBoxLayout(entry_widget)
+        self._value_entry_layout.setContentsMargins(2, 2, 2, 2)
+        self._value_entry_layout.setSpacing(2)
+        #
+        self._value_choose_widget = self.QT_VALUE_ENTRY_CLASS()
+        self._value_entry_layout.addWidget(self._value_choose_widget)
+        self._value_choose_widget._set_entry_frame_(self)
+        #
+        self._value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
+        self._value_entry_layout.addWidget(self._value_entry_widget)
+        self._value_entry_widget._set_entry_frame_(self)
+        #
+        button_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+        self._value_entry_layout.addWidget(button_widget)
+        self._button_layout = QtVBoxLayout(button_widget)
+        self._button_layout._set_align_top_()
+        self._button_layout.setContentsMargins(0, 0, 0, 0)
+        self._button_layout.setSpacing(2)
+
+        self._resize_frame = _utl_gui_qt_wgt_utility._QtVResizeFrame()
+        self._main_layout.addWidget(self._resize_frame)
 
     def _get_resize_frame_(self):
         return self._resize_frame
