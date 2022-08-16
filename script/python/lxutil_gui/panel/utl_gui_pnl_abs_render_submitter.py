@@ -614,19 +614,20 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             ]
 
         def build_fnc_(data_):
-            for k, v in data_[0].items():
-                i_port_path = v['port_path']
-                i_variant_names = v['variant_names']
-                i_current_variant_name = v['variant_name']
-                self._usd_prx_node.set(
-                    i_port_path, i_variant_names
-                )
-                self._usd_prx_node.set(
-                    i_port_path, i_current_variant_name
-                )
-                self._usd_prx_node.set_default(
-                    i_port_path, i_current_variant_name
-                )
+            if data_:
+                for k, v in data_[0].items():
+                    i_port_path = v['port_path']
+                    i_variant_names = v['variant_names']
+                    i_current_variant_name = v['variant_name']
+                    self._usd_prx_node.set(
+                        i_port_path, i_variant_names
+                    )
+                    self._usd_prx_node.set(
+                        i_port_path, i_current_variant_name
+                    )
+                    self._usd_prx_node.set_default(
+                        i_port_path, i_current_variant_name
+                    )
 
         if self._qt_thread_enable is True:
             t = utl_gui_qt_core.QtBuildThread(self.widget)

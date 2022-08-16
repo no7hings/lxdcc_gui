@@ -40,8 +40,8 @@ class AbsTextureWorkspace(object):
             keyword='asset-work-texture-base-dir'
         )
 
-        self._work_texture_directory_rsv_unit = self._rsv_task.get_rsv_unit(
-            keyword='asset-work-texture-dir'
+        self._work_texture_version_directory_rsv_unit = self._rsv_task.get_rsv_unit(
+            keyword='asset-work-texture-version-dir'
         )
         self._work_texture_src_directory_rsv_unit = self._rsv_task.get_rsv_unit(
             keyword='asset-work-texture-src-dir'
@@ -81,13 +81,13 @@ class AbsTextureWorkspace(object):
 
     def get_latest_version(self):
         variant = self.get_current_variant()
-        return self._work_texture_directory_rsv_unit.get_latest_version(
+        return self._work_texture_version_directory_rsv_unit.get_latest_version(
             extend_variants=dict(variant=variant)
         )
 
     def get_new_version(self):
         variant = self.get_current_variant()
-        return self._work_texture_directory_rsv_unit.get_new_version(
+        return self._work_texture_version_directory_rsv_unit.get_new_version(
             extend_variants=dict(variant=variant)
         )
 
@@ -102,7 +102,7 @@ class AbsTextureWorkspace(object):
         return result
 
     def get_directory_path_at(self, variant, version):
-        return self._work_texture_directory_rsv_unit.get_result(
+        return self._work_texture_version_directory_rsv_unit.get_result(
             version=version,
             extend_variants=dict(variant=variant)
         )
@@ -148,7 +148,7 @@ class AbsTextureWorkspace(object):
 
     def get_all_versions(self):
         variant = self.get_current_variant()
-        return self._work_texture_directory_rsv_unit.get_all_exists_versions(
+        return self._work_texture_version_directory_rsv_unit.get_all_exists_versions(
             extend_variants=dict(variant=variant)
         )
 
@@ -216,8 +216,8 @@ class _VersionController(object):
 
         self._version = None
 
-        self._work_texture_directory_rsv_unit = self._rsv_task.get_rsv_unit(
-            keyword='asset-work-texture-dir'
+        self._work_texture_version_directory_rsv_unit = self._rsv_task.get_rsv_unit(
+            keyword='asset-work-texture-version-dir'
         )
         self._work_texture_src_directory_rsv_unit = self._rsv_task.get_rsv_unit(
             keyword='asset-work-texture-src-dir'
@@ -227,7 +227,7 @@ class _VersionController(object):
         )
 
     def get_directory_path_at(self, variant, version):
-        return self._work_texture_directory_rsv_unit.get_result(
+        return self._work_texture_version_directory_rsv_unit.get_result(
             version=version,
             extend_variants=dict(variant=variant)
         )
@@ -292,22 +292,22 @@ class _VersionController(object):
         return self._version
 
     def get_latest_version_at(self, variant):
-        return self._work_texture_directory_rsv_unit.get_latest_version(
+        return self._work_texture_version_directory_rsv_unit.get_latest_version(
             extend_variants=dict(variant=variant)
         )
 
     def get_new_version_at(self, variant):
-        return self._work_texture_directory_rsv_unit.get_new_version(
+        return self._work_texture_version_directory_rsv_unit.get_new_version(
             extend_variants=dict(variant=variant)
         )
 
     def get_all_versions_at(self, variant):
-        return self._work_texture_directory_rsv_unit.get_all_exists_versions(
+        return self._work_texture_version_directory_rsv_unit.get_all_exists_versions(
             extend_variants=dict(variant=variant)
         )
 
     def get_all_locked_versions_at(self, variant):
-        matches = self._work_texture_directory_rsv_unit.get_all_exists_matches(
+        matches = self._work_texture_version_directory_rsv_unit.get_all_exists_matches(
             extend_variants=dict(variant=variant)
         )
         list_ = []
@@ -318,7 +318,7 @@ class _VersionController(object):
         return list_
 
     def get_all_unlocked_versions_at(self, variant):
-        matches = self._work_texture_directory_rsv_unit.get_all_exists_matches(
+        matches = self._work_texture_version_directory_rsv_unit.get_all_exists_matches(
             extend_variants=dict(variant=variant)
         )
         list_ = []
