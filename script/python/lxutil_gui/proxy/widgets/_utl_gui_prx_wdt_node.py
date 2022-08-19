@@ -679,7 +679,7 @@ class PrxValuesEntry(AbsRsvTypeQtEntry):
         pass
 
     def get(self):
-        pass
+        return self._qt_entry_widget._get_values_()
 
     def set(self, raw=None, **kwargs):
         pass
@@ -740,7 +740,7 @@ class PrxStgEntitiesEntry(AbsRsvTypeQtEntry):
         pass
 
     def get(self):
-        pass
+        return self._qt_entry_widget._get_values_()
 
     def set(self, raw=None, **kwargs):
         pass

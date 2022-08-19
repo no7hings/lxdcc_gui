@@ -1439,6 +1439,7 @@ class AbsQtActionDef(object):
             self._action_state = self.ActionState.Disable
         else:
             self._action_state = self.ActionState.Enable
+        #
         self._set_wgt_update_draw_()
 
     def _get_action_is_enable_(self):

@@ -6,7 +6,7 @@ import lxutil.dcc.dcc_objects as utl_dcc_objects
 
 class DccValidatorOpt(utl_gui_pnl_abs_publish.AbsDccValidatorOpt):
     DCC_NAMESPACE = 'katana'
-    DCC_NODE_CLS = None
+    DCC_NODE_CLS = utl_dcc_objects.Obj
     DCC_SELECTION_CLS = None
     def __init__(self, *args, **kwargs):
         super(DccValidatorOpt, self).__init__(*args, **kwargs)

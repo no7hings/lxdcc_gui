@@ -2983,6 +2983,8 @@ class QtTreeWidgetItem(
 
         self._signals = _QtTreeSignals()
 
+        self._status = self.ValidatorStatus.Normal
+
     def _set_child_add_(self):
         item = self.__class__()
         self.addChild(item)
@@ -3193,6 +3195,7 @@ class QtTreeWidgetItem(
             self.setIcon(column, icon)
 
     def _set_status_(self, status, column=0):
+        self._status = status
         if status == self.ValidatorStatus.Normal:
             self.setForeground(column, QtGui.QBrush(Color.NORMAL))
         elif status == self.ValidatorStatus.Correct:
@@ -3205,6 +3208,9 @@ class QtTreeWidgetItem(
             raise TypeError()
 
         self._set_icon_status_(status, column)
+
+    def _get_status_(self, column=0):
+        return self._status
 
     def _set_update_(self):
         tree_widget = self.treeWidget()
