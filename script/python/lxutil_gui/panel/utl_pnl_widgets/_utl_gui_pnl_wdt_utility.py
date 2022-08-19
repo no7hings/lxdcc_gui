@@ -64,5 +64,7 @@ class AssetLineup(utl_gui_pnl_abs_node_graph.AbsAssetLineup):
 
 
 class AssetPublish(utl_gui_pnl_abs_publish.AbsAssetPublish):
+    DCC_NAMESPACE = 'python'
+    DCC_SELECTION_CLS = None
     def __init__(self, session, *args, **kwargs):
         super(AssetPublish, self).__init__(session, *args, **kwargs)

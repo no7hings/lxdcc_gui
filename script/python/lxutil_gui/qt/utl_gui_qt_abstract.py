@@ -2572,7 +2572,7 @@ class AbsQtItemFilterTgtDef(object):
         return self._item_keyword_filter_keys
 
     def _set_item_keyword_filter_tgt_contexts_(self, contexts):
-        self._item_keyword_filter_contexts = contexts
+        self._item_keyword_filter_contexts = [i.decode('utf-8') for i in contexts]
 
     def _get_item_keyword_filter_tgt_contexts_(self):
         return self._item_keyword_filter_contexts
@@ -2650,6 +2650,23 @@ class AbsQtViewFilterTgtDef(object):
             for i in i_item._get_ancestors_():
                 if is_hidden is False:
                     i._set_hidden_(False)
+
+    def _set_view_items_visible_by_keyword_filter_(self, keyword):
+        items = self._get_all_items_()
+        for i_item in items:
+            i_keyword_filter_hidden_ = False
+            #
+            if keyword:
+                i_keyword_filter_enable, i_keyword_filter_hidden = i_item._get_item_keyword_filter_match_args_(keyword)
+                if i_keyword_filter_enable is True:
+                    i_keyword_filter_hidden_ = i_keyword_filter_hidden
+
+            if True in [i_keyword_filter_hidden_]:
+                is_hidden = True
+            else:
+                is_hidden = False
+
+            i_item._set_hidden_(is_hidden)
 
 
 class AbsQtItemStateDef(object):

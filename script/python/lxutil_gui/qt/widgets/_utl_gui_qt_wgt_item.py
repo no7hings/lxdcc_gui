@@ -324,6 +324,7 @@ class _QtListWidget(
     def __init__(self, *args, **kwargs):
         super(_QtListWidget, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
+        self.setAttribute(QtCore.Qt.WA_InputMethodEnabled)
         self.setSelectionMode(self.ExtendedSelection)
         #
         self._item_width, self._item_height = 20, 20
@@ -512,7 +513,7 @@ class _QtListWidget(
     def _set_item_show_deferred_(self, data):
         item_widget, value = data
         item_widget._set_name_text_(value)
-        # item_widget._set_icon_name_text_(value)
+        item_widget._set_icon_name_text_(value)
         item_widget._set_tool_tip_(value)
 
     def _set_item_add_(self, value):
@@ -2153,6 +2154,7 @@ class _QtValuesEntryItem(
     def __init__(self, *args, **kwargs):
         super(_QtValuesEntryItem, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
+        # self.setAttribute(QtCore.Qt.WA_InputMethodEnabled)
         #
         self._frame_draw_margins = 0, 0, 0, 10
         #
@@ -2188,7 +2190,7 @@ class _QtValuesEntryItem(
         self._choose_button = _QtIconPressItem()
         self._button_layout.addWidget(self._choose_button)
         self._choose_button._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get('down')
+            utl_gui_core.RscIconFile.get('add')
         )
         self._choose_button.press_clicked.connect(
             self.__set_choose_popup_
@@ -2246,8 +2248,14 @@ class _QtValuesEntryItem(
     def _set_choose_current_(self, value):
         self._set_values_append_(value)
 
+    def _get_choose_current_(self):
+        return self._get_values_()
+
     def _get_resize_frame_(self):
         return self._resize_frame
+
+    def _set_choose_filter_enable_(self, boolean):
+        self._value_entry_choose_frame._set_popup_filter_enable_(boolean)
 
 
 class _QtValuesChooseEntryItem(
@@ -2947,6 +2955,7 @@ class QtTreeWidgetItem(
     #
     utl_gui_qt_abstract.AbsQtItemVisibleConnectionDef,
 ):
+    ValidatorStatus = bsc_configure.ValidatorStatus
     def __init__(self, *args, **kwargs):
         super(QtTreeWidgetItem, self).__init__(*args, **kwargs)
         self.setFlags(
@@ -3136,8 +3145,66 @@ class QtTreeWidgetItem(
         elif state == utl_gui_core.State.LOST:
             self.setForeground(column, QtGui.QBrush(Color.LOST))
 
+    def _set_icon_status_(self, status, column=0):
+        if column == 0:
+            icon = QtGui.QIcon()
+            pixmap = None
+            if self._icon_file_path is not None:
+                pixmap = QtGui.QPixmap(self._icon_file_path)
+            elif self._icon_name_text is not None:
+                pixmap = QtPixmapMtd.get_by_name(self._icon_name_text)
+            #
+            if pixmap:
+                if status == self.ValidatorStatus.Normal:
+                    background_color = Color.NORMAL
+                elif status == self.ValidatorStatus.Correct:
+                    background_color = Color.CORRECT
+                elif status == self.ValidatorStatus.Warning:
+                    background_color = Color.WARNING
+                elif status == self.ValidatorStatus.Error:
+                    background_color = Color.ERROR
+                else:
+                    raise TypeError()
+                #
+                painter = QtPainter(pixmap)
+                rect = pixmap.rect()
+                x, y = rect.x(), rect.y()
+                w, h = rect.width(), rect.height()
+                #
+                border_color = QtBorderColor.Icon
+                #
+                s_w, s_h = w * .5, h * .5
+                state_rect = QtCore.QRect(
+                    x+w-s_w, y+h-s_h, s_w, s_h
+                )
+                painter._set_frame_draw_by_rect_(
+                    state_rect,
+                    border_color=border_color,
+                    background_color=background_color,
+                    border_radius=w/2
+                )
+                painter.end()
+            #
+            icon.addPixmap(
+                pixmap,
+                QtGui.QIcon.Normal,
+                QtGui.QIcon.On
+            )
+            self.setIcon(column, icon)
+
     def _set_status_(self, status, column=0):
-        pass
+        if status == self.ValidatorStatus.Normal:
+            self.setForeground(column, QtGui.QBrush(Color.NORMAL))
+        elif status == self.ValidatorStatus.Correct:
+            self.setForeground(column, QtGui.QBrush(Color.CORRECT))
+        elif status == self.ValidatorStatus.Warning:
+            self.setForeground(column, QtGui.QBrush(Color.WARNING))
+        elif status == self.ValidatorStatus.Error:
+            self.setForeground(column, QtGui.QBrush(Color.ERROR))
+        else:
+            raise TypeError()
+
+        self._set_icon_status_(status, column)
 
     def _set_update_(self):
         tree_widget = self.treeWidget()

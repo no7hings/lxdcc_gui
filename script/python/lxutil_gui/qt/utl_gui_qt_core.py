@@ -339,6 +339,7 @@ class Color(object):
     ERROR = QtGui.QColor(255, 0, 63, 255)
     LOCKED = QtGui.QColor(127, 127, 255, 255)
     LOST = QtGui.QColor(127, 127, 127, 255)
+    CORRECT = QtGui.QColor(63, 255, 127, 255)
     #
     text_filter = QtGui.QColor(255, 127, 63, 255)
     text_filter_occurrence = QtGui.QColor(255, 63, 63, 255)
@@ -2576,6 +2577,16 @@ class QtPainter(QtGui.QPainter):
         #
         line = QtCore.QLine(
             rect.topLeft(), rect.bottomLeft()
+        )
+        self.drawLine(line)
+
+    def _set_bottom_line_draw_by_rect_(self, rect, border_color, background_color, border_width=1):
+        self._set_border_color_(border_color)
+        self._set_border_width_(border_width)
+        self._set_background_color_(background_color)
+        #
+        line = QtCore.QLine(
+            rect.bottomLeft(), rect.bottomRight()
         )
         self.drawLine(line)
 

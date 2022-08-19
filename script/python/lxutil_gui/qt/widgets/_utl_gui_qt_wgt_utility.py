@@ -1418,6 +1418,8 @@ class _QtHItem(
     utl_gui_qt_abstract.AbsQtActionHoverDef,
     utl_gui_qt_abstract.AbsQtActionPressDef,
     utl_gui_qt_abstract.AbsQtActionSelectDef,
+    #
+    utl_gui_qt_abstract.AbsQtItemFilterTgtDef,
 ):
     delete_press_clicked = qt_signal()
     def __init__(self, *args, **kwargs):
@@ -1441,6 +1443,7 @@ class _QtHItem(
         self._set_action_def_init_(self)
         self._set_action_press_def_init_()
         self._set_action_select_def_init_()
+        self._set_item_filter_tgt_def_init_()
         #
         self._frame_background_color = QtBackgroundColor.Light
 
@@ -1587,6 +1590,9 @@ class _QtHItem(
             i_x, i_y, i_w, i_h
         )
 
+    def _get_name_texts_(self):
+        return [self._get_name_text_()]
+
 
 class _QtPopupListView(utl_gui_qt_abstract.AbsQtListWidget):
     def __init__(self, *args, **kwargs):
@@ -1604,11 +1610,28 @@ class _QtPopupListView(utl_gui_qt_abstract.AbsQtListWidget):
     def _get_maximum_height_(self, count_maximum):
         rects = [self.visualItemRect(self.item(i)) for i in range(self.count())[:count_maximum]]
         if rects:
-            rect = rects[-1]
-            y = rect.y()
-            h = rect.height()
-            return y+h+1+4
+            return sum([i.height() for i in rects])+1+4
         return 20
+
+
+class _QtLineEdit(
+    QtWidgets.QLineEdit,
+    utl_gui_qt_abstract.AbsQtValueDef,
+    #
+    utl_gui_qt_abstract.AbsQtEntryDef,
+    utl_gui_qt_abstract.AbsQtEntryDropDef,
+):
+    entry_changed = qt_signal()
+    user_entry_changed = qt_signal()
+    entry_finished = qt_signal()
+    up_key_pressed = qt_signal()
+    down_key_pressed = qt_signal()
+    def __init__(self, *args, **kwargs):
+        super(_QtLineEdit, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setPalette(QtDccMtd.get_qt_palette())
+        self.setFont(Font.NAME)
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
 
 
 class _QtPopupChooseFrame(
@@ -1619,6 +1642,7 @@ class _QtPopupChooseFrame(
     def __init__(self, *args, **kwargs):
         super(_QtPopupChooseFrame, self).__init__(*args, **kwargs)
         self.setWindowFlags(QtCore.Qt.ToolTip | QtCore.Qt.FramelessWindowHint)
+        # self.setAttribute(QtCore.Qt.WA_InputMethodEnabled)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         #
@@ -1626,6 +1650,11 @@ class _QtPopupChooseFrame(
         self._set_popup_def_init_(self)
         #
         self.setFocusProxy(self._popup_target_entry)
+        #
+        self._filter_enable = False
+        self._filter_height = 20
+        self._filter_text = ''
+        self._filter_text_draw_rect = QtCore.QRect()
         #
         self._list_widget = _QtPopupListView(self)
         #
@@ -1655,37 +1684,77 @@ class _QtPopupChooseFrame(
             background_color=self._frame_background_color,
             border_radius=4
         )
+        if self._filter_enable is True:
+            painter._set_bottom_line_draw_by_rect_(
+                self._filter_text_draw_rect,
+                border_color=self._selected_frame_border_color,
+                background_color=self._frame_background_color,
+            )
+
+            painter._set_text_draw_by_rect_(
+                self._filter_text_draw_rect,
+                self._filter_text,
+                font=Font.NAME,
+                font_color=QtFontColor.Basic,
+                text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+            )
 
     def eventFilter(self, *args):
         widget, event = args
         if widget == self._popup_target_entry:
             if event.type() == QtCore.QEvent.FocusOut:
                 self._set_popup_activated_(False)
+            elif event.type() == QtCore.QEvent.InputMethod:
+                pass
             elif event.type() == QtCore.QEvent.KeyPress:
                 if event.key() == QtCore.Qt.Key_Escape:
                     self._set_popup_activated_(False)
+                elif event.key() == QtCore.Qt.Key_Backspace:
+                    self._filter_text = self._filter_text[:-1]
+                    self._set_wgt_update_draw_()
+                    self._set_popup_filter_execute_()
+                else:
+                    text = event.text()
+                    if text:
+                        self._filter_text += event.text()
+                        self._set_wgt_update_draw_()
+                        self._set_popup_filter_execute_()
         return False
 
     def _set_wgt_update_draw_(self):
         self.update()
 
     def _set_wgt_update_geometry_(self):
-        side = self._popup_side
-        margin = self._popup_margin
-        shadow_radius = self._popup_shadow_radius
-        #
         x, y = 0, 0
         w, h = self.width(), self.height()
-        v_x, v_y = x+margin+side+1, y+margin+side+1
-        v_w, v_h = w-margin*2-side*2-shadow_radius-2, h-margin*2-side*2-shadow_radius - 2
+        #
+        f_h = self._filter_height
+        i_x, i_y = x+1, y+1
+        i_w, i_h = w-2, h-2
         #
         self._frame_draw_rect.setRect(
-            x+1, y+1, w-2, h-2
+            i_x, i_y, i_w, i_h
         )
+        #
+        if self._filter_enable is True:
+            self._filter_text_draw_rect.setRect(
+                i_x, i_y, i_w, f_h
+            )
+            i_y += f_h
+            i_h -= f_h
+
         self._list_widget.setGeometry(
-            x+1, y+1, w-2, h-2
+            i_x, i_y, i_w, i_h
         )
         self._list_widget.updateGeometries()
+
+    def _set_popup_filter_enable_(self, boolean):
+        self._filter_enable = boolean
+
+    def _set_popup_filter_execute_(self):
+        self._list_widget._set_view_items_visible_by_keyword_filter_(
+            self._filter_text
+        )
 
     def _set_popup_scroll_to_pre_(self):
         if self._popup_is_activated is True:
@@ -1703,7 +1772,7 @@ class _QtPopupChooseFrame(
             if name_texts:
                 if isinstance(name_texts, (tuple, list)):
                     icon_file_paths = parent._get_choose_icon_file_paths_()
-                    current_name_text = parent._get_choose_current_()
+                    choose_current = parent._get_choose_current_()
                     for index, i_name_text in enumerate(name_texts):
                         i_item_widget = _QtHItem()
                         i_item = QtListWidgetItem()
@@ -1711,6 +1780,7 @@ class _QtPopupChooseFrame(
                         #
                         self._list_widget.addItem(i_item)
                         self._list_widget.setItemWidget(i_item, i_item_widget)
+                        i_item._set_item_keyword_filter_tgt_contexts_([i_name_text])
                         i_item._set_item_show_connect_()
                         #
                         i_item_widget._set_name_text_(i_name_text)
@@ -1721,13 +1791,20 @@ class _QtPopupChooseFrame(
                         else:
                             i_item_widget._set_icon_name_text_(i_name_text[0])
                         #
-                        if current_name_text == i_name_text:
-                            i_item.setSelected(True)
+                        if isinstance(choose_current, (tuple, list)):
+                            if i_name_text in choose_current:
+                                i_item.setSelected(True)
+                        elif isinstance(choose_current, (str, unicode)):
+                            if i_name_text == choose_current:
+                                i_item.setSelected(True)
                     #
                     press_pos = self._get_popup_pos_(self._popup_target_entry_frame)
                     width, height = self._get_popup_size_(self._popup_target_entry_frame)
                     height_max = self._list_widget._get_maximum_height_(self._item_count_maximum)
                     height_frame = self._popup_target_entry_frame.height()
+                    if self._filter_enable is True:
+                        height_max += self._filter_height
+                    #
                     self._set_popup_fnc_(
                         press_pos,
                         (width, height_max)

@@ -717,6 +717,51 @@ class PrxValuesChooseEntry(AbsRsvTypeQtEntry):
         pass
 
 
+class PrxStgEntitiesEntry(AbsRsvTypeQtEntry):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtValuesEntryItem
+    def __init__(self, *args, **kwargs):
+        super(PrxStgEntitiesEntry, self).__init__(*args, **kwargs)
+        self._history_key = 'gui.shotgun-entities'
+        #
+        self._shotgun_entity_kwargs = 'HumanUser'
+        #
+        self._qt_entry_widget._set_value_entry_drop_enable_(True)
+        self._qt_entry_widget._set_value_entry_enable_(True)
+        self._qt_entry_widget._get_resize_frame_()._set_resize_target_(self.widget)
+        self._qt_entry_widget._get_resize_frame_()._set_resize_minimum_(42)
+        self._qt_entry_widget._set_size_policy_height_fixed_mode_()
+        self._qt_entry_widget._set_choose_filter_enable_(True)
+
+        self.widget.setMaximumHeight(92)
+        self.widget.setMinimumHeight(92)
+
+    def _set_add_(self):
+        pass
+
+    def get(self):
+        pass
+
+    def set(self, raw=None, **kwargs):
+        pass
+
+    def set_append(self, value):
+        self._qt_entry_widget._set_values_append_(
+            value
+        )
+
+    def set_shotgun_entity_kwargs(self, shotgun_entity_kwargs):
+        self._shotgun_entity_kwargs = shotgun_entity_kwargs
+
+        if self._shotgun_entity_kwargs:
+            import lxshotgun.objects as stg_objects
+            values = stg_objects.StgConnector().get_shotgun_entities(
+                self._shotgun_entity_kwargs
+            )
+            values.sort()
+            self._qt_entry_widget._set_choose_values_(values)
+
+
 class PrxRsvProjectChooseEntry(AbsRsvTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
     QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtEnumerateValueEntryItem
@@ -2259,6 +2304,21 @@ class PrxValuesChoosePort(AbsPrxTypePort):
         self._prx_port_entry.set_append(value)
 
 
+class PrxStgEntitiesPort(AbsPrxTypePort):
+    ENABLE_CLASS = _PrxPortStatus
+    LABEL_CLASS = _PrxPortLabel
+    LABEL_HIDED = False
+    ENTRY_CLASS = PrxStgEntitiesEntry
+    def __init__(self, *args, **kwargs):
+        super(PrxStgEntitiesPort, self).__init__(*args, **kwargs)
+
+    def set_append(self, value):
+        self._prx_port_entry.set_append(value)
+
+    def set_shotgun_entity_kwargs(self, shotgun_entity_kwargs):
+        self._prx_port_entry.set_shotgun_entity_kwargs(shotgun_entity_kwargs)
+
+
 class PrxComponentsPort(AbsPrxTypePort):
     ENABLE_CLASS = _PrxPortStatus
     LABEL_CLASS = _PrxPortLabel
@@ -2459,9 +2519,10 @@ class PrxGroupPort_(
             cur_key_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(cur_key_widget)
             cur_key_layout.setContentsMargins(0, 0, 0, 0)
             cur_key_layout._set_align_top_()
-            #
+            # + key
             cur_key_layout.addWidget(cur_port._prx_port_enable._qt_widget)
             cur_key_layout.addWidget(cur_port._prx_port_label._qt_widget)
+            # + value
             cur_port_layout.addWidget(cur_port._prx_port_entry._qt_widget)
             if cur_port.LABEL_HIDED is False:
                 cur_port._prx_port_label._qt_widget.show()
@@ -2474,19 +2535,30 @@ class PrxGroupPort_(
             cur_port_layout.setContentsMargins(0, 0, 0, 0)
             cur_port_layout._set_align_top_()
             cur_port._set_layout_(cur_port_layout)
+            cur_key_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+            cur_key_widget.hide()
+            cur_port_layout.addWidget(cur_key_widget)
+            cur_key_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(cur_key_widget)
+            cur_key_layout.setContentsMargins(0, 0, 0, 0)
+            cur_key_layout._set_align_top_()
+            # + key
+            cur_key_layout.addWidget(cur_port._prx_port_enable._qt_widget)
+            cur_key_layout.addWidget(cur_port._prx_port_label._qt_widget)
+            # + value
+            cur_port_layout.addWidget(cur_port._prx_port_entry._qt_widget)
             # value
             next_port_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
             cur_port_layout.addWidget(next_port_widget)
             next_port_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(next_port_widget)
             next_port_layout.setContentsMargins(0, 0, 0, 0)
             next_port_layout.setSpacing(2)
-            next_port_layout.addWidget(cur_port._prx_port_enable._qt_widget)
-            cur_port._prx_port_enable._qt_widget.hide()
-            next_port_layout.addWidget(cur_port._prx_port_label._qt_widget)
-            cur_port._prx_port_label._qt_widget.hide()
+
             cur_port.set_sub_name_update()
-            next_port_layout.addWidget(cur_port._prx_port_entry._qt_widget)
+
             cur_port._set_join_layout_(next_port_layout)
+            if cur_port.LABEL_HIDED is False:
+                cur_port._prx_port_label._qt_widget.show()
+                cur_key_widget.show()
         elif condition == (True, True):
             # hide status and label
             pre_port_layout = pre_port._get_join_layout_()
@@ -2844,11 +2916,21 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
                 port_path,
                 node_widget=self.widget
             )
+        #
         elif widget_ in ['values_choose']:
             port = PrxValuesChoosePort(
                 port_path,
                 node_widget=self.widget
             )
+
+        elif widget_ in ['shotgun_entities']:
+            port = PrxStgEntitiesPort(
+                port_path,
+                node_widget=self.widget
+            )
+            shotgun_entity_kwargs = option.get('shotgun_entity_kwargs')
+            if shotgun_entity_kwargs:
+                port.set_shotgun_entity_kwargs(shotgun_entity_kwargs)
         #
         elif widget_ in ['button']:
             port = PrxButtonPort(

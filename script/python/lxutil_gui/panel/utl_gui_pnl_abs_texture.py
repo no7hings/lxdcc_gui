@@ -877,15 +877,16 @@ class AbsDccTextureManager(prx_widgets.PrxSessionWindow):
             'extra.collection', self._set_collection_execute_
         )
 
-        self._options_prx_node.set(
-            'refresh', self._set_gui_refresh_
-        )
-
         self._set_collapse_update_(
             collapse_dict={
                 'options': self._options_prx_node,
             }
         )
+
+        self._refresh_button = prx_widgets.PrxPressItem()
+        self.set_button_add(self._refresh_button)
+        self._refresh_button.set_name('refresh')
+        self._refresh_button.set_press_clicked_connect_to(self._set_gui_refresh_)
 
         self.set_refresh_all()
 

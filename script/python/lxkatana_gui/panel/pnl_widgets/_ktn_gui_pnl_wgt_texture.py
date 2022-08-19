@@ -10,7 +10,6 @@ from lxutil_gui.qt import utl_gui_qt_core
 
 class WorkTextureManager(utl_gui_pnl_abs_texture.AbsWorkTextureManager):
     DCC_SELECTION_CLS = ktn_dcc_objects.Selection
-
     DCC_NAMESPACE = 'katana'
     def __init__(self, session, *args, **kwargs):
         super(WorkTextureManager, self).__init__(session, *args, **kwargs)
