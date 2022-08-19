@@ -61,10 +61,3 @@ class AssetLineup(utl_gui_pnl_abs_node_graph.AbsAssetLineup):
     OPTION_HOOK_KEY = 'tool-panels/asset-lineup'
     def __init__(self, hook_option=None, *args, **kwargs):
         super(AssetLineup, self).__init__(hook_option, *args, **kwargs)
-
-
-class AssetPublish(utl_gui_pnl_abs_publish.AbsAssetPublish):
-    DCC_NAMESPACE = 'python'
-    DCC_SELECTION_CLS = None
-    def __init__(self, session, *args, **kwargs):
-        super(AssetPublish, self).__init__(session, *args, **kwargs)

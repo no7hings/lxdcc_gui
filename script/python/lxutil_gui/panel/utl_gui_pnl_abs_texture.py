@@ -933,6 +933,7 @@ class AbsDccTextureManager(prx_widgets.PrxSessionWindow):
                                 j_file_prx_item.set_press_db_clicked_connect_to(
                                     self._set_detail_show_
                                 )
+                            #
                             if j_file_prx_item is not None:
                                 i_dcc_obj_prx_item = self._dcc_obj_add_opt._set_prx_item_add_2_(
                                     i_dcc_obj,
@@ -940,10 +941,10 @@ class AbsDccTextureManager(prx_widgets.PrxSessionWindow):
                                 )
                                 i_dcc_obj.set_obj_gui(i_dcc_obj_prx_item)
                                 j_keys.append('format.{}'.format(j_file.type_name))
-                        #
-                        self._tree_view_filter_opt.set_register(
-                            i_dcc_obj_prx_item, j_keys
-                        )
+                                #
+                                self._tree_view_filter_opt.set_register(
+                                    i_dcc_obj_prx_item, j_keys
+                                )
 
     def _set_gui_textures_validator_(self):
         textures = self._texture_add_opt.get_files()

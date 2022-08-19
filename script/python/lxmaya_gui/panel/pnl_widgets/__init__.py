@@ -21,6 +21,9 @@ from ._mya_pnl_wgt_viewer import *
 
 from ._mya_pnl_wgt_texture import *
 
+from ._mya_pnl_wgt_publish import *
+
+
 
 
 

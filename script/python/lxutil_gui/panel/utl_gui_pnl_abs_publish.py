@@ -47,13 +47,13 @@ class AbsDccValidatorOpt(object):
             dcc_namespace=self.DCC_NAMESPACE
         )
 
-    def set_content(self, content):
+    def set_content_at(self, file_path, content):
         self._prx_tree_view.set_clear()
 
-        self._set_results_build_(content.get('error') or [], bsc_configure.ValidatorStatus.Error)
-        self._set_results_build_(content.get('warning') or [], bsc_configure.ValidatorStatus.Warning)
+        self._set_results_build_at_(content.get('error') or [], bsc_configure.ValidatorStatus.Error)
+        self._set_results_build_at_(content.get('warning') or [], bsc_configure.ValidatorStatus.Warning)
 
-    def _set_results_build_(self, results, status):
+    def _set_results_build_at_(self, results, status):
         for i in results:
             i_type = i['type']
             i_dcc_path = i['node']
@@ -106,6 +106,9 @@ class AbsDccValidatorOpt(object):
         print stg_file.icon
         prx_item.set_status(status)
         return prx_item
+
+    def set_scene_add(self):
+        pass
 
 
 class AbsAssetPublish(prx_widgets.PrxSessionWindow):
@@ -208,10 +211,15 @@ class AbsAssetPublish(prx_widgets.PrxSessionWindow):
         self.set_refresh_all()
 
     def set_refresh_all(self):
-        scene_file_path = self._publish_options_prx_node.get('resolver.scene_file')
+        application = bsc_core.SystemMtd.get_application()
+        if application == 'katana':
+            self._scene_file_path = self._get_dcc_scene_file_path_()
+        else:
+            self._scene_file_path = self._publish_options_prx_node.get('resolver.scene_file')
+        #
         r = rsv_commands.get_resolver()
-        if scene_file_path:
-            rsv_scene_properties = r.get_rsv_scene_properties_by_any_scene_file_path(scene_file_path)
+        if self._scene_file_path:
+            rsv_scene_properties = r.get_rsv_scene_properties_by_any_scene_file_path(self._scene_file_path)
             self._rsv_task = r.get_rsv_task(**rsv_scene_properties.value)
 
             self._publish_options_prx_node.set(
@@ -223,6 +231,9 @@ class AbsAssetPublish(prx_widgets.PrxSessionWindow):
             )
 
             self._set_shotgun_task_update_()
+
+    def _get_dcc_scene_file_path_(self):
+        pass
 
     def _set_shotgun_version_status_update_(self):
         version_type = self._publish_options_prx_node.get('shotgun.version.type')
@@ -252,13 +263,11 @@ class AbsAssetPublish(prx_widgets.PrxSessionWindow):
 
     def _set_validation_execute_(self):
         if bsc_core.ApplicationMtd.get_is_katana():
-            import lxkatana.dcc.dcc_objects as ktn_dcc_objects
-
             s = ssn_commands.set_option_hook_execute(
                 bsc_core.KeywordArgumentsOpt(
                     option=dict(
                         option_hook_key='rsv-task-methods/asset/katana/gen-surface-validation',
-                        file=ktn_dcc_objects.Scene.get_current_file_path(),
+                        file=self._scene_file_path,
                         # with_scene_validation=True,
                         with_geometry_topology_validation=True,
                         with_geometry_uv_map_validation=True,
@@ -267,7 +276,8 @@ class AbsAssetPublish(prx_widgets.PrxSessionWindow):
                     )
                 ).to_string()
             )
-            self._tree_view_validator_opt.set_content(
+            self._tree_view_validator_opt.set_content_at(
+                self._scene_file_path,
                 s.get_validator().get_content()
             )
 
