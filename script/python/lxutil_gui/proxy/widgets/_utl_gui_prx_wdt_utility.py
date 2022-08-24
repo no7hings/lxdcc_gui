@@ -708,6 +708,10 @@ class PrxToolWindow(
         utl_gui_qt_core.set_qt_progress_connect_create()
         #
         utl_gui_qt_core.set_log_writer_connect()
+
+        self._qt_widget._set_window_shortcut_action_create_(
+            self.set_help_unit_show, 'F1'
+        )
         #
         self.set_show_menu_raw(
             [
@@ -1060,7 +1064,7 @@ class PrxScreenshotFrame(
 ):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtScreenshotFrame
     def __init__(self, *args, **kwargs):
-        main_window = utl_gui_qt_core.QtDccMtd.get_qt_main_window()
+        main_window = utl_gui_qt_core.QtDccMtd.get_active_window()
         super(PrxScreenshotFrame, self).__init__(main_window, *args, **kwargs)
 
     def set_start(self):

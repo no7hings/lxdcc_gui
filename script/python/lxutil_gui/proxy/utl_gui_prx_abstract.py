@@ -255,6 +255,7 @@ class AbsPrxWindow(AbsPrx):
         self._qt_widget.deleteLater()
 
     def set_window_close_later(self, time=1000):
+        self._qt_widget.hide()
         self._qt_widget._set_close_later_(time)
 
     def set_window_title(self, *args):

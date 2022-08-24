@@ -485,10 +485,18 @@ class _QtListWidget(
         if data.hasUrls():
             urls = event.mimeData().urls()
             if urls:
+                values = []
+                #
                 for i_url in urls:
                     i_value = i_url.toLocalFile()
                     if self._get_value_is_valid_(i_value):
-                        self._set_values_append_(i_value)
+                        values.append(i_value)
+                #
+                cs = bsc_core.MultiplyFileNameMtd.set_file_path_merge_to(
+                    values,
+                    ['*.####.*']
+                )
+                [self._set_values_append_(i) for i in cs]
 
     def _set_action_delete_execute_(self, event):
         selected_item_widgets = self._get_selected_item_widgets_()
@@ -1751,6 +1759,7 @@ class _QtScriptValueEntryItem(
         self._value_entry_layout.addWidget(self._value_entry_widget)
         #
         self._resize_frame = _utl_gui_qt_wgt_utility._QtVResizeFrame()
+        self._resize_frame.hide()
         self._main_layout.addWidget(self._resize_frame)
 
     def _set_item_value_entry_enable_(self, boolean):
@@ -1758,6 +1767,9 @@ class _QtScriptValueEntryItem(
 
     def _get_resize_frame_(self):
         return self._resize_frame
+
+    def _set_resize_enable_(self, boolean):
+        self._resize_frame.setVisible(boolean)
 
     def _set_value_entry_enable_(self, boolean):
         super(_QtScriptValueEntryItem, self)._set_value_entry_enable_(boolean)

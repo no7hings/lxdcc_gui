@@ -544,6 +544,7 @@ class QtMainWindow(
 ):
     close_clicked = qt_signal()
     key_escape_pressed = qt_signal()
+    key_help_pressed = qt_signal()
     size_changed = qt_signal()
     def __init__(self, *args, **kwargs):
         super(QtMainWindow, self).__init__(*args, **kwargs)
@@ -1748,6 +1749,9 @@ class _QtPopupChooseFrame(
         )
         self._list_widget.updateGeometries()
 
+    def _set_popup_filter_restore_(self):
+        self._filter_text = ''
+
     def _set_popup_filter_enable_(self, boolean):
         self._filter_enable = boolean
 
@@ -1791,18 +1795,21 @@ class _QtPopupChooseFrame(
                         else:
                             i_item_widget._set_icon_name_text_(i_name_text[0])
                         #
-                        if isinstance(choose_current, (tuple, list)):
-                            if i_name_text in choose_current:
-                                i_item.setSelected(True)
-                        elif isinstance(choose_current, (str, unicode)):
-                            if i_name_text == choose_current:
-                                i_item.setSelected(True)
+                        if choose_current:
+                            if isinstance(choose_current, (tuple, list)):
+                                if i_name_text == choose_current[-1]:
+                                    i_item.setSelected(True)
+                            elif isinstance(choose_current, (str, unicode)):
+                                if i_name_text == choose_current:
+                                    i_item.setSelected(True)
                     #
                     press_pos = self._get_popup_pos_(self._popup_target_entry_frame)
                     width, height = self._get_popup_size_(self._popup_target_entry_frame)
                     height_max = self._list_widget._get_maximum_height_(self._item_count_maximum)
                     height_frame = self._popup_target_entry_frame.height()
                     if self._filter_enable is True:
+                        self._set_popup_filter_restore_()
+                        #
                         height_max += self._filter_height
                     #
                     self._set_popup_fnc_(

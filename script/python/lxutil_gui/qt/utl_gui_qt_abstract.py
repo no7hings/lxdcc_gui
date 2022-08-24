@@ -1018,14 +1018,14 @@ class AbsQtNameDef(object):
                 # noinspection PyCallingNonCallable
                 self.setToolTip(html)
             else:
-                html = '<html>\n<body>\n'
+                html = u'<html>\n<body>\n'
                 name_text = self._name_text
                 if name_text:
-                    name_text = name_text.replace('<', '&lt;').replace('>', '&gt;')
-                    html += '<h3>{}</h3>\n'.format(name_text)
+                    name_text = name_text.replace(u'<', u'&lt;').replace(u'>', u'&gt;')
+                    html += u'<h3>{}</h3>\n'.format(name_text)
                 for i in text.split('\n'):
-                    html += '<ul>\n<li><i>{}</i></li>\n</ul>\n'.format(i)
-                html += '</body>\n</html>'
+                    html += u'<ul>\n<li><i>{}</i></li>\n</ul>\n'.format(i)
+                html += u'</body>\n</html>'
                 # noinspection PyCallingNonCallable
                 self.setToolTip(html)
     # noinspection PyUnresolvedReferences
@@ -2573,7 +2573,7 @@ class AbsQtItemFilterTgtDef(object):
         return self._item_keyword_filter_keys
 
     def _set_item_keyword_filter_tgt_contexts_(self, contexts):
-        self._item_keyword_filter_contexts = [i.decode('utf-8') for i in contexts]
+        self._item_keyword_filter_contexts = contexts
 
     def _get_item_keyword_filter_tgt_contexts_(self):
         return self._item_keyword_filter_contexts
@@ -3672,7 +3672,7 @@ class AbsQtScreenshotDef(object):
             self._widget.deleteLater()
 
         self._screenshot_mode = self.Mode.Stopped
-        self._widget.hide()
+        self._widget.update()
 
         AbsQtScreenshotDef.CACHE = self._get_screenshot_accept_geometry_()
 

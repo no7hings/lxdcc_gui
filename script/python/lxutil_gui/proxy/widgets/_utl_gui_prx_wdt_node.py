@@ -616,12 +616,17 @@ class PrxMediasOpenEntry(_PrxStgObjsEntry):
         if s:
             _ = s[0]
             if _:
-                [self.set_append(i) for i in _]
+                cs = bsc_core.MultiplyFileNameMtd.set_file_path_merge_to(
+                    _,
+                    ['*.####.*']
+                )
+                [self.set_append(i) for i in cs]
+
                 self.set_history_update()
     @staticmethod
     def _get_tmp_screenshot_file_path_():
         d = bsc_core.SystemMtd.get_user_directory_path()
-        return u'{}/screenshot/scp_{}.jpg'.format(d, bsc_core.SystemMtd.get_time_tag())
+        return u'{}/screenshot/scp_{}.jpg'.format(d, bsc_core.SystemMtd.get_time_tag_36())
 
     def _set_save_(self, g):
         f = self._get_tmp_screenshot_file_path_()
@@ -640,9 +645,10 @@ class PrxMediasOpenEntry(_PrxStgObjsEntry):
         w.set_finished_connect_to(active_window.show)
 
     def _value_validation_fnc_(self, value):
-        if value:
-            return os.path.isfile(value)
-        return False
+        # if value:
+        #     return os.path.isfile(value)
+        # return False
+        return True
 
 
 class PrxValuesEntry(AbsRsvTypeQtEntry):
@@ -973,6 +979,7 @@ class PrxChooseEntry_(AbsRsvTypeQtEntry):
         super(PrxChooseEntry_, self).__init__(*args, **kwargs)
         #
         self.widget.setFocusProxy(self._qt_entry_widget)
+        self._qt_entry_widget._set_value_entry_enable_(True)
 
     def get(self):
         return self._qt_entry_widget._get_item_value_()
@@ -1124,6 +1131,7 @@ class PrxScriptEntry(AbsRsvTypeQtEntry):
         self._qt_entry_widget._get_resize_frame_()._set_resize_target_(self.widget)
         self._qt_entry_widget._set_item_value_entry_enable_(True)
         self._qt_entry_widget._set_size_policy_height_fixed_mode_()
+        self._qt_entry_widget._set_resize_enable_(True)
 
     def get(self):
         return self._qt_entry_widget._get_item_value_()
@@ -1725,6 +1733,7 @@ class AbsPrxTypePort(AbsPrxPortDef):
     ENABLE_CLASS = None
     LABEL_CLASS = None
     LABEL_HIDED = False
+    KEY_HIDE = False
     ENTRY_CLASS = None
     def __init__(self, path, label=None, enable=None, default_value=None, join_to_next=False, scheme_key=None, node_widget=None):
         self._set_prx_port_def_init_('value', path, label)
@@ -1759,6 +1768,7 @@ class AbsPrxTypePort(AbsPrxPortDef):
         #
         self._is_join_to_next = join_to_next
         self._join_layout = None
+        self._key_widget = None
         #
         self._custom_widget = None
         #
@@ -1914,6 +1924,9 @@ class AbsPrxTypePort(AbsPrxPortDef):
 
     def _get_join_layout_(self):
         return self._join_layout
+
+    def _set_key_widget_(self, widget):
+        self._key_widget = widget
 
     def set_menu_raw(self, raw):
         self._prx_port_entry.set_menu_raw(raw)
@@ -2129,6 +2142,7 @@ class PrxRgbaPort(AbsPrxTypePort):
 class PrxButtonPort(AbsPrxTypePort):
     ENABLE_CLASS = _PrxPortStatus
     LABEL_CLASS = _PrxPortLabel
+    KEY_HIDE = True
     LABEL_HIDED = True
     ENTRY_CLASS = PrxButtonEntry
     def __init__(self, *args, **kwargs):
@@ -2150,6 +2164,7 @@ class PrxButtonPort(AbsPrxTypePort):
 class PrxSubProcessPort(AbsPrxTypePort):
     ENABLE_CLASS = _PrxPortStatus
     LABEL_CLASS = _PrxPortLabel
+    KEY_HIDE = True
     LABEL_HIDED = True
     ENTRY_CLASS = PrxSubProcessEntry
     def __init__(self, *args, **kwargs):
@@ -2207,6 +2222,7 @@ class PrxSubProcessPort(AbsPrxTypePort):
 class PrxValidatorPort(AbsPrxTypePort):
     ENABLE_CLASS = _PrxPortStatus
     LABEL_CLASS = _PrxPortLabel
+    KEY_HIDE = True
     LABEL_HIDED = True
     ENTRY_CLASS = PrxValidatorEntry
     def __init__(self, *args, **kwargs):
@@ -2515,6 +2531,7 @@ class PrxGroupPort_(
             #
             cur_key_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
             cur_key_widget.hide()
+            cur_port._set_key_widget_(cur_key_widget)
             cur_port_layout.addWidget(cur_key_widget)
             cur_key_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(cur_key_widget)
             cur_key_layout.setContentsMargins(0, 0, 0, 0)
@@ -2524,6 +2541,8 @@ class PrxGroupPort_(
             cur_key_layout.addWidget(cur_port._prx_port_label._qt_widget)
             # + value
             cur_port_layout.addWidget(cur_port._prx_port_entry._qt_widget)
+            if cur_port.KEY_HIDE is False:
+                cur_key_widget.show()
             if cur_port.LABEL_HIDED is False:
                 cur_port._prx_port_label._qt_widget.show()
                 cur_key_widget.show()
@@ -2536,7 +2555,8 @@ class PrxGroupPort_(
             cur_port_layout._set_align_top_()
             cur_port._set_layout_(cur_port_layout)
             cur_key_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
-            cur_key_widget.hide()
+            # cur_key_widget.hide()
+            cur_port._set_key_widget_(cur_key_widget)
             cur_port_layout.addWidget(cur_key_widget)
             cur_key_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(cur_key_widget)
             cur_key_layout.setContentsMargins(0, 0, 0, 0)
@@ -2556,6 +2576,8 @@ class PrxGroupPort_(
             cur_port.set_sub_name_update()
 
             cur_port._set_join_layout_(next_port_layout)
+            if cur_port.KEY_HIDE is False:
+                cur_key_widget.show()
             if cur_port.LABEL_HIDED is False:
                 cur_port._prx_port_label._qt_widget.show()
                 cur_key_widget.show()
@@ -2603,15 +2625,17 @@ class PrxGroupPort_(
         children = self.get_children()
         for i_child in children:
             if i_child.get_type() == 'group':
-                pass
+                continue
+            #
+            if i_child.LABEL_HIDED is False:
+                i_width = i_child._prx_port_label.get_name_draw_width() + 8
             else:
-                if i_child.LABEL_HIDED is False:
-                    i_width = i_child._prx_port_label.get_name_draw_width()
-                    if i_child.get_use_enable() is True:
-                        i_width += 23
-                    widths.append(i_width)
-                else:
-                    widths.append(0)
+                i_width = 0
+                # widths.append(0)
+            if i_child.get_use_enable() is True:
+                i_width += 23
+            #
+            widths.append(i_width)
         if widths:
             return max(widths)
         return 0
@@ -2621,16 +2645,19 @@ class PrxGroupPort_(
         children = self.get_children()
         for i_child in children:
             if i_child.get_type() == 'group':
-                pass
-            else:
-                if width > 0:
-                    if i_child.get_use_enable() is True:
-                        i_width = width-23
-                    else:
-                        i_width = width
-                    i_child._prx_port_label._qt_widget.setFixedWidth(i_width + 8)
+                continue
+            #
+            i_key_widget = i_child._key_widget
+            if i_key_widget is not None:
+                i_width = width
+                if i_width > 0:
+                    i_key_widget.setFixedWidth(i_width)
+                    # i_child._prx_port_label._qt_widget.setFixedWidth(i_width+8)
                 else:
-                    i_child._prx_port_label.set_hide()
+                    i_key_widget.setFixedWidth(0)
+                    i_key_widget.hide()
+                    # i_child._prx_port_label._qt_widget.setFixedWidth(0)
+                    # i_child._prx_port_label.set_hide()
 
     def set_expanded(self, boolean):
         self._prx_widget.set_expanded(boolean)

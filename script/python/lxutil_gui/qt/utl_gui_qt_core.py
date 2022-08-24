@@ -1090,6 +1090,9 @@ class QtDccMtd(utl_abstract.AbsDccMtd):
             cls.MAIN_WINDOW = _[0]
         return QtWidgets.QApplication.activeWindow()
     @classmethod
+    def get_active_window(cls):
+        return QtWidgets.QApplication.activeWindow()
+    @classmethod
     def get_qt_icon(cls, icon_name):
         if cls.get_is_maya():
             return QtMayaMtd.get_qt_icon(icon_name)
@@ -3330,11 +3333,17 @@ class QtPainter(QtGui.QPainter):
             self.drawRect(rect_)
 
     def _set_screenshot_draw_by_rect_(self, rect_0, rect_1, border_color, background_color):
+        rect_f_0 = QtCore.QRectF(
+            rect_0.x(), rect_0.y(), rect_0.width(), rect_0.height()
+        )
         path_0 = QtGui.QPainterPath()
-        path_0.addRect(rect_0)
+        path_0.addRect(rect_f_0)
 
+        rect_f_1 = QtCore.QRectF(
+            rect_1.x(), rect_1.y(), rect_1.width(), rect_1.height()
+        )
         path_1 = QtGui.QPainterPath()
-        path_1.addRect(rect_1)
+        path_1.addRect(rect_f_1)
 
         path_2 = path_0-path_1
 
