@@ -3037,16 +3037,19 @@ class QtTreeWidgetItem(
             tree_widget._set_item_check_action_run_(self, column)
             tree_widget._set_item_toggle_emit_send_(self, column, checked)
 
+    def _set_icon_(self, icon, column=0):
+        self._icon = icon
+        self.setIcon(column, self._icon)
+
     def _set_icon_file_path_(self, file_path, column=0):
         self._icon_file_path = file_path
-        #
-        icon = QtGui.QIcon()
-        icon.addPixmap(
-            QtGui.QPixmap(file_path),
+        self._icon = QtGui.QIcon()
+        self._icon.addPixmap(
+            QtGui.QPixmap(self._icon_file_path),
             QtGui.QIcon.Normal,
             QtGui.QIcon.On
         )
-        self.setIcon(column, icon)
+        self.setIcon(column, self._icon)
 
     def _set_color_icon_rgb_(self, rgb, column=0):
         self.setIcon(
@@ -3163,7 +3166,9 @@ class QtTreeWidgetItem(
         if column == 0:
             icon = QtGui.QIcon()
             pixmap = None
-            if self._icon_file_path is not None:
+            if self._icon:
+                pixmap = self._icon.pixmap(20, 20)
+            elif self._icon_file_path is not None:
                 pixmap = QtGui.QPixmap(self._icon_file_path)
             elif self._icon_name_text is not None:
                 pixmap = QtPixmapMtd.get_by_name(self._icon_name_text)
@@ -3187,14 +3192,15 @@ class QtTreeWidgetItem(
                 #
                 border_color = QtBorderColor.Icon
                 #
-                s_w, s_h = w * .5, h * .5
+                s_w, s_h = w*.25, h*.25
                 state_rect = QtCore.QRect(
-                    x+w-s_w, y+h-s_h, s_w, s_h
+                    x+w-s_w-1, y+h-s_h-1, s_w, s_h
                 )
                 painter._set_frame_draw_by_rect_(
                     state_rect,
                     border_color=border_color,
                     background_color=background_color,
+                    border_width=2,
                     border_radius=w/2
                 )
                 painter.end()

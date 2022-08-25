@@ -40,7 +40,9 @@ class TextureManager(utl_gui_pnl_abs_texture.AbsDccTextureManager):
 
     def _set_dcc_objs_update_(self):
         if self._dcc_texture_references is not None:
-            location = self._options_prx_node.get('dcc.location')
+            root = self._options_prx_node.get('dcc.location')
+            geometry_location = '/root/world/geo'
+            location = '{}{}'.format(geometry_location, root)
             dcc_workspace = ktn_dcc_objects.AssetWorkspace()
             dcc_shaders = dcc_workspace.get_all_dcc_geometry_shader_by_location(location)
             self._dcc_objs = self._dcc_texture_references.get_objs(

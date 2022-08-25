@@ -210,7 +210,7 @@ class PrxTreeItem(
             self.widget._set_icon_file_path_(icon, column)
         elif isinstance(icon, utl_gui_qt_core.QtGui.QIcon):
             qt_icon = icon
-            self.widget.setIcon(column, qt_icon)
+            self.widget._set_icon_(qt_icon, column)
 
     def set_icon_by_color(self, color, column=0):
         self.widget._set_color_icon_rgb_(color, column)

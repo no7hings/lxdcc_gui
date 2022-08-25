@@ -28,9 +28,10 @@ import lxresolver.methods as rsv_methods
 from lxutil_gui import utl_gui_configure
 
 
-class AbsDccValidatorOpt(object):
+class AbsValidatorOpt(object):
     DCC_NAMESPACE = None
     DCC_NODE_CLS = None
+    DCC_COMPONENT_CLS = None
     DCC_SELECTION_CLS = None
     def __init__(self, prx_tree_view):
         self._prx_tree_view = prx_tree_view
@@ -90,7 +91,7 @@ class AbsDccValidatorOpt(object):
         with utl_core.gui_progress(maximum=len(results)) as g_p:
             for i_result in results:
                 g_p.set_update()
-
+                #
                 i_type = i_result['type']
                 i_dcc_path = i_result['node']
                 i_group_name = i_result['group']
@@ -114,7 +115,9 @@ class AbsDccValidatorOpt(object):
                     for j_file_path in i_file_paths:
                         self._get_file_(scene_prx_item, i_node_prx_item, j_file_path, i_description, i_validation_status)
                 elif i_type == 'component':
-                    i_components = i_result['elements']
+                    i_component_paths = i_result['elements']
+                    for j_component_path in i_component_paths:
+                        self._get_component_(scene_prx_item, i_node_prx_item, j_component_path, i_description, i_validation_status)
 
     def _get_group_(self, scene_prx_item, group_name):
         if group_name in scene_prx_item._child_dict:
@@ -166,9 +169,22 @@ class AbsDccValidatorOpt(object):
         )
         return prx_item
 
-    def _get_file_(self, scene_prx_item, obj_prx_item, file_path, description, status):
+    def _get_component_(self, scene_prx_item, node_prx_item, component_path, description, status):
+        dcc_obj = self.DCC_COMPONENT_CLS(component_path)
+        prx_item = node_prx_item.set_child_add(
+            name=[dcc_obj.name, description],
+            icon=dcc_obj.icon,
+            tool_tip=dcc_obj.path,
+        )
+        prx_item.set_status(status)
+        prx_item.set_gui_dcc_obj(
+            dcc_obj, self.DCC_NAMESPACE
+        )
+        return prx_item
+
+    def _get_file_(self, scene_prx_item, node_prx_item, file_path, description, status):
         stg_file = utl_dcc_objects.OsFile(file_path)
-        prx_item = obj_prx_item.set_child_add(
+        prx_item = node_prx_item.set_child_add(
             name=[stg_file.name, description],
             icon=stg_file.icon,
             menu=stg_file.get_gui_menu_raw(),
@@ -251,7 +267,6 @@ class DccPublisherOpt(object):
 
 
 class AbsAssetPublish(prx_widgets.PrxSessionWindow):
-    DCC_NAMESPACE = None
     DCC_VALIDATOR_OPT_CLS = None
     def __init__(self, session, *args, **kwargs):
         super(AbsAssetPublish, self).__init__(session, *args, **kwargs)
@@ -357,7 +372,8 @@ class AbsAssetPublish(prx_widgets.PrxSessionWindow):
     def set_refresh_all(self):
         contents = []
         application = bsc_core.SystemMtd.get_application()
-        if application == 'katana':
+        #
+        if bsc_core.ApplicationMtd.get_is_dcc():
             self._scene_file_path = self._get_dcc_scene_file_path_()
             self._publish_options_prx_node.set(
                 'resolver.scene_file', self._scene_file_path
@@ -420,63 +436,139 @@ class AbsAssetPublish(prx_widgets.PrxSessionWindow):
     @utl_gui_qt_core.set_prx_window_waiting
     def _set_validation_execute_(self):
         if self._rsv_scene_properties:
-            if bsc_core.ApplicationMtd.get_is_katana():
-                s = ssn_commands.set_option_hook_execute(
-                    bsc_core.KeywordArgumentsOpt(
-                        option=dict(
-                            option_hook_key='rsv-task-methods/asset/katana/gen-surface-validation',
-                            file=self._scene_file_path,
-                            #
-                            with_shotgun_check=True,
-                            #
-                            with_scene_check=True,
-                            #
-                            with_geometry_topology_check=True,
-                            with_geometry_uv_map_check=True,
-                            #
-                            with_texture_check=True,
-                            with_texture_workspace_check=True,
-                        )
-                    ).to_string()
-                )
-                #
-                self._validator = s.get_validator()
-                #
-                self._tree_view_validator_opt.set_results_at(
-                    self._scene_file_path,
-                    self._validator.get_results()
-                )
-                self._set_publish_enable_refresh_()
+            if bsc_core.ApplicationMtd.get_is_dcc():
+                if bsc_core.ApplicationMtd.get_is_katana():
+                    self._set_katana_validation_in_dcc_()
+                elif bsc_core.ApplicationMtd.get_is_maya():
+                    self._set_maya_validation_in_dcc_()
             else:
                 application = self._rsv_scene_properties.get('application')
                 if application == 'katana':
-                    s = ssn_commands.set_option_hook_execute_by_shell(
-                        bsc_core.KeywordArgumentsOpt(
-                            option=dict(
-                                option_hook_key='rsv-task-methods/asset/katana/gen-surface-validation',
-                                file=self._scene_file_path,
-                                #
-                                with_shotgun_check=True,
-                                #
-                                with_scene_check=True,
-                                #
-                                with_geometry_topology_check=True,
-                                with_geometry_uv_map_check=True,
-                                #
-                                with_texture_check=True,
-                                with_texture_workspace_check=True,
-                            )
-                        ).to_string(),
-                        block=True
-                    )
+                    self._set_katana_validation_in_desktop_()
+                elif application == 'maya':
+                    self._set_maya_validation_in_desktop_()
+
+    def _set_katana_validation_in_dcc_(self):
+        s = ssn_commands.set_option_hook_execute(
+            bsc_core.KeywordArgumentsOpt(
+                option=dict(
+                    option_hook_key='rsv-task-methods/asset/katana/gen-surface-validation',
+                    file=self._scene_file_path,
                     #
-                    self._validator = s.get_validator()
+                    with_shotgun_check=True,
                     #
-                    self._tree_view_validator_opt.set_results_at(
-                        self._scene_file_path,
-                        self._validator.get_exists_results()
-                    )
-                    self._set_publish_enable_refresh_()
+                    with_scene_check=True,
+                    #
+                    with_geometry_topology_check=True,
+                    with_geometry_uv_map_check=True,
+                    #
+                    with_look_check=True,
+                    #
+                    with_texture_check=True,
+                    with_texture_workspace_check=True,
+                )
+            ).to_string()
+        )
+        #
+        self._validator = s.get_validator()
+        #
+        self._tree_view_validator_opt.set_results_at(
+            self._scene_file_path,
+            self._validator.get_results()
+        )
+        self._set_publish_enable_refresh_()
+
+    def _set_katana_validation_in_desktop_(self):
+        s = ssn_commands.set_option_hook_execute_by_shell(
+            bsc_core.KeywordArgumentsOpt(
+                option=dict(
+                    option_hook_key='rsv-task-methods/asset/katana/gen-surface-validation',
+                    file=self._scene_file_path,
+                    #
+                    with_shotgun_check=True,
+                    #
+                    with_scene_check=True,
+                    #
+                    with_geometry_topology_check=True,
+                    with_geometry_uv_map_check=True,
+                    #
+                    with_look_check=True,
+                    #
+                    with_texture_check=True,
+                    with_texture_workspace_check=True,
+                )
+            ).to_string(),
+            block=True
+        )
+        #
+        self._validator = s.get_validator()
+        #
+        self._tree_view_validator_opt.set_results_at(
+            self._scene_file_path,
+            self._validator.get_exists_results()
+        )
+        self._set_publish_enable_refresh_()
+
+    def _set_maya_validation_in_dcc_(self):
+        s = ssn_commands.set_option_hook_execute(
+            bsc_core.KeywordArgumentsOpt(
+                option=dict(
+                    option_hook_key='rsv-task-methods/asset/maya/gen-surface-validation',
+                    file=self._scene_file_path,
+                    #
+                    with_shotgun_check=True,
+                    #
+                    with_scene_check=True,
+                    #
+                    with_geometry_topology_check=True,
+                    with_geometry_uv_map_check=True,
+                    #
+                    with_look_check=True,
+                    #
+                    with_texture_check=True,
+                    with_texture_workspace_check=True,
+                )
+            ).to_string()
+        )
+        #
+        self._validator = s.get_validator()
+        #
+        self._tree_view_validator_opt.set_results_at(
+            self._scene_file_path,
+            self._validator.get_results()
+        )
+        self._set_publish_enable_refresh_()
+
+    def _set_maya_validation_in_desktop_(self):
+        s = ssn_commands.set_option_hook_execute_by_shell(
+            bsc_core.KeywordArgumentsOpt(
+                option=dict(
+                    option_hook_key='rsv-task-methods/asset/maya/gen-surface-validation',
+                    file=self._scene_file_path,
+                    #
+                    with_shotgun_check=True,
+                    #
+                    with_scene_check=True,
+                    #
+                    with_geometry_topology_check=True,
+                    with_geometry_uv_map_check=True,
+                    #
+                    with_look_check=True,
+                    #
+                    with_texture_check=True,
+                    with_texture_workspace_check=True,
+                )
+            ).to_string(),
+            block=True
+        )
+        #
+        self._validator = s.get_validator()
+        #
+        self._tree_view_validator_opt.set_results_at(
+            self._scene_file_path,
+            self._validator.get_exists_results()
+        )
+        self._set_publish_enable_refresh_()
 
     @utl_gui_qt_core.set_prx_window_waiting
     def _set_publish_execute_(self):

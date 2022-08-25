@@ -701,6 +701,8 @@ class AbsQtIconDef(object):
         self._icon_name_text = None
         self._icon_name_is_enable = False
         #
+        self._icon = None
+        #
         self._icon_frame_rect = QtCore.QRect()
         self._icon_file_draw_rect = QtCore.QRect()
         self._sub_icon_file_draw_rect = QtCore.QRect()
@@ -715,6 +717,9 @@ class AbsQtIconDef(object):
 
     def _set_icon_enable_(self, boolean):
         self._icon_is_enable = boolean
+
+    def _set_icon_(self, icon):
+        self._icon = icon
 
     def _set_name_icon_enable_(self, boolean):
         self._icon_name_is_enable = boolean
