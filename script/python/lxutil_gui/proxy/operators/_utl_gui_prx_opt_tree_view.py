@@ -107,8 +107,8 @@ class PrxDccObjTreeViewTagFilterOpt(object):
 
     def _set_item_src_show_deferred_(self, prx_item):
         path_dag_opt = prx_item.get_gui_dcc_obj(namespace=self._namespace_src)
-        name = path_dag_opt.name
-        path = path_dag_opt.path
+        name = bsc_core.SPathMtd.set_unquote_to(path_dag_opt.name)
+        path = bsc_core.SPathMtd.set_unquote_to(path_dag_opt.path)
         prx_item.set_name(name)
         prx_item.set_icon_by_name_text(path, 0)
         prx_item.set_tool_tip(path)

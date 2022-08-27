@@ -416,6 +416,10 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
                         rsv_obj.name
                     ),
                     status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                    #
+                    # use_exec=False,
+                    #
+                    parent=self.widget
                 )
                 result = w.get_result()
                 if result is not True:

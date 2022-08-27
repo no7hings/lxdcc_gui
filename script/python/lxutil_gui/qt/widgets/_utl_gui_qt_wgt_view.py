@@ -181,14 +181,16 @@ class _AbsQtSplitter(QtWidgets.QWidget):
             size_min, size_max = 0 + len(i_l)*h_f_w, self.height() - len(i_r)*h_f_w
         else:
             raise TypeError()
-        for seq, size in enumerate(sizes):
+
+        for seq, i_size in enumerate(sizes):
             # clamp size
-            if size <= size_min:
-                size = size_min
-            elif size >= size_max:
-                size = size_max
+            if i_size <= size_min:
+                i_size = size_min
+            elif i_size >= size_max:
+                i_size = size_max
+            #
             idx = indices[seq]
-            self._size_dict[idx] = size
+            self._size_dict[idx] = i_size
         #
         self._set_update_()
 
@@ -200,6 +202,10 @@ class _AbsQtSplitter(QtWidgets.QWidget):
 
     def _get_widget_(self, index):
         return self._widget_list[index]
+
+    def _set_widget_hide_at_(self, index):
+        handle = self._get_handle_at_(index+1)
+        handle._set_contract_l_switch_()
 
     def _get_cur_index_(self, qt_point):
         for idx, i_rect in enumerate(self._rect_list):
@@ -219,7 +225,10 @@ class _AbsQtSplitter(QtWidgets.QWidget):
         pass
 
     def _set_sizes_(self, sizes):
-        pass
+        self._sizes = sizes
+
+    def _get_handle_at_(self, index):
+        return self._handle_list[index]
 
     def widget(self, index):
         return self._widget_list[index]

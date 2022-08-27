@@ -3740,26 +3740,16 @@ class AbsQtScreenshotDef(object):
         bsc_core.StorageFileOpt(file_path).set_directory_create()
         rect = QtCore.QRect(*geometry)
 
-        app = QtWidgets.QApplication
+        if bsc_core.ApplicationMtd.get_is_maya():
+            main_window = QtMayaMtd.get_qt_main_window()
+            s = QtGui.QPixmap.grabWindow(
+                long(main_window.winId())
+            )
+            s.copy(rect).save(file_path)
+        else:
+            app_ = QtWidgets.QApplication
 
-        s = app.primaryScreen().grabWindow(
-            app.desktop().winId()
-        )
-        s.copy(rect).save(file_path)
-
-    def _get_screenshot_pixmap_(self):
-        x, y = self._widget.x(), self._widget.y()
-
-        rect_0 = self._screenshot_rect
-        x_0, y_0, w_0, h_0 = rect_0.x(), rect_0.y(), rect_0.width(), rect_0.height()
-
-        rect_1 = QtCore.QRect(
-            x+x_0, y+y_0, w_0, h_0
-        )
-
-        app = QtWidgets.QApplication
-
-        s = app.primaryScreen().grabWindow(
-            app.desktop().winId()
-        )
-        return s.copy(rect_1)
+            s = app_.primaryScreen().grabWindow(
+                app_.desktop().winId()
+            )
+            s.copy(rect).save(file_path)

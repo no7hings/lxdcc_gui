@@ -21,8 +21,6 @@ class PrxHSplitter(utl_gui_prx_abstract.AbsPrxWidget):
     def __init__(self, *args, **kwargs):
         super(PrxHSplitter, self).__init__(*args, **kwargs)
 
-        self._stretches = []
-
     def set_widget_add(self, widget):
         if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
             qt_widget = widget
@@ -34,18 +32,18 @@ class PrxHSplitter(utl_gui_prx_abstract.AbsPrxWidget):
     def set_stretches(self, stretches):
         for seq, i in enumerate(stretches):
             self.widget._set_stretch_factor_(seq, i)
-        self._stretches = stretches
 
-    def set_widget_hide(self, index):
-        widget = self.widget.widget(index)
-        if widget:
-            widget.setMaximumWidth(0)
+    def set_widget_hide_at(self, index):
+        self._qt_widget._set_widget_hide_at_(index)
 
     def set_sizes(self, sizes):
         self.widget._set_sizes_(sizes)
 
     def set_swap_enable(self, boolean):
         self.widget._swap_enable = boolean
+
+    def get_handle_at(self, index):
+        return self._qt_widget._get_handle_at_(index)
 
 
 class PrxVSplitter(PrxHSplitter):

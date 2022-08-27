@@ -276,11 +276,8 @@ def set_normal_cursor():
 def set_prx_window_waiting(method):
     def sub_method(*args, **kwargs):
         prx_window = args[0]
-        window = args[0].widget
-        # window.setCursor(QtCore.Qt.BusyCursor)
         prx_window.set_waiting_start()
         _method = method(*args, **kwargs)
-        # window.unsetCursor()
         prx_window.set_waiting_stop()
         return _method
 
@@ -741,7 +738,7 @@ class QtUtilMtd(object):
             painter.setPen(text_color_)
             painter.setFont(get_font(size=int(rd*.675), italic=True))
             painter.drawText(
-                rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(name[0]).capitalize()
+                rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(bsc_core.TextMtd.get_first_word(name)).capitalize()
             )
         #
         painter.end()

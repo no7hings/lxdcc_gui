@@ -1145,6 +1145,9 @@ class PrxScriptEntry(AbsRsvTypeQtEntry):
     def get_is_default(self):
         return self._qt_entry_widget._get_item_value_is_default_()
 
+    def set_locked(self, boolean):
+        self._qt_entry_widget._set_value_entry_enable_(not boolean)
+
 
 class PrxEnumerateEntry(AbsRsvTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtEntryFrame
@@ -1827,7 +1830,8 @@ class AbsPrxTypePort(AbsPrxPortDef):
         self._use_enable = boolean
         if boolean is not None:
             if isinstance(boolean, bool):
-                self._prx_port_enable.set_show()
+                if self._use_enable is True:
+                    self._prx_port_enable.set_show()
                 # self._prx_port_enable.set(boolean)
         else:
             self._prx_port_enable.set_hide()
@@ -2484,6 +2488,7 @@ class PrxGroupPort_(
         self._prx_widget.set_name(self._label)
         self._prx_widget.set_expanded(True)
         qt_line = _utl_gui_qt_wgt_utility._QtLine()
+        qt_line._set_line_draw_offset_x_(4)
         self._prx_widget.set_widget_add(qt_line)
         self._port_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_line)
         self._port_layout.setContentsMargins(8, 0, 0, 0)
@@ -2511,6 +2516,9 @@ class PrxGroupPort_(
         group_port = self.__class__(path)
         group_port._prx_widget.set_name_font_size(8)
         group_port._prx_widget.set_name_icon_enable(False)
+        group_port._prx_widget.set_expand_icon_name(
+            'qt-style/branch-open', 'qt-style/branch-close'
+        )
         self._port_layout.addWidget(group_port._prx_widget._qt_widget)
         self._port_stack.set_object_add(group_port)
         return group_port
@@ -2627,15 +2635,16 @@ class PrxGroupPort_(
             if i_child.get_type() == 'group':
                 continue
             #
-            if i_child.LABEL_HIDED is False:
-                i_width = i_child._prx_port_label.get_name_draw_width() + 8
-            else:
-                i_width = 0
-                # widths.append(0)
-            if i_child.get_use_enable() is True:
-                i_width += 23
-            #
-            widths.append(i_width)
+            if i_child.KEY_HIDE is False:
+                if i_child.LABEL_HIDED is False:
+                    i_width = i_child._prx_port_label.get_name_draw_width()+8
+                else:
+                    i_width = 0
+                #
+                if i_child.get_use_enable() is True:
+                    i_width += 22
+                #
+                widths.append(i_width)
         if widths:
             return max(widths)
         return 0
@@ -2650,14 +2659,22 @@ class PrxGroupPort_(
             i_key_widget = i_child._key_widget
             if i_key_widget is not None:
                 i_width = width
-                if i_width > 0:
-                    i_key_widget.setFixedWidth(i_width)
-                    # i_child._prx_port_label._qt_widget.setFixedWidth(i_width+8)
+                if i_child.KEY_HIDE is False:
+                    if i_width > 0:
+                        if i_child.LABEL_HIDED is False:
+                            i_key_widget.setFixedWidth(i_width)
+                        else:
+                            if i_child.get_use_enable() is True:
+                                i_key_widget.setFixedWidth(22)
+                            else:
+                                i_key_widget.setFixedWidth(0)
+                                i_key_widget.hide()
+                    else:
+                        i_key_widget.setFixedWidth(0)
+                        i_key_widget.hide()
                 else:
                     i_key_widget.setFixedWidth(0)
                     i_key_widget.hide()
-                    # i_child._prx_port_label._qt_widget.setFixedWidth(0)
-                    # i_child._prx_port_label.set_hide()
 
     def set_expanded(self, boolean):
         self._prx_widget.set_expanded(boolean)

@@ -109,13 +109,18 @@ class _QtLine(
         self._frame_border_color = 95, 95, 95, 255
         self._frame_background_color = 0, 0, 0, 0
 
+        self._line_draw_offset_x = 2
+
     def _set_wgt_update_draw_(self):
         self.update()
+
+    def _set_line_draw_offset_x_(self, x):
+        self._line_draw_offset_x = x
 
     def paintEvent(self, event):
         painter = QtPainter(self)
 
-        x, y = 2, 0
+        x, y = self._line_draw_offset_x, 0
         w, h = self.width(), self.height()
         rect = QtCore.QRect(x, y, w, h)
         painter._set_line_draw_by_rect_(
@@ -1793,7 +1798,7 @@ class _QtPopupChooseFrame(
                         if i_icon_file_path is not None:
                             i_item_widget._set_icon_file_path_(i_icon_file_path)
                         else:
-                            i_item_widget._set_icon_name_text_(i_name_text[0])
+                            i_item_widget._set_icon_name_text_(i_name_text)
                         #
                         if choose_current:
                             if isinstance(choose_current, (tuple, list)):
@@ -2074,7 +2079,7 @@ class _QtPopupGuideFrame(
                 #
                 if i_name_text:
                     item_widget._set_name_text_(i_name_text)
-                    item_widget._set_icon_name_text_(i_name_text[0])
+                    item_widget._set_icon_name_text_(i_name_text)
                 #
                 item_widget._set_index_(seq)
                 if current_name_text == i_name_text:

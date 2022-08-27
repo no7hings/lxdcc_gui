@@ -2691,6 +2691,16 @@ class _QtHExpandItem0(
             x, y, w-20, h
         )
 
+    def _set_expand_icon_file_path_(self, icon_file_path_0, icon_file_path_1):
+        self._item_expand_icon_file_path_0 = icon_file_path_0
+        self._item_expand_icon_file_path_1 = icon_file_path_1
+        self._set_item_expand_update_()
+
+    def _set_expand_icon_name_text_(self, icon_name_0, icon_name_1):
+        self._item_expand_icon_file_path_0 = utl_gui_core.RscIconFile.get(icon_name_0)
+        self._item_expand_icon_file_path_1 = utl_gui_core.RscIconFile.get(icon_name_1)
+        self._set_item_expand_update_()
+
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
@@ -4096,7 +4106,7 @@ class _AbsQtSplitterHandle(
         if self._is_contract_r is True:
             self._set_contract_r_switch_()
         else:
-            splitter = self.splitter()
+            splitter = self._get_splitter_()
             index_l = splitter.indexOf(self)-1
             index_r = splitter.indexOf(self)
             indices = index_l, index_r
@@ -4107,7 +4117,7 @@ class _AbsQtSplitterHandle(
                 self._sizes = splitter._get_sizes_(indices)
                 #
                 sizes = [0, sum(self._sizes)]
-                splitter._set_adjacent_sizes_(indices, sizes, )
+                splitter._set_adjacent_sizes_(indices, sizes)
             else:
                 splitter._set_adjacent_sizes_(indices, self._sizes)
             #
@@ -4117,7 +4127,7 @@ class _AbsQtSplitterHandle(
         if self._is_contract_l is True:
             self._set_contract_l_switch_()
         else:
-            splitter = self.splitter()
+            splitter = self._get_splitter_()
             index_l = splitter.indexOf(self)-1
             index_r = splitter.indexOf(self)
             indices = index_l, index_r
@@ -4161,6 +4171,9 @@ class _AbsQtSplitterHandle(
 
     def _get_orientation_(self):
         return self.QT_ORIENTATION
+
+    def _get_splitter_(self):
+        return self.parent()
 
     def splitter(self):
         return self.parent()

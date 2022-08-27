@@ -1,5 +1,6 @@
 # coding:utf-8
 import collections
+import threading
 
 import time
 
@@ -23,69 +24,51 @@ import lxresolver.commands as rsv_commands
 
 from lxutil_gui import utl_gui_core
 
-import lxresolver.methods as rsv_methods
-
-from lxutil_gui import utl_gui_configure
-
 
 class AbsValidatorOpt(object):
     DCC_NAMESPACE = None
     DCC_NODE_CLS = None
     DCC_COMPONENT_CLS = None
     DCC_SELECTION_CLS = None
-    def __init__(self, prx_tree_view):
-        self._prx_tree_view = prx_tree_view
-        self._obj_add_dict = self._prx_tree_view._item_dict
+    DCC_PATHSEP = None
+    def __init__(self, filter_tree_view, result_tree_view):
+        self._filter_tree_view = filter_tree_view
+        self._result_tree_view = result_tree_view
+        self._obj_add_dict = self._result_tree_view._item_dict
 
-        self._prx_tree_view.set_item_select_changed_connect_to(
+        self._result_tree_view.set_item_select_changed_connect_to(
             self.set_select
+        )
+
+        self._filter_opt = utl_prx_operators.PrxDccObjTreeViewTagFilterOpt(
+            prx_tree_view_src=self._filter_tree_view,
+            prx_tree_view_tgt=self._result_tree_view,
+            prx_tree_item_cls=prx_widgets.PrxObjTreeItem
         )
 
     def set_select(self):
         utl_prx_operators.PrxDccObjTreeViewSelectionOpt._set_dcc_select_(
-            prx_tree_view=self._prx_tree_view,
+            prx_tree_view=self._result_tree_view,
             dcc_selection_cls=self.DCC_SELECTION_CLS,
             dcc_namespace=self.DCC_NAMESPACE
         )
 
-    def set_scene_add(self, file_path):
-        if file_path in self._obj_add_dict:
-            return self._obj_add_dict[file_path]
-        #
-        stg_file = utl_dcc_objects.OsFile(file_path)
-
-        name = stg_file.get_path_prettify_()
-
-        prx_item = self._prx_tree_view.set_item_add(
-            name=name,
-            icon=stg_file.icon,
-            tool_tip=file_path,
-        )
-        prx_item.set_expanded(True)
-        prx_item.set_checked(True)
-
-        prx_item._validation_name = name
-        prx_item._validation_result = [0, 0]
-
-        prx_item._child_dict = {}
-        self._obj_add_dict[file_path] = prx_item
-        return prx_item
-
     def set_results_at(self, file_path, results):
-        scene_prx_item = self.set_scene_add(file_path)
+        scene_prx_item = self._get_scene_(file_path)
         scene_prx_item.set_children_clear()
+        self._filter_opt.set_restore()
         scene_prx_item._child_dict = {}
         if not results:
             scene_prx_item.set_status(
                 bsc_configure.ValidatorStatus.Correct
             )
             return True
-
+        #
         self._set_sub_results_build_at_(
             scene_prx_item, results
         )
-
-        self._prx_tree_view.set_items_expand_by_depth(1)
+        #
+        self._result_tree_view.set_items_expand_by_depth(1)
 
     def _set_sub_results_build_at_(self, scene_prx_item, results):
         with utl_core.gui_progress(maximum=len(results)) as g_p:
@@ -105,19 +88,92 @@ class AbsValidatorOpt(object):
 
                 i_description = i_result['description']
                 #
-                self._set_status_update_(scene_prx_item, i_validation_status)
+                self._set_status_update_(scene_prx_item, i_status, i_validation_status)
                 #
                 i_group_prx_item = self._get_group_(scene_prx_item, i_group_name)
-                self._set_status_update_(i_group_prx_item, i_validation_status)
+                self._set_status_update_(i_group_prx_item, i_status, i_validation_status)
                 i_node_prx_item = self._get_node_(scene_prx_item, i_group_prx_item, i_dcc_path, i_description, i_validation_status)
+
+                i_filter_key = '.'.join(
+                    [
+                        bsc_core.SPathMtd.set_quote_to(i_group_name),
+                        bsc_core.SPathMtd.set_quote_to(i_description)
+                    ]
+                )
+
+                self._filter_opt.set_register(
+                    i_node_prx_item, [i_filter_key]
+                )
                 if i_type == 'file':
-                    i_file_paths = i_result['elements']
-                    for j_file_path in i_file_paths:
-                        self._get_file_(scene_prx_item, i_node_prx_item, j_file_path, i_description, i_validation_status)
+                    j_elements = i_result['elements']
+                    for j_file_path in j_elements:
+                        j_file_prx_item = self._get_file_(
+                            scene_prx_item, i_node_prx_item,
+                            j_file_path, i_description, i_validation_status
+                        )
+                        self._filter_opt.set_register(
+                            j_file_prx_item, [i_filter_key]
+                        )
                 elif i_type == 'component':
-                    i_component_paths = i_result['elements']
-                    for j_component_path in i_component_paths:
-                        self._get_component_(scene_prx_item, i_node_prx_item, j_component_path, i_description, i_validation_status)
+                    j_elements = i_result['elements']
+                    for j_dcc_path in j_elements:
+                        j_comp_prx_item = self._get_component_(
+                            scene_prx_item, i_node_prx_item,
+                            j_dcc_path, i_description, i_validation_status
+                        )
+                        self._filter_opt.set_register(
+                            j_comp_prx_item, [i_filter_key]
+                        )
+
+    def _set_status_update_(self, prx_item, status, validation_status):
+        name = prx_item._validation_name
+        result = prx_item._validation_result
+        #
+        pre_validation_status = prx_item.get_status()
+        if validation_status > pre_validation_status:
+            prx_item.set_status(validation_status)
+
+        if status in result:
+            count = result[status]
+        else:
+            count = 0
+            result[status] = 0
+
+        count += 1
+
+        result[status] = count
+        #
+        d = ' '.join(['[ {} x {} ]'.format(k, v) for k, v in result.items() if v])
+        #
+        prx_item.set_name(
+            '{} {}'.format(name, d)
+        )
+
+    def _get_scene_(self, file_path):
+        if file_path in self._obj_add_dict:
+            return self._obj_add_dict[file_path]
+        #
+        stg_file = utl_dcc_objects.OsFile(file_path)
+        name = stg_file.get_path_prettify_()
+        prx_item = self._result_tree_view.set_item_add(
+            name=name,
+            icon=stg_file.icon,
+            tool_tip=file_path,
+        )
+        prx_item.set_expanded(True)
+        prx_item.set_checked(True)
+
+        prx_item._validation_name = name
+        prx_item._validation_result = collections.OrderedDict(
+            [
+                ('error', 0),
+                ('warning', 0)
+            ]
+        )
+
+        prx_item._child_dict = {}
+        self._obj_add_dict[file_path] = prx_item
+        return prx_item
 
     def _get_group_(self, scene_prx_item, group_name):
         if group_name in scene_prx_item._child_dict:
@@ -128,54 +184,51 @@ class AbsValidatorOpt(object):
             name=group_name,
             icon=utl_gui_core.RscIconFile.get('file/folder'),
         )
-        # prx_item.set_expanded(True)
+        prx_item.set_checked(True)
         #
         prx_item._validation_name = group_name
-        prx_item._validation_result = [0, 0]
+        prx_item._validation_result = collections.OrderedDict(
+            [
+                ('error', 0),
+                ('warning', 0)
+            ]
+        )
         #
         scene_prx_item._child_dict[group_name] = prx_item
         return prx_item
 
-    def _set_status_update_(self, prx_item, status):
-        group_name = prx_item._validation_name
-        error_count, warning_count = prx_item._validation_result
-        pre_status = prx_item.get_status()
-        if status > pre_status:
-            prx_item.set_status(status)
-
-        if status == bsc_configure.ValidatorStatus.Error:
-            error_count += 1
-        elif status == bsc_configure.ValidatorStatus.Warning:
-            warning_count += 1
-        #
-        prx_item._validation_result = [error_count, warning_count]
-        #
-        d = ', '.join([['error x {}', 'warning x {}'][seq].format(i) for seq, i in enumerate([error_count, warning_count]) if i])
-        #
-        prx_item.set_name(
-            '{} [ {} ]'.format(group_name, d)
-        )
-
     def _get_node_(self, scene_prx_item, group_prx_item, dcc_path, description, status):
+        dcc_path_dag_opt = bsc_core.DccPathDagOpt(dcc_path)
+        pathsep = dcc_path_dag_opt.get_pathsep()
+        if pathsep != self.DCC_PATHSEP:
+            dcc_path = dcc_path_dag_opt.set_translate_to(self.DCC_PATHSEP).to_string()
+        #
         dcc_obj = self.DCC_NODE_CLS(dcc_path)
         prx_item = group_prx_item.set_child_add(
             name=[dcc_obj.name, description],
             icon=dcc_obj.icon,
             tool_tip=dcc_obj.path,
         )
+        prx_item.set_checked(True)
         prx_item.set_status(status)
         prx_item.set_gui_dcc_obj(
             dcc_obj, self.DCC_NAMESPACE
         )
         return prx_item
 
-    def _get_component_(self, scene_prx_item, node_prx_item, component_path, description, status):
-        dcc_obj = self.DCC_COMPONENT_CLS(component_path)
+    def _get_component_(self, scene_prx_item, node_prx_item, dcc_path, description, status):
+        dcc_path_dag_opt = bsc_core.DccPathDagOpt(dcc_path)
+        pathsep = dcc_path_dag_opt.get_pathsep()
+        if pathsep != self.DCC_PATHSEP:
+            dcc_path = dcc_path_dag_opt.set_translate_to(self.DCC_PATHSEP).to_string()
+        #
+        dcc_obj = self.DCC_COMPONENT_CLS(dcc_path)
         prx_item = node_prx_item.set_child_add(
             name=[dcc_obj.name, description],
             icon=dcc_obj.icon,
             tool_tip=dcc_obj.path,
         )
+        prx_item.set_checked(True)
         prx_item.set_status(status)
         prx_item.set_gui_dcc_obj(
             dcc_obj, self.DCC_NAMESPACE
@@ -191,13 +244,15 @@ class AbsValidatorOpt(object):
             tool_tip=stg_file.path
         )
         prx_item.set_status(status)
+        prx_item.set_checked(True)
         return prx_item
 
 
 class DccPublisherOpt(object):
-    def __init__(self, session, scene_file_path, **kwargs):
+    def __init__(self, session, scene_file_path, rsv_scene_properties, **kwargs):
         self._session = session
         self._scene_file_path = scene_file_path
+        self._rsv_scene_properties = rsv_scene_properties
         self._kwargs = kwargs
 
     def set_run(self):
@@ -241,6 +296,14 @@ class DccPublisherOpt(object):
 
         extra_key = bsc_core.SessionMtd.set_extra_data_save(extra_data)
 
+        application = self._rsv_scene_properties.get('application')
+        if application == 'katana':
+            choice_scheme = 'asset-katana-publish'
+        elif application == 'maya':
+            choice_scheme = 'asset-maya-publish'
+        else:
+            raise RuntimeError()
+
         option_opt = bsc_core.KeywordArgumentsOpt(
             option=dict(
                 option_hook_key='rsv-task-batchers/asset/gen-surface-export',
@@ -249,7 +312,7 @@ class DccPublisherOpt(object):
                 #
                 extra_key=extra_key,
                 #
-                choice_scheme='asset-katana-publish',
+                choice_scheme=choice_scheme,
                 #
                 version_type=version_type,
                 movie_file=movie_file_path,
@@ -266,61 +329,84 @@ class DccPublisherOpt(object):
         )
 
 
-class AbsAssetPublish(prx_widgets.PrxSessionWindow):
+class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
     DCC_VALIDATOR_OPT_CLS = None
     def __init__(self, session, *args, **kwargs):
-        super(AbsAssetPublish, self).__init__(session, *args, **kwargs)
+        super(AbsAssetPublisher, self).__init__(session, *args, **kwargs)
 
     def set_variants_restore(self):
         self._scene_file_path = None
         self._rsv_scene_properties = None
 
     def set_all_setup(self):
+        self._check_key_map = {
+            'validation.ignore_shotgun_check': 'with_shotgun_check',
+            'validation.ignore_scene_check': 'with_scene_check',
+            'validation.ignore_geometry_check': 'with_geometry_check',
+            'validation.ignore_geometry_topology_check': 'with_geometry_topology_check',
+            'validation.ignore_look_check': 'with_look_check',
+            'validation.ignore_texture_check': 'with_texture_check',
+            'validation.ignore_texture_workspace_check': 'with_texture_workspace_check',
+        }
+
         self._tab_view = prx_widgets.PrxTabView()
         self.set_widget_add(self._tab_view)
 
-        s_0 = prx_widgets.PrxScrollArea()
+        sa_0 = prx_widgets.PrxScrollArea()
         self._tab_view.set_item_add(
-            s_0,
+            sa_0,
             name='Validation',
             icon_name_text='Validation',
         )
 
-        s_1 = prx_widgets.PrxScrollArea()
+        sa_1 = prx_widgets.PrxScrollArea()
         self._tab_view.set_item_add(
-            s_1,
+            sa_1,
             name='Configure',
             icon_name_text='Configure',
         )
 
-        self._vld_results_view_group = prx_widgets.PrxExpandedGroup()
-        s_0.set_widget_add(self._vld_results_view_group)
-        self._vld_results_view_group.set_expanded(True)
-        self._vld_results_view_group.set_name('check results')
-        self._tree_view = prx_widgets.PrxTreeView()
-        self._vld_results_view_group.set_widget_add(self._tree_view)
-        self._tree_view.set_header_view_create(
-            [('name', 4), ('description', 2)],
-            self.get_definition_window_size()[0] - 32
+        ep_0 = prx_widgets.PrxExpandedGroup()
+        sa_0.set_widget_add(ep_0)
+        ep_0.set_expanded(True)
+        ep_0.set_name('check results')
+
+        hs_0 = prx_widgets.PrxHSplitter()
+        ep_0.set_widget_add(hs_0)
+
+        self._filter_tree_view = prx_widgets.PrxTreeView()
+        hs_0.set_widget_add(self._filter_tree_view)
+        self._filter_tree_view.set_header_view_create(
+            [('name', 3)],
+            self.get_definition_window_size()[0]*(1.0/3.0) - 32
         )
+        #
+        self._result_tree_view = prx_widgets.PrxTreeView()
+        hs_0.set_widget_add(self._result_tree_view)
+        self._result_tree_view.set_header_view_create(
+            [('name', 4), ('description', 2)],
+            self.get_definition_window_size()[0]*(2.0/3.0) - 32
+        )
+        hs_0.set_stretches([1, 3])
+        hs_0.set_widget_hide_at(0)
 
         self._tree_view_validator_opt = self.DCC_VALIDATOR_OPT_CLS(
-            self._tree_view
+            self._filter_tree_view, self._result_tree_view
         )
 
-        self._publish_options_prx_node = prx_widgets.PrxNode_('options')
-        s_1.set_widget_add(self._publish_options_prx_node)
-        self._publish_options_prx_node.set_ports_create_by_configure(
+        self._cfg_options_prx_node = prx_widgets.PrxNode_('options')
+        sa_1.set_widget_add(self._cfg_options_prx_node)
+        self._cfg_options_prx_node.set_ports_create_by_configure(
             self._session.configure.get('build.node.publish_options'),
         )
 
-        self._publish_options_prx_node.set(
+        self._cfg_options_prx_node.set(
             'resolver.load', self.set_refresh_all
         )
 
         self._set_collapse_update_(
             collapse_dict={
-                'options': self._publish_options_prx_node,
+                'options': self._cfg_options_prx_node,
             }
         )
 
@@ -345,7 +431,7 @@ class AbsAssetPublish(prx_widgets.PrxSessionWindow):
             False
         )
 
-        self._publish_options_prx_node.get_port(
+        self._cfg_options_prx_node.get_port(
             'publish.ignore_validation_error'
         ).set_changed_connect_to(
             self._set_publish_enable_refresh_
@@ -355,10 +441,17 @@ class AbsAssetPublish(prx_widgets.PrxSessionWindow):
             self._session.configure.get('option.gui.tool_tip'),
         )
 
+        self._cfg_options_prx_node.set(
+            'validation.ignore_all', self._set_validation_ignore_all_
+        )
+        self._cfg_options_prx_node.set(
+            'validation.ignore_clear', self._set_validation_ignore_clear_
+        )
+
         self.set_refresh_all()
 
     def _get_publish_is_enable_(self):
-        if self._publish_options_prx_node.get('publish.ignore_validation_error') is True:
+        if self._cfg_options_prx_node.get('publish.ignore_validation_error') is True:
             return True
         if self._validator is not None:
             return self._validator.get_is_passed()
@@ -375,22 +468,22 @@ class AbsAssetPublish(prx_widgets.PrxSessionWindow):
         #
         if bsc_core.ApplicationMtd.get_is_dcc():
             self._scene_file_path = self._get_dcc_scene_file_path_()
-            self._publish_options_prx_node.set(
+            self._cfg_options_prx_node.set(
                 'resolver.scene_file', self._scene_file_path
             )
-            self._publish_options_prx_node.get_port(
+            self._cfg_options_prx_node.get_port(
                 'resolver.scene_file'
             ).set_locked(True)
         else:
-            self._scene_file_path = self._publish_options_prx_node.get(
+            self._scene_file_path = self._cfg_options_prx_node.get(
                 'resolver.scene_file'
             )
         #
         r = rsv_commands.get_resolver()
         #
-        self._tree_view.set_clear()
+        self._result_tree_view.set_clear()
         if self._scene_file_path:
-            self._tree_view_validator_opt.set_scene_add(self._scene_file_path)
+            self._tree_view_validator_opt._get_scene_(self._scene_file_path)
             #
             self._rsv_scene_properties = r.get_rsv_scene_properties_by_any_scene_file_path(self._scene_file_path)
             if self._rsv_scene_properties:
@@ -422,50 +515,47 @@ class AbsAssetPublish(prx_widgets.PrxSessionWindow):
         pass
 
     def _set_shotgun_version_status_update_(self):
-        version_type = self._publish_options_prx_node.get('shotgun.version.type')
+        version_type = self._cfg_options_prx_node.get('shotgun.version.type')
         version_status_mapper = dict(
             daily='rev',
             check='pub',
             downstream='pub'
         )
         version_status = version_status_mapper[version_type]
-        self._publish_options_prx_node.set(
+        self._cfg_options_prx_node.set(
             'shotgun.version.status', version_status
         )
+
+    def _set_validation_ignore_all_(self):
+        [self._cfg_options_prx_node.set(k, True) for k, v in self._check_key_map.items()]
+
+    def _set_validation_ignore_clear_(self):
+        [self._cfg_options_prx_node.set(k, False) for k, v in self._check_key_map.items()]
 
     @utl_gui_qt_core.set_prx_window_waiting
     def _set_validation_execute_(self):
         if self._rsv_scene_properties:
+            check_kwargs = {v: not self._cfg_options_prx_node.get(k) for k, v in self._check_key_map.items()}
             if bsc_core.ApplicationMtd.get_is_dcc():
                 if bsc_core.ApplicationMtd.get_is_katana():
-                    self._set_katana_validation_in_dcc_()
+                    self._set_katana_validation_in_dcc_(check_kwargs)
                 elif bsc_core.ApplicationMtd.get_is_maya():
-                    self._set_maya_validation_in_dcc_()
+                    self._set_maya_validation_in_dcc_(check_kwargs)
             else:
                 application = self._rsv_scene_properties.get('application')
                 if application == 'katana':
-                    self._set_katana_validation_in_desktop_()
+                    self._set_katana_validation_in_desktop_(check_kwargs)
                 elif application == 'maya':
-                    self._set_maya_validation_in_desktop_()
+                    self._set_maya_validation_in_desktop_(check_kwargs)
 
-    def _set_katana_validation_in_dcc_(self):
+    def _set_katana_validation_in_dcc_(self, check_kwargs):
         s = ssn_commands.set_option_hook_execute(
             bsc_core.KeywordArgumentsOpt(
                 option=dict(
                     option_hook_key='rsv-task-methods/asset/katana/gen-surface-validation',
                     file=self._scene_file_path,
                     #
-                    with_shotgun_check=True,
-                    #
-                    with_scene_check=True,
-                    #
-                    with_geometry_topology_check=True,
-                    with_geometry_uv_map_check=True,
-                    #
-                    with_look_check=True,
-                    #
-                    with_texture_check=True,
-                    with_texture_workspace_check=True,
+                    **check_kwargs
                 )
             ).to_string()
         )
@@ -478,24 +568,14 @@ class AbsAssetPublish(prx_widgets.PrxSessionWindow):
         )
         self._set_publish_enable_refresh_()
 
-    def _set_katana_validation_in_desktop_(self):
+    def _set_katana_validation_in_desktop_(self, check_kwargs):
         s = ssn_commands.set_option_hook_execute_by_shell(
             bsc_core.KeywordArgumentsOpt(
                 option=dict(
                     option_hook_key='rsv-task-methods/asset/katana/gen-surface-validation',
                     file=self._scene_file_path,
                     #
-                    with_shotgun_check=True,
-                    #
-                    with_scene_check=True,
-                    #
-                    with_geometry_topology_check=True,
-                    with_geometry_uv_map_check=True,
-                    #
-                    with_look_check=True,
-                    #
-                    with_texture_check=True,
-                    with_texture_workspace_check=True,
+                    **check_kwargs
                 )
             ).to_string(),
             block=True
@@ -509,24 +589,14 @@ class AbsAssetPublish(prx_widgets.PrxSessionWindow):
         )
         self._set_publish_enable_refresh_()
 
-    def _set_maya_validation_in_dcc_(self):
+    def _set_maya_validation_in_dcc_(self, check_kwargs):
         s = ssn_commands.set_option_hook_execute(
             bsc_core.KeywordArgumentsOpt(
                 option=dict(
                     option_hook_key='rsv-task-methods/asset/maya/gen-surface-validation',
                     file=self._scene_file_path,
                     #
-                    with_shotgun_check=True,
-                    #
-                    with_scene_check=True,
-                    #
-                    with_geometry_topology_check=True,
-                    with_geometry_uv_map_check=True,
-                    #
-                    with_look_check=True,
-                    #
-                    with_texture_check=True,
-                    with_texture_workspace_check=True,
+                    **check_kwargs
                 )
             ).to_string()
         )
@@ -539,24 +609,14 @@ class AbsAssetPublish(prx_widgets.PrxSessionWindow):
         )
         self._set_publish_enable_refresh_()
 
-    def _set_maya_validation_in_desktop_(self):
+    def _set_maya_validation_in_desktop_(self, check_kwargs):
         s = ssn_commands.set_option_hook_execute_by_shell(
             bsc_core.KeywordArgumentsOpt(
                 option=dict(
                     option_hook_key='rsv-task-methods/asset/maya/gen-surface-validation',
                     file=self._scene_file_path,
                     #
-                    with_shotgun_check=True,
-                    #
-                    with_scene_check=True,
-                    #
-                    with_geometry_topology_check=True,
-                    with_geometry_uv_map_check=True,
-                    #
-                    with_look_check=True,
-                    #
-                    with_texture_check=True,
-                    with_texture_workspace_check=True,
+                    **check_kwargs
                 )
             ).to_string(),
             block=True
@@ -577,6 +637,7 @@ class AbsAssetPublish(prx_widgets.PrxSessionWindow):
             DccPublisherOpt(
                 self._session,
                 self._scene_file_path,
+                self._rsv_scene_properties,
                 **_kwargs
             ).set_run()
 

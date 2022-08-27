@@ -9,11 +9,12 @@ class ValidatorOpt(utl_gui_pnl_abs_publish.AbsValidatorOpt):
     DCC_NODE_CLS = mya_dcc_objects.Node
     DCC_COMPONENT_CLS = mya_dcc_objects.Component
     DCC_SELECTION_CLS = mya_dcc_objects.Selection
+    DCC_PATHSEP = '|'
     def __init__(self, *args, **kwargs):
         super(ValidatorOpt, self).__init__(*args, **kwargs)
 
 
-class AssetPublish(utl_gui_pnl_abs_publish.AbsAssetPublish):
+class AssetPublish(utl_gui_pnl_abs_publish.AbsAssetPublisher):
     DCC_VALIDATOR_OPT_CLS = ValidatorOpt
     def __init__(self, session, *args, **kwargs):
         super(AssetPublish, self).__init__(session, *args, **kwargs)
