@@ -53,7 +53,8 @@ class AbsValidatorOpt(object):
             dcc_namespace=self.DCC_NAMESPACE
         )
 
-    def set_results_at(self, file_path, results):
+    def set_results_at(self, rsv_scene_properties, results):
+        file_path = rsv_scene_properties.get('extra.file')
         scene_prx_item = self._get_scene_(file_path)
         scene_prx_item.set_children_clear()
         self._filter_opt.set_restore()
@@ -65,12 +66,12 @@ class AbsValidatorOpt(object):
             return True
         #
         self._set_sub_results_build_at_(
-            scene_prx_item, results
+            scene_prx_item, rsv_scene_properties, results
         )
         #
         self._result_tree_view.set_items_expand_by_depth(1)
 
-    def _set_sub_results_build_at_(self, scene_prx_item, results):
+    def _set_sub_results_build_at_(self, scene_prx_item, rsv_scene_properties, results):
         with utl_core.gui_progress(maximum=len(results)) as g_p:
             for i_result in results:
                 g_p.set_update()
@@ -92,7 +93,14 @@ class AbsValidatorOpt(object):
                 #
                 i_group_prx_item = self._get_group_(scene_prx_item, i_group_name)
                 self._set_status_update_(i_group_prx_item, i_status, i_validation_status)
-                i_node_prx_item = self._get_node_(scene_prx_item, i_group_prx_item, i_dcc_path, i_description, i_validation_status)
+                i_node_prx_item = self._get_node_(
+                    scene_prx_item,
+                    rsv_scene_properties,
+                    i_group_prx_item,
+                    i_dcc_path,
+                    i_description,
+                    i_validation_status
+                )
 
                 i_filter_key = '.'.join(
                     [
@@ -197,11 +205,13 @@ class AbsValidatorOpt(object):
         scene_prx_item._child_dict[group_name] = prx_item
         return prx_item
 
-    def _get_node_(self, scene_prx_item, group_prx_item, dcc_path, description, status):
+    def _get_node_(self, scene_prx_item, rsv_scene_properties, group_prx_item, dcc_path, description, status):
         dcc_path_dag_opt = bsc_core.DccPathDagOpt(dcc_path)
         pathsep = dcc_path_dag_opt.get_pathsep()
-        if pathsep != self.DCC_PATHSEP:
-            dcc_path = dcc_path_dag_opt.set_translate_to(self.DCC_PATHSEP).to_string()
+        pathsep_src = rsv_scene_properties.get('dcc.pathsep')
+        if pathsep == pathsep_src:
+            if pathsep != self.DCC_PATHSEP:
+                dcc_path = dcc_path_dag_opt.set_translate_to(self.DCC_PATHSEP).to_string()
         #
         dcc_obj = self.DCC_NODE_CLS(dcc_path)
         prx_item = group_prx_item.set_child_add(
@@ -563,7 +573,7 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
         self._validator = s.get_validator()
         #
         self._tree_view_validator_opt.set_results_at(
-            self._scene_file_path,
+            self._rsv_scene_properties,
             self._validator.get_results()
         )
         self._set_publish_enable_refresh_()
@@ -584,7 +594,7 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
         self._validator = s.get_validator()
         #
         self._tree_view_validator_opt.set_results_at(
-            self._scene_file_path,
+            self._rsv_scene_properties,
             self._validator.get_exists_results()
         )
         self._set_publish_enable_refresh_()
@@ -604,7 +614,7 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
         self._validator = s.get_validator()
         #
         self._tree_view_validator_opt.set_results_at(
-            self._scene_file_path,
+            self._rsv_scene_properties,
             self._validator.get_results()
         )
         self._set_publish_enable_refresh_()
@@ -625,7 +635,7 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
         self._validator = s.get_validator()
         #
         self._tree_view_validator_opt.set_results_at(
-            self._scene_file_path,
+            self._rsv_scene_properties,
             self._validator.get_exists_results()
         )
         self._set_publish_enable_refresh_()

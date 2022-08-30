@@ -467,10 +467,10 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
         )
 
 
-class PrxDdlMonitorWindow(utl_gui_prx_abstract.AbsPrxWindow):
+class PrxMonitorWindow(utl_gui_prx_abstract.AbsPrxWindow):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtMainWindow
     def __init__(self, *args, **kwargs):
-        super(PrxDdlMonitorWindow, self).__init__(*args, **kwargs)
+        super(PrxMonitorWindow, self).__init__(*args, **kwargs)
         self.widget.setWindowFlags(
             _utl_gui_qt_wgt_utility.QtCore.Qt.Window | _utl_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
         )

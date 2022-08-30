@@ -189,6 +189,7 @@ class _QtStatusDef(object):
         raise NotImplementedError()
 
     def _set_status_(self, status):
+        print status
         self._is_status_enable = True
         #
         self._status = status
@@ -235,8 +236,9 @@ class AbsQtSubProcessDef(object):
         self._sub_process_finished_value = 0
         self._sub_process_finished_maximum = 0
 
-        self._sub_process_status_text_format_0 = '[{value}/{maximum}][{costed_time}]'
-        self._sub_process_status_text_format_1 = '[{value}/{maximum}][{costed_time}/{estimated_time}]'
+        self._sub_process_status_text_format_0 = '[{costed_time}]'
+        self._sub_process_status_text_format_1 = '[{value}/{maximum}][{costed_time}]'
+        self._sub_process_status_text_format_2 = '[{value}/{maximum}][{costed_time}/{estimated_time}]'
 
         # self._sub_process_timer = QtCore.QTimer(self)
 
@@ -317,20 +319,22 @@ class AbsQtSubProcessDef(object):
         self._set_wgt_update_draw_()
 
     def _get_sub_process_status_text_(self):
-        kwargs = dict(
-            value=self._sub_process_finished_value,
-            maximum=self._sub_process_finished_maximum,
-            costed_time=bsc_core.IntegerMtd.second_to_time_prettify(self._sub_process_timestamp_costed),
-            estimated_time=bsc_core.IntegerMtd.second_to_time_prettify(self._sub_process_finished_timestamp_estimated),
-        )
-        if int(self._sub_process_finished_timestamp_estimated) > 0:
-            return self._sub_process_status_text_format_1.format(
-                **kwargs
+        if self._sub_process_is_enable is True:
+            kwargs = dict(
+                value=self._sub_process_finished_value,
+                maximum=self._sub_process_finished_maximum,
+                costed_time=bsc_core.IntegerMtd.second_to_time_prettify(self._sub_process_timestamp_costed),
+                estimated_time=bsc_core.IntegerMtd.second_to_time_prettify(self._sub_process_finished_timestamp_estimated),
             )
-        else:
-            return self._sub_process_status_text_format_0.format(
-                **kwargs
-            )
+            if int(self._sub_process_finished_timestamp_estimated) > 0:
+                return self._sub_process_status_text_format_2.format(
+                    **kwargs
+                )
+            else:
+                return self._sub_process_status_text_format_1.format(
+                    **kwargs
+                )
+        return ''
 
     def _get_sub_process_is_finished_(self):
         return sum(self._sub_process_finished_results) == len(self._sub_process_finished_results)

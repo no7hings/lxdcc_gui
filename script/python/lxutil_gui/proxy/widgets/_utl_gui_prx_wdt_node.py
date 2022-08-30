@@ -2488,10 +2488,10 @@ class PrxGroupPort_(
         self._prx_widget.set_name(self._label)
         self._prx_widget.set_expanded(True)
         qt_line = _utl_gui_qt_wgt_utility._QtLine()
-        qt_line._set_line_draw_offset_x_(4)
+        qt_line._set_line_draw_offset_x_(2)
         self._prx_widget.set_widget_add(qt_line)
         self._port_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_line)
-        self._port_layout.setContentsMargins(8, 0, 0, 0)
+        self._port_layout.setContentsMargins(10, 0, 0, 0)
         self._port_layout.setSpacing(2)
         #
         self._port_stack = self.PORT_STACK_CLASS()

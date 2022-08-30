@@ -1228,7 +1228,6 @@ class _QtPressItem(
                 border_radius=4,
                 offset=offset
             )
-        #
         if self._get_sub_process_is_enable_() is True:
             status_colors = [self._sub_process_status_colors, self._hover_sub_process_status_colors][self._action_is_hovered]
             painter._set_elements_status_draw_by_rect_(
@@ -1733,7 +1732,7 @@ class _QtScriptValueEntryItem(
     entry_changed = qt_signal()
     def __init__(self, *args, **kwargs):
         super(_QtScriptValueEntryItem, self).__init__(*args, **kwargs)
-        self._frame_draw_margins = 0, 0, 0, 10
+        self._frame_draw_margins = 0, 0, 0, 0
         #
         self._set_item_value_type_constant_entry_def_init_()
         self._set_item_value_default_def_init_()
@@ -1769,6 +1768,10 @@ class _QtScriptValueEntryItem(
         return self._resize_frame
 
     def _set_resize_enable_(self, boolean):
+        if boolean is True:
+            self._frame_draw_margins = 0, 0, 0, 10
+        else:
+            self._frame_draw_margins = 0, 0, 0, 0
         self._resize_frame.setVisible(boolean)
 
     def _set_value_entry_enable_(self, boolean):

@@ -620,6 +620,9 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
     def set_click(self):
         self.widget._set_action_press_click_emit_send_()
 
+    def set_status_enable(self, boolean):
+        pass
+
     def set_status(self, status):
         self.widget.status_changed.emit(status)
 
