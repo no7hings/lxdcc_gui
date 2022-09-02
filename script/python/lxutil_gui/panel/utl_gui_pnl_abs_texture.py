@@ -345,12 +345,12 @@ class _VersionController(object):
             return self._resolver.get_result(**kwargs_0), self._resolver.get_result(**kwargs_1)
 
 
-class AbsWorkTextureManager(prx_widgets.PrxSessionWindow):
+class AbsWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
     DCC_NAMESPACE = None
     DCC_SELECTION_CLS = None
     TEXTURE_WORKSPACE_CLS = None
     def __init__(self, session, *args, **kwargs):
-        super(AbsWorkTextureManager, self).__init__(session, *args, **kwargs)
+        super(AbsWorkspaceTextureManager, self).__init__(session, *args, **kwargs)
 
     def set_variants_restore(self):
         self._dcc_texture_references = None
@@ -380,12 +380,16 @@ class AbsWorkTextureManager(prx_widgets.PrxSessionWindow):
         )
 
         self._workspace_options_prx_node.set(
-            'control.new_version', self._set_wsp_version_new_execute_
+            'control.new_version', self._set_wsp_version_new_
         )
         self._workspace_options_prx_node.get_port(
             'control.version'
         ).set_changed_connect_to(
             self._set_wsp_texture_directories_update_
+        )
+
+        self._workspace_options_prx_node.set(
+            'control.lock_all_version', self._set_wsp_all_version_lock_
         )
 
         self._workspace_options_prx_node.set(
@@ -468,7 +472,7 @@ class AbsWorkTextureManager(prx_widgets.PrxSessionWindow):
                 self._is_disable = True
                 self.set_window_close()
 
-    def _set_wsp_version_new_execute_(self):
+    def _set_wsp_version_new_(self):
         def yes_fnc_():
             self._version_controller.set_version_create_at(
                 variant, next_version
@@ -522,6 +526,9 @@ class AbsWorkTextureManager(prx_widgets.PrxSessionWindow):
         [v_p.set_icon_file_as_value(i, utl_gui_core.RscIconFile.get('lock')) for i in all_locked_versions]
 
         w.set_window_show()
+
+    def _set_wsp_all_version_lock_(self):
+        pass
 
     def _set_wsp_texture_pull_(self, from_variant, from_version, to_version):
         directory_path_src_0 = self._version_controller.get_src_directory_path_at(
@@ -808,13 +815,13 @@ class AbsDccTextureManager(prx_widgets.PrxSessionWindow):
         e_p_0.set_name('textures')
         e_p_0.set_expanded(True)
         #
-        self._tree_view_filter = prx_widgets.PrxTreeView()
-        self._tree_view_filter.set_single_selection()
-        self._tree_view_filter.set_header_view_create(
-            [('name', 3), ('count', 1)],
+        self._filter_tree_view = prx_widgets.PrxTreeView()
+        self._filter_tree_view.set_single_selection()
+        self._filter_tree_view.set_header_view_create(
+            [('name', 3)],
             self.get_definition_window_size()[0]*(2.0/6.0)-32
         )
-        h_s_0.set_widget_add(self._tree_view_filter)
+        h_s_0.set_widget_add(self._filter_tree_view)
         #
         self._tree_view = prx_widgets.PrxTreeView()
         h_s_0.set_widget_add(self._tree_view)
@@ -825,6 +832,7 @@ class AbsDccTextureManager(prx_widgets.PrxSessionWindow):
         h_s_0.set_stretches(
             [1, 3]
         )
+        h_s_0.set_widget_hide_at(0)
         #
         self._texture_add_opt = utl_prx_operators.PrxStgObjTreeViewAddOpt(
             prx_tree_view=self._tree_view,
@@ -846,7 +854,7 @@ class AbsDccTextureManager(prx_widgets.PrxSessionWindow):
         )
 
         self._tree_view_filter_opt = utl_prx_operators.PrxDccObjTreeViewTagFilterOpt(
-            prx_tree_view_src=self._tree_view_filter,
+            prx_tree_view_src=self._filter_tree_view,
             prx_tree_view_tgt=self._tree_view,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
         )
@@ -941,10 +949,6 @@ class AbsDccTextureManager(prx_widgets.PrxSessionWindow):
                                 )
                                 i_dcc_obj.set_obj_gui(i_dcc_obj_prx_item)
                                 j_keys.append('format.{}'.format(j_file.type_name))
-                                #
-                                self._tree_view_filter_opt.set_register(
-                                    i_dcc_obj_prx_item, j_keys
-                                )
 
     def _set_gui_textures_validator_(self):
         textures = self._texture_add_opt.get_files()
@@ -1019,6 +1023,14 @@ class AbsDccTextureManager(prx_widgets.PrxSessionWindow):
                     )
                     j_color_space = j_dcc_obj.get_color_space()
                     j_dcc_obj_prx_item.set_name(j_color_space, 1)
+                    if i_descriptions:
+                        self._tree_view_filter_opt.set_register(
+                            j_dcc_obj_prx_item, [bsc_core.SPathMtd.set_quote_to(i) for i in i_descriptions]
+                        )
+                    else:
+                        self._tree_view_filter_opt.set_register(
+                            j_dcc_obj_prx_item, [bsc_core.SPathMtd.set_quote_to(i) for i in ['N/a']]
+                        )
 
         repath_src_port.set_statuses(
             repath_src_statuses

@@ -553,23 +553,24 @@ class PrxStgObjTreeViewAddOpt(object):
 
         if obj.PATHSEP in obj.path:
             root = obj.get_root()
-            self._set_prx_item_add_(
-                obj=root,
-                use_show_thread=use_show_thread
-            )
-            directory = obj.get_parent()
-            self._set_prx_item_add_(
-                obj=directory,
-                parent=root,
-                use_show_thread=use_show_thread,
-                name_use_path_prettify=True
-            )
-            #
-            return self._set_prx_item_add_(
-                obj=obj,
-                parent=directory,
-                use_show_thread=use_show_thread
-            )
+            if root is not None:
+                self._set_prx_item_add_(
+                    obj=root,
+                    use_show_thread=use_show_thread
+                )
+                directory = obj.get_parent()
+                self._set_prx_item_add_(
+                    obj=directory,
+                    parent=root,
+                    use_show_thread=use_show_thread,
+                    name_use_path_prettify=True
+                )
+                #
+                return self._set_prx_item_add_(
+                    obj=obj,
+                    parent=directory,
+                    use_show_thread=use_show_thread
+                )
         #
         return False, None
 

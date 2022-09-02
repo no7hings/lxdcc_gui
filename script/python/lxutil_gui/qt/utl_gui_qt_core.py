@@ -1190,12 +1190,20 @@ class QtMethodSignals(QtCore.QObject):
     error_occurred = qt_signal()
 
 
+class QtCommandSignals(QtCore.QObject):
+    completed = qt_signal(tuple)
+    failed = qt_signal(tuple)
+    #
+    finished = qt_signal(tuple)
+
+
 class QtMethodThread(QtCore.QThread):
     stated = qt_signal()
     running = qt_signal()
     stopped = qt_signal()
     #
     completed = qt_signal()
+    failed = qt_signal(str)
     error_occurred = qt_signal()
     #
     run_started = qt_signal()
@@ -1209,11 +1217,17 @@ class QtMethodThread(QtCore.QThread):
 
     def run(self):
         self.run_started.emit()
-        #
-        for i in self._methods:
-            i()
-        #
-        self.run_finished.emit()
+        # noinspection PyBroadException
+        try:
+            for i in self._methods:
+                i()
+            #
+            self.completed.emit()
+        except:
+            self.failed.emit(bsc_core.ExceptionMtd.get_stack())
+        finally:
+            #
+            self.run_finished.emit()
 
 
 class QtBuildThread(QtCore.QThread):

@@ -536,7 +536,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         def cache_fnc_():
             _list = []
             #
-            _keywords = ['{branch}-review-file'] + self._rsv_keywords
+            _keywords = self._rsv_keywords
             #
             for _i_keyword in _keywords:
                 _i_rsv_unit = rsv_task.get_rsv_unit(
@@ -551,7 +551,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
 
         def build_fnc_(data):
             self._set_gui_rsv_task_unit_show_deferred_(
-                rsv_task, rsv_task_unit_gui, data[1:]
+                rsv_task, rsv_task_unit_gui, data
             )
         #
         rsv_task_gui = rsv_task.get_obj_gui()
@@ -648,6 +648,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         rsv_task_unit_gui.set_name_dict(show_info_dict)
         r, g, b = bsc_core.TextOpt(task).to_rgb()
         rsv_task_unit_gui.set_name_frame_background_color((r, g, b, 127))
+        print pixmaps
         rsv_task_unit_gui.set_icons_by_pixmap(pixmaps)
         rsv_task_unit_gui.set_tool_tip(
             rsv_task.description

@@ -1,7 +1,7 @@
 # coding:utf-8
 import functools
 
-from lxbasic import bsc_core
+from lxbasic import bsc_configure, bsc_core
 
 from lxutil import utl_core
 
@@ -23,11 +23,18 @@ class AbsPrxDialogWindow(
     BUTTON_WIDTH = 120
     WAITING_CHART_CLASS = _utl_gui_qt_wgt_chart._QtWaitingChart
     PROGRESS_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtProgressBar
+    #
+    ValidatorStatus = bsc_configure.ValidatorStatus
     def __init__(self, *args, **kwargs):
         super(AbsPrxDialogWindow, self).__init__(*args, **kwargs)
-        self.widget.setWindowFlags(
-            _utl_gui_qt_wgt_utility.QtCore.Qt.Tool | _utl_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
-        )
+        if kwargs.get('parent'):
+            self.widget.setWindowFlags(
+                _utl_gui_qt_wgt_utility.QtCore.Qt.Tool | _utl_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
+            )
+        else:
+            self.widget.setWindowFlags(
+                _utl_gui_qt_wgt_utility.QtCore.Qt.Window | _utl_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
+            )
         self.widget.setWindowModality(
             _utl_gui_qt_wgt_utility.QtCore.Qt.WindowModal
         )
@@ -107,27 +114,23 @@ class AbsPrxDialogWindow(
         self._kwargs = {}
 
     def _set_method_run_(self, methods):
-        def debug_run_fnc_(fnc_, *args, **kwargs):
-            # noinspection PyBroadException
-            try:
-                _method = fnc_(*args, **kwargs)
-            except:
-                from lxutil import utl_core
-                #
-                utl_core.ExceptionCatcher.set_create()
-                raise
+        def completed_fnc_():
+            self.set_window_close_later()
+
+        def failed_fnc_(log):
+            self.set_content(log)
+            self.set_status(self.ValidatorStatus.Error)
 
         if self._use_thread is True:
-            thread = self.widget._set_thread_create_()
-            thread.run_started.connect(self.set_waiting_start)
-            thread.run_finished.connect(self.set_waiting_stop)
-            thread.run_finished.connect(self.set_window_close_later)
+            t = self.widget._set_thread_create_()
+            t.run_started.connect(self.set_waiting_start)
+            t.run_finished.connect(self.set_waiting_stop)
+            t.completed.connect(completed_fnc_)
+            t.failed.connect(failed_fnc_)
             for i in methods:
-                thread.set_method_add(
-                    functools.partial(debug_run_fnc_, i)
-                )
+                t.set_method_add(i)
             #
-            thread.start()
+            t.start()
         else:
             self.set_waiting_start()
             for i in methods:
@@ -469,16 +472,25 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
 
 class PrxMonitorWindow(utl_gui_prx_abstract.AbsPrxWindow):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtMainWindow
+    ValidatorStatus = bsc_configure.ValidatorStatus
     def __init__(self, *args, **kwargs):
         super(PrxMonitorWindow, self).__init__(*args, **kwargs)
-        self.widget.setWindowFlags(
-            _utl_gui_qt_wgt_utility.QtCore.Qt.Window | _utl_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
+        if kwargs.get('parent'):
+            self.widget.setWindowFlags(
+                _utl_gui_qt_wgt_utility.QtCore.Qt.Tool | _utl_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
+            )
+        else:
+            self.widget.setWindowFlags(
+                _utl_gui_qt_wgt_utility.QtCore.Qt.Window | _utl_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
+            )
+        self.widget.setWindowModality(
+            _utl_gui_qt_wgt_utility.QtCore.Qt.WindowModal
         )
 
     def _set_build_(self):
-        w = _utl_gui_qt_wgt_utility.QtWidget()
-        self._qt_widget.setCentralWidget(w)
-        self._central_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(w)
+        self._central_widget = _utl_gui_qt_wgt_utility.QtWidget()
+        self._qt_widget.setCentralWidget(self._central_widget)
+        self._central_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._central_widget)
         #
         self._tip_text_browser = _utl_gui_prx_wdt_utility.PrxTextBrowser()
         self._central_layout.addWidget(self._tip_text_browser.widget)
@@ -492,6 +504,9 @@ class PrxMonitorWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._button_layout.addWidget(self._status_button.widget)
         self._status_button.set_name('process')
         self._status_button.set_icon_by_name_text('process')
+
+    def set_status(self, status):
+        self._central_widget._set_status_(status)
 
     def get_status_button(self):
         return self._status_button

@@ -8,7 +8,7 @@ import lxkatana.dcc.dcc_objects as ktn_dcc_objects
 from lxutil_gui.qt import utl_gui_qt_core
 
 
-class WorkTextureManager(utl_gui_pnl_abs_texture.AbsWorkTextureManager):
+class WorkTextureManager(utl_gui_pnl_abs_texture.AbsWorkspaceTextureManager):
     DCC_SELECTION_CLS = ktn_dcc_objects.Selection
     DCC_NAMESPACE = 'katana'
     def __init__(self, session, *args, **kwargs):

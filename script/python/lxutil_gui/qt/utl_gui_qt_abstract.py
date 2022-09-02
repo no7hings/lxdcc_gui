@@ -119,7 +119,7 @@ class _QtStatusDef(object):
             h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
             color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
             hover_color = r, g, b
-        elif status in [bsc_configure.Status.Failed, bsc_configure.Status.Error]:
+        elif status in [bsc_configure.Status.Failed, bsc_configure.Status.Error, bsc_configure.Status.Killed]:
             r, g, b = 255, 0, 63
             h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
             color = bsc_core.ColorMtd.hsv2rgb(h, s * .75, v * .75)
@@ -189,7 +189,6 @@ class _QtStatusDef(object):
         raise NotImplementedError()
 
     def _set_status_(self, status):
-        print status
         self._is_status_enable = True
         #
         self._status = status

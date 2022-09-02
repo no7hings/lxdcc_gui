@@ -586,7 +586,7 @@ class QtTextBrowser_(
 ):
     def __init__(self, *args, **kwargs):
         super(QtTextBrowser_, self).__init__(*args, **kwargs)
-        self.setWordWrapMode(QtGui.QTextOption.WordWrap)
+        self.setWordWrapMode(QtGui.QTextOption.WrapAnywhere)
         self.installEventFilter(self)
         # self.setAcceptRichText(False)
         # self.setWordWrapMode(QtGui.QTextOption.NoWrap)
@@ -1013,9 +1013,11 @@ class _QtPressItem(
             self._set_sub_process_finished_at_
         )
 
-        self._rate_timer = QtCore.QTimer(self)
+        self._sub_process_timer = QtCore.QTimer(self)
 
-        self._rate_timer.timeout.connect(self._set_sub_process_update_draw_)
+        self._sub_process_timer.timeout.connect(
+            self._set_sub_process_update_draw_
+        )
 
     def _set_wgt_update_draw_(self):
         self.update()
@@ -1114,7 +1116,7 @@ class _QtPressItem(
             self._set_status_(
                 self.Status.Started
             )
-            self._rate_timer.start(1000)
+            self._sub_process_timer.start(1000)
 
     def _set_sub_process_finished_at_(self, index, status):
         super(_QtPressItem, self)._set_sub_process_finished_at_(index, status)
@@ -1130,7 +1132,7 @@ class _QtPressItem(
                 )
             self.rate_finished.emit()
 
-            self._rate_timer.stop()
+            self._sub_process_timer.stop()
 
         self._set_wgt_update_draw_()
 

@@ -55,23 +55,24 @@ class AbsValidatorOpt(object):
 
     def set_results_at(self, rsv_scene_properties, results):
         file_path = rsv_scene_properties.get('extra.file')
+        check_results = results['check_results']
         scene_prx_item = self._get_scene_(file_path)
         scene_prx_item.set_children_clear()
         self._filter_opt.set_restore()
         scene_prx_item._child_dict = {}
-        if not results:
+        if not check_results:
             scene_prx_item.set_status(
                 bsc_configure.ValidatorStatus.Correct
             )
             return True
         #
-        self._set_sub_results_build_at_(
-            scene_prx_item, rsv_scene_properties, results
+        self._set_sub_check_results_build_at_(
+            scene_prx_item, rsv_scene_properties, check_results
         )
         #
         self._result_tree_view.set_items_expand_by_depth(1)
 
-    def _set_sub_results_build_at_(self, scene_prx_item, rsv_scene_properties, results):
+    def _set_sub_check_results_build_at_(self, scene_prx_item, rsv_scene_properties, results):
         with utl_core.gui_progress(maximum=len(results)) as g_p:
             for i_result in results:
                 g_p.set_update()
@@ -259,9 +260,10 @@ class AbsValidatorOpt(object):
 
 
 class DccPublisherOpt(object):
-    def __init__(self, session, scene_file_path, rsv_scene_properties, **kwargs):
+    def __init__(self, session, scene_file_path, validation_info_file, rsv_scene_properties, **kwargs):
         self._session = session
         self._scene_file_path = scene_file_path
+        self._validation_info_file = validation_info_file
         self._rsv_scene_properties = rsv_scene_properties
         self._kwargs = kwargs
 
@@ -327,6 +329,8 @@ class DccPublisherOpt(object):
                 version_type=version_type,
                 movie_file=movie_file_path,
                 #
+                validation_info_file=self._validation_info_file,
+                #
                 user=user,
                 #
                 td_enable=self._session.get_td_enable(),
@@ -351,10 +355,14 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
     def set_all_setup(self):
         self._check_key_map = {
             'validation.ignore_shotgun_check': 'with_shotgun_check',
+            #
             'validation.ignore_scene_check': 'with_scene_check',
+            #
             'validation.ignore_geometry_check': 'with_geometry_check',
             'validation.ignore_geometry_topology_check': 'with_geometry_topology_check',
+            #
             'validation.ignore_look_check': 'with_look_check',
+            #
             'validation.ignore_texture_check': 'with_texture_check',
             'validation.ignore_texture_workspace_check': 'with_texture_workspace_check',
         }
@@ -381,24 +389,24 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
         ep_0.set_expanded(True)
         ep_0.set_name('check results')
 
-        hs_0 = prx_widgets.PrxHSplitter()
-        ep_0.set_widget_add(hs_0)
+        h_s_0 = prx_widgets.PrxHSplitter()
+        ep_0.set_widget_add(h_s_0)
 
         self._filter_tree_view = prx_widgets.PrxTreeView()
-        hs_0.set_widget_add(self._filter_tree_view)
+        h_s_0.set_widget_add(self._filter_tree_view)
         self._filter_tree_view.set_header_view_create(
             [('name', 3)],
             self.get_definition_window_size()[0]*(1.0/3.0) - 32
         )
         #
         self._result_tree_view = prx_widgets.PrxTreeView()
-        hs_0.set_widget_add(self._result_tree_view)
+        h_s_0.set_widget_add(self._result_tree_view)
         self._result_tree_view.set_header_view_create(
             [('name', 4), ('description', 2)],
             self.get_definition_window_size()[0]*(2.0/3.0) - 32
         )
-        hs_0.set_stretches([1, 3])
-        hs_0.set_widget_hide_at(0)
+        h_s_0.set_stretches([1, 3])
+        h_s_0.set_widget_hide_at(0)
 
         self._tree_view_validator_opt = self.DCC_VALIDATOR_OPT_CLS(
             self._filter_tree_view, self._result_tree_view
@@ -435,7 +443,9 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
         self._publish_button.set_press_clicked_connect_to(self._set_publish_execute_)
         self._publish_button.set_option_click_enable(True)
 
-        self._validator = None
+        self._validation_checker = None
+        self._validation_check_options = {}
+        self._validation_info_file = None
 
         self._publish_button.set_enable(
             False
@@ -463,14 +473,51 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
     def _get_publish_is_enable_(self):
         if self._cfg_options_prx_node.get('publish.ignore_validation_error') is True:
             return True
-        if self._validator is not None:
-            return self._validator.get_is_passed()
+        if self._validation_checker is not None:
+            return self._validation_checker.get_is_passed()
         return False
 
+    def _get_validation_info_file_path_(self):
+        if self._rsv_scene_properties:
+            file_opt = bsc_core.StorageFileOpt(
+                self._scene_file_path
+            )
+            return '{directory}/validation/{date}-{user}/{name}-{tag}.info'.format(
+                **dict(
+                    directory=file_opt.directory_path,
+                    name=file_opt.name_base,
+                    date=bsc_core.SystemMtd.get_date_tag(),
+                    user=bsc_core.SystemMtd.get_user_name(),
+                    tag=bsc_core.SystemMtd.get_time_tag_36()
+                )
+            )
+
+    def _get_validation_info_texts_(self):
+        list_ = []
+        if self._cfg_options_prx_node.get('publish.ignore_validation_error') is True:
+            list_.append(
+                'validation check ignore: on'
+            )
+        if self._validation_checker is not None:
+            list_.append(
+                'validation check run: on'
+            )
+            list_.append(self._validation_checker.get_info())
+            return list_
+        return ['validation check run: off']
+
     def _set_publish_enable_refresh_(self):
-        self._publish_button.set_enable(
-            self._get_publish_is_enable_()
-        )
+        self._validation_info_file = self._get_validation_info_file_path_()
+        if self._validation_info_file is not None:
+            info = '\n'.join(self._get_validation_info_texts_())
+            bsc_core.StorageFileOpt(
+                self._validation_info_file
+            ).set_write(
+                info
+            )
+            self._publish_button.set_enable(
+                self._get_publish_is_enable_()
+            )
 
     def set_refresh_all(self):
         contents = []
@@ -542,118 +589,114 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
     def _set_validation_ignore_clear_(self):
         [self._cfg_options_prx_node.set(k, False) for k, v in self._check_key_map.items()]
 
-    @utl_gui_qt_core.set_prx_window_waiting
     def _set_validation_execute_(self):
         if self._rsv_scene_properties:
-            check_kwargs = {v: not self._cfg_options_prx_node.get(k) for k, v in self._check_key_map.items()}
+            self._validation_check_options = {v: not self._cfg_options_prx_node.get(k) for k, v in self._check_key_map.items()}
             if bsc_core.ApplicationMtd.get_is_dcc():
                 if bsc_core.ApplicationMtd.get_is_katana():
-                    self._set_katana_validation_in_dcc_(check_kwargs)
+                    self._set_katana_validation_in_execute_()
                 elif bsc_core.ApplicationMtd.get_is_maya():
-                    self._set_maya_validation_in_dcc_(check_kwargs)
+                    self._set_maya_validation_in_dcc_()
             else:
                 application = self._rsv_scene_properties.get('application')
                 if application == 'katana':
-                    self._set_katana_validation_in_desktop_(check_kwargs)
+                    self._set_katana_validation_execute_by_shell_()
                 elif application == 'maya':
-                    self._set_maya_validation_in_desktop_(check_kwargs)
+                    self._set_maya_validation_execute_by_shell_(self._validation_check_options)
 
-    def _set_katana_validation_in_dcc_(self, check_kwargs):
+    def _set_gui_validation_check_results_show_(self, session):
+        self._validation_checker = session.get_validation_checker()
+        self._validation_checker.set_options(
+            self._validation_check_options
+        )
+        #
+        self._result_tree_view.set_clear()
+        self._tree_view_validator_opt.set_results_at(
+            self._rsv_scene_properties,
+            self._validation_checker.get_data()
+        )
+        self._set_publish_enable_refresh_()
+
+    def _set_dcc_validation_execute_(self, option_hook_key):
         s = ssn_commands.set_option_hook_execute(
             bsc_core.KeywordArgumentsOpt(
                 option=dict(
-                    option_hook_key='rsv-task-methods/asset/katana/gen-surface-validation',
+                    option_hook_key=option_hook_key,
                     file=self._scene_file_path,
                     #
-                    **check_kwargs
+                    **self._validation_check_options
                 )
             ).to_string()
         )
-        #
-        self._validator = s.get_validator()
-        #
-        self._tree_view_validator_opt.set_results_at(
-            self._rsv_scene_properties,
-            self._validator.get_results()
-        )
-        self._set_publish_enable_refresh_()
 
-    def _set_katana_validation_in_desktop_(self, check_kwargs):
-        s = ssn_commands.set_option_hook_execute_by_shell(
+        self._set_gui_validation_check_results_show_(s)
+
+    def _set_dcc_validation_execute_by_shell_(self, option_hook_key):
+        def completed_fnc_(*args):
+            self._set_gui_validation_check_results_show_(s)
+
+        def finished_fnc_(*args):
+            pass
+        #
+        s = ssn_commands.get_option_hook_session(
             bsc_core.KeywordArgumentsOpt(
                 option=dict(
-                    option_hook_key='rsv-task-methods/asset/katana/gen-surface-validation',
+                    option_hook_key=option_hook_key,
                     file=self._scene_file_path,
                     #
-                    **check_kwargs
-                )
-            ).to_string(),
-            block=True
-        )
-        #
-        self._validator = s.get_validator()
-        #
-        self._tree_view_validator_opt.set_results_at(
-            self._rsv_scene_properties,
-            self._validator.get_exists_results()
-        )
-        self._set_publish_enable_refresh_()
-
-    def _set_maya_validation_in_dcc_(self, check_kwargs):
-        s = ssn_commands.set_option_hook_execute(
-            bsc_core.KeywordArgumentsOpt(
-                option=dict(
-                    option_hook_key='rsv-task-methods/asset/maya/gen-surface-validation',
-                    file=self._scene_file_path,
-                    #
-                    **check_kwargs
+                    **self._validation_check_options
                 )
             ).to_string()
         )
+        cmd = s.get_execute_shell_command()
         #
-        self._validator = s.get_validator()
-        #
-        self._tree_view_validator_opt.set_results_at(
-            self._rsv_scene_properties,
-            self._validator.get_results()
+        q_c_s = utl_core.CommandMonitor.set_create(
+            'Validation for {}'.format(self._rsv_task),
+            cmd,
+            parent=self.widget
         )
-        self._set_publish_enable_refresh_()
+        #
+        q_c_s.completed.connect(completed_fnc_)
+        q_c_s.finished.connect(finished_fnc_)
 
-    def _set_maya_validation_in_desktop_(self, check_kwargs):
-        s = ssn_commands.set_option_hook_execute_by_shell(
-            bsc_core.KeywordArgumentsOpt(
-                option=dict(
-                    option_hook_key='rsv-task-methods/asset/maya/gen-surface-validation',
-                    file=self._scene_file_path,
-                    #
-                    **check_kwargs
-                )
-            ).to_string(),
-            block=True
+    @utl_gui_qt_core.set_prx_window_waiting
+    def _set_katana_validation_in_execute_(self):
+        self._set_dcc_validation_execute_(
+            'rsv-task-methods/asset/katana/gen-surface-validation'
         )
-        #
-        self._validator = s.get_validator()
-        #
-        self._tree_view_validator_opt.set_results_at(
-            self._rsv_scene_properties,
-            self._validator.get_exists_results()
+
+    def _set_katana_validation_execute_by_shell_(self):
+        self._set_dcc_validation_execute_by_shell_(
+            'rsv-task-methods/asset/katana/gen-surface-validation'
         )
-        self._set_publish_enable_refresh_()
+
+    @utl_gui_qt_core.set_prx_window_waiting
+    def _set_maya_validation_in_dcc_(self):
+        self._set_dcc_validation_execute_(
+            'rsv-task-methods/asset/maya/gen-surface-validation'
+        )
+
+    def _set_maya_validation_execute_by_shell_(self):
+        self._set_dcc_validation_execute_by_shell_(
+            'rsv-task-methods/asset/maya/gen-surface-validation'
+        )
 
     @utl_gui_qt_core.set_prx_window_waiting
     def _set_publish_execute_(self):
         def yes_fnc_():
             _kwargs = w.get_options_as_kwargs()
+            #
             DccPublisherOpt(
                 self._session,
                 self._scene_file_path,
+                self._validation_info_file,
                 self._rsv_scene_properties,
                 **_kwargs
             ).set_run()
 
         if self._rsv_scene_properties:
             w = utl_core.DialogWindow.set_create(
-                'Publish',
+                'Publish for {}'.format(self._rsv_task),
                 content=(
                     u'1. choose a version type in "version type";\n'
                     u'    a). default is "downstream"\n'
@@ -685,4 +728,5 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
             )
 
             self.widget.hide()
+
             w.set_window_show()
