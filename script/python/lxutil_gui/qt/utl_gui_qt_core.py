@@ -3909,6 +3909,6 @@ if __name__ == '__main__':
     d = bsc_objects.Configure(
         value='/data/e/myworkspace/td/lynxi/script/python/lxutil_gui/qt/.test/_tst__draw_data.yml'
     )
-    QtPixmapDrawer.get_image_by_data(d, '/data/f/test_rvio/test_2.png')
+    QtPixmapDrawer.get_image_by_data(d, '/data/f/test_rvio/test_3.png')
     app.exit(0)
     sys.exit(0)

@@ -482,13 +482,14 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
             file_opt = bsc_core.StorageFileOpt(
                 self._scene_file_path
             )
-            return '{directory}/validation/{date}-{user}/{name}-{tag}.info'.format(
+            return '{directory}/validation/{date}-{user}/{name}-{tag}{ext}.info'.format(
                 **dict(
                     directory=file_opt.directory_path,
                     name=file_opt.name_base,
                     date=bsc_core.SystemMtd.get_date_tag(),
                     user=bsc_core.SystemMtd.get_user_name(),
-                    tag=bsc_core.SystemMtd.get_time_tag_36()
+                    tag=bsc_core.SystemMtd.get_time_tag_36(),
+                    ext=file_opt.ext
                 )
             )
 
@@ -602,7 +603,7 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
                 if application == 'katana':
                     self._set_katana_validation_execute_by_shell_()
                 elif application == 'maya':
-                    self._set_maya_validation_execute_by_shell_(self._validation_check_options)
+                    self._set_maya_validation_execute_by_shell_()
 
     def _set_gui_validation_check_results_show_(self, session):
         self._validation_checker = session.get_validation_checker()
@@ -702,7 +703,7 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
                     u'    a). default is "downstream"\n'
                     u'2. entry description in "description";\n'
                     u'3. choose one or more image or movie file or make a snapshot in "review";\n'
-                    u'    a). support formats: "jpg", "exr", "mov"'
+                    u'    a). support formats: "jpg", "exr", "mov"\n'
                     u'4. choose one or more user in "notice";\n'
                     u'5. press "Confirm" to continue'
                 ),
