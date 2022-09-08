@@ -75,9 +75,11 @@ class AbsTextureWorkspace(object):
 
     def set_lock_at(self, variant, version):
         directory_path = self.get_directory_path_at(variant, version)
-        rsv_methods.PathGroupPermission(
+        rsv_methods.PathPermissionOpt(
             directory_path
-        ).set_all_read_only()
+        ).set_just_read_only_for(
+            ['cg_group', 'coop_grp']
+        )
 
     def get_latest_version(self):
         variant = self.get_current_variant()
@@ -257,7 +259,7 @@ class _VersionController(object):
         bsc_core.StoragePathMtd.set_directory_create(
             self.get_tx_directory_path_at(variant, version)
         )
-
+        #
         utl_core.Log.set_module_result_trace(
             'version create',
             'variant="{}", version="{}"'.format(
@@ -268,9 +270,11 @@ class _VersionController(object):
     def set_version_lock_at(self, variant, version):
         directory_path = self.get_directory_path_at(variant, version)
         #
-        rsv_methods.PathGroupPermission(
+        rsv_methods.PathPermissionOpt(
             directory_path
-        ).set_all_read_only()
+        ).set_just_read_only_for(
+            ['cg_group', 'coop_grp']
+        )
         #
         utl_core.Log.set_module_result_trace(
             'version lock',

@@ -13,7 +13,7 @@ class AssetComparerPanel(utl_gui_pnl_abs_comparer.AbsAssetComparerPanel):
     #
     FNC_GEOMETRY_COMPARER = ktn_fnc_comparers.GeometryComparer
     #
-    DCC_SELECTION_CLS = ktn_core.SceneGraphSelection
+    DCC_SELECTION_CLS = ktn_core.KtnSGSelectionOpt
     DCC_NAMESPACE = 'dcc'
     DCC_OBJ_PATHSEP = '|'
     def __init__(self, *args, **kwargs):

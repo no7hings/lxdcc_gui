@@ -20,7 +20,7 @@ class AssetLookViewerPanel(utl_gui_pnl_abs_look_viewer.AbsAssetLookViewerPanel):
     DCC_SCENE_CLASS = ktn_dcc_objects.Scene
     DCC_FNC_LOOK_IMPORTER_CLASS = ktn_fnc_importers.LookAssImporter
     DCC_SELECTION_CLS = ktn_dcc_objects.Selection
-    DCC_STAGE_SELECTION_CLS = ktn_core.SceneGraphSelection
+    DCC_STAGE_SELECTION_CLS = ktn_core.KtnSGSelectionOpt
     #
     DCC_NAMESPACE = 'dcc'
     #
