@@ -492,7 +492,7 @@ class _QtListWidget(
                     if self._get_value_is_valid_(i_value):
                         values.append(i_value)
                 #
-                cs = bsc_core.MultiplyFileNameMtd.set_merge_to(
+                cs = bsc_core.MultiplyFileMtd.set_merge_to(
                     values,
                     ['*.####.*']
                 )

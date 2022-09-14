@@ -77,7 +77,7 @@ class W(prx_widgets.PrxToolWindow):
             for i_file_path in _:
                 g_p.set_update()
                 i_opt = bsc_core.StorageFileOpt(i_file_path)
-                i_match_args = bsc_core.MultiplyFileNameMtd.get_match_args(
+                i_match_args = bsc_core.MultiplyFileMtd.get_match_args(
                     i_opt.name, name_pattern
                 )
                 if i_match_args:

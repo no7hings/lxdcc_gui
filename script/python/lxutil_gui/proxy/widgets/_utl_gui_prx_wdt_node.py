@@ -616,7 +616,7 @@ class PrxMediasOpenEntry(_PrxStgObjsEntry):
         if s:
             _ = s[0]
             if _:
-                cs = bsc_core.MultiplyFileNameMtd.set_merge_to(
+                cs = bsc_core.MultiplyFileMtd.set_merge_to(
                     _,
                     ['*.####.*']
                 )

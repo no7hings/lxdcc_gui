@@ -389,6 +389,9 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
         ep_0.set_expanded(True)
         ep_0.set_name('check results')
 
+        # v_t = prx_widgets.PrxVToolBar()
+        # ep_0.set_widget_add(v_t)
+
         h_s_0 = prx_widgets.PrxHSplitter()
         ep_0.set_widget_add(h_s_0)
 
