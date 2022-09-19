@@ -2498,8 +2498,10 @@ class QtPainter(QtGui.QPainter):
         if text_color is not None:
             text_color_ = text_color
         #
+        border_color = QtBorderColor.Icon
+        #
         self._set_background_color_(background_color_)
-        self._set_border_color_(text_color_)
+        self._set_border_color_(border_color)
         self._set_border_width_(border_width)
         #
         b_ = border_width / 2
@@ -2531,6 +2533,7 @@ class QtPainter(QtGui.QPainter):
         self._set_font_(
             get_font(size=t_f_s, italic=True)
         )
+        self._set_border_color_(text_color_)
         self.drawText(
             frame_rect,
             QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
