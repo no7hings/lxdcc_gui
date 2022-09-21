@@ -697,6 +697,8 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
                 self._rsv_scene_properties,
                 **_kwargs
             ).set_run()
+            # import time
+            # time.sleep(3)
 
         if self._rsv_scene_properties:
             w = utl_core.DialogWindow.set_create(
@@ -726,6 +728,8 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
                 #
                 use_exec=False
             )
+
+            w.set_yes_completed_notify_enable(True)
 
             w.set_window_close_connect_to(
                 self.widget.show

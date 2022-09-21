@@ -3890,7 +3890,7 @@ class QtPixmapDrawer(object):
             text_size = data.get('draw.text.size')
             text_weight = data.get('draw.text.weight')
             text_color = data.get('draw.text.color')
-            text_rect = QtCore.QRect(x+m, y+m, w/2, h/2)
+            text_rect = QtCore.QRect(x+m, y+m, w, h/2)
             if isinstance(text_content, dict):
                 painter._set_text_draw_by_rect_use_dict_(
                     text_rect, text_content, text_size, text_weight, text_color
@@ -3908,10 +3908,28 @@ class QtPixmapDrawer(object):
 
 if __name__ == '__main__':
     import lxbasic.objects as bsc_objects
+
+    import itertools
+
     app = QtWidgets.QApplication(sys.argv)
-    d = bsc_objects.Configure(
-        value='/data/e/myworkspace/td/lynxi/script/python/lxutil_gui/qt/.test/_tst__draw_data.yml'
-    )
-    QtPixmapDrawer.get_image_by_data(d, '/data/f/test_rvio/test_3.png')
+
+    for i, j in itertools.product(
+        [('high', '/master/hi'), ('shape', '/master/shape')],
+        ['primary', 'ass_asset_color', 'ass_group_color', 'ass_object_color', 'ass_shell_color']
+    ):
+        i_name = '{}-{}'.format(i[0], j)
+        d = bsc_objects.Configure(
+            value='/data/e/myworkspace/td/lynxi/script/python/lxutil_gui/qt/.test/_tst__draw_data.yml'
+        )
+        d.set(
+            'draw.text.content.location', i[1]
+        )
+        d.set(
+            'draw.text.content.aov', j
+        )
+        QtPixmapDrawer.get_image_by_data(
+            d,
+            '/l/resource/td/asset/image/foreground-v001/{}.png'.format(i_name)
+        )
     app.exit(0)
     sys.exit(0)

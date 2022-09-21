@@ -39,6 +39,10 @@ class AbsPrxDialogWindow(
             _utl_gui_qt_wgt_utility.QtCore.Qt.WindowModal
         )
         self._use_thread = True
+        self._notify_when_yes_completed = False
+
+    def set_yes_completed_notify_enable(self, boolean):
+        self._notify_when_yes_completed = boolean
 
     def _set_central_layout_create_(self):
         self._central_widget = _utl_gui_qt_wgt_utility.QtWidget()
@@ -106,6 +110,13 @@ class AbsPrxDialogWindow(
         self._cancel_button.set_width(self.BUTTON_WIDTH)
         self._cancel_button.set_press_clicked_connect_to(self.set_cancel_run)
         #
+        # self._close_button = _utl_gui_prx_wdt_utility.PrxPressItem()
+        # self._close_button.set_visible(False)
+        # self._button_layout.addWidget(self._close_button.widget)
+        # self._close_button.set_name('Close')
+        # self._close_button.set_icon_by_name_text('close')
+        # self._close_button.set_width(self.BUTTON_WIDTH)
+        #
         self._yes_methods = []
         self._no_methods = []
         self._cancel_methods = []
@@ -113,13 +124,30 @@ class AbsPrxDialogWindow(
         self._result = False
         self._kwargs = {}
 
-    def _set_method_run_(self, methods):
+    def _set_completed_(self, scheme):
+        if scheme == 'yes':
+            if self._notify_when_yes_completed is True:
+                self._options_prx_node.set_visible(False)
+                self.set_yes_visible(False)
+                self.set_cancel_visible(False)
+                self.set_content('job is completed, press "Close" to continue')
+                self.set_status(self.ValidatorStatus.Correct)
+                return
+        self.set_window_close_later()
+
+    def _set_failed_(self, log):
+        self._options_prx_node.set_visible(False)
+        self.set_yes_visible(False)
+        self.set_cancel_visible(False)
+        self.set_content(log)
+        self.set_status(self.ValidatorStatus.Error)
+
+    def _set_method_run_(self, methods, scheme):
         def completed_fnc_():
-            self.set_window_close_later()
+            self._set_completed_(scheme)
 
         def failed_fnc_(log):
-            self.set_content(log)
-            self.set_status(self.ValidatorStatus.Error)
+            self._set_failed_(log)
 
         if self._use_thread is True:
             t = self.widget._set_thread_create_()
@@ -133,8 +161,10 @@ class AbsPrxDialogWindow(
             t.start()
         else:
             self.set_waiting_start()
+            #
             for i in methods:
                 i()
+            #
             self.set_waiting_stop()
             self.set_window_close_later()
 
@@ -144,17 +174,17 @@ class AbsPrxDialogWindow(
     def set_no_run(self):
         self._result = False
         self._kwargs = self.get_options_as_kwargs()
-        self._set_method_run_(self._no_methods)
+        self._set_method_run_(self._no_methods, scheme='no')
 
     def set_yes_run(self):
         self._result = True
         self._kwargs = self.get_options_as_kwargs()
-        self._set_method_run_(self._yes_methods)
+        self._set_method_run_(self._yes_methods, scheme='yes')
 
     def set_cancel_run(self):
         self._result = False
         self._kwargs = self.get_options_as_kwargs()
-        self._set_method_run_(self._cancel_methods)
+        self._set_method_run_(self._cancel_methods, scheme='cancel')
 
     def get_result(self):
         return self._result
@@ -237,6 +267,12 @@ class AbsPrxDialogWindow(
 
     def set_print_over_use_thread(self, text):
         self._tip_text_browser.set_print_over_use_thread(text)
+
+    def set_failed(self):
+        pass
+
+    def set_completed(self):
+        pass
 
 
 class PrxDialogWindow0(AbsPrxDialogWindow):

@@ -758,8 +758,8 @@ class PrxStgEntitiesEntry(AbsRsvTypeQtEntry):
 
     def set_shotgun_entity_kwargs(self, shotgun_entity_kwargs):
         self._shotgun_entity_kwargs = shotgun_entity_kwargs
-
         if self._shotgun_entity_kwargs:
+            entity_type = self._shotgun_entity_kwargs['entity_type']
             import lxshotgun.objects as stg_objects
             values = stg_objects.StgConnector().get_shotgun_entities(
                 self._shotgun_entity_kwargs
