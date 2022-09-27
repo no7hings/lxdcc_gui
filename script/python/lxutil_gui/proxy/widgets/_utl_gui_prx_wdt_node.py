@@ -554,6 +554,12 @@ class PrxDirectoriesOpenEntry(_PrxStgObjsEntry):
         )
         self.set_history_key('gui.directories-open')
 
+    def set_locked(self, boolean):
+        self._qt_entry_widget._set_value_entry_enable_(not boolean)
+        self._qt_entry_widget._set_value_entry_drop_enable_(not boolean)
+        self._qt_entry_widget._set_value_entry_choose_enable_(not boolean)
+        self._open_button.widget._set_action_enable_(not boolean)
+
     def _set_open_(self):
         f = utl_gui_qt_core.QtWidgets.QFileDialog()
         options = f.Options()
@@ -561,7 +567,7 @@ class PrxDirectoriesOpenEntry(_PrxStgObjsEntry):
         s = f.getExistingDirectory(
             self.widget,
             'Open Directory',
-            self.get(),
+            self.get()[-1] if self.get() else None,
         )
         if s:
             self.set_append(s)
@@ -571,6 +577,9 @@ class PrxDirectoriesOpenEntry(_PrxStgObjsEntry):
         if value:
             return os.path.isdir(value)
         return False
+
+    def set(self, *args, **kwargs):
+        self._qt_entry_widget._set_values_(args[0])
 
 
 class PrxMediasOpenEntry(_PrxStgObjsEntry):
@@ -2924,15 +2933,13 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             show_history_latest = option.get('show_history_latest')
             if show_history_latest:
                 port.set_history_show_latest()
-
-            lock = option.get('lock') or False
-            if lock is True:
-                port.set_locked(True)
         elif widget_ in ['directories']:
             port = PrxDirectoriesOpenPort(
                 port_path,
                 node_widget=self.widget
             )
+            port.set(value_)
+            port.set_default(value_)
         #
         elif widget_ in ['medias']:
             port = PrxMediasOpenPort(
@@ -2950,10 +2957,6 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             ext_filter = option.get('ext_filter')
             if ext_filter:
                 port.set_ext_filter(ext_filter)
-
-            lock = option.get('lock') or False
-            if lock is True:
-                port.set_locked(True)
         #
         elif widget_ in ['values']:
             port = PrxValuesPort(

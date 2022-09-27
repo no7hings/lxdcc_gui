@@ -1,7 +1,11 @@
 # coding:utf-8
+from lxbasic import bsc_configure, bsc_core
+
 import lxbasic.objects as bsc_objects
 #
 from lxutil import utl_configure, utl_core
+
+from lxutil_gui import utl_gui_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
@@ -9,11 +13,11 @@ import lxutil_gui.qt.widgets as qt_widgets
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
+import lxutil_gui.proxy.operators as utl_prx_operators
+
 import lxresolver.commands as rsv_commands
 
 import lxresolver.operators as rsv_operators
-
-import lxutil_gui.proxy.operators as utl_prx_operators
 
 
 class AbsAssetComparerPanel(
@@ -397,3 +401,312 @@ class AbsAssetComparerPanel(
 
     def _set_checked_look_import_from_surface_(self):
         pass
+
+
+class AbsDccComparerOpt(object):
+    DCC_NAMESPACE = None
+    DCC_NODE_CLS = None
+    DCC_COMPONENT_CLS = None
+    DCC_SELECTION_CLS = None
+    DCC_PATHSEP = None
+    def __init__(self, filter_tree_view, result_tree_view):
+        self._filter_tree_view = filter_tree_view
+        self._result_tree_view = result_tree_view
+        self._obj_add_dict = self._result_tree_view._item_dict
+
+        self._result_tree_view.set_item_select_changed_connect_to(
+            self.set_select
+        )
+
+        self._filter_opt = utl_prx_operators.PrxDccObjTreeViewTagFilterOpt(
+            prx_tree_view_src=self._filter_tree_view,
+            prx_tree_view_tgt=self._result_tree_view,
+            prx_tree_item_cls=prx_widgets.PrxObjTreeItem
+        )
+
+    def set_restore(self):
+        self.set_result_restore()
+        self.set_filter_restore()
+
+    def set_result_restore(self):
+        self._result_tree_view.set_restore()
+
+    def set_filter_restore(self):
+        self._filter_tree_view.set_restore()
+
+    def get_node(self, path_src, path_tgt, status, description):
+        if path_src in self._obj_add_dict:
+            return self._obj_add_dict[path_src]
+        #
+        dcc_path_dag_opt_src = bsc_core.DccPathDagOpt(path_src)
+        dcc_path_dag_opt_tgt = bsc_core.DccPathDagOpt(path_tgt)
+        #
+        dcc_obj_src = self.DCC_NODE_CLS(path_src)
+
+        transform_path_opt_src = dcc_path_dag_opt_src.get_parent()
+        transform_prx_item_src = self.get_transform(transform_path_opt_src)
+        #
+        prx_item_src = transform_prx_item_src.set_child_add(
+            name=[dcc_obj_src.name, description, dcc_path_dag_opt_tgt.name],
+            icon=utl_gui_core.RscIconFile.get('obj/mesh'),
+            tool_tip=[path_src, description, path_tgt],
+        )
+        prx_item_src.set_status(
+            status
+        )
+        self._obj_add_dict[path_src] = prx_item_src
+        prx_item_src.set_gui_dcc_obj(
+            dcc_obj_src, self.DCC_NAMESPACE
+        )
+
+        self._filter_opt.set_register(
+            prx_item_src, [description]
+        )
+        return prx_item_src
+
+    def get_root(self, path_dag_opt):
+        path = path_dag_opt.path
+        if path in self._obj_add_dict:
+            return self._obj_add_dict[path]
+
+        prx_item = self._result_tree_view.set_item_add(
+            name=path_dag_opt.name,
+            icon=utl_gui_core.RscIconFile.get('obj/transform'),
+            tool_tip=path,
+        )
+        prx_item.set_expanded(True)
+        self._obj_add_dict[path] = prx_item
+        return prx_item
+
+    def get_group(self, path_dag_opt):
+        path = path_dag_opt.path
+        if path in self._obj_add_dict:
+            return self._obj_add_dict[path]
+
+        parent_prx_item = self.get_root(path_dag_opt.get_root())
+
+        prx_item = parent_prx_item.set_child_add(
+            name=path_dag_opt.name,
+            icon=utl_gui_core.RscIconFile.get('obj/transform'),
+            tool_tip=path,
+        )
+        prx_item.set_expanded(True)
+        self._obj_add_dict[path] = prx_item
+        return prx_item
+
+    def get_transform(self, path_dag_opt):
+        path = path_dag_opt.path
+        if path in self._obj_add_dict:
+            return self._obj_add_dict[path]
+
+        name = path_dag_opt.name
+
+        parent_prx_item = self.get_group(path_dag_opt.get_parent())
+
+        prx_item = parent_prx_item.set_child_add(
+            name=name,
+            icon=utl_gui_core.RscIconFile.get('obj/transform'),
+            tool_tip=path,
+        )
+        prx_item.set_expanded(True)
+        self._obj_add_dict[path] = prx_item
+        return prx_item
+
+    def set_select(self):
+        pass
+
+    def set_accept(self):
+        pass
+
+
+class AbsGeometryComparer(prx_widgets.PrxSessionWindow):
+    ERROR_STATUS = [
+        utl_configure.DccMeshCheckStatus.DELETION,
+        utl_configure.DccMeshCheckStatus.ADDITION,
+        #
+        utl_configure.DccMeshCheckStatus.NAME_CHANGED,
+        utl_configure.DccMeshCheckStatus.PATH_CHANGED,
+        utl_configure.DccMeshCheckStatus.PATH_EXCHANGED,
+        #
+        utl_configure.DccMeshCheckStatus.FACE_VERTICES_CHANGED,
+    ]
+    WARNING_STATUS = [
+        utl_configure.DccMeshCheckStatus.POINTS_CHANGED,
+    ]
+    DCC_COMPARER_OPT_CLS = None
+    def __init__(self, session, *args, **kwargs):
+        super(AbsGeometryComparer, self).__init__(session, *args, **kwargs)
+
+    def set_all_setup(self):
+        s = prx_widgets.PrxScrollArea()
+        self.set_widget_add(s)
+
+        e_g = prx_widgets.PrxExpandedGroup()
+        s.set_widget_add(e_g)
+        e_g.set_name('viewers')
+        e_g.set_expanded(True)
+
+        h_s = prx_widgets.PrxHSplitter()
+        e_g.set_widget_add(h_s)
+        v_s = prx_widgets.PrxVSplitter()
+        h_s.set_widget_add(v_s)
+        self._filter_tree_view = prx_widgets.PrxTreeView()
+        v_s.set_widget_add(self._filter_tree_view)
+        self._filter_tree_view.set_header_view_create(
+            [('name', 2), ('count', 1)],
+            self.get_definition_window_size()[0]*(1.0/3.0) - 48
+        )
+        #
+        self._sector_chart = prx_widgets.PrxSectorChart()
+        v_s.set_widget_add(self._sector_chart)
+        self._result_tree_view = prx_widgets.PrxTreeView()
+        h_s.set_widget_add(self._result_tree_view)
+        self._result_tree_view.set_header_view_create(
+            [('name', 2), ('description', 1), ('target', 1)],
+            self.get_definition_window_size()[0]*(2.0/3.0) - 48
+        )
+        #
+        self._comparer_opt = self.DCC_COMPARER_OPT_CLS(
+            self._filter_tree_view, self._result_tree_view
+        )
+        #
+        self._options_prx_node = prx_widgets.PrxNode_('options')
+        s.set_widget_add(self._options_prx_node)
+        self._options_prx_node.set_ports_create_by_configure(
+            self._session.configure.get('build.node.options'),
+        )
+
+        self._options_prx_node.set(
+            'refresh', self.set_refresh_all
+        )
+
+        self._set_collapse_update_(
+            collapse_dict={
+                'options': self._options_prx_node,
+            }
+        )
+
+        v_s.set_stretches([1, 2])
+        h_s.set_stretches([1, 2])
+
+        self._resolver = rsv_commands.get_resolver()
+        self._rsv_project = self._resolver.get_rsv_project(
+            project=self._session.option_opt.get('project')
+        )
+        self._rsv_asset = self._rsv_project.get_rsv_entity(
+            asset=self._session.option_opt.get('asset')
+        )
+
+        self.__set_usd_source_file_refresh_()
+        self.__set_usd_target_file_refresh_()
+
+        self.set_refresh_all()
+
+    def __set_usd_source_file_refresh_(self):
+        step = self._session.option_opt.get('source_step')
+        task = self._session.option_opt.get('source_task')
+
+        keyword = 'asset-geometry-usd-var-file'
+        rsv_task = self._rsv_asset.get_rsv_task(
+            step=step, task=task
+        )
+        if rsv_task is not None:
+            file_rsv_unit = rsv_task.get_rsv_unit(
+                keyword=keyword
+            )
+            file_paths = file_rsv_unit.get_result(
+                version='all', extend_variants=dict(var='hi')
+            )
+            self._options_prx_node.set(
+                'usd.source_file', file_paths
+            )
+
+    def __set_usd_target_file_refresh_(self):
+        step = self._session.option_opt.get('step')
+        task = self._session.option_opt.get('task')
+
+        keyword = 'asset-geometry-usd-var-file'
+        rsv_task = self._rsv_asset.get_rsv_task(
+            step=step, task=task
+        )
+        if rsv_task is not None:
+            file_rsv_unit = rsv_task.get_rsv_unit(
+                keyword=keyword
+            )
+            file_paths = file_rsv_unit.get_result(
+                version='all', extend_variants=dict(var='hi')
+            )
+            self._options_prx_node.set(
+                'usd.target_file', file_paths
+            )
+
+    def set_refresh_all(self):
+        import lxusd.fnc.comparers as usd_fnc_comparers
+
+        file_path_src = self._options_prx_node.get('usd.source_file')
+        if not file_path_src:
+            return
+        file_path_tgt = self._options_prx_node.get('usd.target_file')
+        if not file_path_tgt:
+            return
+
+        location = '/master/hi'
+
+        results = usd_fnc_comparers.GeometryComparer(
+            option=dict(
+                file_src=file_path_src,
+                file_tgt=file_path_tgt,
+                #
+                location=location
+            )
+        ).get_results()
+
+        sector_chart_data_dict = {}
+        count = len(results)
+
+        self._comparer_opt.set_restore()
+
+        with utl_core.gui_progress(maximum=count) as g_p:
+            for i_path_src, i_path_tgt, i_description in results:
+                i_keys = i_description.split('+')
+
+                for j_key in i_keys:
+                    sector_chart_data_dict.setdefault(
+                        j_key, []
+                    ).append(
+                        i_path_src
+                    )
+
+                i_status = bsc_configure.ValidatorStatus.Correct
+                for j_key in i_keys:
+                    if j_key in self.ERROR_STATUS:
+                        i_status = bsc_configure.ValidatorStatus.Error
+                        break
+                    elif j_key in self.WARNING_STATUS:
+                        i_status = bsc_configure.ValidatorStatus.Warning
+                        break
+
+                self._comparer_opt.get_node(
+                    i_path_src, i_path_tgt, i_status, i_description
+                )
+                #
+                g_p.set_update()
+        #
+        sector_chart_data = []
+        for i_check_status in utl_configure.DccMeshCheckStatus.ALL:
+            if i_check_status != utl_configure.DccMeshCheckStatus.NON_CHANGED:
+                if i_check_status in sector_chart_data_dict:
+                    sector_chart_data.append(
+                        (i_check_status, count, len(sector_chart_data_dict[i_check_status]))
+                    )
+                else:
+                    sector_chart_data.append(
+                        (i_check_status, count, 0)
+                    )
+        #
+        self._sector_chart.set_chart_data(
+            sector_chart_data,
+            utl_configure.GuiSectorChartMode.Error
+        )
+
+        self._comparer_opt.set_accept()

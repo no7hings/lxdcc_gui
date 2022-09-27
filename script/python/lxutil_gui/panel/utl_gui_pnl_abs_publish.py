@@ -411,7 +411,7 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
         h_s_0.set_stretches([1, 3])
         h_s_0.set_widget_hide_at(0)
 
-        self._tree_view_validator_opt = self.DCC_VALIDATOR_OPT_CLS(
+        self._tree_view_opt = self.DCC_VALIDATOR_OPT_CLS(
             self._filter_tree_view, self._result_tree_view
         )
 
@@ -544,7 +544,7 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
         #
         self._result_tree_view.set_clear()
         if self._scene_file_path:
-            self._tree_view_validator_opt._get_scene_(self._scene_file_path)
+            self._tree_view_opt._get_scene_(self._scene_file_path)
             #
             self._rsv_scene_properties = r.get_rsv_scene_properties_by_any_scene_file_path(self._scene_file_path)
             if self._rsv_scene_properties:
@@ -615,7 +615,7 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
         )
         #
         self._result_tree_view.set_clear()
-        self._tree_view_validator_opt.set_results_at(
+        self._tree_view_opt.set_results_at(
             self._rsv_scene_properties,
             self._validation_checker.get_data()
         )

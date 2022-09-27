@@ -259,6 +259,9 @@ class PrxTreeView(
         self._item_dict.clear()
         self._loading_item_prxes = []
 
+    def set_restore(self):
+        self.set_clear()
+
     def set_item_select_changed_connect_to(self, fnc):
         self.view.itemSelectionChanged.connect(fnc)
 

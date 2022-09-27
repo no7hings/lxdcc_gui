@@ -508,15 +508,12 @@ class _QtListWidget(
     def _set_values_remove_(self, value):
         if value:
             if self._entry_is_enable is True:
-                if value in self._values:
-                    index = self._values.index(value)
-                    self._values.remove(value)
-                    #
-                    item = self.item(index)
-                    self._set_item_widget_delete_(item)
-                    self.takeItem(index)
-
-                # print self._values
+                index = self._values.index(value)
+                self._values.remove(value)
+                #
+                item = self.item(index)
+                self._set_item_widget_delete_(item)
+                self.takeItem(index)
 
     def _set_item_show_deferred_(self, data):
         item_widget, value = data
@@ -549,11 +546,10 @@ class _QtListWidget(
 
     def _set_values_append_(self, value):
         if value:
-            if self._entry_is_enable is True:
-                if value not in self._values:
-                    self._values.append(value)
-                    self._set_item_add_(value)
-                    self.entry_added.emit()
+            if value not in self._values:
+                self._values.append(value)
+                self._set_item_add_(value)
+                self.entry_added.emit()
 
         # print self._values
 
@@ -2238,6 +2234,9 @@ class _QtValuesEntryItem(
     def _set_value_entry_drop_enable_(self, boolean):
         self._value_entry_widget._set_entry_drop_enable_(boolean)
 
+    def _set_value_entry_choose_enable_(self, boolean):
+        self._choose_button._set_action_enable_(boolean)
+
     def _set_values_append_fnc_(self, fnc):
         pass
 
@@ -3407,7 +3406,7 @@ class QtTreeWidgetItem(
                 if name_text_orig is not None:
                     title_text = name_text_orig
                 else:
-                    title_text = self._get_name_text_()
+                    title_text = self._get_name_text_(column)
                 #
                 title_text = title_text.replace(u'<', u'&lt;').replace(u'>', u'&gt;')
                 html = u'<html>\n<body>\n'
@@ -3852,7 +3851,7 @@ class _QtListItemWidget(
             w, h = rect.width(), rect.height()
             i_w_0, i_h_0 = self._get_image_size_()
             if (i_w_0, i_h_0) != (0, 0):
-                i_x, i_y, i_w, i_h = utl_gui_core.SizeMtd.set_fit_to(
+                i_x, i_y, i_w, i_h = bsc_core.SizeMtd.set_fit_to(
                     (i_w_0, i_h_0), (w, h)
                 )
                 if self._get_movie_enable_() is True:

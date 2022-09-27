@@ -648,7 +648,6 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         rsv_task_unit_gui.set_name_dict(show_info_dict)
         r, g, b = bsc_core.TextOpt(task).to_rgb()
         rsv_task_unit_gui.set_name_frame_background_color((r, g, b, 127))
-        print pixmaps
         rsv_task_unit_gui.set_icons_by_pixmap(pixmaps)
         rsv_task_unit_gui.set_tool_tip(
             rsv_task.description

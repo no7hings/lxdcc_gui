@@ -1573,7 +1573,7 @@ class _QtNGGraph(
         o_w, o_h = self.width(), self.height()
         x_0, y_0, x_1, y_1, w_0, h_0 = self._get_ng_graph_frame_args_(ng_nodes)
         #
-        i_x, i_y, i_w, i_h = utl_gui_core.SizeMtd.set_fit_to(
+        i_x, i_y, i_w, i_h = bsc_core.SizeMtd.set_fit_to(
             (w_0, h_0), (o_w, o_h)
         )
         o_r = (i_w*.75)

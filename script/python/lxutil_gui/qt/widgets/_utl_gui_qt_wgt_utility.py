@@ -1664,7 +1664,7 @@ class _QtPopupChooseFrame(
         #
         self._list_widget = _QtPopupListView(self)
         #
-        self._item_count_maximum = 20
+        self._item_count_maximum = 10
         self._item_width, self._item_height = 20, 20
         self._list_widget.setGridSize(QtCore.QSize(self._item_width, self._item_height))
         self._list_widget.setSpacing(2)
@@ -1857,7 +1857,7 @@ class _QtPopupCompletionFrame(
         #
         self._list_widget = _QtPopupListView(self)
         #
-        self._item_count_maximum = 20
+        self._item_count_maximum = 10
         self._item_width, self._item_height = 20, 20
         self._list_widget.setGridSize(QtCore.QSize(self._item_width, self._item_height))
         self._list_widget.setSpacing(2)
@@ -1994,7 +1994,7 @@ class _QtPopupGuideFrame(
         #
         self._list_widget = _QtPopupListView(self)
         #
-        self._item_count_maximum = 20
+        self._item_count_maximum = 10
         self._item_width, self._item_height = 20, 20
         self._list_widget.setGridSize(QtCore.QSize(self._item_width, self._item_height))
         self._list_widget.setSpacing(2)

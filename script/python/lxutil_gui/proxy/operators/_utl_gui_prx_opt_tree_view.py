@@ -250,10 +250,18 @@ class PrxDccObjTreeViewTagFilterOpt(object):
                 i_key,
                 prx_item_tgt
             )
+            count = len(self._filter_content.get(i_key))
             #
-            self._set_registry_src_(i_path, dcc_obj, expand_depth)
+            prx_item_src = self._set_registry_src_(
+                i_path, dcc_obj, expand_depth
+            )
+
+            prx_item_src.set_name(str(count), 1)
 
     def _set_registry_src_(self, path, dcc_obj=None, expand_depth=1):
+        if path in self._obj_add_dict:
+            return self._obj_add_dict[path]
+        #
         path_dag_opt = bsc_core.DccPathDagOpt(path)
         ancestor_paths = path_dag_opt.get_ancestor_paths()
         if ancestor_paths:

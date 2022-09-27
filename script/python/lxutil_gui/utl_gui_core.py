@@ -115,50 +115,6 @@ class ChartMethod(object):
         return math.sqrt(((x1 - x2) ** 2) + ((y1 - y2) ** 2))
 
 
-class SizeMtd(object):
-    @classmethod
-    def set_remap_to(cls, width, height, maximum):
-        maxValue = max([width, height])
-        if maxValue > maximum:
-            if width > height:
-                return maximum, maximum*(float(height)/float(width))
-            elif width < height:
-                return maximum*(float(width)/float(height)), maximum
-        return width, height
-    @classmethod
-    def set_fit_to(cls, size_0, size_1):
-        w0, h0 = size_0
-        w1, h1 = size_1
-        p_0 = float(w0) / float(h0)
-        p_1 = float(w1) / float(h1)
-        smax1 = max(w1, h1)
-        smin1 = min(w1, h1)
-        if p_0 > 1:
-            if p_0 > p_1:
-                w, h = w1, w1/p_0
-            elif p_0 < p_1:
-                w, h = h1*p_0, h1
-            else:
-                w, h = w1, h1
-        elif p_0 < 1:
-            if p_0 > p_1:
-                w, h = w1, w1/p_0
-            elif p_0 < p_1:
-                w, h = h1*p_0, h1
-            else:
-                w, h = w1, h1
-        else:
-            w, h = smin1, smin1
-        x, y = int((w1-w)/2), int((h1-h)/2)
-        return x, y, w, h
-    @classmethod
-    def set_fill_to(cls, size_0, size_1):
-        w0, h0 = size_0
-        w1, h1 = size_1
-        p_0 = float(w0) / float(h0)
-        p_1 = float(w1) / float(h1)
-
-
 class Ellipse2dMtd(object):
     @classmethod
     def get_coord_at_angle(cls, start, radius, angle):

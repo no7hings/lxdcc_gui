@@ -5,7 +5,7 @@ import lxutil.dcc.dcc_objects as utl_dcc_objects
 
 
 class ValidatorOpt(utl_gui_pnl_abs_publish.AbsValidatorOpt):
-    DCC_NAMESPACE = 'katana'
+    DCC_NAMESPACE = 'lynxi'
     DCC_NODE_CLS = utl_dcc_objects.Obj
     DCC_COMPONENT_CLS = utl_dcc_objects.Component
     DCC_SELECTION_CLS = None

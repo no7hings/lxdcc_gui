@@ -3,9 +3,11 @@ from lxutil.dcc.dcc_objects import _utl_dcc_obj_utility
 
 from lxutil import utl_core
 
+import lxutil.dcc.dcc_objects as utl_dcc_objects
+
 from lxutil_prd import utl_prd_objects
 
-from lxutil_gui.panel import utl_gui_pnl_abstract, utl_gui_pnl_abs_utility, utl_gui_pnl_abs_render_submitter, utl_gui_pnl_abs_loader, utl_gui_pnl_abs_node_graph, utl_gui_pnl_abs_publish
+from lxutil_gui.panel import utl_gui_pnl_abstract, utl_gui_pnl_abs_utility, utl_gui_pnl_abs_render_submitter, utl_gui_pnl_abs_loader, utl_gui_pnl_abs_node_graph, utl_gui_pnl_abs_publish, utl_gui_pnl_abs_comparer
 
 
 class SceneBuildToolPanel(utl_gui_pnl_abstract.AbsShotBuildToolPanel):
@@ -61,3 +63,19 @@ class AssetLineup(utl_gui_pnl_abs_node_graph.AbsAssetLineup):
     OPTION_HOOK_KEY = 'tool-panels/asset-lineup'
     def __init__(self, hook_option=None, *args, **kwargs):
         super(AssetLineup, self).__init__(hook_option, *args, **kwargs)
+
+
+class ComparerOpt(utl_gui_pnl_abs_comparer.AbsDccComparerOpt):
+    DCC_NAMESPACE = 'lynxi'
+    DCC_NODE_CLS = utl_dcc_objects.Obj
+    DCC_COMPONENT_CLS = utl_dcc_objects.Component
+    DCC_SELECTION_CLS = None
+    DCC_PATHSEP = '/'
+    def __init__(self, *args, **kwargs):
+        super(ComparerOpt, self).__init__(*args, **kwargs)
+
+
+class GeometryComparer(utl_gui_pnl_abs_comparer.AbsGeometryComparer):
+    DCC_COMPARER_OPT_CLS = ComparerOpt
+    def __init__(self, session, *args, **kwargs):
+        super(GeometryComparer, self).__init__(session, *args, **kwargs)

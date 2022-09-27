@@ -1504,10 +1504,9 @@ class QtSectorChartDrawData(object):
         self._draw_data = self._get_data_(
             data, position, size, align, side_w, mode
         )
-
     @classmethod
     def _get_basic_data_at_(cls, index, subDatum, offset, radius, tape_w, spacing, mode):
-        eR = 4
+        e_r = 4
         ia = 90
         offset_x, offset_y = offset
         explain, maxValue, value = subDatum
@@ -1569,28 +1568,28 @@ class QtSectorChartDrawData(object):
         total_path = rim_path - rim_sub_path
         occupy_path = rim_path - percent_sub_path
         #
-        x1, y1 = cx, out_y + (tape_w - spacing) / 4
-        x2, y2 = x1 + tape_w / 4, y1
-        x3, y3 = x2 + tape_w / 4, y2 + tape_w / 4
-        x4, y4 = x3 + tape_w / 4, y3
+        x1, y1 = cx, out_y + (tape_w - spacing)/4
+        x2, y2 = x1 + tape_w/4, y1
+        x3, y3 = x2 + tape_w/4, y2 + tape_w/4
+        x4, y4 = x3 + tape_w/4, y3
         text_line = QtGui.QPolygon(
-            [QtCore.QPoint(x1, y1), QtCore.QPoint(x2, y2), QtCore.QPoint(x3, y3), QtCore.QPoint(x4 - eR, y4)]
+            [QtCore.QPoint(x1, y1), QtCore.QPoint(x2, y2), QtCore.QPoint(x3, y3), QtCore.QPoint(x4 - e_r, y4)]
         )
-        text_point = QtCore.QPoint(x4 + eR + 4, y4 + 4)
-        text_ellipse = QtCore.QRect(x4 - eR, y4 - eR, eR * 2, eR * 2)
-        return background_rgba, border_rgba, total_path, occupy_path, text_point, text_line, text_ellipse, text
-
+        text_point = QtCore.QPoint(x4 + e_r + 4, y4 + 4)
+        text_ellipse = QtCore.QRect(x4 - e_r, y4 - e_r, e_r * 2, e_r * 2)
+        text_size = tape_w/3
+        return background_rgba, border_rgba, total_path, occupy_path, text_point, text_line, text_ellipse, text_size, text
     @classmethod
     def _get_basic_data_(cls, data, offset, radius, tape_w, spacing, mode):
         lis = []
         if data:
             for i_index, i_datum in enumerate(data):
-                subDrawDatum = cls._get_basic_data_at_(
-                    i_index, i_datum, offset, radius, tape_w, spacing, mode
+                lis.append(
+                    cls._get_basic_data_at_(
+                        i_index, i_datum, offset, radius, tape_w, spacing, mode
+                    )
                 )
-                lis.append(subDrawDatum)
         return lis
-
     @classmethod
     def _get_data_(cls, data, position, size, align, side_w, mode):
         if data:
@@ -1601,7 +1600,7 @@ class QtSectorChartDrawData(object):
             align_h, align_v = align
             #
             radius = int(min(size_w, size_h)) - side_w * 2
-            tape_w = int(radius / count * .75)
+            tape_w = int(radius/count*.75)
             #
             spacing = 8
             #
@@ -1754,7 +1753,7 @@ class QtRadarChartDrawData(object):
         return map_brush, map_polygon_src, map_polygon_tgt
     @classmethod
     def _get_mark_data_at_(cls, index, index_maximum, value_maximum, data, offset_x, offset_y, radius, spacing):
-        eR = 4
+        e_r = 4
         ia = -90
         explain, value_src, value_tgt = data
         #
@@ -1817,7 +1816,7 @@ class QtRadarChartDrawData(object):
         #
         text_point_0 = QtCore.QPoint(text_x_0 - text_w_0 / 2, text_y_0 - text_h / 2)
         text_point_1 = QtCore.QPoint(text_x_0 - text_w_1 / 2, text_y_0 + text_h / 2)
-        mark_ellipse = QtCore.QRect(map_x_0 - eR, map_y_0 - eR, eR * 2, eR * 2)
+        mark_ellipse = QtCore.QRect(map_x_0 - e_r, map_y_0 - e_r, e_r * 2, e_r * 2)
         #
         point_tgt = QtCore.QPoint(map_x_0, map_y_0)
         point_src = QtCore.QPoint(map_x_1, map_y_1)
@@ -1830,16 +1829,17 @@ class QtRadarChartDrawData(object):
             index_maximum = len(data)
             value_maximum = max([i[2] for i in data])
             for i_index, i_data in enumerate(data):
-                subDrawDatum = cls._get_mark_data_at_(
-                    i_index,
-                    index_maximum,
-                    value_maximum,
-                    i_data,
-                    offset_x, offset_y,
-                    radius,
-                    spacing
+                lis.append(
+                    cls._get_mark_data_at_(
+                        i_index,
+                        index_maximum,
+                        value_maximum,
+                        i_data,
+                        offset_x, offset_y,
+                        radius,
+                        spacing
+                    )
                 )
-                lis.append(subDrawDatum)
         return lis
 
     def get(self):
@@ -2936,7 +2936,7 @@ class QtPainter(QtGui.QPainter):
                 (
                     i_background_rgba, i_border_rgba,
                     i_total_path, i_occupy_path,
-                    i_text_point, i_text_line, i_text_ellipse, i_text
+                    i_text_point, i_text_line, i_text_ellipse, i_text_size, i_text
                 ) = i
                 #
                 self._set_background_color_(background_color)
@@ -2953,6 +2953,10 @@ class QtPainter(QtGui.QPainter):
                 #
                 self.drawPolyline(i_text_line)
                 self.drawEllipse(i_text_ellipse)
+                #
+                self._set_font_(
+                    get_font()
+                )
                 #
                 self.drawText(i_text_point, i_text)
 
