@@ -425,14 +425,9 @@ class AbsDccComparerOpt(object):
         )
 
     def set_restore(self):
-        self.set_result_restore()
-        self.set_filter_restore()
-
-    def set_result_restore(self):
-        self._result_tree_view.set_restore()
-
-    def set_filter_restore(self):
         self._filter_tree_view.set_restore()
+        self._result_tree_view.set_restore()
+        self._filter_opt.set_restore()
 
     def get_node(self, path_src, path_tgt, status, description):
         if path_src in self._obj_add_dict:

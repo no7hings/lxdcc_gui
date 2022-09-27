@@ -507,7 +507,7 @@ class QtTreeWidget(
         self.setEditTriggers(self.NoEditTriggers)
         self.setDragDropMode(self.DragOnly)
         self.setSelectionMode(self.ExtendedSelection)
-        self.setWordWrap(True)
+        # self.setWordWrap(True)
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.setItemDelegate(
             _utl_gui_qt_wgt_utility.QtStyledItemDelegate()
