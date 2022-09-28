@@ -5,7 +5,7 @@ from lxbasic import bsc_configure, bsc_core
 
 from lxutil import utl_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_chart
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_chart
 
 from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wdt_node
 
@@ -35,11 +35,14 @@ class AbsPrxDialogWindow(
             self.widget.setWindowFlags(
                 _utl_gui_qt_wgt_utility.QtCore.Qt.Window | _utl_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
             )
+        #
         self.widget.setWindowModality(
             _utl_gui_qt_wgt_utility.QtCore.Qt.WindowModal
         )
         self._use_thread = True
         self._notify_when_yes_completed = False
+
+        self._completed_content = 'process is completed, press "Close" to continue'
 
     def set_yes_completed_notify_enable(self, boolean):
         self._notify_when_yes_completed = boolean
@@ -51,7 +54,18 @@ class AbsPrxDialogWindow(
 
     def _set_build_(self):
         self._set_central_layout_create_()
+        #
         self._set_waiting_def_init_()
+        #
+        self._sub_label_item = _utl_gui_qt_wgt_item._QtTextItem()
+        self._central_layout.addWidget(self._sub_label_item)
+        self._sub_label_item.setVisible(False)
+        self._sub_label_item.setMaximumHeight(20)
+        self._sub_label_item.setMinimumHeight(20)
+        self._sub_label_item._set_name_text_option_(
+            utl_gui_qt_core.QtCore.Qt.AlignHCenter | utl_gui_qt_core.QtCore.Qt.AlignVCenter
+        )
+        #
         qt_progress_bar = self.PROGRESS_WIDGET_CLASS()
         self._set_progresses_def_init_(qt_progress_bar)
         self._central_layout.addWidget(qt_progress_bar)
@@ -124,13 +138,20 @@ class AbsPrxDialogWindow(
         self._result = False
         self._kwargs = {}
 
+    def set_sub_label(self, text):
+        self._sub_label_item.setVisible(True)
+        self._sub_label_item._set_name_text_(text)
+
+    def set_completed_content(self, text):
+        self._completed_content = text
+
     def _set_completed_(self, scheme):
         if scheme == 'yes':
             if self._notify_when_yes_completed is True:
                 self._options_prx_node.set_visible(False)
                 self.set_yes_visible(False)
                 self.set_cancel_visible(False)
-                self.set_content('job is completed, press "Close" to continue')
+                self.set_content(self._completed_content)
                 self.set_status(self.ValidatorStatus.Correct)
                 return
         self.set_window_close_later()

@@ -459,7 +459,7 @@ class _PrxStgObjsEntry(AbsRsvTypeQtEntry):
         self._ext_filter = ext_filter
 
     def set_append(self, raw):
-        self._qt_entry_widget._set_values_append_(
+        self._qt_entry_widget._set_value_append_(
             raw
         )
 
@@ -505,7 +505,10 @@ class _PrxStgObjsEntry(AbsRsvTypeQtEntry):
     def set_history_show_latest(self):
         _ = utl_core.History.get_latest(self._history_key)
         if _:
-            self._qt_entry_widget._set_values_append_(_)
+            self._qt_entry_widget._set_value_append_(_)
+
+    def set_history_visible(self, boolean):
+        pass
 
 
 class PrxFilesOpenEntry(_PrxStgObjsEntry):
@@ -560,6 +563,9 @@ class PrxDirectoriesOpenEntry(_PrxStgObjsEntry):
         self._qt_entry_widget._set_value_entry_choose_enable_(not boolean)
         self._open_button.widget._set_action_enable_(not boolean)
 
+    def set_history_visible(self, boolean):
+        self._qt_entry_widget._set_value_entry_choose_visible_(boolean)
+
     def _set_open_(self):
         f = utl_gui_qt_core.QtWidgets.QFileDialog()
         options = f.Options()
@@ -579,6 +585,7 @@ class PrxDirectoriesOpenEntry(_PrxStgObjsEntry):
         return False
 
     def set(self, *args, **kwargs):
+        self._qt_entry_widget._set_values_clear_()
         self._qt_entry_widget._set_values_(args[0])
 
 
@@ -700,7 +707,7 @@ class PrxValuesEntry(AbsRsvTypeQtEntry):
         pass
 
     def set_append(self, value):
-        self._qt_entry_widget._set_values_append_(
+        self._qt_entry_widget._set_value_append_(
             value
         )
 
@@ -761,7 +768,7 @@ class PrxStgEntitiesEntry(AbsRsvTypeQtEntry):
         pass
 
     def set_append(self, value):
-        self._qt_entry_widget._set_values_append_(
+        self._qt_entry_widget._set_value_append_(
             value
         )
 
@@ -2296,6 +2303,9 @@ class PrxDirectoriesOpenPort(AbsPrxTypePort):
     def __init__(self, *args, **kwargs):
         super(PrxDirectoriesOpenPort, self).__init__(*args, **kwargs)
 
+    def set_history_visible(self, boolean):
+        self._prx_port_entry.set_history_visible(boolean)
+
 
 class PrxMediasOpenPort(AbsPrxTypePort):
     ENABLE_CLASS = _PrxPortStatus
@@ -2940,6 +2950,9 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             )
             port.set(value_)
             port.set_default(value_)
+
+            if 'history_visible' in option:
+                port.set_history_visible(option['history_visible'])
         #
         elif widget_ in ['medias']:
             port = PrxMediasOpenPort(

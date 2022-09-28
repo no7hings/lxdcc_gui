@@ -95,6 +95,22 @@ class QtWidget(
                     border_width=2,
                     border_radius=2
                 )
+            elif self._status in [
+                bsc_configure.ValidatorStatus.Active
+            ]:
+                pox_x, pos_y = 0, 0
+                width, height = self.width(), self.height()
+                frame_rect = QtCore.QRect(
+                    pox_x, pos_y, width, height
+                )
+                #
+                painter._set_frame_draw_by_rect_(
+                    frame_rect,
+                    border_color=(63, 127, 255, 255),
+                    background_color=(0, 0, 0, 0),
+                    border_width=2,
+                    border_radius=2
+                )
 
 
 class _QtLine(

@@ -457,7 +457,7 @@ class _QtListWidget(
         text = QtWidgets.QApplication.clipboard().text()
         if text:
             values = [i.strip() for i in text.split('\n')]
-            [self._set_values_append_(i) for i in values]
+            [self._set_value_append_(i) for i in values]
 
     def _set_action_cut_(self):
         selected_item_widgets = self._get_selected_item_widgets_()
@@ -466,7 +466,7 @@ class _QtListWidget(
             QtWidgets.QApplication.clipboard().setText(
                 '\n'.join(values)
             )
-            [self._set_values_remove_(i) for i in values]
+            [self._set_value_delete_(i) for i in values]
 
     def _set_action_select_all_(self):
         self._set_all_items_selected_(True)
@@ -496,16 +496,16 @@ class _QtListWidget(
                     values,
                     ['*.####.*']
                 )
-                [self._set_values_append_(i) for i in cs]
+                [self._set_value_append_(i) for i in cs]
 
     def _set_action_delete_execute_(self, event):
         selected_item_widgets = self._get_selected_item_widgets_()
         if selected_item_widgets:
             for i in selected_item_widgets:
                 i_value = i._get_name_text_()
-                self._set_values_remove_(i_value)
+                self._set_value_delete_(i_value)
 
-    def _set_values_remove_(self, value):
+    def _set_value_delete_(self, value):
         if value:
             if self._entry_is_enable is True:
                 index = self._values.index(value)
@@ -514,6 +514,17 @@ class _QtListWidget(
                 item = self.item(index)
                 self._set_item_widget_delete_(item)
                 self.takeItem(index)
+
+    def _set_value_append_(self, value):
+        if value:
+            if value not in self._values:
+                self._values.append(value)
+                self._set_item_add_(value)
+                self.entry_added.emit()
+
+    def _set_values_clear_(self):
+        self._values = []
+        self._set_clear_()
 
     def _set_item_show_deferred_(self, data):
         item_widget, value = data
@@ -529,7 +540,7 @@ class _QtListWidget(
             self._set_item_show_deferred_(data)
 
         def delete_fnc_():
-            self._set_values_remove_(value)
+            self._set_value_delete_(value)
 
         item_widget = _utl_gui_qt_wgt_utility._QtHItem()
         item_widget._set_delete_enable_(True)
@@ -544,18 +555,9 @@ class _QtListWidget(
             cache_fnc_, build_fnc_
         )
 
-    def _set_values_append_(self, value):
-        if value:
-            if value not in self._values:
-                self._values.append(value)
-                self._set_item_add_(value)
-                self.entry_added.emit()
-
-        # print self._values
-
     def _set_values_(self, values):
         self._set_clear_()
-        [self._set_values_append_(i) for i in values]
+        [self._set_value_append_(i) for i in values]
 
     def _set_value_icon_file_path_(self, file_path):
         pass
@@ -919,6 +921,9 @@ class _QtIconPressItem(
                 self._action_state_rect,
                 utl_gui_core.RscIconFile.get('state-disable')
             )
+
+    def _set_visible_(self, boolean):
+        self.setVisible(boolean)
 
 
 class _QtPressItem(
@@ -2225,10 +2230,7 @@ class _QtValuesEntryItem(
         super(_QtValuesEntryItem, self)._set_value_entry_enable_(boolean)
 
         self._value_entry_widget._set_entry_enable_(boolean)
-
-        self._frame_background_color = [
-            QtBackgroundColor.Basic, QtBackgroundColor.Dark
-        ][boolean]
+        self._frame_background_color = [QtBackgroundColor.Basic, QtBackgroundColor.Dark][boolean]
         self._set_wgt_update_draw_()
 
     def _set_value_entry_drop_enable_(self, boolean):
@@ -2237,17 +2239,23 @@ class _QtValuesEntryItem(
     def _set_value_entry_choose_enable_(self, boolean):
         self._choose_button._set_action_enable_(boolean)
 
+    def _set_value_entry_choose_visible_(self, boolean):
+        self._choose_button._set_visible_(boolean)
+
     def _set_values_append_fnc_(self, fnc):
         pass
 
-    def _set_values_append_(self, value):
-        self._value_entry_widget._set_values_append_(value)
+    def _set_value_append_(self, value):
+        self._value_entry_widget._set_value_append_(value)
 
     def _set_values_(self, values):
         self._value_entry_widget._set_values_(values)
 
     def _get_values_(self):
         return self._value_entry_widget._get_values_()
+
+    def _set_values_clear_(self):
+        self._value_entry_widget._set_values_clear_()
 
     def _set_value_icon_file_path_(self):
         pass
@@ -2262,7 +2270,7 @@ class _QtValuesEntryItem(
         self._choose_button._set_icon_file_path_(file_path)
 
     def _set_choose_current_(self, value):
-        self._set_values_append_(value)
+        self._set_value_append_(value)
 
     def _get_choose_current_(self):
         return self._get_values_()
@@ -3196,6 +3204,8 @@ class QtTreeWidgetItem(
                     background_color = Color.WARNING
                 elif status == self.ValidatorStatus.Error:
                     background_color = Color.ERROR
+                elif status == self.ValidatorStatus.Active:
+                    background_color = Color.ACTIVE
                 else:
                     raise TypeError()
                 #
@@ -3236,6 +3246,8 @@ class QtTreeWidgetItem(
             self.setForeground(column, QtGui.QBrush(Color.WARNING))
         elif status == self.ValidatorStatus.Error:
             self.setForeground(column, QtGui.QBrush(Color.ERROR))
+        elif status == self.ValidatorStatus.Active:
+            self.setForeground(column, QtGui.QBrush(Color.ACTIVE))
         else:
             raise TypeError()
 

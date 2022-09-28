@@ -25,381 +25,15 @@ from lxutil_gui import utl_gui_core
 
 import lxresolver.methods as rsv_methods
 
+import lxutil.rsv.objects as utl_rsv_objects
 
-class AbsTextureWorkspace(object):
-    def __init__(self, rsv_task):
-        self._resolver = rsv_commands.get_resolver()
 
-        self._rsv_task = rsv_task
-
-        self._variant = None
-
-        self._version = None
-
-        self._work_texture_base_directory_rsv_unit = self._rsv_task.get_rsv_unit(
-            keyword='asset-work-texture-base-dir'
-        )
-
-        self._work_texture_version_directory_rsv_unit = self._rsv_task.get_rsv_unit(
-            keyword='asset-work-texture-version-dir'
-        )
-        self._work_texture_src_directory_rsv_unit = self._rsv_task.get_rsv_unit(
-            keyword='asset-work-texture-src-dir'
-        )
-        self._work_texture_tx_directory_rsv_unit = self._rsv_task.get_rsv_unit(
-            keyword='asset-work-texture-tx-dir'
-        )
-        self._work_texture_configure_file_rsv_unit = self._rsv_task.get_rsv_unit(
-            keyword='asset-work-texture-workspace-file'
-        )
-
-        self._configure_file_path = self.get_configure_file_path()
-        self._configure_file_opt = bsc_core.StorageFileOpt(self._configure_file_path)
-
-    def set_create_at(self, variant, version):
-        if version == 'new':
-            version = self.get_new_version()
-        #
-        self.set_variant(variant)
-        self.set_version(version)
-        #
-        bsc_core.StoragePathMtd.set_directory_create(
-            self.get_directory_path_at(variant, version)
-        )
-        bsc_core.StoragePathMtd.set_directory_create(
-            self.get_src_directory_path_at(variant, version)
-        )
-        bsc_core.StoragePathMtd.set_directory_create(
-            self.get_tx_directory_path_at(variant, version)
-        )
-
-    def set_lock_at(self, variant, version):
-        directory_path = self.get_directory_path_at(variant, version)
-        rsv_methods.PathPermissionOpt(
-            directory_path
-        ).set_just_read_only_for(
-            ['cg_group', 'coop_grp']
-        )
-
-    def get_latest_version(self):
-        variant = self.get_current_variant()
-        return self._work_texture_version_directory_rsv_unit.get_latest_version(
-            extend_variants=dict(variant=variant)
-        )
-
-    def get_new_version(self):
-        variant = self.get_current_variant()
-        return self._work_texture_version_directory_rsv_unit.get_new_version(
-            extend_variants=dict(variant=variant)
-        )
-
-    def set_load(self, variant, version):
-        self.set_variant(variant)
-        self.set_version(version)
-
-    def get_configure_file_path(self):
-        result = self._work_texture_configure_file_rsv_unit.get_result()
-        if result is None:
-            result = self._work_texture_configure_file_rsv_unit.get_result(version='new')
-        return result
-
-    def get_directory_path_at(self, variant, version):
-        return self._work_texture_version_directory_rsv_unit.get_result(
-            version=version,
-            extend_variants=dict(variant=variant)
-        )
-
-    def get_src_directory_path_at(self, variant, version):
-        return self._work_texture_src_directory_rsv_unit.get_result(
-            version=version,
-            extend_variants=dict(variant=variant)
-        )
-
-    def get_tx_directory_path_at(self, variant, version):
-        return self._work_texture_tx_directory_rsv_unit.get_result(
-            version=version,
-            extend_variants=dict(variant=variant)
-        )
-
-    def get_current_directory_path(self):
-        variant = self.get_current_variant()
-        version = self.get_current_version()
-        return self.get_directory_path_at(variant, version)
-
-    def get_current_src_directory_path(self):
-        variant = self.get_current_variant()
-        version = self.get_current_version()
-        return self.get_src_directory_path_at(variant, version)
-
-    def get_current_tx_directory_path(self):
-        variant = self.get_current_variant()
-        version = self.get_current_version()
-        return self.get_tx_directory_path_at(variant, version)
-
-    def get_current_variant(self):
-        return self._variant
-
-    def set_variant(self, variant):
-        self._variant = variant
-
-    def set_version(self, version):
-        self._version = version
-
-    def get_current_version(self):
-        return self._version
-
-    def get_all_versions(self):
-        variant = self.get_current_variant()
-        return self._work_texture_version_directory_rsv_unit.get_all_exists_versions(
-            extend_variants=dict(variant=variant)
-        )
-
-    def _set_dcc_version_(self, version):
-        raise NotImplementedError()
-
-    def _get_dcc_version_(self):
-        raise NotImplementedError()
-
-    def _set_dcc_variant_(self, variant):
-        raise NotImplementedError()
-
-    def _get_dcc_variant_(self):
-        raise NotImplementedError()
-
-    def _set_dcc_directory_(self, directory):
-        pass
-
-    def get_base_directory_path(self):
-        result = self._work_texture_base_directory_rsv_unit.get_result()
-        if result is None:
-            result = self._work_texture_base_directory_rsv_unit.get_result(version='new')
-        return result
-
-    def get_kwargs_by_directory_path(self, directory_path):
-        for i_rsv_unit in [
-            self._work_texture_src_directory_rsv_unit,
-            self._work_texture_tx_directory_rsv_unit
-        ]:
-            i_properties = i_rsv_unit.get_properties_by_result(directory_path)
-            if i_properties:
-                return i_properties.get_value()
-
-    def get_search_directory_args(self, directory_path):
-        kwargs = self.get_kwargs_by_directory_path(directory_path)
-        if kwargs:
-            kwargs_0, kwargs_1 = copy.copy(kwargs), copy.copy(kwargs)
-            kwargs_0['keyword'], kwargs_1['keyword'] = 'asset-work-texture-src-dir', 'asset-work-texture-tx-dir'
-            return self._resolver.get_result(**kwargs_0), self._resolver.get_result(**kwargs_1)
-    @classmethod
-    def get_is_read_only(cls, directory_path):
-        return rsv_methods.PathGroupPermission(
-            directory_path
-        ).get_is_read_only(
-            'srf_grp'
-        )
-
-    def get_current_is_read_only(self):
-        return self.get_is_read_only(
-            self.get_current_directory_path()
-        )
-
-    def get_is_read_only_at(self, variant, version):
-        directory_path = self.get_directory_path_at(variant, version)
-        return self.get_is_read_only(directory_path)
-
-
-class _VersionController(object):
-    def __init__(self, rsv_task):
-        self._resolver = rsv_commands.get_resolver()
-
-        self._rsv_task = rsv_task
-
-        self._variant = None
-
-        self._version = None
-
-        self._work_texture_version_directory_rsv_unit = self._rsv_task.get_rsv_unit(
-            keyword='asset-work-texture-version-dir'
-        )
-        self._work_texture_src_directory_rsv_unit = self._rsv_task.get_rsv_unit(
-            keyword='asset-work-texture-src-dir'
-        )
-        self._work_texture_tx_directory_rsv_unit = self._rsv_task.get_rsv_unit(
-            keyword='asset-work-texture-tx-dir'
-        )
-
-    def get_directory_path_at(self, variant, version):
-        return self._work_texture_version_directory_rsv_unit.get_result(
-            version=version,
-            extend_variants=dict(variant=variant)
-        )
-
-    def get_src_directory_path_at(self, variant, version):
-        return self._work_texture_src_directory_rsv_unit.get_result(
-            version=version,
-            extend_variants=dict(variant=variant)
-        )
-
-    def get_tx_directory_path_at(self, variant, version):
-        return self._work_texture_tx_directory_rsv_unit.get_result(
-            version=version,
-            extend_variants=dict(variant=variant)
-        )
-
-    def set_version_create_at(self, variant, version):
-        if version == 'new':
-            version = self.get_new_version_at(variant)
-        #
-        bsc_core.StoragePathMtd.set_directory_create(
-            self.get_directory_path_at(variant, version)
-        )
-        bsc_core.StoragePathMtd.set_directory_create(
-            self.get_src_directory_path_at(variant, version)
-        )
-        bsc_core.StoragePathMtd.set_directory_create(
-            self.get_tx_directory_path_at(variant, version)
-        )
-        #
-        utl_core.Log.set_module_result_trace(
-            'version create',
-            'variant="{}", version="{}"'.format(
-                variant, version
-            )
-        )
-
-    def set_version_lock_at(self, variant, version):
-        directory_path = self.get_directory_path_at(variant, version)
-        #
-        self.set_directory_locked(directory_path)
-        #
-        utl_core.Log.set_module_result_trace(
-            'version lock',
-            'variant="{}", version="{}"'.format(
-                variant, version
-            )
-        )
-    @classmethod
-    def set_directory_locked(cls, directory_path):
-        rsv_methods.PathPermissionOpt(
-            directory_path
-        ).set_just_read_only_for(
-            ['cg_group', 'coop_grp']
-        )
-
-    def set_current_variant(self, variant):
-        self._variant = variant
-
-    def set_current_version(self, version):
-        self._version = version
-
-    def get_current_variant(self):
-        return self._variant
-
-    def get_current_version(self):
-        return self._version
-
-    def get_latest_version_at(self, variant):
-        return self._work_texture_version_directory_rsv_unit.get_latest_version(
-            extend_variants=dict(variant=variant)
-        )
-
-    def get_new_version_at(self, variant):
-        return self._work_texture_version_directory_rsv_unit.get_new_version(
-            extend_variants=dict(variant=variant)
-        )
-
-    def get_all_versions_at(self, variant):
-        return self._work_texture_version_directory_rsv_unit.get_all_exists_versions(
-            extend_variants=dict(variant=variant)
-        )
-
-    def get_all_locked_versions_at(self, variant):
-        matches = self._work_texture_version_directory_rsv_unit.get_all_exists_matches(
-            extend_variants=dict(variant=variant)
-        )
-        list_ = []
-        for i in matches:
-            i_result, i_variants = i
-            if bsc_core.StoragePathMtd.get_is_writeable(i_result) is False:
-                list_.append(i_variants['version'])
-        return list_
-
-    def get_all_unlocked_versions_at(self, variant):
-        matches = self._work_texture_version_directory_rsv_unit.get_all_exists_matches(
-            extend_variants=dict(variant=variant)
-        )
-        list_ = []
-        for i in matches:
-            i_result, i_variants = i
-            if bsc_core.StoragePathMtd.get_is_writeable(i_result) is True:
-                list_.append(i_variants['version'])
-        return list_
-
-    def get_all_directories(self, dcc_objs):
-        rsv_project = self._rsv_task.get_rsv_project()
-
-        directory_keyword = 'asset-work-texture-version-dir'
-
-        file_keywords = [
-            'asset-work-texture-src-dir',
-            'asset-work-texture-tx-dir'
-        ]
-
-        directory_pattern = rsv_project.get_pattern(directory_keyword)
-
-        check_pattern_opts = []
-        for i_k in file_keywords:
-            i_p = rsv_project.get_pattern(
-                i_k
-            )
-            i_check_p = i_p + '/{extra}'
-            i_check_p_opt = bsc_core.ParsePatternOpt(
-                i_check_p
-            )
-            i_check_p_opt.set_update(
-                **dict(root=rsv_project.get('root'))
-            )
-            check_pattern_opts.append(i_check_p_opt)
-
-        set_ = set()
-
-        file_paths = set([i_v for i in dcc_objs for i_k, i_v in i.reference_raw.items()])
-        for i_file_path in file_paths:
-            for i_check_p_opt in check_pattern_opts:
-                i_variants = i_check_p_opt.get_variants(i_file_path)
-                if i_variants is not None:
-                    i_directory_path = directory_pattern.format(**i_variants)
-                    set_.add(i_directory_path)
-                    break
-
-        return list(set_)
-
-    def set_all_directories_locked(self, dcc_objs):
-        pass
-
-    def get_kwargs_by_directory_path(self, directory_path):
-        for i_rsv_unit in [
-            self._work_texture_src_directory_rsv_unit,
-            self._work_texture_tx_directory_rsv_unit
-        ]:
-            i_properties = i_rsv_unit.get_properties_by_result(directory_path)
-            if i_properties:
-                return i_properties.get_value()
-
-    def get_search_directory_args(self, directory_path):
-        kwargs = self.get_kwargs_by_directory_path(directory_path)
-        if kwargs:
-            kwargs_0, kwargs_1 = copy.copy(kwargs), copy.copy(kwargs)
-            kwargs_0['keyword'], kwargs_1['keyword'] = 'asset-work-texture-src-dir', 'asset-work-texture-tx-dir'
-            return self._resolver.get_result(**kwargs_0), self._resolver.get_result(**kwargs_1)
-
-
-class AbsTextureWorkspaceManager(prx_widgets.PrxSessionWindow):
+class AbsAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
     DCC_NAMESPACE = None
     DCC_SELECTION_CLS = None
     TEXTURE_WORKSPACE_CLS = None
     def __init__(self, session, *args, **kwargs):
-        super(AbsTextureWorkspaceManager, self).__init__(session, *args, **kwargs)
+        super(AbsAssetWorkspaceTextureManager, self).__init__(session, *args, **kwargs)
 
     def set_variants_restore(self):
         self._dcc_texture_references = None
@@ -449,6 +83,10 @@ class AbsTextureWorkspaceManager(prx_widgets.PrxSessionWindow):
             'texture.create.execute_us_deadline', self._set_wsp_tx_create_execute_by_deadline_
         )
 
+        self._options_prx_node.set(
+            'refresh', self._set_texture_workspace_update_
+        )
+
         self._set_collapse_update_(
             collapse_dict={
                 'options': self._options_prx_node,
@@ -469,9 +107,9 @@ class AbsTextureWorkspaceManager(prx_widgets.PrxSessionWindow):
         self._dcc_objs = []
 
     def _set_texture_workspace_update_(self):
-        self._version_controller = _VersionController(self._rsv_task)
+        self._rsv_workspace_texture_opt = utl_rsv_objects.RsvAssetWorkspaceTextureOpt(self._rsv_task)
         current_variant = 'main'
-        self._version_controller.set_current_variant(current_variant)
+        self._rsv_workspace_texture_opt.set_current_variant(current_variant)
         if self._set_workspace_check_(current_variant) is True:
             self._options_prx_node.set(
                 'resolver.task', self._rsv_task.path
@@ -489,7 +127,7 @@ class AbsTextureWorkspaceManager(prx_widgets.PrxSessionWindow):
         variant = self._options_prx_node.get(
             'control.variant'
         )
-        unlocked_versions = self._version_controller.get_all_unlocked_versions_at(
+        unlocked_versions = self._rsv_workspace_texture_opt.get_all_unlocked_versions_at(
             variant
         )
         if unlocked_versions:
@@ -505,35 +143,30 @@ class AbsTextureWorkspaceManager(prx_widgets.PrxSessionWindow):
         variant = self._options_prx_node.get(
             'control.variant'
         )
-        version = self._options_prx_node.get(
-            'control.version'
+        unlocked_versions = self._rsv_workspace_texture_opt.get_all_unlocked_versions_at(
+            variant
         )
-        if version != 'None':
+        if unlocked_versions:
             self._options_prx_node.set(
-                'texture.directory.source', self._version_controller.get_src_directory_path_at(
-                    variant,
-                    version
-                )
-            )
-            self._options_prx_node.set(
-                'texture.directory.target', self._version_controller.get_tx_directory_path_at(
-                    variant,
-                    version
-                )
+                'texture.directories',
+                [self._rsv_workspace_texture_opt.get_directory_path_at(variant, i) for i in unlocked_versions]
             )
         else:
-            self._options_prx_node.set('')
-            self._options_prx_node.set('')
+            if unlocked_versions:
+                self._options_prx_node.set(
+                    'texture.directories',
+                    []
+                )
 
     def _set_workspace_check_(self, current_variant):
         def yes_fnc_():
-            self._version_controller.set_version_create_at(
+            self._rsv_workspace_texture_opt.set_version_create_at(
                 current_variant, 'new'
             )
 
         self._is_disable = True
 
-        directory_path = self._version_controller.get_directory_path_at(
+        directory_path = self._rsv_workspace_texture_opt.get_directory_path_at(
             current_variant, 'latest'
         )
         if directory_path:
@@ -563,7 +196,7 @@ class AbsTextureWorkspaceManager(prx_widgets.PrxSessionWindow):
 
     def _set_wsp_version_new_(self):
         def yes_fnc_():
-            self._version_controller.set_version_create_at(
+            self._rsv_workspace_texture_opt.set_version_create_at(
                 variant, next_version
             )
 
@@ -575,22 +208,22 @@ class AbsTextureWorkspaceManager(prx_widgets.PrxSessionWindow):
                 _variant, _from_version, _to_version,
             )
 
-            self._version_controller.set_version_lock_at(
+            self._rsv_workspace_texture_opt.set_version_lock_at(
                 _variant, _from_version
             )
 
             time.sleep(2)
-            self.set_refresh_all()
+            self._set_texture_workspace_update_()
 
         variant = self._options_prx_node.get('control.variant')
-        next_version = self._version_controller.get_new_version_at(variant)
+        next_version = self._rsv_workspace_texture_opt.get_new_version_at(variant)
 
         w = utl_core.DialogWindow.set_create(
             self._session.gui_name,
             content=u'create new version "{}" in variant "{}" and pull textures from choose version ( lock choose version ), press "Confirm" to continue'.format(
                 next_version, variant
             ),
-            status=utl_core.DialogWindow.ValidatorStatus.Warning,
+            status=utl_core.DialogWindow.ValidatorStatus.Active,
             #
             options_configure=self._session.configure.get('build.node.new_version'),
             #
@@ -606,8 +239,8 @@ class AbsTextureWorkspaceManager(prx_widgets.PrxSessionWindow):
 
         n = w.get_options_node()
         v_p = n.get_port('version')
-        all_versions = self._version_controller.get_all_versions_at(variant)
-        all_locked_versions = self._version_controller.get_all_locked_versions_at(variant)
+        all_versions = self._rsv_workspace_texture_opt.get_all_versions_at(variant)
+        all_locked_versions = self._rsv_workspace_texture_opt.get_all_locked_versions_at(variant)
 
         v_p.set(
             all_versions
@@ -621,16 +254,16 @@ class AbsTextureWorkspaceManager(prx_widgets.PrxSessionWindow):
             if unlocked_directory_paths:
                 with utl_core.gui_progress(maximum=len(unlocked_directory_paths)) as g_p:
                     for _i in unlocked_directory_paths:
-                        self._version_controller.set_directory_locked(_i)
+                        self._rsv_workspace_texture_opt.set_directory_locked(_i)
                         g_p.set_update()
             #
             time.sleep(2)
-            self.set_refresh_all()
+            self._set_texture_workspace_update_()
 
         self._set_dcc_texture_references_update_()
         self._set_dcc_objs_update_()
 
-        directory_paths = self._version_controller.get_all_directories(
+        directory_paths = self._rsv_workspace_texture_opt.get_all_directories(
             self._dcc_objs
         )
 
@@ -638,8 +271,9 @@ class AbsTextureWorkspaceManager(prx_widgets.PrxSessionWindow):
         if unlocked_directory_paths:
             w = utl_core.DialogWindow.set_create(
                 self._session.gui_name,
-                content=u'lock all used texture directories when it is matched "texture workspace" rule, press "Confirm" to continue',
-                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                sub_label='Lock All Version',
+                content=u'lock all texture directories(used and matched "texture workspace" rule), press "Confirm" to continue',
+                status=utl_core.DialogWindow.ValidatorStatus.Active,
                 #
                 options_configure=self._session.configure.get('build.node.lock_all_version'),
                 #
@@ -651,7 +285,7 @@ class AbsTextureWorkspaceManager(prx_widgets.PrxSessionWindow):
                 show=False,
                 #
                 parent=self.widget,
-                window_size=(480, 480)
+                window_size=(480, 240)
             )
 
             w.get_options_node().set(
@@ -662,7 +296,7 @@ class AbsTextureWorkspaceManager(prx_widgets.PrxSessionWindow):
         else:
             utl_core.DialogWindow.set_create(
                 self._session.gui_name,
-                content=u'all used and matched "texture workspace" rule\'s texture directories is locked',
+                content=u'all texture directories(used and matched "texture workspace" rule) is locked',
                 status=utl_core.DialogWindow.ValidatorStatus.Warning,
                 #
                 yes_label='Close',
@@ -673,17 +307,17 @@ class AbsTextureWorkspaceManager(prx_widgets.PrxSessionWindow):
             )
 
     def _set_wsp_texture_pull_(self, from_variant, from_version, to_version):
-        directory_path_src_0 = self._version_controller.get_src_directory_path_at(
+        directory_path_src_0 = self._rsv_workspace_texture_opt.get_src_directory_path_at(
             from_variant, from_version
         )
-        directory_path_tx_0 = self._version_controller.get_tx_directory_path_at(
+        directory_path_tx_0 = self._rsv_workspace_texture_opt.get_tx_directory_path_at(
             from_variant, from_version
         )
 
-        directory_path_src_1 = self._version_controller.get_src_directory_path_at(
+        directory_path_src_1 = self._rsv_workspace_texture_opt.get_src_directory_path_at(
             from_variant, to_version
         )
-        directory_path_tx_1 = self._version_controller.get_tx_directory_path_at(
+        directory_path_tx_1 = self._rsv_workspace_texture_opt.get_tx_directory_path_at(
             from_variant, to_version
         )
 
@@ -733,37 +367,43 @@ class AbsTextureWorkspaceManager(prx_widgets.PrxSessionWindow):
     def _set_version_new_(self):
         pass
 
-    def _set_tx_create_data_update_from_workspace_(self, force_enable, directory_path_src, directory_path_tx):
+    def _set_tx_create_data_update_(self, directory_paths, force_enable=False, ext_tgt='.tx'):
         self._create_data = []
+        with utl_core.gui_progress(maximum=len(directory_paths)) as g_p:
+            for i_directory_path in directory_paths:
+                i_directory_path_src = '{}/src'.format(i_directory_path)
+                i_directory_path_tgt = '{}/{}'.format(i_directory_path, ext_tgt[1:])
+                self._set_tx_create_data_update_at_(
+                    i_directory_path_src, i_directory_path_tgt,
+                    force_enable, ext_tgt,
+                )
+                g_p.set_update()
 
-        ext_tgt = '.tx'
-
+    def _set_tx_create_data_update_at_(self, directory_path_src, directory_path_tgt, force_enable=False, ext_tgt='.tx'):
         file_paths_src = bsc_core.DirectoryMtd.get_file_paths__(
             directory_path_src
         )
         if file_paths_src:
             with utl_core.gui_progress(maximum=len(file_paths_src)) as g_p:
                 for i_file_path in file_paths_src:
-                    g_p.set_update()
-                    #
                     i_texture_src = utl_dcc_objects.OsTexture(
                         i_file_path
                     )
                     if i_texture_src.ext != ext_tgt:
                         if force_enable is True:
                             self._create_data.append(
-                                (i_texture_src.path, directory_path_tx)
+                                (i_texture_src.path, directory_path_tgt)
                             )
                         else:
                             if i_texture_src.get_is_exists_as_tgt_ext(
                                 ext_tgt,
-                                directory_path_tx
+                                directory_path_tgt
                             ) is False:
                                 self._create_data.append(
-                                    (i_texture_src.path, directory_path_tx)
+                                    (i_texture_src.path, directory_path_tgt)
                                 )
-        else:
-            pass
+                    #
+                    g_p.set_update()
 
     def _set_tx_create_by_data_(self, button, post_fnc=None):
         def finished_fnc_(index, status, results):
@@ -834,7 +474,7 @@ class AbsTextureWorkspaceManager(prx_widgets.PrxSessionWindow):
             button.set_restore()
 
             contents = [
-                'non-texture(s) to create, you can click refresh and try again'
+                'non-texture(s) for create'
             ]
 
         if contents:
@@ -854,56 +494,87 @@ class AbsTextureWorkspaceManager(prx_widgets.PrxSessionWindow):
             return True
 
     def _set_wsp_tx_create_execute_(self):
-        directory_path_src = self._options_prx_node.get('texture.directory.source')
-        directory_path_tx = self._options_prx_node.get('texture.directory.target')
-
         force_enable = self._options_prx_node.get('texture.create.force_enable')
+        ext_tgt = '.tx'
         button = self._options_prx_node.get_port('texture.create.execute')
-        method_args = [
-            (self._set_tx_create_data_update_from_workspace_, (force_enable, directory_path_src, directory_path_tx)),
-            (self._set_tx_create_by_data_, (button, ))
-        ]
-        with utl_core.gui_progress(maximum=len(method_args)) as g_p:
-            for i_fnc, i_args in method_args:
-                g_p.set_update()
+        directory_paths = self._options_prx_node.get('texture.directories')
+        if directory_paths:
+            method_args = [
+                (self._set_tx_create_data_update_, (directory_paths, force_enable, ext_tgt)),
+                (self._set_tx_create_by_data_, (button,))
+            ]
+            with utl_core.gui_progress(maximum=len(method_args)) as g_p:
+                for i_fnc, i_args in method_args:
+                    g_p.set_update()
+                    #
+                    i_result = i_fnc(*i_args)
+                    if i_result is False:
+                        break
+        else:
+            utl_core.DialogWindow.set_create(
+                self._session.gui_name,
+                content='non-directory(s) for create',
+                status=utl_core.DialogWindow.ValidatorStatus.Warning,
                 #
-                i_result = i_fnc(*i_args)
-                if i_result is False:
-                    break
+                yes_label='Close',
+                #
+                no_visible=False, cancel_visible=False,
+                #
+                parent=self.widget
+            )
 
     def _set_wsp_tx_create_execute_by_deadline_(self):
-        directory_path = self._options_prx_node.get('texture.directory.source')
-        directory_path_tgt = self._options_prx_node.get('texture.directory.target')
+        force_enable = self._options_prx_node.get('texture.create.force_enable')
         ext_tgt = '.tx'
+        directory_paths = self._options_prx_node.get('texture.directories')
+        if directory_paths:
+            directory_paths_src = ['{}/src'.format(i) for i in directory_paths]
+            directory_paths_tgt = ['{}/{}'.format(i, ext_tgt[1:]) for i in directory_paths]
 
-        j_option_opt = bsc_core.KeywordArgumentsOpt(
-            option=dict(
-                option_hook_key='methods/texture/texture-convert',
-                directory=directory_path,
-                output_directory=directory_path_tgt,
-                target_ext=ext_tgt,
-                width=None,
-                #
-                td_enable=self._session.get_td_enable(),
-                rez_beta=self._session.get_rez_beta(),
+            j_option_opt = bsc_core.KeywordArgumentsOpt(
+                option=dict(
+                    option_hook_key='methods/texture/texture-convert',
+                    #
+                    directories=directory_paths_src,
+                    output_directories=directory_paths_tgt,
+                    #
+                    force_enable=force_enable,
+                    #
+                    target_ext=ext_tgt,
+                    width=None,
+                    #
+                    td_enable=self._session.get_td_enable(),
+                    rez_beta=self._session.get_rez_beta(),
+                )
             )
-        )
-        #
-        session = ssn_commands.set_option_hook_execute_by_deadline(
-            option=j_option_opt.to_string()
-        )
-        ddl_job_id = session.get_ddl_job_id()
+            #
+            session = ssn_commands.set_option_hook_execute_by_deadline(
+                option=j_option_opt.to_string()
+            )
+            ddl_job_id = session.get_ddl_job_id()
 
-        utl_core.DDlMonitor.set_create(
-            session.gui_name, ddl_job_id
-        )
+            utl_core.DDlMonitor.set_create(
+                session.gui_name, ddl_job_id
+            )
+        else:
+            utl_core.DialogWindow.set_create(
+                self._session.gui_name,
+                content='non-directory(s) for create',
+                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                #
+                yes_label='Close',
+                #
+                no_visible=False, cancel_visible=False,
+                #
+                parent=self.widget
+            )
 
 
-class AbsDccTextureManager(prx_widgets.PrxSessionWindow):
+class AbsAssetDccTextureManager(prx_widgets.PrxSessionWindow):
     DCC_NAMESPACE = None
     DCC_SELECTION_CLS = None
     def __init__(self, session, *args, **kwargs):
-        super(AbsDccTextureManager, self).__init__(session, *args, **kwargs)
+        super(AbsAssetDccTextureManager, self).__init__(session, *args, **kwargs)
 
     def set_variants_restore(self):
         self._create_data = []
@@ -1511,8 +1182,10 @@ class AbsDccTextureManager(prx_widgets.PrxSessionWindow):
             self._set_search_run_(w, **w.get_options_as_kwargs())
 
         w = utl_core.DialogWindow.set_create(
-            'Search',
+            self._session.gui_name,
+            sub_label='Search',
             content=u'choose or entry a directory, press "Confirm" to continue',
+            status=utl_core.DialogWindow.ValidatorStatus.Active,
             #
             options_configure=self._session.configure.get('build.node.extra_search'),
             #
@@ -1607,8 +1280,10 @@ class AbsDccTextureManager(prx_widgets.PrxSessionWindow):
             self._set_collection_run_(w, **w.get_options_as_kwargs())
 
         w = utl_core.DialogWindow.set_create(
-            'Collection',
+            self._session.gui_name,
+            sub_label='Collection',
             content=u'choose or entry a directory, press "Confirm" to continue',
+            status=utl_core.DialogWindow.ValidatorStatus.Active,
             #
             options_configure=self._session.configure.get('build.node.extra_collection'),
             #

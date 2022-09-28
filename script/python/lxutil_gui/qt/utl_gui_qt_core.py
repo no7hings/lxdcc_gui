@@ -337,6 +337,7 @@ class Color(object):
     LOCKED = QtGui.QColor(127, 127, 255, 255)
     LOST = QtGui.QColor(127, 127, 127, 255)
     CORRECT = QtGui.QColor(63, 255, 127, 255)
+    ACTIVE = QtGui.QColor(63, 127, 255, 255)
     #
     text_filter = QtGui.QColor(255, 127, 63, 255)
     text_filter_occurrence = QtGui.QColor(255, 63, 63, 255)
@@ -3911,29 +3912,30 @@ class QtPixmapDrawer(object):
 
 
 if __name__ == '__main__':
-    import lxbasic.objects as bsc_objects
-
-    import itertools
-
-    app = QtWidgets.QApplication(sys.argv)
-
-    for i, j in itertools.product(
-        [('high', '/master/hi'), ('shape', '/master/shape')],
-        ['primary', 'ass_asset_color', 'ass_group_color', 'ass_object_color', 'ass_shell_color']
-    ):
-        i_name = '{}-{}'.format(i[0], j)
-        d = bsc_objects.Configure(
-            value='/data/e/myworkspace/td/lynxi/script/python/lxutil_gui/qt/.test/_tst__draw_data.yml'
-        )
-        d.set(
-            'draw.text.content.location', i[1]
-        )
-        d.set(
-            'draw.text.content.aov', j
-        )
-        QtPixmapDrawer.get_image_by_data(
-            d,
-            '/l/resource/td/asset/image/foreground-v001/{}.png'.format(i_name)
-        )
-    app.exit(0)
-    sys.exit(0)
+    pass
+    # import lxbasic.objects as bsc_objects
+    #
+    # import itertools
+    #
+    # app = QtWidgets.QApplication(sys.argv)
+    #
+    # for i, j in itertools.product(
+    #     [('high', '/master/hi'), ('shape', '/master/shape')],
+    #     ['primary', 'ass_asset_color', 'ass_group_color', 'ass_object_color', 'ass_shell_color']
+    # ):
+    #     i_name = '{}-{}'.format(i[0], j)
+    #     d = bsc_objects.Configure(
+    #         value='/data/e/myworkspace/td/lynxi/script/python/lxutil_gui/qt/.test/_tst__draw_data.yml'
+    #     )
+    #     d.set(
+    #         'draw.text.content.location', i[1]
+    #     )
+    #     d.set(
+    #         'draw.text.content.aov', j
+    #     )
+    #     QtPixmapDrawer.get_image_by_data(
+    #         d,
+    #         '/l/resource/td/asset/image/foreground-v001/{}.png'.format(i_name)
+    #     )
+    # app.exit(0)
+    # sys.exit(0)

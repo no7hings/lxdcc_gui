@@ -637,13 +637,13 @@ class AbsQtValuesDef(object):
         self._widget = widget
         self._values = []
 
-    def _set_values_append_(self, value):
+    def _set_value_append_(self, value):
         if value not in self._values:
             self._values.append(value)
             return True
         return False
 
-    def _set_values_remove_(self, value):
+    def _set_value_delete_(self, value):
         if value in self._values:
             self._values.remove(value)
             return True

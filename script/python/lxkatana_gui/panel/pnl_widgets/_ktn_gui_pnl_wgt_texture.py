@@ -8,11 +8,11 @@ import lxkatana.dcc.dcc_objects as ktn_dcc_objects
 from lxutil_gui.qt import utl_gui_qt_core
 
 
-class TextureWorkspaceManager(utl_gui_pnl_abs_texture.AbsTextureWorkspaceManager):
+class AssetWorkspaceTextureManager(utl_gui_pnl_abs_texture.AbsAssetWorkspaceTextureManager):
     DCC_SELECTION_CLS = ktn_dcc_objects.Selection
     DCC_NAMESPACE = 'katana'
     def __init__(self, session, *args, **kwargs):
-        super(TextureWorkspaceManager, self).__init__(session, *args, **kwargs)
+        super(AssetWorkspaceTextureManager, self).__init__(session, *args, **kwargs)
 
     def _set_dcc_scene_update_(self):
         self._file_path = ktn_dcc_objects.Scene.get_current_file_path()
@@ -32,11 +32,11 @@ class TextureWorkspaceManager(utl_gui_pnl_abs_texture.AbsTextureWorkspaceManager
             )
 
 
-class TextureManager(utl_gui_pnl_abs_texture.AbsDccTextureManager):
+class AssetDccTextureManager(utl_gui_pnl_abs_texture.AbsAssetDccTextureManager):
     DCC_SELECTION_CLS = ktn_dcc_objects.Selection
     DCC_NAMESPACE = 'maya'
     def __init__(self, *args, **kwargs):
-        super(TextureManager, self).__init__(*args, **kwargs)
+        super(AssetDccTextureManager, self).__init__(*args, **kwargs)
 
     def _set_dcc_texture_references_update_(self):
         self._dcc_texture_references = ktn_dcc_objects.TextureReferences()

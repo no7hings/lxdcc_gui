@@ -6,11 +6,11 @@ from lxutil_gui.qt import utl_gui_qt_core
 import lxmaya.dcc.dcc_objects as mya_dcc_objects
 
 
-class TextureManager(utl_gui_pnl_abs_texture.AbsDccTextureManager):
+class AssetDccTextureManager(utl_gui_pnl_abs_texture.AbsAssetDccTextureManager):
     DCC_SELECTION_CLS = mya_dcc_objects.Selection
     DCC_NAMESPACE = 'maya'
     def __init__(self, *args, **kwargs):
-        super(TextureManager, self).__init__(*args, **kwargs)
+        super(AssetDccTextureManager, self).__init__(*args, **kwargs)
 
     def _set_dcc_texture_references_update_(self):
         self._dcc_texture_references = mya_dcc_objects.TextureReferences()

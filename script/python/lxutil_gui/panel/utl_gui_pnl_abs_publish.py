@@ -123,6 +123,16 @@ class AbsValidatorOpt(object):
                         self._filter_opt.set_register(
                             j_file_prx_item, [i_filter_key]
                         )
+                elif i_type == 'directory':
+                    j_elements = i_result['elements']
+                    for j_directory_path in j_elements:
+                        j_file_prx_item = self._get_directory_(
+                            scene_prx_item, i_node_prx_item,
+                            j_directory_path, i_description, i_validation_status
+                        )
+                        self._filter_opt.set_register(
+                            j_file_prx_item, [i_filter_key]
+                        )
                 elif i_type == 'component':
                     j_elements = i_result['elements']
                     for j_dcc_path in j_elements:
@@ -191,7 +201,7 @@ class AbsValidatorOpt(object):
 
         prx_item = scene_prx_item.set_child_add(
             name=group_name,
-            icon=utl_gui_core.RscIconFile.get('file/folder'),
+            icon=utl_gui_core.RscIconFile.get('validator'),
         )
         prx_item.set_checked(True)
         #
@@ -249,10 +259,22 @@ class AbsValidatorOpt(object):
     def _get_file_(self, scene_prx_item, node_prx_item, file_path, description, status):
         stg_file = utl_dcc_objects.OsFile(file_path)
         prx_item = node_prx_item.set_child_add(
-            name=[stg_file.name, description],
+            name=[stg_file.get_path_prettify_(maximum=32), description],
             icon=stg_file.icon,
             menu=stg_file.get_gui_menu_raw(),
             tool_tip=stg_file.path
+        )
+        prx_item.set_status(status)
+        prx_item.set_checked(True)
+        return prx_item
+
+    def _get_directory_(self, scene_prx_item, node_prx_item, directory_path, description, status):
+        stg_directory = utl_dcc_objects.OsDirectory_(directory_path)
+        prx_item = node_prx_item.set_child_add(
+            name=[stg_directory.get_path_prettify_(maximum=32), description],
+            icon=stg_directory.icon,
+            menu=stg_directory.get_gui_menu_raw(),
+            tool_tip=stg_directory.path
         )
         prx_item.set_status(status)
         prx_item.set_checked(True)
@@ -330,6 +352,8 @@ class DccPublisherOpt(object):
                 movie_file=movie_file_path,
                 #
                 validation_info_file=self._validation_info_file,
+                #
+                with_workspace_texture_lock=k['process.options.with_workspace_texture_lock'],
                 #
                 user=user,
                 #
@@ -730,6 +754,9 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
             )
 
             w.set_yes_completed_notify_enable(True)
+            w.set_completed_content(
+                'deadline job submit is completed, press "Close" to continue'
+            )
 
             w.set_window_close_connect_to(
                 self.widget.show
