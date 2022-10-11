@@ -26,7 +26,7 @@ class AssetWorkspaceTextureManager(utl_gui_pnl_abs_texture.AbsAssetWorkspaceText
             geometry_location = '/root/world/geo'
             location = '{}{}'.format(geometry_location, root)
             dcc_workspace = ktn_dcc_objects.AssetWorkspace()
-            dcc_shaders = dcc_workspace.get_all_dcc_geometry_shader_by_location(location)
+            dcc_shaders = dcc_workspace.get_all_dcc_geometry_shaders_by_location(location)
             self._dcc_objs = self._dcc_texture_references.get_objs(
                 include_paths=[i.path for i in dcc_shaders]
             )
@@ -47,7 +47,7 @@ class AssetDccTextureManager(utl_gui_pnl_abs_texture.AbsAssetDccTextureManager):
             geometry_location = '/root/world/geo'
             location = '{}{}'.format(geometry_location, root)
             dcc_workspace = ktn_dcc_objects.AssetWorkspace()
-            dcc_shaders = dcc_workspace.get_all_dcc_geometry_shader_by_location(location)
+            dcc_shaders = dcc_workspace.get_all_dcc_geometry_shaders_by_location(location)
             self._dcc_objs = self._dcc_texture_references.get_objs(
                 include_paths=[i.path for i in dcc_shaders]
             )
