@@ -469,6 +469,9 @@ class _QtIconPressItem(
     utl_gui_qt_abstract.AbsQtNameDef,
     utl_gui_qt_abstract.AbsQtMenuDef,
     #
+    utl_gui_qt_abstract.AbsQtStatusDef,
+    utl_gui_qt_abstract.AbsQtStateDef,
+    #
     utl_gui_qt_abstract.AbsQtActionDef,
     utl_gui_qt_abstract.AbsQtActionHoverDef,
     utl_gui_qt_abstract.AbsQtActionPressDef,
@@ -486,7 +489,7 @@ class _QtIconPressItem(
         #
         f_w, f_h = self._icon_frame_size
         #
-        i_f_w, i_f_h = self._icon_file_draw_size
+        icn_w, icn_h = self._icon_file_draw_size
         s_i_f_w, s_i_f_h = self._sub_icon_file_draw_size
         i_c_w, i_c_h = self._icon_color_draw_size
         i_n_w, i_n_h = self._icon_name_draw_size
@@ -494,12 +497,12 @@ class _QtIconPressItem(
         _w, _h = w, h
         _x, _y = x, y
         if self._icon_is_enable is True:
-            _x, _y = _x + (w - f_w)/2, _y + (h - f_h)/2
+            _x, _y = _x+(w - f_w)/2, _y + (h - f_h)/2
             self._icon_frame_rect.setRect(
                 _x, _y, f_w, f_h
             )
             self._icon_file_draw_rect.setRect(
-                _x+(f_w-i_f_w)/2, _y+(f_h-i_f_h)/2, i_f_w, i_f_h
+                _x+(f_w-icn_w)/2, _y+(f_h-icn_h)/2, icn_w, icn_h
             )
             self._sub_icon_file_draw_rect.setRect(
                 _x+_w-s_i_f_w, _y+_h-s_i_f_h, s_i_f_w, s_i_f_h
@@ -530,6 +533,8 @@ class _QtIconPressItem(
         self._set_name_def_init_()
         self._set_icon_def_init_()
         self._set_menu_def_init_()
+        self._set_status_def_init_()
+        self._set_state_def_init_()
         #
         self._set_action_def_init_(self)
         self._set_action_hover_def_init_()
@@ -639,7 +644,7 @@ class _QtIconPressItem(
 class _QtPressItem(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
-    utl_gui_qt_abstract._QtStatusDef,
+    utl_gui_qt_abstract.AbsQtStatusDef,
     #
     utl_gui_qt_abstract.AbsQtSubProcessDef,
     utl_gui_qt_abstract.AbsQtValidatorDef,
@@ -1389,9 +1394,9 @@ class _QtConstantValueEntryItem(
         self._value_entry_layout.setContentsMargins(0, 0, 0, 0)
         self._value_entry_layout.setSpacing(4)
         #
-        self._set_value_entry_build_(self._item_value_type)
+        self._build_value_entry_(self._item_value_type)
 
-    def _set_value_entry_build_(self, value_type):
+    def _build_value_entry_(self, value_type):
         self._item_value_type = value_type
         #
         self._value_entry = self.QT_VALUE_ENTRY_CLASS()
@@ -1427,9 +1432,9 @@ class _QtScriptValueEntryItem(
         self._set_item_value_type_constant_entry_def_init_()
         self._set_item_value_default_def_init_()
         #
-        self._set_value_entry_build_(self._item_value_type)
+        self._build_value_entry_(self._item_value_type)
 
-    def _set_value_entry_build_(self, value_type):
+    def _build_value_entry_(self, value_type):
         self._item_value_type = value_type
         #
         self._main_layout = QtVBoxLayout(self)
@@ -1515,9 +1520,9 @@ class _QtRgbaValueEntryItem(
         self._value_entry_layout.setContentsMargins(20, 0, 0, 0)
         self._value_entry_layout.setSpacing(4)
         #
-        self._set_value_entry_build_(self._item_value_type)
+        self._build_value_entry_(self._item_value_type)
 
-    def _set_value_entry_build_(self, value_type):
+    def _build_value_entry_(self, value_type):
         self._item_value_type = value_type
         #
         self._value_entry = self.QT_VALUE_ENTRY_CLASS()
@@ -1651,7 +1656,7 @@ class _QtEnumerateValueEntryItem(
         self._set_choose_def_init_()
         self._set_entry_completion_def_init_()
         #
-        self._set_value_entry_build_(self._item_value_type)
+        self._build_value_entry_(self._item_value_type)
 
     def eventFilter(self, *args):
         super(_QtEnumerateValueEntryItem, self).eventFilter(*args)
@@ -1680,7 +1685,7 @@ class _QtEnumerateValueEntryItem(
                 # set value before
                 self._set_choose_changed_emit_send_()
 
-    def _set_value_entry_build_(self, value_type):
+    def _build_value_entry_(self, value_type):
         self._item_value_type = value_type
         #
         self._main_layout = QtVBoxLayout(self)
@@ -1737,7 +1742,7 @@ class _QtEnumerateValueEntryItem(
             self._value_entry_choose_frame._set_popup_end_
         )
         #
-        self._set_entry_completion_build_(self._value_entry, self)
+        self._build_entry_completion_(self._value_entry, self)
 
     def _set_value_entry_enable_(self, boolean):
         super(_QtEnumerateValueEntryItem, self)._set_value_entry_enable_(boolean)
@@ -1804,9 +1809,9 @@ class _QtArrayValueEntryItem(
         self._value_entry_layout.setContentsMargins(0, 0, 0, 0)
         self._value_entry_layout.setSpacing(8)
         #
-        self._set_value_entry_build_(2, self._item_value_type)
+        self._build_value_entry_(2, self._item_value_type)
 
-    def _set_value_entry_build_(self, value_size, value_type):
+    def _build_value_entry_(self, value_size, value_type):
         self._item_value_type = value_type
         #
         self._value_entry_widgets = []
@@ -1847,10 +1852,10 @@ class _QtValuesEntryFrame(
         self._set_value_entry_def_init_(self)
         self._set_choose_def_init_()
         #
-        self._set_value_entry_build_(str)
+        self._build_value_entry_(str)
         self._set_choose_multiply_enable_(True)
 
-    def _set_value_entry_build_(self, value_type):
+    def _build_value_entry_(self, value_type):
         self._item_value_type = value_type
 
         self._main_layout = QtVBoxLayout(self)
@@ -1981,9 +1986,9 @@ class _QtValuesChooseEntryItem(
         #
         self._set_value_entry_def_init_(self)
         #
-        self._set_value_entry_build_(str)
+        self._build_value_entry_(str)
 
-    def _set_value_entry_build_(self, value_type):
+    def _build_value_entry_(self, value_type):
         self._item_value_type = value_type
 
         self._main_layout = QtVBoxLayout(self)
@@ -2072,7 +2077,7 @@ class _QtFilterBar(
         self._value_entry_frame.setMaximumWidth(240)
         qt_layout_0.addWidget(self._value_entry_frame)
         #
-        self._set_value_entry_build_(str)
+        self._build_value_entry_(str)
         #
         self._match_case_button = _QtIconPressItem()
         self._match_case_button.hide()
@@ -2114,6 +2119,80 @@ class _QtFilterBar(
         self._result_index = None
         #
         self._set_update_()
+
+    def _build_value_entry_(self, value_type):
+        self._item_value_type = value_type
+        self._value_entry_layout = QtHBoxLayout(self._value_entry_frame)
+        self._value_entry_layout.setContentsMargins(*[0]*4)
+        self._value_entry_layout.setSpacing(2)
+        #
+        self._header_button = _QtIconPressItem()
+        # self._header_button._set_icon_frame_size_(16, 16)
+        # self._header_button._set_file_icon_size_(12, 12)
+        self._value_entry_layout.addWidget(self._header_button)
+        self._header_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get(
+                'search'
+            )
+        )
+        #
+        self._header_button._set_menu_raw_(
+            [
+                ('option', None, None),
+                (),
+                ('history', None, None)
+            ]
+        )
+        #
+        self._value_entry = self.QT_VALUE_ENTRY_CLASS()
+        self._value_entry_layout.addWidget(self._value_entry)
+        #
+        self._value_entry.entry_changed.connect(self._set_enter_changed_emit_send_)
+        #
+        self._entry_clear_button = _QtIconPressItem()
+        # self._entry_clear_button._set_icon_frame_size_(16, 16)
+        # self._entry_clear_button._set_file_icon_size_(12, 12)
+        self._value_entry_layout.addWidget(self._entry_clear_button)
+        self._entry_clear_button.hide()
+        self._entry_clear_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get(
+                'entry_clear'
+            )
+        )
+        self._entry_clear_button.clicked.connect(self._set_entry_clear_)
+        #
+        self._entry_history_button = _QtIconPressItem()
+        self._value_entry_layout.addWidget(self._entry_history_button)
+        self._entry_history_button._set_icon_state_draw_enable_(True)
+        #
+        self._entry_history_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get('history')
+        )
+        # self._entry_history_button._set_icon_frame_size_(16, 16)
+        # self._entry_history_button._set_file_icon_size_(12, 12)
+        self._entry_history_button.press_clicked.connect(
+            self.__set_choose_popup_
+        )
+        self._entry_history_button.hide()
+        #
+        self._entry_history_choose_drop_frame = self.CHOOSE_FRAME_CLASS(self)
+        # self._entry_history_choose_drop_frame._set_popup_offset_(0, 22)
+        self._entry_history_choose_drop_frame._set_popup_target_entry_(self._value_entry)
+        self._entry_history_choose_drop_frame._set_popup_target_entry_frame_(self._value_entry_frame)
+        self._value_entry.up_key_pressed.connect(
+            self._entry_history_choose_drop_frame._set_popup_scroll_to_pre_
+        )
+        self._value_entry.down_key_pressed.connect(
+            self._entry_history_choose_drop_frame._set_popup_scroll_to_next_
+        )
+        self._value_entry.entry_finished.connect(
+            self._entry_history_choose_drop_frame._set_popup_end_
+        )
+        self._entry_history_choose_drop_frame.hide()
+
+        self._build_entry_completion_(self._value_entry, self._value_entry_frame)
+
+        self._entry_completion_frame.completion_finished.connect(self._set_entry_history_value_add_)
     #
     def _set_update_(self):
         self._match_case_button._set_icon_file_path_(
@@ -2142,9 +2221,9 @@ class _QtFilterBar(
         return self._value_entry
 
     def _set_entry_clear_(self):
-        self._value_entry.clear()
+        self._value_entry._set_clear_()
+        self._value_entry._set_user_enter_cleared_emit_send_()
         self._set_enter_changed_emit_send_()
-        self._set_user_enter_cleared_emit_send_()
 
     def _get_is_match_case_(self):
         return self._is_match_case
@@ -2196,85 +2275,10 @@ class _QtFilterBar(
     def _set_entry_focus_(self, boolean):
         self._value_entry._set_focused_(boolean)
 
-    def _set_value_entry_build_(self, value_type):
-        self._item_value_type = value_type
-        self._value_entry_layout = QtHBoxLayout(self._value_entry_frame)
-        self._value_entry_layout.setContentsMargins(*[0]*4)
-        self._value_entry_layout.setSpacing(2)
-        #
-        self._header_button = _QtIconPressItem()
-        # self._header_button._set_icon_frame_size_(16, 16)
-        # self._header_button._set_file_icon_size_(12, 12)
-        self._value_entry_layout.addWidget(self._header_button)
-        self._header_button._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get(
-                'search'
-            )
-        )
-        #
-        self._header_button._set_menu_raw_(
-            [
-                ('option', None, None),
-                (),
-                ('history', None, None)
-            ]
-        )
-        #
-        self._value_entry = self.QT_VALUE_ENTRY_CLASS()
-        self._value_entry_layout.addWidget(self._value_entry)
-        #
-        self._value_entry.entry_changed.connect(self._set_enter_changed_emit_send_)
-        #
-        self._entry_clear_button = _QtIconPressItem()
-        # self._entry_clear_button._set_icon_frame_size_(16, 16)
-        # self._entry_clear_button._set_file_icon_size_(12, 12)
-        self._value_entry_layout.addWidget(self._entry_clear_button)
-        self._entry_clear_button.hide()
-        self._entry_clear_button._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get(
-                'entry_clear'
-            )
-        )
-        self._entry_clear_button.clicked.connect(self._set_entry_clear_)
-        #
-        self._history_button = _QtIconPressItem()
-        self._value_entry_layout.addWidget(self._history_button)
-        #
-        self._history_button._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get('history')
-        )
-        # self._history_button._set_icon_frame_size_(16, 16)
-        # self._history_button._set_file_icon_size_(12, 12)
-        self._history_button.press_clicked.connect(
-            self.__set_choose_popup_
-        )
-        self._history_button.hide()
-        #
-        self._entry_history_choose_drop_frame = self.CHOOSE_FRAME_CLASS(self)
-        # self._entry_history_choose_drop_frame._set_popup_offset_(0, 22)
-        self._entry_history_choose_drop_frame._set_popup_target_entry_(self._value_entry)
-        self._entry_history_choose_drop_frame._set_popup_target_entry_frame_(self._value_entry_frame)
-        self._value_entry.up_key_pressed.connect(
-            self._entry_history_choose_drop_frame._set_popup_scroll_to_pre_
-        )
-        self._value_entry.down_key_pressed.connect(
-            self._entry_history_choose_drop_frame._set_popup_scroll_to_next_
-        )
-        self._value_entry.entry_finished.connect(
-            self._entry_history_choose_drop_frame._set_popup_end_
-        )
-        self._entry_history_choose_drop_frame.hide()
-
-        self._set_entry_completion_build_(self._value_entry, self._value_entry_frame)
-
-        self._entry_completion_frame.completion_finished.connect(
-            self._set_entry_history_value_add_
-        )
-
     def _set_entry_history_key_(self, key):
         super(_QtFilterBar, self)._set_entry_history_key_(key)
         #
-        self._history_button.show()
+        self._entry_history_button.show()
 
     def _set_entry_history_value_add_(self, value):
         if value:
@@ -2296,7 +2300,7 @@ class _QtFilterBar(
             histories
         )
 
-    def _set_entry_history_refresh_(self):
+    def _refresh_entry_history_(self):
         if self._entry_history_key is not None:
             value = self._get_value_()
             if value:
@@ -2306,17 +2310,25 @@ class _QtFilterBar(
                         value
                     )
             #
-            histories = utl_core.History.get(
+            values = utl_core.History.get(
                 self._entry_history_key
             )
-            if histories:
-                histories.reverse()
-            #
-            histories = [i for i in histories if self._get_entry_history_value_is_valid_(i) is True]
-            #
-            self._set_choose_values_(
-                histories
-            )
+            if values:
+                # latest show on top
+                values.reverse()
+                # value validation
+                values = [i for i in values if self._get_entry_history_value_is_valid_(i) is True]
+                #
+                self._set_choose_values_(values)
+                #
+                self._entry_history_button._set_action_enable_(
+                    True
+                )
+            else:
+                self._set_choose_values_clear_()
+                self._entry_history_button._set_action_enable_(
+                    False
+                )
 
     def _get_choose_current_values_extend_(self, values):
         self._set_value_(values[-1])
@@ -2696,7 +2708,7 @@ class QtTreeWidgetItem(
     #
     utl_gui_qt_abstract.AbsQtItemFilterDef,
     #
-    utl_gui_qt_abstract.AbsQtItemStateDef,
+    utl_gui_qt_abstract.AbsQtStateDef,
     #
     utl_gui_qt_abstract.AbsQtDagDef,
     utl_gui_qt_abstract.AbsQtVisibleDef,
@@ -2722,7 +2734,7 @@ class QtTreeWidgetItem(
         #
         self._set_item_filter_def_init_()
         #
-        self._set_item_state_def_init_()
+        self._set_state_def_init_()
         #
         self._set_dag_def_init_()
         self._set_visible_def_init_()
@@ -3143,7 +3155,7 @@ class QtTreeWidgetItem(
     def _get_item_widget_(self):
         pass
 
-    def _get_item_state_color_(self):
+    def _get_state_color_(self):
         return self.foreground(0)
 
     def _set_hidden_(self, boolean, ancestors=False):
@@ -3188,7 +3200,7 @@ class _QtListItemWidget(
     utl_gui_qt_abstract.AbsQtActionPressDef,
     utl_gui_qt_abstract.AbsQtActionSelectDef,
     #
-    utl_gui_qt_abstract.AbsQtItemStateDef,
+    utl_gui_qt_abstract.AbsQtStateDef,
     #
     utl_gui_qt_abstract.AbsQtItemMovieActionDef,
 ):
@@ -3216,7 +3228,7 @@ class _QtListItemWidget(
         #
         self._set_item_movie_action_def_init_()
         #
-        self._set_item_state_def_init_()
+        self._set_state_def_init_()
         #
         self._file_type_icon = None
         #
@@ -3641,7 +3653,7 @@ class _AbsQtSplitterHandle(
     utl_gui_qt_abstract.AbsQtActionHoverDef,
     utl_gui_qt_abstract.AbsQtActionPressDef,
     #
-    utl_gui_qt_abstract.AbsQtItemStateDef,
+    utl_gui_qt_abstract.AbsQtStateDef,
 ):
     QT_ORIENTATION = None
     def _set_wgt_update_draw_(self):
@@ -3731,7 +3743,7 @@ class _AbsQtSplitterHandle(
         self._set_action_def_init_(self)
         self._set_action_press_def_init_()
         #
-        self._set_item_state_def_init_()
+        self._set_state_def_init_()
         #
         self._hovered_frame_border_color = QtBorderColor.Button
         self._hovered_frame_background_color = QtBackgroundColor.Button

@@ -110,8 +110,9 @@ class AbsQtMenuDef(object):
         return self._menu_content
 
 
-class _QtStatusDef(object):
+class AbsQtStatusDef(object):
     Status = bsc_configure.Status
+    ValidationStatus = bsc_configure.ValidatorStatus
     @classmethod
     def _get_sub_process_status_color_(cls, status):
         if status in [bsc_configure.Status.Started]:
@@ -248,7 +249,7 @@ class AbsQtSubProcessDef(object):
         if count > 0:
             self._sub_process_is_enable = True
             self._sub_process_statuses = [status] * count
-            color, hover_color = _QtStatusDef._get_sub_process_status_color_(status)
+            color, hover_color = AbsQtStatusDef._get_sub_process_status_color_(status)
             self._sub_process_status_colors = [color]*count
             self._hover_sub_process_status_colors = [hover_color]*count
             self._sub_process_finished_results = [False]*count
@@ -267,7 +268,7 @@ class AbsQtSubProcessDef(object):
             self._sub_process_status_colors = []
             self._hover_sub_process_status_colors = []
             for i_status in statuses:
-                i_color, i_hover_color = _QtStatusDef._get_sub_process_status_color_(i_status)
+                i_color, i_hover_color = AbsQtStatusDef._get_sub_process_status_color_(i_status)
                 self._sub_process_status_colors.append(i_color)
                 self._hover_sub_process_status_colors.append(i_hover_color)
 
@@ -281,7 +282,7 @@ class AbsQtSubProcessDef(object):
     def _set_sub_process_status_at_(self, index, status):
         self._sub_process_statuses[index] = status
         #
-        color, hover_color = _QtStatusDef._get_sub_process_status_color_(status)
+        color, hover_color = AbsQtStatusDef._get_sub_process_status_color_(status)
         self._sub_process_status_colors[index] = color
         self._hover_sub_process_status_colors[index] = hover_color
         #
@@ -361,7 +362,7 @@ class AbsQtValidatorDef(object):
 
     def _set_validator_status_at_(self, index, status):
         self._validator_statuses[index] = status
-        color, hover_color = _QtStatusDef._get_validator_status_color_(status)
+        color, hover_color = AbsQtStatusDef._get_validator_status_color_(status)
         self._validator_status_colors[index] = color
         self._hover_validator_status_colors[index] = hover_color
         #
@@ -380,7 +381,7 @@ class AbsQtValidatorDef(object):
             self._validator_status_colors = []
             self._hover_validator_status_colors = []
             for i_status in statuses:
-                i_color, i_hover_color = _QtStatusDef._get_validator_status_color_(i_status)
+                i_color, i_hover_color = AbsQtStatusDef._get_validator_status_color_(i_status)
                 self._validator_status_colors.append(i_color)
                 self._hover_validator_status_colors.append(i_hover_color)
         else:
@@ -715,18 +716,30 @@ class AbsQtIconDef(object):
         self._icon_frame_size = 20, 20
         self._icon_file_draw_size = 16, 16
         self._icon_file_draw_percent = .75
+        #
         self._sub_icon_file_draw_size = 8, 8
         self._icon_color_draw_size = 12, 12
         self._icon_name_draw_size = 12, 12
         self._icon_name_draw_percent = .675
+        #
+        self._icon_state_draw_is_enable = False
+        self._icon_state_draw_rect = QtCore.QRect()
+        self._icon_state_draw_percent = .25
+        self._icon_state_draw_rgb = 72, 72, 72
 
     def _set_icon_enable_(self, boolean):
         self._icon_is_enable = boolean
 
+    def _set_icon_state_draw_enable_(self, boolean):
+        self._icon_state_draw_is_enable = boolean
+
+    def _set_icon_state_rgb_(self, color):
+        pass
+
     def _set_icon_(self, icon):
         self._icon = icon
 
-    def _set_name_icon_enable_(self, boolean):
+    def _set_icon_name_enable_(self, boolean):
         self._icon_name_is_enable = boolean
 
     def _set_icon_file_path_(self, file_path):
@@ -1860,15 +1873,6 @@ class _QtItemOptionPressActionDef(object):
         return False
 
 
-
-class _Values(list):
-    def __init__(self, *args, **kwargs):
-        super(_Values, self).__init__(*args, **kwargs)
-
-    def set_add(self):
-        pass
-
-
 class AbsQtChooseDef(object):
     choose_changed = qt_signal()
     def _set_choose_def_init_(self):
@@ -1912,6 +1916,16 @@ class AbsQtChooseDef(object):
         c = len(values)
         self._choose_values = values
         self._choose_icon_file_paths = [icon_file_path]*c
+
+    def _set_choose_values_clear_(self):
+        self._choose_values = []
+        self._choose_values_current = []
+
+        self._choose_keyword_filter_dict = {}
+        self._choose_tag_filter_dict = {}
+
+        self._choose_icon_file_paths = []
+        self._choose_image_url_dict = {}
 
     def _set_choose_keyword_filter_dict_(self, dict_):
         self._choose_keyword_filter_dict = dict_
@@ -1977,7 +1991,7 @@ class AbsQtValueEntryDef(object):
     def _set_value_entry_changed_connect_to_(self, fnc):
         pass
 
-    def _set_value_entry_build_(self, *args, **kwargs):
+    def _build_value_entry_(self, *args, **kwargs):
         pass
 
     def _get_value_entry_widget_(self):
@@ -1989,7 +2003,7 @@ class AbsQtEntryCompletionDef(object):
     def _set_entry_completion_def_init_(self):
         self._entry_completion_gain_fnc = None
 
-    def _set_entry_completion_build_(self, entry_gui, entry_frame_gui):
+    def _build_entry_completion_(self, entry_gui, entry_frame_gui):
         self._value_entry = entry_gui
         self._value_entry_frame = entry_frame_gui
         #
@@ -2003,7 +2017,7 @@ class AbsQtEntryCompletionDef(object):
             self._set_entry_completion_popup_start_
         )
         entry_gui.user_entry_cleared.connect(
-            self._set_entry_completion_popup_end_
+            self._set_entry_completion_popup_kill_
         )
         entry_gui.up_key_pressed.connect(
             self._entry_completion_frame._set_popup_scroll_to_pre_
@@ -2030,8 +2044,8 @@ class AbsQtEntryCompletionDef(object):
     def _set_entry_completion_popup_start_(self):
         self._entry_completion_frame._set_popup_start_()
 
-    def _set_entry_completion_popup_end_(self):
-        self._entry_completion_frame._set_popup_end_()
+    def _set_entry_completion_popup_kill_(self):
+        self._entry_completion_frame._set_popup_activated_(False)
 
 
 class AbsQtEntryHistoryDef(object):
@@ -2039,17 +2053,17 @@ class AbsQtEntryHistoryDef(object):
         self._widget = widget
         self._entry_history_is_enable = False
         self._entry_history_key = None
-        self.entry_history_value_validation_fnc = None
+        self._entry_history_value_validation_fnc = None
 
     def _set_entry_history_enable_(self, boolean):
         self._entry_history_is_enable = boolean
 
     def _set_entry_history_validation_fnc_(self, fnc):
-        self.entry_history_value_validation_fnc = fnc
+        self._entry_history_value_validation_fnc = fnc
 
     def _get_entry_history_value_is_valid_(self, value):
-        if self.entry_history_value_validation_fnc is not None:
-            return self.entry_history_value_validation_fnc(value)
+        if self._entry_history_value_validation_fnc is not None:
+            return self._entry_history_value_validation_fnc(value)
         return True
 
     def _set_entry_history_key_(self, key):
@@ -2057,12 +2071,12 @@ class AbsQtEntryHistoryDef(object):
         #
         self._entry_history_key = key
 
-        self._set_entry_history_refresh_()
+        self._refresh_entry_history_()
 
     def _set_entry_history_value_add_(self, *args, **kwargs):
         pass
 
-    def _set_entry_history_refresh_(self):
+    def _refresh_entry_history_(self):
         pass
 
     def _set_entry_history_show_latest_(self):
@@ -2809,22 +2823,27 @@ class AbsQtViewFilterTgtDef(object):
                     i._set_hidden_(False)
 
 
-class AbsQtItemStateDef(object):
-    def _set_item_state_def_init_(self):
-        self._item_state = utl_gui_core.State.NORMAL
-        self._item_state_color = Brush.TEXT_NORMAL
+class AbsQtStateDef(object):
+    ActionState = bsc_configure.ActionState
+    def _set_state_def_init_(self):
+        self._state = utl_gui_core.State.NORMAL
+        self._state_draw_is_enable = False
+        self._state_color = Brush.TEXT_NORMAL
 
-    def _set_item_state_(self, status, *args, **kwargs):
-        self._item_state = status
+    def _set_state_(self, *args, **kwargs):
+        self._state = args[0]
 
-    def _get_item_state_(self, *args, **kwargs):
-        return self._item_state
+    def _get_state_(self, *args, **kwargs):
+        return self._state
 
-    def _get_item_state_color_(self):
-        return self._item_state_color
+    def _get_state_color_(self):
+        return self._state_color
 
-    def _set_item_state_color_(self, color):
-        self._item_state_color = color
+    def _set_state_color_(self, color):
+        self._state_color = color
+
+    def _set_state_draw_enable_(self, boolean):
+        self._state_draw_is_enable = boolean
 
 
 class AbsQtDagDef(object):
@@ -2948,7 +2967,7 @@ class AbsQtViewStateDef(object):
         if isinstance(items, (tuple, list)):
             lis = []
             for i_item in items:
-                lis.append(i_item._get_item_state_())
+                lis.append(i_item._get_state_())
             return lis
         return []
 
@@ -2956,7 +2975,7 @@ class AbsQtViewStateDef(object):
         if isinstance(items, (tuple, list)):
             lis = []
             for i_item in items:
-                lis.append(i_item._get_item_state_color_())
+                lis.append(i_item._get_state_color_())
             return lis
         return []
 
@@ -3299,7 +3318,7 @@ class AbsQtItemValueTypeConstantEntryDef(object):
         #
         self._value_entry = None
 
-    def _set_value_entry_build_(self, value_type):
+    def _build_value_entry_(self, value_type):
         pass
 
     def _get_value_entry_widget_(self):
@@ -3350,7 +3369,7 @@ class AbsQtValueEnumerateEntryDef(object):
     def _set_wgt_update_(self):
         raise NotImplementedError()
 
-    def _set_value_entry_build_(self, value_type):
+    def _build_value_entry_(self, value_type):
         pass
 
     def _get_value_entry_widget_(self):
@@ -3442,7 +3461,7 @@ class _QtArrayValueEntryDef(object):
         self._value = []
         self._value_entry_widgets = []
 
-    def _set_value_entry_build_(self, value_size, value_type):
+    def _build_value_entry_(self, value_size, value_type):
         pass
 
     def _set_value_type_(self, value_type):
@@ -3454,7 +3473,7 @@ class _QtArrayValueEntryDef(object):
         return self._item_value_type
 
     def _set_value_size_(self, size):
-        self._set_value_entry_build_(size, self._item_value_type)
+        self._build_value_entry_(size, self._item_value_type)
 
     def _get_value_size_(self):
         return len(self._value_entry_widgets)

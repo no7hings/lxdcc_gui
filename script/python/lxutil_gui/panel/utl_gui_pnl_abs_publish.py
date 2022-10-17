@@ -585,7 +585,7 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
 
         if contents:
             utl_core.DialogWindow.set_create(
-                self._session.gui_name,
+                label=self._session.gui_name,
                 content=u'\n'.join(contents),
                 status=utl_core.DialogWindow.ValidatorStatus.Error,
                 #
@@ -726,7 +726,8 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
 
         if self._rsv_scene_properties:
             w = utl_core.DialogWindow.set_create(
-                'Publish for {}'.format(self._rsv_task),
+                label=self._session.gui_name,
+                sub_label='Publish for {}'.format(self._rsv_task),
                 content=(
                     u'1. choose a version type in "version type";\n'
                     u'    a). default is "downstream"\n'
@@ -750,7 +751,9 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
                 #
                 parent=self.widget,
                 #
-                use_exec=False
+                use_exec=False,
+                #
+                usd_window_modality=False
             )
 
             w.set_yes_completed_notify_enable(True)

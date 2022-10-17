@@ -28,6 +28,8 @@ option:
         color-tool-tip: '255, 255, 191, 255'
         #
         color-icon: '191, 191, 191, 255'
+        #
+        color-error: '255, 0, 63, 255'
     #
     border:
         color-transparent: '0, 0, 0, 0'

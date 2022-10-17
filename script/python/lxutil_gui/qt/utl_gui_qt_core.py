@@ -545,6 +545,10 @@ class QtBackgroundColor(object):
         *utl_gui_core.QtStyleMtd.get_background('color-item-loading')
     )
 
+    Error = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_background('color-error')
+    )
+
 
 class QtFontColor(object):
     @staticmethod

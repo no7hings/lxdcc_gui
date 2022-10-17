@@ -44,6 +44,11 @@ class AbsPrxDialogWindow(
 
         self._completed_content = 'process is completed, press "Close" to continue'
 
+    def set_window_modality(self, boolean):
+        self.widget.setWindowModality(
+            [_utl_gui_qt_wgt_utility.QtCore.Qt.NonModal, _utl_gui_qt_wgt_utility.QtCore.Qt.WindowModal][boolean]
+        )
+
     def set_yes_completed_notify_enable(self, boolean):
         self._notify_when_yes_completed = boolean
 
@@ -70,12 +75,16 @@ class AbsPrxDialogWindow(
         self._set_progresses_def_init_(qt_progress_bar)
         self._central_layout.addWidget(qt_progress_bar)
         #
+        s = _utl_gui_prx_wdt_utility.PrxScrollArea()
+        self._central_layout.addWidget(s.widget)
+        #
         self._customize_widget = _utl_gui_qt_wgt_utility.QtWidget()
-        self._central_layout.addWidget(self._customize_widget)
+        s.set_widget_add(self._customize_widget)
         self._customize_widget.setSizePolicy(
             utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
             utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding
         )
+
         self._customize_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._customize_widget)
         self._customize_layout.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignTop)
         # option
@@ -84,9 +93,9 @@ class AbsPrxDialogWindow(
         self._options_prx_node.set_hide()
         # tip
         self._tip_group = _utl_gui_prx_wdt_utility.PrxExpandedGroup()
+        self._customize_layout.addWidget(self._tip_group.widget)
         self._tip_group.set_visible(False)
         self._tip_group.set_name('tips')
-        self._customize_layout.addWidget(self._tip_group.widget)
         self._tip_text_browser = _utl_gui_prx_wdt_utility.PrxTextBrowser()
         self._tip_group.set_widget_add(self._tip_text_browser)
         #

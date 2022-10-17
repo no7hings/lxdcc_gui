@@ -559,10 +559,10 @@ class AbsPrxItemFilterTgtDef(object):
         return self.item._get_item_tag_filter_tgt_statistic_enable_()
 
     def get_states(self):
-        return self.item._get_item_state_()
+        return self.item._get_state_()
 
     def set_states(self, *args, **kwargs):
-        self.item._set_item_state_(*args, **kwargs)
+        self.item._set_state_(*args, **kwargs)
 
     def set_keyword_filter_keys_tgt_update(self, keys):
         self.item._set_item_keyword_filter_keys_tgt_update_(keys)

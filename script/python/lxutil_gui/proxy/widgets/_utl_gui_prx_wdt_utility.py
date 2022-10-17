@@ -54,7 +54,7 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         self._head._set_icon_name_text_(name)
 
     def set_name_icon_enable(self, boolean):
-        self._head._set_name_icon_enable_(boolean)
+        self._head._set_icon_name_enable_(boolean)
 
     def set_expand_icon_file(self, icon_file_path_0, icon_file_path_1):
         self._head._set_expand_icon_file_path_(

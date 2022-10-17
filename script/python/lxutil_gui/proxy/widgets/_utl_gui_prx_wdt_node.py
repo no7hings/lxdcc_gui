@@ -1159,20 +1159,20 @@ class PrxArrayEntry(AbsRsvTypeQtEntry):
 class PrxIntegerArrayEntry(PrxArrayEntry):
     def __init__(self, *args, **kwargs):
         super(PrxIntegerArrayEntry, self).__init__(*args, **kwargs)
-        self._qt_entry_widget._set_value_entry_build_(2, int)
+        self._qt_entry_widget._build_value_entry_(2, int)
 
 
 class PrxFloatArrayEntry(PrxArrayEntry):
     def __init__(self, *args, **kwargs):
         super(PrxFloatArrayEntry, self).__init__(*args, **kwargs)
-        self._qt_entry_widget._set_value_entry_build_(2, float)
+        self._qt_entry_widget._build_value_entry_(2, float)
 
 
 class PrxRgbaEntry(PrxConstantEntry):
     QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtRgbaValueEntryItem
     def __init__(self, *args, **kwargs):
         super(PrxRgbaEntry, self).__init__(*args, **kwargs)
-        # self._qt_entry_widget._set_value_entry_build_(3, float)
+        # self._qt_entry_widget._build_value_entry_(3, float)
 
 
 class PrxBooleanEntry(AbsRsvTypeQtEntry):

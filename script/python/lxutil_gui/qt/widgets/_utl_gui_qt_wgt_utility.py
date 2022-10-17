@@ -28,7 +28,7 @@ class QtItemDelegate(QtWidgets.QItemDelegate):
 
 class QtWidget(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtStatusDef
+    utl_gui_qt_abstract.AbsQtStatusDef
 ):
     def __init__(self, *args, **kwargs):
         super(QtWidget, self).__init__(*args, **kwargs)
@@ -641,7 +641,7 @@ class QtMainWindow(
 
 class QtDialog(
     QtWidgets.QDialog,
-    utl_gui_qt_abstract._QtStatusDef,
+    utl_gui_qt_abstract.AbsQtStatusDef,
     QtThreadDef
 ):
     size_changed = qt_signal()
@@ -1345,7 +1345,7 @@ class QtListWidgetItem(
     #
     utl_gui_qt_abstract.AbsQtItemFilterDef,
     #
-    utl_gui_qt_abstract.AbsQtItemStateDef,
+    utl_gui_qt_abstract.AbsQtStateDef,
     #
     utl_gui_qt_abstract.AbsQtDagDef,
     utl_gui_qt_abstract.AbsQtVisibleDef,
@@ -1362,7 +1362,7 @@ class QtListWidgetItem(
         self._visible_tgt_key = None
         self._set_item_filter_def_init_()
         #
-        self._set_item_state_def_init_()
+        self._set_state_def_init_()
         #
         self._set_dag_def_init_()
         self._set_visible_def_init_()
@@ -2714,7 +2714,7 @@ class _QtEntryFrame(
     QtWidgets.QWidget,
     #
     utl_gui_qt_abstract.AbsQtFrameDef,
-    utl_gui_qt_abstract._QtStatusDef,
+    utl_gui_qt_abstract.AbsQtStatusDef,
 ):
     # def _get_action_is_enable_(self):
     #     pass

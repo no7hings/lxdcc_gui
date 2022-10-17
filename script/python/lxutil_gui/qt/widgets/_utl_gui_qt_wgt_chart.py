@@ -1073,7 +1073,7 @@ class _QtSequenceChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtNameDef,
     utl_gui_qt_abstract._QtChartDef,
-    utl_gui_qt_abstract._QtStatusDef,
+    utl_gui_qt_abstract.AbsQtStatusDef,
     #
     utl_gui_qt_abstract.AbsQtMenuDef,
 ):
