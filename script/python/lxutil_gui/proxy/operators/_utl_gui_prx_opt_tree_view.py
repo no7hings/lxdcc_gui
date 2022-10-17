@@ -6,6 +6,8 @@ from lxbasic import bsc_core
 
 import lxbasic.objects as bsc_objects
 
+from lxutil_gui import utl_gui_configure
+
 from lxutil_gui.proxy import utl_gui_prx_core
 
 
@@ -208,15 +210,15 @@ class PrxDccObjTreeViewTagFilterOpt(object):
                         i_prx_item_src.set_hidden(boolean=True, ancestors=True)
 
     def set_filter(self):
-        tag_filter_src_all_keys = []
+        tag_filter_all_keys_src = []
         for i_prx_item_src in self._prx_tree_view_src._item_dict.values():
             tag_filter_src_keys = i_prx_item_src.get_tag_filter_src_keys()
             for tag_filter_src_key in tag_filter_src_keys:
                 if i_prx_item_src.get_is_checked() is True:
-                    if tag_filter_src_key not in tag_filter_src_all_keys:
-                        tag_filter_src_all_keys.append(tag_filter_src_key)
+                    if tag_filter_src_key not in tag_filter_all_keys_src:
+                        tag_filter_all_keys_src.append(tag_filter_src_key)
         #
-        self._prx_tree_view_tgt.set_tag_filter_tgt_keys(tag_filter_src_all_keys)
+        self._prx_tree_view_tgt.set_tag_filter_all_keys_src(tag_filter_all_keys_src)
 
     def get_filter_dict(self):
         dic = collections.OrderedDict()
@@ -241,7 +243,7 @@ class PrxDccObjTreeViewTagFilterOpt(object):
         for i_key in keys:
             i_path = self._to_filter_key_path_(i_key)
             #
-            prx_item_tgt.set_tag_filter_tgt_mode('A+B')
+            prx_item_tgt.set_tag_filter_tgt_mode(utl_gui_configure.TagFilterMode.MatchAll)
             prx_item_tgt.set_tag_filter_tgt_key_add(
                 i_path, ancestors=True
             )
@@ -252,13 +254,13 @@ class PrxDccObjTreeViewTagFilterOpt(object):
             )
             count = len(self._filter_content.get(i_key))
             #
-            prx_item_src = self._set_registry_src_(
+            prx_item_src = self._get_item_src_(
                 i_path, dcc_obj, expand_depth
             )
 
             prx_item_src.set_name(str(count), 1)
 
-    def _set_registry_src_(self, path, dcc_obj=None, expand_depth=1):
+    def _get_item_src_(self, path, dcc_obj=None, expand_depth=1):
         if path in self._obj_add_dict:
             return self._obj_add_dict[path]
         #
@@ -531,7 +533,7 @@ class PrxStgObjTreeViewAddOpt(object):
             #
             self._obj_add_dict[obj_key] = prx_item
             prx_item.set_checked(True)
-            prx_item.set_keyword_filter_tgt_contexts([obj.path, obj.type])
+            prx_item.set_keyword_filter_keys_tgt_update([obj.path, obj.type])
             obj.set_obj_gui(prx_item)
             prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
             if obj.get_is_file() is True:
@@ -1013,7 +1015,9 @@ class PrxRsvObjTreeViewAddOpt(object):
                 )
             #
             prx_item.set_checked(True)
-            prx_item.set_keyword_filter_tgt_contexts([obj_path, obj_type])
+            prx_item.set_keyword_filter_keys_tgt_update(
+                [obj_path, obj_type]
+            )
             obj.set_obj_gui(prx_item)
             prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
             self._obj_add_dict[obj_path] = prx_item

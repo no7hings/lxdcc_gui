@@ -541,16 +541,16 @@ class AbsPrxItemFilterTgtDef(object):
         raise NotImplementedError()
 
     def set_tag_filter_tgt_mode(self, *args, **kwargs):
-        self.item._set_item_tag_filter_tgt_mode_(*args, **kwargs)
+        self.item._set_item_tag_filter_mode_(*args, **kwargs)
 
     def get_tag_filter_tgt_mode(self):
-        return self.item._get_item_tag_filter_tgt_mode_()
+        return self.item._get_item_tag_filter_mode_()
 
     def set_tag_filter_tgt_key_add(self, *args, **kwargs):
-        self.item._set_item_tag_filter_tgt_key_add_(*args, **kwargs)
+        self.item._set_item_tag_filter_keys_tgt_add_(*args, **kwargs)
 
     def get_tag_filter_tgt_keys(self):
-        return self.item._get_item_tag_filter_tgt_keys_()
+        return self.item._get_item_tag_filter_keys_tgt_()
 
     def set_tag_filter_tgt_statistic_enable(self, *args, **kwargs):
         self.item._set_item_tag_filter_tgt_statistic_enable_(*args, **kwargs)
@@ -564,11 +564,11 @@ class AbsPrxItemFilterTgtDef(object):
     def set_states(self, *args, **kwargs):
         self.item._set_item_state_(*args, **kwargs)
 
-    def set_keyword_filter_tgt_contexts(self, contexts):
-        self.item._set_item_keyword_filter_tgt_contexts_(contexts)
+    def set_keyword_filter_keys_tgt_update(self, keys):
+        self.item._set_item_keyword_filter_keys_tgt_update_(keys)
 
-    def get_keyword_filter_tgt_contexts(self):
-        return self.item._get_item_keyword_filter_tgt_contexts_()
+    def get_keyword_filter_keys_tgt(self):
+        return self.item._get_item_keyword_filter_keys_tgt_()
 
 
 class AbsPrxViewFilterTagDef(object):
@@ -582,8 +582,8 @@ class AbsPrxViewFilterTagDef(object):
     def get_tag_filter_tgt_statistic_raw(self):
         return self.view._get_view_tag_filter_tgt_statistic_raw_()
 
-    def set_tag_filter_tgt_keys(self, *args, **kwargs):
-        self.view._set_view_tag_filter_tgt_keys_(*args, **kwargs)
+    def set_tag_filter_all_keys_src(self, *args, **kwargs):
+        self.view._set_view_tag_filter_all_keys_src_(*args, **kwargs)
         #
         self.set_items_visible_by_any_filter()
         #

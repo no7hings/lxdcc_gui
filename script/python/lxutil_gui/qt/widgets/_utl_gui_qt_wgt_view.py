@@ -1331,8 +1331,8 @@ class _QtGuideBar(
     utl_gui_qt_abstract.AbsQtGuideActionDef,
     utl_gui_qt_abstract.AbsQtGuideChooseActionDef,
 ):
-    CHOOSE_RECT_CLS = _utl_gui_qt_wgt_item._QtItemGuideRect
-    CHOOSE_DROP_FRAME_CLASS = _utl_gui_qt_wgt_utility._QtPopupGuideFrame
+    CHOOSE_RECT_CLS = _utl_gui_qt_wgt_item._QtGuideRect
+    CHOOSE_FRAME_CLASS = _utl_gui_qt_wgt_utility._QtPopupGuideFrame
     def __init__(self, *args, **kwargs):
         super(_QtGuideBar, self).__init__(*args, **kwargs)
         self.installEventFilter(self)

@@ -1,4 +1,6 @@
 # coding:utf-8
+import fnmatch
+
 import collections
 
 import os
@@ -76,6 +78,8 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         self._rsv_task_unit_runner = None
 
         self._session_dict = {}
+
+        self._value_completion_data = set()
     #
     def _set_rsv_option_update_(self, raw):
         pass
@@ -104,7 +108,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         self._rsv_obj_tree_view_0 = prx_widgets.PrxTreeView()
         v_s.set_widget_add(self._rsv_obj_tree_view_0)
         self._rsv_obj_tree_view_0.set_filter_history_key(
-            'filter.{}-task'.format(self._session.name)
+            'filter.{}-entities'.format(self._session.name)
         )
         #
         self._filter_tree_viewer_0 = prx_widgets.PrxTreeView()
@@ -217,6 +221,10 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         self._prx_obj_guide_bar.set_item_clicked_connect_to(self._set_rsv_obj_select_)
         # self._prx_obj_guide_bar.set_item_changed_connect_to(self._set_rsv_obj_select_)
 
+        self._rsv_obj_tree_view_0.set_filter_completion_gain_fnc(
+            self._value_completion_gain_fnc_
+        )
+
     def _set_gui_rsv_task_units_refresh_by_selection_(self):
         tree_item_prxes = self._rsv_obj_tree_view_0.get_selected_items()
         if self._rsv_task_unit_runner is not None:
@@ -250,6 +258,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         #
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
         self._prx_obj_guide_bar.set_clear()
+        self._value_completion_data = set()
         #
         self._set_gui_add_rsv_project_(rsv_project)
         #
@@ -262,6 +271,15 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
         if is_create is True:
             prx_item.set_expanded(True, ancestors=True)
         return show_threads
+    #
+    def _value_completion_gain_fnc_(self, *args, **kwargs):
+        keyword = args[0]
+        if keyword:
+            _ = fnmatch.filter(
+                self._value_completion_data, '*{}*'.format(args[0])
+            )
+            return bsc_core.TextsMtd.set_sort_by_initial(_)
+        return []
     #
     def _set_add_rsv_entities_(self, rsv_project):
         def post_fnc_():
@@ -305,6 +323,7 @@ class AbsEntitiesLoaderPanel_(prx_widgets.PrxToolWindow):
     def _set_gui_add_rsv_entities_(self, rsv_entities):
         for i_rsv_entity in rsv_entities:
             self._set_gui_add_rsv_entity_(i_rsv_entity)
+            self._value_completion_data.add(i_rsv_entity.name)
         #
         self._count += len(rsv_entities)
 

@@ -2028,7 +2028,7 @@ class _QtNGImage(_QtNGNode):
             )
 
         if self._image_file_path is not None:
-            painter._set_image_draw_by_rect_(
+            painter._set_image_file_path_draw_by_rect_(
                 self._ng_node_rect_frame,
                 self._image_file_path,
                 offset=offset
@@ -2232,7 +2232,7 @@ class _QtNGImageGraph(_QtNGGraph):
             )
             i_image_file_path = i_ng_node._get_image_file_path_()
             # painter.fillRect(i_i_rect, QtGui.QColor(255, 0, 255))
-            painter._set_image_draw_by_rect_(
+            painter._set_image_file_path_draw_by_rect_(
                 i_i_rect,
                 i_image_file_path,
                 offset=offset

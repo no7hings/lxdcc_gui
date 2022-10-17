@@ -10,306 +10,7 @@ from lxutil_gui.qt import utl_gui_qt_abstract
 from lxutil_gui.qt import utl_gui_qt_core
 
 
-class QtLineEdit_(
-    QtWidgets.QLineEdit,
-    utl_gui_qt_abstract.AbsQtValueDef,
-    #
-    utl_gui_qt_abstract.AbsQtEntryDef,
-    utl_gui_qt_abstract.AbsQtEntryDropDef,
-):
-    entry_changed = qt_signal()
-    user_entry_changed = qt_signal()
-    entry_finished = qt_signal()
-    up_key_pressed = qt_signal()
-    down_key_pressed = qt_signal()
-    def __init__(self, *args, **kwargs):
-        super(QtLineEdit_, self).__init__(*args, **kwargs)
-        self.installEventFilter(self)
-        self.setPalette(QtDccMtd.get_qt_palette())
-        self.setFont(Font.NAME)
-        self.setFocusPolicy(QtCore.Qt.ClickFocus)
-        # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        #
-        self._item_value_type = str
-        #
-        self._item_value_default = None
-        #
-        self._maximum = 1
-        self._minimum = 0
-        #
-        self.returnPressed.connect(self._set_enter_finished_emit_send_)
-        self.textEdited.connect(self._set_user_enter_changed_emit_send_)
-        self.textChanged.connect(self._set_enter_changed_emit_send_)
-        #
-        self.setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QLineEdit')
-        )
-        self._set_value_def_init_(self)
-        self._set_entry_def_init_(self)
-        self._set_entry_drop_def_init_(self)
-        self.setAcceptDrops(self._entry_drop_is_enable)
-
-    def _set_action_wheel_update_(self, event):
-        if self._item_value_type in [int, float]:
-            delta = event.angleDelta().y()
-            pre_value = self._get_item_value_()
-            if delta > 0:
-                self._set_item_value_(pre_value+1)
-            else:
-                self._set_item_value_(pre_value-1)
-            #
-            self._set_enter_changed_emit_send_()
-
-    def eventFilter(self, *args):
-        widget, event = args
-        if widget == self:
-            if event.type() == QtCore.QEvent.FocusIn:
-                self._is_focused = True
-                entry_frame = self._get_entry_frame_()
-                if isinstance(entry_frame, _utl_gui_qt_wgt_utility._QtEntryFrame):
-                    entry_frame._set_focused_(True)
-            elif event.type() == QtCore.QEvent.FocusOut:
-                self._is_focused = False
-                entry_frame = self._get_entry_frame_()
-                if isinstance(entry_frame, _utl_gui_qt_wgt_utility._QtEntryFrame):
-                    entry_frame._set_focused_(False)
-                #
-                self._set_value_completion_()
-            elif event.type() == QtCore.QEvent.Wheel:
-                self._set_action_wheel_update_(event)
-            elif event.type() == QtCore.QEvent.KeyPress:
-                if event.key() == QtCore.Qt.Key_Up:
-                    self.up_key_pressed.emit()
-                if event.key() == QtCore.Qt.Key_Down:
-                    self.down_key_pressed.emit()
-        return False
-
-    def _set_entry_drop_enable_(self, boolean):
-        super(QtLineEdit_, self)._set_entry_drop_enable_(boolean)
-        self.setAcceptDrops(boolean)
-
-    def _set_action_drop_execute_(self, event):
-        data = event.mimeData()
-        if data.hasUrls():
-            urls = event.mimeData().urls()
-            if urls:
-                value = urls[0].toLocalFile()
-                if self._get_value_is_valid_(value):
-                    self._set_item_value_(value)
-                    return True
-        return False
-
-    def dropEvent(self, event):
-        if self._set_action_drop_execute_(event) is True:
-            event.accept()
-        else:
-            event.ignore()
-
-    def contextMenuEvent(self, event):
-        menu_raw = [
-            ('basic', ),
-            ('copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
-            ('paste', None, (True, self.paste, False), QtGui.QKeySequence.Paste),
-            ('cut', None, (True, self.cut, False), QtGui.QKeySequence.Cut),
-            ('extend', ),
-            ('undo', None, (True, self.undo, False), QtGui.QKeySequence.Undo),
-            ('redo', None, (True, self.redo, False), QtGui.QKeySequence.Redo),
-            ('select all', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll),
-        ]
-        #
-        if self.isReadOnly():
-            menu_raw = [
-                ('basic',),
-                ('copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
-                ('extend', ),
-                ('select all', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll)
-            ]
-        #
-        if self._entry_use_as_storage is True:
-            menu_raw.extend(
-                [
-                    ('system',),
-                    ('show in system', 'file/folder', (True, self._set_open_in_system_, False), QtGui.QKeySequence.Open)
-                ]
-            )
-        #
-        if menu_raw:
-            self._qt_menu = _utl_gui_qt_wgt_utility.QtMenu(self)
-            self._qt_menu._set_menu_raw_(menu_raw)
-            self._qt_menu._set_show_()
-
-    def _set_enter_finished_emit_send_(self):
-        # noinspection PyUnresolvedReferences
-        self.entry_finished.emit()
-
-    def _set_enter_changed_emit_send_(self):
-        # noinspection PyUnresolvedReferences
-        self.entry_changed.emit()
-
-    def _set_user_enter_changed_emit_send_(self):
-        # noinspection PyUnresolvedReferences
-        self.user_entry_changed.emit()
-
-    def _set_value_completion_(self):
-        if self._item_value_type in [int, float]:
-            if not self.text():
-                self._set_item_value_(0)
-
-    def _set_item_value_type_(self, value_type):
-        self._item_value_type = value_type
-        if self._item_value_type is None:
-            pass
-        elif self._item_value_type is str:
-            pass
-            # self._set_use_as_string_()
-        elif self._item_value_type is int:
-            self._set_use_as_integer_()
-        elif self._item_value_type is float:
-            self._set_use_as_float_()
-
-    def _get_item_value_type_(self):
-        return self._item_value_type
-
-    def _set_open_in_system_(self):
-        _ = self.text()
-        if _:
-            bsc_core.StoragePathOpt(_).set_open_in_system()
-
-    def _set_entry_use_as_storage_(self, boolean=True):
-        super(QtLineEdit_, self)._set_entry_use_as_storage_(boolean)
-        if boolean is True:
-            i_action = QtWidgets.QAction(self)
-            i_action.triggered.connect(
-                self._set_open_in_system_
-            )
-            i_action.setShortcut(
-                QtGui.QKeySequence.Open
-            )
-            i_action.setShortcutContext(
-                QtCore.Qt.WidgetShortcut
-            )
-            self.addAction(i_action)
-
-    def _set_use_as_string_(self):
-        reg = QtCore.QRegExp(r'^[a-zA-Z0-9_]+$')
-        validator = QtGui.QRegExpValidator(reg, self)
-        self.setValidator(validator)
-        # self.setToolTip(
-        #     (
-        #         '"LMB-click" to entry\n'
-        #     )
-        # )
-
-    def _set_use_as_integer_(self):
-        self.setValidator(QtGui.QIntValidator())
-        self._set_value_completion_()
-        # self.setToolTip(
-        #     (
-        #         '"LMB-click" to entry\n'
-        #         '"MMB-wheel" to modify "int" value'
-        #     )
-        # )
-
-    def _set_use_as_float_(self):
-        self.setValidator(QtGui.QDoubleValidator())
-        self._set_value_completion_()
-        # self.setToolTip(
-        #     (
-        #         '"LMB-click" to entry\n'
-        #         '"MMB-wheel" to modify "float" value'
-        #     )
-        # )
-
-    def _set_use_as_frames_(self):
-        self._set_item_value_type_(str)
-        reg = QtCore.QRegExp(r'^[0-9-,]+$')
-        validator = QtGui.QRegExpValidator(reg, self)
-        self.setValidator(validator)
-        # self.setToolTip(
-        #     (
-        #         '"LMB-click" to entry\n'
-        #         'etc:\n'
-        #         '   1\n'
-        #         '   1-2\n'
-        #         '   1-5,7,50-100,101'
-        #     )
-        # )
-
-    def _set_use_as_rgba_(self):
-        self._set_item_value_type_(str)
-        reg = QtCore.QRegExp(r'^[0-9.,]+$')
-        validator = QtGui.QRegExpValidator(reg, self)
-        self.setValidator(validator)
-
-    def _set_value_maximum_(self, value):
-        self._maximum = value
-
-    def _get_value_maximum_(self):
-        return self._maximum
-
-    def _set_value_minimum_(self, value):
-        self._minimum = value
-
-    def _get_value_minimum_(self):
-        return self._minimum
-
-    def _set_value_range_(self, maximum, minimum):
-        self._set_value_maximum_(maximum), self._set_value_minimum_(minimum)
-
-    def _get_value_range_(self):
-        return self._get_value_maximum_(), self._get_value_minimum_()
-
-    def _get_item_value_(self):
-        _ = self.text()
-        if self._item_value_type == str:
-            return _
-        elif self._item_value_type == int:
-            return int(_)
-        elif self._item_value_type == float:
-            return float(_)
-        return _
-
-    def _set_item_value_(self, value):
-        if value is not None:
-            value = self._item_value_type(value)
-            if isinstance(value, unicode):
-                value = value.encode('utf-8')
-            else:
-                value = str(value)
-            self.setText(value)
-        else:
-            self.setText('')
-
-    def _get_item_value_default_(self):
-        return self._item_value_default
-
-    def _set_focused_connect_to_(self, widget):
-        pass
-    #
-    def _get_is_selected_(self):
-        boolean = False
-        if self.selectedText():
-            boolean = True
-        return boolean
-
-    def _set_item_value_clear_(self):
-        self._set_item_value_('')
-
-    def _set_enter_enable_(self, boolean):
-        self.setReadOnly(not boolean)
-
-    def _set_focused_(self, boolean):
-        if boolean is True:
-            self.setFocus(
-                QtCore.Qt.MouseFocusReason
-            )
-        else:
-            self.setFocus(
-                QtCore.Qt.NoFocusReason
-            )
-
-
-class _QtListWidget(
+class _QtListEntry(
     utl_gui_qt_abstract.AbsQtListWidget,
     utl_gui_qt_abstract.AbsQtHelpDef,
     #
@@ -322,7 +23,7 @@ class _QtListWidget(
     entry_changed = qt_signal()
     entry_added = qt_signal()
     def __init__(self, *args, **kwargs):
-        super(_QtListWidget, self).__init__(*args, **kwargs)
+        super(_QtListEntry, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
         self.setAttribute(QtCore.Qt.WA_InputMethodEnabled)
         self.setSelectionMode(self.ExtendedSelection)
@@ -383,6 +84,8 @@ class _QtListWidget(
             if event.type() == QtCore.QEvent.KeyPress:
                 if event.key() == QtCore.Qt.Key_Control:
                     self._action_control_flag = True
+                else:
+                    event.ignore()
             elif event.type() == QtCore.QEvent.KeyRelease:
                 if event.key() == QtCore.Qt.Key_Control:
                     self._action_control_flag = False
@@ -475,7 +178,7 @@ class _QtListWidget(
         return [self.itemWidget(i) for i in self.selectedItems()]
 
     def _set_entry_drop_enable_(self, boolean):
-        super(_QtListWidget, self)._set_entry_drop_enable_(boolean)
+        super(_QtListEntry, self)._set_entry_drop_enable_(boolean)
         self.setAcceptDrops(boolean)
         # self.setDragDropMode(self.DropOnly)
         # self.setDropIndicatorShown(True)
@@ -514,6 +217,8 @@ class _QtListWidget(
                 item = self.item(index)
                 self._set_item_widget_delete_(item)
                 self.takeItem(index)
+        #
+        self._set_show_view_items_update_()
 
     def _set_value_append_(self, value):
         if value:
@@ -521,6 +226,11 @@ class _QtListWidget(
                 self._values.append(value)
                 self._set_item_add_(value)
                 self.entry_added.emit()
+
+    def _set_value_extend_(self, values):
+        if values:
+            for i_value in values:
+                self._set_value_append_(i_value)
 
     def _set_values_clear_(self):
         self._values = []
@@ -563,7 +273,7 @@ class _QtListWidget(
         pass
 
     def _set_entry_use_as_storage_(self, boolean):
-        super(_QtListWidget, self)._set_entry_use_as_storage_(boolean)
+        super(_QtListEntry, self)._set_entry_use_as_storage_(boolean)
         if boolean is True:
             i_action = QtWidgets.QAction(self)
             i_action.triggered.connect(
@@ -671,10 +381,10 @@ class QtTextBrowser_(
             self._qt_menu._set_menu_raw_(menu_raw)
             self._qt_menu._set_show_()
 
-    def _get_item_value_(self):
+    def _get_value_(self):
         return self.toPlainText()
 
-    def _set_item_value_(self, value):
+    def _set_value_(self, value):
         if value is not None:
             self.setText(
                 unicode(value).encode('utf-8')
@@ -987,7 +697,7 @@ class _QtPressItem(
         self._set_action_check_def_init_()
         self._set_item_option_press_action_def_init_()
         #
-        self._set_item_check_update_()
+        self._set_check_update_draw_()
         #
         r, g, b = 167, 167, 167
         h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
@@ -1046,10 +756,10 @@ class _QtPressItem(
         c_x, c_y = x, y
         c_w, c_h = w, h
         if check_enable is True:
-            self._item_check_frame_rect.setRect(
+            self._check_rect.setRect(
                 _x, _y, f_w, f_h
             )
-            self._item_check_icon_rect.setRect(
+            self._check_icon_draw_rect.setRect(
                 _x + (f_w - i_f_w)/2, _y + (f_h - i_f_h)/2, i_f_w, i_f_h
             )
             _x += f_h
@@ -1173,7 +883,7 @@ class _QtPressItem(
                     self._action_flag = None
                     #
                     flag_raw = [
-                        (check_enable, self._item_check_frame_rect, self.ActionFlag.CheckClick),
+                        (check_enable, self._check_rect, self.ActionFlag.CheckClick),
                         (click_enable, self._frame_draw_rect, self.ActionFlag.PressClick),
                         (option_click_enable, self._option_click_rect, self.ActionFlag.OptionClick),
                     ]
@@ -1191,7 +901,7 @@ class _QtPressItem(
                     self.update()
                 elif event.type() == QtCore.QEvent.MouseButtonRelease:
                     if self._action_flag == self.ActionFlag.CheckClick:
-                        self._set_item_check_swap_()
+                        self._set_check_swap_()
                         self.checked.emit()
                     elif self._action_flag == self.ActionFlag.PressClick:
                         self.clicked.emit()
@@ -1259,8 +969,8 @@ class _QtPressItem(
         # check
         if self._get_action_check_is_enable_() is True:
             painter._set_icon_file_draw_by_rect_(
-                self._item_check_icon_rect,
-                self._item_check_icon_file_path,
+                self._check_icon_draw_rect,
+                self._check_icon_file_path,
                 offset=offset
             )
         # icon
@@ -1346,7 +1056,7 @@ class _QtCheckItem(
         #
         self._set_item_value_default_def_init_()
         #
-        self._set_item_check_update_()
+        self._set_check_update_draw_()
 
     def _set_wgt_update_draw_(self):
         self.update()
@@ -1362,10 +1072,10 @@ class _QtCheckItem(
             x, y, w-1, h-1
         )
         #
-        self._set_item_check_frame_rect_(
+        self._set_check_rect_(
             x, y, f_w, f_h
         )
-        self._set_item_check_icon_rect_(
+        self._set_check_icon_draw_rect_(
             x + (f_w - i_w)/2, y + (f_h - i_h)/2, i_w, i_h
         )
         x += f_w+spacing
@@ -1373,8 +1083,8 @@ class _QtCheckItem(
             x, y, w-x, h
         )
 
-    def _get_item_value_(self):
-        return self._get_item_is_checked_()
+    def _get_value_(self):
+        return self._get_is_checked_()
 
     def eventFilter(self, *args):
         widget, event = args
@@ -1400,22 +1110,22 @@ class _QtCheckItem(
         offset = self._get_action_offset_()
         #
         background_color = painter._get_item_background_color_1_by_rect_(
-            self._item_check_frame_rect,
+            self._check_rect,
             is_hovered=self._action_is_hovered,
             is_actioned=self._get_is_actioned_()
         )
         painter._set_frame_draw_by_rect_(
-            self._item_check_frame_rect,
+            self._check_rect,
             border_color=QtBorderColor.Transparent,
             background_color=background_color,
             border_radius=4,
             offset=offset
         )
         #
-        if self._item_check_icon_file_path is not None:
+        if self._check_icon_file_path is not None:
             painter._set_icon_file_draw_by_rect_(
-                rect=self._item_check_icon_rect,
-                file_path=self._item_check_icon_file_path,
+                rect=self._check_icon_draw_rect,
+                file_path=self._check_icon_file_path,
                 offset=offset
             )
         #
@@ -1457,7 +1167,7 @@ class _QtStatusItem(
         self._set_action_def_init_(self)
         self._set_action_check_def_init_()
         #
-        self._set_item_check_update_()
+        self._set_check_update_draw_()
 
     def _set_wgt_update_draw_(self):
         self.update()
@@ -1494,7 +1204,7 @@ class _QtStatusItem(
         offset = self._get_action_offset_()
         is_hovered = self._get_is_hovered_()
         #
-        if self._get_item_is_checked_():
+        if self._get_is_checked_():
             background_color = [(255, 255, 63), (255, 127, 63)][is_hovered]
             painter._set_icon_name_text_draw_by_rect_(
                 rect=self._icon_color_draw_rect,
@@ -1526,7 +1236,7 @@ class _QtEnumerateConstantEntry(QtWidgets.QComboBox):
         self.view().setPalette(QtDccMtd.get_qt_palette())
         self.setFont(Font.NAME)
         #
-        self.setLineEdit(QtLineEdit_())
+        self.setLineEdit(_utl_gui_qt_wgt_utility.QtLineEdit_())
         #
         self.setStyleSheet(
             (
@@ -1558,29 +1268,6 @@ class _QtEnumerateConstantEntry(QtWidgets.QComboBox):
                 if isinstance(parent, _utl_gui_qt_wgt_utility._QtEntryFrame):
                     parent._set_focused_(False)
         return False
-
-
-class _QtPopupListView(utl_gui_qt_abstract.AbsQtListWidget):
-    def __init__(self, *args, **kwargs):
-        super(_QtPopupListView, self).__init__(*args, **kwargs)
-        self.setDragDropMode(QtWidgets.QListWidget.DragOnly)
-        self.setDragEnabled(False)
-        self.setSelectionMode(QtWidgets.QListWidget.SingleSelection)
-        self.setResizeMode(QtWidgets.QListWidget.Adjust)
-        self.setViewMode(QtWidgets.QListWidget.ListMode)
-        self.setPalette(QtDccMtd.get_qt_palette())
-
-    def paintEvent(self, event):
-        pass
-
-    def _get_maximum_height_(self, count_maximum):
-        rects = [self.visualItemRect(self.item(i)) for i in range(self.count())[:count_maximum]]
-        if rects:
-            rect = rects[-1]
-            y = rect.y()
-            h = rect.height()
-            return y+h+1+4
-        return 20
 
 
 class _QtItemRgbaChooseDropFrame(
@@ -1687,7 +1374,7 @@ class _QtConstantValueEntryItem(
     utl_gui_qt_abstract.AbsQtItemValueTypeConstantEntryDef,
     utl_gui_qt_abstract.AbsQtItemValueDefaultDef,
 ):
-    QT_VALUE_ENTRY_CLASS = QtLineEdit_
+    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_utility.QtLineEdit_
     #
     entry_changed = qt_signal()
     def __init__(self, *args, **kwargs):
@@ -1702,19 +1389,19 @@ class _QtConstantValueEntryItem(
         self._value_entry_layout.setContentsMargins(0, 0, 0, 0)
         self._value_entry_layout.setSpacing(4)
         #
-        self._set_value_entry_widget_build_(self._item_value_type)
+        self._set_value_entry_build_(self._item_value_type)
 
-    def _set_value_entry_widget_build_(self, value_type):
+    def _set_value_entry_build_(self, value_type):
         self._item_value_type = value_type
         #
-        self._value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
-        self._value_entry_layout.addWidget(self._value_entry_widget)
-        self._value_entry_widget._set_item_value_type_(self._item_value_type)
+        self._value_entry = self.QT_VALUE_ENTRY_CLASS()
+        self._value_entry_layout.addWidget(self._value_entry)
+        self._value_entry._set_value_type_(self._item_value_type)
 
     def _set_value_entry_enable_(self, boolean):
         super(_QtConstantValueEntryItem, self)._set_value_entry_enable_(boolean)
 
-        self._value_entry_widget.setReadOnly(not boolean)
+        self._value_entry.setReadOnly(not boolean)
 
         self._frame_background_color = [
             QtBackgroundColor.Basic, QtBackgroundColor.Dark
@@ -1740,9 +1427,9 @@ class _QtScriptValueEntryItem(
         self._set_item_value_type_constant_entry_def_init_()
         self._set_item_value_default_def_init_()
         #
-        self._set_value_entry_widget_build_(self._item_value_type)
+        self._set_value_entry_build_(self._item_value_type)
 
-    def _set_value_entry_widget_build_(self, value_type):
+    def _set_value_entry_build_(self, value_type):
         self._item_value_type = value_type
         #
         self._main_layout = QtVBoxLayout(self)
@@ -1755,17 +1442,17 @@ class _QtScriptValueEntryItem(
         self._value_entry_layout.setContentsMargins(2, 2, 2, 2)
         self._value_entry_layout.setSpacing(2)
         #
-        self._value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
-        self._value_entry_widget._set_entry_frame_(self)
-        # self._value_entry_widget.setReadOnly(False)
-        self._value_entry_layout.addWidget(self._value_entry_widget)
+        self._value_entry = self.QT_VALUE_ENTRY_CLASS()
+        self._value_entry._set_entry_frame_(self)
+        # self._value_entry.setReadOnly(False)
+        self._value_entry_layout.addWidget(self._value_entry)
         #
         self._resize_frame = _utl_gui_qt_wgt_utility._QtVResizeFrame()
         self._resize_frame.hide()
         self._main_layout.addWidget(self._resize_frame)
 
     def _set_item_value_entry_enable_(self, boolean):
-        self._value_entry_widget.setReadOnly(not boolean)
+        self._value_entry.setReadOnly(not boolean)
 
     def _get_resize_frame_(self):
         return self._resize_frame
@@ -1780,7 +1467,7 @@ class _QtScriptValueEntryItem(
     def _set_value_entry_enable_(self, boolean):
         super(_QtScriptValueEntryItem, self)._set_value_entry_enable_(boolean)
 
-        self._value_entry_widget.setReadOnly(not boolean)
+        self._value_entry.setReadOnly(not boolean)
 
         self._frame_background_color = [
             QtBackgroundColor.Basic, QtBackgroundColor.Dark
@@ -1800,9 +1487,9 @@ class _QtRgbaValueEntryItem(
     utl_gui_qt_abstract.AbsQtItemValueTypeConstantEntryDef,
     utl_gui_qt_abstract.AbsQtItemValueDefaultDef,
 ):
-    QT_VALUE_ENTRY_CLASS = QtLineEdit_
+    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_utility.QtLineEdit_
     #
-    CHOOSE_DROP_FRAME_CLASS = _QtItemRgbaChooseDropFrame
+    CHOOSE_FRAME_CLASS = _QtItemRgbaChooseDropFrame
     def _set_wgt_update_draw_(self):
         self.update()
 
@@ -1828,14 +1515,14 @@ class _QtRgbaValueEntryItem(
         self._value_entry_layout.setContentsMargins(20, 0, 0, 0)
         self._value_entry_layout.setSpacing(4)
         #
-        self._set_value_entry_widget_build_(self._item_value_type)
+        self._set_value_entry_build_(self._item_value_type)
 
-    def _set_value_entry_widget_build_(self, value_type):
+    def _set_value_entry_build_(self, value_type):
         self._item_value_type = value_type
         #
-        self._value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
-        self._value_entry_layout.addWidget(self._value_entry_widget)
-        self._value_entry_widget._set_item_value_type_(self._item_value_type)
+        self._value_entry = self.QT_VALUE_ENTRY_CLASS()
+        self._value_entry_layout.addWidget(self._value_entry)
+        self._value_entry._set_value_type_(self._item_value_type)
 
     def _set_wgt_update_geometry_(self):
         super(_QtRgbaValueEntryItem, self)._set_wgt_update_geometry_()
@@ -1897,7 +1584,7 @@ class _QtRgbaValueEntryItem(
             )
 
     def _set_color_choose_drop_(self):
-        widget = self.CHOOSE_DROP_FRAME_CLASS(self)
+        widget = self.CHOOSE_FRAME_CLASS(self)
         # widget._set_popup_offset_(0, 22)
         widget._set_popup_start_()
 
@@ -1917,27 +1604,24 @@ class _QtEnumerateValueEntryItem(
     utl_gui_qt_abstract.AbsQtValueEnumerateEntryDef,
     utl_gui_qt_abstract.AbsQtItemValueDefaultDef,
     #
-    utl_gui_qt_abstract.AbsQtChooseDef,
-    #
     utl_gui_qt_abstract.AbsQtActionDef,
-    #
     utl_gui_qt_abstract.AbsQtActionEntryDef,
-):
-    QT_VALUE_ENTRY_CLASS = QtLineEdit_
     #
-    CHOOSE_DROP_FRAME_CLASS = _utl_gui_qt_wgt_utility._QtPopupChooseFrame
-    COMPLETION_DROP_FRAME_CLASS = _utl_gui_qt_wgt_utility._QtPopupCompletionFrame
+    utl_gui_qt_abstract.AbsQtChooseDef,
+    utl_gui_qt_abstract.AbsQtEntryCompletionDef,
+):
+    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_utility.QtLineEdit_
+    #
+    CHOOSE_FRAME_CLASS = _utl_gui_qt_wgt_utility._QtPopupChooseFrame
+    COMPLETION_FRAME_CLASS = _utl_gui_qt_wgt_utility._QtPopupCompletionFrame
     def __set_choose_popup_(self):
         self._value_entry_choose_frame._set_popup_start_()
-
-    def __set_completion_popup_(self):
-        self._value_entry_completion_frame._set_popup_start_()
 
     def _set_wgt_update_(self):
         values = self._get_item_values_()
         if values:
             if self._value_entry_is_enable is True:
-                value = self._get_item_value_()
+                value = self._get_value_()
                 if value in values:
                     self._value_index_label.show()
                     maximum = len(values)
@@ -1965,8 +1649,9 @@ class _QtEnumerateValueEntryItem(
         #
         self._set_action_entry_def_init_(self)
         self._set_choose_def_init_()
+        self._set_entry_completion_def_init_()
         #
-        self._set_value_entry_widget_build_(self._item_value_type)
+        self._set_value_entry_build_(self._item_value_type)
 
     def eventFilter(self, *args):
         super(_QtEnumerateValueEntryItem, self).eventFilter(*args)
@@ -1981,7 +1666,7 @@ class _QtEnumerateValueEntryItem(
     def _set_action_wheel_update_(self, event):
         delta = event.angleDelta().y()
         values = self._get_item_values_()
-        pre_value = self._get_item_value_()
+        pre_value = self._get_value_()
         maximum = len(values) - 1
         if pre_value in values:
             pre_index = values.index(pre_value)
@@ -1991,11 +1676,11 @@ class _QtEnumerateValueEntryItem(
                 cur_index = pre_index + 1
             cur_index = max(min(cur_index, maximum), 0)
             if cur_index != pre_index:
-                self._set_item_value_(values[cur_index])
+                self._set_value_(values[cur_index])
                 # set value before
                 self._set_choose_changed_emit_send_()
 
-    def _set_value_entry_widget_build_(self, value_type):
+    def _set_value_entry_build_(self, value_type):
         self._item_value_type = value_type
         #
         self._main_layout = QtVBoxLayout(self)
@@ -2008,14 +1693,11 @@ class _QtEnumerateValueEntryItem(
         self._value_entry_layout.setContentsMargins(2, 0, 2, 0)
         self._value_entry_layout.setSpacing(2)
         #
-        self._value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
-        self._value_entry_layout.addWidget(self._value_entry_widget)
-        self._value_entry_widget._set_entry_frame_(self)
-        self._value_entry_widget._set_item_value_type_(self._item_value_type)
-        self._value_entry_widget._set_enter_enable_(False)
-        self._value_entry_widget.user_entry_changed.connect(
-            self.__set_completion_popup_
-        )
+        self._value_entry = self.QT_VALUE_ENTRY_CLASS()
+        self._value_entry_layout.addWidget(self._value_entry)
+        self._value_entry._set_entry_frame_(self)
+        self._value_entry._set_value_type_(self._item_value_type)
+        self._value_entry._set_enter_enable_(False)
         #
         self._value_index_label = _QtTextItem()
         self._value_entry_layout.addWidget(self._value_index_label)
@@ -2040,40 +1722,27 @@ class _QtEnumerateValueEntryItem(
             self.__set_choose_popup_
         )
         #
-        self._value_entry_choose_frame = self.CHOOSE_DROP_FRAME_CLASS(self)
+        self._value_entry_choose_frame = self.CHOOSE_FRAME_CLASS(self)
         # self._value_entry_choose_frame._set_popup_offset_(0, 22)
-        self._value_entry_choose_frame._set_popup_target_entry_(self._value_entry_widget)
+        self._value_entry_choose_frame._set_popup_target_entry_(self._value_entry)
         self._value_entry_choose_frame._set_popup_target_entry_frame_(self)
         self._value_entry_choose_frame.hide()
-        self._value_entry_widget.up_key_pressed.connect(
+        self._value_entry.up_key_pressed.connect(
             self._value_entry_choose_frame._set_popup_scroll_to_pre_
         )
-        self._value_entry_widget.down_key_pressed.connect(
+        self._value_entry.down_key_pressed.connect(
             self._value_entry_choose_frame._set_popup_scroll_to_next_
         )
-        self._value_entry_widget.entry_finished.connect(
+        self._value_entry.entry_finished.connect(
             self._value_entry_choose_frame._set_popup_end_
         )
         #
-        self._value_entry_completion_frame = self.COMPLETION_DROP_FRAME_CLASS(self)
-        # self._value_entry_completion_frame._set_popup_offset_(0, 22)
-        self._value_entry_completion_frame._set_popup_target_entry_(self._value_entry_widget)
-        self._value_entry_completion_frame._set_popup_target_entry_frame_(self)
-        self._value_entry_completion_frame.hide()
-        self._value_entry_widget.up_key_pressed.connect(
-            self._value_entry_completion_frame._set_popup_scroll_to_pre_
-        )
-        self._value_entry_widget.down_key_pressed.connect(
-            self._value_entry_completion_frame._set_popup_scroll_to_next_
-        )
-        self._value_entry_widget.entry_finished.connect(
-            self._value_entry_completion_frame._set_popup_end_
-        )
+        self._set_entry_completion_build_(self._value_entry, self)
 
     def _set_value_entry_enable_(self, boolean):
         super(_QtEnumerateValueEntryItem, self)._set_value_entry_enable_(boolean)
 
-        self._value_entry_widget._set_enter_enable_(boolean)
+        self._value_entry._set_enter_enable_(boolean)
         self._choose_button.setHidden(not boolean)
         self._value_index_label.setHidden(not boolean)
 
@@ -2083,21 +1752,21 @@ class _QtEnumerateValueEntryItem(
         self._set_wgt_update_draw_()
 
     def _set_value_entry_drop_enable_(self, boolean):
-        self._value_entry_widget._set_entry_drop_enable_(boolean)
+        self._value_entry._set_entry_drop_enable_(boolean)
 
-    def _set_value_entry_filter_fnc_(self, fnc):
-        self._value_entry_widget._set_value_validation_fnc_(fnc)
+    def _set_value_validation_fnc_(self, fnc):
+        self._value_entry._set_value_validation_fnc_(fnc)
 
     def _set_value_entry_use_as_storage_(self, boolean):
-        self._value_entry_widget._set_entry_use_as_storage_(boolean)
+        self._value_entry._set_entry_use_as_storage_(boolean)
 
     def _set_value_entry_finished_connect_to_(self, fnc):
-        self._value_entry_widget.entry_finished.connect(fnc)
+        self._value_entry.entry_finished.connect(fnc)
 
     def _set_value_entry_changed_connect_to_(self, fnc):
-        self._value_entry_widget.entry_changed.connect(fnc)
+        self._value_entry.entry_changed.connect(fnc)
 
-    def _set_value_entry_choose_button_icon_file_path_(self, file_path):
+    def _set_choose_icon_file_path_(self, file_path):
         self._choose_button._set_icon_file_path_(file_path)
 
     def _set_value_entry_button_add_(self, widget):
@@ -2105,15 +1774,15 @@ class _QtEnumerateValueEntryItem(
 
     def _set_value_index_visible_(self, boolean):
         pass
-
+    #
     def _get_choose_values_(self):
         return self._get_item_values_()
 
-    def _get_choose_current_(self):
-        return self._get_item_value_()
+    def _get_choose_current_values_(self):
+        return [self._get_value_()]
 
-    def _set_choose_current_(self, value):
-        self._set_item_value_(value)
+    def _get_choose_current_values_extend_(self, values):
+        self._set_value_(values[-1])
 
     def _get_choose_icon_file_paths_(self):
         return self._get_item_value_icon_file_paths_()
@@ -2123,7 +1792,7 @@ class _QtArrayValueEntryItem(
     _utl_gui_qt_wgt_utility._QtEntryFrame,
     utl_gui_qt_abstract._QtArrayValueEntryDef,
 ):
-    QT_VALUE_ENTRY_CLASS = QtLineEdit_
+    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_utility.QtLineEdit_
     #
     entry_changed = qt_signal()
     def __init__(self, *args, **kwargs):
@@ -2135,9 +1804,9 @@ class _QtArrayValueEntryItem(
         self._value_entry_layout.setContentsMargins(0, 0, 0, 0)
         self._value_entry_layout.setSpacing(8)
         #
-        self._set_value_entry_widget_build_(2, self._item_value_type)
+        self._set_value_entry_build_(2, self._item_value_type)
 
-    def _set_value_entry_widget_build_(self, value_size, value_type):
+    def _set_value_entry_build_(self, value_size, value_type):
         self._item_value_type = value_type
         #
         self._value_entry_widgets = []
@@ -2146,8 +1815,8 @@ class _QtArrayValueEntryItem(
         self._set_entry_count_(value_size)
         if value_size:
             for i in range(value_size):
-                _i_value_entry_widget = QtLineEdit_()
-                _i_value_entry_widget._set_item_value_type_(self._item_value_type)
+                _i_value_entry_widget = _utl_gui_qt_wgt_utility.QtLineEdit_()
+                _i_value_entry_widget._set_value_type_(self._item_value_type)
                 self._value_entry_layout.addWidget(_i_value_entry_widget)
                 self._value_entry_widgets.append(_i_value_entry_widget)
 
@@ -2155,33 +1824,33 @@ class _QtArrayValueEntryItem(
         pass
 
 
-class _QtValuesEntryItem(
+class _QtValuesEntryFrame(
     _utl_gui_qt_wgt_utility._QtEntryFrame,
     #
     utl_gui_qt_abstract.AbsQtValueEntryDef,
     utl_gui_qt_abstract.AbsQtChooseDef,
 ):
-    QT_VALUE_ENTRY_CLASS = _QtListWidget
+    QT_VALUE_ENTRY_CLASS = _QtListEntry
     #
-    CHOOSE_DROP_FRAME_CLASS = _utl_gui_qt_wgt_utility._QtPopupChooseFrame
+    CHOOSE_FRAME_CLASS = _utl_gui_qt_wgt_utility._QtPopupChooseFrame
     #
     add_press_clicked = qt_signal()
     def __set_choose_popup_(self):
         self._value_entry_choose_frame._set_popup_start_()
 
     def __init__(self, *args, **kwargs):
-        super(_QtValuesEntryItem, self).__init__(*args, **kwargs)
+        super(_QtValuesEntryFrame, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
-        # self.setAttribute(QtCore.Qt.WA_InputMethodEnabled)
         #
         self._frame_draw_margins = 0, 0, 0, 10
         #
         self._set_value_entry_def_init_(self)
         self._set_choose_def_init_()
         #
-        self._set_value_entry_widget_build_(str)
+        self._set_value_entry_build_(str)
+        self._set_choose_multiply_enable_(True)
 
-    def _set_value_entry_widget_build_(self, value_type):
+    def _set_value_entry_build_(self, value_type):
         self._item_value_type = value_type
 
         self._main_layout = QtVBoxLayout(self)
@@ -2194,9 +1863,9 @@ class _QtValuesEntryItem(
         self._value_entry_layout.setContentsMargins(2, 2, 2, 2)
         self._value_entry_layout.setSpacing(2)
         #
-        self._value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
-        self._value_entry_layout.addWidget(self._value_entry_widget)
-        self._value_entry_widget._set_entry_frame_(self)
+        self._value_entry = self.QT_VALUE_ENTRY_CLASS()
+        self._value_entry_layout.addWidget(self._value_entry)
+        self._value_entry._set_entry_frame_(self)
         #
         button_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
         self._value_entry_layout.addWidget(button_widget)
@@ -2208,15 +1877,18 @@ class _QtValuesEntryItem(
         self._choose_button = _QtIconPressItem()
         self._button_layout.addWidget(self._choose_button)
         self._choose_button._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get('add')
+            utl_gui_core.RscIconFile.get('file/file')
+        )
+        self._choose_button._set_sub_icon_file_path_(
+            utl_gui_core.RscIconFile.get('create')
         )
         self._choose_button.press_clicked.connect(
             self.__set_choose_popup_
         )
         #
-        self._value_entry_choose_frame = self.CHOOSE_DROP_FRAME_CLASS(self)
+        self._value_entry_choose_frame = self.CHOOSE_FRAME_CLASS(self)
         # self._value_entry_choose_frame._set_popup_offset_(0, 22)
-        self._value_entry_choose_frame._set_popup_target_entry_(self._value_entry_widget)
+        self._value_entry_choose_frame._set_popup_target_entry_(self._value_entry)
         self._value_entry_choose_frame._set_popup_target_entry_frame_(self)
         self._value_entry_choose_frame.hide()
 
@@ -2224,17 +1896,17 @@ class _QtValuesEntryItem(
         self._main_layout.addWidget(self._resize_frame)
 
     def _get_value_entry_widget_(self):
-        return self._value_entry_widget
+        return self._value_entry
 
     def _set_value_entry_enable_(self, boolean):
-        super(_QtValuesEntryItem, self)._set_value_entry_enable_(boolean)
+        super(_QtValuesEntryFrame, self)._set_value_entry_enable_(boolean)
 
-        self._value_entry_widget._set_entry_enable_(boolean)
+        self._value_entry._set_entry_enable_(boolean)
         self._frame_background_color = [QtBackgroundColor.Basic, QtBackgroundColor.Dark][boolean]
         self._set_wgt_update_draw_()
 
     def _set_value_entry_drop_enable_(self, boolean):
-        self._value_entry_widget._set_entry_drop_enable_(boolean)
+        self._value_entry._set_entry_drop_enable_(boolean)
 
     def _set_value_entry_choose_enable_(self, boolean):
         self._choose_button._set_action_enable_(boolean)
@@ -2246,16 +1918,19 @@ class _QtValuesEntryItem(
         pass
 
     def _set_value_append_(self, value):
-        self._value_entry_widget._set_value_append_(value)
+        self._value_entry._set_value_append_(value)
+
+    def _set_value_extend_(self, values):
+        self._value_entry._set_value_extend_(values)
 
     def _set_values_(self, values):
-        self._value_entry_widget._set_values_(values)
+        self._value_entry._set_values_(values)
 
     def _get_values_(self):
-        return self._value_entry_widget._get_values_()
+        return self._value_entry._get_values_()
 
     def _set_values_clear_(self):
-        self._value_entry_widget._set_values_clear_()
+        self._value_entry._set_values_clear_()
 
     def _set_value_icon_file_path_(self):
         pass
@@ -2264,22 +1939,32 @@ class _QtValuesEntryItem(
         self._button_layout.addWidget(widget)
 
     def _set_value_entry_use_as_storage_(self, boolean):
-        self._value_entry_widget._set_entry_use_as_storage_(boolean)
+        self._value_entry._set_entry_use_as_storage_(boolean)
 
-    def _set_value_entry_choose_button_icon_file_path_(self, file_path):
+    def _set_choose_icon_file_path_(self, file_path):
         self._choose_button._set_icon_file_path_(file_path)
-
-    def _set_choose_current_(self, value):
-        self._set_value_append_(value)
-
-    def _get_choose_current_(self):
-        return self._get_values_()
-
+    # resize
     def _get_resize_frame_(self):
         return self._resize_frame
+    # choose
+    def _get_choose_current_values_extend_(self, values):
+        self._set_value_extend_(values)
 
-    def _set_choose_filter_enable_(self, boolean):
-        self._value_entry_choose_frame._set_popup_filter_enable_(boolean)
+    def _get_choose_current_values_(self):
+        return self._get_values_()
+
+    def _set_choose_keyword_filter_enable_(self, boolean):
+        self._value_entry_choose_frame._set_popup_keyword_filter_enable_(boolean)
+
+    def _set_choose_tag_filter_enable_(self, boolean):
+        self._value_entry_choose_frame._set_popup_tag_filter_enable_(boolean)
+
+    def _set_choose_item_size_(self, w, h):
+        self._value_entry_choose_frame._set_popup_item_size_(w, h)
+
+    def _set_choose_multiply_enable_(self, boolean):
+        super(_QtValuesEntryFrame, self)._set_choose_multiply_enable_(boolean)
+        self._value_entry_choose_frame._set_popup_multiply_enable_(boolean)
 
 
 class _QtValuesChooseEntryItem(
@@ -2287,7 +1972,7 @@ class _QtValuesChooseEntryItem(
     #
     utl_gui_qt_abstract.AbsQtValueEntryDef,
 ):
-    QT_VALUE_ENTRY_CLASS = _QtListWidget
+    QT_VALUE_ENTRY_CLASS = _QtListEntry
     def __init__(self, *args, **kwargs):
         super(_QtValuesChooseEntryItem, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -2296,9 +1981,9 @@ class _QtValuesChooseEntryItem(
         #
         self._set_value_entry_def_init_(self)
         #
-        self._set_value_entry_widget_build_(str)
+        self._set_value_entry_build_(str)
 
-    def _set_value_entry_widget_build_(self, value_type):
+    def _set_value_entry_build_(self, value_type):
         self._item_value_type = value_type
 
         self._main_layout = QtVBoxLayout(self)
@@ -2315,9 +2000,9 @@ class _QtValuesChooseEntryItem(
         self._value_entry_layout.addWidget(self._value_choose_widget)
         self._value_choose_widget._set_entry_frame_(self)
         #
-        self._value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
-        self._value_entry_layout.addWidget(self._value_entry_widget)
-        self._value_entry_widget._set_entry_frame_(self)
+        self._value_entry = self.QT_VALUE_ENTRY_CLASS()
+        self._value_entry_layout.addWidget(self._value_entry)
+        self._value_entry._set_entry_frame_(self)
         #
         button_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
         self._value_entry_layout.addWidget(button_widget)
@@ -2336,13 +2021,14 @@ class _QtValuesChooseEntryItem(
 class _QtFilterBar(
     QtWidgets.QWidget,
     #
-    utl_gui_qt_abstract.AbsQtChooseDef,
-    #
     utl_gui_qt_abstract.AbsQtValueEnumerateEntryDef,
     #
     utl_gui_qt_abstract.AbsQtActionEntryDef,
     #
     utl_gui_qt_abstract.AbsQtEntryHistoryDef,
+    #
+    utl_gui_qt_abstract.AbsQtChooseDef,
+    utl_gui_qt_abstract.AbsQtEntryCompletionDef,
 ):
     BTN_FRAME_SIZE = 18, 18
     BTN_ICON_SIZE = 16, 16
@@ -2351,10 +2037,10 @@ class _QtFilterBar(
     preOccurrenceClicked = qt_signal()
     nextOccurrenceClicked = qt_signal()
     #
-    QT_VALUE_ENTRY_CLASS = QtLineEdit_
+    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_utility.QtLineEdit_
     #
-    CHOOSE_DROP_FRAME_CLASS = _utl_gui_qt_wgt_utility._QtPopupChooseFrame
-    COMPLETION_DROP_FRAME_CLASS = _utl_gui_qt_wgt_utility._QtPopupCompletionFrame
+    CHOOSE_FRAME_CLASS = _utl_gui_qt_wgt_utility._QtPopupChooseFrame
+    COMPLETION_FRAME_CLASS = _utl_gui_qt_wgt_utility._QtPopupCompletionFrame
     def __set_choose_popup_(self):
         self._entry_history_choose_drop_frame._set_popup_start_()
 
@@ -2376,29 +2062,31 @@ class _QtFilterBar(
         self._set_choose_def_init_()
         self._set_action_entry_def_init_(self)
         #
+        self._set_entry_completion_def_init_()
+        #
         self._result_label = _utl_gui_qt_wgt_utility.QtLabel()
         qt_layout_0.addWidget(self._result_label)
         self._result_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         #
-        self._entry_frame = _utl_gui_qt_wgt_utility._QtEntryFrame()
-        self._entry_frame.setMaximumWidth(240)
-        qt_layout_0.addWidget(self._entry_frame)
+        self._value_entry_frame = _utl_gui_qt_wgt_utility._QtEntryFrame()
+        self._value_entry_frame.setMaximumWidth(240)
+        qt_layout_0.addWidget(self._value_entry_frame)
         #
-        self._set_value_entry_widget_build_(str)
+        self._set_value_entry_build_(str)
         #
         self._match_case_button = _QtIconPressItem()
         self._match_case_button.hide()
         qt_layout_0.addWidget(self._match_case_button)
-        self._match_case_button.setFocusProxy(self._value_entry_widget)
-        self._match_case_button.clicked.connect(self._set_match_case_swap_)
+        self._match_case_button.setFocusProxy(self._value_entry)
+        self._match_case_button.clicked.connect(self._set_filter_match_case_swap_)
         self._match_case_icon_names = 'match_case_off', 'match_case_on'
         self._is_match_case = False
         #
         self._match_word_button = _QtIconPressItem()
         self._match_word_button.hide()
         qt_layout_0.addWidget(self._match_word_button)
-        self._match_word_button.setFocusProxy(self._value_entry_widget)
-        self._match_word_button.clicked.connect(self._set_match_word_swap_)
+        self._match_word_button.setFocusProxy(self._value_entry)
+        self._match_word_button.clicked.connect(self._set_filter_match_word_swap_)
         self._match_word_icon_names = 'match_word_off', 'match_word_on'
         self._is_match_word = False
         #
@@ -2436,25 +2124,25 @@ class _QtFilterBar(
             utl_gui_core.RscIconFile.get(self._match_word_icon_names[self._is_match_word])
         )
         #
-        self._value_entry_widget.setPlaceholderText(
+        self._value_entry.setPlaceholderText(
             ' and '.join([i for i in [[None, 'Match-case'][self._is_match_case], [None, 'Match-word'][self._is_match_word]] if i])
         )
 
-    def _set_match_case_swap_(self):
+    def _set_filter_match_case_swap_(self):
         self._is_match_case = not self._is_match_case
         self._set_update_()
         self._set_enter_changed_emit_send_()
 
-    def _set_match_word_swap_(self):
+    def _set_filter_match_word_swap_(self):
         self._is_match_word = not self._is_match_word
         self._set_update_()
         self._set_enter_changed_emit_send_()
 
     def _get_qt_entry_(self):
-        return self._value_entry_widget
+        return self._value_entry
 
     def _set_entry_clear_(self):
-        self._value_entry_widget.clear()
+        self._value_entry.clear()
         self._set_enter_changed_emit_send_()
 
     def _get_is_match_case_(self):
@@ -2470,7 +2158,7 @@ class _QtFilterBar(
 
     def _set_entry_clear_button_visible_update_(self):
         self._entry_clear_button.setVisible(
-            not not self._value_entry_widget.text()
+            not not self._value_entry.text()
         )
 
     def _set_pre_occurrence_emit_send_(self):
@@ -2505,11 +2193,11 @@ class _QtFilterBar(
         self._set_result_update_()
 
     def _set_entry_focus_(self, boolean):
-        self._value_entry_widget._set_focused_(boolean)
+        self._value_entry._set_focused_(boolean)
 
-    def _set_value_entry_widget_build_(self, value_type):
+    def _set_value_entry_build_(self, value_type):
         self._item_value_type = value_type
-        self._value_entry_layout = QtHBoxLayout(self._entry_frame)
+        self._value_entry_layout = QtHBoxLayout(self._value_entry_frame)
         self._value_entry_layout.setContentsMargins(*[0]*4)
         self._value_entry_layout.setSpacing(2)
         #
@@ -2531,11 +2219,10 @@ class _QtFilterBar(
             ]
         )
         #
-        self._value_entry_widget = self.QT_VALUE_ENTRY_CLASS()
-        self._value_entry_layout.addWidget(self._value_entry_widget)
+        self._value_entry = self.QT_VALUE_ENTRY_CLASS()
+        self._value_entry_layout.addWidget(self._value_entry)
         #
-        self._value_entry_widget.entry_changed.connect(self._set_enter_changed_emit_send_)
-        self._value_entry_widget.entry_finished.connect(self._set_entry_history_update_)
+        self._value_entry.entry_changed.connect(self._set_enter_changed_emit_send_)
         #
         self._entry_clear_button = _QtIconPressItem()
         # self._entry_clear_button._set_icon_frame_size_(16, 16)
@@ -2562,29 +2249,55 @@ class _QtFilterBar(
         )
         self._history_button.hide()
         #
-        self._entry_history_choose_drop_frame = self.CHOOSE_DROP_FRAME_CLASS(self)
+        self._entry_history_choose_drop_frame = self.CHOOSE_FRAME_CLASS(self)
         # self._entry_history_choose_drop_frame._set_popup_offset_(0, 22)
-        self._entry_history_choose_drop_frame._set_popup_target_entry_(self._value_entry_widget)
-        self._entry_history_choose_drop_frame._set_popup_target_entry_frame_(self._entry_frame)
-        self._value_entry_widget.up_key_pressed.connect(
+        self._entry_history_choose_drop_frame._set_popup_target_entry_(self._value_entry)
+        self._entry_history_choose_drop_frame._set_popup_target_entry_frame_(self._value_entry_frame)
+        self._value_entry.up_key_pressed.connect(
             self._entry_history_choose_drop_frame._set_popup_scroll_to_pre_
         )
-        self._value_entry_widget.down_key_pressed.connect(
+        self._value_entry.down_key_pressed.connect(
             self._entry_history_choose_drop_frame._set_popup_scroll_to_next_
         )
-        self._value_entry_widget.entry_finished.connect(
+        self._value_entry.entry_finished.connect(
             self._entry_history_choose_drop_frame._set_popup_end_
         )
         self._entry_history_choose_drop_frame.hide()
+
+        self._set_entry_completion_build_(self._value_entry, self._value_entry_frame)
+
+        self._entry_completion_frame.completion_finished.connect(
+            self._set_entry_history_value_add_
+        )
 
     def _set_entry_history_key_(self, key):
         super(_QtFilterBar, self)._set_entry_history_key_(key)
         #
         self._history_button.show()
 
-    def _set_entry_history_update_(self):
+    def _set_entry_history_value_add_(self, value):
+        if value:
+            if self._get_entry_history_value_is_valid_(value) is True:
+                utl_core.History.set_append(
+                    self._entry_history_key,
+                    value
+                )
+        #
+        histories = utl_core.History.get(
+            self._entry_history_key
+        )
+        if histories:
+            histories.reverse()
+        #
+        histories = [i for i in histories if self._get_entry_history_value_is_valid_(i) is True]
+        #
+        self._set_choose_values_(
+            histories
+        )
+
+    def _set_entry_history_refresh_(self):
         if self._entry_history_key is not None:
-            value = self._get_item_value_()
+            value = self._get_value_()
             if value:
                 if self._get_entry_history_value_is_valid_(value) is True:
                     utl_core.History.set_append(
@@ -2604,8 +2317,8 @@ class _QtFilterBar(
                 histories
             )
 
-    def _set_choose_current_(self, value):
-        self._set_item_value_(value)
+    def _get_choose_current_values_extend_(self, values):
+        self._set_value_(values[-1])
 
 
 class _QtHExpandItem0(
@@ -2980,7 +2693,7 @@ class QtTreeWidgetItem(
     utl_gui_qt_abstract.AbsShowItemDef,
     utl_gui_qt_abstract.AbsQtMenuDef,
     #
-    utl_gui_qt_abstract.AbsQtItemFilterTgtDef,
+    utl_gui_qt_abstract.AbsQtItemFilterDef,
     #
     utl_gui_qt_abstract.AbsQtItemStateDef,
     #
@@ -2999,14 +2712,14 @@ class QtTreeWidgetItem(
         self._set_item_dag_loading_def_init_(self)
         self._set_show_item_def_init_(self)
         #
-        self._is_check_enable = True
+        self._check_is_enable = True
         self._emit_send_enable = False
         #
         self._set_name_def_init_()
         self._set_icon_def_init_()
         self._set_menu_def_init_()
         #
-        self._set_item_filter_tgt_def_init_()
+        self._set_item_filter_def_init_()
         #
         self._set_item_state_def_init_()
         #
@@ -3035,7 +2748,7 @@ class QtTreeWidgetItem(
         self.setData(column, QtCore.Qt.CheckStateRole, state, emit_send_enable=False)
 
     def checkState(self, column):
-        if self._is_check_enable is True:
+        if self._check_is_enable is True:
             return self.data(column, QtCore.Qt.CheckStateRole)
         return QtCore.Qt.Unchecked
 
@@ -3043,7 +2756,7 @@ class QtTreeWidgetItem(
         emit_send_enable = False
         tree_widget = self.treeWidget()
         if role == QtCore.Qt.CheckStateRole:
-            if self._is_check_enable is False:
+            if self._check_is_enable is False:
                 value = QtCore.Qt.Unchecked
             #
             emit_send_enable = kwargs.get('emit_send_enable', True)
@@ -3271,11 +2984,11 @@ class QtTreeWidgetItem(
         pass
 
     def _set_check_enable_(self, boolean, column=0):
-        self._is_check_enable = boolean
+        self._check_is_enable = boolean
         self.setData(column, QtCore.Qt.CheckStateRole, self.checkState(column))
 
     def _get_action_check_is_enable_(self):
-        return self._is_check_enable
+        return self._check_is_enable
 
     def _set_emit_send_enable_(self, boolean):
         self._emit_send_enable = boolean
@@ -3289,7 +3002,7 @@ class QtTreeWidgetItem(
         )
 
     def _set_check_state_extra_(self, column=0):
-        if self._is_check_enable is True:
+        if self._check_is_enable is True:
             check_state = self.checkState(column)
             descendants = self._get_descendants_()
             [i.setData(column, QtCore.Qt.CheckStateRole, check_state, emit_send_enable=False) for i in descendants]
@@ -3348,9 +3061,6 @@ class QtTreeWidgetItem(
 
     def _get_name_text_(self, column=0):
         return self.text(column)
-
-    def _get_item_keyword_filter_tgt_keys_(self):
-        return self._get_name_texts_()
     # show
     def _set_view_(self, widget):
         self._tree_widget = widget
@@ -4296,7 +4006,7 @@ class _QtWindowHead(
             )
 
 
-class _QtItemGuideRect(
+class _QtGuideRect(
     utl_gui_qt_abstract.AbsQtIconDef,
     utl_gui_qt_abstract.AbsQtTypeDef,
     utl_gui_qt_abstract.AbsQtNameDef,

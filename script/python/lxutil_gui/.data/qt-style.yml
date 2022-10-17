@@ -26,6 +26,8 @@ option:
         color-button-disable: '79, 79, 79, 255'
         #
         color-tool-tip: '255, 255, 191, 255'
+        #
+        color-icon: '191, 191, 191, 255'
     #
     border:
         color-transparent: '0, 0, 0, 0'
@@ -45,8 +47,7 @@ option:
         color-selected: '63, 127, 255, 255'
         color-actioned: '63, 255, 127, 255'
         #
-        color-icon: '191, 191, 191, 255'
-        color-icon-hovered: '255, 127, 63, 255'
+        color-icon: '207, 207, 207, 255'
         #
         border-radius: 1
         border-style: 'solid'

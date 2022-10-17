@@ -395,7 +395,7 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
         widget = _utl_gui_qt_wgt_item._QtScriptValueEntryItem()
         qt_layout_0.addWidget(widget)
-        self._qt_text_browser_0 = widget._value_entry_widget
+        self._qt_text_browser_0 = widget._value_entry
 
     def set_markdown_file_open(self, file_path):
         if file_path:
@@ -568,10 +568,10 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget.update()
 
     def get_is_checked(self):
-        return self.widget._get_item_is_checked_()
+        return self.widget._get_is_checked_()
 
     def set_checked(self, boolean):
-        self.widget._set_item_checked_(boolean)
+        self.widget._set_checked_(boolean)
 
     def set_option_click_enable(self, boolean):
         self.widget._set_item_option_click_enable_(boolean)
@@ -680,11 +680,8 @@ class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):
     def set_history_filter_fnc(self, fnc):
         pass
 
-
-class PrxEntryItem(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtLineEdit
-    def __init__(self, *args, **kwargs):
-        super(PrxEntryItem, self).__init__(*args, **kwargs)
+    def set_filter_completion_gain_fnc(self, fnc):
+        self._qt_widget._set_entry_completion_gain_fnc_(fnc)
 
 
 class PrxToolWindow(

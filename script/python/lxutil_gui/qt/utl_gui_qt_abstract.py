@@ -657,7 +657,7 @@ class AbsQtEntryDef(object):
     def _set_entry_def_init_(self, widget):
         self._widget = widget
         #
-        self._entry_frame = None
+        self._value_entry_frame = None
         #
         self._entry_is_enable = False
         #
@@ -667,11 +667,11 @@ class AbsQtEntryDef(object):
         self._entry_is_enable = boolean
 
     def _set_entry_frame_(self, widget):
-        self._entry_frame = widget
+        self._value_entry_frame = widget
 
     def _get_entry_frame_(self):
-        if self._entry_frame is not None:
-            return self._entry_frame
+        if self._value_entry_frame is not None:
+            return self._value_entry_frame
         return self._widget.parent()
 
     def _set_entry_use_as_storage_(self, boolean):
@@ -714,9 +714,11 @@ class AbsQtIconDef(object):
         #
         self._icon_frame_size = 20, 20
         self._icon_file_draw_size = 16, 16
+        self._icon_file_draw_percent = .75
         self._sub_icon_file_draw_size = 8, 8
         self._icon_color_draw_size = 12, 12
         self._icon_name_draw_size = 12, 12
+        self._icon_name_draw_percent = .675
 
     def _set_icon_enable_(self, boolean):
         self._icon_is_enable = boolean
@@ -1031,7 +1033,12 @@ class AbsQtNameDef(object):
                 if name_text:
                     name_text = name_text.replace(u'<', u'&lt;').replace(u'>', u'&gt;')
                     html += u'<h3>{}</h3>\n'.format(name_text)
-                for i in text.split('\n'):
+                if isinstance(text, (str, unicode)):
+                    texts = text.split('\n')
+                else:
+                    texts = text
+                #
+                for i in texts:
                     html += u'<ul>\n<li><i>{}</i></li>\n</ul>\n'.format(i)
                 html += u'</body>\n</html>'
                 # noinspection PyCallingNonCallable
@@ -1170,21 +1177,25 @@ class _QtProgressDef(object):
 class AbsQtImageDef(object):
     def _set_image_def_init_(self):
         self._image_enable = False
+        self._image_draw_is_enable = False
         #
         self._image_file_path = None
         self._image_name_text = None
+        self._image_data = None
         #
         self._image_frame_size = 32, 32
-        self._image_size = 30, 30
+        self._image_draw_size = 30, 30
+        self._image_draw_percent = .75
         self._image_frame_draw_enable = False
         #
         self._image_frame_rect = QtCore.QRect(0, 0, 0, 0)
-        self._image_rect = QtCore.QRect(0, 0, 0, 0)
+        self._image_draw_rect = QtCore.QRect(0, 0, 0, 0)
 
     def _set_wgt_update_draw_(self):
         raise NotImplementedError()
 
     def _set_image_file_path_(self, file_path):
+        self._image_draw_is_enable = True
         self._image_enable = True
         self._image_file_path = file_path
         self._set_wgt_update_draw_()
@@ -1192,8 +1203,28 @@ class AbsQtImageDef(object):
     def _set_image_name_text_(self, text):
         self._image_name_text = text
 
-    def _set_image_size_(self, size):
-        self._image_size = size
+    def _set_image_url_(self, url):
+        self._image_draw_is_enable = True
+        # noinspection PyBroadException
+        try:
+            self._image_data = urllib.urlopen(url).read()
+        except:
+            pass
+
+        self._set_wgt_update_draw_()
+
+    def _set_image_draw_enable_(self, boolean):
+        self._image_draw_is_enable = boolean
+
+    def _get_image_data(self):
+        if self._image_enable is True:
+            return self._image_data
+
+    def _set_image_draw_size_(self, w, h):
+        self._image_draw_size = w, h
+
+    def _get_image_draw_size_(self):
+        return self._image_draw_size
 
     def _get_image_size_(self):
         if self._image_file_path is not None:
@@ -1207,20 +1238,19 @@ class AbsQtImageDef(object):
                         return s.width(), s.height()
                 elif ext in ['.mov']:
                     pass
-                    # print bsc_core.VedioOpt(self._image_file_path).get_size()
-        return self._image_size
+        return self._image_draw_size
 
     def _get_image_file_path_(self):
         if self._image_enable is True:
             return self._image_file_path
 
     def _set_image_rect_(self, x, y, w, h):
-        self._image_rect.setRect(
+        self._image_draw_rect.setRect(
             x, y, w, h
         )
 
     def _get_image_rect_(self):
-        return self._image_rect
+        return self._image_draw_rect
 
     def _get_has_image_(self):
         return (
@@ -1689,60 +1719,69 @@ class AbsQtActionCheckDef(object):
         raise NotImplementedError()
 
     def _set_action_check_def_init_(self):
-        self._is_check_enable = False
-        #
-        self._item_check_icon_file_path = None
-        self._item_check_icon_file_path_0 = utl_core.Icon.get('box_unchecked')
-        self._item_check_icon_file_path_1 = utl_core.Icon.get('box_checked')
+        self._check_is_enable = False
         #
         self._item_is_checked = False
-        self._item_check_frame_rect = QtCore.QRect()
-        self._item_check_icon_rect = QtCore.QRect()
+        self._check_rect = QtCore.QRect()
+        self._check_icon_draw_rect = QtCore.QRect()
+        self._check_is_hovered = False
+        #
+        self._item_check_icon_file_path_0 = utl_gui_core.RscIconFile.get('box_unchecked')
+        self._item_check_icon_file_path_1 = utl_gui_core.RscIconFile.get('box_checked')
+        self._check_icon_file_path = self._item_check_icon_file_path_0
+
+        self._check_draw_is_enable = False
 
     def _set_action_check_enable_(self, boolean):
-        self._is_check_enable = boolean
+        self._check_is_enable = boolean
 
     def _get_action_check_is_enable_(self):
         if self._get_action_is_enable_() is True:
-            return self._is_check_enable
+            return self._check_is_enable
         return False
 
-    def _set_item_checked_(self, boolean):
-        self._item_is_checked = boolean
-        self._set_item_check_update_()
+    def _set_check_draw_enable_(self, boolean):
+        self._check_draw_is_enable = boolean
 
-    def _get_item_is_checked_(self):
+    def _set_checked_(self, boolean):
+        self._item_is_checked = boolean
+        self._set_check_update_draw_()
+
+    def _get_is_checked_(self):
         return self._item_is_checked
 
-    def _set_item_check_swap_(self):
+    def _set_check_swap_(self):
         self._item_is_checked = not self._item_is_checked
-        self._set_item_check_update_()
+        self._set_check_update_draw_()
 
-    def _set_item_check_update_(self):
-        self._item_check_icon_file_path = [
+    def _set_check_update_draw_(self):
+        self._check_icon_file_path = [
             self._item_check_icon_file_path_0, self._item_check_icon_file_path_1
         ][self._item_is_checked]
         #
         self._set_wgt_update_draw_()
 
-    def _set_item_check_frame_rect_(self, x, y, w, h):
-        self._item_check_frame_rect.setRect(
+    def _set_check_rect_(self, x, y, w, h):
+        self._check_rect.setRect(
             x, y, w, h
         )
 
-    def _set_item_check_icon_rect_(self, x, y, w, h):
-        self._item_check_icon_rect.setRect(
+    def _set_check_icon_draw_rect_(self, x, y, w, h):
+        self._check_icon_draw_rect.setRect(
             x, y, w, h
         )
 
     def _set_item_check_action_run_(self):
-        self._set_item_check_swap_()
+        self._set_check_swap_()
         #
         self.check_clicked.emit()
         self.check_toggled.emit(self._item_is_checked)
 
     def _set_item_check_changed_connect_to_(self, fnc):
         self.check_clicked.connect(fnc)
+
+    def _set_action_check_execute_(self, event):
+        self._set_check_swap_()
 
 
 class _QtItemExpandActionDef(object):
@@ -1760,8 +1799,8 @@ class _QtItemExpandActionDef(object):
         self._item_is_expand_enable = False
         #
         self._item_expand_icon_file_path = None
-        self._item_expand_icon_file_path_0 = utl_core.Icon.get('box_checked')
-        self._item_expand_icon_file_path_1 = utl_core.Icon.get('box_unchecked')
+        self._item_expand_icon_file_path_0 = utl_gui_core.RscIconFile.get('box_checked')
+        self._item_expand_icon_file_path_1 = utl_gui_core.RscIconFile.get('box_unchecked')
         self._item_is_expanded = False
         #
         self._item_expand_frame_rect = QtCore.QRect()
@@ -1807,7 +1846,7 @@ class _QtItemOptionPressActionDef(object):
 
     def _set_item_option_press_action_def_init_(self):
         self._option_click_enable = False
-        self._option_icon_file_path = utl_core.Icon.get('option')
+        self._option_icon_file_path = utl_gui_core.RscIconFile.get('option')
         #
         self._option_click_rect = QtCore.QRect()
         self._option_click_icon_rect = QtCore.QRect()
@@ -1821,22 +1860,37 @@ class _QtItemOptionPressActionDef(object):
         return False
 
 
+
+class _Values(list):
+    def __init__(self, *args, **kwargs):
+        super(_Values, self).__init__(*args, **kwargs)
+
+    def set_add(self):
+        pass
+
+
 class AbsQtChooseDef(object):
     choose_changed = qt_signal()
     def _set_choose_def_init_(self):
-        self._choose_expand_icon_file_path = utl_core.Icon.get('choose_expand')
-        self._choose_collapse_icon_file_path = utl_core.Icon.get('choose_collapse')
+        self._choose_expand_icon_file_path = utl_gui_core.RscIconFile.get('choose_expand')
+        self._choose_collapse_icon_file_path = utl_gui_core.RscIconFile.get('choose_collapse')
         #
         self._path_text = None
         #
         self._rect = QtCore.QRect()
         #
         self._choose_is_activated = False
-        #
-        self._item_choose_content_raw = None
+
         self._choose_values = []
+        self._choose_values_current = []
+
+        self._choose_keyword_filter_dict = {}
+        self._choose_tag_filter_dict = {}
+
         self._choose_icon_file_paths = []
-        self._item_choose_path_texts = []
+        self._choose_image_url_dict = {}
+
+        self._choose_multiply_is_enable = False
 
     def _get_choose_is_activated_(self):
         return self._choose_is_activated
@@ -1844,8 +1898,13 @@ class AbsQtChooseDef(object):
     def _set_choose_activated_(self, boolean):
         self._choose_is_activated = boolean
 
+    def _set_choose_multiply_enable_(self, boolean):
+        self._choose_multiply_is_enable = boolean
+
+    def _get_choose_multiply_is_enable_(self):
+        return self._choose_multiply_is_enable
+
     def _set_item_choose_content_raw_(self, raw):
-        self._item_choose_content_raw = raw
         if isinstance(raw, (tuple, list)):
             self._choose_values = list(raw)
 
@@ -1854,13 +1913,34 @@ class AbsQtChooseDef(object):
         self._choose_values = values
         self._choose_icon_file_paths = [icon_file_path]*c
 
+    def _set_choose_keyword_filter_dict_(self, dict_):
+        self._choose_keyword_filter_dict = dict_
+
+    def _get_choose_keyword_filter_dict_(self):
+        return self._choose_keyword_filter_dict
+
+    def _set_choose_tag_filter_dict_(self, dict_):
+        self._choose_tag_filter_dict = dict_
+
+    def _get_choose_tag_filter_dict_(self):
+        return self._choose_tag_filter_dict
+
+    def _set_choose_image_url_dict_(self, dict_):
+        self._choose_image_url_dict = dict_
+
+    def _get_choose_image_url_dict_(self):
+        return self._choose_image_url_dict
+
     def _get_choose_values_(self):
         return self._choose_values
 
-    def _get_choose_current_(self):
+    def _get_choose_current_values_(self):
         pass
 
-    def _set_choose_current_(self, value):
+    def _get_choose_current_values_append_(self, value):
+        self._choose_values_current.append(value)
+
+    def _get_choose_current_values_extend_(self, values):
         pass
 
     def _get_choose_icon_file_paths_(self):
@@ -1878,8 +1958,6 @@ class AbsQtValueEntryDef(object):
         self._widget = widget
         self._value_entry_is_enable = False
         self._value_entry_drop_is_enable = False
-        #
-        self._value_entry_completion_fnc = None
 
     def _set_value_entry_enable_(self, boolean):
         self._value_entry_is_enable = boolean
@@ -1887,7 +1965,7 @@ class AbsQtValueEntryDef(object):
     def _set_value_entry_drop_enable_(self, boolean):
         pass
 
-    def _set_value_entry_filter_fnc_(self, fnc):
+    def _set_value_validation_fnc_(self, fnc):
         pass
 
     def _set_value_entry_use_as_storage_(self, boolean):
@@ -1899,24 +1977,55 @@ class AbsQtValueEntryDef(object):
     def _set_value_entry_changed_connect_to_(self, fnc):
         pass
 
-    def _set_value_entry_completion_gain_fnc_(self, fnc):
-        self._value_entry_completion_fnc = fnc
-
-    def _get_value_entry_completion_data_(self):
-        if self._value_entry_completion_fnc is not None:
-            return self._value_entry_completion_fnc() or []
-        return []
-
-    def _set_value_entry_widget_build_(self, *args, **kwargs):
+    def _set_value_entry_build_(self, *args, **kwargs):
         pass
 
     def _get_value_entry_widget_(self):
         pass
 
 
-class AbsQtActionEntryDef(object):
-    def _set_action_entry_def_init_(self, widget):
-        pass
+class AbsQtEntryCompletionDef(object):
+    COMPLETION_FRAME_CLASS = None
+    def _set_entry_completion_def_init_(self):
+        self._entry_completion_gain_fnc = None
+
+    def _set_entry_completion_build_(self, entry_gui, entry_frame_gui):
+        self._value_entry = entry_gui
+        self._value_entry_frame = entry_frame_gui
+        #
+        self._entry_completion_frame = self.COMPLETION_FRAME_CLASS(self)
+        self._entry_completion_frame.hide()
+        # self._entry_completion_frame._set_popup_offset_(0, 22)
+        self._entry_completion_frame._set_popup_target_entry_(entry_gui)
+        self._entry_completion_frame._set_popup_target_entry_frame_(entry_frame_gui)
+        #
+        entry_gui.user_entry_changed.connect(
+            self._set_entry_completion_popup_
+        )
+        entry_gui.up_key_pressed.connect(
+            self._entry_completion_frame._set_popup_scroll_to_pre_
+        )
+        entry_gui.down_key_pressed.connect(
+            self._entry_completion_frame._set_popup_scroll_to_next_
+        )
+        entry_gui.entry_finished.connect(
+            self._entry_completion_frame._set_popup_end_
+        )
+
+    def _get_entry_completion_frame_gui_(self):
+        return self._entry_completion_frame
+
+    def _set_entry_completion_gain_fnc_(self, fnc):
+        self._entry_completion_gain_fnc = fnc
+
+    def _get_entry_completion_data_(self):
+        if self._entry_completion_gain_fnc is not None:
+            keyword = self._value_entry._get_value_()
+            return self._entry_completion_gain_fnc(keyword) or []
+        return []
+
+    def _set_entry_completion_popup_(self):
+        self._entry_completion_frame._set_popup_start_()
 
 
 class AbsQtEntryHistoryDef(object):
@@ -1942,12 +2051,20 @@ class AbsQtEntryHistoryDef(object):
         #
         self._entry_history_key = key
 
-        self._set_entry_history_update_()
+        self._set_entry_history_refresh_()
 
-    def _set_entry_history_update_(self):
+    def _set_entry_history_value_add_(self, *args, **kwargs):
+        pass
+
+    def _set_entry_history_refresh_(self):
         pass
 
     def _set_entry_history_show_latest_(self):
+        pass
+
+
+class AbsQtActionEntryDef(object):
+    def _set_action_entry_def_init_(self, widget):
         pass
 
 
@@ -1957,7 +2074,7 @@ class _QtViewBarDef(object):
 
 class AbsQtGuideChooseActionDef(object):
     CHOOSE_RECT_CLS = None
-    CHOOSE_DROP_FRAME_CLASS = None
+    CHOOSE_FRAME_CLASS = None
     #
     choose_item_changed = qt_signal()
     choose_item_clicked = qt_signal()
@@ -2008,7 +2125,7 @@ class AbsQtGuideChooseActionDef(object):
         return self._get_guide_choose_item_at_(index)._get_choose_values_()
 
     def _set_guide_choose_item_drop_at_(self, index=0):
-        widget = self.CHOOSE_DROP_FRAME_CLASS(self)
+        widget = self.CHOOSE_FRAME_CLASS(self)
         widget._set_popup_start_(
             index
         )
@@ -2527,58 +2644,26 @@ class AbsQtViewTagFilterSrcDef(object):
         pass
 
 
-class AbsQtItemFilterTgtDef(object):
-    def _set_item_filter_tgt_def_init_(self):
-        self._item_tag_filter_tgt_mode = 'A+B'
-        self._item_tag_filter_tgt_keys = []
+class AbsQtItemFilterDef(object):
+    TagFilterMode = utl_gui_configure.TagFilterMode
+    def _set_item_filter_def_init_(self):
+        self._item_tag_filter_mode = self.TagFilterMode.MatchAll
+        self._item_tag_filter_keys_src = set()
+        self._item_tag_filter_keys_tgt = set()
         #
         self._item_tag_filter_tgt_statistic_enable = False
         #
-        self._item_keyword_filter_keys = []
+        self._item_keyword_filter_keys_tgt = set()
         self._item_keyword_filter_contexts = []
 
-    def _set_item_tag_filter_tgt_mode_(self, mode):
-        self._item_tag_filter_tgt_mode = mode
+    def _set_item_keyword_filter_key_tgt_add_(self, key):
+        self._item_keyword_filter_keys_tgt.add(key)
 
-    def _get_item_tag_filter_tgt_mode_(self):
-        return self._item_tag_filter_tgt_mode
+    def _set_item_keyword_filter_keys_tgt_update_(self, keys):
+        self._item_keyword_filter_keys_tgt.update(set(keys))
 
-    def _set_item_tag_filter_tgt_key_add_(self, key, ancestors=False):
-        if key not in self._item_tag_filter_tgt_keys:
-            self._item_tag_filter_tgt_keys.append(key)
-        #
-        if ancestors is True:
-            self._set_item_tag_filter_tgt_ancestors_update_()
-
-    def _get_item_tag_filter_tgt_keys_(self):
-        return self._item_tag_filter_tgt_keys
-
-    def _set_item_tag_filter_tgt_ancestors_update_(self):
-        pass
-
-    def _set_item_tag_filter_tgt_statistic_enable_(self, boolean):
-        self._item_tag_filter_tgt_statistic_enable = boolean
-
-    def _get_item_tag_filter_tgt_statistic_enable_(self):
-        return self._item_tag_filter_tgt_statistic_enable
-
-    def _get_item_tag_filter_tgt_match_args_(self, tag_filter_src_all_keys):
-        tag_filter_tgt_keys = self._get_item_tag_filter_tgt_keys_()
-        tag_filter_tgt_mode = self._get_item_tag_filter_tgt_mode_()
-        if tag_filter_tgt_keys:
-            if tag_filter_tgt_mode == 'A+B':
-                for tag_filter_tgt_key in tag_filter_tgt_keys:
-                    if tag_filter_tgt_key not in tag_filter_src_all_keys:
-                        return True, True
-            elif tag_filter_tgt_mode == 'A/B':
-                for tag_filter_tgt_key in tag_filter_tgt_keys:
-                    if tag_filter_tgt_key in tag_filter_src_all_keys:
-                        return True, False
-            return True, False
-        return False, False
-
-    def _get_item_keyword_filter_tgt_keys_(self):
-        return self._item_keyword_filter_keys
+    def _get_item_keyword_filter_keys_tgt_(self):
+        return list(self._item_keyword_filter_keys_tgt)
 
     def _set_item_keyword_filter_tgt_contexts_(self, contexts):
         self._item_keyword_filter_contexts = contexts
@@ -2589,11 +2674,15 @@ class AbsQtItemFilterTgtDef(object):
     def _get_item_keyword_filter_match_args_(self, keyword):
         if keyword:
             keyword = keyword.lower()
-            keyword_filter_contexts = self._get_item_keyword_filter_tgt_contexts_() or []
-            if keyword_filter_contexts:
-                context = u'+'.join(keyword_filter_contexts)
+            keyword_filter_keys_tgt = self._get_item_keyword_filter_keys_tgt_() or []
+            context = ''
+            if keyword_filter_keys_tgt:
+                context = '+'.join([i for i in keyword_filter_keys_tgt if i])
             else:
-                context = u'+'.join([i for i in self._get_item_keyword_filter_tgt_keys_() if i])
+                if hasattr(self, '_get_name_texts_'):
+                    context = '+'.join([i for i in self._get_name_texts_() if i])
+                elif hasattr(self, '_get_name_text_'):
+                    context = self._get_name_text_()
             #
             context = context.lower()
             if '*' in keyword:
@@ -2607,13 +2696,66 @@ class AbsQtItemFilterTgtDef(object):
             return True, True
         return False, False
 
+    def _set_item_tag_filter_mode_(self, mode):
+        self._item_tag_filter_mode = mode
+
+    def _get_item_tag_filter_mode_(self):
+        return self._item_tag_filter_mode
+    # tag filter source
+    def _set_item_tag_filter_keys_src_add_(self, key):
+        self._item_tag_filter_keys_src.add(key)
+
+    def _set_item_tag_filter_keys_src_update_(self, keys):
+        self._item_tag_filter_keys_src.update(set(keys))
+
+    def _get_item_tag_filter_keys_src_(self):
+        return list(self._item_tag_filter_keys_src)
+    # tag filter target
+    def _set_item_tag_filter_keys_tgt_add_(self, key, ancestors=False):
+        self._item_tag_filter_keys_tgt.add(key)
+        #
+        if ancestors is True:
+            self._set_item_tag_filter_tgt_ancestors_update_()
+
+    def _set_item_tag_filter_keys_tgt_update_(self, keys):
+        self._item_tag_filter_keys_tgt.update(set(keys))
+
+    def _get_item_tag_filter_keys_tgt_(self):
+        return list(self._item_tag_filter_keys_tgt)
+
+    def _set_item_tag_filter_tgt_ancestors_update_(self):
+        pass
+
+    def _set_item_tag_filter_tgt_statistic_enable_(self, boolean):
+        self._item_tag_filter_tgt_statistic_enable = boolean
+
+    def _get_item_tag_filter_tgt_statistic_enable_(self):
+        return self._item_tag_filter_tgt_statistic_enable
+
+    def _get_item_tag_filter_tgt_match_args_(self, tags_src):
+        tags_tgt = self._get_item_tag_filter_keys_tgt_()
+        mode = self._get_item_tag_filter_mode_()
+        if tags_tgt:
+            if mode == self.TagFilterMode.MatchAll:
+                for tag_filter_tgt_key in tags_tgt:
+                    if tag_filter_tgt_key not in tags_src:
+                        return True, True
+                return True, False
+            elif mode == self.TagFilterMode.MatchOne:
+                for tag_filter_tgt_key in tags_tgt:
+                    if tag_filter_tgt_key in tags_src:
+                        return True, False
+                return True, True
+            return True, False
+        return False, False
+
 
 class AbsQtViewFilterTgtDef(object):
     def _get_all_items_(self):
         raise NotImplementedError()
 
     def _set_view_filter_tgt_def_init_(self):
-        self._view_tag_filter_tgt_keys = []
+        self._view_tag_filter_all_keys_src = []
 
     def _get_view_tag_filter_tgt_statistic_raw_(self):
         dic = {}
@@ -2621,27 +2763,27 @@ class AbsQtViewFilterTgtDef(object):
         for i_item in items:
             enable = i_item._get_item_tag_filter_tgt_statistic_enable_()
             if enable is True:
-                i_keys = i_item._get_item_tag_filter_tgt_keys_()
+                i_keys = i_item._get_item_tag_filter_keys_tgt_()
                 for j_key in i_keys:
                     dic.setdefault(j_key, []).append(i_item)
         return dic
 
-    def _set_view_tag_filter_tgt_keys_(self, keys):
-        self._view_tag_filter_tgt_keys = keys
+    def _set_view_tag_filter_all_keys_src_(self, keys):
+        self._view_tag_filter_all_keys_src = keys
 
-    def _get_view_tag_filter_tgt_keys_(self):
-        return self._view_tag_filter_tgt_keys
+    def _get_view_tag_filter_keys_src_(self):
+        return self._view_tag_filter_all_keys_src
 
     def _set_view_items_visible_by_any_filter_(self, keyword):
-        tag_filter_src_all_keys = self._get_view_tag_filter_tgt_keys_()
+        tags_src = self._get_view_tag_filter_keys_src_()
         self._keyword_filter_item_prxes = []
         #
         items = self._get_all_items_()
         for i_item in items:
             i_tag_filter_hidden_ = False
             i_keyword_filter_hidden_ = False
-            if tag_filter_src_all_keys:
-                i_tag_filter_is_enable, i_tag_filter_hidden = i_item._get_item_tag_filter_tgt_match_args_(tag_filter_src_all_keys)
+            if tags_src:
+                i_tag_filter_is_enable, i_tag_filter_hidden = i_item._get_item_tag_filter_tgt_match_args_(tags_src)
                 if i_tag_filter_is_enable is True:
                     i_tag_filter_hidden_ = i_tag_filter_hidden
             #
@@ -2659,23 +2801,6 @@ class AbsQtViewFilterTgtDef(object):
             for i in i_item._get_ancestors_():
                 if is_hidden is False:
                     i._set_hidden_(False)
-
-    def _set_view_items_visible_by_keyword_filter_(self, keyword):
-        items = self._get_all_items_()
-        for i_item in items:
-            i_keyword_filter_hidden_ = False
-            #
-            if keyword:
-                i_keyword_filter_enable, i_keyword_filter_hidden = i_item._get_item_keyword_filter_match_args_(keyword)
-                if i_keyword_filter_enable is True:
-                    i_keyword_filter_hidden_ = i_keyword_filter_hidden
-
-            if True in [i_keyword_filter_hidden_]:
-                is_hidden = True
-            else:
-                is_hidden = False
-
-            i_item._set_hidden_(is_hidden)
 
 
 class AbsQtItemStateDef(object):
@@ -3013,6 +3138,9 @@ class AbsQtListWidget(
         if item_widgets:
             return item_widgets[-1]
 
+    def _get_checked_item_widgets_(self):
+        return [i for i in self._get_all_item_widgets_() if i._get_is_checked_() is True]
+
     def _set_item_select_update_(self):
         pass
 
@@ -3143,17 +3271,17 @@ class AbsQtItemValueDefaultDef(object):
     def _set_item_value_default_def_init_(self):
         self._item_value_default = None
 
-    def _get_item_value_(self):
+    def _get_value_(self):
         raise NotImplementedError()
 
-    def _set_item_value_default_(self, value):
+    def _set_value_default_(self, value):
         self._item_value_default = value
 
-    def _get_item_value_default_(self):
+    def _get_value_default_(self):
         return self._item_value_default
 
-    def _get_item_value_is_default_(self):
-        return self._get_item_value_() == self._get_item_value_default_()
+    def _get_value_is_default_(self):
+        return self._get_value_() == self._get_value_default_()
 
 
 class AbsQtItemValueTypeConstantEntryDef(object):
@@ -3163,38 +3291,38 @@ class AbsQtItemValueTypeConstantEntryDef(object):
         #
         self._item_value_default = None
         #
-        self._value_entry_widget = None
+        self._value_entry = None
 
-    def _set_value_entry_widget_build_(self, value_type):
+    def _set_value_entry_build_(self, value_type):
         pass
 
     def _get_value_entry_widget_(self):
-        return self._value_entry_widget
+        return self._value_entry
 
-    def _set_item_value_type_(self, value_type):
+    def _set_value_type_(self, value_type):
         self._item_value_type = value_type
-        self._value_entry_widget._set_item_value_type_(value_type)
+        self._value_entry._set_value_type_(value_type)
 
     def _set_use_as_frames_(self):
-        self._value_entry_widget._set_use_as_frames_()
+        self._value_entry._set_use_as_frames_()
 
     def _set_use_as_rgba_(self):
-        self._value_entry_widget._set_use_as_rgba_()
+        self._value_entry._set_use_as_rgba_()
 
-    def _get_item_value_type_(self):
+    def _get_value_type_(self):
         return self._item_value_type
 
-    def _set_item_value_(self, value):
-        self._value_entry_widget._set_item_value_(value)
+    def _set_value_(self, value):
+        self._value_entry._set_value_(value)
 
-    def _get_item_value_(self):
-        return self._value_entry_widget._get_item_value_()
+    def _get_value_(self):
+        return self._value_entry._get_value_()
 
     def _set_value_entry_finished_connect_to_(self, fnc):
-        self._value_entry_widget.entry_finished.connect(fnc)
+        self._value_entry.entry_finished.connect(fnc)
 
     def _set_value_entry_changed_connect_to_(self, fnc):
-        self._value_entry_widget.entry_changed.connect(fnc)
+        self._value_entry.entry_changed.connect(fnc)
 
     def _set_item_value_entry_enable_(self, boolean):
         pass
@@ -3210,37 +3338,37 @@ class AbsQtValueEnumerateEntryDef(object):
         self._values = []
         self._value_icon_file_paths = []
         #
-        self._value_entry_widget = None
+        self._value_entry = None
         self._value_index_visible = True
 
     def _set_wgt_update_(self):
         raise NotImplementedError()
 
-    def _set_value_entry_widget_build_(self, value_type):
+    def _set_value_entry_build_(self, value_type):
         pass
 
     def _get_value_entry_widget_(self):
-        return self._value_entry_widget
+        return self._value_entry
 
     def _set_value_entry_drop_enable_(self, boolean):
-        self._value_entry_widget._set_entry_drop_enable_(boolean)
+        self._value_entry._set_entry_drop_enable_(boolean)
 
-    def _set_item_value_type_(self, value_type):
+    def _set_value_type_(self, value_type):
         self._item_value_type = value_type
-        self._value_entry_widget._set_item_value_type_(value_type)
+        self._value_entry._set_value_type_(value_type)
 
-    def _get_item_value_type_(self):
+    def _get_value_type_(self):
         return self._item_value_type
 
-    def _set_item_value_default_(self, value):
+    def _set_value_default_(self, value):
         self._item_value_default = value
 
     def _set_item_value_default_by_index_(self, index):
-        self._set_item_value_default_(
+        self._set_value_default_(
             self._get_item_value_at_(index)
         )
 
-    def _get_item_value_default_(self):
+    def _get_value_default_(self):
         return self._item_value_default
 
     def _set_item_values_(self, values, icon_file_path=None):
@@ -3259,12 +3387,12 @@ class AbsQtValueEnumerateEntryDef(object):
         self._values.append(value)
         self._set_wgt_update_()
 
-    def _set_item_value_(self, value):
-        self._value_entry_widget._set_item_value_(value)
+    def _set_value_(self, value):
+        self._value_entry._set_value_(value)
         self._set_wgt_update_()
 
     def _set_item_value_at_(self, index):
-        self._set_item_value_(
+        self._set_value_(
             self._get_item_value_at_(index)
         )
 
@@ -3285,18 +3413,18 @@ class AbsQtValueEnumerateEntryDef(object):
                 self._get_item_value_index_(value), file_path
             )
 
-    def _get_item_value_(self):
-        return self._value_entry_widget._get_item_value_()
+    def _get_value_(self):
+        return self._value_entry._get_value_()
 
     def _get_item_value_at_(self, index):
         return self._values[index]
 
-    def _set_item_value_clear_(self):
+    def _set_value_clear_(self):
         self._values = []
-        self._value_entry_widget._set_item_value_clear_()
+        self._value_entry._set_value_clear_()
 
-    def _get_item_value_is_default_(self):
-        return self._get_item_value_() == self._get_item_value_default_()
+    def _get_value_is_default_(self):
+        return self._get_value_() == self._get_value_default_()
 
 
 class _QtArrayValueEntryDef(object):
@@ -3308,45 +3436,45 @@ class _QtArrayValueEntryDef(object):
         self._value = []
         self._value_entry_widgets = []
 
-    def _set_value_entry_widget_build_(self, value_size, value_type):
+    def _set_value_entry_build_(self, value_size, value_type):
         pass
 
-    def _set_item_value_type_(self, value_type):
+    def _set_value_type_(self, value_type):
         self._item_value_type = value_type
         for i_value_entry_widget in self._value_entry_widgets:
-            i_value_entry_widget._set_item_value_type_(value_type)
+            i_value_entry_widget._set_value_type_(value_type)
 
-    def _get_item_value_type_(self):
+    def _get_value_type_(self):
         return self._item_value_type
 
     def _set_value_size_(self, size):
-        self._set_value_entry_widget_build_(size, self._item_value_type)
+        self._set_value_entry_build_(size, self._item_value_type)
 
     def _get_value_size_(self):
         return len(self._value_entry_widgets)
 
-    def _get_item_value_default_(self):
+    def _get_value_default_(self):
         return self._item_value_default
 
-    def _set_item_value_(self, value):
+    def _set_value_(self, value):
         for i, i_value in enumerate(value):
             widget = self._value_entry_widgets[i]
-            widget._set_item_value_(i_value)
+            widget._set_value_(i_value)
 
-    def _get_item_value_(self):
+    def _get_value_(self):
         value = []
         for i in self._value_entry_widgets:
-            i_value = i._get_item_value_()
+            i_value = i._get_value_()
             value.append(
                 i_value
             )
         return tuple(value)
 
-    def _set_item_value_default_(self, value):
+    def _set_value_default_(self, value):
         self._item_value_default = value
 
-    def _get_item_value_is_default_(self):
-        return tuple(self._get_item_value_()) == tuple(self._get_item_value_default_())
+    def _get_value_is_default_(self):
+        return tuple(self._get_value_()) == tuple(self._get_value_default_())
 
     def _set_value_entry_changed_connect_to_(self, fnc):
         for i in self._value_entry_widgets:
@@ -3472,23 +3600,27 @@ class AbsQtDeleteDef(object):
         self._widget = widget
         #
         self._delete_is_enable = False
-        self._delete_draw_rect = QtCore.QRect()
+        self._delete_draw_is_enable = False
+        self._delete_rect = QtCore.QRect()
+        self._delete_icon_draw_rect = QtCore.QRect()
         #
-        self._delete_icon_file_draw_size = 12, 12
+        self._delete_icon_file_draw_size = 16, 16
         self._delete_is_hovered = False
-        self._delete_icon_file_path = utl_gui_core.RscIconFile.get('close')
-        self._hover_delete_icon_file_path = utl_gui_core.RscIconFile.get('close-hover')
+        self._delete_icon_file_path = utl_gui_core.RscIconFile.get('delete')
 
     def _set_delete_enable_(self, boolean):
         self._delete_is_enable = boolean
+        self._delete_draw_is_enable = boolean
 
-    def _set_delete_draw_rect_(self, x, y, w, h):
-        self._delete_draw_rect.setRect(
+    def _set_delete_rect_(self, x, y, w, h):
+        self._delete_rect.setRect(
             x, y, w, h
         )
 
-    def _get_delete_icon_file_path_(self):
-        return [self._delete_icon_file_path, self._hover_delete_icon_file_path][self._delete_is_hovered]
+    def _set_delete_draw_rect_(self, x, y, w, h):
+        self._delete_icon_draw_rect.setRect(
+            x, y, w, h
+        )
 
 
 class AbsQtHelpDef(object):

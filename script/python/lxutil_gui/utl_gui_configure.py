@@ -84,6 +84,11 @@ class AlignRegion(enum.IntEnum):
     Center = 9
 
 
+class TagFilterMode(enum.IntEnum):
+    MatchAll = 0
+    MatchOne = 1
+
+
 class State(object):
     NORMAL = 'normal'
     ENABLE = 'enable'

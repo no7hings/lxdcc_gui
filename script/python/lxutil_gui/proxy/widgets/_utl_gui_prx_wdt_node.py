@@ -50,7 +50,7 @@ class _PrxPortInfo(utl_gui_prx_abstract.AbsPrxWidget):
         )
 
     def set(self, boolean):
-        self.widget._set_item_checked_(boolean)
+        self.widget._set_checked_(boolean)
 
 
 class _PrxPortStatus(utl_gui_prx_abstract.AbsPrxWidget):
@@ -67,7 +67,7 @@ class _PrxPortStatus(utl_gui_prx_abstract.AbsPrxWidget):
         )
 
     def set(self, boolean):
-        self.widget._set_item_checked_(boolean)
+        self.widget._set_checked_(boolean)
 
 
 # label
@@ -172,11 +172,9 @@ class _PrxStgObjEntry(AbsRsvTypeQtEntry):
         self._qt_entry_widget._set_value_entry_enable_(True)
         self._qt_entry_widget._set_value_entry_drop_enable_(True)
         self._qt_entry_widget._set_value_entry_use_as_storage_(True)
-        self._qt_entry_widget._set_value_entry_filter_fnc_(self._value_validation_fnc_)
-        self._qt_entry_widget._set_value_entry_completion_gain_fnc_(
-            self._set_completion_fnc_
-        )
-        self._qt_entry_widget._set_value_entry_choose_button_icon_file_path_(
+        self._qt_entry_widget._set_value_validation_fnc_(self._value_validation_fnc_)
+        self._qt_entry_widget._set_entry_completion_gain_fnc_(self._value_completion_gain_fnc_)
+        self._qt_entry_widget._set_choose_icon_file_path_(
             utl_gui_core.RscIconFile.get('history')
         )
         #
@@ -215,22 +213,22 @@ class _PrxStgObjEntry(AbsRsvTypeQtEntry):
         raise NotImplementedError()
 
     def get(self):
-        return self._qt_entry_widget._get_item_value_()
+        return self._qt_entry_widget._get_value_()
 
     def set(self, raw=None, **kwargs):
-        self._qt_entry_widget._set_item_value_(raw)
+        self._qt_entry_widget._set_value_(raw)
 
     def set_default(self, raw, **kwargs):
-        self._qt_entry_widget._set_item_value_default_(raw)
+        self._qt_entry_widget._set_value_default_(raw)
 
     def get_is_default(self):
-        return self._qt_entry_widget._get_item_value_is_default_()
+        return self._qt_entry_widget._get_value_is_default_()
 
     def set_changed_connect_to(self, fnc):
         self._qt_entry_widget._set_value_entry_changed_connect_to_(fnc)
     #
     def set_history_update(self):
-        value = self._qt_entry_widget._get_item_value_()
+        value = self._qt_entry_widget._get_value_()
         if value:
             if self._value_validation_fnc_(value) is True:
                 utl_core.History.set_append(
@@ -253,7 +251,7 @@ class _PrxStgObjEntry(AbsRsvTypeQtEntry):
     def set_history_show_latest(self):
         _ = utl_core.History.get_latest(self._history_key)
         if _:
-            self._qt_entry_widget._set_item_value_(_)
+            self._qt_entry_widget._set_value_(_)
 
     def set_locked(self, boolean):
         self._qt_entry_widget._set_value_entry_enable_(
@@ -266,7 +264,7 @@ class _PrxStgObjEntry(AbsRsvTypeQtEntry):
     def _value_validation_fnc_(self, history):
         return True
 
-    def _set_completion_fnc_(self):
+    def _value_completion_gain_fnc_(self, *args, **kwargs):
         return []
 
 
@@ -370,10 +368,10 @@ class PrxDirectoryOpenEntry(_PrxStgObjEntry):
     def _value_validation_fnc_(self, path):
         return os.path.isdir(path)
 
-    def _set_completion_fnc_(self):
-        path = self.get()
+    def _value_completion_gain_fnc_(self, *args, **kwargs):
+        keyword = args[0]
         _ = glob.glob(
-            '{}*'.format(path)
+            u'{}*'.format(keyword)
         )
         return [i for i in _ if os.path.isdir(i)]
 
@@ -409,17 +407,17 @@ class PrxDirectorySaveEntry(_PrxStgObjEntry):
     def _value_validation_fnc_(self, path):
         return os.path.isdir(path)
 
-    def _set_completion_fnc_(self):
-        path = self.get()
+    def _value_completion_gain_fnc_(self, *args, **kwargs):
+        keyword = args[0]
         _ = glob.glob(
-            u'{}*'.format(path)
+            u'{}*'.format(keyword)
         ) or []
         return [i for i in _ if os.path.isdir(i)]
 
 
 class _PrxStgObjsEntry(AbsRsvTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtValuesEntryItem
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtValuesEntryFrame
     def __init__(self, *args, **kwargs):
         super(_PrxStgObjsEntry, self).__init__(*args, **kwargs)
         self._history_key = 'gui.storages'
@@ -432,7 +430,7 @@ class _PrxStgObjsEntry(AbsRsvTypeQtEntry):
         self._qt_entry_widget._get_value_entry_widget_()._set_entry_use_as_storage_(True)
         self._qt_entry_widget._get_value_entry_widget_()._set_value_validation_fnc_(self._value_validation_fnc_)
         self._qt_entry_widget._get_value_entry_widget_().entry_added.connect(self.set_history_update)
-        self._qt_entry_widget._set_value_entry_choose_button_icon_file_path_(
+        self._qt_entry_widget._set_choose_icon_file_path_(
             utl_gui_core.RscIconFile.get('history')
         )
 
@@ -611,7 +609,7 @@ class PrxMediasOpenEntry(_PrxStgObjsEntry):
                 '"LMB-click" create file by "screenshot"'
             ]
         )
-        # self.set_history_key('gui.medias-open')
+        self.set_history_key('gui.medias-open')
 
     def _set_open_(self):
         f = utl_gui_qt_core.QtWidgets.QFileDialog()
@@ -669,7 +667,7 @@ class PrxMediasOpenEntry(_PrxStgObjsEntry):
 
 class PrxValuesEntry(AbsRsvTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtValuesEntryItem
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtValuesEntryFrame
     def __init__(self, *args, **kwargs):
         super(PrxValuesEntry, self).__init__(*args, **kwargs)
         self._history_key = 'gui.storages'
@@ -679,7 +677,7 @@ class PrxValuesEntry(AbsRsvTypeQtEntry):
         self._qt_entry_widget._get_resize_frame_()._set_resize_target_(self.widget)
         self._qt_entry_widget._get_resize_frame_()._set_resize_minimum_(42)
         self._qt_entry_widget._set_size_policy_height_fixed_mode_()
-        self._qt_entry_widget._set_value_entry_choose_button_icon_file_path_(
+        self._qt_entry_widget._set_choose_icon_file_path_(
             utl_gui_core.RscIconFile.get('history')
         )
 
@@ -739,24 +737,35 @@ class PrxValuesChooseEntry(AbsRsvTypeQtEntry):
         pass
 
 
-class PrxStgEntitiesEntry(AbsRsvTypeQtEntry):
+class PrxShotgunEntitiesEntry(AbsRsvTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtValuesEntryItem
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtValuesEntryFrame
     def __init__(self, *args, **kwargs):
-        super(PrxStgEntitiesEntry, self).__init__(*args, **kwargs)
+        super(PrxShotgunEntitiesEntry, self).__init__(*args, **kwargs)
         self._history_key = 'gui.shotgun-entities'
         #
-        self._shotgun_entity_kwargs = 'HumanUser'
+        self._shotgun_entity_kwargs = {}
         #
         self._qt_entry_widget._set_value_entry_drop_enable_(True)
         self._qt_entry_widget._set_value_entry_enable_(True)
         self._qt_entry_widget._get_resize_frame_()._set_resize_target_(self.widget)
         self._qt_entry_widget._get_resize_frame_()._set_resize_minimum_(42)
         self._qt_entry_widget._set_size_policy_height_fixed_mode_()
-        self._qt_entry_widget._set_choose_filter_enable_(True)
+        #
+        self._qt_entry_widget._set_choose_keyword_filter_enable_(True)
+        self._qt_entry_widget._set_choose_tag_filter_enable_(True)
+        self._qt_entry_widget._set_choose_item_size_(40, 40)
+        self._qt_entry_widget._set_choose_icon_file_path_(
+            utl_gui_core.RscIconFile.get('python_0')
+        )
 
         self.widget.setMaximumHeight(92)
         self.widget.setMinimumHeight(92)
+
+        self._data = []
+        self._name_pattern = '{name}'
+        self._image_key = 'image'
+        self._tag_filter_key = 'groups'
 
     def _set_add_(self):
         pass
@@ -772,16 +781,71 @@ class PrxStgEntitiesEntry(AbsRsvTypeQtEntry):
             value
         )
 
-    def set_shotgun_entity_kwargs(self, shotgun_entity_kwargs):
-        self._shotgun_entity_kwargs = shotgun_entity_kwargs
-        if self._shotgun_entity_kwargs:
-            entity_type = self._shotgun_entity_kwargs['entity_type']
+    def set_shotgun_entity_kwargs(self, shotgun_entity_kwargs, name_field='name', image_field=None, keyword_filter_fields=None, tag_filter_fields=None):
+        if shotgun_entity_kwargs:
             import lxshotgun.objects as stg_objects
-            values = stg_objects.StgConnector().get_shotgun_entities(
-                self._shotgun_entity_kwargs
+            #
+            name_field = name_field or 'name'
+            image_field = image_field or 'image'
+            shotgun_entity_kwargs['fields'].append(name_field)
+            shotgun_entity_kwargs['fields'].append(image_field)
+            if tag_filter_fields is not None:
+                shotgun_entity_kwargs['fields'].extend(tag_filter_fields)
+            #
+            self._shotgun_entity_kwargs = shotgun_entity_kwargs
+            #
+            data = stg_objects.StgConnector().get_shotgun_entities_(
+                **shotgun_entity_kwargs
             )
-            values.sort()
-            self._qt_entry_widget._set_choose_values_(values)
+            self._data = data
+            names = []
+            image_url_dict = {}
+            keyword_filter_dict = {}
+            tag_filter_dict = {}
+            for i in data:
+                i_key = i[name_field].decode('utf-8')
+                names.append(i_key)
+                #
+                i_image_url = i.get(image_field)
+                image_url_dict[i_key] = i_image_url
+                if keyword_filter_fields:
+                    i_filter_keys = self._get_filter_keys(
+                        i, keyword_filter_fields
+                    )
+                    keyword_filter_dict[i_key] = i_filter_keys
+                #
+                if tag_filter_fields:
+                    i_filter_keys = self._get_filter_keys(
+                        i, tag_filter_fields
+                    )
+                    i_filter_keys.insert(0, 'ALL')
+                    tag_filter_dict[i_key] = i_filter_keys
+            #
+            names = bsc_core.TextsMtd.set_sort_by_initial(names)
+            self._qt_entry_widget._set_choose_values_(names)
+            self._qt_entry_widget._set_choose_image_url_dict_(image_url_dict)
+            self._qt_entry_widget._set_choose_keyword_filter_dict_(keyword_filter_dict)
+            self._qt_entry_widget._set_choose_tag_filter_dict_(tag_filter_dict)
+    @classmethod
+    def _get_filter_keys(cls, data, fields):
+        tags = set()
+        for i_tag_filter_field in fields:
+            i_data = data.get(i_tag_filter_field)
+            if isinstance(i_data, (str, unicode)):
+                tags.add(i_data.decode('utf-8'))
+            elif isinstance(i_data, (tuple, list)):
+                for j_data in i_data:
+                    if isinstance(j_data, (str, unicode)):
+                        tags.add(j_data)
+                    elif isinstance(j_data, dict):
+                        tags.add(
+                            j_data.get('name').decode('utf-8')
+                        )
+            elif isinstance(i_data, dict):
+                tags.add(
+                    i_data.get('name').decode('utf-8')
+                )
+        return list(tags)
 
 
 class PrxRsvProjectChooseEntry(AbsRsvTypeQtEntry):
@@ -800,22 +864,22 @@ class PrxRsvProjectChooseEntry(AbsRsvTypeQtEntry):
         self._qt_entry_widget._set_choose_changed_connect_to_(self.set_history_update)
 
     def get(self):
-        return self._qt_entry_widget._get_item_value_()
+        return self._qt_entry_widget._get_value_()
 
     def set(self, raw=None, **kwargs):
-        self._qt_entry_widget._set_item_value_(raw)
+        self._qt_entry_widget._set_value_(raw)
 
     def set_default(self, raw, **kwargs):
-        self._qt_entry_widget._set_item_value_default_(raw)
+        self._qt_entry_widget._set_value_default_(raw)
 
     def get_is_default(self):
-        return self._qt_entry_widget._get_item_value_is_default_()
+        return self._qt_entry_widget._get_value_is_default_()
 
     def set_changed_connect_to(self, fnc):
         self._qt_entry_widget._set_value_entry_changed_connect_to_(fnc)
     #
     def set_history_update(self):
-        project = self._qt_entry_widget._get_item_value_()
+        project = self._qt_entry_widget._get_value_()
         if project:
             import lxresolver.commands as rsv_commands
             resolver = rsv_commands.get_resolver()
@@ -843,7 +907,7 @@ class PrxRsvProjectChooseEntry(AbsRsvTypeQtEntry):
     def set_history_show_latest(self):
         _ = utl_core.History.get_latest(self.HISTORY_KEY)
         if _:
-            self._qt_entry_widget._set_item_value_(_)
+            self._qt_entry_widget._set_value_(_)
 
     def get_histories(self):
         return utl_core.History.get(
@@ -869,7 +933,7 @@ class PrxSchemeChooseEntry(AbsRsvTypeQtEntry):
         self._qt_entry_widget._set_choose_changed_connect_to_(self.set_history_update)
 
     def get(self):
-        return self._qt_entry_widget._get_item_value_()
+        return self._qt_entry_widget._get_value_()
 
     def set(self, raw=None, **kwargs):
         if isinstance(raw, (tuple, list)):
@@ -878,10 +942,10 @@ class PrxSchemeChooseEntry(AbsRsvTypeQtEntry):
             self.set_history_show_latest()
 
     def set_default(self, raw, **kwargs):
-        self._qt_entry_widget._set_item_value_default_(raw)
+        self._qt_entry_widget._set_value_default_(raw)
 
     def get_is_default(self):
-        return self._qt_entry_widget._get_item_value_is_default_()
+        return self._qt_entry_widget._get_value_is_default_()
 
     def set_scheme_key(self, key):
         self._scheme_key = key
@@ -905,7 +969,7 @@ class PrxSchemeChooseEntry(AbsRsvTypeQtEntry):
     #
     def set_history_update(self):
         if self._scheme_key is not None:
-            scheme = self._qt_entry_widget._get_item_value_()
+            scheme = self._qt_entry_widget._get_value_()
             if scheme:
                 utl_core.History.set_append(
                     self._scheme_key,
@@ -927,7 +991,7 @@ class PrxSchemeChooseEntry(AbsRsvTypeQtEntry):
         if self._scheme_key is not None:
             _ = utl_core.History.get_latest(self._scheme_key)
             if _:
-                self._qt_entry_widget._set_item_value_(_)
+                self._qt_entry_widget._set_value_(_)
 
 
 class PrxConstantEntry(AbsRsvTypeQtEntry):
@@ -940,7 +1004,7 @@ class PrxConstantEntry(AbsRsvTypeQtEntry):
         self.widget.setFocusProxy(self._qt_entry_widget)
 
     def set_value_type(self, value_type):
-        self._qt_entry_widget._set_item_value_type_(value_type)
+        self._qt_entry_widget._set_value_type_(value_type)
 
     def set_use_as_frames(self):
         self._qt_entry_widget._set_use_as_frames_()
@@ -949,19 +1013,19 @@ class PrxConstantEntry(AbsRsvTypeQtEntry):
         self._qt_entry_widget._set_use_as_rgba_()
 
     def get(self):
-        return self._qt_entry_widget._get_item_value_()
+        return self._qt_entry_widget._get_value_()
 
     def set(self, raw=None, **kwargs):
-        self._qt_entry_widget._set_item_value_(raw)
+        self._qt_entry_widget._set_value_(raw)
 
     def set_default(self, raw, **kwargs):
-        self._qt_entry_widget._set_item_value_default_(raw)
+        self._qt_entry_widget._set_value_default_(raw)
 
     def get_default(self):
-        return self._qt_entry_widget._get_item_value_default_()
+        return self._qt_entry_widget._get_value_default_()
 
     def get_is_default(self):
-        return self._qt_entry_widget._get_item_value_is_default_()
+        return self._qt_entry_widget._get_value_is_default_()
 
     def set_changed_connect_to(self, fnc):
         self._qt_entry_widget._set_value_entry_changed_connect_to_(fnc)
@@ -998,7 +1062,7 @@ class PrxChooseEntry_(AbsRsvTypeQtEntry):
         self._qt_entry_widget._set_value_entry_enable_(True)
 
     def get(self):
-        return self._qt_entry_widget._get_item_value_()
+        return self._qt_entry_widget._get_value_()
 
     def get_enumerate_strings(self):
         return self._qt_entry_widget._get_item_values_()
@@ -1010,7 +1074,7 @@ class PrxChooseEntry_(AbsRsvTypeQtEntry):
                 self.set(raw[-1])
                 self.set_default(raw[-1])
         elif isinstance(raw, (str, unicode)):
-            self._qt_entry_widget._set_item_value_(raw)
+            self._qt_entry_widget._set_value_(raw)
         elif isinstance(raw, (int, float)):
             self._qt_entry_widget._set_item_value_at_(int(raw))
 
@@ -1021,15 +1085,15 @@ class PrxChooseEntry_(AbsRsvTypeQtEntry):
 
     def set_default(self, raw, **kwargs):
         if isinstance(raw, (str, unicode)):
-            self._qt_entry_widget._set_item_value_default_(raw)
+            self._qt_entry_widget._set_value_default_(raw)
         elif isinstance(raw, (int, float)):
             self._qt_entry_widget._set_item_value_default_by_index_(raw)
 
     def get_default(self):
-        return self._qt_entry_widget._get_item_value_default_()
+        return self._qt_entry_widget._get_value_default_()
 
     def get_is_default(self):
-        return self._qt_entry_widget._get_item_value_is_default_()
+        return self._qt_entry_widget._get_value_is_default_()
 
     def set_changed_connect_to(self, fnc):
         self._qt_entry_widget._set_choose_changed_connect_to_(fnc)
@@ -1069,24 +1133,24 @@ class PrxArrayEntry(AbsRsvTypeQtEntry):
         super(PrxArrayEntry, self).__init__(*args, **kwargs)
 
     def set_value_type(self, value_type):
-        self._qt_entry_widget._set_item_value_type_(value_type)
+        self._qt_entry_widget._set_value_type_(value_type)
 
     def set_value_size(self, size):
         self._qt_entry_widget._set_value_size_(size)
 
     def get(self):
-        return self._qt_entry_widget._get_item_value_()
+        return self._qt_entry_widget._get_value_()
 
     def set(self, raw=None, **kwargs):
-        self._qt_entry_widget._set_item_value_(
+        self._qt_entry_widget._set_value_(
             raw
         )
 
     def set_default(self, raw, **kwargs):
-        self._qt_entry_widget._set_item_value_default_(raw)
+        self._qt_entry_widget._set_value_default_(raw)
 
     def get_is_default(self):
-        return self._qt_entry_widget._get_item_value_is_default_()
+        return self._qt_entry_widget._get_value_is_default_()
     
     def set_changed_connect_to(self, fnc):
         self._qt_entry_widget._set_value_entry_changed_connect_to_(fnc)
@@ -1095,20 +1159,20 @@ class PrxArrayEntry(AbsRsvTypeQtEntry):
 class PrxIntegerArrayEntry(PrxArrayEntry):
     def __init__(self, *args, **kwargs):
         super(PrxIntegerArrayEntry, self).__init__(*args, **kwargs)
-        self._qt_entry_widget._set_value_entry_widget_build_(2, int)
+        self._qt_entry_widget._set_value_entry_build_(2, int)
 
 
 class PrxFloatArrayEntry(PrxArrayEntry):
     def __init__(self, *args, **kwargs):
         super(PrxFloatArrayEntry, self).__init__(*args, **kwargs)
-        self._qt_entry_widget._set_value_entry_widget_build_(2, float)
+        self._qt_entry_widget._set_value_entry_build_(2, float)
 
 
 class PrxRgbaEntry(PrxConstantEntry):
     QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtRgbaValueEntryItem
     def __init__(self, *args, **kwargs):
         super(PrxRgbaEntry, self).__init__(*args, **kwargs)
-        # self._qt_entry_widget._set_value_entry_widget_build_(3, float)
+        # self._qt_entry_widget._set_value_entry_build_(3, float)
 
 
 class PrxBooleanEntry(AbsRsvTypeQtEntry):
@@ -1118,19 +1182,19 @@ class PrxBooleanEntry(AbsRsvTypeQtEntry):
         super(PrxBooleanEntry, self).__init__(*args, **kwargs)
 
     def get(self):
-        return self._qt_entry_widget._get_item_is_checked_()
+        return self._qt_entry_widget._get_is_checked_()
 
     def set(self, raw=None, **kwargs):
-        self._qt_entry_widget._set_item_checked_(raw)
+        self._qt_entry_widget._set_checked_(raw)
 
     def set_default(self, raw, **kwargs):
-        self._qt_entry_widget._set_item_value_default_(raw)
+        self._qt_entry_widget._set_value_default_(raw)
 
     def get_default(self):
-        return self._qt_entry_widget._get_item_value_default_()
+        return self._qt_entry_widget._get_value_default_()
 
     def get_is_default(self):
-        return self._qt_entry_widget._get_item_value_is_default_()
+        return self._qt_entry_widget._get_value_is_default_()
 
     def set_changed_connect_to(self, fnc):
         self._qt_entry_widget._set_item_check_changed_connect_to_(fnc)
@@ -1150,16 +1214,16 @@ class PrxScriptEntry(AbsRsvTypeQtEntry):
         self._qt_entry_widget._set_resize_enable_(True)
 
     def get(self):
-        return self._qt_entry_widget._get_item_value_()
+        return self._qt_entry_widget._get_value_()
 
     def set(self, raw=None, **kwargs):
-        self._qt_entry_widget._set_item_value_(raw)
+        self._qt_entry_widget._set_value_(raw)
 
     def set_default(self, raw, **kwargs):
-        self._qt_entry_widget._set_item_value_default_(raw)
+        self._qt_entry_widget._set_value_default_(raw)
 
     def get_is_default(self):
-        return self._qt_entry_widget._get_item_value_is_default_()
+        return self._qt_entry_widget._get_value_is_default_()
 
     def set_locked(self, boolean):
         self._qt_entry_widget._set_value_entry_enable_(not boolean)
@@ -1409,7 +1473,7 @@ class PrxRsvObjChooseEntry(_AbsPrxTypeEntry):
                     **create_kwargs
                 )
             # prx_item.set_checked(True)
-            prx_item.set_keyword_filter_tgt_contexts([obj_path, obj_type])
+            prx_item.set_keyword_filter_keys_tgt_update([obj_path, obj_type])
             obj.set_obj_gui(prx_item)
             prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
             self._obj_add_dict[obj_path] = prx_item
@@ -1480,7 +1544,7 @@ class PrxRsvObjChooseEntry(_AbsPrxTypeEntry):
             **create_kwargs
         )
         # prx_item.set_checked(True)
-        prx_item.set_keyword_filter_tgt_contexts([obj_path, obj_type])
+        prx_item.set_keyword_filter_keys_tgt_update([obj_path, obj_type])
         obj.set_obj_gui(prx_item)
         prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
         self._obj_add_dict[obj_path] = prx_item
@@ -1564,7 +1628,7 @@ class PrxComponentsEntry(_AbsPrxTypeEntry):
                     **create_kwargs
                 )
             prx_item.set_checked(True)
-            prx_item.set_keyword_filter_tgt_contexts([obj_path, obj_type])
+            prx_item.set_keyword_filter_keys_tgt_update([obj_path, obj_type])
             obj.set_obj_gui(prx_item)
             prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
             self._obj_add_dict[obj_path] = prx_item
@@ -1631,7 +1695,7 @@ class PrxComponentsEntry(_AbsPrxTypeEntry):
         )
         #
         prx_item.set_checked(True)
-        prx_item.set_keyword_filter_tgt_contexts([obj_path, obj_type])
+        prx_item.set_keyword_filter_keys_tgt_update([obj_path, obj_type])
         obj.set_obj_gui(prx_item)
         prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
         self._obj_add_dict[obj_path] = prx_item
@@ -2343,19 +2407,19 @@ class PrxValuesChoosePort(AbsPrxTypePort):
         self._prx_port_entry.set_append(value)
 
 
-class PrxStgEntitiesPort(AbsPrxTypePort):
+class PrxShotgunEntitiesPort(AbsPrxTypePort):
     ENABLE_CLASS = _PrxPortStatus
     LABEL_CLASS = _PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLASS = PrxStgEntitiesEntry
+    ENTRY_CLASS = PrxShotgunEntitiesEntry
     def __init__(self, *args, **kwargs):
-        super(PrxStgEntitiesPort, self).__init__(*args, **kwargs)
+        super(PrxShotgunEntitiesPort, self).__init__(*args, **kwargs)
 
     def set_append(self, value):
         self._prx_port_entry.set_append(value)
 
-    def set_shotgun_entity_kwargs(self, shotgun_entity_kwargs):
-        self._prx_port_entry.set_shotgun_entity_kwargs(shotgun_entity_kwargs)
+    def set_shotgun_entity_kwargs(self, *args, **kwargs):
+        self._prx_port_entry.set_shotgun_entity_kwargs(*args, **kwargs)
 
 
 class PrxComponentsPort(AbsPrxTypePort):
@@ -2906,6 +2970,11 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
                     port_path,
                     node_widget=self.widget
                 )
+            #
+            history_key_ = option.get('history_key')
+            if history_key_:
+                port.set_history_key(history_key_)
+            #
             port.set(value_)
             port.set_default(value_)
             ext_filter = option.get('ext_filter')
@@ -2915,7 +2984,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             show_history_latest = option.get('show_history_latest')
             if show_history_latest:
                 port.set_history_show_latest()
-
+            #
             lock = option.get('lock') or False
             if lock is True:
                 port.set_locked(True)
@@ -2936,10 +3005,10 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             history_key_ = option.get('history_key')
             if history_key_:
                 port.set_history_key(history_key_)
-
+            #
             port.set(value_)
             port.set_default(value_)
-
+            #
             show_history_latest = option.get('show_history_latest')
             if show_history_latest:
                 port.set_history_show_latest()
@@ -2984,13 +3053,17 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             )
 
         elif widget_ in ['shotgun_entities']:
-            port = PrxStgEntitiesPort(
+            port = PrxShotgunEntitiesPort(
                 port_path,
                 node_widget=self.widget
             )
             shotgun_entity_kwargs = option.get('shotgun_entity_kwargs')
             if shotgun_entity_kwargs:
-                port.set_shotgun_entity_kwargs(shotgun_entity_kwargs)
+                port.set_shotgun_entity_kwargs(
+                    shotgun_entity_kwargs,
+                    keyword_filter_fields=option.get('keyword_filter_fields'),
+                    tag_filter_fields=option.get('tag_filter_fields')
+                )
         #
         elif widget_ in ['button']:
             port = PrxButtonPort(

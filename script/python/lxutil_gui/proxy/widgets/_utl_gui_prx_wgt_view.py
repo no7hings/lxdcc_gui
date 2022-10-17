@@ -3,6 +3,8 @@ import collections
 
 from lxbasic import bsc_core
 
+from lxutil_gui import utl_gui_configure
+
 from lxutil_gui.qt import utl_gui_qt_core
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_view, _utl_gui_qt_wgt_item
@@ -288,35 +290,37 @@ class PrxTreeView(
     def set_header_view_create(self, data, max_width):
         self.view._set_view_header_(data, max_width)
 
-    def set_tag_filter_tgt_keys(self, keys):
-        utl_gui_prx_abstract.AbsPrxViewFilterTagDef.set_tag_filter_tgt_keys(
+    def set_tag_filter_all_keys_src(self, keys):
+        utl_gui_prx_abstract.AbsPrxViewFilterTagDef.set_tag_filter_all_keys_src(
             self, keys
         )
         # self._set_items_hidden_by_any_filter_()
     @classmethod
-    def _get_item_tag_filter_tgt_match_args_(cls, prx_item_tgt, tag_filter_src_all_keys):
+    def _get_item_tag_filter_tgt_match_args_(cls, prx_item_tgt, tag_filter_all_keys_src):
         tag_filter_tgt_keys = prx_item_tgt.get_tag_filter_tgt_keys()
         tag_filter_tgt_mode = prx_item_tgt.get_tag_filter_tgt_mode()
         if tag_filter_tgt_keys:
-            if tag_filter_tgt_mode == 'A+B':
+            if tag_filter_tgt_mode == utl_gui_configure.TagFilterMode.MatchAll:
                 for tag_filter_tgt_key in tag_filter_tgt_keys:
-                    if tag_filter_tgt_key not in tag_filter_src_all_keys:
+                    if tag_filter_tgt_key not in tag_filter_all_keys_src:
                         return True, True
-            elif tag_filter_tgt_mode == 'A/B':
+                return True, False
+            elif tag_filter_tgt_mode == utl_gui_configure.TagFilterMode.MatchOne:
                 for tag_filter_tgt_key in tag_filter_tgt_keys:
-                    if tag_filter_tgt_key in tag_filter_src_all_keys:
+                    if tag_filter_tgt_key in tag_filter_all_keys_src:
                         return True, False
+                return True, True
             return True, False
         return False, False
     @classmethod
     def _get_item_keyword_filter_match_args_(cls, item_prx, keyword):
         if keyword:
             keyword = keyword.lower()
-            keyword_filter_contexts = item_prx.get_keyword_filter_tgt_contexts() or []
-            if keyword_filter_contexts:
-                context = u'+'.join(keyword_filter_contexts)
+            keyword_filter_keys_tgt = item_prx.get_keyword_filter_keys_tgt() or []
+            if keyword_filter_keys_tgt:
+                context = '+'.join([i.decode('utf-8') for i in keyword_filter_keys_tgt if i])
             else:
-                context = u'+'.join([i for i in item_prx.get_names() if i])
+                context = '+'.join([i.decode('utf-8') for i in item_prx.get_names() if i])
             #
             context = context.lower()
             if '*' in keyword:
@@ -331,7 +335,7 @@ class PrxTreeView(
         return False, False
 
     def _set_items_hidden_by_any_filter_(self):
-        tag_filter_src_all_keys = self.view._get_view_tag_filter_tgt_keys_()
+        tag_filter_all_keys_src = self.view._get_view_tag_filter_keys_src_()
         filter_keyword = self._prx_filter_bar.get_keyword()
         self._keyword_filter_item_prxes = []
         #
@@ -339,9 +343,9 @@ class PrxTreeView(
         for i_prx_item_tgt in item_prxes:
             i_tag_filter_hidden_ = False
             i_keyword_filter_hidden_ = False
-            if tag_filter_src_all_keys:
+            if tag_filter_all_keys_src:
                 i_tag_filter_is_enable, i_tag_filter_hidden = self._get_item_tag_filter_tgt_match_args_(
-                    i_prx_item_tgt, tag_filter_src_all_keys
+                    i_prx_item_tgt, tag_filter_all_keys_src
                 )
                 if i_tag_filter_is_enable is True:
                     i_tag_filter_hidden_ = i_tag_filter_hidden
@@ -446,6 +450,9 @@ class PrxTreeView(
 
     def set_filter_history_key(self, key):
         self._prx_filter_bar.set_history_key(key)
+
+    def set_filter_completion_gain_fnc(self, fnc):
+        self._prx_filter_bar.set_filter_completion_gain_fnc(fnc)
 
 
 class PrxListView(
