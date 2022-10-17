@@ -1719,6 +1719,7 @@ class QtLineEdit_(
 ):
     entry_changed = qt_signal()
     user_entry_changed = qt_signal()
+    user_entry_cleared = qt_signal()
     entry_finished = qt_signal()
     up_key_pressed = qt_signal()
     down_key_pressed = qt_signal()
@@ -1849,6 +1850,9 @@ class QtLineEdit_(
     def _set_user_enter_changed_emit_send_(self):
         # noinspection PyUnresolvedReferences
         self.user_entry_changed.emit()
+
+    def _set_user_enter_cleared_emit_send_(self):
+        self.user_entry_cleared.emit()
 
     def _set_value_completion_(self):
         if self._item_value_type in [int, float]:

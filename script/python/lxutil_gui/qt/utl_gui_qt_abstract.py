@@ -2000,7 +2000,10 @@ class AbsQtEntryCompletionDef(object):
         self._entry_completion_frame._set_popup_target_entry_frame_(entry_frame_gui)
         #
         entry_gui.user_entry_changed.connect(
-            self._set_entry_completion_popup_
+            self._set_entry_completion_popup_start_
+        )
+        entry_gui.user_entry_cleared.connect(
+            self._set_entry_completion_popup_end_
         )
         entry_gui.up_key_pressed.connect(
             self._entry_completion_frame._set_popup_scroll_to_pre_
@@ -2024,8 +2027,11 @@ class AbsQtEntryCompletionDef(object):
             return self._entry_completion_gain_fnc(keyword) or []
         return []
 
-    def _set_entry_completion_popup_(self):
+    def _set_entry_completion_popup_start_(self):
         self._entry_completion_frame._set_popup_start_()
+
+    def _set_entry_completion_popup_end_(self):
+        self._entry_completion_frame._set_popup_end_()
 
 
 class AbsQtEntryHistoryDef(object):

@@ -2144,6 +2144,7 @@ class _QtFilterBar(
     def _set_entry_clear_(self):
         self._value_entry.clear()
         self._set_enter_changed_emit_send_()
+        self._set_user_enter_cleared_emit_send_()
 
     def _get_is_match_case_(self):
         return self._is_match_case
