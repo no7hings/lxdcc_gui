@@ -305,8 +305,8 @@ class AbsScenePackagerPanel(
 
     def _get_checked_os_objs_(self):
         lis = []
-        item_prxes = self._prx_stg_obj_tree_view_add_opt._obj_add_dict.values()
-        for v in item_prxes:
+        prx_items = self._prx_stg_obj_tree_view_add_opt._obj_add_dict.values()
+        for v in prx_items:
             if v.get_is_checked() is True:
                 storage_obj = v.get_gui_dcc_obj(namespace='storage-file')
                 if storage_obj is not None:

@@ -291,8 +291,8 @@ class DccPublisherOpt(object):
 
     def set_run(self):
         k = self._kwargs
-        media_files = k['review']
-        version_type = k['version_type']
+        media_files = self._kwargs['review']
+        version_type = self._kwargs['version_type']
         scene_file_path = self._scene_file_path
 
         scene_file_opt = bsc_core.StorageFileOpt(scene_file_path)
@@ -321,11 +321,11 @@ class DccPublisherOpt(object):
         extra_data = dict(
             user=user,
             #
-            version_type=k['version_type'],
+            version_type=self._kwargs['version_type'],
             version_status='pub',
             #
-            notice=k['notice'],
-            description=k['description'],
+            notice=self._kwargs['notice'],
+            description=self._kwargs['description'],
         )
 
         extra_key = bsc_core.SessionMtd.set_extra_data_save(extra_data)
@@ -353,12 +353,14 @@ class DccPublisherOpt(object):
                 #
                 validation_info_file=self._validation_info_file,
                 #
-                with_workspace_texture_lock=k['process.options.with_workspace_texture_lock'],
+                with_workspace_texture_lock=self._kwargs['process.options.with_workspace_texture_lock'],
                 #
                 user=user,
                 #
                 td_enable=self._session.get_td_enable(),
                 rez_beta=self._session.get_rez_beta(),
+                #
+                localhost_enable=self._kwargs['process.deadline.scheme'] == 'localhost'
             )
         )
         #
@@ -735,7 +737,8 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
                     u'3. choose one or more image or movie file or make a snapshot in "review";\n'
                     u'    a). support formats: "jpg", "exr", "mov"\n'
                     u'4. choose one or more user in "notice";\n'
-                    u'5. press "Confirm" to continue'
+                    u'5. configure in "process";\n'
+                    u'6. press "Confirm" to continue'
                 ),
                 #
                 options_configure=self._session.configure.get('build.node.extra_publish'),

@@ -2406,13 +2406,13 @@ class QtPainter(QtGui.QPainter):
             get_font(size=t_f_s)
         )
         #
-        background_color, text_color = QtColorMtd._get_image_draw_args_by_text_(draw_text)
+        background_color, font_color = QtColorMtd._get_image_draw_args_by_text_(draw_text)
         self._set_border_color_(QtBorderColor.Icon)
         self._set_background_color_(background_color)
         self.drawRect(
             rect
         )
-        self._set_font_color_(text_color)
+        self._set_font_color_(font_color)
         self.drawText(
             rect,
             QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
@@ -2557,7 +2557,7 @@ class QtPainter(QtGui.QPainter):
 
         self.drawRect(rect_)
 
-    def _set_icon_name_text_draw_by_rect_(self, rect, text, border_color=None, background_color=None, text_color=None, offset=0, border_radius=0, border_width=1, is_hovered=False, is_enable=True):
+    def _set_icon_name_text_draw_by_rect_(self, rect, text, border_color=None, background_color=None, font_color=None, offset=0, border_radius=0, border_width=1, is_hovered=False, is_enable=True):
         if offset != 0:
             rect_offset = QtCore.QRect(
                 rect.x() + offset, rect.y() + offset,
@@ -2566,13 +2566,17 @@ class QtPainter(QtGui.QPainter):
         else:
             rect_offset = rect
         #
-        x, y = rect.x()+offset, rect.y()+offset
-        w, h = rect.width()-offset, rect.height()-offset
+        x, y = rect_offset.x()+offset, rect_offset.y()+offset
+        w, h = rect_offset.width()-offset, rect_offset.height()-offset
         #
         frame_rect = QtCore.QRect(
             x, y,
             w, h
         )
+        if border_color is not None:
+            border_color_ = border_color
+        else:
+            border_color_ = QtBorderColor.Icon
         #
         if background_color is not None:
             background_color__ = Color._get_rgba_(background_color)
@@ -2580,9 +2584,11 @@ class QtPainter(QtGui.QPainter):
             background_color__ = bsc_core.TextOpt(text).to_rgb()
 
         background_color_, text_color_ = QtColorMtd._get_image_draw_args_by_color_(*background_color__)
+        if font_color is not None:
+            text_color_ = font_color
         #
         self._set_background_color_(background_color_)
-        self._set_border_color_(QtBorderColor.Icon)
+        self._set_border_color_(border_color_)
         self._set_border_width_(border_width)
         #
         b_ = border_width / 2
@@ -2748,12 +2754,12 @@ class QtPainter(QtGui.QPainter):
             self._set_border_color_(QtFontColor.Hovered)
         #
         if offset != 0:
-            rect_ = QtCore.QRect(
+            rect_offset = QtCore.QRect(
                 rect.x()+offset, rect.y()+offset,
                 rect.width()-offset, rect.height()-offset
             )
         else:
-            rect_ = rect
+            rect_offset = rect
         #
         if text_option is not None:
             text_option_ = text_option
@@ -2778,13 +2784,13 @@ class QtPainter(QtGui.QPainter):
             text_ = self.fontMetrics().elidedText(
                 text,
                 QtCore.Qt.ElideLeft,
-                rect.width(),
+                rect.width()-2,
                 QtCore.Qt.TextShowMnemonic
             )
         #
         rect_f_ = QtCore.QRectF(
-            rect_.x(), rect_.y(),
-            rect_.width(), rect_.height()
+            rect_offset.x(), rect_offset.y(),
+            rect_offset.width(), rect_offset.height()
         )
         self.drawText(
             rect_f_,
@@ -2792,7 +2798,7 @@ class QtPainter(QtGui.QPainter):
             text_option__,
         )
 
-    def _set_text_draw_by_rect_use_dict_(self, rect, text_dict, text_size, text_weight, text_color):
+    def _set_text_draw_by_rect_use_dict_(self, rect, text_dict, text_size, text_weight, font_color):
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
         self._set_font_option_(text_size, text_weight)
@@ -2809,7 +2815,7 @@ class QtPainter(QtGui.QPainter):
                 key_text_width=t_w,
                 key_text_size=text_size, value_text_size=text_size,
                 key_text_weight=text_weight, value_text_weight=text_weight,
-                key_text_color=text_color, value_text_color=text_color,
+                key_text_color=font_color, value_text_color=font_color,
             )
 
     def _set_radar_chart_draw_by_rect_(self, rect, chart_data):
@@ -3962,11 +3968,11 @@ class QtPixmapDrawer(object):
             text_content = data.get('draw.text.content')
             text_size = data.get('draw.text.size')
             text_weight = data.get('draw.text.weight')
-            text_color = data.get('draw.text.color')
+            font_color = data.get('draw.text.color')
             text_rect = QtCore.QRect(x+m, y+m, w, h/2)
             if isinstance(text_content, dict):
                 painter._set_text_draw_by_rect_use_dict_(
-                    text_rect, text_content, text_size, text_weight, text_color
+                    text_rect, text_content, text_size, text_weight, font_color
                 )
 
         painter.end()

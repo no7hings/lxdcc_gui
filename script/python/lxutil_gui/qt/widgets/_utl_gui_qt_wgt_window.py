@@ -10,7 +10,7 @@ class _QtWindow(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
 ):
-    def _set_wgt_update_draw_(self):
+    def _refresh_widget_draw_(self):
         self.update()
 
     def __init__(self, *args, **kwargs):
@@ -34,7 +34,7 @@ class _QtWindow(
     def _set_widget_geometries_update_(self):
         pos_x, pos_y = 0, 0
         width, height = self.width(), self.height()
-        self._set_frame_rect_(
+        self._set_frame_draw_geometry_(
             pos_x, pos_y, width, height
         )
 
@@ -53,7 +53,7 @@ class _QtWindow(
 class _QtFramelessWindow(
     QtWidgets.QWidget
 ):
-    def _set_wgt_update_draw_(self):
+    def _refresh_widget_draw_(self):
         self.update()
 
     def __init__(self, *args, **kwargs):

@@ -63,7 +63,7 @@ class _PrxPortStatus(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget.setMaximumWidth(AttrConfig.PRX_PORT_HEIGHT)
         self.widget.setMinimumWidth(AttrConfig.PRX_PORT_HEIGHT)
         self.widget.setToolTip(
-            '"LMB-click" to use value "default" / "latest"'
+            '"LMB-click" to use value "default" / "local" / "global"'
         )
 
     def set(self, boolean):
@@ -143,8 +143,8 @@ class AbsRsvTypeQtEntry(utl_gui_prx_abstract.AbsPrxWidget):
         pass
 
     def set_use_as_storage(self, boolean=True):
-        if hasattr(self._qt_entry_widget, '_set_entry_use_as_storage_'):
-            self._qt_entry_widget._set_entry_use_as_storage_(boolean)
+        if hasattr(self._qt_entry_widget, '_set_validator_use_as_storage_'):
+            self._qt_entry_widget._set_validator_use_as_storage_(boolean)
 
     def _set_file_show_(self):
         utl_dcc_objects.OsFile(self.get()).set_open()
@@ -177,6 +177,9 @@ class _PrxStgObjEntry(AbsRsvTypeQtEntry):
         self._qt_entry_widget._set_choose_icon_file_path_(
             utl_gui_core.RscIconFile.get('history')
         )
+        self._qt_entry_widget._set_choose_sub_icon_file_path_(
+            utl_gui_core.RscIconFile.get('down')
+        )
         #
         self._open_or_save_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         # self.set_button_add(self._open_or_save_button)
@@ -190,7 +193,7 @@ class _PrxStgObjEntry(AbsRsvTypeQtEntry):
         )
         self._open_or_save_button.set_press_clicked_connect_to(self._set_open_or_save_)
         #
-        self._qt_entry_widget._set_choose_changed_connect_to_(self.set_history_update)
+        self._qt_entry_widget.user_choose_changed.connect(self.set_history_update)
         self._qt_entry_widget._set_value_entry_finished_connect_to_(self.set_history_update)
 
         self._qt_entry_widget._set_value_entry_drop_enable_(True)
@@ -427,9 +430,9 @@ class _PrxStgObjsEntry(AbsRsvTypeQtEntry):
         self._qt_entry_widget._get_resize_frame_()._set_resize_target_(self.widget)
         self._qt_entry_widget._get_resize_frame_()._set_resize_minimum_(42)
         self._qt_entry_widget._set_size_policy_height_fixed_mode_()
-        self._qt_entry_widget._get_value_entry_widget_()._set_entry_use_as_storage_(True)
-        self._qt_entry_widget._get_value_entry_widget_()._set_value_validation_fnc_(self._value_validation_fnc_)
-        self._qt_entry_widget._get_value_entry_widget_().entry_added.connect(self.set_history_update)
+        self._qt_entry_widget._get_value_entry_gui_()._set_validator_use_as_storage_(True)
+        self._qt_entry_widget._get_value_entry_gui_()._set_value_validation_fnc_(self._value_validation_fnc_)
+        self._qt_entry_widget._get_value_entry_gui_().entry_added.connect(self.set_history_update)
         self._qt_entry_widget._set_choose_icon_file_path_(
             utl_gui_core.RscIconFile.get('history')
         )
@@ -861,7 +864,7 @@ class PrxRsvProjectChooseEntry(AbsRsvTypeQtEntry):
         self.set_history_update()
         #
         self._qt_entry_widget._set_value_entry_finished_connect_to_(self.set_history_update)
-        self._qt_entry_widget._set_choose_changed_connect_to_(self.set_history_update)
+        self._qt_entry_widget.user_choose_changed.connect(self.set_history_update)
 
     def get(self):
         return self._qt_entry_widget._get_value_()
@@ -930,7 +933,7 @@ class PrxSchemeChooseEntry(AbsRsvTypeQtEntry):
         self.set_history_update()
         #
         self._qt_entry_widget._set_value_entry_finished_connect_to_(self.set_history_update)
-        self._qt_entry_widget._set_choose_changed_connect_to_(self.set_history_update)
+        self._qt_entry_widget.user_choose_changed.connect(self.set_history_update)
 
     def get(self):
         return self._qt_entry_widget._get_value_()
@@ -1007,10 +1010,10 @@ class PrxConstantEntry(AbsRsvTypeQtEntry):
         self._qt_entry_widget._set_value_type_(value_type)
 
     def set_use_as_frames(self):
-        self._qt_entry_widget._set_use_as_frames_()
+        self._qt_entry_widget._set_validator_use_as_frames_()
 
     def set_use_as_rgba(self):
-        self._qt_entry_widget._set_use_as_rgba_()
+        self._qt_entry_widget._set_validator_use_as_rgba_()
 
     def get(self):
         return self._qt_entry_widget._get_value_()
@@ -1096,7 +1099,7 @@ class PrxChooseEntry_(AbsRsvTypeQtEntry):
         return self._qt_entry_widget._get_value_is_default_()
 
     def set_changed_connect_to(self, fnc):
-        self._qt_entry_widget._set_choose_changed_connect_to_(fnc)
+        self._qt_entry_widget.choose_changed.connect(fnc)
 
     def set_locked(self, boolean):
         self._qt_entry_widget._set_value_entry_enable_(not boolean)
@@ -1159,20 +1162,20 @@ class PrxArrayEntry(AbsRsvTypeQtEntry):
 class PrxIntegerArrayEntry(PrxArrayEntry):
     def __init__(self, *args, **kwargs):
         super(PrxIntegerArrayEntry, self).__init__(*args, **kwargs)
-        self._qt_entry_widget._build_value_entry_(2, int)
+        self._qt_entry_widget._build_entry_(2, int)
 
 
 class PrxFloatArrayEntry(PrxArrayEntry):
     def __init__(self, *args, **kwargs):
         super(PrxFloatArrayEntry, self).__init__(*args, **kwargs)
-        self._qt_entry_widget._build_value_entry_(2, float)
+        self._qt_entry_widget._build_entry_(2, float)
 
 
 class PrxRgbaEntry(PrxConstantEntry):
     QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtRgbaValueEntryItem
     def __init__(self, *args, **kwargs):
         super(PrxRgbaEntry, self).__init__(*args, **kwargs)
-        # self._qt_entry_widget._build_value_entry_(3, float)
+        # self._qt_entry_widget._build_entry_(3, float)
 
 
 class PrxBooleanEntry(AbsRsvTypeQtEntry):
@@ -2878,7 +2881,14 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         #
         if widget_ in ['group']:
             group = self._set_group_create_(port_path)
-            group.set_label(label_)
+            if label_:
+                group.set_label(label_)
+            #
+            expand = option.get('expand') or False
+            group.set_expanded(expand)
+
+            collapse = option.get('collapse') or False
+            group.set_expanded(not collapse)
             return
         #
         key_ = option.get('key')

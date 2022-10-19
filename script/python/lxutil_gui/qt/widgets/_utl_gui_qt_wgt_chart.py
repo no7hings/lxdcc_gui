@@ -13,8 +13,11 @@ class _QtColorChooseChart(
     utl_gui_qt_abstract.AbsQtActionDef,
     utl_gui_qt_abstract._QtChartDef,
 ):
+    def _refresh_widget_draw_(self):
+        pass
+
     color_choose_changed = qt_signal()
-    def _set_wgt_update_draw_(self):
+    def _execute_popup_filter_(self):
         self.update()
 
     def _set_chart_update_data_(self):
@@ -232,19 +235,19 @@ class _QtColorChooseChart(
                     # Track
                     self._track_offset_flag = True
                     point = event.globalPos() - self._track_offset_start_point
-                    self._set_track_offset_action_run_(point)
+                    self._execute_action_track_offset_(point)
                 elif event.buttons() == QtCore.Qt.MidButton:
                     # Circle
                     self._circle_flag = True
                     #
-                    self._set_track_circle_action_run_(event)
+                    self._execute_action_track_circle_(event)
                     self._set_action_flag_(self.ActionFlag.TrackCircle)
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 if event.button() == QtCore.Qt.LeftButton:
                     if self._get_action_flag_is_match_(
                         self.ActionFlag.PressClick
                     ):
-                        self._set_press_click_action_run_(event)
+                        self._execute_action_press_click_(event)
                     #
                     self._move_flag = True
                 elif event.button() == QtCore.Qt.RightButton:
@@ -261,7 +264,7 @@ class _QtColorChooseChart(
                 self._set_action_flag_(
                     self.ActionFlag.ZoomWheel
                 )
-                self._set_zoom_scale_action_run_(event)
+                self._execute_action_zoom_scale_(event)
                 #
                 self._move_flag = False
                 self._circle_flag = False
@@ -271,7 +274,7 @@ class _QtColorChooseChart(
                 self._circle_flag = False
                 self._track_offset_flag = False
                 self._set_chart_update_data_()
-                self._set_wgt_update_draw_()
+                self._refresh_widget_draw_()
         return False
 
     def _set_choose_color_update_(self):
@@ -291,13 +294,13 @@ class _QtColorChooseChart(
             #
             self.color_choose_changed.emit()
             #
-            self._set_wgt_update_draw_()
+            self._refresh_widget_draw_()
     #
-    def _set_press_click_action_run_(self, event):
+    def _execute_action_press_click_(self, event):
         self._color_point = event.pos()
         self._set_choose_color_update_()
     #
-    def _set_zoom_scale_action_run_(self, event):
+    def _execute_action_zoom_scale_(self, event):
         delta = event.angleDelta().y()
         #
         radix = 3
@@ -313,10 +316,10 @@ class _QtColorChooseChart(
         if pre_count != cur_count:
             self._count = cur_count
             self._set_chart_update_data_()
-            self._set_wgt_update_draw_()
+            self._refresh_widget_draw_()
             self._set_choose_color_update_()
     #
-    def _set_track_circle_action_run_(self, event):
+    def _execute_action_track_circle_(self, event):
         point = event.pos()
         #
         angle_ = self._get_angle_at_circle_(point)
@@ -328,10 +331,10 @@ class _QtColorChooseChart(
             self._color_h_offset = angle
         #
         self._set_chart_update_data_()
-        self._set_wgt_update_draw_()
+        self._refresh_widget_draw_()
         self._set_choose_color_update_()
     #
-    def _set_track_offset_action_run_(self, point):
+    def _execute_action_track_offset_(self, point):
         xDelta = point.x()
         yDelta = point.y()
         xRadix = 5.0
@@ -346,7 +349,7 @@ class _QtColorChooseChart(
         #
         self.update()
     #
-    def _set_resize_action_run_(self, size):
+    def _execute_action_resize_(self, size):
         pass
     #
     def _get_popup_pos_(self, xPos, yPos, width, height):
@@ -429,7 +432,7 @@ class _QtWaitingChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtChartDef,
 ):
-    def _set_wgt_update_draw_(self):
+    def _refresh_widget_draw_(self):
         self.update()
 
     def __init__(self, *args, **kwargs):
@@ -487,11 +490,11 @@ class _QtWaitingChart(
                 (i_x, i_y)
             )
 
-        self._set_wgt_update_draw_()
+        self._refresh_widget_draw_()
 
     def _set_waiting_update_(self):
         self._timestamp = int(bsc_core.SystemMtd.get_timestamp() * 5)
-        self._set_wgt_update_draw_()
+        self._refresh_widget_draw_()
         # ApplicationOpt().set_process_run_0()
 
     def eventFilter(self, *args):
@@ -547,7 +550,7 @@ class _QtSectorChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtChartDef
 ):
-    def _set_wgt_update_draw_(self):
+    def _refresh_widget_draw_(self):
         self.update()
 
     def _set_chart_update_data_(self):
@@ -611,7 +614,7 @@ class _QtRadarChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtChartDef
 ):
-    def _set_wgt_update_draw_(self):
+    def _refresh_widget_draw_(self):
         self.update()
 
     def _set_chart_update_data_(self):
@@ -725,7 +728,7 @@ class _QtPieChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract._QtChartDef
 ):
-    def _set_wgt_update_draw_(self):
+    def _refresh_widget_draw_(self):
         self.update()
 
     def _set_chart_update_data_(self):
@@ -877,7 +880,7 @@ class _QtHistogramChart(
     #
     utl_gui_qt_abstract._QtChartDef,
 ):
-    def _set_wgt_update_draw_(self):
+    def _refresh_widget_draw_(self):
         self.update()
 
     def _set_chart_update_data_(self):
@@ -987,13 +990,13 @@ class _QtHistogramChart(
                 elif event.buttons() == QtCore.Qt.MidButton:
                     # Track
                     if self._track_offset_flag is True:
-                        self._set_track_offset_action_run_(event)
+                        self._execute_action_track_offset_(event)
                 else:
                     event.ignore()
             #
             elif event.type() == QtCore.QEvent.Wheel:
                 if self._zoom_scale_flag is True:
-                    self._set_zoom_scale_action_run_(event)
+                    self._execute_action_zoom_scale_(event)
         return False
     #
     def paintEvent(self, event):
@@ -1121,7 +1124,7 @@ class _QtSequenceChart(
             #
             self.update()
 
-    def _set_wgt_update_draw_(self):
+    def _refresh_widget_draw_(self):
         self.update()
 
     def __init__(self, *args, **kwargs):

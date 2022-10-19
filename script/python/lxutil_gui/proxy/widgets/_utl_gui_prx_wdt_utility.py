@@ -544,7 +544,7 @@ class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget.clicked.connect(fnc)
 
     def set_click(self):
-        self.widget._set_action_press_click_emit_send_()
+        self.widget._send_action_press_click_emit_()
 
     def set_tool_tip(self, *args, **kwargs):
         self.widget._set_tool_tip_(*args, **kwargs)
@@ -618,7 +618,7 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget.option_clicked.connect(fnc)
 
     def set_click(self):
-        self.widget._set_action_press_click_emit_send_()
+        self.widget._send_action_press_click_emit_()
 
     def set_status_enable(self, boolean):
         pass
@@ -639,6 +639,33 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget._set_sub_process_initialization_(count, status)
 
 
+class PrxCheckItem(utl_gui_prx_abstract.AbsPrxWidget):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item._QtCheckItem
+    def __init__(self, *args, **kwargs):
+        super(PrxCheckItem, self).__init__(*args, **kwargs)
+        self.widget.setMaximumHeight(20)
+        self.widget.setMinimumHeight(20)
+
+    def set_check_icon_names(self, icon_name_0, icon_name_1):
+        self.widget._set_check_icon_file_paths_(
+            utl_gui_core.RscIconFile.get(icon_name_0),
+            utl_gui_core.RscIconFile.get(icon_name_1)
+        )
+
+
+class PrxEnableItem(utl_gui_prx_abstract.AbsPrxWidget):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item._QtEnableItem
+    def __init__(self, *args, **kwargs):
+        super(PrxEnableItem, self).__init__(*args, **kwargs)
+        self.widget.setMaximumSize(20, 20)
+        self.widget.setMinimumSize(20, 20)
+
+    def set_icon_name(self, icon_name):
+        self.widget._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get(icon_name),
+        )
+
+
 class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_item._QtFilterBar
     def __init__(self, *args, **kwargs):
@@ -650,8 +677,11 @@ class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):
     def set_filter_connect_to(self, proxy):
         proxy._set_filter_bar_(self)
         self.widget.entry_changed.connect(proxy._set_items_hidden_by_any_filter_)
-        self.widget.preOccurrenceClicked.connect(proxy._set_scroll_to_pre_occurrence_match_item_)
-        self.widget.nextOccurrenceClicked.connect(proxy._set_scroll_to_pst_occurrence_match_item_)
+        self.widget.user_entry_changed.connect(proxy._set_items_hidden_by_any_filter_)
+        self.widget.occurrence_previous_press_clicked.connect(proxy._execute_occurrence_to_previous_)
+        self.widget.occurrence_next_press_clicked.connect(proxy._execute_occurrence_to_next_)
+        self.widget.user_choose_changed.connect(proxy._execute_occurrence_to_current_)
+        self.widget.completion_finished.connect(proxy._execute_occurrence_to_current_)
 
     def get_keyword(self):
         return self.get_enter_widget().text()

@@ -62,18 +62,29 @@ class AbsPrxDialogWindow(
         #
         self._set_waiting_def_init_()
         #
-        self._sub_label_item = _utl_gui_qt_wgt_item._QtTextItem()
-        self._central_layout.addWidget(self._sub_label_item)
-        self._sub_label_item.setVisible(False)
-        self._sub_label_item.setMaximumHeight(20)
-        self._sub_label_item.setMinimumHeight(20)
-        self._sub_label_item._set_name_text_option_(
+        self._sub_label = _utl_gui_qt_wgt_item._QtTextItem()
+        self._central_layout.addWidget(self._sub_label)
+        self._sub_label.setVisible(False)
+        self._sub_label.setMaximumHeight(20)
+        self._sub_label.setMinimumHeight(20)
+        self._sub_label._set_name_text_option_(
             utl_gui_qt_core.QtCore.Qt.AlignHCenter | utl_gui_qt_core.QtCore.Qt.AlignVCenter
         )
         #
         qt_progress_bar = self.PROGRESS_WIDGET_CLASS()
         self._set_progresses_def_init_(qt_progress_bar)
         self._central_layout.addWidget(qt_progress_bar)
+        #
+        self._top_toolbar = _utl_gui_prx_wdt_utility.PrxHToolBar()
+        self._central_layout.addWidget(self._top_toolbar.widget)
+        self._top_toolbar.set_expanded(True)
+        #
+        self._modal_button = _utl_gui_prx_wdt_utility.PrxEnableItem()
+        self._top_toolbar.set_widget_add(self._modal_button)
+        self._modal_button.set_icon_name('window-modal')
+        self._modal_button.widget.setToolTip(
+            '"LMB-click" to turn window modal "on" / "off"'
+        )
         #
         s = _utl_gui_prx_wdt_utility.PrxScrollArea()
         self._central_layout.addWidget(s.widget)
@@ -84,7 +95,7 @@ class AbsPrxDialogWindow(
             utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
             utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding
         )
-
+        #
         self._customize_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._customize_widget)
         self._customize_layout.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignTop)
         # option
@@ -99,11 +110,11 @@ class AbsPrxDialogWindow(
         self._tip_text_browser = _utl_gui_prx_wdt_utility.PrxTextBrowser()
         self._tip_group.set_widget_add(self._tip_text_browser)
         #
-        self._button_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
-        self._button_tool_bar.set_expanded(True)
-        self._central_layout.addWidget(self._button_tool_bar.widget)
+        self._bottom_toolbar = _utl_gui_prx_wdt_utility.PrxHToolBar()
+        self._central_layout.addWidget(self._bottom_toolbar.widget)
+        self._bottom_toolbar.set_expanded(True)
         qt_widget_2 = _utl_gui_qt_wgt_utility.QtWidget()
-        self._button_tool_bar.set_widget_add(qt_widget_2)
+        self._bottom_toolbar.set_widget_add(qt_widget_2)
         self._button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_2)
         #
         qt_spacer_0 = _utl_gui_qt_wgt_utility._QtSpacer()
@@ -148,8 +159,8 @@ class AbsPrxDialogWindow(
         self._kwargs = {}
 
     def set_sub_label(self, text):
-        self._sub_label_item.setVisible(True)
-        self._sub_label_item._set_name_text_(text)
+        self._sub_label.setVisible(True)
+        self._sub_label._set_name_text_(text)
 
     def set_completed_content(self, text):
         self._completed_content = text

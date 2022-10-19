@@ -132,7 +132,7 @@ class PrxTreeView(
         self._gui_menu_raw = []
         self._item_dict = collections.OrderedDict()
         self._loading_item_prxes = []
-        self._match_occurrence_index = 0
+        self._occurrence_index_current = 0
         #
         self._prx_filter_bar = self._prx_filer_bar_0
         self._keyword_filter_item_prxes = []
@@ -339,8 +339,8 @@ class PrxTreeView(
         filter_keyword = self._prx_filter_bar.get_keyword()
         self._keyword_filter_item_prxes = []
         #
-        item_prxes = self.get_all_items()
-        for i_prx_item_tgt in item_prxes:
+        prx_items = self.get_all_items()
+        for i_prx_item_tgt in prx_items:
             i_tag_filter_hidden_ = False
             i_keyword_filter_hidden_ = False
             if tag_filter_all_keys_src:
@@ -371,24 +371,37 @@ class PrxTreeView(
         #
         self.view._set_show_view_items_update_()
     @classmethod
-    def _get_item_name_colors_(cls, item_prxes, column=0):
+    def _get_item_name_colors_(cls, prx_items, column=0):
         lis = []
-        for item_prx in item_prxes:
-            item = item_prx.widget
+        for i_prx_item in prx_items:
+            item = i_prx_item.widget
             lis.append(item.textColor(column))
         return lis
 
     def _set_filter_bar_(self, filter_bar):
         self._prx_filter_bar = filter_bar
 
-    def _set_scroll_to_pre_occurrence_match_item_(self):
-        item_prxes = self._keyword_filter_item_prxes
-        if item_prxes:
-            idx_max, idx_min = len(item_prxes)-1, 0
-            idx = self._match_occurrence_index or 0
+    def _execute_occurrence_to_current_(self):
+        prx_items = self._keyword_filter_item_prxes
+        if prx_items:
+            idx_cur = 0
+            item_prx_pre = prx_items[idx_cur]
+            item_prx_pre._set_filter_occurrence_(True)
+            self.view._set_scroll_to_item_top_(item_prx_pre.widget)
+            self._occurrence_index_current = idx_cur
+        else:
+            self._occurrence_index_current = None
+        #
+        self._prx_filter_bar.set_result_index(self._occurrence_index_current)
+
+    def _execute_occurrence_to_previous_(self):
+        prx_items = self._keyword_filter_item_prxes
+        if prx_items:
+            idx_max, idx_min = len(prx_items)-1, 0
+            idx = self._occurrence_index_current or 0
             #
             idx = max(min(idx, idx_max), 0)
-            item_prx = item_prxes[idx]
+            item_prx = prx_items[idx]
             item_prx._set_filter_occurrence_(False)
             #
             if idx == idx_min:
@@ -396,23 +409,23 @@ class PrxTreeView(
             else:
                 idx -= 1
             idx_pre = max(min(idx, idx_max), 0)
-            item_prx_pre = item_prxes[idx_pre]
+            item_prx_pre = prx_items[idx_pre]
             item_prx_pre._set_filter_occurrence_(True)
             self.view._set_scroll_to_item_top_(item_prx_pre.widget)
-            self._match_occurrence_index = idx_pre
+            self._occurrence_index_current = idx_pre
         else:
-            self._match_occurrence_index = None
+            self._occurrence_index_current = None
         #
-        self._prx_filter_bar.set_result_index(self._match_occurrence_index)
+        self._prx_filter_bar.set_result_index(self._occurrence_index_current)
 
-    def _set_scroll_to_pst_occurrence_match_item_(self):
-        item_prxes = self._keyword_filter_item_prxes
-        if item_prxes:
-            idx_max, idx_min = len(item_prxes)-1, 0
-            idx = self._match_occurrence_index or 0
+    def _execute_occurrence_to_next_(self):
+        prx_items = self._keyword_filter_item_prxes
+        if prx_items:
+            idx_max, idx_min = len(prx_items)-1, 0
+            idx = self._occurrence_index_current or 0
             #
             idx = max(min(idx, idx_max), 0)
-            item_prx = item_prxes[idx]
+            item_prx = prx_items[idx]
             item_prx._set_filter_occurrence_(False)
             #
             if idx == idx_max:
@@ -420,14 +433,14 @@ class PrxTreeView(
             else:
                 idx += 1
             idx_pst = max(min(idx, idx_max), 0)
-            item_prx_pst = item_prxes[idx_pst]
+            item_prx_pst = prx_items[idx_pst]
             item_prx_pst._set_filter_occurrence_(True)
             self.view._set_scroll_to_item_top_(item_prx_pst.widget)
-            self._match_occurrence_index = idx_pst
+            self._occurrence_index_current = idx_pst
         else:
-            self._match_occurrence_index = None
+            self._occurrence_index_current = None
         #
-        self._prx_filter_bar.set_result_index(self._match_occurrence_index)
+        self._prx_filter_bar.set_result_index(self._occurrence_index_current)
 
     def get_item_by_filter_key(self, filter_key):
         return self._item_dict.get(filter_key)
@@ -545,8 +558,8 @@ class PrxListView(
 
     def set_visible_tgt_raw_update(self):
         dic = {}
-        item_prxes = self.get_all_items()
-        for item_prx in item_prxes:
+        prx_items = self.get_all_items()
+        for item_prx in prx_items:
             tgt_key = item_prx.get_visible_tgt_key()
             if tgt_key is not None:
                 dic.setdefault(
@@ -642,7 +655,7 @@ class PrxGuideBar(
         return self.widget._get_view_guide_current_path_()
 
     def set_item_clicked_connect_to(self, fnc):
-        self.widget.guide_item_clicked.connect(fnc)
+        self.widget.guide_item_press_clicked.connect(fnc)
 
     def set_item_double_clicked_connect_to(self, fnc):
         self.widget.guide_item_double_clicked.connect(fnc)
