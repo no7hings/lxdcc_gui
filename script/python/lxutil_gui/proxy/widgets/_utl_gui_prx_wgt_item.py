@@ -3,7 +3,7 @@ from lxutil import utl_core
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_item
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_item_for_list, _utl_gui_qt_wgt_item_for_tree
 
 from lxutil_gui.qt import utl_gui_qt_core
 
@@ -161,12 +161,12 @@ class PrxTreeItem(
     utl_gui_prx_abstract.AbsPrxWidget,
     utl_gui_prx_abstract.AbsPrxMenuDef,
     AbsPrxTreeDef,
-    utl_gui_prx_abstract._PrxStateDef,
+    utl_gui_prx_abstract.AbsPrxStateDef,
     #
     utl_gui_prx_abstract.AbsPrxItemFilterTgtDef,
     utl_gui_prx_abstract.AbsPrxItemVisibleConnectionDef
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item.QtTreeWidgetItem
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item_for_tree.QtTreeWidgetItem
     def __init__(self, *args, **kwargs):
         super(PrxTreeItem, self).__init__(*args, **kwargs)
         self._set_prx_tree_def_init_()
@@ -273,7 +273,7 @@ class PrxTreeItem(
             self.widget._set_check_state_extra_(column)
 
     def get_check_enable(self):
-        return self.widget._get_action_check_is_enable_()
+        return self.widget._get_check_action_is_enable_()
 
     def set_check_enable(self, boolean, descendants=False, column=0):
         self.widget.setDisabled(not boolean)
@@ -676,7 +676,7 @@ class PrxListItem(
     utl_gui_prx_abstract.AbsPrxItemFilterTgtDef,
     utl_gui_prx_abstract.AbsPrxItemVisibleConnectionDef
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item._QtListItemWidget
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item_for_list._QtListItemWidget
     def __init__(self, *args, **kwargs):
         super(PrxListItem, self).__init__(*args, **kwargs)
         self._visible_tgt_key = None
@@ -691,7 +691,7 @@ class PrxListItem(
         self.widget._set_index_(index)
 
     def set_icons_by_pixmap(self, icons):
-        self.widget._set_icons_by_pixmap_(icons)
+        self.widget._set_icon_pixmaps_(icons)
 
     def set_icon_by_file(self, icon_name=None, icon_file_path=None):
         if icon_file_path is not None:
@@ -722,7 +722,7 @@ class PrxListItem(
         )
 
     def set_icon_frame_size(self, w, h):
-        self.widget._set_icon_frame_size_(w, h)
+        self.widget._set_icon_frame_draw_size_(w, h)
 
     def set_icon_size(self, w, h):
         self.widget._set_icon_size_(w, h)
@@ -817,6 +817,10 @@ class PrxListItem(
 
     def set_press_db_clicked_method_add_(self, fnc):
         self.widget._set_action_press_db_clicked_method_add_(fnc)
+
+    def set_check_enable(self, boolean):
+        self._qt_widget._set_check_enable_(boolean)
+        self._qt_widget._set_check_action_enable_(True)
 
     def __str__(self):
         return '{}(names={})'.format(

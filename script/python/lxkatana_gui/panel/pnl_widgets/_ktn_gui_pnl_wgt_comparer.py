@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxutil_gui.panel import utl_gui_pnl_abs_comparer
+import lxutil_gui.panel.abstracts as utl_gui_pnl_abstracts
 
 import lxkatana.dcc.dcc_objects as ktn_dcc_objects
 
@@ -8,7 +8,7 @@ import lxkatana.fnc.comparers as ktn_fnc_comparers
 from lxkatana import ktn_core
 
 
-class AssetComparerPanel(utl_gui_pnl_abs_comparer.AbsAssetComparerPanel):
+class AssetComparerPanel(utl_gui_pnl_abstracts.AbsAssetComparerPanel):
     DCC_OBJ_CLASS = ktn_dcc_objects.Node
     #
     FNC_GEOMETRY_COMPARER = ktn_fnc_comparers.GeometryComparer

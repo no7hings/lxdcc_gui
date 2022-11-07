@@ -8,9 +8,9 @@ import collections
 
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-from lxutil_gui.qt import utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_view
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item_for_tree, _utl_gui_qt_wgt_view_for_tree
 
 
 class _NGLayoutFlag(enum.IntEnum):
@@ -644,7 +644,7 @@ class _QtNGConnection(
                 elif event.buttons() == QtCore.Qt.MidButton:
                     pass
                 elif event.buttons() == QtCore.Qt.NoButton:
-                    self._set_action_hover_execute_(event)
+                    self._execute_action_hover_(event)
                 else:
                     event.ignore()
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
@@ -680,7 +680,7 @@ class _QtNGConnection(
             self._ng_draw_connection_coord_arrow
         )
 
-    def _set_action_hover_execute_(self, event):
+    def _execute_action_hover_(self, event):
         point = event.pos()
 
 
@@ -1012,7 +1012,7 @@ class _QtNGNode(
         self._ng_sbj_graph._set_ng_action_graph_node_press_end_(self)
         self._refresh_widget_draw_()
 
-    def _set_action_hover_execute_(self, event):
+    def _execute_action_hover_(self, event):
         point = event.pos()
         if self._ng_node_rect_select.contains(point):
             self._set_action_hovered_(True)
@@ -1064,7 +1064,7 @@ class _QtNGNode(
                 elif event.buttons() == QtCore.Qt.MidButton:
                     pass
                 elif event.button() == QtCore.Qt.NoButton:
-                    self._set_action_hover_execute_(event)
+                    self._execute_action_hover_(event)
                 else:
                     event.ignore()
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
@@ -1096,7 +1096,7 @@ class _QtNGNode(
             border_width=self._ng_draw_border_w,
             border_radius=self._ng_draw_border_w,
             is_hovered=self._get_is_hovered_(),
-            is_selected=self._item_is_selected,
+            is_selected=self._is_selected,
             is_actioned=self._get_is_actioned_(),
         )
 
@@ -1128,11 +1128,11 @@ class _QtNGNode(
         )
 
         if self._name_text is not None:
-            painter._set_text_draw_by_rect_(
+            painter._draw_text_by_rect_(
                 self._name_draw_rect,
                 self._name_text,
                 font=get_font(size=self._ng_draw_font_h),
-                font_color=QtFontColor.Basic,
+                font_color=QtFontColors.Basic,
                 text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                 offset=offset
             )
@@ -1371,12 +1371,12 @@ class _QtNGGraph(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_utility._QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_utility.QtEntryFrame):
                     parent._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_utility._QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_utility.QtEntryFrame):
                     parent._set_focused_(False)
         return False
 
@@ -1425,8 +1425,8 @@ class _QtNGGraph(
         ):
             painter._set_dotted_frame_draw_(
                 self._action_rect_select_rect,
-                border_color=QtBorderColor.Selected,
-                background_color=QtBackgroundColor.Transparent
+                border_color=QtBorderColors.Selected,
+                background_color=QtBackgroundColors.Transparent
             )
 
         infos = collections.OrderedDict(
@@ -1927,7 +1927,7 @@ class _QtNGGraph(
 
 
 class _QtNGTreeNode(
-    _utl_gui_qt_wgt_item.QtTreeWidgetItem
+    _utl_gui_qt_wgt_item_for_tree.QtTreeWidgetItem
 ):
     def __init__(self, *args, **kwargs):
         super(_QtNGTreeNode, self).__init__(*args, **kwargs)
@@ -1936,7 +1936,7 @@ class _QtNGTreeNode(
 
 
 class _QtNGTree(
-    _utl_gui_qt_wgt_view.QtTreeWidget,
+    _utl_gui_qt_wgt_view_for_tree.QtTreeWidget,
     AbsQtNGUniverseDef
 ):
     def _set_ng_universe_(self, universe):
@@ -2008,7 +2008,7 @@ class _QtNGImage(_QtNGNode):
         painter._set_node_frame_draw_by_rect_(
             self._ng_node_rect_frame,
             border_width=self._ng_draw_border_w,
-            is_selected=self._item_is_selected,
+            is_selected=self._is_selected,
             is_hovered=self._action_is_hovered,
             is_actioned=self._get_is_actioned_()
         )
@@ -2017,11 +2017,11 @@ class _QtNGImage(_QtNGNode):
             text = '{}\n{}cm'.format(
                 self._name_text, self._get_image_line_height_()
             )
-            painter._set_text_draw_by_rect_(
+            painter._draw_text_by_rect_(
                 self._name_draw_rect,
                 text,
                 font=get_font(size=self._ng_draw_font_h),
-                font_color=QtFontColor.Basic,
+                font_color=QtFontColors.Basic,
                 text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
                 offset=offset,
                 word_warp=True
@@ -2104,8 +2104,8 @@ class _QtNGImageGraph(_QtNGGraph):
         ):
             painter._set_dotted_frame_draw_(
                 self._action_rect_select_rect,
-                border_color=QtBorderColor.Selected,
-                background_color=QtBackgroundColor.Transparent
+                border_color=QtBorderColors.Selected,
+                background_color=QtBackgroundColors.Transparent
             )
 
     def _set_ng_universe_(self, universe):
@@ -2218,11 +2218,11 @@ class _QtNGImageGraph(_QtNGGraph):
                 i_ng_node._get_name_text_(),
                 i_ng_node._get_image_line_height_()
             )
-            painter._set_text_draw_by_rect_(
+            painter._draw_text_by_rect_(
                 i_t_rect,
                 i_t_name_text,
                 font=get_font(size=i_t_font_size),
-                font_color=QtFontColor.Basic,
+                font_color=QtFontColors.Basic,
                 text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
                 offset=offset,
                 word_warp=True

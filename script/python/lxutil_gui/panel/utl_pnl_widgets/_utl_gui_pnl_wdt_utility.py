@@ -7,7 +7,9 @@ import lxutil.dcc.dcc_objects as utl_dcc_objects
 
 from lxutil_prd import utl_prd_objects
 
-from lxutil_gui.panel import utl_gui_pnl_abstract, utl_gui_pnl_abs_utility, utl_gui_pnl_abs_render_submitter, utl_gui_pnl_abs_loader, utl_gui_pnl_abs_node_graph, utl_gui_pnl_abs_publish, utl_gui_pnl_abs_comparer
+import lxutil_gui.panel.abstracts as utl_gui_pnl_abstracts
+
+from lxutil_gui.panel import utl_gui_pnl_abstract, utl_gui_pnl_abs_utility, utl_gui_pnl_abs_render_submitter, utl_gui_pnl_abs_node_graph
 
 
 class SceneBuildToolPanel(utl_gui_pnl_abstract.AbsShotBuildToolPanel):
@@ -36,9 +38,9 @@ class FncPanel(utl_gui_pnl_abs_utility.AbsFncPanel):
         super(FncPanel, self).__init__(file_path, *args, **kwargs)
 
 
-class RsvEntitiesLoader(utl_gui_pnl_abs_loader.AbsEntitiesLoaderPanel_):
+class PnlRsvUnitLoader(utl_gui_pnl_abstracts.AbsPnlRsvUnitLoader):
     def __init__(self, session, *args, **kwargs):
-        super(RsvEntitiesLoader, self).__init__(session, *args, **kwargs)
+        super(PnlRsvUnitLoader, self).__init__(session, *args, **kwargs)
 
 
 class AssetRenderSubmitter(utl_gui_pnl_abs_render_submitter.AbsAssetRenderSubmitterPanel):
@@ -65,7 +67,7 @@ class AssetLineup(utl_gui_pnl_abs_node_graph.AbsAssetLineup):
         super(AssetLineup, self).__init__(hook_option, *args, **kwargs)
 
 
-class ComparerOpt(utl_gui_pnl_abs_comparer.AbsDccComparerOpt):
+class ComparerOpt(utl_gui_pnl_abstracts.AbsDccComparerOpt):
     DCC_NAMESPACE = 'lynxi'
     DCC_NODE_CLS = utl_dcc_objects.Obj
     DCC_COMPONENT_CLS = utl_dcc_objects.Component
@@ -75,7 +77,12 @@ class ComparerOpt(utl_gui_pnl_abs_comparer.AbsDccComparerOpt):
         super(ComparerOpt, self).__init__(*args, **kwargs)
 
 
-class GeometryComparer(utl_gui_pnl_abs_comparer.AbsGeometryComparer):
+class PnlAssetGeometryComparer(utl_gui_pnl_abstracts.AbsPnlGeometryComparer):
     DCC_COMPARER_OPT_CLS = ComparerOpt
     def __init__(self, session, *args, **kwargs):
-        super(GeometryComparer, self).__init__(session, *args, **kwargs)
+        super(PnlAssetGeometryComparer, self).__init__(session, *args, **kwargs)
+
+
+class PnlAssetLookLib(utl_gui_pnl_abstracts.AbsPnlAbsLib):
+    def __init__(self, session, *args, **kwargs):
+        super(PnlAssetLookLib, self).__init__(session, *args, **kwargs)

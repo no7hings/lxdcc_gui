@@ -30,9 +30,10 @@ class ActionFlag(enum.IntEnum):
     ZoomMove = 0x21
     #
     CheckClick = 0x31
-    ExpandClick = 0x32
-    OptionClick = 0x33
-    ChooseClick = 0x34
+    CheckDbClick = 0x32
+    ExpandClick = 0x33
+    OptionClick = 0x34
+    ChooseClick = 0x35
     #
     SplitHHover = 0x41
     SplitVHover = 0x42

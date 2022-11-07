@@ -193,7 +193,6 @@ class AbsSceneMethodRunnerPanel(
         )
 
     def _set_tool_panel_setup_(self):
-        self.set_window_loading_end()
         self._set_refresh_all_()
 
     def _set_panel_build_(self):
@@ -245,16 +244,16 @@ class AbsSceneMethodRunnerPanel(
         qt_layout_0.addWidget(self._configure_gui.widget)
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxStringPort('work_scene_src_file_path', 'Work-Scene-src-file')
+            prx_widgets.PrxPortForString('work_scene_src_file_path', 'Work-Scene-src-file')
         )
         _port.set_use_as_storage()
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxEnumeratePort('scene_src_file_path', 'Scene-src-file')
+            prx_widgets.PrxPortForEnumerate('scene_src_file_path', 'Scene-src-file')
         )
         _port.set_use_as_storage()
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxEnumeratePort('scheme', 'Scheme')
+            prx_widgets.PrxPortForEnumerate('scheme', 'Scheme')
         )
         _port.set(
             [
@@ -264,7 +263,7 @@ class AbsSceneMethodRunnerPanel(
         )
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxEnumeratePort('version', 'Version')
+            prx_widgets.PrxPortForEnumerate('version', 'Version')
         )
         _port.set(['latest', 'new'])
         #
@@ -492,7 +491,7 @@ class AbsSceneMethodRunnerPanel(
                     method_obj_gui.set_expanded(True)
                 else:
                     utl_core.Log.set_module_warning_trace(
-                        'method-gui-build',
+                        'method-gui-add',
                         'method-obj="{}" is Non-exists'.format(i_method_path)
                     )
             #

@@ -113,7 +113,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
                 (ktn_dcc_objects.AssetWorkspace().set_variables_registry, ())
             ]
 
-            with utl_core.gui_progress(maximum=len(ms)) as g_p:
+            with utl_core.gui_progress(maximum=len(ms), label='load workspace') as g_p:
                 for i_m, i_as in ms:
                     g_p.set_update()
                     if i_as:

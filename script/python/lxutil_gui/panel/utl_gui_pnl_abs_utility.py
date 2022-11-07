@@ -176,8 +176,6 @@ class AbsSceneTextureManagerPanel(
         self._refresh_button_0.set_press_clicked_connect_to(self._set_refresh_all_)
 
     def _set_tool_panel_setup_(self):
-        self.set_window_loading_end()
-        #
         self._set_refresh_all_()
 
     def _set_refresh_all_(self, includes=None):
@@ -245,7 +243,7 @@ class AbsSceneTextureManagerPanel(
         _port.set(self.set_color_space_auto_switch)
         # tx-create
         _port = self._tool_node_prx.set_port_add(
-            prx_widgets.PrxBooleanPort('create_and_repath_to_tx_force', 'Create & Repath to tx(s) force', join_to_next=True)
+            prx_widgets.PrxPortForBoolean('create_and_repath_to_tx_force', 'Create & Repath to tx(s) force', join_to_next=True)
         )
         _port.set_tool_tip(
             [
@@ -274,7 +272,7 @@ class AbsSceneTextureManagerPanel(
         _port.set(self.set_tx_repath_to_orig)
         # jpg-create
         _port = self._tool_node_prx.set_port_add(
-            prx_widgets.PrxBooleanPort('create_and_repath_to_jpg_force', 'Create & Repath to jpg(s) force', join_to_next=True)
+            prx_widgets.PrxPortForBoolean('create_and_repath_to_jpg_force', 'Create & Repath to jpg(s) force', join_to_next=True)
         )
         _port.set_tool_tip(
             [
@@ -323,7 +321,7 @@ class AbsSceneTextureManagerPanel(
             prx_widgets.PrxDirectoryOpenPort('target_directory', 'Target-directory')
         )
         _port = self._search_node_gui.set_port_add(
-            prx_widgets.PrxBooleanPort('ignore_source_resolved', 'Ignore Source-resolved')
+            prx_widgets.PrxPortForBoolean('ignore_source_resolved', 'Ignore Source-resolved')
         )
         _port.set(True)
         _port = self._search_node_gui.set_port_add(
@@ -411,7 +409,7 @@ class AbsSceneTextureManagerPanel(
                 self._dcc_objs = self._texture_references.get_objs()
             #
             if self._dcc_objs:
-                with utl_core.gui_progress(maximum=len(self._dcc_objs)) as g_p:
+                with utl_core.gui_progress(maximum=len(self._dcc_objs), label='gui-add for texture') as g_p:
                     for i_dcc_obj in self._dcc_objs:
                         g_p.set_update()
                         i_files = i_dcc_obj.get_file_objs()
@@ -700,7 +698,6 @@ class AbsShotgunEntitiesCreatorPanel(
         self._set_tool_group_0_build_()
 
     def _set_tool_panel_setup_(self):
-        self.set_window_loading_end()
         self._set_refresh_all_()
 
     def _set_tool_group_0_build_(self):
@@ -716,15 +713,15 @@ class AbsShotgunEntitiesCreatorPanel(
         qt_layout_0.addWidget(self._tool_node_prx.widget)
         #
         _port = self._tool_node_prx.set_port_add(
-            prx_widgets.PrxEnumeratePort('project', 'Project-name')
+            prx_widgets.PrxPortForEnumerate('project', 'Project-name')
         )
         _port = self._tool_node_prx.set_port_add(
-            prx_widgets.PrxEnumeratePort('task_template', 'Task-template')
+            prx_widgets.PrxPortForEnumerate('task_template', 'Task-template')
         )
         _port.set_tool_tip(self._shotgun_template_configure.get_str_as_yaml_style())
         #
         _port = self._tool_node_prx.set_port_add(
-            prx_widgets.PrxStringPort('entities', 'Entity-name(s)')
+            prx_widgets.PrxPortForString('entities', 'Entity-name(s)')
         )
         _port.set_tool_tip(
             [
@@ -893,7 +890,7 @@ class AbsDatabaseGeometryManagerPanel(
         qt_layout_0.addWidget(self._database_export_node_prx.widget)
         #
         _port = self._database_export_node_prx.set_port_add(
-            prx_widgets.PrxBooleanPort('export_uv_map_force', 'Export UV-map(s) Force')
+            prx_widgets.PrxPortForBoolean('export_uv_map_force', 'Export UV-map(s) Force')
         )
         _port.set_tool_tip(
             [
@@ -969,7 +966,6 @@ class AbsDatabaseGeometryManagerPanel(
         self._geometry_uv_assign_ddl_job_process = None
 
     def _set_tool_panel_setup_(self):
-        self.set_window_loading_end()
         self._set_refresh_all_()
 
     def _set_refresh_all_(self):
@@ -1042,7 +1038,6 @@ class AbsGeometryCheckerPanel(
         pass
 
     def _set_tool_panel_setup_(self):
-        self.set_window_loading_end()
         self._set_refresh_all_()
 
     def _set_refresh_all_(self):

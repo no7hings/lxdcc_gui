@@ -56,7 +56,6 @@ class AbsScenePackagerPanel(
         )
 
     def _set_tool_panel_setup_(self):
-        self.set_window_loading_end()
         self._set_refresh_all_()
 
     def _get_is_tree_mode_(self):
@@ -162,7 +161,7 @@ class AbsScenePackagerPanel(
             )
         )
         self._replace_start_attribute = attribute_box_0.set_port_add(
-            prx_widgets.PrxEnumeratePort(
+            prx_widgets.PrxPortForEnumerate(
                 'replace_with', 'Replace With'
             )
         )
@@ -193,12 +192,12 @@ class AbsScenePackagerPanel(
         _port.set('/data/package_temporary')
         #
         _port = self._package_node_gui.set_port_add(
-            prx_widgets.PrxBooleanPort('ignore_structure', 'Ignore-structure')
+            prx_widgets.PrxPortForBoolean('ignore_structure', 'Ignore-structure')
         )
         _port.set(False)
         #
         _port = self._package_node_gui.set_port_add(
-            prx_widgets.PrxBooleanPort('repath', 'Repath')
+            prx_widgets.PrxPortForBoolean('repath', 'Repath')
         )
         _port.set_enable(False)
         #
@@ -222,7 +221,7 @@ class AbsScenePackagerPanel(
             prx_widgets.PrxTextPort('target_directory', 'Target-directory')
         )
         _port = self._search_node_gui.set_port_add(
-            prx_widgets.PrxBooleanPort('ignore_source_resolved', 'Ignore-source-resolved')
+            prx_widgets.PrxPortForBoolean('ignore_source_resolved', 'Ignore-source-resolved')
         )
         _port.set(True)
         _port = self._search_node_gui.set_port_add(

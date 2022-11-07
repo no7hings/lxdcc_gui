@@ -56,7 +56,6 @@ class AbsAssetLookViewerPanel(
         self._set_configure_groups_build_()
 
     def _set_tool_panel_setup_(self):
-        self.set_window_loading_end()
         self._set_refresh_all_()
 
     def _set_viewer_groups_build_(self):
@@ -139,7 +138,7 @@ class AbsAssetLookViewerPanel(
         )
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxEnumeratePort('look_pass', 'Look-pass')
+            prx_widgets.PrxPortForEnumerate('look_pass', 'Look-pass')
         )
         #
         _port = self._configure_gui.set_port_add(

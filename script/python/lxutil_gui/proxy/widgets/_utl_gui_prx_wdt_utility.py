@@ -1,5 +1,9 @@
 # coding:utf-8
-from lxutil import utl_configure, utl_core
+import uuid
+
+from lxbasic import bsc_core
+
+from lxutil import utl_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
@@ -9,15 +13,13 @@ from lxutil_gui.proxy import utl_gui_prx_configure, utl_gui_prx_core, utl_gui_pr
 
 from lxutil_gui import utl_gui_core
 
-import lxutil.modifiers as utl_modifiers
-
 from lxbasic import bsc_configure
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
 
 class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtLine
     def __init__(self, *args, **kwargs):
         super(PrxExpandedGroup, self).__init__(*args, **kwargs)
 
@@ -29,24 +31,25 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         # header
         self._head = _utl_gui_qt_wgt_item._QtHExpandItem0()
         qt_layout_0.addWidget(self._head)
-        self._head.setMaximumHeight(20)
-        self._head.setMinimumHeight(20)
+        self._head.setMaximumHeight(22)
+        self._head.setMinimumHeight(22)
         self._head.expand_toggled.connect(self.set_expanded)
         self._head.setToolTip('"LMB-click" to expand "on" / "off"')
+        self._head.press_toggled.connect(self._qt_widget._set_pressed_)
         #
-        qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
+        qt_widget_1 = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
         qt_layout_0.addWidget(qt_widget_1)
         qt_layout_1 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_1)
-        qt_layout_1.setContentsMargins(0, 0, 0, 0)
+        qt_layout_1.setContentsMargins(2, 0, 0, 0)
         qt_layout_1.setSpacing(2)
         #
         self._layout = qt_layout_1
         #
         self._view = qt_widget_1
         #
-        self._set_item_expand_update_()
+        self._refresh_expand_()
 
-    def _set_item_expand_update_(self):
+    def _refresh_expand_(self):
         self._view.setVisible(self.get_is_expanded())
 
     def set_name(self, name):
@@ -61,8 +64,13 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
             icon_file_path_0, icon_file_path_1
         )
 
-    def set_expand_icon_name(self, icon_name_0, icon_name_1):
-        self._head._set_expand_icon_name_text_(
+    def set_expand_icon_names(self, icon_name_0, icon_name_1):
+        self._head._set_expand_icon_names_(
+            icon_name_0, icon_name_1
+        )
+
+    def set_expand_sub_icon_names(self, icon_name_0, icon_name_1):
+        self._head._set_expand_sub_icon_names_(
             icon_name_0, icon_name_1
         )
 
@@ -71,7 +79,7 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_expanded(self, boolean):
         self._head._set_item_expanded_(boolean)
-        self._set_item_expand_update_()
+        self._refresh_expand_()
 
     def set_head_visible(self, boolean):
         self._head.setHidden(not boolean)
@@ -189,25 +197,25 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
         self._head = _utl_gui_qt_wgt_item._QtHExpandItem1()
         qt_layout_0.addWidget(self._head)
         self._head.expand_toggled.connect(self.set_expanded)
-        self._head.setToolTip('LMB-click to expand "on" / "off"')
+        self._head.setToolTip('"LMB-click" to expand "on" / "off"')
         #
         qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
         qt_layout_0.addWidget(qt_widget_1)
         qt_layout_1 = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
-        qt_layout_1.setContentsMargins(0, 0, 0, 0)
+        qt_layout_1.setContentsMargins(*[0]*4)
         qt_layout_1.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignVCenter)
         self._qt_layout_0 = qt_layout_1
         #
         self._view = qt_widget_1
         #
-        self._set_item_expand_update_()
+        self._refresh_expand_()
         #
         self._view.setSizePolicy(
             utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
             utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum
         )
 
-    def _set_item_expand_update_(self):
+    def _refresh_expand_(self):
         if self.get_is_expanded() is True:
             self._head.setMaximumSize(self._bar_width_min, self._bar_height)
             self._head.setMinimumSize(self._bar_width_min, self._bar_height)
@@ -222,18 +230,18 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
             self.widget.setMinimumHeight(self._bar_height_min)
         #
         self._view.setVisible(self.get_is_expanded())
-        self._head._set_item_expand_update_()
+        self._head._refresh_expand_()
 
     def set_name(self, name):
         self._head.set_name(name)
 
     def set_expanded(self, boolean):
         self._head._set_item_expanded_(boolean)
-        self._set_item_expand_update_()
+        self._refresh_expand_()
 
     def set_expand_swap(self):
         self._head._set_item_expanded_swap_()
-        self._set_item_expand_update_()
+        self._refresh_expand_()
 
     def get_is_expanded(self):
         return self._head._get_item_is_expanded_()
@@ -246,7 +254,7 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_bar_height(self, h):
         self._bar_height = h
-        self._set_item_expand_update_()
+        self._refresh_expand_()
 
     def get_qt_layout(self):
         return self._qt_layout_0
@@ -283,7 +291,7 @@ class PrxVToolBar(PrxHToolBar):
         self._head = _utl_gui_qt_wgt_item._QtVExpandItem1()
         qt_layout_0.addWidget(self._head)
         self._head.expand_toggled.connect(self.set_expanded)
-        self._head.setToolTip('LMB-click to expand "on" / "off"')
+        self._head.setToolTip('"LMB-click" to expand "on" / "off"')
         #
         qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
         qt_layout_0.addWidget(qt_widget_1)
@@ -294,14 +302,14 @@ class PrxVToolBar(PrxHToolBar):
         #
         self._view = qt_widget_1
         #
-        self._set_item_expand_update_()
+        self._refresh_expand_()
         #
         self._view.setSizePolicy(
             utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum,
             utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding
         )
 
-    def _set_item_expand_update_(self):
+    def _refresh_expand_(self):
         if self.get_is_expanded() is True:
             self._head.setMaximumSize(self._bar_width, self._bar_height_min)
             self._head.setMinimumSize(self._bar_width, self._bar_height_min)
@@ -316,7 +324,7 @@ class PrxVToolBar(PrxHToolBar):
             self.widget.setMinimumWidth(self._bar_width_min)
         #
         self._view.setVisible(self.get_is_expanded())
-        self._head._set_item_expand_update_()
+        self._head._refresh_expand_()
 
 
 class Window(utl_gui_prx_abstract.AbsPrxWindow):
@@ -355,7 +363,7 @@ class ContentWidget(utl_gui_prx_abstract.AbsPrxWidget):
         qt_layout_0.addWidget(qt_top_widget_0)
         #
         qt_top_layout_1 = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_top_widget_0)
-        self._qt_label_0 = _utl_gui_qt_wgt_item._QtTextItem()
+        self._qt_label_0 = _utl_gui_qt_wgt_item.QtTextItem()
         self._qt_label_0._set_name_text_option_(
             utl_gui_qt_core.QtCore.Qt.AlignHCenter | utl_gui_qt_core.QtCore.Qt.AlignVCenter
         )
@@ -393,7 +401,7 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
 
     def _set_build_(self):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
-        widget = _utl_gui_qt_wgt_item._QtScriptValueEntryItem()
+        widget = _utl_gui_qt_wgt_item.QtValueEntryForScript()
         qt_layout_0.addWidget(widget)
         self._qt_text_browser_0 = widget._value_entry
 
@@ -515,7 +523,7 @@ class ProgressWindow(utl_gui_prx_abstract.AbsPrxWindow):
 
 
 class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item._QtIconPressItem
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtIconPressItem
     def __init__(self, *args, **kwargs):
         super(PrxIconPressItem, self).__init__(*args, **kwargs)
         self.widget.setMaximumSize(20, 20)
@@ -538,7 +546,10 @@ class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget._set_icon_name_text_(text)
 
     def set_icon_size(self, w, h):
-        self.widget._set_file_icon_size_(w, h)
+        self.widget._set_icon_file_draw_size_(w, h)
+
+    def set_icon_frame_size(self, w, h):
+        self._qt_widget._set_icon_frame_draw_size_(w, h)
 
     def set_press_clicked_connect_to(self, fnc):
         self.widget.clicked.connect(fnc)
@@ -554,7 +565,7 @@ class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item._QtPressItem
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item.QtPressItem
     def __init__(self, *args, **kwargs):
         super(PrxPressItem, self).__init__(*args, **kwargs)
         self.widget.setMaximumHeight(20)
@@ -564,7 +575,7 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget._set_action_enable_(boolean)
 
     def set_check_enable(self, boolean):
-        self.widget._set_action_check_enable_(boolean)
+        self.widget._set_check_action_enable_(boolean)
         self.widget.update()
 
     def get_is_checked(self):
@@ -657,17 +668,29 @@ class PrxEnableItem(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_item._QtEnableItem
     def __init__(self, *args, **kwargs):
         super(PrxEnableItem, self).__init__(*args, **kwargs)
-        self.widget.setMaximumSize(20, 20)
-        self.widget.setMinimumSize(20, 20)
+        self._qt_widget.setMaximumSize(20, 20)
+        self._qt_widget.setMinimumSize(20, 20)
 
     def set_icon_name(self, icon_name):
-        self.widget._set_icon_file_path_(
+        self._qt_widget._set_icon_file_path_(
             utl_gui_core.RscIconFile.get(icon_name),
         )
 
+    def set_checked(self, boolean):
+        self._qt_widget._set_checked_(boolean)
+
+    def execute_swap_check(self):
+        self._qt_widget._execute_check_swap_()
+
+    def get_checked(self):
+        return self._qt_widget._get_is_checked_()
+
+    def connect_check_clicked_to(self, fnc):
+        self._qt_widget.check_clicked.connect(fnc)
+
 
 class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item._QtFilterBar
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item.QtFilterBar
     def __init__(self, *args, **kwargs):
         super(PrxFilterBar, self).__init__(*args, **kwargs)
 
@@ -718,17 +741,19 @@ class PrxToolWindow(
     utl_gui_prx_abstract.AbsPrxWindow,
     #
     utl_gui_prx_abstract.AbsWidgetContentDef,
-    utl_gui_prx_abstract.AbsPrxProgressesDef,
     #
-    utl_gui_prx_abstract.AbsPrxWaitingDef
+    utl_gui_prx_abstract.AbsPrxProgressingDef,
+    utl_gui_prx_abstract.AbsPrxWaitingDef,
 ):
     PRX_TYPE = 'tool_window'
     #
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtMainWindow
     #
     CONTENT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
-    PROGRESS_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtProgressBar
-    WAITING_CHART_CLASS = _utl_gui_qt_wgt_chart._QtWaitingChart
+    PROGRESS_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtProgressBar
+    #
+    QT_WAITING_CHART_CLASS = _utl_gui_qt_wgt_chart.QtWaitingChart
+    QT_PROGRESSING_CHART_CLASS = _utl_gui_qt_wgt_chart.QtProgressingChart
     #
     HELP_FILE_PATH = None
     def __init__(self, *args, **kwargs):
@@ -749,7 +774,7 @@ class PrxToolWindow(
         #
         utl_gui_qt_core.set_log_writer_connect()
 
-        self._qt_widget._set_window_shortcut_action_create_(
+        self._qt_widget._create_window_shortcut_action_(
             self.set_help_unit_show, 'F1'
         )
         #
@@ -772,11 +797,10 @@ class PrxToolWindow(
         self._qt_central_widget = _utl_gui_qt_wgt_utility.QtWidget()
         self._qt_widget.setCentralWidget(self._qt_central_widget)
         #
+        self._set_progressing_def_init_()
+        #
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_central_widget)
         # progress-bar
-        qt_progress_bar = self.PROGRESS_WIDGET_CLASS()
-        self._set_progresses_def_init_(qt_progress_bar)
-        qt_layout_0.addWidget(qt_progress_bar)
         #
         self._set_widget_content_def_init_(qt_layout_0)
         #
@@ -785,6 +809,7 @@ class PrxToolWindow(
         self._set_cnt_wdt_2_build_()
         self._set_cnt_wdt_3_build_()
         self._set_cnt_wdt_4_build_()
+        self._set_cnt_wdt_5_build_()
         #
         self._set_waiting_def_init_()
         #
@@ -883,6 +908,23 @@ class PrxToolWindow(
         qt_layout_0.addWidget(content_widget_0.widget)
         content_widget_0.set_close_connect_to(fnc_)
 
+    def _set_cnt_wdt_5_build_(self):
+        def fnc_():
+            self.set_current_unit('main_0')
+        #
+        qt_widget_0 = self._set_cnt_wdt_create_('exception_0')
+        qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_0)
+        qt_layout_0.setContentsMargins(0, 0, 0, 0)
+        #
+        content_widget_0 = ContentWidget()
+        content_widget_0.set_name('exception')
+        qt_layout_0.addWidget(content_widget_0.widget)
+        content_widget_0.set_close_connect_to(fnc_)
+        #
+        self._exception_text_browser = PrxTextBrowser()
+        self._exception_text_browser.set_font_size(10)
+        content_widget_0.set_widget_add(self._exception_text_browser.widget)
+
     def get_main_widget(self):
         return self._main_widget
 
@@ -931,32 +973,34 @@ class PrxToolWindow(
     # loading
     def set_window_loading_show(self):
         utl_gui_qt_core.set_qt_window_show(
-            self.widget, size=self.get_definition_window_size()
+            self.widget,
+            size=self.get_definition_window_size()
         )
-        self._loading_show_timer.stop()
 
     def set_loading_start(self, time, method):
+        def method_fnc_():
+            self.set_window_loading_end()
+            method()
+        #
         self._is_loading = True
         self._loading_index = 0
         self.set_current_unit('window_loading_0')
         #
-        self.set_waiting_start()
+        self.start_waiting(auto_stop_time=time)
         #
-        self._loading_timer_0 = utl_gui_qt_core.QtCore.QTimer(self.widget)
+        self._loading_timer_start = utl_gui_qt_core.QtCore.QTimer(self.widget)
+        self._loading_timer_start.singleShot(time, method_fnc_)
+
         self._loading_show_timer = utl_gui_qt_core.QtCore.QTimer(self.widget)
-        #
-        self._loading_timer_0.start(time)
-        self._loading_timer_0.timeout.connect(method)
-        #
-        self._loading_show_timer.start(int(time*.8))
-        self._loading_show_timer.timeout.connect(self.set_window_loading_show)
+        self._loading_show_timer.singleShot(int(time*.8), self.set_window_loading_show)
 
     def set_window_loading_end(self):
-        self.set_waiting_stop()
+        utl_gui_qt_core.set_qt_window_show(
+            self.widget, size=self.get_definition_window_size()
+        )
         #
         self.set_current_unit('main_0')
         #
-        self._loading_timer_0.stop()
         self._is_loading = False
     # log
     def set_log_unit_show(self):
@@ -999,24 +1043,48 @@ class PrxToolWindow(
                 self.HELP_FILE_PATH
             )
 
-    def set_help_content(self, content):
-        if isinstance(content, (str, unicode)):
-            self._help_text_browser.set_content(content)
-        elif isinstance(content, (tuple, list)):
+    def set_help_content(self, text):
+        if isinstance(text, (str, unicode)):
+            self._help_text_browser.set_content(text)
+        elif isinstance(text, (tuple, list)):
             self._help_text_browser.set_content(
-                '\n'.join(content)
+                '\n'.join(text)
             )
 
     def set_help_file(self, file_path):
         self._help_text_browser.set_markdown_file_open(file_path)
+    # exception
+    def set_exception_unit_show(self):
+        self.set_current_unit('exception_0')
 
-    def set_window_show(self, pos=None, size=None, exclusive=True):
+    def set_exception_content(self, text):
+        if isinstance(text, (str, unicode)):
+            self._exception_text_browser.set_content(text)
+        elif isinstance(text, (tuple, list)):
+            self._exception_text_browser.set_content(
+                '\n'.join(text)
+            )
+
+    def set_exception_content_add(self, text):
+        if isinstance(text, (str, unicode)):
+            self._exception_text_browser.set_add(text)
+        elif isinstance(text, (tuple, list)):
+            self._exception_text_browser.set_add(
+                '\n'.join(text)
+            )
+
+    def set_window_show(self, pos=None, size=None, exclusive=False):
         # show unique
         if exclusive is True:
             gui_proxies = utl_gui_prx_core.get_gui_proxy_by_class(self.__class__)
             for i in gui_proxies:
-                if not i == self:
-                    if hasattr(i, 'set_window_close'):
+                if hasattr(i, '_window_unicode_id'):
+                    if i._window_unicode_id != self._window_unicode_id:
+                        utl_core.Log.set_module_warning_trace(
+                            'close exists window for "{}"'.format(
+                                self.__class__.__name__
+                            )
+                        )
                         i.set_window_close()
         #
         if self._is_loading is True:
@@ -1040,33 +1108,64 @@ class PrxToolWindow(
 class PrxSessionWindow(PrxToolWindow):
     def __init__(self, session, *args, **kwargs):
         super(PrxSessionWindow, self).__init__(*args, **kwargs)
-        self._session = session
-        self._session.set_configure_reload()
-        self._session = session
-        self._session.set_configure_reload()
-        if self._session.get_td_enable() is True:
-            self.set_window_title('[TD] {}'.format(self._session.gui_configure.get('name')))
-        elif self._session.get_rez_beta() is True:
-            self.set_window_title('[BETA] {}'.format(self._session.gui_configure.get('name')))
-        else:
-            self.set_window_title(self._session.gui_configure.get('name'))
-        #
-        self.set_definition_window_size(self._session.gui_configure.get('size'))
+        self._debug_run_(self._main_fnc_, session)
 
-        self.set_loading_start(
-            time=1000,
-            method=self._setup_fnc_
-        )
     @property
     def session(self):
         return self._session
 
+    def _debug_run_(self, fnc, *args, **kwargs):
+        # noinspection PyBroadException
+        try:
+            fnc(*args, **kwargs)
+        except Exception as e:
+            import sys
+
+            import traceback
+
+            exc_texts = []
+            exc_type, exc_value, exc_stack = sys.exc_info()
+            if exc_type:
+                value = '{}: "{}"'.format(exc_type.__name__, exc_value.message)
+                for seq, stk in enumerate(traceback.extract_tb(exc_stack)):
+                    i_file_path, i_line, i_fnc, i_fnc_line = stk
+                    exc_texts.append(
+                        '{indent}file "{file}" line {line} in {fnc}\n{indent}{indent}{fnc_line}'.format(
+                            **dict(
+                                indent='    ',
+                                file=i_file_path,
+                                line=i_line,
+                                fnc=i_fnc,
+                                fnc_line=i_fnc_line
+                            )
+                        )
+                    )
+                #
+                self.set_exception_unit_show()
+                self.set_exception_content_add('traceback:')
+                [self.set_exception_content_add(i) for i in exc_texts]
+                self.set_exception_content_add(value)
+
+    def _main_fnc_(self, *args, **kwargs):
+        self._session = args[0]
+        self._session.set_configure_reload()
+        if self._session.get_td_enable() is True:
+            self.set_window_title('[TD] {} for {}'.format(self._session.gui_configure.get('name'), self._session.application))
+        elif self._session.get_rez_beta() is True:
+            self.set_window_title('[BETA] {} for {}'.format(self._session.gui_configure.get('name'), self._session.application))
+        else:
+            self.set_window_title(self._session.gui_configure.get('name'))
+        #
+        self.set_definition_window_size(self._session.gui_configure.get('size'))
+        #
+        self.set_loading_start(time=1000, method=self._setup_fnc_)
+
+        self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
+
     def _setup_fnc_(self):
         self.set_variants_restore()
-
+        #
         self.set_all_setup()
-
-        self.set_window_loading_end()
 
     def _set_collapse_update_(self, collapse_dict):
         for i_k, i_v in collapse_dict.items():

@@ -97,7 +97,7 @@ class AbsRenderSubmitterPanel(
             self._file_path = None
         #
         self._set_panel_build_()
-        self.get_log_bar().set_expanded(True)
+        # self.get_log_bar().set_expanded(True)
         #
         self.set_loading_start(
             time=1000,
@@ -180,7 +180,6 @@ class AbsRenderSubmitterPanel(
         self._rsv_renderer_list_view.set_item_icon_size(*self.ITEM_ICON_SIZE)
 
     def _set_tool_panel_setup_(self):
-        self.set_window_loading_end()
         self._set_prx_node_build_()
         self.set_all_refresh()
 
@@ -420,7 +419,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             self.set_renderers_refresh,
             self.set_usd_refresh,
         ]
-        with utl_core.gui_progress(maximum=len(methods)) as g_p:
+        with utl_core.gui_progress(maximum=len(methods), label='execute refresh method') as g_p:
             for i in methods:
                 g_p.set_update()
                 result = i()
@@ -576,7 +575,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 i_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
                     i_rsv_unit_file.ext,
                     tag=i_rsv_properties.get('workspace'),
-                    size=self.ITEM_ICON_SIZE
+                    frame_size=self.ITEM_ICON_SIZE
                 )
                 pixmaps.append(i_pixmap)
 
@@ -1144,7 +1143,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 i_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
                     i_rsv_unit_file.ext,
                     tag=i_rsv_properties.get('workspace'),
-                    size=self.ITEM_ICON_SIZE
+                    frame_size=self.ITEM_ICON_SIZE
                 )
                 pixmaps.append(i_pixmap)
 
@@ -1215,7 +1214,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             self.set_renderers_refresh,
             self.set_combinations_refresh,
         ]
-        with utl_core.gui_progress(maximum=len(methods)) as g_p:
+        with utl_core.gui_progress(maximum=len(methods), label='execute refresh method') as g_p:
             for i in methods:
                 g_p.set_update()
                 result = i()

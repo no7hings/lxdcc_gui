@@ -113,7 +113,7 @@ class SceneCleanerPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
             if i.get_is_checked() is True:
                 i.set_click()
         #
-        item_prx.widget._set_progress_stop_()
+        item_prx.widget._stop_progress_()
     @classmethod
     def set_unused_scripts_clear(cls):
         # noinspection PyUnresolvedReferences
@@ -307,7 +307,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
         if mya_root.get_is_exists() is True:
             keyword = 'asset-work-geometry-usd-var-file'
             location_names = ['hi', 'shape']
-            with utl_core.gui_progress(maximum=len(location_names)) as g_p:
+            with utl_core.gui_progress(maximum=len(location_names), label='export geometry uv-map in location') as g_p:
                 for i_location_name in location_names:
                     g_p.set_update()
                     #

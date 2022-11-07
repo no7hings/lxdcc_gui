@@ -1,17 +1,18 @@
 # coding=utf-8
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-from lxutil_gui.qt import utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
 from lxbasic import bsc_configure, bsc_core
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
 
 
-class _QtColorChooseChart(
+class QtColorChooseChart(
     QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtWgtDef,
     utl_gui_qt_abstract.AbsQtActionDef,
-    utl_gui_qt_abstract._QtChartDef,
+    utl_gui_qt_abstract.AbsQtChartDef,
 ):
     def _refresh_widget_draw_(self):
         pass
@@ -20,7 +21,7 @@ class _QtColorChooseChart(
     def _execute_popup_filter_(self):
         self.update()
 
-    def _set_chart_update_data_(self):
+    def _refresh_chart_data_(self):
         def set_branch_draw_fnc_(x, y, radius_, color_h_offset_, color_h_multiply_):
             _i_pos = x, y
             if not _i_pos in poses:
@@ -104,7 +105,7 @@ class _QtColorChooseChart(
                 set_branch_draw_fnc_(_xSubPos, _ySubPos, mainRadius, self._color_h_offset, self._color_v_multiply)
 
     def __init__(self, *args, **kwargs):
-        super(_QtColorChooseChart, self).__init__(*args, **kwargs)
+        super(QtColorChooseChart, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setMouseTracking(True)
         self.installEventFilter(self)
@@ -119,6 +120,7 @@ class _QtColorChooseChart(
             QtWidgets.QSizePolicy.Expanding
         )
         #
+        self._set_widget_def_init_(self)
         self._set_action_def_init_(self)
         self._set_chart_def_init_()
         self._set_build_()
@@ -273,7 +275,7 @@ class _QtColorChooseChart(
                 self._move_flag = False
                 self._circle_flag = False
                 self._track_offset_flag = False
-                self._set_chart_update_data_()
+                self._refresh_chart_data_()
                 self._refresh_widget_draw_()
         return False
 
@@ -315,7 +317,7 @@ class _QtColorChooseChart(
         )
         if pre_count != cur_count:
             self._count = cur_count
-            self._set_chart_update_data_()
+            self._refresh_chart_data_()
             self._refresh_widget_draw_()
             self._set_choose_color_update_()
     #
@@ -330,7 +332,7 @@ class _QtColorChooseChart(
         if self._circle_flag is True:
             self._color_h_offset = angle
         #
-        self._set_chart_update_data_()
+        self._refresh_chart_data_()
         self._refresh_widget_draw_()
         self._set_choose_color_update_()
     #
@@ -428,72 +430,205 @@ class _QtColorChooseChart(
         self._mult_v_minimum = 0.0
 
 
-class _QtWaitingChart(
+class QtProgressingChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtChartDef,
+    utl_gui_qt_abstract.AbsQtProgressDef
 ):
     def _refresh_widget_draw_(self):
         self.update()
 
     def __init__(self, *args, **kwargs):
-        super(_QtWaitingChart, self).__init__(*args, **kwargs)
+        super(QtProgressingChart, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
-        self.setMouseTracking(True)
         #
-        self.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding,
-            QtWidgets.QSizePolicy.Expanding
-        )
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         #
-        self.installEventFilter(self)
+        self._set_progress_def_init_()
 
-        self._set_chart_def_init_()
-        self._c = 10
-        self._w, self._h = 64, 64
-        self._i_w, self._i_h = 10, 10
-        self._basic_rect = QtCore.QRect()
-        self._positions = []
-        self._timestamp = 0
+    def paintEvent(self, event):
+        painter = QtPainter(self)
+        if self._get_progress_is_enable_() is True:
+            if self._progress_raw:
+                x, y = 0, 0
+                w, h = self.width(), self.height()
+                frm_w, frm_h = 96, 96
+                frame_rect = QtCore.QRect(
+                    x + (w - frm_w)/2, y + (h - frm_h) / 2, frm_w, frm_h
+                )
+                base_rect = QtCore.QRect(
+                    x, y, w, h
+                )
+                painter._set_border_color_(0, 0, 0, 0)
+                painter._set_background_color_(15, 15, 15, 127)
+                painter.drawRect(
+                    base_rect
+                )
+                for i_index, i in enumerate(self._progress_raw):
+                    i_percent, i_percent_range, i_label = i
+                    if i_index == 0:
+                        i_data = QtProgressingChartDrawMtd._get_basic_data_(
+                            rect=frame_rect,
+                            index=i_index,
+                            percent=i_percent,
+                            percent_range=i_percent_range,
+                            label=i_label,
+                            tape_w=12, spacing=4
+                        )
+                    else:
+                        i_data = QtProgressingChartDrawMtd._get_basic_data_(
+                            rect=frame_rect,
+                            index=i_index,
+                            percent=i_percent,
+                            percent_range=i_percent_range,
+                            label=i_label,
+                            tape_w=4, spacing=12
+                        )
 
-        self._timer = QtCore.QTimer(self)
-        self._timer.setInterval(0)
-        self._timer.timeout.connect(
-            self._set_waiting_update_
+                    i_annulus_sector_path, i_annulus_sector_color, i_text_rect_f, i_text_option, i_text, i_text_color = i_data
+                    #
+                    painter._set_border_color_(QtBorderColors.Transparent)
+                    if i_index == 0:
+                        painter._set_background_color_(i_annulus_sector_color)
+                    else:
+                        painter._set_background_color_(i_text_color)
+                    painter.drawPath(i_annulus_sector_path)
+
+                    painter._set_font_color_(i_text_color)
+                    painter._set_font_(QtFonts.Chart)
+
+                    i_text_ = painter.fontMetrics().elidedText(
+                        i_text,
+                        QtCore.Qt.ElideLeft,
+                        i_text_rect_f.width() - 2,
+                        QtCore.Qt.TextShowMnemonic
+                    )
+                    painter.drawText(
+                        i_text_rect_f, i_text_, i_text_option
+                    )
+
+
+class QtInfoChart(
+    QtWidgets.QWidget,
+):
+    def _refresh_widget_draw_(self):
+        self.update()
+
+    def __init__(self, *args, **kwargs):
+        super(QtInfoChart, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+        #
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.setMaximumHeight(20)
+        self.setMinimumHeight(20)
+
+        self._info_text = ''
+
+        self._info_draw_rect = QtCore.QRect()
+        self._info_draw_size = 160, 24
+
+    def _refresh_widget_geometry_(self, x, y, w, h):
+        self.setGeometry(
+            x, y, w, h
         )
+        self._refresh_widget_draw_()
 
-    def _set_waiting_start_(self):
-        self._timer.start(0)
-        # ApplicationOpt().set_process_run_0()
+    def _set_info_text_(self, text):
+        self._info_text = text
+        if text:
+            self.show()
+            self._refresh_widget_draw_()
+        else:
+            self.hide()
 
-    def _set_waiting_stop_(self):
-        self._timer.stop()
-        # ApplicationOpt().set_process_run_0()
+    def paintEvent(self, event):
+        painter = QtPainter(self)
+        if self._info_text:
+            rect = self.rect()
+            painter._draw_frame_by_rect_(
+                rect=rect,
+                border_color=QtBorderColors.Transparent,
+                background_color=QtBackgroundColors.ToolTip,
+            )
+            painter._draw_line_by_points_(
+                point_0=rect.topLeft(), point_1=rect.topRight(),
+                border_color=QtBorderColors.Basic
+            )
+            painter._draw_text_by_rect_(
+                rect=self.rect(),
+                text=self._info_text,
+                font=get_font(size=10, italic=True),
+                font_color=QtFontColors.ToolTip,
+                text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+            )
 
-    def _set_chart_update_data_(self):
+
+class QtWaitingChart(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtChartDef,
+):
+    def _refresh_widget_draw_(self):
+        self.update()
+
+    def _refresh_chart_data_(self):
         x, y = 0, 0
         w, h = self.width(), self.height()
         #
-        c_w, c_h = self._w, self._h
-        self._basic_rect.setRect(
+        c = self._waiting_draw_count
+        c_w = c_h = self._waiting_draw_radius
+        self._waiting_draw_rect.setRect(
             x, y, w, h
         )
-        start = x+(w-c_w)/2, y+(h-c_h)/2
+        start_pos = x+(w-c_w)/2, y+(h-c_h)/2
         radius = min(c_w, c_h)
-        self._positions = []
-        for i in range(self._c):
-            i_angle = 360.0/self._c*i
+        self._waiting_positions = []
+        for i in range(c):
+            i_angle = 360.0/c*i
             i_x, i_y = utl_gui_core.Ellipse2dMtd.get_coord_at_angle(
-                start=start, radius=radius, angle=i_angle
+                start=start_pos, radius=radius, angle=i_angle
             )
-            self._positions.append(
+            self._waiting_positions.append(
                 (i_x, i_y)
             )
 
         self._refresh_widget_draw_()
 
-    def _set_waiting_update_(self):
-        self._timestamp = int(bsc_core.SystemMtd.get_timestamp() * 5)
+    def __init__(self, *args, **kwargs):
+        super(QtWaitingChart, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+        self.setMouseTracking(True)
+        #
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        #
+        self.installEventFilter(self)
+
+        self._set_chart_def_init_()
+       
+        self._waiting_draw_radius = 64
+        self._waiting_draw_item_radius = 12
+        self._waiting_draw_count = 10
+        self._waiting_draw_rect = QtCore.QRect()
+        self._waiting_positions = []
+        self._waiting_timestamp = 0
+
+        self._waiting_timer = QtCore.QTimer(self)
+        self._waiting_timer.setInterval(0)
+        self._waiting_timer.timeout.connect(
+            self._refresh_waiting_draw_
+        )
+
+    def _start_waiting_(self):
+        self._waiting_timer.start(0)
+        # ApplicationOpt().set_process_run_0()
+
+    def _stop_waiting_(self):
+        self._waiting_timer.stop()
+        # ApplicationOpt().set_process_run_0()
+
+    def _refresh_waiting_draw_(self):
+        self._waiting_timestamp = int(bsc_core.SystemMtd.get_timestamp() * 5)
         self._refresh_widget_draw_()
         # ApplicationOpt().set_process_run_0()
 
@@ -501,7 +636,7 @@ class _QtWaitingChart(
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Resize:
-                self._set_chart_update_data_()
+                self._refresh_chart_data_()
                 event.accept()
         return False
 
@@ -513,18 +648,18 @@ class _QtWaitingChart(
         painter._set_border_color_(0, 0, 0, 0)
         painter._set_background_color_(31, 31, 31, 63)
         painter.drawRect(
-            self._basic_rect
+            self._waiting_draw_rect
         )
-        c = self._c
-        timestamp = self._timestamp
-        for seq, i in enumerate(self._positions):
+        c = self._waiting_draw_count
+        i_r = self._waiting_draw_item_radius
+        timestamp = self._waiting_timestamp
+        for seq, i in enumerate(self._waiting_positions):
             i_x, i_y = i
 
-            cur_index = self._c - timestamp % (c+1)
+            cur_index = c-timestamp % (c+1)
             i_c_h = abs(cur_index-seq) * (360 / c)
             i_h, i_s, i_v = i_c_h, 0.5, 1.0
             i_c_r, i_c_g, i_c_b = bsc_core.ColorMtd.hsv2rgb(i_h, i_s, i_v)
-            i_r = 12
             #
             painter._set_border_color_(0, 0, 0, 0)
             painter._set_background_color_(i_c_r, i_c_g, i_c_b, 255)
@@ -546,14 +681,14 @@ class _QtWaitingChart(
                 )
 
 
-class _QtSectorChart(
+class QtSectorChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtChartDef
+    utl_gui_qt_abstract.AbsQtChartDef
 ):
     def _refresh_widget_draw_(self):
         self.update()
 
-    def _set_chart_update_data_(self):
+    def _refresh_chart_data_(self):
         x, y = 0, 0
         # noinspection PyUnresolvedReferences
         w, h = self.width(), self.height()
@@ -567,7 +702,7 @@ class _QtSectorChart(
         ).get()
     #
     def __init__(self, *args, **kwargs):
-        super(_QtSectorChart, self).__init__(*args, **kwargs)
+        super(QtSectorChart, self).__init__(*args, **kwargs)
         #
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setMouseTracking(True)
@@ -585,7 +720,7 @@ class _QtSectorChart(
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Resize:
-                self._set_chart_update_data_()
+                self._refresh_chart_data_()
                 self.update()
             elif event.type() == QtCore.QEvent.Enter:
                 pass
@@ -610,14 +745,14 @@ class _QtSectorChart(
             )
 
 
-class _QtRadarChart(
+class QtRadarChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtChartDef
+    utl_gui_qt_abstract.AbsQtChartDef
 ):
     def _refresh_widget_draw_(self):
         self.update()
 
-    def _set_chart_update_data_(self):
+    def _refresh_chart_data_(self):
         x, y = 0, 0
         # noinspection PyUnresolvedReferences
         w, h = self.width(), self.height()
@@ -631,7 +766,7 @@ class _QtRadarChart(
         ).get()
     #
     def __init__(self, *args, **kwargs):
-        super(_QtRadarChart, self).__init__(*args, **kwargs)
+        super(QtRadarChart, self).__init__(*args, **kwargs)
         #
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setMouseTracking(True)
@@ -659,7 +794,7 @@ class _QtRadarChart(
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Resize:
-                self._set_chart_update_data_()
+                self._refresh_chart_data_()
                 self.update()
             elif event.type() == QtCore.QEvent.Enter:
                 pass
@@ -724,14 +859,14 @@ class _QtRadarChart(
                     painter.drawText(i_text_point_1, i_text_1)
 
 
-class _QtPieChart(
+class QtPieChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract._QtChartDef
+    utl_gui_qt_abstract.AbsQtChartDef
 ):
     def _refresh_widget_draw_(self):
         self.update()
 
-    def _set_chart_update_data_(self):
+    def _refresh_chart_data_(self):
         x, y = 0, 0
         # noinspection PyUnresolvedReferences
         w, h = self.width(), self.height()
@@ -776,7 +911,7 @@ class _QtPieChart(
         self.update()
     #
     def __init__(self, *args, **kwargs):
-        super(_QtPieChart, self).__init__(*args, **kwargs)
+        super(QtPieChart, self).__init__(*args, **kwargs)
         #
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setMouseTracking(True)
@@ -811,7 +946,7 @@ class _QtPieChart(
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Resize:
-                self._set_chart_update_data_()
+                self._refresh_chart_data_()
                 self.update()
             elif event.type() == QtCore.QEvent.Enter:
                 pass
@@ -871,19 +1006,19 @@ class _QtPieChart(
                 )
 
 
-class _QtHistogramChart(
+class QtHistogramChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtDrawGridDef,
     #
     utl_gui_qt_abstract.AbsQtTrackActionDef,
     utl_gui_qt_abstract.AbsQtZoomActionDef,
     #
-    utl_gui_qt_abstract._QtChartDef,
+    utl_gui_qt_abstract.AbsQtChartDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()
 
-    def _set_chart_update_data_(self):
+    def _refresh_chart_data_(self):
         x, y = 0, 0
         # noinspection PyUnresolvedReferences
         w, h = self.width(), self.height()
@@ -904,7 +1039,7 @@ class _QtHistogramChart(
         self._selectedIndex = int(x / int(self._grid_width / self._zoom_scale_x))
     #
     def __init__(self, *args, **kwargs):
-        super(_QtHistogramChart, self).__init__(*args, **kwargs)
+        super(QtHistogramChart, self).__init__(*args, **kwargs)
         #
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setMouseTracking(True)
@@ -944,7 +1079,7 @@ class _QtHistogramChart(
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Resize:
-                self._set_chart_update_data_()
+                self._refresh_chart_data_()
                 self.update()
             elif event.type() == QtCore.QEvent.Enter:
                 pass
@@ -1072,16 +1207,16 @@ class _QtHistogramChart(
         self._selectedIndex = -1
 
 
-class _QtSequenceChart(
+class QtSequenceChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtNameDef,
-    utl_gui_qt_abstract._QtChartDef,
+    utl_gui_qt_abstract.AbsQtChartDef,
     utl_gui_qt_abstract.AbsQtStatusDef,
     #
     utl_gui_qt_abstract.AbsQtMenuDef,
 ):
     QT_MENU_CLASS = _utl_gui_qt_wgt_utility.QtMenu
-    def _set_chart_update_data_(self):
+    def _refresh_chart_data_(self):
         data = self._chart_data
         if data is not None:
             index_array, index_range, name_text = data
@@ -1128,7 +1263,7 @@ class _QtSequenceChart(
         self.update()
 
     def __init__(self, *args, **kwargs):
-        super(_QtSequenceChart, self).__init__(*args, **kwargs)
+        super(QtSequenceChart, self).__init__(*args, **kwargs)
         #
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setMouseTracking(True)
@@ -1157,7 +1292,7 @@ class _QtSequenceChart(
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Resize:
-                # self._set_chart_update_data_()
+                # self._refresh_chart_data_()
                 self.update()
             elif event.type() == QtCore.QEvent.Enter:
                 self._hover_flag = True

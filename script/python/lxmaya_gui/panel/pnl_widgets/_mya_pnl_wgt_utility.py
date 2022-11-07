@@ -212,7 +212,8 @@ class DatabaseGeometryManagerPanel(utl_gui_pnl_abs_utility.AbsDatabaseGeometryMa
                         default_prim_path=root,
                         with_uv=True,
                         with_mesh=True,
-                        use_override=False
+                        use_override=False,
+                        port_match_patterns=['pg_*']
                     )
                 ).set_run()
 

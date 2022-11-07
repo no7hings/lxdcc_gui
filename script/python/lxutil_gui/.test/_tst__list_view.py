@@ -27,27 +27,27 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
                             utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
                                 '.ma',
                                 tag='work',
-                                size=(24, 24)
+                                frame_size=(24, 24)
                             ),
                             utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
                                 '.ma',
                                 tag='work',
-                                size=(24, 24)
+                                frame_size=(24, 24)
                             ),
                             utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
                                 '.ma',
                                 tag='work',
-                                size=(24, 24)
+                                frame_size=(24, 24)
                             ),
                             utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
                                 '.ma',
                                 tag='work',
-                                size=(24, 24)
+                                frame_size=(24, 24)
                             ),
                             utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
                                 '.ma',
                                 tag='work',
-                                size=(24, 24)
+                                frame_size=(24, 24)
                             )
                         ]
                     )

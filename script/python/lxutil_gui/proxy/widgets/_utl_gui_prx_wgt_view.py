@@ -3,11 +3,11 @@ import collections
 
 from lxbasic import bsc_core
 
-from lxutil_gui import utl_gui_configure
+from lxutil_gui import utl_gui_configure, utl_gui_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_view, _utl_gui_qt_wgt_item
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_view, _utl_gui_qt_wgt_view_for_list, _utl_gui_qt_wgt_view_for_tree
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
@@ -55,7 +55,7 @@ class PrxVSplitter(PrxHSplitter):
 
 
 class PrxTabView(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_view._QtTabView
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_view.QtTabView
     def __init__(self, *args, **kwargs):
         super(PrxTabView, self).__init__(*args, **kwargs)
 
@@ -98,8 +98,8 @@ class PrxTreeView(
     #
     utl_gui_prx_abstract.AbsPrxViewVisibleConnectionDef,
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtEntryFrame
-    QT_VIEW_CLASS = _utl_gui_qt_wgt_view.QtTreeWidget
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtEntryFrame
+    QT_VIEW_CLASS = _utl_gui_qt_wgt_view_for_tree.QtTreeWidget
     def __init__(self, *args, **kwargs):
         super(PrxTreeView, self).__init__(*args, **kwargs)
         self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
@@ -369,7 +369,7 @@ class PrxTreeView(
                 if is_hidden is False:
                     i.set_hidden(False)
         #
-        self.view._set_show_view_items_update_()
+        self.view._refresh_view_all_items_viewport_showable_()
     @classmethod
     def _get_item_name_colors_(cls, prx_items, column=0):
         lis = []
@@ -476,8 +476,8 @@ class PrxListView(
     #
     utl_gui_prx_abstract.AbsPrxViewVisibleConnectionDef,
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtEntryFrame
-    QT_VIEW_CLASS = _utl_gui_qt_wgt_view.QtListWidget
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtEntryFrame
+    QT_VIEW_CLASS = _utl_gui_qt_wgt_view_for_list.QtListWidget
     def __init__(self, *args, **kwargs):
         super(PrxListView, self).__init__(*args, **kwargs)
         self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
@@ -486,10 +486,30 @@ class PrxListView(
         self._prx_h_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
         self._qt_layout_0.addWidget(self._prx_h_tool_bar.widget)
         self._prx_h_tool_bar.set_border_radius(1)
-        self._view_mode_swap_button = _utl_gui_qt_wgt_item._QtIconPressItem()
-        self._view_mode_swap_button._set_icon_file_path_(utl_core.Icon.get('grid_mode'))
-        self._view_mode_swap_button.clicked.connect(self.set_view_mode_swap)
+        #
+        self._view_mode_swap_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
         self._prx_h_tool_bar.set_widget_add(self._view_mode_swap_button)
+        self._view_mode_swap_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('grid_mode'))
+        self._view_mode_swap_button.clicked.connect(self.__swap_view_mode)
+        self._view_mode_swap_button._set_tool_tip_text_(
+            '"LMB click" for switch view mode'
+        )
+        #
+        self._check_all_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+        self._check_all_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('all_checked'))
+        self._prx_h_tool_bar.set_widget_add(self._check_all_button)
+        self._check_all_button.clicked.connect(self.__check_all_items)
+        self._check_all_button._set_tool_tip_text_(
+            '"LMB click" for checked all items'
+        )
+        #
+        self._uncheck_all_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+        self._uncheck_all_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('all_unchecked'))
+        self._prx_h_tool_bar.set_widget_add(self._uncheck_all_button)
+        self._uncheck_all_button.clicked.connect(self.__uncheck_all_items)
+        self._uncheck_all_button._set_tool_tip_text_(
+            '"LMB click" for unchecked all items'
+        )
         #
         self._prx_filer_bar_0 = _utl_gui_prx_wdt_utility.PrxFilterBar()
         self._prx_h_tool_bar.set_widget_add(self._prx_filer_bar_0)
@@ -497,6 +517,13 @@ class PrxListView(
         self._qt_view = self.QT_VIEW_CLASS()
         self._qt_layout_0.addWidget(self._qt_view)
         self._set_prx_view_def_init_(self._qt_view)
+        #
+        self._qt_info_chart = _utl_gui_qt_wgt_chart.QtInfoChart()
+        self._qt_info_chart.hide()
+        self._qt_layout_0.addWidget(self._qt_info_chart)
+        self._qt_view.info_changed.connect(
+            self._qt_info_chart._set_info_text_
+        )
         #
         self._prx_filter_bar = self._prx_filer_bar_0
     @property
@@ -506,11 +533,17 @@ class PrxListView(
     def filter_bar(self):
         return self._prx_filter_bar
 
-    def set_view_mode_swap(self):
+    def __swap_view_mode(self):
         self.view._set_view_mode_swap_()
         self._view_mode_swap_button._set_icon_file_path_(
-            utl_core.Icon.get(['list_mode', 'grid_mode'][self.view._get_is_grid_mode_()])
+            utl_gui_core.RscIconFile.get(['list_mode', 'grid_mode'][self.view._get_is_grid_mode_()])
         )
+
+    def __check_all_items(self):
+        self._qt_view._set_all_item_widgets_checked_(True)
+
+    def __uncheck_all_items(self):
+        self._qt_view._set_all_item_widgets_checked_(False)
 
     def set_view_list_mode(self):
         self.view._set_list_mode_()
@@ -548,10 +581,10 @@ class PrxListView(
         self.view._set_item_image_frame_draw_enable_(boolean)
     #
     def set_item_add(self, *args, **kwargs):
-        item_widget_prx = _utl_gui_prx_wgt_item.PrxListItem()
-        item_widget_prx.set_view(self)
-        self.view._set_item_widget_add_(item_widget_prx.widget, **kwargs)
-        return item_widget_prx
+        prx_item_widget = _utl_gui_prx_wgt_item.PrxListItem()
+        prx_item_widget.set_view(self)
+        self.view._set_item_widget_add_(prx_item_widget.widget, **kwargs)
+        return prx_item_widget
 
     def set_visible_tgt_raw_clear(self):
         self.set_visible_tgt_raw({})
@@ -591,6 +624,9 @@ class PrxListView(
 
     def set_refresh_connect_to(self, fnc):
         self._qt_view.f5_key_pressed.connect(fnc)
+
+    def get_checked_items(self):
+        return [i.gui_proxy for i in self._qt_view._get_checked_item_widgets_()]
 
 
 class PrxImageView(PrxListView):

@@ -41,7 +41,6 @@ class AbsSceneShaderViewerPanel(
         )
 
     def _set_tool_panel_setup_(self):
-        self.set_window_loading_end()
         self._set_refresh_all_()
 
     def _set_panel_build_(self):
@@ -112,31 +111,29 @@ class AbsSceneShaderViewerPanel(
         #
         materials = self.DCC_MATERIALS_CLS().get_objs()
         if materials:
-            gp = utl_core.GuiProgressesRunner(maximum=len(materials))
-            for material in materials:
-                gp.set_update()
-                #
-                material_type_name = 'material'
-                material_gui = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as(material, mode='list')
-                #
-                tag_filter_key = 'material.{}'.format(material_type_name)
-                self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
-                    tag_filter_key, material_gui
-                )
-                #
-                shaders = material.get_all_source_objs()
-                for i in shaders:
-                    shader_path = i.path
-                    shader = self.DCC_SHADER_CLS(shader_path)
-                    shader_type_name = shader.get_shader_type_name()
-                    if shader_type_name:
-                        shader_gui = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as(shader, mode='list')
-                        shader_gui.set_name(shader_type_name, 2)
-                        shader_gui.set_icon_by_color(bsc_core.TextOpt(shader_type_name).to_rgb(), 2)
-                        #
-                        tag_filter_key = 'shader.{}'.format(shader_type_name)
-                        self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
-                            tag_filter_key, shader_gui
-                        )
-            #
-            gp.set_stop()
+            with utl_core.gui_progress(maximum=len(materials), label='gui-add for material') as g_p:
+                for i_material in materials:
+                    g_p.set_update()
+                    #
+                    material_type_name = 'material'
+                    material_gui = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as(i_material, mode='list')
+                    #
+                    tag_filter_key = 'material.{}'.format(material_type_name)
+                    self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
+                        tag_filter_key, material_gui
+                    )
+                    #
+                    i_shaders = i_material.get_all_source_objs()
+                    for i in i_shaders:
+                        shader_path = i.path
+                        shader = self.DCC_SHADER_CLS(shader_path)
+                        shader_type_name = shader.get_shader_type_name()
+                        if shader_type_name:
+                            shader_gui = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as(shader, mode='list')
+                            shader_gui.set_name(shader_type_name, 2)
+                            shader_gui.set_icon_by_color(bsc_core.TextOpt(shader_type_name).to_rgb(), 2)
+                            #
+                            tag_filter_key = 'shader.{}'.format(shader_type_name)
+                            self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
+                                tag_filter_key, shader_gui
+                            )

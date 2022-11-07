@@ -26,6 +26,15 @@ class W(QtWidgets.QMainWindow):
         b_1.setText('Copy')
         b_1.clicked.connect(self.copy_file)
 
+        s_ = QtWidgets.QSlider()
+        l_.addWidget(s_)
+        s_.setSingleStep(.1)
+
+        le_ = QtWidgets.QLineEdit()
+        s_.valueChanged.connect(lambda x: le_.setText(str(x/100.0)))
+        l_.addWidget(le_)
+
+
     def open_file(self):
         f = QtWidgets.QFileDialog()
         s = f.getOpenFileName(

@@ -141,12 +141,53 @@ class State(object):
     LOST = 'lost'
 
 
+class RscIconFile(object):
+    BRANCH = 'icons'
+    ICON_KEY_PATTERN = r'[@](.*?)[@]'
+    @classmethod
+    def get(cls, key):
+        return utl_core.Resources.get(
+            '{}/{}.*'.format(cls.BRANCH, key)
+        )
+    @classmethod
+    def get_(cls, key):
+        _ = re.findall(
+            re.compile(cls.ICON_KEY_PATTERN, re.S), key
+        )
+        if _:
+            cls.get(_)
+
+
+class RcsIconDirectory(object):
+    BRANCH = 'icons'
+    ICON_KEY_PATTERN = r'[@](.*?)[@]'
+    @classmethod
+    def get(cls, key):
+        return utl_core.Resources.get(
+            '{}/{}'.format(cls.BRANCH, key)
+        )
+
+
+class RscFontFile(object):
+    BRANCH = 'fonts'
+    @classmethod
+    def get(cls, key):
+        return utl_core.Resources.get(
+            '{}/{}.*'.format(cls.BRANCH, key)
+        )
+    @classmethod
+    def get_all(cls, sub_key='*'):
+        return utl_core.Resources.get_all(
+            '{}/{}.*'.format(cls.BRANCH, sub_key)
+        )
+
+
 class QtStyleMtd(object):
     CONFIGURE = bsc_objects.Configure(
         value='{}/qt-style.yml'.format(utl_gui_configure.Data.DATA_ROOT)
     )
     CONFIGURE.set(
-        'option.icon-dir', utl_core.Icon.ROOT_PATH
+        'option.icon-dir', RcsIconDirectory.get('qt-style')
     )
     CONFIGURE.set_flatten()
     @classmethod
@@ -177,38 +218,7 @@ class QtStyleMtd(object):
         )
 
 
-class RscIconFile(object):
-    BRANCH = 'icons'
-    ICON_KEY_PATTERN = r'[@](.*?)[@]'
-    @classmethod
-    def get(cls, key):
-        return utl_core.Resources.get(
-            '{}/{}.*'.format(cls.BRANCH, key)
-        )
-    @classmethod
-    def get_(cls, key):
-        _ = re.findall(
-            re.compile(cls.ICON_KEY_PATTERN, re.S), key
-        )
-        if _:
-            cls.get(_)
-
-
-class RscFontFile(object):
-    BRANCH = 'fonts'
-    @classmethod
-    def get(cls, key):
-        return utl_core.Resources.get(
-            '{}/{}.*'.format(cls.BRANCH, key)
-        )
-    @classmethod
-    def get_all(cls, sub_key='*'):
-        return utl_core.Resources.get_all(
-            '{}/{}.*'.format(cls.BRANCH, sub_key)
-        )
-
-
 if __name__ == '__main__':
     import os
     os.environ['LYNXI_RESOURCES'] = '/data/e/myworkspace/td/lynxi/script/python/.resources'
-    print RscFontFile.get_all()
+    print RcsIconDirectory.get('qt-style')

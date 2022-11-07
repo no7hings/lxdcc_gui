@@ -1,0 +1,111 @@
+directory/open:
+    widget: directory
+    open_or_save: open
+    history_key: 'test.directory-open'
+    show_history_latest: True
+    value: ''
+    tool_tip: '...'
+    enable: True
+
+directory/save:
+    widget: directory
+    open_or_save: save
+    history_key: 'test.directory-save'
+    show_history_latest: True
+    value: ''
+    tool_tip: '...'
+    enable: True
+
+file/open:
+    widget: file
+    open_or_save: open
+    history_key: 'test.file-open'
+    show_history_latest: True
+    value: ''
+    tool_tip: '...'
+    enable: True
+
+file/save:
+    widget: file
+    open_or_save: save
+    history_key: 'test.file-save'
+    show_history_latest: True
+    value: ''
+    tool_tip: '...'
+    enable: True
+
+constant/enumerate:
+    widget: enumerate
+    value: ['A', 'B', 'C']
+    tool_tip: '...'
+    enable: True
+
+constant/boolean:
+    widget: boolean
+    value: True
+    tool_tip: '...'
+    enable: True
+
+constant/float:
+    widget: float
+    value: 1
+    tool_tip: '...'
+    enable: True
+
+constant/float2:
+    widget: float2
+    value: [1, 2]
+    tool_tip: '...'
+    enable: True
+
+constant/float3:
+    widget: float3
+    value: [1, 2, 3]
+    tool_tip: '...'
+    enable: True
+
+constant/script:
+    widget: script
+    value: ''
+    tool_tip: '...'
+    enable: True
+
+array/shotgun_entities_choose:
+    widget: shotgun_entities_choose
+    # option for shotgun entities
+    shotgun_entity_kwargs: { entity_type: 'HumanUser', filters: [ [ 'sg_studio', 'is', 'CG' ], [ 'sg_status_list', 'is', 'act' ] ], fields: [ 'sg_nickname', 'email', 'name' ] }
+    key_pattern: '{sg_nickname};{email};{name}'
+    keyword_filter_fields: [ 'sg_nickname', 'email', 'name' ]
+    tag_filter_fields: [ 'department' ]
+    #
+    value: ''
+    tool_tip: '...'
+    enable: True
+
+array/files:
+    widget: files
+    value: ''
+    tool_tip: '...'
+    enable: True
+
+array/directories:
+    widget: directories
+    value: ''
+    tool_tip: '...'
+    enable: True
+
+array/madias:
+    widget: medias
+    value: ''
+    tool_tip: '...'
+    history_key: 'test.medias-open'
+    ext_filter: 'All Media File (*.jpg *.png *.exr)'
+    enable: True
+
+array/values_choose:
+    widget: values_choose
+    value: ['A', 'B']
+    tool_tip: '...'
+    history_key: 'test.values'
+    ext_filter: 'All Media File (*.jpg *.png *.exr)'
+    enable: True

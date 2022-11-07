@@ -1,16 +1,14 @@
 # coding:utf-8
-from lxutil_gui.panel import utl_gui_pnl_abs_texture
-
-from lxutil_gui.qt import utl_gui_qt_core
+import lxutil_gui.panel.abstracts as utl_gui_pnl_abstracts
 
 import lxmaya.dcc.dcc_objects as mya_dcc_objects
 
 
-class AssetDccTextureManager(utl_gui_pnl_abs_texture.AbsAssetDccTextureManager):
+class PnlAssetDccTextureManager(utl_gui_pnl_abstracts.AbsPnlAssetDccTextureManager):
     DCC_SELECTION_CLS = mya_dcc_objects.Selection
     DCC_NAMESPACE = 'maya'
     def __init__(self, *args, **kwargs):
-        super(AssetDccTextureManager, self).__init__(*args, **kwargs)
+        super(PnlAssetDccTextureManager, self).__init__(*args, **kwargs)
 
     def _set_dcc_texture_references_update_(self):
         self._dcc_texture_references = mya_dcc_objects.TextureReferences()

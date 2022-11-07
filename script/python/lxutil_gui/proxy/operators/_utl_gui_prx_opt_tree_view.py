@@ -992,6 +992,7 @@ class PrxRsvObjTreeViewAddOpt(object):
         self._prx_tree_view.set_clear()
 
     def _set_prx_item_add_(self, obj, use_show_thread=False):
+        obj_name = obj.name
         obj_path = obj.path
         obj_type = obj.type
         if obj_path in self._obj_add_dict:
@@ -999,7 +1000,7 @@ class PrxRsvObjTreeViewAddOpt(object):
             return False, prx_item, None
         else:
             create_kwargs = dict(
-                name='...',
+                name=obj_name,
                 item_class=self._prx_tree_item_cls,
                 filter_key=obj.path
             )
@@ -1052,7 +1053,7 @@ class PrxRsvObjTreeViewAddOpt(object):
             obj.get_gui_extend_menu_raw() or []
         )
         #
-        prx_item.set_icon_by_name_text(obj_type_name)
+        prx_item.set_icon_by_file(obj.icon)
         prx_item.set_name(obj_name)
         prx_item.set_tool_tip(obj.description)
         #

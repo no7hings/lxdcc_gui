@@ -19,7 +19,7 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
         n = utl_prx_widgets.PrxNode_('root')
         self.set_widget_add(n)
         p = n.set_port_add(
-            utl_prx_widgets.PrxEnumeratePort_(
+            utl_prx_widgets.PrxPortForEnumerate(
                 'test_enumerate'
             )
         )
@@ -30,7 +30,7 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
             )
         )
         p = n.set_port_add(
-            utl_prx_widgets.PrxFloatArrayPort(
+            utl_prx_widgets.PrxPortForFloatTuple(
                 'test_float_array'
             )
         )
@@ -57,7 +57,7 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
         )
 
         p = n.set_port_add(
-            utl_prx_widgets.PrxScriptPort(
+            utl_prx_widgets.PrxPortForScript(
                 'test_script'
             )
         )

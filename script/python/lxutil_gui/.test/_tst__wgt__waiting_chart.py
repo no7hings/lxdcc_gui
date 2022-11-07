@@ -10,9 +10,9 @@ class W(prx_widgets.PrxToolWindow):
     def __init__(self, *args, **kwargs):
         super(W, self).__init__(*args, **kwargs)
         #
-        c = _utl_gui_qt_wgt_chart._QtWaitingChart()
+        c = _utl_gui_qt_wgt_chart.QtWaitingChart()
         self.set_widget_add(c)
-        c._set_waiting_start_()
+        c._start_waiting_()
 
     def test(self):
         pass

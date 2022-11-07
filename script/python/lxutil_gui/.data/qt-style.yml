@@ -14,10 +14,13 @@ option:
         #
         color-hovered: '255, 159, 79, 255'
         color-selected: '79, 159, 255, 255'
+        color-checked: '255, 79, 159, 255'
+        color-pressed: '159, 79, 255, 255'
         color-actioned: '79, 255, 159, 255'
         #
         color-item-selected: '79, 159, 255, 255'
         color-item-selected-indirect: '79, 159, 255, 63'
+        color-item-hovered: '255, 159, 79, 255'
         #
         color-item-loading: '31, 31, 31, 63'
         #
@@ -25,7 +28,7 @@ option:
         color-button-hovered: '151, 151, 151'
         color-button-disable: '79, 79, 79, 255'
         #
-        color-tool-tip: '255, 255, 191, 255'
+        color-tool-tip: '255, 255, 159, 255'
         #
         color-icon: '191, 191, 191, 255'
         #
@@ -55,6 +58,7 @@ option:
         border-style: 'solid'
     #
     font:
+        color-black: '31, 31, 31, 255'
         color-dark: '127, 127, 127, 255'
         color-basic: '223, 223, 223, 255'
         color-light: '255, 255, 255, 255'
@@ -72,10 +76,10 @@ option:
         color-tool-tip: '31, 31, 31, 255'
     #
     icon-file:
-        collapse: '<option.icon-dir>/qt-style/collapse.svg'
-        expand: '<option.icon-dir>/qt-style/expand.svg'
-        up-arrow: '<option.icon-dir>/qt-style/up-arrow.svg'
-        down-arrow: '<option.icon-dir>/qt-style/down-arrow.svg'
+        collapse: '<option.icon-dir>/collapse.svg'
+        expand: '<option.icon-dir>/expand.svg'
+        up-arrow: '<option.icon-dir>/up-arrow.svg'
+        down-arrow: '<option.icon-dir>/down-arrow.svg'
     #
     size:
         head-view:
@@ -143,17 +147,23 @@ widget:
     QTreeView:
         |-
         QTreeView{
-            background: rgba(<option.background.color-transparent>); 
+            show-decoration-selected: 1;
+            background: rgba(<option.background.color-transparent>);
             color: rgba(<option.font.color-basic>); 
             border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
         }
         QTreeView::item:hover{
-            background: rgba(<option.background.color-hovered>); 
+            background: rgba(<option.background.color-hovered>);
             color: rgba(<option.font.color-hovered>); 
             border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
         }
         QTreeView::item:selected{
-            background: rgba(<option.background.color-selected>); 
+            background: rgba(<option.background.color-selected>);
+            color: rgba(<option.font.color-selected>); 
+            border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
+        }
+        QTreeView::item:selected:hover{
+            background: qlineargradient(spread:pad, x1: 0, y1: 0, x2: 0, y2: 1, stop:0 rgba(<option.background.color-hovered>), stop:1 rgba(<option.background.color-transparent>));
             color: rgba(<option.font.color-selected>); 
             border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
         }
@@ -182,35 +192,44 @@ widget:
             border-image: none; image: url(<option.icon-file.collapse>);
         }
         QTreeView::indicator:checked{
-            image: url(<option.icon-dir>/qt-style/tree-box-check-on.svg);
+            image: url(<option.icon-dir>/tree-box-check-on.svg);
         }
         QTreeView::indicator:checked:hover {
-            image: url(<option.icon-dir>/qt-style/tree-box-check-on-hover.svg);
+            image: url(<option.icon-dir>/tree-box-check-on-hover.svg);
         }
         QTreeView::indicator:checked:disabled {
-            image: url(<option.icon-dir>/qt-style/tree-box-check-on-disable.svg);
+            image: url(<option.icon-dir>/tree-box-check-on-disable.svg);
         }
         QTreeView::indicator:unchecked{
-            image: url(<option.icon-dir>/qt-style/tree-box-check-off.svg);
+            image: url(<option.icon-dir>/tree-box-check-off.svg);
         }
         QTreeView::indicator:unchecked:hover{
-            image: url(<option.icon-dir>/qt-style/tree-box-check-off-hover.svg);
+            image: url(<option.icon-dir>/tree-box-check-off-hover.svg);
         }
         QTreeView::indicator:unchecked:disabled {
-            image: url(<option.icon-dir>/qt-style/tree-box-check-on-disable.svg);
+            image: url(<option.icon-dir>/tree-box-check-on-disable.svg);
         }
     QHeaderView:
         |-
-        QHeaderView::section{
-            background: rgba(<option.background.color-dark>); 
+        QHeaderView{
+            background: rgba(<option.background.color-transparent>); 
             color: rgba(<option.font.color-basic>);
-            border: 1px rgba(<option.border.color-basic>); border-radius: 0px; border-style: solid; 
-            padding: 0px, 0px, 2px, 2px; margin: 0px, 0px, 2px, 2px;
+            border: 1px rgba(<option.border.color-basic>); border-radius: 0px; border-style: none none solid none; 
+        }
+        QHeaderView::section{
+            background: rgba(<option.background.color-transparent>); 
+            color: rgba(<option.font.color-basic>);
+            border: none;
+        }
+        QHeaderView::section:hover{
+            background: rgba(<option.background.color-transparent>);
+            color: rgba(<option.font.color-basic>);
+            border: none; 
         }
         QHeaderView::section:checked{
-            background: rgba(<option.background.color-dark>);
+            background: rgba(<option.background.color-transparent>);
             color: rgba(<option.font.color-basic>);
-            border: 1px rgba(<option.border.color-basic>); border-radius: 0px; border-style: solid; 
+            border: none; 
         }
         QHeaderView::up-arrow{
             image: url(<option.icon-file.up-arrow>);
@@ -222,7 +241,7 @@ widget:
         |-
         QScrollBar:vertical{
             background: rgba(<option.background.color-transparent>);
-            border: 1px rgba(<option.border.color-dark>); border-radius: 1px; border-style: solid;
+            border: 1px rgba(<option.border.color-dark>); border-radius: 1px; border-style: none none none solid;
             width: <option.size.scroll-bar.width>px; margin: 0px, 0px, 0px, 0px; padding: <option.size.scroll-bar.width>px 1px <option.size.scroll-bar.width>px 1px;
         }
         QScrollBar::handle:vertical{
@@ -234,23 +253,23 @@ widget:
             border: 1px rgba(<option.border.color-light-hover>); border-radius: 1px; border-style: solid;
         }
         QScrollBar::add-line:vertical{
-            image: url(<option.icon-dir>/qt-style/v_scroll_add.svg);
+            image: url(<option.icon-dir>/v_scroll_add.svg);
         }
         QScrollBar::add-line:vertical:hover{
-            image: url(<option.icon-dir>/qt-style/v_scroll_add_hover.svg);
+            image: url(<option.icon-dir>/v_scroll_add_hover.svg);
         }
         QScrollBar::sub-line:vertical{
-            image: url(<option.icon-dir>/qt-style/v_scroll_sub.svg);
+            image: url(<option.icon-dir>/v_scroll_sub.svg);
         }
         QScrollBar::sub-line:vertical:hover{
-            image: url(<option.icon-dir>/qt-style/v_scroll_sub_hover.svg);
+            image: url(<option.icon-dir>/v_scroll_sub_hover.svg);
         }
         QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
             background: rgba(<option.background.color-transparent>);
         }
         QScrollBar:horizontal{
             background: rgba(<option.background.color-transparent>);
-            border: 1px rgba(<option.border.color-dark>); border-radius: 1px; border-style: solid;
+            border: 1px rgba(<option.border.color-dark>); border-radius: 1px; border-style: solid none none none;
             height: <option.size.scroll-bar.height>px; margin: 0px, 0px, 0px, 0px; padding: 1px <option.size.scroll-bar.height>px 1px <option.size.scroll-bar.height>px;
         }
         QScrollBar::handle:horizontal{
@@ -262,16 +281,16 @@ widget:
             border: 1px rgba(<option.border.color-light-hover>); border-radius: 1px; border-style: solid;
         }
         QScrollBar::add-line:horizontal{
-            image: url(<option.icon-dir>/qt-style/h_scroll_add.svg);
+            image: url(<option.icon-dir>/h_scroll_add.svg);
         }
         QScrollBar::add-line:horizontal:hover{
-            image: url(<option.icon-dir>/qt-style/h_scroll_add_hover.svg);
+            image: url(<option.icon-dir>/h_scroll_add_hover.svg);
         }
         QScrollBar::sub-line:horizontal{
-            image: url(<option.icon-dir>/qt-style/h_scroll_sub.svg);
+            image: url(<option.icon-dir>/h_scroll_sub.svg);
         }
         QScrollBar::sub-line:horizontal:hover{
-            image: url(<option.icon-dir>/qt-style/h_scroll_sub_hover.svg);
+            image: url(<option.icon-dir>/h_scroll_sub_hover.svg);
         }
         QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal{
             background: rgba(<option.background.color-transparent>);

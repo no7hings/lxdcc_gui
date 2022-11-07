@@ -55,7 +55,6 @@ class AbsAssetBuilderPanel(
         self._set_group_0_build_()
 
     def _set_tool_panel_setup_(self):
-        self.set_window_loading_end()
         self._set_refresh_all_()
 
     def _set_group_0_build_(self):

@@ -3,7 +3,11 @@ import fnmatch
 
 import functools
 
+import uuid
+
 from lxbasic import bsc_configure, bsc_core
+
+from lxutil import utl_core
 
 from lxutil_gui import utl_gui_configure
 
@@ -12,7 +16,7 @@ from lxutil_gui.qt import utl_gui_qt_core
 from lxutil_gui.proxy import utl_gui_prx_core
 
 
-class _PrxStateDef(object):
+class AbsPrxStateDef(object):
     NORMAL_STATE = utl_gui_configure.State.NORMAL
     ENABLE_STATE = utl_gui_configure.State.ENABLE
     DISABLE_STATE = utl_gui_configure.State.DISABLE
@@ -135,36 +139,61 @@ class AbsPrxViewDef(object):
         return [i.gui_proxy for i in self._get_selected_items_()]
 
 
+class _Loading(object):
+    def __init__(self, proxy):
+        self._proxy = proxy
+
+    def start(self):
+        self._proxy.start_waiting()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._proxy.stop_waiting()
+
+
 class AbsPrxWaitingDef(object):
-    WAITING_CHART_CLASS = None
-    def _set_waiting_def_init_(self):
-        self._waiting_char = self.WAITING_CHART_CLASS(self.widget)
-        self._waiting_char.hide()
-        self.widget._set_size_changed_connect_to_(self._set_waiting_update_)
+    QT_WAITING_CHART_CLASS = None
     @property
     def widget(self):
         raise NotImplementedError()
 
-    def set_waiting_start(self):
+    def waiting(self):
+        return _Loading(self)
+
+    def _set_waiting_def_init_(self):
+        self._qt_waiting_char = self.QT_WAITING_CHART_CLASS(self.widget)
+        self._qt_waiting_char.hide()
+        #
+        self._auto_stop_timer = utl_gui_qt_core.QtCore.QTimer(self.widget)
+        #
+        self.widget._set_size_changed_connect_to_(self._refresh_waiting_draw_)
+
+    def start_waiting(self, auto_stop_time=None):
         self.widget.setCursor(utl_gui_qt_core.QtCore.Qt.BusyCursor)
-        self._waiting_char.show()
+        self._qt_waiting_char.show()
         utl_gui_qt_core.ApplicationOpt().set_process_run_0()
-        self._waiting_char._set_waiting_start_()
+        self._qt_waiting_char._start_waiting_()
+        if isinstance(auto_stop_time, (int, float)):
+            self._auto_stop_timer.singleShot(
+                auto_stop_time, self.stop_waiting
+            )
 
-    def set_waiting_update(self):
-        self._waiting_char.update()
+    def update_waiting(self):
+        self._qt_waiting_char.update()
         utl_gui_qt_core.ApplicationOpt().set_process_run_0()
 
-    def set_waiting_stop(self):
+    def stop_waiting(self):
         self.widget.unsetCursor()
-        self._waiting_char.hide()
+        self._qt_waiting_char.hide()
         utl_gui_qt_core.ApplicationOpt().set_process_run_0()
-        self._waiting_char._set_waiting_stop_()
+        self._qt_waiting_char._stop_waiting_()
 
-    def _set_waiting_update_(self):
+    def _refresh_waiting_draw_(self):
         x, y = 0, 0
         w, h = self.widget.width(), self.widget.height()
-        self._waiting_char.setGeometry(
+        self._qt_waiting_char.setGeometry(
             x, y, w, h
         )
 
@@ -181,8 +210,8 @@ class AbsPrxWaitingDef(object):
 
         thread = self.widget._set_thread_create_()
 
-        thread.run_started.connect(self.set_waiting_start)
-        thread.run_finished.connect(self.set_waiting_stop)
+        thread.run_started.connect(self.start_waiting)
+        thread.run_finished.connect(self.stop_waiting)
         for i in methods:
             thread.set_method_add(
                 functools.partial(debug_run_fnc_, i)
@@ -194,6 +223,8 @@ class AbsPrxWaitingDef(object):
 class AbsPrxWindow(AbsPrx):
     def __init__(self, *args, **kwargs):
         super(AbsPrxWindow, self).__init__(*args, **kwargs)
+        self._window_unicode_id = str(uuid.uuid1()).upper()
+        #
         main_window = utl_gui_qt_core.QtDccMtd.get_qt_main_window()
         if kwargs.get('parent'):
             pass
@@ -203,6 +234,8 @@ class AbsPrxWindow(AbsPrx):
                 self.widget.setParent(
                     main_window, utl_gui_qt_core.QtCore.Qt.Window
                 )
+        #
+        self._main_window_geometry = None
         #
         self._definition_window_size = 480, 320
         #
@@ -221,6 +254,10 @@ class AbsPrxWindow(AbsPrx):
     def _set_build_(self):
         pass
 
+    def set_main_window_geometry(self, geometry):
+        self._main_window_geometry = geometry
+        self._qt_widget._main_window_geometry = geometry
+
     def get_definition_window_size(self):
         return self._definition_window_size
 
@@ -235,8 +272,13 @@ class AbsPrxWindow(AbsPrx):
         if exclusive is True:
             gui_proxies = utl_gui_prx_core.get_gui_proxy_by_class(self.__class__)
             for i in gui_proxies:
-                if not i == self:
-                    if hasattr(i, 'set_window_close'):
+                if hasattr(i, '_window_unicode_id'):
+                    if i._window_unicode_id != self._window_unicode_id:
+                        utl_core.Log.set_module_warning_trace(
+                            'close exists window for "{}"'.format(
+                                self.__class__.__name__
+                            )
+                        )
                         i.set_window_close()
         #
         utl_gui_qt_core.set_qt_window_show(self.widget, pos, size)
@@ -280,7 +322,7 @@ class AbsPrxWindow(AbsPrx):
         self._status = status
 
     def set_refresh_action_create(self, fnc):
-        self._qt_widget._set_window_shortcut_action_create_(
+        self._qt_widget._create_window_shortcut_action_(
             fnc, 'F5'
         )
 
@@ -332,6 +374,8 @@ class GuiProgress(object):
         self._is_stop = False
         #
         self._is_raise = False
+        #
+        self._depth = 0
     @property
     def label(self):
         return self._label
@@ -359,9 +403,12 @@ class GuiProgress(object):
 
     def set_value(self, v):
         self._value = v
-
-    def get_is_stop(self):
-        return self._is_stop
+    #
+    def get_depth(self):
+        return self._depth
+    #
+    def set_start(self):
+        pass
 
     def set_update(self):
         if self._is_stop is False:
@@ -381,18 +428,18 @@ class GuiProgress(object):
 
     def set_stop(self):
         if self.get_is_root():
-            self._qt_progress._set_progress_stop_()
+            self._qt_progress._stop_progress_()
             self._value = 0
             self._maximum = 0
             self._map_value = 0
             self._map_maximum = 0
             self._is_stop = True
 
+    def get_is_stop(self):
+        return self._is_stop
+
     def set_raise(self):
         self._is_raise = True
-
-    def get_children(self):
-        return self._children
 
     def get_parent(self):
         return self._parent
@@ -401,8 +448,8 @@ class GuiProgress(object):
         return self._parent is None
 
     def _get_percent_(self):
-        if self.maximum > 0:
-            return round(float(self.value)/float(self.maximum), 4)
+        if self._maximum > 0:
+            return round(float(self._value)/float(self._maximum), 4)
         else:
             return 0
 
@@ -411,17 +458,18 @@ class GuiProgress(object):
             return round(float(1)/float(self.maximum), 4)
         return 0
 
-    def set_child_add(self, progress):
-        self._children.append(progress)
-        progress._parent = self
-        progress._sub_end = self._get_percent_()
-        progress._sub_start = round(progress._sub_end - self._get_span_(), 4)
+    def set_child_add(self, progress_fnc):
+        self._children.append(progress_fnc)
+        progress_fnc._parent = self
+        #
+        progress_fnc._sub_end = self._get_percent_()
+        progress_fnc._sub_start = max(min(round(progress_fnc._sub_end-self._get_span_(), 4), 1.0), 0.0)
 
     def _set_qt_progress_update_(self):
         if self.get_qt_progress() is not None:
             if self.get_is_root() is True:
                 descendants = self.get_descendants()
-                raw = [(0, 1, self._get_percent_(), self._label)]
+                raw = [(self._get_percent_(), (0, 1), self._label)]
                 maximums, values = [self._maximum], [self._value]
                 map_maximums, map_values = [self._map_maximum], [self._map_value]
                 for i_descendant in descendants:
@@ -431,9 +479,14 @@ class GuiProgress(object):
                     map_maximums.append(i_descendant._map_maximum)
                     map_values.append(i_descendant._map_value)
                     #
-                    raw.append(
-                        (i_descendant._sub_start, i_descendant._sub_end, i_descendant._get_percent_(), i_descendant._label)
-                    )
+                    i_percent_start = i_descendant._sub_start
+                    i_percent_end = i_descendant._sub_end
+                    i_percent = i_descendant._get_percent_()
+                    i_label = i_descendant._label
+                    if i_percent < 1:
+                        raw.append(
+                            (i_percent, (i_percent_start, i_percent_end), i_label)
+                        )
                 #
                 maximum, value = sum(maximums), sum(values)
                 map_maximum, map_value = sum(map_maximums), sum(map_values)
@@ -445,24 +498,41 @@ class GuiProgress(object):
                 self._qt_progress._set_progress_value_(value)
 
     def get_root(self):
-        def _rcs_fnc(obj_):
+        def rcs_fnc_(obj_):
             _parent = obj_.get_parent()
             if _parent is None:
                 return obj_
             else:
-                return _rcs_fnc(_parent)
-        return _rcs_fnc(self)
+                return rcs_fnc_(_parent)
+        #
+        return rcs_fnc_(self)
 
     def get_descendants(self):
-        def _rcs_fnc(lis_, obj_):
+        def rcs_fnc_(lis_, obj_):
             _children = obj_.get_children()
             if _children:
                 for _child in _children:
                     lis_.append(_child)
-                    _rcs_fnc(lis_, _child)
-
+                    rcs_fnc_(lis_, _child)
+        #
         lis = []
-        _rcs_fnc(lis, self)
+        rcs_fnc_(lis, self)
+        return lis
+
+    def get_children(self):
+        return self._children
+
+    def get_descendant_args(self):
+        def rcs_fnc_(lis_, obj_, depth_):
+            _children = obj_.get_children()
+            if _children:
+                for _i_child in _children:
+                    lis_.append((depth_, _i_child))
+                    #
+                    rcs_fnc_(lis_, _i_child, depth_+1)
+        #
+        lis = []
+        rcs_fnc_(lis, self, 0)
         return lis
 
     def __str__(self):
@@ -483,18 +553,34 @@ class GuiProgress(object):
         self.set_stop()
 
 
-class AbsPrxProgressesDef(object):
-    PROGRESS_CLASS = GuiProgress
+class AbsPrxProgressingDef(object):
+    QT_PROGRESSING_CHART_CLASS = None
+    PROGRESS_FNC_CLASS = GuiProgress
     PROGRESS_WIDGET_CLASS = None
-    def _set_progresses_def_init_(self, qt_progress_bar):
-        self._qt_progress_bar = qt_progress_bar
-        #
+    @property
+    def widget(self):
+        raise NotImplementedError()
+
+    def _set_progressing_def_init_(self):
+        self._qt_progressing_char = self.QT_PROGRESSING_CHART_CLASS(self.widget)
+        # self._qt_progressing_char.hide()
+
+        self.widget._set_size_changed_connect_to_(self._refresh_progressing_draw_)
+
         self._current_progress = None
-    #
+
+    def _refresh_progressing_draw_(self):
+        x, y = 0, 0
+        w, h = self.widget.width(), self.widget.height()
+        self._qt_progressing_char.setGeometry(
+            x, y, w, h
+        )
+        self._qt_progressing_char._refresh_widget_draw_()
+
     def set_progress_create(self, maximum, label=None):
-        p = self.PROGRESS_CLASS(
+        p = self.PROGRESS_FNC_CLASS(
             proxy=self,
-            qt_progress=self._qt_progress_bar,
+            qt_progress=self._qt_progressing_char,
             maximum=maximum,
             label=label
         )
@@ -568,7 +654,7 @@ class AbsPrxItemFilterTgtDef(object):
         self.item._set_item_keyword_filter_keys_tgt_update_(keys)
 
     def get_keyword_filter_keys_tgt(self):
-        return self.item._get_item_keyword_filter_keys_tgt_()
+        return self.item._get_keyword_filter_keys_tgt_()
 
 
 class AbsPrxViewFilterTagDef(object):
@@ -587,7 +673,7 @@ class AbsPrxViewFilterTagDef(object):
         #
         self.set_items_visible_by_any_filter()
         #
-        self.view._set_show_view_items_update_()
+        self.view._refresh_view_all_items_viewport_showable_()
 
     def get_item_states(self, items):
         return self.view._get_view_item_states_(items)

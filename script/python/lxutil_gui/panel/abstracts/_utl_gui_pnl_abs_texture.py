@@ -1,9 +1,5 @@
 # coding:utf-8
-import collections
-
 import time
-
-import copy
 
 from lxbasic import bsc_configure, bsc_core
 
@@ -28,12 +24,12 @@ import lxresolver.methods as rsv_methods
 import lxutil.rsv.objects as utl_rsv_objects
 
 
-class AbsAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
+class AbsPnlAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
     DCC_NAMESPACE = None
     DCC_SELECTION_CLS = None
     TEXTURE_WORKSPACE_CLS = None
     def __init__(self, session, *args, **kwargs):
-        super(AbsAssetWorkspaceTextureManager, self).__init__(session, *args, **kwargs)
+        super(AbsPnlAssetWorkspaceTextureManager, self).__init__(session, *args, **kwargs)
 
     def set_variants_restore(self):
         self._dcc_texture_references = None
@@ -66,7 +62,7 @@ class AbsAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
             'control.new_version', self._set_wsp_version_new_
         )
         self._options_prx_node.get_port(
-            'control.version'
+            'control.variant'
         ).set_changed_connect_to(
             self._set_wsp_texture_directories_update_
         )
@@ -93,8 +89,6 @@ class AbsAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
             }
         )
 
-        self.set_window_loading_end()
-
         self.set_refresh_all()
 
     def _set_dcc_scene_update_(self):
@@ -116,28 +110,14 @@ class AbsAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
             )
 
             self._options_prx_node.set(
+                'control.variant', [current_variant]
+            )
+
+            self._options_prx_node.set(
                 'control.variant', current_variant
             )
-
-            self._set_wsp_versions_update_()
             #
             self._set_wsp_texture_directories_update_()
-
-    def _set_wsp_versions_update_(self):
-        variant = self._options_prx_node.get(
-            'control.variant'
-        )
-        unlocked_versions = self._rsv_workspace_texture_opt.get_all_unlocked_versions_at(
-            variant
-        )
-        if unlocked_versions:
-            self._options_prx_node.set(
-                'control.version', unlocked_versions
-            )
-        else:
-            self._options_prx_node.set(
-                'control.version', ['None']
-            )
 
     def _set_wsp_texture_directories_update_(self):
         variant = self._options_prx_node.get(
@@ -185,7 +165,8 @@ class AbsAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
                 #
                 no_visible=False,
                 # show=False,
-                parent=self.widget
+                parent=self.widget,
+                window_size=(480, 480),
             )
             result = w.get_result()
             if result is True:
@@ -223,7 +204,7 @@ class AbsAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
             content=u'create new version "{}" in variant "{}" and pull textures from choose version ( lock choose version ), press "Confirm" to continue'.format(
                 next_version, variant
             ),
-            status=utl_core.DialogWindow.ValidatorStatus.Active,
+            status=utl_core.DialogWindow.ValidatorStatus.Warning,
             #
             options_configure=self._session.configure.get('build.node.new_version'),
             #
@@ -234,7 +215,8 @@ class AbsAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
             no_visible=False,
             show=False,
             #
-            parent=self.widget
+            parent=self.widget,
+            window_size=(480, 480),
         )
 
         n = w.get_options_node()
@@ -252,7 +234,7 @@ class AbsAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
     def _set_wsp_all_version_lock_(self):
         def yes_fnc_():
             if unlocked_directory_paths:
-                with utl_core.gui_progress(maximum=len(unlocked_directory_paths)) as g_p:
+                with utl_core.gui_progress(maximum=len(unlocked_directory_paths), label='lock version directory') as g_p:
                     for _i in unlocked_directory_paths:
                         self._rsv_workspace_texture_opt.set_directory_locked(_i)
                         g_p.set_update()
@@ -273,7 +255,7 @@ class AbsAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
                 self._session.gui_name,
                 sub_label='Lock All Version',
                 content=u'lock all texture directories(used and matched "texture workspace" rule), press "Confirm" to continue',
-                status=utl_core.DialogWindow.ValidatorStatus.Active,
+                status=utl_core.DialogWindow.ValidatorStatus.Warning,
                 #
                 options_configure=self._session.configure.get('build.node.lock_all_version'),
                 #
@@ -285,7 +267,7 @@ class AbsAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
                 show=False,
                 #
                 parent=self.widget,
-                window_size=(480, 240)
+                window_size=(480, 480)
             )
 
             w.get_options_node().set(
@@ -326,7 +308,7 @@ class AbsAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
             (self._set_wsp_texture_pull_as_link_, (directory_path_tx_0, directory_path_tx_1))
         ]
 
-        with utl_core.gui_progress(maximum=len(method_args)) as g_p:
+        with utl_core.gui_progress(maximum=len(method_args), label='execute texture pull method') as g_p:
             for i_method, i_args in method_args:
                 g_p.set_update()
                 i_method(*i_args)
@@ -336,7 +318,7 @@ class AbsAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
             directory_path_src
         )
         if file_paths_src:
-            with utl_core.gui_progress(maximum=len(file_paths_src)) as g_p:
+            with utl_core.gui_progress(maximum=len(file_paths_src), label='pull texture as link') as g_p:
                 for i_file_path in file_paths_src:
                     g_p.set_update()
                     #
@@ -369,7 +351,7 @@ class AbsAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
 
     def _set_tx_create_data_update_(self, directory_paths, force_enable=False, ext_tgt='.tx'):
         self._create_data = []
-        with utl_core.gui_progress(maximum=len(directory_paths)) as g_p:
+        with utl_core.gui_progress(maximum=len(directory_paths), label='create texture-tx in directory') as g_p:
             for i_directory_path in directory_paths:
                 i_directory_path_src = '{}/src'.format(i_directory_path)
                 i_directory_path_tgt = '{}/{}'.format(i_directory_path, ext_tgt[1:])
@@ -384,7 +366,7 @@ class AbsAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
             directory_path_src
         )
         if file_paths_src:
-            with utl_core.gui_progress(maximum=len(file_paths_src)) as g_p:
+            with utl_core.gui_progress(maximum=len(file_paths_src), label='texture-tx create running') as g_p:
                 for i_file_path in file_paths_src:
                     i_texture_src = utl_dcc_objects.OsTexture(
                         i_file_path
@@ -503,7 +485,7 @@ class AbsAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
                 (self._set_tx_create_data_update_, (directory_paths, force_enable, ext_tgt)),
                 (self._set_tx_create_by_data_, (button,))
             ]
-            with utl_core.gui_progress(maximum=len(method_args)) as g_p:
+            with utl_core.gui_progress(maximum=len(method_args), label='texture-tx create processing') as g_p:
                 for i_fnc, i_args in method_args:
                     g_p.set_update()
                     #
@@ -570,11 +552,11 @@ class AbsAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
             )
 
 
-class AbsAssetDccTextureManager(prx_widgets.PrxSessionWindow):
+class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
     DCC_NAMESPACE = None
     DCC_SELECTION_CLS = None
     def __init__(self, session, *args, **kwargs):
-        super(AbsAssetDccTextureManager, self).__init__(session, *args, **kwargs)
+        super(AbsPnlAssetDccTextureManager, self).__init__(session, *args, **kwargs)
 
     def set_variants_restore(self):
         self._create_data = []
@@ -696,7 +678,7 @@ class AbsAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             (self._set_gui_textures_refresh_, ()),
             (self._set_gui_textures_validator_, ())
         ]
-        with utl_core.gui_progress(maximum=len(method_args)) as g_p:
+        with utl_core.gui_progress(maximum=len(method_args), label='gui processing') as g_p:
             for i_fnc, i_args in method_args:
                 g_p.set_update()
                 i_fnc(*i_args)
@@ -706,7 +688,7 @@ class AbsAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         self._tree_view_filter_opt.set_restore()
 
         if self._dcc_objs:
-            with utl_core.gui_progress(maximum=len(self._dcc_objs)) as g_p:
+            with utl_core.gui_progress(maximum=len(self._dcc_objs), label='gui texture showing') as g_p:
                 for i_dcc_obj in self._dcc_objs:
                     g_p.set_update()
                     #
@@ -743,7 +725,7 @@ class AbsAssetDccTextureManager(prx_widgets.PrxSessionWindow):
 
         repath_tgt_port = self._options_prx_node.get_port('target.repath_to_target')
         repath_tgt_statuses = [bsc_configure.ValidatorStatus.Normal]*c
-        with utl_core.gui_progress(maximum=len(textures)) as g_p:
+        with utl_core.gui_progress(maximum=len(textures), label='gui texture validating') as g_p:
             for i_index, i_texture_any in enumerate(textures):
                 g_p.set_update()
 
@@ -895,7 +877,7 @@ class AbsAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         self._create_data = []
         textures = self._texture_add_opt.get_checked_files()
         if textures:
-            with utl_core.gui_progress(maximum=len(textures)) as g_p:
+            with utl_core.gui_progress(maximum=len(textures), label='gain texture create-data') as g_p:
                 for i_texture_any in self._texture_add_opt.get_checked_files():
                     g_p.set_update()
                     # ignore is locked
@@ -1035,7 +1017,7 @@ class AbsAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             (self._set_target_create_data_update_, (ext_tgt, force_enable)),
             (self._set_target_create_by_data_, (button, self._set_gui_refresh_))
         ]
-        with utl_core.gui_progress(maximum=len(method_args)) as g_p:
+        with utl_core.gui_progress(maximum=len(method_args), label='create texture by data') as g_p:
             for i_fnc, i_args in method_args:
                 g_p.set_update()
                 #
@@ -1049,7 +1031,7 @@ class AbsAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         #
         textures = self._texture_add_opt.get_checked_files()
         if textures:
-            with utl_core.gui_progress(maximum=len(textures)) as g_p:
+            with utl_core.gui_progress(maximum=len(textures), label='repath texture to source') as g_p:
                 for i_texture_any in self._texture_add_opt.get_checked_files():
                     g_p.set_update()
 
@@ -1100,7 +1082,7 @@ class AbsAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         #
         textures = self._texture_add_opt.get_checked_files()
         if textures:
-            with utl_core.gui_progress(maximum=len(textures)) as g_p:
+            with utl_core.gui_progress(maximum=len(textures), label='repath texture to target') as g_p:
                 for i_texture_any in self._texture_add_opt.get_checked_files():
                     g_p.set_update()
 

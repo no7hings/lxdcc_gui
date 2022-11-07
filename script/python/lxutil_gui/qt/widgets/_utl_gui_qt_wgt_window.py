@@ -1,5 +1,5 @@
 # coding=utf-8
-from lxutil_gui.qt import utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
 from lxutil_gui.qt.utl_gui_qt_core import *
 
@@ -43,7 +43,7 @@ class _QtWindow(
         #
         self._set_widget_geometries_update_()
         #
-        painter._set_frame_draw_by_rect_(
+        painter._draw_frame_by_rect_(
             self._frame_draw_rect,
             background_color=self._frame_background_color,
             border_color=self._frame_border_color

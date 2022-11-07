@@ -26,8 +26,6 @@ class W(prx_widgets.PrxToolWindow):
     def _set_tool_panel_setup_(self):
         self.test()
 
-        self.set_window_loading_end()
-
     def test(self):
         self._g = prx_widgets.PrxNGGraph()
         self.set_widget_add(self._g)

@@ -83,8 +83,6 @@ class AbsRezGraph(prx_widgets.PrxToolWindow):
         packages = self._hook_option_opt.get('packages', as_array=True)
         self.test(packages)
 
-        self.set_window_loading_end()
-
     def test(self, packages):
         import rez.resolved_context as r_c
 
@@ -338,8 +336,6 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
 
         self.set_refresh_all()
 
-        self.set_window_loading_end()
-
     def set_refresh_all(self):
         self._resolver = rsv_commands.get_resolver()
 
@@ -391,26 +387,26 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
         rsv_tags = rsv_project.get_rsv_tags(**self._rsv_filter_opt.value)
         #
         if self._qt_thread_enable is True:
-            t_r = utl_gui_qt_core.QtBuildThreadsRunner(self.widget)
-            t_r.run_finished.connect(post_fnc_)
+            ts = utl_gui_qt_core.QtBuildThreadStack(self.widget)
+            ts.run_finished.connect(post_fnc_)
             for i_rsv_tag in rsv_tags:
-                t_r.set_register(
+                ts.set_register(
                     functools.partial(
-                        self._set_cache_add_rsv_entities_,
+                        self.__cache_rsv_entities_by_tag_,
                         i_rsv_tag
                     ),
                     self._set_gui_add_rsv_entities_
                 )
-            t_r.set_start()
+            ts.set_start()
         else:
-            with utl_core.gui_progress(maximum=len(rsv_tags)) as g_p:
+            with utl_core.gui_progress(maximum=len(rsv_tags), label='gui-add for entity') as g_p:
                 for i_rsv_tag in rsv_tags:
                     g_p.set_update()
                     self._set_gui_add_rsv_entities_(
-                        self._set_cache_add_rsv_entities_(i_rsv_tag)
+                        self.__cache_rsv_entities_by_tag_(i_rsv_tag)
                     )
     # entities for tag
-    def _set_cache_add_rsv_entities_(self, rsv_tag):
+    def __cache_rsv_entities_by_tag_(self, rsv_tag):
         return rsv_tag.get_rsv_entities(**self._rsv_filter_opt.value)
 
     def _set_gui_add_rsv_entities_(self, rsv_entities):

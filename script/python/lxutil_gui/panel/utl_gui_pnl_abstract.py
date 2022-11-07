@@ -494,7 +494,7 @@ class AbsShotBuildToolPanel(
         option_layout.addWidget(self._package_node_gui.widget)
         #
         _port = self._package_node_gui.set_port_add(
-            prx_widgets.PrxEnumeratePort('filter_scheme', 'Filter-scheme')
+            prx_widgets.PrxPortForEnumerate('filter_scheme', 'Filter-scheme')
         )
         _port.set(self._filter_enable_dict.keys())
 
@@ -548,7 +548,6 @@ class AbsShotBuildToolPanel(
                 self.set_window_title(self._current_shot.__str__())
         #
         self._set_shots_gui_build_()
-        self.set_window_loading_end()
         #
         self._set_refresh_all_()
     #

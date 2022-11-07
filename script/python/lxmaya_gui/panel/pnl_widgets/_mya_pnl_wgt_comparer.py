@@ -1,16 +1,14 @@
 # coding:utf-8
-from lxutil import utl_configure
-
-from lxutil_gui.panel import utl_gui_pnl_abs_comparer
-
 from lxmaya import ma_core
+
+import lxutil_gui.panel.abstracts as utl_gui_pnl_abstracts
 
 import lxmaya.dcc.dcc_objects as mya_dcc_objects
 
 import lxmaya.fnc.comparers as mya_fnc_comparers
 
 
-class AssetComparerPanel(utl_gui_pnl_abs_comparer.AbsAssetComparerPanel):
+class AssetComparerPanel(utl_gui_pnl_abstracts.AbsAssetComparerPanel):
     DCC_OBJ_CLASS = mya_dcc_objects.Node
     #
     FNC_GEOMETRY_COMPARER = mya_fnc_comparers.GeometryComparer

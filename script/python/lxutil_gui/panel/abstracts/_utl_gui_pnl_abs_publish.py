@@ -73,7 +73,7 @@ class AbsValidatorOpt(object):
         self._result_tree_view.set_items_expand_by_depth(1)
 
     def _set_sub_check_results_build_at_(self, scene_prx_item, rsv_scene_properties, results):
-        with utl_core.gui_progress(maximum=len(results)) as g_p:
+        with utl_core.gui_progress(maximum=len(results), label='gui-add for check result') as g_p:
             for i_result in results:
                 g_p.set_update()
                 #
@@ -201,7 +201,7 @@ class AbsValidatorOpt(object):
 
         prx_item = scene_prx_item.set_child_add(
             name=group_name,
-            icon=utl_gui_core.RscIconFile.get('validator'),
+            icon=utl_gui_core.RscIconFile.get('application/python'),
         )
         prx_item.set_checked(True)
         #
@@ -369,10 +369,10 @@ class DccPublisherOpt(object):
         )
 
 
-class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
+class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
     DCC_VALIDATOR_OPT_CLS = None
     def __init__(self, session, *args, **kwargs):
-        super(AbsAssetPublisher, self).__init__(session, *args, **kwargs)
+        super(AbsPnlAssetPublisher, self).__init__(session, *args, **kwargs)
 
     def set_variants_restore(self):
         self._scene_file_path = None
@@ -756,7 +756,7 @@ class AbsAssetPublisher(prx_widgets.PrxSessionWindow):
                 #
                 use_exec=False,
                 #
-                usd_window_modality=False
+                use_window_modality=False
             )
 
             w.set_yes_completed_notify_enable(True)

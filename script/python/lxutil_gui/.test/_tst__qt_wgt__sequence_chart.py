@@ -27,13 +27,13 @@ class W(prx_widgets.PrxToolWindow):
             )
         )
         self._name_pattern_port = self._configure_node.set_port_add(
-            prx_widgets.PrxStringPort(
+            prx_widgets.PrxPortForString(
                 'name-pattern', 'name-pattern'
             )
         )
         self._name_pattern_port.set('*.%04d.*exr')
         self._frame_range_port = self._configure_node.set_port_add(
-            prx_widgets.PrxIntegerArrayPort(
+            prx_widgets.PrxPortForIntegerTuple(
                 'frame_range', 'frame-range'
             )
         )

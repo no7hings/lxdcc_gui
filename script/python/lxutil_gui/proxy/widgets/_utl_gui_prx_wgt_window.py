@@ -17,12 +17,13 @@ from lxutil_gui.proxy import utl_gui_prx_abstract
 class AbsPrxDialogWindow(
     utl_gui_prx_abstract.AbsPrxWindow,
     utl_gui_prx_abstract.AbsPrxWaitingDef,
-    utl_gui_prx_abstract.AbsPrxProgressesDef,
+    utl_gui_prx_abstract.AbsPrxProgressingDef,
 ):
     QT_WIDGET_CLASS = None
     BUTTON_WIDTH = 120
-    WAITING_CHART_CLASS = _utl_gui_qt_wgt_chart._QtWaitingChart
-    PROGRESS_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtProgressBar
+    QT_WAITING_CHART_CLASS = _utl_gui_qt_wgt_chart.QtWaitingChart
+    PROGRESS_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtProgressBar
+    QT_PROGRESSING_CHART_CLASS = _utl_gui_qt_wgt_chart.QtProgressingChart
     #
     ValidatorStatus = bsc_configure.ValidatorStatus
     def __init__(self, *args, **kwargs):
@@ -45,9 +46,10 @@ class AbsPrxDialogWindow(
         self._completed_content = 'process is completed, press "Close" to continue'
 
     def set_window_modality(self, boolean):
-        self.widget.setWindowModality(
-            [_utl_gui_qt_wgt_utility.QtCore.Qt.NonModal, _utl_gui_qt_wgt_utility.QtCore.Qt.WindowModal][boolean]
-        )
+        pass
+
+    def _set_modality_swap_(self):
+        pass
 
     def set_yes_completed_notify_enable(self, boolean):
         self._notify_when_yes_completed = boolean
@@ -62,26 +64,30 @@ class AbsPrxDialogWindow(
         #
         self._set_waiting_def_init_()
         #
-        self._sub_label = _utl_gui_qt_wgt_item._QtTextItem()
+        self._sub_label = _utl_gui_qt_wgt_item.QtTextItem()
         self._central_layout.addWidget(self._sub_label)
         self._sub_label.setVisible(False)
         self._sub_label.setMaximumHeight(20)
         self._sub_label.setMinimumHeight(20)
+        self._sub_label._set_name_draw_font_(utl_gui_qt_core.get_font(size=11, italic=True))
         self._sub_label._set_name_text_option_(
             utl_gui_qt_core.QtCore.Qt.AlignHCenter | utl_gui_qt_core.QtCore.Qt.AlignVCenter
         )
         #
-        qt_progress_bar = self.PROGRESS_WIDGET_CLASS()
-        self._set_progresses_def_init_(qt_progress_bar)
-        self._central_layout.addWidget(qt_progress_bar)
+        self._set_progressing_def_init_()
         #
         self._top_toolbar = _utl_gui_prx_wdt_utility.PrxHToolBar()
+        self._top_toolbar.set_hide()
         self._central_layout.addWidget(self._top_toolbar.widget)
         self._top_toolbar.set_expanded(True)
         #
         self._modal_button = _utl_gui_prx_wdt_utility.PrxEnableItem()
         self._top_toolbar.set_widget_add(self._modal_button)
         self._modal_button.set_icon_name('window-modal')
+        self._modal_button.set_checked(True)
+        self._modal_button.connect_check_clicked_to(
+            self._set_modality_swap_
+        )
         self._modal_button.widget.setToolTip(
             '"LMB-click" to turn window modal "on" / "off"'
         )
@@ -115,14 +121,14 @@ class AbsPrxDialogWindow(
         self._bottom_toolbar.set_expanded(True)
         qt_widget_2 = _utl_gui_qt_wgt_utility.QtWidget()
         self._bottom_toolbar.set_widget_add(qt_widget_2)
-        self._button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_2)
+        self._entry_button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_2)
         #
         qt_spacer_0 = _utl_gui_qt_wgt_utility._QtSpacer()
-        self._button_layout.addWidget(qt_spacer_0)
+        self._entry_button_layout.addWidget(qt_spacer_0)
         #
         self._yes_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         # self._yes_button.set_visible(False)
-        self._button_layout.addWidget(self._yes_button.widget)
+        self._entry_button_layout.addWidget(self._yes_button.widget)
         self._yes_button.set_name('Yes')
         self._yes_button.set_icon_by_name_text('Yes')
         self._yes_button.set_width(self.BUTTON_WIDTH)
@@ -130,7 +136,7 @@ class AbsPrxDialogWindow(
         #
         self._no_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         # self._no_button.set_visible(False)
-        self._button_layout.addWidget(self._no_button.widget)
+        self._entry_button_layout.addWidget(self._no_button.widget)
         self._no_button.set_name('No')
         self._no_button.set_icon_by_name_text('No')
         self._no_button.set_width(self.BUTTON_WIDTH)
@@ -138,7 +144,7 @@ class AbsPrxDialogWindow(
         #
         self._cancel_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         # self._cancel_button.set_visible(False)
-        self._button_layout.addWidget(self._cancel_button.widget)
+        self._entry_button_layout.addWidget(self._cancel_button.widget)
         self._cancel_button.set_name('Cancel')
         self._cancel_button.set_icon_by_name_text('Cancel')
         self._cancel_button.set_width(self.BUTTON_WIDTH)
@@ -146,7 +152,7 @@ class AbsPrxDialogWindow(
         #
         # self._close_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         # self._close_button.set_visible(False)
-        # self._button_layout.addWidget(self._close_button.widget)
+        # self._entry_button_layout.addWidget(self._close_button.widget)
         # self._close_button.set_name('Close')
         # self._close_button.set_icon_by_name_text('close')
         # self._close_button.set_width(self.BUTTON_WIDTH)
@@ -192,8 +198,8 @@ class AbsPrxDialogWindow(
 
         if self._use_thread is True:
             t = self.widget._set_thread_create_()
-            t.run_started.connect(self.set_waiting_start)
-            t.run_finished.connect(self.set_waiting_stop)
+            t.run_started.connect(self.start_waiting)
+            t.run_finished.connect(self.stop_waiting)
             t.completed.connect(completed_fnc_)
             t.failed.connect(failed_fnc_)
             for i in methods:
@@ -201,12 +207,12 @@ class AbsPrxDialogWindow(
             #
             t.start()
         else:
-            self.set_waiting_start()
+            self.start_waiting()
             #
             for i in methods:
                 i()
             #
-            self.set_waiting_stop()
+            self.stop_waiting()
             self.set_window_close_later()
 
     def set_use_thread(self, boolean):
@@ -265,6 +271,7 @@ class AbsPrxDialogWindow(
 
     def set_status(self, status):
         self._central_widget._set_status_(status)
+        self._sub_label._set_status_(status)
 
     def set_customize_widget_add(self, widget):
         if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
@@ -324,12 +331,34 @@ class PrxDialogWindow0(AbsPrxDialogWindow):
         self._tip_group.set_expanded(True)
         self.set_content_font_size(10)
 
+        # self._top_toolbar.set_show()
+
     def set_window_show(self, pos=None, size=None, exclusive=True):
         # do not show unique
         utl_gui_qt_core.set_qt_window_show(
             self.widget,
             pos,
             size
+        )
+
+    def _set_modality_swap_(self):
+        def get_geometry_args_fnc_():
+            w = self._qt_widget.centralWidget()
+            p = w.pos()
+            p_ = self._qt_widget.mapToGlobal(p)
+            return p_.x(), p_.y(), w.width(), w.height()
+
+        geometry_args = get_geometry_args_fnc_()
+        self._qt_widget.hide()
+        self._qt_widget.setWindowModality(
+            [_utl_gui_qt_wgt_utility.QtCore.Qt.NonModal, _utl_gui_qt_wgt_utility.QtCore.Qt.WindowModal][self._modal_button.get_checked()]
+        )
+        self._qt_widget.show()
+        self._qt_widget.setGeometry(*geometry_args)
+
+    def set_window_modality(self, boolean):
+        self.widget.setWindowModality(
+            [_utl_gui_qt_wgt_utility.QtCore.Qt.NonModal, _utl_gui_qt_wgt_utility.QtCore.Qt.WindowModal][boolean]
         )
 
 
@@ -427,13 +456,13 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
         qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
         self._central_layout.addWidget(qt_widget_1)
         #
-        self._button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
+        self._entry_button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
         #
         qt_spacer_0 = _utl_gui_qt_wgt_utility._QtSpacer()
-        self._button_layout.addWidget(qt_spacer_0)
+        self._entry_button_layout.addWidget(qt_spacer_0)
         #
         self._stop_button = _utl_gui_prx_wdt_utility.PrxPressItem()
-        self._button_layout.addWidget(self._stop_button.widget)
+        self._entry_button_layout.addWidget(self._stop_button.widget)
         self._stop_button.set_name('Stop')
         self._stop_button.set_icon_by_name_text('Stop')
         self._stop_button.set_width(80)
@@ -575,10 +604,10 @@ class PrxMonitorWindow(utl_gui_prx_abstract.AbsPrxWindow):
         qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
         self._central_layout.addWidget(qt_widget_1)
         #
-        self._button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
+        self._entry_button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
         #
         self._status_button = _utl_gui_prx_wdt_utility.PrxPressItem()
-        self._button_layout.addWidget(self._status_button.widget)
+        self._entry_button_layout.addWidget(self._status_button.widget)
         self._status_button.set_name('process')
         self._status_button.set_icon_by_name_text('process')
 

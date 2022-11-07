@@ -29,19 +29,22 @@ if __name__ == '__main__':
     for i in range(20):
         if i == 10:
             w = utl_core.DialogWindow.set_create(
-                label='Test',
-                sub_label='Test',
+                label='label',
+                sub_label='sub label',
                 yes_method=yes_method,
                 use_exec=False,
                 options_configure={
-                    'user/description': {
+                    'user/description/test': {
                         'widget': 'script',
                         'value': u'测试',
                         'enable': False,
                         'tool_tip': '...'
                     }
                 },
-                window_size=(480, 480)
+                window_size=(480, 480),
+                status=utl_core.DialogWindow.ValidatorStatus.Error,
+                parent=w.widget,
+                use_window_modality=False,
             )
     #
     sys.exit(app.exec_())

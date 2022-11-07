@@ -28,7 +28,7 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
         n = utl_prx_widgets.PrxNode_('root')
         self.set_widget_add(n)
         p = n.set_port_add(
-            utl_prx_widgets.PrxShotgunEntitiesPort(
+            utl_prx_widgets.PrxPortForShotgunEntitiesAsChoose(
                 'test_shotgun_entities'
             )
         )
@@ -57,6 +57,22 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
             utl_prx_widgets.PrxDirectoryOpenPort(
                 'test_directory_open'
             )
+        )
+
+        p = n.set_port_add(
+            utl_prx_widgets.PrxPortForScript(
+                'test_script'
+            )
+        )
+
+        p = n.set_port_add(
+            utl_prx_widgets.PrxPortForEnumerate(
+                'text_enumerate'
+            )
+        )
+
+        p.set(
+            ['A', 'B', 'C', 'D', 'E', 'F', 'G']
         )
 
 
