@@ -342,7 +342,7 @@ class AbsPnlAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
                 self._rsv_task = self._resolver.get_rsv_task_by_any_file_path(
                     self._file_path
                 )
-                self._rsv_entity = self._rsv_task.get_rsv_entity()
+                self._rsv_entity = self._rsv_task.get_rsv_resource()
 
                 self._set_texture_workspace_update_()
 
@@ -580,7 +580,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         e_p_0.set_expanded(True)
         #
         self._filter_tree_view = prx_widgets.PrxTreeView()
-        self._filter_tree_view.set_single_selection()
+        self._filter_tree_view.set_selection_use_single()
         self._filter_tree_view.set_header_view_create(
             [('name', 3)],
             self.get_definition_window_size()[0]*(2.0/6.0)-32

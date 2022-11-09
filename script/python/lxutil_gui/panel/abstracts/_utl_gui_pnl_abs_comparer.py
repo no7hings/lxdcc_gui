@@ -582,7 +582,7 @@ class AbsPnlGeometryComparer(prx_widgets.PrxSessionWindow):
         self._rsv_project = self._resolver.get_rsv_project(
             project=self._session.option_opt.get('project')
         )
-        self._rsv_asset = self._rsv_project.get_rsv_entity(
+        self._rsv_asset = self._rsv_project.get_rsv_resource(
             asset=self._session.option_opt.get('asset')
         )
 

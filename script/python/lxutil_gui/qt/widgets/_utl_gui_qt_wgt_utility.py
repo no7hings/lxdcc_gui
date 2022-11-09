@@ -1530,6 +1530,9 @@ class QtListWidgetItem(
         #
         self._signals.check_clicked.emit(self, 0)
         self._signals.check_toggled.emit(self, 0, boolean)
+
+    def _set_checked_for_user_(self, boolean):
+        self._set_checked_(boolean)
         self.listWidget().item_checked.emit(self, 0)
 
     def _get_is_checked_(self):
@@ -2787,13 +2790,13 @@ class QtPopupCompletionFrame(
         self._set_popup_activated_(False)
 
 
-class QtPopupGuideFrame(
+class QtPopupForGuide(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract.AbsQtPopupDef,
 ):
     def __init__(self, *args, **kwargs):
-        super(QtPopupGuideFrame, self).__init__(*args, **kwargs)
+        super(QtPopupForGuide, self).__init__(*args, **kwargs)
         self.setWindowFlags(QtCore.Qt.ToolTip | QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
@@ -2955,7 +2958,7 @@ class QtPopupGuideFrame(
     def _start_action_popup_(self, index):
         parent = self.parent()
         content_name_texts = list(parent._get_guide_choose_item_content_name_texts_at_(index))
-        if isinstance(content_name_texts, (tuple, list)):
+        if content_name_texts:
             desktop_rect = get_qt_desktop_rect()
             #
             press_pos = parent._get_guide_choose_item_point_at_(index)
@@ -3037,7 +3040,7 @@ class QtPopupGuideFrame(
         self._set_popup_activated_(False)
 
     def _set_popup_activated_(self, boolean):
-        super(QtPopupGuideFrame, self)._set_popup_activated_(boolean)
+        super(QtPopupForGuide, self)._set_popup_activated_(boolean)
         if self._choose_index is not None:
             parent = self.parent()
             parent._set_guide_choose_item_collapse_at_(self._choose_index)
@@ -3122,8 +3125,8 @@ class QtEntryFrame(
         self._set_status_def_init_()
         #
         self._frame_border_color = QtBackgroundColors.Light
-        self._hovered_frame_border_color = QtBackgroundColors.Hovered
-        self._selected_frame_border_color = QtBackgroundColors.Selected
+        self._hovered_frame_border_color = QtBorderColors.Hovered
+        self._selected_frame_border_color = QtBorderColors.Selected
         #
         self._frame_background_color = QtBackgroundColors.Dark
 
@@ -3152,7 +3155,7 @@ class QtEntryFrame(
                 i_rect,
                 border_color=bdr_color,
                 background_color=background_color,
-                border_radius=2,
+                # border_radius=1,
                 # border_width=2,
             )
 

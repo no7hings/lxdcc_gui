@@ -533,7 +533,7 @@ class PrxStgObjTreeViewAddOpt(object):
             #
             self._obj_add_dict[obj_key] = prx_item
             prx_item.set_checked(True)
-            prx_item.set_keyword_filter_keys_tgt_update([obj.path, obj.type])
+            prx_item.update_keyword_filter_keys_tgt([obj.path, obj.type])
             obj.set_obj_gui(prx_item)
             prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
             if obj.get_is_file() is True:
@@ -1016,7 +1016,7 @@ class PrxRsvObjTreeViewAddOpt(object):
                 )
             #
             prx_item.set_checked(True)
-            prx_item.set_keyword_filter_keys_tgt_update(
+            prx_item.update_keyword_filter_keys_tgt(
                 [obj_path, obj_type]
             )
             obj.set_obj_gui(prx_item)

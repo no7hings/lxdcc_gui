@@ -650,7 +650,7 @@ class AbsPrxItemFilterTgtDef(object):
     def set_states(self, *args, **kwargs):
         self.item._set_state_(*args, **kwargs)
 
-    def set_keyword_filter_keys_tgt_update(self, keys):
+    def update_keyword_filter_keys_tgt(self, keys):
         self.item._set_item_keyword_filter_keys_tgt_update_(keys)
 
     def get_keyword_filter_keys_tgt(self):

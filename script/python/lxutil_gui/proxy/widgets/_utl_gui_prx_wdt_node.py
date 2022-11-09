@@ -1418,7 +1418,7 @@ class PrxRsvObjChooseEntry(_AbsPrxTypeEntry):
             [('name', 2), ('update', 1)],
             180
         )
-        self._prx_entry_widget.set_single_selection()
+        self._prx_entry_widget.set_selection_use_single()
         self._prx_entry_widget.set_size_policy_height_fixed_mode()
         self._obj_add_dict = {}
 
@@ -1445,7 +1445,7 @@ class PrxRsvObjChooseEntry(_AbsPrxTypeEntry):
                     **create_kwargs
                 )
             # prx_item.set_checked(True)
-            prx_item.set_keyword_filter_keys_tgt_update([obj_path, obj_type])
+            prx_item.update_keyword_filter_keys_tgt([obj_path, obj_type])
             obj.set_obj_gui(prx_item)
             prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
             self._obj_add_dict[obj_path] = prx_item
@@ -1516,7 +1516,7 @@ class PrxRsvObjChooseEntry(_AbsPrxTypeEntry):
             **create_kwargs
         )
         # prx_item.set_checked(True)
-        prx_item.set_keyword_filter_keys_tgt_update([obj_path, obj_type])
+        prx_item.update_keyword_filter_keys_tgt([obj_path, obj_type])
         obj.set_obj_gui(prx_item)
         prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
         self._obj_add_dict[obj_path] = prx_item
@@ -1576,7 +1576,7 @@ class PrxComponentsEntry(_AbsPrxTypeEntry):
             [('name', 1)],
             320
         )
-        self._prx_entry_widget.set_single_selection()
+        self._prx_entry_widget.set_selection_use_single()
         self._prx_entry_widget.set_size_policy_height_fixed_mode()
         self._obj_add_dict = {}
 
@@ -1603,7 +1603,7 @@ class PrxComponentsEntry(_AbsPrxTypeEntry):
                     **create_kwargs
                 )
             prx_item.set_checked(True)
-            prx_item.set_keyword_filter_keys_tgt_update([obj_path, obj_type])
+            prx_item.update_keyword_filter_keys_tgt([obj_path, obj_type])
             obj.set_obj_gui(prx_item)
             prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
             self._obj_add_dict[obj_path] = prx_item
@@ -1670,7 +1670,7 @@ class PrxComponentsEntry(_AbsPrxTypeEntry):
         )
         #
         prx_item.set_checked(True)
-        prx_item.set_keyword_filter_keys_tgt_update([obj_path, obj_type])
+        prx_item.update_keyword_filter_keys_tgt([obj_path, obj_type])
         obj.set_obj_gui(prx_item)
         prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
         self._obj_add_dict[obj_path] = prx_item

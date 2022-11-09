@@ -15,7 +15,7 @@ option:
         color-hovered: '255, 159, 79, 255'
         color-selected: '79, 159, 255, 255'
         color-checked: '255, 79, 159, 255'
-        color-pressed: '159, 79, 255, 255'
+        color-pressed: '79, 255, 159, 255'
         color-actioned: '79, 255, 159, 255'
         #
         color-item-selected: '79, 159, 255, 255'

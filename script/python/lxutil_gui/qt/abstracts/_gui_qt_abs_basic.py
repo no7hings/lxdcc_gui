@@ -1866,6 +1866,8 @@ class AbsQtActionPressDef(object):
 class AbsQtActionCheckDef(object):
     check_clicked = qt_signal()
     check_toggled = qt_signal(bool)
+    user_check_clicked = qt_signal()
+    user_check_toggled = qt_signal(bool)
     #
     ActionFlag = utl_gui_configure.ActionFlag
     def _refresh_widget_draw_(self):
@@ -2254,7 +2256,7 @@ class AbsQtActionEntryDef(object):
         pass
 
 
-class AbsQtGuideChooseActionDef(object):
+class AbsQtActionChooseForGuideDef(object):
     CHOOSE_RECT_CLS = None
     POPUP_CHOOSE_WIDGET_CLASS = None
     #
@@ -2267,7 +2269,7 @@ class AbsQtGuideChooseActionDef(object):
     def _refresh_widget_draw_(self):
         raise NotImplementedError()
 
-    def _set_guide_choose_action_def_init_(self, widget):
+    def _init_set_action_choose_for_guide_def_(self, widget):
         self._widget = widget
         self._choose_items = []
         self._guide_choose_current_index = None
@@ -2304,19 +2306,16 @@ class AbsQtGuideChooseActionDef(object):
         item = self._get_guide_choose_item_at_(index)
         if item is not None:
             return item._name_text
-
     #
     def _set_guide_choose_item_content_at_(self, raw, index=0):
         item = self._get_guide_choose_item_at_(index)
         if item is not None:
             item._set_item_choose_content_raw_(raw)
-
     #
     def _set_guide_choose_item_content_name_texts_at_(self, texts, index=0):
         item = self._get_guide_choose_item_at_(index)
         if item is not None:
             item._set_choose_values_(texts)
-
     #
     def _get_guide_choose_item_content_name_texts_at_(self, index=0):
         item = self._get_guide_choose_item_at_(index)

@@ -1400,6 +1400,13 @@ class QtBuildThread(QtCore.QThread):
         self._status = status
         self.status_changed.emit(status)
 
+    def set_quit(self):
+        self.set_kill()
+        #
+        self.quit()
+        self.wait()
+        self.deleteLater()
+
     def run(self):
         if self._status == self.Status.Waiting:
             self.run_started.emit()
@@ -2411,8 +2418,8 @@ class QtPainter(QtGui.QPainter):
     def _set_border_color_(self, *args):
         qt_color = Color._get_qt_color_(*args)
         pen = QtGui.QPen(qt_color)
-        pen.setCapStyle(QtCore.Qt.RoundCap)
-        pen.setJoinStyle(QtCore.Qt.RoundJoin)
+        pen.setCapStyle(QtCore.Qt.SquareCap)
+        pen.setJoinStyle(QtCore.Qt.BevelJoin)
         self.setPen(pen)
 
     def _set_border_style_(self, style):
@@ -3244,6 +3251,7 @@ class QtPainter(QtGui.QPainter):
         conditions = [is_check_hovered, is_checked, is_press_hovered, is_pressed, is_selected]
         if True not in conditions:
             return QtBackgroundColors.Transparent
+        #
         start_pos, end_pos = rect.topLeft(), rect.bottomRight()
         color = QtGui.QLinearGradient(start_pos, end_pos)
         #
@@ -3263,14 +3271,15 @@ class QtPainter(QtGui.QPainter):
                 (0, QtBackgroundColors.Checked)
             ]
         #
+        if True in check_args:
+            pass
+        #
         if is_selected is True:
             select_args = [
                 (.5, QtBackgroundColors.Selected)
             ]
         else:
-            select_args = [
-                (.5, QtBackgroundColors.Transparent)
-            ]
+            select_args = []
         #
         press_conditions = [is_press_hovered, is_pressed]
         press_args = []
@@ -4276,6 +4285,9 @@ class QtItemSignals(
     #
     check_clicked = qt_signal(object, int)
     check_toggled = qt_signal(object, int, bool)
+
+    user_check_clicked = qt_signal(object, int)
+    user_check_toggled = qt_signal(object, int, bool)
 
 
 if __name__ == '__main__':

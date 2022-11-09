@@ -161,7 +161,7 @@ class AbsRenderSubmitterPanel(
             [('name', 3), ('count', 1)],
             self.get_definition_window_size()[0]*(1.0/5.0) - 24
         )
-        self._filter_tree_viewer_0.set_single_selection()
+        self._filter_tree_viewer_0.set_selection_use_single()
 
         self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.PrxDccObjTreeViewTagFilterOpt(
             prx_tree_view_src=self._filter_tree_viewer_0,
@@ -239,7 +239,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     **self._rsv_scene_properties.value
                 )
                 self._rsv_project = self._rsv_task.get_rsv_project()
-                self._rsv_entity = self._rsv_task.get_rsv_entity()
+                self._rsv_entity = self._rsv_task.get_rsv_resource()
                 self._render_movie_file_rsv_unit = self._rsv_task.get_rsv_unit(
                     keyword='{branch}-output-katana-render-video-mov-file'
                 )
@@ -1180,7 +1180,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 self._rsv_task = self._resolver.get_rsv_task(
                     **self._rsv_scene_properties.value
                 )
-                self._rsv_entity = self._rsv_task.get_rsv_entity()
+                self._rsv_entity = self._rsv_task.get_rsv_resource()
                 self._render_movie_file_rsv_unit = self._rsv_task.get_rsv_unit(
                     keyword='{branch}-output-katana-render-video-mov-file'
                 )

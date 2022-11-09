@@ -493,10 +493,10 @@ class _QtGuideBar(
     utl_gui_qt_abstract.AbsQtEntryActionDef,
     #
     utl_gui_qt_abstract.AbsQtGuideActionDef,
-    utl_gui_qt_abstract.AbsQtGuideChooseActionDef,
+    utl_gui_qt_abstract.AbsQtActionChooseForGuideDef,
 ):
     CHOOSE_RECT_CLS = _utl_gui_qt_wgt_item._QtGuideRect
-    POPUP_CHOOSE_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtPopupGuideFrame
+    POPUP_CHOOSE_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtPopupForGuide
     #
     QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_utility.QtLineEdit_
     #
@@ -532,7 +532,7 @@ class _QtGuideBar(
         self._set_action_entry_def_init_()
         #
         self._set_guide_action_def_init_()
-        self._set_guide_choose_action_def_init_(self)
+        self._init_set_action_choose_for_guide_def_(self)
 
         self._enter_is_enable = False
 
@@ -734,13 +734,13 @@ class _QtGuideBar(
         self._set_view_guide_clear_()
         #
         path_values = path_args.values()
-        for index, (k, v) in enumerate(path_args.items()):
+        for index, (i_name, i_type) in enumerate(path_args.items()):
             i_item = self._set_guide_choose_item_create_()
             #
             i_path = '/' + '/'.join(path_values[:index+1])
             i_item._set_path_text_(i_path)
-            i_item._set_type_text_(k)
-            i_item._set_name_text_(v)
+            i_item._set_type_text_(i_type)
+            i_item._set_name_text_(i_name)
         #
         self._refresh_guide_draw_geometry_()
         self.update()

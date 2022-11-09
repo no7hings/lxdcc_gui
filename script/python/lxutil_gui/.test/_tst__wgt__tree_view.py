@@ -13,7 +13,7 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
         r = rsv_commands.get_resolver()
         n = utl_prx_widgets.PrxNode_('root')
         self.set_widget_add(n)
-        assets = r.get_rsv_entities(
+        assets = r.get_rsv_resources(
             project='cgm', branch='asset'
         )
         p = n.set_port_add(

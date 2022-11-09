@@ -176,7 +176,7 @@ class PrxTreeView(
         if selection_items:
             self.view._set_scroll_to_item_top_(selection_items[-1])
 
-    def set_single_selection(self):
+    def set_selection_use_single(self):
         self.view.setSelectionMode(utl_gui_qt_core.QtWidgets.QAbstractItemView.SingleSelection)
 
     def set_size_policy_height_fixed_mode(self):

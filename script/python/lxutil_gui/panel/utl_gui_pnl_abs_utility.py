@@ -376,7 +376,7 @@ class AbsSceneTextureManagerPanel(
             self.get_definition_window_size()[0] * (3.0 / 4.0) - 40
         )
         #
-        self._obj_tree_viewer_0.set_single_selection()
+        self._obj_tree_viewer_0.set_selection_use_single()
         #
         self._prx_stg_obj_tree_view_add_opt = utl_prx_operators.PrxStgTextureTreeViewAddOpt(
             prx_tree_view=self._obj_tree_viewer_0,

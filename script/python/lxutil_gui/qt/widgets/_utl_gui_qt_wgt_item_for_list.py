@@ -54,6 +54,12 @@ class _QtListItemWidget(
         #
         self._refresh_widget_draw_()
 
+    def _get_check_action_is_available_(self, event):
+        if self._check_action_is_enable is True:
+            p = event.pos()
+            return self._check_action_rect.contains(p)
+        return False
+
     def __init__(self, *args, **kwargs):
         super(_QtListItemWidget, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -110,8 +116,6 @@ class _QtListItemWidget(
                 self._set_action_hovered_(True)
             elif event.type() == QtCore.QEvent.Leave:
                 self._set_action_hovered_(False)
-                self._check_is_hovered = False
-                self._press_is_hovered = False
             #
             elif event.type() == QtCore.QEvent.Resize:
                 self.update()
@@ -123,10 +127,11 @@ class _QtListItemWidget(
                 if event.button() == QtCore.Qt.RightButton:
                     self._set_menu_show_()
                 elif event.button() == QtCore.Qt.LeftButton:
-                    if self._check_is_hovered is True:
+                    if self._get_check_action_is_available_(event) is True:
                         self._set_action_check_execute_(event)
                         self.check_clicked.emit()
                         self.check_toggled.emit(self._is_checked)
+                        self.user_check_toggled.emit(self._is_checked)
                         self._set_action_flag_(self.ActionFlag.CheckClick)
                     else:
                         self.press_clicked.emit()
@@ -135,10 +140,11 @@ class _QtListItemWidget(
             #
             elif event.type() == QtCore.QEvent.MouseButtonDblClick:
                 if event.button() == QtCore.Qt.LeftButton:
-                    if self._check_is_hovered is True:
+                    if self._get_check_action_is_available_(event) is True:
                         self._set_action_check_execute_(event)
                         self.check_clicked.emit()
                         self.check_toggled.emit(self._is_checked)
+                        self.user_check_toggled.emit(self._is_checked)
                         self._set_action_flag_(self.ActionFlag.CheckDbClick)
                     else:
                         self.press_clicked.emit()
@@ -333,6 +339,15 @@ class _QtListItemWidget(
                     item._item_show_image_loading_index
                 )
 
+    def _set_action_hovered_(self, boolean):
+        if boolean is True:
+            self._check_is_hovered = True
+        else:
+            self._check_is_hovered = False
+            self._press_is_hovered = False
+        #
+        self._refresh_widget_draw_()
+
     def _set_frame_icon_size_(self, w, h):
         self._frame_icon_width, self._frame_icon_height = w, h
 
@@ -376,7 +391,7 @@ class _QtListItemWidget(
                 self._set_widget_frame_geometry_update_as_list_mode_(
                     (x, y), (w, h)
                 )
-
+    # frame for grid mode
     def _set_widget_frame_geometry_update_as_grid_mode_(self, pos, size):
         x, y = pos
         w, h = size
@@ -464,19 +479,31 @@ class _QtListItemWidget(
             )
 
     def _refresh_widget_icon_draw_geometries_(self):
-        if self._get_has_icons_() is True:
+        if self._get_has_icons_() is True or self._check_is_enable is True:
+            rect = self._icon_frame_draw_rect
+            x, y = rect.x(), rect.y()
+            w, h = rect.width(), rect.height()
+            #
+            side = 2
+            spacing = 0
+            #
+            icn_frm_w, icn_frm_h = self._icon_frame_draw_size
+            icn_w, icn_h = self._icon_size
+            if self._check_is_enable is True:
+                check_icn_frm_w, check_icn_frm_h = icn_frm_w*self._check_icon_frame_draw_percent, icn_frm_h*self._check_icon_frame_draw_percent
+                check_icn_w, check_icn_h = icn_frm_w*self._check_icon_draw_percent, icn_frm_h*self._check_icon_draw_percent
+                #
+                self._set_check_action_rect_(
+                    x, y, icn_frm_w, icn_frm_h
+                )
+                self._set_check_icon_frame_draw_rect_(
+                    x+(icn_frm_w-check_icn_frm_w)/2, y+(icn_frm_h-check_icn_frm_h)/2, check_icn_frm_w, check_icn_frm_h
+                )
+                self._set_check_icon_draw_rect_(
+                    x+(icn_frm_w-check_icn_w)/2, y+(icn_frm_h-check_icn_h)/2, check_icn_w, check_icn_h
+                )
             icn_indices = self._get_icon_indices_()
             if icn_indices:
-                rect = self._icon_frame_draw_rect
-                x, y = rect.x(), rect.y()
-                w, h = rect.width(), rect.height()
-                #
-                side = 2
-                spacing = 0
-                #
-                icn_frm_w, icn_frm_h = self._icon_frame_draw_size
-                icn_w, icn_h = self._icon_size
-                #
                 c_0 = int(float(h) / icn_frm_h)
                 if self._check_is_enable is True:
                     icn_indices_ = icn_indices+[len(icn_indices)]
@@ -492,19 +519,6 @@ class _QtListItemWidget(
                                 x+(icn_frm_w-icn_w)/2+icn_frm_w*i_column, y+(icn_frm_h-icn_h)/2+i_icn_index_draw*(icn_frm_h+spacing), icn_w, icn_h,
                                 i_icn_index-1
                             )
-                    #
-                    check_icn_frm_w, check_icn_frm_h = icn_frm_w*self._check_icon_frame_draw_percent, icn_frm_h*self._check_icon_frame_draw_percent
-                    check_icn_w, check_icn_h = icn_frm_w*self._check_icon_draw_percent, icn_frm_h*self._check_icon_draw_percent
-                    #
-                    self._set_check_action_rect_(
-                        x, y, icn_frm_w, icn_frm_h
-                    )
-                    self._set_check_icon_frame_draw_rect_(
-                        x+(icn_frm_w-check_icn_frm_w)/2, y+(icn_frm_h-check_icn_frm_h)/2, check_icn_frm_w, check_icn_frm_h
-                    )
-                    self._set_check_icon_draw_rect_(
-                        x+(icn_frm_w-check_icn_w)/2, y+(icn_frm_h-check_icn_h)/2, check_icn_w, check_icn_h
-                    )
                 else:
                     for i_icn_index in icn_indices:
                         i_column = int(float(i_icn_index)/c_0)

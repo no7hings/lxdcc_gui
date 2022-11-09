@@ -119,6 +119,7 @@ class QtListWidget(
             info = '{} item is checked ...'.format(c)
         else:
             info = ''
+        #
         if info != self._info:
             self.info_changed.emit(info)
             self._info = info
@@ -221,6 +222,11 @@ class QtListWidget(
             i._set_checked_(boolean)
             for i in self._get_all_item_widgets_()
         ]
+        [
+            i._set_checked_(boolean)
+            for i in self._get_all_items_()
+        ]
+        self.item_checked.emit(self, 0)
 
     def _set_view_mode_swap_(self):
         if self._get_is_grid_mode_() is True:
@@ -237,8 +243,8 @@ class QtListWidget(
         item = _utl_gui_qt_wgt_utility.QtListWidgetItem('', view)
         item.setSizeHint(QtCore.QSize(*self._grid_size))
         item.gui_proxy = item_widget.gui_proxy
-        item_widget.check_toggled.connect(
-            item._set_checked_
+        item_widget.user_check_toggled.connect(
+            item._set_checked_for_user_
         )
         #
         view.addItem(item)

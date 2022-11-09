@@ -313,7 +313,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
             [('name', 3)],
             self.get_definition_window_size()[0] * (1.0 / 4.0) - 24
         )
-        # self._rsv_obj_tree_view_0.set_single_selection()
+        # self._rsv_obj_tree_view_0.set_selection_use_single()
         self._prx_dcc_obj_tree_view_add_opt = utl_prx_operators.PrxRsvObjTreeViewAddOpt(
             prx_tree_view=self._rsv_obj_tree_view_0,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem,
@@ -407,7 +407,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
                     )
     # entities for tag
     def __cache_rsv_entities_by_tag_(self, rsv_tag):
-        return rsv_tag.get_rsv_entities(**self._rsv_filter_opt.value)
+        return rsv_tag.get_rsv_resources(**self._rsv_filter_opt.value)
 
     def _set_gui_add_rsv_entities_(self, rsv_entities):
         for i_rsv_entity in rsv_entities:

@@ -2566,7 +2566,7 @@ class _QtHExpandItem0(
             self._frame_draw_rect,
             border_color=background_color,
             background_color=background_color,
-            border_radius=1,
+            # border_radius=1,
             offset=offset
         )
         # file-icon
@@ -2688,7 +2688,7 @@ class _QtHExpandItem1(
             rect=self._frame_draw_rect,
             border_color=background_color,
             background_color=background_color,
-            border_radius=self._frame_border_radius,
+            # border_radius=self._frame_border_radius,
             offset=offset
         )
         # icon

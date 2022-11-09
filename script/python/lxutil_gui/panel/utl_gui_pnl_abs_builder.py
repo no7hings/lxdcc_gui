@@ -91,7 +91,7 @@ class AbsAssetBuilderPanel(
         project = self._options_prx_node.get_port('project').get()
         resolver = rsv_commands.get_resolver()
         rsv_project = resolver.get_rsv_project(project=project)
-        rsv_assets = rsv_project.get_rsv_entities(branch='asset')
+        rsv_assets = rsv_project.get_rsv_resources(branch='asset')
         assets = [
             i.name for i in rsv_assets
         ]
