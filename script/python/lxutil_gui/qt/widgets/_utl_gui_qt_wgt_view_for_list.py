@@ -44,6 +44,7 @@ class QtListWidget(
         self._item_name_frame_size = 16, 16
         self._item_name_size = 12, 12
         self._item_name_frame_draw_enable = False
+        self._item_names_draw_range = None
         #
         self._item_image_frame_draw_enable = False
         #
@@ -190,6 +191,9 @@ class QtListWidget(
     def _set_item_name_frame_draw_enable_(self, boolean):
         self._item_name_frame_draw_enable = boolean
 
+    def _set_item_names_draw_range_(self, range_):
+        self._item_names_draw_range = range_
+
     def _set_item_image_frame_draw_enable_(self, boolean):
         self._item_image_frame_draw_enable = boolean
     #
@@ -273,6 +277,9 @@ class QtListWidget(
         #
         item_widget._set_name_frame_size_(
             *self._item_name_frame_size
+        )
+        item_widget._set_names_draw_range_(
+            self._item_names_draw_range
         )
         item_widget._set_name_size_(
             *self._item_name_size

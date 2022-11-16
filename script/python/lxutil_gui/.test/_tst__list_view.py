@@ -3,9 +3,7 @@ from lxbasic import bsc_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wdt_node, _utl_gui_prx_wgt_view
-
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_view
+from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wgt_view_for_list
 
 
 class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
@@ -56,7 +54,7 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
             item_prx = wdt.set_item_add()
             item_prx.set_show_method(show_fnc_)
         #
-        wdt = _utl_gui_prx_wgt_view.PrxListView()
+        wdt = _utl_gui_prx_wgt_view_for_list.PrxListView()
         wdt.set_item_icon_frame_size(30, 30)
         wdt.set_item_icon_size(20, 20)
         wdt.set_clear()

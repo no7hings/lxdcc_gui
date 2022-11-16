@@ -288,7 +288,7 @@ class AbsSceneMethodRunnerPanel(
                 self.DCC_SELECTION_CLS.set_clear()
 
     def _set_obj_check_result_build_(self, method, method_obj_gui):
-        method_obj_gui.set_children_clear()
+        method_obj_gui.clear_children()
         for obj_path, v in method.check_results.value.items():
             check_tags = method.get_obj_check_tags(obj_path)
             #

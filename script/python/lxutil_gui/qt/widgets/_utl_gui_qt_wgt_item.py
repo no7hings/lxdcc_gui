@@ -2564,7 +2564,7 @@ class _QtHExpandItem0(
         #
         painter._draw_frame_by_rect_(
             self._frame_draw_rect,
-            border_color=background_color,
+            border_color=QtBorderColors.Transparent,
             background_color=background_color,
             # border_radius=1,
             offset=offset
@@ -2686,7 +2686,7 @@ class _QtHExpandItem1(
         background_color = [self._frame_background_color, self._hovered_frame_background_color][self._action_is_hovered]
         painter._draw_frame_by_rect_(
             rect=self._frame_draw_rect,
-            border_color=background_color,
+            border_color=QtBorderColors.Transparent,
             background_color=background_color,
             # border_radius=self._frame_border_radius,
             offset=offset

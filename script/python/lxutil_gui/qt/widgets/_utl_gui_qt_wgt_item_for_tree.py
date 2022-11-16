@@ -13,7 +13,7 @@ class QtTreeWidgetItem(
     utl_gui_qt_abstract.AbsQtNameDef,
     #
     utl_gui_qt_abstract.AbsQtIconDef,
-    utl_gui_qt_abstract.AbsShowItemDef,
+    utl_gui_qt_abstract.AbsQtShowForItemDef,
     utl_gui_qt_abstract.AbsQtMenuDef,
     #
     utl_gui_qt_abstract.AbsQtItemFilterDef,
@@ -33,7 +33,7 @@ class QtTreeWidgetItem(
         )
         #
         self._set_item_dag_loading_def_init_(self)
-        self._set_show_item_def_init_(self)
+        self._set_show_for_item_def_init_(self)
         #
         self._check_action_is_enable = True
         self._emit_send_enable = False
@@ -94,6 +94,7 @@ class QtTreeWidgetItem(
             #
             tree_widget._set_item_check_action_run_(self, column)
             tree_widget._set_item_toggle_emit_send_(self, column, checked)
+            tree_widget.update()
 
     def _set_icon_(self, icon, column=0):
         self._icon = icon
@@ -222,6 +223,37 @@ class QtTreeWidgetItem(
             self.setForeground(column, QtGui.QBrush(Color.LOCKED))
         elif state == utl_gui_core.State.LOST:
             self.setForeground(column, QtGui.QBrush(Color.LOST))
+    # status
+    def _set_status_(self, status, column=0):
+        if status != self._status:
+            self._status = status
+
+            self._set_name_status_(status, column)
+            self._set_icon_status_(status, column)
+
+    def _set_name_status_(self, status, column=0):
+        font = get_font()
+        if status == self.ValidatorStatus.Normal:
+            self.setFont(column, font)
+            self.setForeground(column, QtGui.QBrush(Color.NORMAL))
+        elif status == self.ValidatorStatus.Correct:
+            self.setFont(column, font)
+            self.setForeground(column, QtGui.QBrush(Color.CORRECT))
+        elif status == self.ValidatorStatus.Warning:
+            self.setFont(column, font)
+            self.setForeground(column, QtGui.QBrush(Color.WARNING))
+        elif status == self.ValidatorStatus.Error:
+            self.setFont(column, font)
+            self.setForeground(column, QtGui.QBrush(Color.ERROR))
+        elif status == self.ValidatorStatus.Active:
+            self.setFont(column, font)
+            self.setForeground(column, QtGui.QBrush(Color.ACTIVE))
+        elif status == self.ValidatorStatus.Disable:
+            font.setItalic(True)
+            self.setFont(column, font)
+            self.setForeground(column, QtGui.QBrush(Color.DISABLE))
+        else:
+            raise TypeError()
 
     def _set_icon_status_(self, status, column=0):
         if column == 0:
@@ -240,6 +272,13 @@ class QtTreeWidgetItem(
             if pixmap:
                 if status == self.ValidatorStatus.Normal:
                     background_color = Color.NORMAL
+                    icon.addPixmap(
+                        pixmap,
+                        QtGui.QIcon.Normal,
+                        QtGui.QIcon.On
+                    )
+                    self.setIcon(column, icon)
+                    return
                 elif status == self.ValidatorStatus.Correct:
                     background_color = Color.CORRECT
                 elif status == self.ValidatorStatus.Warning:
@@ -248,6 +287,8 @@ class QtTreeWidgetItem(
                     background_color = Color.ERROR
                 elif status == self.ValidatorStatus.Active:
                     background_color = Color.ACTIVE
+                elif status == self.ValidatorStatus.Disable:
+                    background_color = Color.DISABLE
                 else:
                     raise TypeError()
                 #
@@ -277,23 +318,6 @@ class QtTreeWidgetItem(
                 QtGui.QIcon.On
             )
             self.setIcon(column, icon)
-
-    def _set_status_(self, status, column=0):
-        self._status = status
-        if status == self.ValidatorStatus.Normal:
-            self.setForeground(column, QtGui.QBrush(Color.NORMAL))
-        elif status == self.ValidatorStatus.Correct:
-            self.setForeground(column, QtGui.QBrush(Color.CORRECT))
-        elif status == self.ValidatorStatus.Warning:
-            self.setForeground(column, QtGui.QBrush(Color.WARNING))
-        elif status == self.ValidatorStatus.Error:
-            self.setForeground(column, QtGui.QBrush(Color.ERROR))
-        elif status == self.ValidatorStatus.Active:
-            self.setForeground(column, QtGui.QBrush(Color.ACTIVE))
-        else:
-            raise TypeError()
-
-        self._set_icon_status_(status, column)
 
     def _get_status_(self, column=0):
         return self._status
@@ -453,7 +477,7 @@ class QtTreeWidgetItem(
                 # noinspection PyCallingNonCallable
                 self.setToolTip(column, html)
             else:
-                css = u'<html>\n<body>\n<style>.nowrap{white-space:nowrap;}</style>\n'
+                css = u'<html>\n<body>\n<style>.no_wrap{white-space:nowrap;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
                 name_text_orig = self._get_name_text_orig_()
                 if name_text_orig is not None:
                     title_text = name_text_orig
@@ -461,7 +485,9 @@ class QtTreeWidgetItem(
                     title_text = self._get_name_text_(column)
                 #
                 title_text = title_text.replace(u'<', u'&lt;').replace(u'>', u'&gt;')
-                css += u'<h3><p class="nowrap">{}</p></h3>\n'.format(title_text)
+                css += u'<h3><p class="no_warp_and_center">{}</p></h3>\n'.format(title_text)
+                #
+                css += u'<p><hr></p>\n'
                 if isinstance(text, (str, unicode)):
                     texts = text.split('\n')
                 else:
@@ -494,6 +520,9 @@ class QtTreeWidgetItem(
         #
         if ancestors is True:
             [i._set_expanded_(boolean) for i in self._get_ancestors_()]
+
+    def _clear_(self):
+        self.takeChildren()
 
     def __str__(self):
         return '{}(names="{}")'.format(

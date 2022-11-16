@@ -627,7 +627,7 @@ class QtUtilMtd(object):
         palette.setColor(palette.All, palette.NoRole, QtBackgroundColors.Dark)
         palette.setColor(palette.All, palette.Base, QtBackgroundColors.Dark)
         palette.setColor(palette.All, palette.Light, QtBackgroundColors.Light)
-        palette.setColor(palette.All, palette.Highlight, QtBackgroundColors.Selected)
+        palette.setColor(palette.All, palette.Highlight, QtGui.QColor(255, 255, 255, 0))
         palette.setColor(palette.All, palette.Button, QtBackgroundColors.Button)
         #
         palette.setColor(palette.All, palette.Window, QtBackgroundColors.Basic)
@@ -638,7 +638,7 @@ class QtUtilMtd(object):
         palette.setColor(palette.All, palette.ButtonText, QtFontColors.Basic)
         palette.setColor(palette.All, palette.HighlightedText, QtFontColors.Light)
         #
-        palette.setColor(palette.All, palette.AlternateBase, QtBackgroundColors.Basic)
+        palette.setColor(palette.All, palette.AlternateBase, QtBackgroundColors.Dark)
         # tool-tip
         if tool_tip is True:
             p = QtWidgets.QToolTip.palette()

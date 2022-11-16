@@ -57,7 +57,7 @@ class AbsValidatorOpt(object):
         file_path = rsv_scene_properties.get('extra.file')
         check_results = results['check_results']
         scene_prx_item = self._get_scene_(file_path)
-        scene_prx_item.set_children_clear()
+        scene_prx_item.clear_children()
         self._filter_opt.set_restore()
         scene_prx_item._child_dict = {}
         if not check_results:

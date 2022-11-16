@@ -193,6 +193,11 @@ class _QtListItemWidget(
                 item._item_show_loading_index
             )
         else:
+            # if self._is_selected is True:
+            #     painter.fillRect(
+            #         self._select_state_draw_rect,
+            #         QtBackgroundColors.ItemSelected
+            #     )
             painter._draw_frame_by_rect_(
                 bkg_rect,
                 border_color=QtBackgroundColors.Transparent,
@@ -205,7 +210,7 @@ class _QtListItemWidget(
                 if self._get_has_icons_() or self._check_is_enable is True:
                     painter._draw_frame_by_rect_(
                         self._icon_frame_draw_rect,
-                        border_color=self._frame_background_color,
+                        border_color=QtBorderColors.Transparent,
                         background_color=self._frame_background_color,
                         offset=offset
                     )
@@ -214,7 +219,7 @@ class _QtListItemWidget(
                 if self._get_has_names_():
                     painter._draw_frame_by_rect_(
                         self._name_frame_rect,
-                        border_color=self._get_name_frame_border_color_(),
+                        border_color=QtBorderColors.Transparent,
                         background_color=self._get_name_frame_background_color_(),
                         offset=offset
                     )
@@ -223,7 +228,7 @@ class _QtListItemWidget(
                 if self._get_has_image_():
                     painter._draw_frame_by_rect_(
                         self._image_frame_rect,
-                        border_color=self._frame_background_color,
+                        border_color=QtBorderColors.Transparent,
                         background_color=self._frame_background_color,
                         offset=offset
                     )
@@ -281,6 +286,11 @@ class _QtListItemWidget(
                         key_text_width = utl_gui_qt_core.QtTextMtd.get_draw_width_maximum(
                             painter, self._name_text_dict.keys()
                         )
+                        if self._list_widget._get_is_grid_mode_():
+                            if self._names_draw_range is not None:
+                                key_text_width = utl_gui_qt_core.QtTextMtd.get_draw_width_maximum(
+                                    painter, self._name_text_dict.keys()[self._names_draw_range[0]:self._names_draw_range[1]]
+                                )
                         for i_name_index, (i_key, i_value) in enumerate(name_text_dict.items()):
                             painter._set_text_draw_by_rect_use_key_value_(
                                 self._get_name_rect_at_(i_name_index),
@@ -379,17 +389,21 @@ class _QtListItemWidget(
     def _refresh_widget_frame_draw_geometries_(self):
         if self._list_widget is not None:
             side = 4
+            o_x, o_y = 0, 0
             spacing = 2
             x, y = side, side
             w, h = self._frame_size
             self._set_frame_draw_geometry_(x, y, w, h)
+
+            m_frm_x, m_frm_y = x+o_x, y+o_y
+            m_frm_w, m_frm_h = w-o_x, h-o_y
             if self._list_widget._get_is_grid_mode_():
                 self._set_widget_frame_geometry_update_as_grid_mode_(
-                    (x, y), (w, h)
+                    (m_frm_x, m_frm_y), (m_frm_w, m_frm_h)
                 )
             else:
                 self._set_widget_frame_geometry_update_as_list_mode_(
-                    (x, y), (w, h)
+                    (m_frm_x, m_frm_y), (m_frm_w, m_frm_h)
                 )
     # frame for grid mode
     def _set_widget_frame_geometry_update_as_grid_mode_(self, pos, size):
@@ -399,6 +413,8 @@ class _QtListItemWidget(
         if self._get_has_names_() is True:
             name_f_w, name_f_h = self._name_frame_size
             name_c = len(self._get_name_indices_())
+            if self._names_draw_range is not None:
+                name_c = len(self._get_name_indices_()[self._names_draw_range[0]:self._names_draw_range[1]])
             #
             name_w_, name_h_ = w, name_c*name_f_h
             name_x_, name_y_ = x, y+h-name_h_
@@ -451,7 +467,7 @@ class _QtListItemWidget(
             c_0 = int(float(icn_h_) / icn_frm_h)
             c_1 = math.ceil(float(icn_c) / c_0)
             # grid to
-            icn_w_, icn_h_ = icn_frm_w * c_1, icn_h_
+            icn_w_, icn_h_ = icn_frm_w*c_1, icn_h_
             #
             self._icon_frame_draw_rect.setRect(
                 icn_x_, icn_y_,
@@ -594,7 +610,7 @@ class _QtListItemWidget(
     def __str__(self):
         return '{}(names={})'.format(
             self.__class__.__name__,
-            ', '.join(self._get_name_texts_())
+            ', '.join(map(lambda x: '"{}"'.format(x), self.get_names()))
         )
 
     def __repr__(self):

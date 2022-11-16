@@ -1015,7 +1015,7 @@ class PrxRsvObjTreeViewAddOpt(object):
                     **create_kwargs
                 )
             #
-            prx_item.set_checked(True)
+            prx_item.set_checked(False)
             prx_item.update_keyword_filter_keys_tgt(
                 [obj_path, obj_type]
             )

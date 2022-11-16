@@ -22,11 +22,11 @@ from lxutil_gui import utl_gui_configure, utl_gui_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_view
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
-from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wgt_view
+from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wgt_view_for_tree
 
 
 class AttrConfig(object):
@@ -1408,7 +1408,7 @@ class _AbsPrxTypeEntry(utl_gui_prx_abstract.AbsPrxWidget):
 
 class PrxRsvObjChooseEntry(_AbsPrxTypeEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    PRX_ENTRY_CLASS = _utl_gui_prx_wgt_view.PrxTreeView
+    PRX_ENTRY_CLASS = _utl_gui_prx_wgt_view_for_tree.PrxTreeView
     NAMESPACE = 'resolver'
     def __init__(self, *args, **kwargs):
         super(PrxRsvObjChooseEntry, self).__init__(*args, **kwargs)
@@ -1566,7 +1566,7 @@ class PrxRsvObjChooseEntry(_AbsPrxTypeEntry):
 
 class PrxComponentsEntry(_AbsPrxTypeEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    PRX_ENTRY_CLASS = _utl_gui_prx_wgt_view.PrxTreeView
+    PRX_ENTRY_CLASS = _utl_gui_prx_wgt_view_for_tree.PrxTreeView
     NAMESPACE = 'resolver'
     def __init__(self, *args, **kwargs):
         super(PrxComponentsEntry, self).__init__(*args, **kwargs)

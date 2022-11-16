@@ -542,6 +542,9 @@ class QtInfoChart(
         else:
             self.hide()
 
+    def _clear_(self):
+        self._set_info_text_('')
+
     def paintEvent(self, event):
         painter = QtPainter(self)
         if self._info_text:

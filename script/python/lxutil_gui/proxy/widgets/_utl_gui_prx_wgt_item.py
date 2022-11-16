@@ -232,7 +232,7 @@ class PrxTreeItem(
             *args, **kwargs
         )
 
-    def set_children_clear(self):
+    def clear_children(self):
         self.widget.takeChildren()
 
     def get_children(self):
@@ -559,7 +559,7 @@ class PrxTreeItem(
     def __str__(self):
         return '{}(names={})'.format(
             self.__class__.__name__,
-            ', '.join(self.get_names())
+            ', '.join(map(lambda x: '"{}"'.format(x), self.get_names()))
         )
 
     def __repr__(self):
@@ -682,6 +682,9 @@ class PrxListItem(
         self._visible_tgt_key = None
     @property
     def item(self):
+        return self._qt_widget._get_item_()
+
+    def get_item(self):
         return self._qt_widget._get_item_()
 
     def set_gui_menu_raw(self, raw):
@@ -825,7 +828,7 @@ class PrxListItem(
     def __str__(self):
         return '{}(names={})'.format(
             self.__class__.__name__,
-            ', '.join(self.get_names())
+            ', '.join(map(lambda x: '"{}"'.format(x), self.get_names()))
         )
 
     def __repr__(self):

@@ -1168,11 +1168,13 @@ class AbsQtNameDef(object):
                 # noinspection PyCallingNonCallable
                 self.setToolTip(html)
             else:
-                css = u'<html>\n<body>\n<style>.nowrap{white-space:nowrap;}</style>\n'
+                css = u'<html>\n<body>\n<style>.no_wrap{white-space:nowrap;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
                 title_text = self._name_text
                 if title_text:
                     title_text = title_text.replace(u'<', u'&lt;').replace(u'>', u'&gt;')
-                    css += u'<h3><p class="nowrap">{}</p></h3>\n'.format(title_text)
+                    css += u'<h3><p class="no_warp_and_center">{}</p></h3>\n'.format(title_text)
+                #
+                css += u'<p><hr></p>\n'
                 if isinstance(text, (str, unicode)):
                     texts = text.split('\n')
                 else:
@@ -1452,6 +1454,8 @@ class AbsQtNamesDef(object):
         self._name_frame_border_color = 0, 0, 0, 0
         self._name_frame_background_color = 95, 95, 95, 127
         #
+        self._names_draw_range = None
+        #
         self._name_frame_rect = QtCore.QRect(0, 0, 0, 0)
 
     def _set_name_text_at_(self, text, index=0):
@@ -1495,6 +1499,9 @@ class AbsQtNamesDef(object):
 
     def _get_name_text_dict_(self):
         return self._name_text_dict
+
+    def _set_names_draw_range_(self, range_):
+        self._names_draw_range = range_
 
     def _set_name_frame_border_color_(self, color):
         self._name_frame_border_color = color
@@ -1545,16 +1552,25 @@ class AbsQtNamesDef(object):
                 # noinspection PyCallingNonCallable
                 self.setToolTip(html)
             else:
-                css = u'<html>\n<body>\n<style>.nowrap{white-space:nowrap;}</style>\n'
-                title_text = self._get_name_text_()
-                css += u'<h3><p class="nowrap">{}</p></h3>\n'.format(title_text)
+                css = u'<html>\n<body>\n<style>.no_wrap{white-space:nowrap;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
+                if self._name_texts:
+                    for seq, i in enumerate(self._name_texts):
+                        if len(i) > 240:
+                            i = i[:240] + '...'
+                        if seq == 0:
+                            css += u'<h2><p class="no_warp_and_center">{}</p></h2>\n'.format(i)
+                            css += u'<p><hr></p>\n'
+                        else:
+                            css += u'<h4><p class="nowrap">{}</p></h4>\n'.format(i)
+
+                css += u'<p><hr></p>\n'
                 if isinstance(text, (str, unicode)):
                     texts = text.split('\n')
                 else:
                     texts = text
                 #
                 for i in texts:
-                    css += u'<ul><li><i><p class="nowrap">{}</p></i></li></ul>\n'.format(i)
+                    css += u'<ul><li><i><p class="no_wrap">{}</p></i></li></ul>\n'.format(i)
                 css += u'</body>\n</html>'
                 self.setToolTip(css)
 
@@ -2445,6 +2461,8 @@ class AbsQtActionSelectDef(object):
     def _set_action_select_def_init_(self):
         self._is_selected = False
 
+        self._select_state_draw_rect = QtCore.QRect()
+
     def _get_action_flag_(self):
         raise NotImplementedError()
 
@@ -2504,279 +2522,6 @@ class AbsQtBuildViewDef(object):
         self._build_runnable_runner = QtBuildRunnableRunner(
             view
         )
-
-
-class AbsShowItemDef(
-    AbsQtBuildItemDef
-):
-    ShowStatus = bsc_configure.ShowStatus
-
-    def _refresh_widget_draw_(self):
-        raise NotImplementedError()
-
-    def _get_view_(self):
-        raise NotImplementedError()
-
-    def _get_item_widget_(self):
-        raise NotImplementedError()
-
-    def _set_show_item_def_init_(self, widget):
-        #
-        self._widget = widget
-        #
-        if bsc_core.ApplicationMtd.get_is_maya():
-            self._item_show_use_thread = False
-        else:
-            self._item_show_use_thread = True
-        #
-        self._item_show_thread = None
-        self._item_show_image_thread = None
-        #
-        self._item_show_cache_fnc = None
-        self._item_show_build_fnc = None
-        #
-        self._item_show_status = self.ShowStatus.Stopped
-        # image
-        self._item_show_image_cache_fnc = None
-        self._item_show_image_build_fnc = None
-        #
-        self._item_show_image_status = self.ShowStatus.Stopped
-
-        self._set_build_item_def_init_()
-
-    def _set_item_show_def_setup_(self, view):
-        self._set_build_item_setup_(view)
-
-        self._item_show_runnable = None
-        self._item_show_image_runnable = None
-        #
-        self._item_show_timer = QtCore.QTimer(view)
-        self._item_show_loading_index = 0
-        self._item_show_loading_timer = QtCore.QTimer(view)
-        #
-        self._item_show_image_timer = QtCore.QTimer(view)
-        self._item_show_image_loading_index = 0
-        self._item_show_image_loading_timer = QtCore.QTimer(view)
-        #
-        self._item_show_image_sub_process = None
-        self._item_show_image_cmd = None
-        self._item_show_image_file_path = None
-
-    def _set_item_show_method_(self, method):
-        def cache_fnc_():
-            return []
-
-        def build_fnc_(data):
-            method()
-
-        if method is not None:
-            self._set_item_show_fnc_(cache_fnc_, build_fnc_)
-
-    # fnc
-    def _set_item_show_fnc_(self, cache_fnc, build_fnc):
-        if cache_fnc is not None and build_fnc is not None:
-            if self._item_show_cache_fnc is None and self._item_show_build_fnc is None:
-                self._item_show_cache_fnc = cache_fnc
-                self._item_show_build_fnc = build_fnc
-                #
-                self._item_show_status = self.ShowStatus.Waiting
-                if self._get_item_is_viewport_showable_() is True:
-                    self._set_item_show_start_()
-
-    def _set_item_show_fnc_start_(self):
-        if self._item_show_status == self.ShowStatus.Waiting:
-            if self._item_show_use_thread is True:
-                self._item_show_status = self.ShowStatus.Loading
-                #
-                self._item_show_thread = self._set_build_item_runnable_create_(
-                    self._item_show_cache_fnc,
-                    self._item_show_build_fnc,
-                    self._set_item_show_fnc_stop_
-                )
-                #
-                self._item_show_thread.set_start()
-            else:
-                self._item_show_build_fnc(
-                    self._item_show_cache_fnc()
-                )
-                self._set_item_show_fnc_stop_()
-
-    def _set_item_show_fnc_stop_(self):
-        self._set_item_show_stop_(
-            self.ShowStatus.Completed
-        )
-
-    def _set_item_show_start_(self, time=50, force=False):
-        def run_fnc():
-            if self._item_show_cache_fnc is not None:
-                self._set_item_show_fnc_start_()
-
-        #
-        if self._item_show_status == self.ShowStatus.Waiting or force is True:
-            self._set_item_show_start_loading_()
-            #
-            self._item_show_timer.timeout.connect(run_fnc)
-            self._item_show_timer.start(time)
-
-    def _set_item_show_stop_(self, status):
-        self._item_show_status = status
-        self._item_show_timer.stop()
-        self._set_item_show_stop_loading_()
-
-    def _get_item_show_is_finished_(self):
-        return self._item_show_status in [
-            self.ShowStatus.Completed, self.ShowStatus.Failed
-        ]
-
-    # loading
-    def _set_item_show_start_loading_(self):
-        if self._item_show_status == self.ShowStatus.Waiting:
-            self._set_item_show_update_loading_()
-            self._item_show_loading_timer.timeout.connect(
-                self._set_item_show_update_loading_
-            )
-            self._item_show_loading_timer.start(100)
-
-    def _set_item_show_update_loading_(self):
-        self._item_show_loading_index += 1
-        # self._refresh_widget_draw_()
-
-    def _set_item_show_stop_loading_(self):
-        self._item_show_loading_timer.stop()
-        # self._refresh_widget_draw_()
-
-    # image fnc
-    def _set_item_show_image_cmd_(self, image_file_path, cmd):
-        def cache_fnc_():
-            return []
-
-        def build_fnc_(data):
-            # noinspection PyBroadException
-            try:
-                bsc_core.SubProcessMtd.set_run_with_result(
-                    cmd
-                )
-            except:
-                pass
-
-        if cmd is not None:
-            self._item_show_image_file_path = image_file_path
-            self._set_item_show_image_fnc_(cache_fnc_, build_fnc_)
-
-    def _set_item_show_image_fnc_(self, cache_fnc, build_fnc):
-        if cache_fnc is not None and build_fnc is not None:
-            if self._item_show_image_cache_fnc is None and self._item_show_image_build_fnc is None:
-                self._item_show_image_cache_fnc = cache_fnc
-                self._item_show_image_build_fnc = build_fnc
-                #
-                self._item_show_image_status = self.ShowStatus.Waiting
-                if self._get_item_is_viewport_showable_() is True:
-                    self._set_item_show_image_start_()
-
-    def _set_item_show_image_fnc_start_(self):
-        if self._item_show_image_status == self.ShowStatus.Waiting:
-            self._item_show_image_status = self.ShowStatus.Loading
-            if self._item_show_use_thread is True:
-                self._item_show_image_thread = self._set_build_item_runnable_create_(
-                    self._item_show_image_cache_fnc,
-                    self._item_show_image_build_fnc,
-                    self._set_item_show_image_fnc_stop_
-                )
-                #
-                self._item_show_image_thread.set_start()
-            else:
-                self._item_show_image_build_fnc(
-                    self._item_show_image_cache_fnc()
-                )
-                self._set_item_show_image_fnc_stop_()
-
-    def _set_item_show_image_fnc_stop_(self):
-        if self._item_show_image_file_path is not None:
-            if os.path.isfile(self._item_show_image_file_path) is True:
-                self._set_item_show_image_stop_(self.ShowStatus.Completed)
-            else:
-                self._set_item_show_image_stop_(self.ShowStatus.Failed)
-
-    def _set_item_show_image_start_(self, time=50, force=False):
-        def run_fnc():
-            if self._item_show_cache_fnc is not None:
-                self._set_item_show_image_fnc_start_()
-
-        #
-        if self._item_show_image_status == self.ShowStatus.Waiting or force is True:
-            self._set_item_show_image_start_loading_()
-            #
-            self._item_show_image_timer.timeout.connect(run_fnc)
-            self._item_show_image_timer.start(time)
-
-    def _set_item_show_image_stop_(self, status):
-        self._item_show_image_status = status
-        if status == self.ShowStatus.Failed:
-            item_widget = self._get_item_widget_()
-            if item_widget is not None:
-                item_widget._set_image_file_path_(
-                    utl_gui_core.RscIconFile.get('image_loading_failed_error')
-                )
-        #
-        self._item_show_image_timer.stop()
-        self._set_item_show_image_stop_loading_()
-
-    def _get_item_is_viewport_showable_(self, *args, **kwargs):
-        raise NotImplementedError()
-
-    def _set_item_show_image_start_loading_(self):
-        if self._item_show_image_status == self.ShowStatus.Waiting:
-            self._set_item_show_image_update_loading_()
-            self._item_show_image_loading_timer.timeout.connect(
-                self._set_item_show_image_update_loading_
-            )
-            self._item_show_image_loading_timer.start(100)
-
-    def _set_item_show_image_update_loading_(self):
-        self._item_show_image_loading_index += 1
-        # self._refresh_widget_draw_()
-
-    def _set_item_show_image_stop_loading_(self):
-        self._item_show_image_loading_timer.stop()
-        # noinspection PyBroadException
-        try:
-            self._refresh_widget_draw_()
-        except:
-            pass
-
-    def _set_item_show_start_all_(self, force=False):
-        self._set_item_show_start_(force=force)
-        self._set_item_show_image_start_(force=force)
-
-    def _set_item_show_stop_all_(self):
-        self._set_item_show_stop_(self.ShowStatus.Stopped)
-        self._set_item_show_image_stop_(self.ShowStatus.Stopped)
-
-    def _set_item_show_kill_all_(self):
-        if self._item_show_thread is not None:
-            self._item_show_thread.set_kill()
-        #
-        if self._item_show_image_thread is not None:
-            self._item_show_image_thread.set_kill()
-
-    def _set_item_viewport_visible_(self, boolean):
-        if boolean is True:
-            self._set_item_show_start_all_()
-        #
-        self._set_item_widget_visible_(boolean)
-
-    def _set_item_widget_visible_(self, boolean):
-        raise NotImplementedError()
-
-    def _set_viewport_show_enable_(self, boolean):
-        self._is_viewport_show_enable = boolean
-
-    def _set_item_show_start_auto_(self):
-        if self._get_item_is_viewport_showable_() is True:
-            self._set_item_show_start_all_()
-
-    def _set_item_show_force_(self):
-        self._set_item_show_start_all_(force=True)
 
 
 class AbsQtEntryActionDef(object):
@@ -2849,23 +2594,20 @@ class AbsQtViewScrollActionDef(object):
         return 0
 
 
-class AbsQtViewTagFilterSrcDef(object):
-    def _set_view_tag_filter_src_def_init_(self):
-        pass
-
-
 class AbsQtItemFilterDef(object):
     TagFilterMode = utl_gui_configure.TagFilterMode
-
     def _set_item_filter_def_init_(self):
         self._item_tag_filter_mode = self.TagFilterMode.MatchAll
         self._item_tag_filter_keys_src = set()
         self._item_tag_filter_keys_tgt = set()
         #
-        self._item_tag_filter_tgt_statistic_enable = False
+        self._item_semantic_tag_filter_mode = self.TagFilterMode.MatchAll
+        self._item_semantic_tag_filter_keys_tgt = dict()
         #
         self._item_keyword_filter_keys_tgt = set()
         self._item_keyword_filter_contexts = []
+        #
+        self._item_tag_filter_tgt_statistic_enable = False
 
     def _set_item_keyword_filter_key_tgt_add_(self, key):
         self._item_keyword_filter_keys_tgt.add(key)
@@ -2924,7 +2666,6 @@ class AbsQtItemFilterDef(object):
 
     def _get_item_tag_filter_keys_src_(self):
         return list(self._item_tag_filter_keys_src)
-
     # tag filter target
     def _set_item_tag_filter_keys_tgt_add_(self, key, ancestors=False):
         self._item_tag_filter_keys_tgt.add(key)
@@ -2936,7 +2677,7 @@ class AbsQtItemFilterDef(object):
         self._item_tag_filter_keys_tgt.update(set(keys))
 
     def _get_item_tag_filter_keys_tgt_(self):
-        return list(self._item_tag_filter_keys_tgt)
+        return self._item_tag_filter_keys_tgt
 
     def _set_item_tag_filter_tgt_ancestors_update_(self):
         pass
@@ -2947,30 +2688,63 @@ class AbsQtItemFilterDef(object):
     def _get_item_tag_filter_tgt_statistic_enable_(self):
         return self._item_tag_filter_tgt_statistic_enable
 
-    def _get_item_tag_filter_tgt_match_args_(self, tags_src):
-        tags_tgt = self._get_item_tag_filter_keys_tgt_()
-        mode = self._get_item_tag_filter_mode_()
-        if tags_tgt:
+    def _get_item_tag_filter_tgt_match_args_(self, data_src):
+        data_tgt = self._item_tag_filter_keys_tgt
+        mode = self._item_tag_filter_mode
+        if data_tgt:
             if mode == self.TagFilterMode.MatchAll:
-                for tag_filter_tgt_key in tags_tgt:
-                    if tag_filter_tgt_key not in tags_src:
+                for i_key_tgt in data_tgt:
+                    if i_key_tgt not in data_src:
                         return True, True
                 return True, False
             elif mode == self.TagFilterMode.MatchOne:
-                for tag_filter_tgt_key in tags_tgt:
-                    if tag_filter_tgt_key in tags_src:
+                for i_key_tgt in data_tgt:
+                    if i_key_tgt in data_src:
                         return True, False
+                return True, True
+            return True, False
+        return False, False
+    # semantic tag filter
+    def _set_item_semantic_tag_filter_key_add_(self, key, value):
+        self._item_semantic_tag_filter_keys_tgt.setdefault(
+            key, set()
+        ).add(value)
+
+    def _set_item_semantic_tag_filter_key_update_(self, data):
+        self._item_semantic_tag_filter_keys_tgt.update(data)
+
+    def _get_item_semantic_tag_filter_keys_tgt_(self):
+        return self._item_semantic_tag_filter_keys_tgt
+
+    def _get_item_semantic_tag_filter_tgt_match_args_(self, data_src):
+        data_tgt = self._item_semantic_tag_filter_keys_tgt
+        mode = self._item_semantic_tag_filter_mode
+        if data_tgt:
+            if mode == self.TagFilterMode.MatchAll:
+                for k, v_tgt in data_tgt.items():
+                    if k in data_src:
+                        v_src = data_src[k]
+                        if not v_tgt.intersection(v_src):
+                            return True, True
+                return True, False
+            elif mode == self.TagFilterMode.MatchOne:
+                for k, v_tgt in data_tgt.items():
+                    if k in data_src:
+                        v_src = data_src[k]
+                        if v_tgt.intersection(v_src):
+                            return True, False
                 return True, True
             return True, False
         return False, False
 
 
-class AbsQtViewFilterTgtDef(object):
+class AbsQtViewFilterDef(object):
     def _get_all_items_(self):
         raise NotImplementedError()
 
-    def _set_view_filter_tgt_def_init_(self):
-        self._view_tag_filter_all_keys_src = []
+    def _set_view_filter_def_init_(self):
+        self._view_tag_filter_data_src = []
+        self._view_semantic_tag_filter_data_src = {}
 
     def _get_view_tag_filter_tgt_statistic_raw_(self):
         dic = {}
@@ -2983,36 +2757,50 @@ class AbsQtViewFilterTgtDef(object):
                     dic.setdefault(j_key, []).append(i_item)
         return dic
 
-    def _set_view_tag_filter_all_keys_src_(self, keys):
-        self._view_tag_filter_all_keys_src = keys
+    def _set_view_tag_filter_data_src_(self, data_src):
+        self._view_tag_filter_data_src = data_src
 
-    def _get_view_tag_filter_keys_src_(self):
-        return self._view_tag_filter_all_keys_src
+    def _get_view_tag_filter_data_src_(self):
+        return self._view_tag_filter_data_src
+
+    def _get_view_semantic_tag_filter_data_src_(self):
+        return self._view_semantic_tag_filter_data_src
+
+    def _set_view_semantic_tag_filter_data_src_(self, data_src):
+        self._view_semantic_tag_filter_data_src = data_src
 
     def _set_view_items_visible_by_any_filter_(self, keyword):
-        tags_src = self._get_view_tag_filter_keys_src_()
+        tag_filter_data_src = self._get_view_tag_filter_data_src_()
+        semantic_tag_filter_data_src = self._get_view_semantic_tag_filter_data_src_()
         self._keyword_filter_item_prxes = []
         #
         items = self._get_all_items_()
         for i_item in items:
             i_tag_filter_hidden_ = False
+            i_semantic_filter_hidden_ = False
             i_keyword_filter_hidden_ = False
-            if tags_src:
-                i_tag_filter_is_enable, i_tag_filter_hidden = i_item._get_item_tag_filter_tgt_match_args_(tags_src)
-                if i_tag_filter_is_enable is True:
-                    i_tag_filter_hidden_ = i_tag_filter_hidden
+            if tag_filter_data_src:
+                i_is_enable, i_is_hidden = i_item._get_item_tag_filter_tgt_match_args_(tag_filter_data_src)
+                if i_is_enable is True:
+                    i_tag_filter_hidden_ = i_is_hidden
+            #
+            if semantic_tag_filter_data_src:
+                i_is_enable, i_is_hidden = i_item._get_item_semantic_tag_filter_tgt_match_args_(semantic_tag_filter_data_src)
+                if i_is_enable is True:
+                    i_semantic_filter_hidden_ = i_is_hidden
             #
             if keyword:
-                i_keyword_filter_enable, i_keyword_filter_hidden = i_item._get_item_keyword_filter_match_args_(keyword)
-                if i_keyword_filter_enable is True:
-                    i_keyword_filter_hidden_ = i_keyword_filter_hidden
+                i_is_enable, i_is_hidden = i_item._get_item_keyword_filter_match_args_(keyword)
+                if i_is_enable is True:
+                    i_keyword_filter_hidden_ = i_is_hidden
             #
-            if True in [i_tag_filter_hidden_, i_keyword_filter_hidden_]:
+            if True in [i_tag_filter_hidden_, i_semantic_filter_hidden_, i_keyword_filter_hidden_]:
                 is_hidden = True
             else:
                 is_hidden = False
             #
             i_item._set_hidden_(is_hidden)
+            #
             for i in i_item._get_ancestors_():
                 if is_hidden is False:
                     i._set_hidden_(False)
@@ -3023,9 +2811,9 @@ class AbsQtViewFilterTgtDef(object):
             i_keyword_filter_hidden_ = False
             #
             if keyword:
-                i_keyword_filter_enable, i_keyword_filter_hidden = i_item._get_item_keyword_filter_match_args_(keyword)
-                if i_keyword_filter_enable is True:
-                    i_keyword_filter_hidden_ = i_keyword_filter_hidden
+                i_is_enable, i_is_hidden = i_item._get_item_keyword_filter_match_args_(keyword)
+                if i_is_enable is True:
+                    i_keyword_filter_hidden_ = i_is_hidden
 
             if True in [i_keyword_filter_hidden_]:
                 is_hidden = True
@@ -3196,8 +2984,278 @@ class AbsQtViewStateDef(object):
         return []
 
 
-class AbsShowViewDef(object):
-    def _set_show_view_def_init_(self, widget):
+class AbsQtShowForItemDef(
+    AbsQtBuildItemDef
+):
+    ShowStatus = bsc_configure.ShowStatus
+
+    def _refresh_widget_draw_(self):
+        raise NotImplementedError()
+
+    def _get_view_(self):
+        raise NotImplementedError()
+
+    def _get_item_widget_(self):
+        raise NotImplementedError()
+
+    def _set_show_for_item_def_init_(self, widget):
+        #
+        self._widget = widget
+        #
+        if bsc_core.ApplicationMtd.get_is_maya():
+            self._item_show_use_thread = False
+        else:
+            self._item_show_use_thread = True
+        #
+        self._item_show_thread = None
+        self._item_show_image_thread = None
+        #
+        self._item_show_cache_fnc = None
+        self._item_show_build_fnc = None
+        #
+        self._item_show_status = self.ShowStatus.Stopped
+        # image
+        self._item_show_image_cache_fnc = None
+        self._item_show_image_build_fnc = None
+        #
+        self._item_show_image_status = self.ShowStatus.Stopped
+
+        self._set_build_item_def_init_()
+
+    def _set_item_show_def_setup_(self, view):
+        self._set_build_item_setup_(view)
+
+        self._item_show_runnable = None
+        self._item_show_image_runnable = None
+        #
+        self._item_show_timer = QtCore.QTimer(view)
+        self._item_show_loading_index = 0
+        self._item_show_loading_timer = QtCore.QTimer(view)
+        #
+        self._item_show_image_timer = QtCore.QTimer(view)
+        self._item_show_image_loading_index = 0
+        self._item_show_image_loading_timer = QtCore.QTimer(view)
+        #
+        self._item_show_image_sub_process = None
+        self._item_show_image_cmd = None
+        self._item_show_image_file_path = None
+
+    def _set_item_show_method_(self, method):
+        def cache_fnc_():
+            return []
+
+        def build_fnc_(data):
+            method()
+
+        if method is not None:
+            self._set_item_show_fnc_(cache_fnc_, build_fnc_)
+    # fnc
+    def _set_item_show_fnc_(self, cache_fnc, build_fnc):
+        if cache_fnc is not None and build_fnc is not None:
+            if self._item_show_cache_fnc is None and self._item_show_build_fnc is None:
+                self._item_show_cache_fnc = cache_fnc
+                self._item_show_build_fnc = build_fnc
+                #
+                self._item_show_status = self.ShowStatus.Waiting
+                if self._get_item_is_viewport_showable_() is True:
+                    self._set_item_show_start_()
+
+    def _set_item_show_fnc_start_(self):
+        if self._item_show_status == self.ShowStatus.Waiting:
+            if self._item_show_use_thread is True:
+                self._item_show_status = self.ShowStatus.Loading
+                #
+                self._item_show_thread = self._set_build_item_runnable_create_(
+                    self._item_show_cache_fnc,
+                    self._item_show_build_fnc,
+                    self._set_item_show_fnc_stop_
+                )
+                #
+                self._item_show_thread.set_start()
+            else:
+                self._item_show_build_fnc(
+                    self._item_show_cache_fnc()
+                )
+                self._set_item_show_fnc_stop_()
+
+    def _set_item_show_fnc_stop_(self):
+        self._set_item_show_stop_(
+            self.ShowStatus.Completed
+        )
+
+    def _set_item_show_start_(self, time=50, force=False):
+        def run_fnc():
+            if self._item_show_cache_fnc is not None:
+                self._set_item_show_fnc_start_()
+
+        #
+        if self._item_show_status == self.ShowStatus.Waiting or force is True:
+            self._set_item_show_start_loading_()
+            #
+            self._item_show_timer.timeout.connect(run_fnc)
+            self._item_show_timer.start(time)
+
+    def _set_item_show_stop_(self, status):
+        self._item_show_status = status
+        self._item_show_timer.stop()
+        self._set_item_show_stop_loading_()
+
+    def _get_item_show_is_finished_(self):
+        return self._item_show_status in [
+            self.ShowStatus.Completed, self.ShowStatus.Failed
+        ]
+    # loading
+    def _set_item_show_start_loading_(self):
+        if self._item_show_status == self.ShowStatus.Waiting:
+            self._set_item_show_update_loading_()
+            self._item_show_loading_timer.timeout.connect(
+                self._set_item_show_update_loading_
+            )
+            self._item_show_loading_timer.start(100)
+
+    def _set_item_show_update_loading_(self):
+        self._item_show_loading_index += 1
+        # self._refresh_widget_draw_()
+
+    def _set_item_show_stop_loading_(self):
+        self._item_show_loading_timer.stop()
+        # self._refresh_widget_draw_()
+    # image fnc
+    def _set_item_show_image_cmd_(self, image_file_path, cmd):
+        def cache_fnc_():
+            return []
+
+        def build_fnc_(data):
+            # noinspection PyBroadException
+            try:
+                bsc_core.SubProcessMtd.set_run_with_result(
+                    cmd
+                )
+            except:
+                pass
+
+        if cmd is not None:
+            self._item_show_image_file_path = image_file_path
+            self._set_item_show_image_fnc_(cache_fnc_, build_fnc_)
+
+    def _set_item_show_image_fnc_(self, cache_fnc, build_fnc):
+        if cache_fnc is not None and build_fnc is not None:
+            if self._item_show_image_cache_fnc is None and self._item_show_image_build_fnc is None:
+                self._item_show_image_cache_fnc = cache_fnc
+                self._item_show_image_build_fnc = build_fnc
+                #
+                self._item_show_image_status = self.ShowStatus.Waiting
+                if self._get_item_is_viewport_showable_() is True:
+                    self._set_item_show_image_start_()
+
+    def _set_item_show_image_fnc_start_(self):
+        if self._item_show_image_status == self.ShowStatus.Waiting:
+            self._item_show_image_status = self.ShowStatus.Loading
+            if self._item_show_use_thread is True:
+                self._item_show_image_thread = self._set_build_item_runnable_create_(
+                    self._item_show_image_cache_fnc,
+                    self._item_show_image_build_fnc,
+                    self._set_item_show_image_fnc_stop_
+                )
+                #
+                self._item_show_image_thread.set_start()
+            else:
+                self._item_show_image_build_fnc(
+                    self._item_show_image_cache_fnc()
+                )
+                self._set_item_show_image_fnc_stop_()
+
+    def _set_item_show_image_fnc_stop_(self):
+        if self._item_show_image_file_path is not None:
+            if os.path.isfile(self._item_show_image_file_path) is True:
+                self._set_item_show_image_stop_(self.ShowStatus.Completed)
+            else:
+                self._set_item_show_image_stop_(self.ShowStatus.Failed)
+
+    def _set_item_show_image_start_(self, time=50, force=False):
+        def run_fnc():
+            if self._item_show_cache_fnc is not None:
+                self._set_item_show_image_fnc_start_()
+
+        #
+        if self._item_show_image_status == self.ShowStatus.Waiting or force is True:
+            self._set_item_show_image_start_loading_()
+            #
+            self._item_show_image_timer.timeout.connect(run_fnc)
+            self._item_show_image_timer.start(time)
+
+    def _set_item_show_image_stop_(self, status):
+        self._item_show_image_status = status
+        if status == self.ShowStatus.Failed:
+            item_widget = self._get_item_widget_()
+            if item_widget is not None:
+                item_widget._set_image_file_path_(
+                    utl_gui_core.RscIconFile.get('image_loading_failed_error')
+                )
+        #
+        self._item_show_image_timer.stop()
+        self._set_item_show_image_stop_loading_()
+
+    def _get_item_is_viewport_showable_(self, *args, **kwargs):
+        raise NotImplementedError()
+
+    def _set_item_show_image_start_loading_(self):
+        if self._item_show_image_status == self.ShowStatus.Waiting:
+            self._set_item_show_image_update_loading_()
+            self._item_show_image_loading_timer.timeout.connect(
+                self._set_item_show_image_update_loading_
+            )
+            self._item_show_image_loading_timer.start(100)
+
+    def _set_item_show_image_update_loading_(self):
+        self._item_show_image_loading_index += 1
+        # self._refresh_widget_draw_()
+
+    def _set_item_show_image_stop_loading_(self):
+        self._item_show_image_loading_timer.stop()
+        # noinspection PyBroadException
+        try:
+            self._refresh_widget_draw_()
+        except:
+            pass
+
+    def _set_item_show_start_all_(self, force=False):
+        self._set_item_show_start_(force=force)
+        self._set_item_show_image_start_(force=force)
+
+    def _set_item_show_stop_all_(self):
+        self._set_item_show_stop_(self.ShowStatus.Stopped)
+        self._set_item_show_image_stop_(self.ShowStatus.Stopped)
+
+    def _set_item_show_kill_all_(self):
+        if self._item_show_thread is not None:
+            self._item_show_thread.set_kill()
+        #
+        if self._item_show_image_thread is not None:
+            self._item_show_image_thread.set_kill()
+
+    def _set_item_viewport_visible_(self, boolean):
+        if boolean is True:
+            self._set_item_show_start_all_()
+        #
+        self._set_item_widget_visible_(boolean)
+
+    def _set_item_widget_visible_(self, boolean):
+        raise NotImplementedError()
+
+    def _set_viewport_show_enable_(self, boolean):
+        self._is_viewport_show_enable = boolean
+
+    def _set_item_show_start_auto_(self):
+        if self._get_item_is_viewport_showable_() is True:
+            self._set_item_show_start_all_()
+
+    def _set_item_show_force_(self):
+        self._set_item_show_start_all_(force=True)
+
+
+class AbsQtShowForViewDef(object):
+    def _set_show_for_view_def_init_(self, widget):
         self._widget = widget
 
     def _get_view_item_viewport_showable_(self, item):

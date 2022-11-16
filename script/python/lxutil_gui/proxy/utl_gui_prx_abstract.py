@@ -669,7 +669,7 @@ class AbsPrxViewFilterTagDef(object):
         return self.view._get_view_tag_filter_tgt_statistic_raw_()
 
     def set_tag_filter_all_keys_src(self, *args, **kwargs):
-        self.view._set_view_tag_filter_all_keys_src_(*args, **kwargs)
+        self.view._set_view_tag_filter_data_src_(*args, **kwargs)
         #
         self.set_items_visible_by_any_filter()
         #

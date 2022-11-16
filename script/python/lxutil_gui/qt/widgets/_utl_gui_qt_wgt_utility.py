@@ -894,7 +894,31 @@ class QtStyledItemDelegate(QtWidgets.QStyledItemDelegate):
         super(QtStyledItemDelegate, self).__init__(parent)
         self._icon_file_draw_size = QtCore.QSize(20, 20)
 
-    def paint(self, painter, option, index):
+    def _draw_for_hover_(self, painter, option, index):
+        if option.state & QtWidgets.QStyle.State_MouseOver:
+            if index.column() == 0:
+                rect = option.rect
+                x, y = rect.x(), rect.y()
+                w, h = rect.width(), rect.height()
+                hover_rect = QtCore.QRect(
+                    x, y, 4, h
+                )
+                painter.fillRect(
+                    hover_rect, QtBackgroundColors.Hovered
+                )
+        elif option.state & QtWidgets.QStyle.State_Selected:
+            if index.column() == 0:
+                rect = option.rect
+                x, y = rect.x(), rect.y()
+                w, h = rect.width(), rect.height()
+                hover_rect = QtCore.QRect(
+                    x, y, 4, h
+                )
+                painter.fillRect(
+                    hover_rect, QtBackgroundColors.Selected
+                )
+
+    def _draw_for_keyword_(self, painter, option, index):
         _ = index.data(QtCore.Qt.DisplayRole)
         if _:
             user_data = index.data(QtCore.Qt.UserRole)
@@ -922,8 +946,11 @@ class QtStyledItemDelegate(QtWidgets.QStyledItemDelegate):
                             #     start, end = span
                             #     b = Color.text_filter
                             #     qt_painter.fillRect(rect, b)
-        #
+
+    def paint(self, painter, option, index):
         super(QtStyledItemDelegate, self).paint(painter, option, index)
+
+        # self._draw_for_hover_(painter, option, index)
 
     def updateEditorGeometry(self, editor, option, index):
         super(QtStyledItemDelegate, self).updateEditorGeometry(editor, option, index)
@@ -1487,7 +1514,7 @@ class QtFileDialog(QtWidgets.QFileDialog):
 
 class QtListWidgetItem(
     QtWidgets.QListWidgetItem,
-    utl_gui_qt_abstract.AbsShowItemDef,
+    utl_gui_qt_abstract.AbsQtShowForItemDef,
     #
     utl_gui_qt_abstract.AbsQtItemFilterDef,
     #
@@ -1503,7 +1530,7 @@ class QtListWidgetItem(
         self.setFlags(
             QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled
         )
-        self._set_show_item_def_init_(self)
+        self._set_show_for_item_def_init_(self)
         #
         self._visible_tgt_key = None
         self._set_item_filter_def_init_()
@@ -2569,7 +2596,7 @@ class QtPopupChooseFrame(
         if selected_item_widgets:
             item_src = selected_item_widgets[0]
             tags = [item_src._get_name_text_()]
-            self._item_list_widget._set_view_tag_filter_all_keys_src_(tags)
+            self._item_list_widget._set_view_tag_filter_data_src_(tags)
         #
         self._item_list_widget._set_view_items_visible_by_any_filter_(
             keyword_filter_text
@@ -3128,7 +3155,7 @@ class QtEntryFrame(
         self._hovered_frame_border_color = QtBorderColors.Hovered
         self._selected_frame_border_color = QtBorderColors.Selected
         #
-        self._frame_background_color = QtBackgroundColors.Dark
+        self._frame_background_color = QtBackgroundColors.Dim
 
         self._resize_gui = None
 

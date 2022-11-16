@@ -19,7 +19,7 @@ option:
         color-actioned: '79, 255, 159, 255'
         #
         color-item-selected: '79, 159, 255, 255'
-        color-item-selected-indirect: '79, 159, 255, 63'
+        color-item-selected-indirect: '39, 79, 127, 255'
         color-item-hovered: '255, 159, 79, 255'
         #
         color-item-loading: '31, 31, 31, 63'
@@ -28,7 +28,7 @@ option:
         color-button-hovered: '151, 151, 151'
         color-button-disable: '79, 79, 79, 255'
         #
-        color-tool-tip: '255, 255, 159, 255'
+        color-tool-tip: '255, 223, 159, 255'
         #
         color-icon: '191, 191, 191, 255'
         #
@@ -46,7 +46,7 @@ option:
         color-button-hovered: '143, 143, 151'
         color-button-disable: '71, 71, 71, 255'
         #
-        color-tool-tip: '255, 255, 191, 255'
+        color-tool-tip: '255, 223, 159, 255'
         #
         color-hovered: '255, 127, 63, 255'
         color-selected: '63, 127, 255, 255'
@@ -65,6 +65,9 @@ option:
         #
         color-hovered: '31, 31, 31, 255'
         color-selected: '31, 31, 31, 255'
+        #
+        color-item-hovered: '255, 127, 63, 255'
+        color-item-selected: '79, 159, 255, 255'
         #
         color-key-basic: '191, 191, 191, 255'
         color-key-hovered: '63, 63, 63, 255'
@@ -152,19 +155,23 @@ widget:
             color: rgba(<option.font.color-basic>); 
             border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
         }
+        QTreeView::item{
+            background: rgba(<option.background.color-transparent>);
+            border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
+        }
         QTreeView::item:hover{
-            background: rgba(<option.background.color-hovered>);
-            color: rgba(<option.font.color-hovered>); 
+            background: rgba(<option.background.color-transparent>);
+            color: rgba(<option.font.color-item-hovered>); 
             border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
         }
         QTreeView::item:selected{
-            background: rgba(<option.background.color-selected>);
-            color: rgba(<option.font.color-selected>); 
+            background: rgba(<option.background.color-transparent>);
+            color: rgba(<option.font.color-item-selected>); 
             border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
         }
         QTreeView::item:selected:hover{
-            background: qlineargradient(spread:pad, x1: 0, y1: 0, x2: 0, y2: 1, stop:0 rgba(<option.background.color-hovered>), stop:1 rgba(<option.background.color-transparent>));
-            color: rgba(<option.font.color-selected>); 
+            background: rgba(<option.background.color-transparent>);
+            color: rgba(<option.font.color-item-hovered>); 
             border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
         }
         QTreeView::branch:open:has-children:has-siblings{

@@ -6,14 +6,14 @@ class AbsQtTreeWidget(
     QtWidgets.QTreeWidget,
     AbsQtMenuDef,
     #
-    AbsQtViewFilterTgtDef,
+    AbsQtViewFilterDef,
     #
     AbsQtViewStateDef,
     AbsQtViewVisibleConnectionDef,
     #
     AbsQtViewScrollActionDef,
     AbsQtBuildViewDef,
-    AbsShowViewDef
+    AbsQtShowForViewDef
 ):
     def __init__(self, *args, **kwargs):
         super(AbsQtTreeWidget, self).__init__(*args, **kwargs)
@@ -21,7 +21,7 @@ class AbsQtTreeWidget(
         #
         self._set_menu_def_init_()
         #
-        self._set_view_filter_tgt_def_init_()
+        self._set_view_filter_def_init_()
         #
         self._set_view_state_def_init_()
         self._set_view_visible_connection_def_init_()
@@ -35,7 +35,7 @@ class AbsQtTreeWidget(
         self._set_build_view_def_init_()
         self._set_build_view_setup_(self)
 
-        self._set_show_view_def_init_(self)
+        self._set_show_for_view_def_init_(self)
 
     def _get_all_items_(self, column=0):
         def _rcs_fnc(index_):
@@ -45,11 +45,12 @@ class AbsQtTreeWidget(
                 row_count = model.rowCount(index_)
                 lis.append(self.itemFromIndex(index_))
             #
-            for row in range(row_count):
+            for i_row in range(row_count):
                 if index_ is None:
-                    _index = model.index(row, column)
+                    _index = model.index(i_row, column)
                 else:
-                    _index = index_.child(row, index_.column())
+                    _index = index_.child(i_row, index_.column())
+                #
                 if _index.isValid():
                     _rcs_fnc(_index)
 
@@ -58,6 +59,30 @@ class AbsQtTreeWidget(
 
         _rcs_fnc(None)
         return lis
+
+    def _get_all_checked_items_(self, column=0):
+        def _rcs_fnc(index_):
+            if index_ is None:
+                row_count = model.rowCount()
+            else:
+                row_count = model.rowCount(index_)
+            #
+            for i_row in range(row_count):
+                if index_ is None:
+                    _i_index = model.index(i_row, column)
+                else:
+                    _i_index = index_.child(i_row, index_.column())
+                #
+                if _i_index.isValid():
+                    if _i_index.data(QtCore.Qt.CheckStateRole) == QtCore.Qt.Checked:
+                        list_.append(self.itemFromIndex(_i_index))
+                        _rcs_fnc(_i_index)
+
+        list_ = []
+        model = self.model()
+
+        _rcs_fnc(None)
+        return list_
 
     def _set_view_header_(self, raw, max_width):
         texts, widths = zip(*raw)
@@ -105,11 +130,11 @@ class AbsQtListWidget(
     AbsQtViewSelectActionDef,
     AbsQtViewScrollActionDef,
     #
-    AbsQtViewFilterTgtDef,
+    AbsQtViewFilterDef,
     AbsQtViewStateDef,
     AbsQtViewVisibleConnectionDef,
     AbsQtBuildViewDef,
-    AbsShowViewDef
+    AbsQtShowForViewDef
 ):
     item_show_changed = qt_signal()
 
@@ -120,7 +145,7 @@ class AbsQtListWidget(
         self._set_view_select_action_def_init_()
         self._set_view_scroll_action_def_init_()
         #
-        self._set_view_filter_tgt_def_init_()
+        self._set_view_filter_def_init_()
         #
         self._set_view_state_def_init_()
         self._set_view_visible_connection_def_init_()
@@ -148,7 +173,7 @@ class AbsQtListWidget(
         self._set_build_view_def_init_()
         self._set_build_view_setup_(self)
 
-        self._set_show_view_def_init_(self)
+        self._set_show_for_view_def_init_(self)
 
     def _get_view_h_scroll_bar_(self):
         return self.horizontalScrollBar()

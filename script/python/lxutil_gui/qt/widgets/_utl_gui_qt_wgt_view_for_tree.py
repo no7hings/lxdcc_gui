@@ -17,6 +17,7 @@ class QtTreeWidget(
     _is_expand_descendants = False
     #
     item_checked = qt_signal()
+    item_check_changed = qt_signal()
     item_toggled = qt_signal(bool)
     #
     filter_changed = qt_signal()
@@ -44,15 +45,11 @@ class QtTreeWidget(
         self.setEditTriggers(self.NoEditTriggers)
         self.setDragDropMode(self.DragOnly)
         self.setSelectionMode(self.ExtendedSelection)
+        # self.setSelectionBehavior(self.SelectRows)
         # self.setWordWrap(True)
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.setItemDelegate(
-            _utl_gui_qt_wgt_utility.QtStyledItemDelegate()
-        )
-        #
-        self.setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QTreeView')
-        )
+        self.setItemDelegate(_utl_gui_qt_wgt_utility.QtStyledItemDelegate())
+        self.setStyleSheet(utl_gui_core.QtStyleMtd.get('QTreeView'))
         # header view
         self.header().setFixedHeight(16)
         # self.header().setStretchLastSection(False)
@@ -66,7 +63,7 @@ class QtTreeWidget(
             utl_gui_core.QtStyleMtd.get('QHeaderView')
         )
         self.header().setFont(Font.NAME)
-        self.header().setAutoFillBackground(True)
+        # self.header().setAutoFillBackground(True)
         # noinspection PyUnresolvedReferences
         self.header().sortIndicatorChanged.connect(
             self._refresh_view_items_viewport_showable_by_sort_
@@ -107,6 +104,8 @@ class QtTreeWidget(
             self._set_item_clicked_emit_send_
         )
 
+        self._draw_for_check_state_enable = True
+
     def drawBranches(self, painter, rect, index):
         # Get the indention level of the row
         level = 0
@@ -122,12 +121,13 @@ class QtTreeWidget(
         lineWidth = DpiScale(1)
 
         # Cell width
-        cellWidth = int(rect.width() / (level + 1))
+        cell_w = int(rect.width() / (level + 1))
+        offset = 2
 
         # Current cell to draw in
-        x = rect.x() + cellWidth * level
+        x = rect.x() + cell_w * level + offset
         y = rect.y()
-        w = cellWidth
+        w = cell_w
         h = rect.height()
 
         # Center of the cell
@@ -135,7 +135,7 @@ class QtTreeWidget(
         cy = y + int(h / 2) - int(lineWidth / 2)
 
         # Backup the old pen
-        oldPen = painter.pen()
+        tmp_pen = painter.pen()
 
         # Draw the branch indicator on the right most
         if self._get_item_has_visible_children_by_index_(index):
@@ -213,8 +213,8 @@ class QtTreeWidget(
         # Draw other vertical and horizental lines on the left of the indicator
         if level > 0:
             # Move cell window to the left
-            x -= cellWidth
-            cx -= cellWidth
+            x -= cell_w
+            cx -= cell_w
             _below_is_visible = self._get_item_below_is_visible_by_index_(index)
             if _below_is_visible is True:
                 # The row has more siblings. i.e. |
@@ -228,27 +228,24 @@ class QtTreeWidget(
                 painter.drawLine(cx, y, cx, cy)
                 painter.drawLine(cx, cy, x + w, cy)
             # More vertical lines on the left. i.e. ||||-
-            tmpIndex = index.parent()
+            tmp_index = index.parent()
             for i in range(0, level - 1):
                 # Move the cell window to the left
-                x -= cellWidth
-                cx -= cellWidth
+                x -= cell_w
+                cx -= cell_w
                 # Draw vertical line if the row has silbings at this level
-                _below_is_visible = self._get_item_below_is_visible_by_index_(tmpIndex)
+                _below_is_visible = self._get_item_below_is_visible_by_index_(tmp_index)
                 if _below_is_visible is True:
                     painter.drawLine(cx, y, cx, y + h)
-                tmpIndex = tmpIndex.parent()
+                tmp_index = tmp_index.parent()
         # Restore the old pen
-        painter.setPen(oldPen)
+        painter.setPen(tmp_pen)
 
     def drawRow(self, painter, option, index):
         #
-        if index in self._selected_indices:
-            painter.fillRect(option.rect, QtBackgroundColors.ItemSelected)
-        elif index in self._selected_indirect_indices:
-            painter.fillRect(option.rect, QtBackgroundColors.ItemSelectedIndirect)
-        #
         super(QtTreeWidget, self).drawRow(painter, option, index)
+        #
+        self._draw_for_check_and_select_(painter, option, index)
         #
         QtTreeMtd._set_item_row_draw_(painter, option, index)
 
@@ -307,6 +304,48 @@ class QtTreeWidget(
             )
         #
         super(QtTreeWidget, self).paintEvent(event)
+
+    def _set_draw_for_check_state_enable_(self, boolean):
+        self._draw_for_check_state_enable = boolean
+
+    def _draw_for_check_and_select_(self, painter, option, index):
+        rect = option.rect
+        x, y = rect.x(), rect.y()
+        w, h = rect.width(), rect.height()
+        #
+        d_w = 4
+        #
+        select_rect = QtCore.QRect(
+            x, y, d_w, h
+        )
+        is_selected = False
+        if index in self._selected_indices:
+            painter.fillRect(
+                select_rect, QtBackgroundColors.ItemSelected
+            )
+            is_selected = True
+        elif index in self._selected_indirect_indices:
+            painter.fillRect(
+                select_rect, QtBackgroundColors.ItemSelectedIndirect
+            )
+            is_selected = True
+        if self._draw_for_check_state_enable is True:
+            data = index.data(QtCore.Qt.CheckStateRole)
+            if data:
+                rect = option.rect
+                x, y = rect.x(), rect.y()
+                w, h = rect.width(), rect.height()
+                if is_selected is True:
+                    check_rect = QtCore.QRect(
+                        x, y, d_w/2, h
+                    )
+                else:
+                    check_rect = QtCore.QRect(
+                        x, y, d_w, h
+                    )
+                painter.fillRect(
+                    check_rect, QtBackgroundColors.Checked
+                )
     @classmethod
     def _set_item_db_clicked_emit_send_(cls, item, column):
         item._signals.press_db_clicked.emit(item, column)
@@ -534,7 +573,7 @@ class QtTreeWidget(
     def _set_item_check_action_run_(self, item, column):
         if item._get_emit_send_enable_() is True:
             # noinspection PyUnresolvedReferences
-            self.item_checked.emit()
+            self.item_check_changed.emit()
 
     def _set_item_toggle_emit_send_(self, item, column, boolean):
         if item._get_emit_send_enable_() is True:

@@ -400,7 +400,7 @@ class AbsSceneCheckerToolPanel(
         if inspection is not None:
             inspection_gui.set_gui_attribute('inspection', inspection)
             # clear obj gui
-            inspection_gui.set_children_clear()
+            inspection_gui.clear_children()
             #
             error_object_raw_dict = inspection.error_object_raw_dict
             if error_object_raw_dict:
