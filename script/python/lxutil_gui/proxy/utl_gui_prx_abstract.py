@@ -251,6 +251,9 @@ class AbsPrxWindow(AbsPrx):
 
         self._set_build_()
 
+    def get_window_unique_id(self):
+        return self._window_unicode_id
+
     def _set_build_(self):
         pass
 
@@ -262,10 +265,11 @@ class AbsPrxWindow(AbsPrx):
         return self._definition_window_size
 
     def set_definition_window_size(self, size):
-        self._definition_window_size = size
-        self.widget.setBaseSize(
-            utl_gui_qt_core.QtCore.QSize(*self._definition_window_size)
-        )
+        if size is not None:
+            self._definition_window_size = size
+            self.widget.setBaseSize(
+                utl_gui_qt_core.QtCore.QSize(*self._definition_window_size)
+            )
 
     def set_window_show(self, pos=None, size=None, exclusive=True):
         # show unique

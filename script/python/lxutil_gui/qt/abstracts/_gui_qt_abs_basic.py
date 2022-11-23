@@ -180,6 +180,11 @@ class AbsQtStatusDef(object):
             h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
             color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
             hover_color = r, g, b
+        elif status in [bsc_configure.ValidatorStatus.Active]:
+            r, g, b = 63, 127, 255
+            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
+            hover_color = r, g, b
         else:
             r, g, b = 255, 255, 255
             h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
@@ -206,6 +211,11 @@ class AbsQtStatusDef(object):
             hover_color = r, g, b
         elif status in [bsc_configure.ValidatorStatus.Locked]:
             r, g, b = 127, 127, 255
+            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
+            hover_color = r, g, b
+        elif status in [bsc_configure.ValidatorStatus.Active]:
+            r, g, b = 63, 127, 255
             h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
             color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
             hover_color = r, g, b
@@ -570,7 +580,6 @@ class AbsQtPopupDef(object):
         self._popup_toolbar_draw_tool_tip_rect = QtCore.QRect()
 
         self._popup_auto_resize_is_enable = False
-
     @classmethod
     def _get_popup_press_point_(cls, widget, rect=None):
         if rect is None:
@@ -584,14 +593,12 @@ class AbsQtPopupDef(object):
         p = widget.mapToGlobal(rect.topLeft())
         o_x, o_y = self._popup_offset
         return p.x() + o_x, p.y() + o_y
-
     @classmethod
     def _get_popup_pos_0_(cls, widget):
         rect = widget.rect()
         # p = QtCore.QPoint(rect.right(), rect.center().y())
         p = widget.mapToGlobal(rect.bottomLeft())
         return p.x(), p.y() + 1
-
     @classmethod
     def _get_popup_size_(cls, widget):
         rect = widget.rect()
@@ -1098,7 +1105,7 @@ class AbsQtNameDef(object):
         #
         self._name_frame_size = 20, 20
         self._name_draw_size = 16, 16
-        self._name_frame_rect = QtCore.QRect()
+        self._name_frame_draw_rect = QtCore.QRect()
         self._name_draw_rect = QtCore.QRect()
 
         self._tool_tip_text = None
@@ -1138,7 +1145,7 @@ class AbsQtNameDef(object):
             return self._name_text
 
     def _set_name_frame_rect_(self, x, y, w, h):
-        self._name_frame_rect.setRect(
+        self._name_frame_draw_rect.setRect(
             x, y, w, h
         )
 
@@ -1150,7 +1157,7 @@ class AbsQtNameDef(object):
     def _get_name_rect_(self):
         return self._name_draw_rect
 
-    def _set_tool_tip_(self, raw, as_markdown_style=False):
+    def _set_tool_tip_(self, raw, **kwargs):
         if isinstance(raw, (tuple, list)):
             _ = u'\n'.join(raw)
         elif isinstance(raw, (str, unicode)):
@@ -1158,34 +1165,31 @@ class AbsQtNameDef(object):
         else:
             raise TypeError()
         #
-        self._set_tool_tip_text_(_, as_markdown_style)
+        self._set_tool_tip_text_(_, **kwargs)
 
-    def _set_tool_tip_text_(self, text, markdown_style=False):
+    def _set_tool_tip_text_(self, text, **kwargs):
         if hasattr(self, 'setToolTip'):
-            if markdown_style is True:
-                import markdown
-                html = markdown.markdown(text)
-                # noinspection PyCallingNonCallable
-                self.setToolTip(html)
+            css = u'<html>\n<body>\n<style>.no_wrap{white-space:nowrap;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
+            name_text = self._name_text
+            if 'name' in kwargs:
+                name_text = kwargs['name']
+            #
+            if name_text:
+                name_text = name_text.replace(u'<', u'&lt;').replace(u'>', u'&gt;')
+                css += u'<h3><p class="no_warp_and_center">{}</p></h3>\n'.format(name_text)
+            #
+            css += u'<p><hr></p>\n'
+            if isinstance(text, (str, unicode)):
+                texts = text.split('\n')
             else:
-                css = u'<html>\n<body>\n<style>.no_wrap{white-space:nowrap;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
-                title_text = self._name_text
-                if title_text:
-                    title_text = title_text.replace(u'<', u'&lt;').replace(u'>', u'&gt;')
-                    css += u'<h3><p class="no_warp_and_center">{}</p></h3>\n'.format(title_text)
-                #
-                css += u'<p><hr></p>\n'
-                if isinstance(text, (str, unicode)):
-                    texts = text.split('\n')
-                else:
-                    texts = text
-                #
-                for i in texts:
-                    css += u'<ul><li><i><p class="nowrap">{}</p></i></li></ul>\n'.format(i)
-                css += u'</body>\n</html>'
-                # noinspection PyCallingNonCallable
-                # self._tool_tip_text = css
-                self.setToolTip(css)
+                texts = text
+            #
+            for i in texts:
+                css += u'<ul><li><i><p class="no_wrap">{}</p></i></li></ul>\n'.format(i)
+            css += u'</body>\n</html>'
+            # noinspection PyCallingNonCallable
+            # self._tool_tip_text = css
+            self.setToolTip(css)
 
     # noinspection PyUnresolvedReferences
     def _set_name_font_size_(self, size):
@@ -1456,7 +1460,7 @@ class AbsQtNamesDef(object):
         #
         self._names_draw_range = None
         #
-        self._name_frame_rect = QtCore.QRect(0, 0, 0, 0)
+        self._name_frame_draw_rect = QtCore.QRect(0, 0, 0, 0)
 
     def _set_name_text_at_(self, text, index=0):
         self._name_texts[index] = text
@@ -1494,7 +1498,7 @@ class AbsQtNamesDef(object):
     def _set_name_text_dict_(self, text_dict):
         self._name_text_dict = text_dict
         self._set_name_texts_(
-            self._name_text_dict.values()
+            [v if seq == 0 else '{}: {}'.format(k, v) for seq, (k, v) in enumerate(self._name_text_dict.items())]
         )
 
     def _get_name_text_dict_(self):
@@ -1533,7 +1537,7 @@ class AbsQtNamesDef(object):
     def _set_name_frame_draw_enable_(self, boolean):
         self._name_frame_draw_enable = boolean
 
-    def _set_tool_tip_(self, raw, as_markdown_style=False):
+    def _set_tool_tip_(self, raw, **kwargs):
         if raw is not None:
             if isinstance(raw, (tuple, list)):
                 _ = u'\n'.join(raw)
@@ -1542,37 +1546,31 @@ class AbsQtNamesDef(object):
             else:
                 raise TypeError()
             #
-            self._set_tool_tip_text_(_, as_markdown_style)
+            self._set_tool_tip_text_(_, **kwargs)
 
-    def _set_tool_tip_text_(self, text, markdown_style=False):
+    def _set_tool_tip_text_(self, text, **kwargs):
         if hasattr(self, 'setToolTip'):
-            if markdown_style is True:
-                import markdown
-                html = markdown.markdown(text)
-                # noinspection PyCallingNonCallable
-                self.setToolTip(html)
-            else:
-                css = u'<html>\n<body>\n<style>.no_wrap{white-space:nowrap;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
-                if self._name_texts:
-                    for seq, i in enumerate(self._name_texts):
-                        if len(i) > 240:
-                            i = i[:240] + '...'
-                        if seq == 0:
-                            css += u'<h2><p class="no_warp_and_center">{}</p></h2>\n'.format(i)
-                            css += u'<p><hr></p>\n'
-                        else:
-                            css += u'<h4><p class="nowrap">{}</p></h4>\n'.format(i)
+            css = u'<html>\n<body>\n<style>.no_wrap{white-space:nowrap;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
+            if self._name_texts:
+                for seq, i in enumerate(self._name_texts):
+                    # if len(i) > 240:
+                    #     i = i[:240] + '...'
+                    if seq == 0:
+                        css += u'<h2><p class="no_warp_and_center">{}</p></h2>\n'.format(i)
+                        css += u'<p><hr></p>\n'
+                    else:
+                        css += u'<ul><li><i><p class="no_wrap">{}</p></i></li></ul>\n'.format(i)
 
-                css += u'<p><hr></p>\n'
-                if isinstance(text, (str, unicode)):
-                    texts = text.split('\n')
-                else:
-                    texts = text
-                #
-                for i in texts:
-                    css += u'<ul><li><i><p class="no_wrap">{}</p></i></li></ul>\n'.format(i)
-                css += u'</body>\n</html>'
-                self.setToolTip(css)
+            css += u'<p><hr></p>\n'
+            if isinstance(text, (str, unicode)):
+                texts = text.split('\n')
+            else:
+                texts = text
+            #
+            for i in texts:
+                css += u'<ul><li><i><p class="no_wrap">{}</p></i></li></ul>\n'.format(i)
+            css += u'</body>\n</html>'
+            self.setToolTip(css)
 
 
 class AbsQtChartDef(object):
@@ -2217,7 +2215,7 @@ class AbsQtEntryCompletionDef(object):
         self._entry_completion_frame._start_action_popup_()
 
     def _set_entry_completion_popup_kill_(self):
-        self._entry_completion_frame._set_popup_activated_(False)
+        self._entry_completion_frame._close_popup_()
 
     def _send_completion_finished_emit_(self):
         self.completion_finished.emit()

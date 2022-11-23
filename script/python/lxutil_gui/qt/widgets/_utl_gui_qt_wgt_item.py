@@ -1340,6 +1340,9 @@ class QtValueEntryForConstant(
         self._value_entry_layout.addWidget(self._value_entry)
         self._value_entry._set_value_type_(self._value_type)
 
+    def _set_value_entry_validator_use_as_name_(self):
+        self._value_entry._set_validator_use_as_name_()
+
     def _set_value_entry_enable_(self, boolean):
         super(QtValueEntryForConstant, self)._set_value_entry_enable_(boolean)
 

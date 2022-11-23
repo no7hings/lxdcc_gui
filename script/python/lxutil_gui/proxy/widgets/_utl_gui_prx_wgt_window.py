@@ -58,6 +58,7 @@ class AbsPrxDialogWindow(
         self._central_widget = _utl_gui_qt_wgt_utility.QtWidget()
         self._qt_widget.setCentralWidget(self._central_widget)
         self._central_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._central_widget)
+        self._central_layout.setContentsMargins(*[4]*4)
 
     def _set_build_(self):
         self._set_central_layout_create_()

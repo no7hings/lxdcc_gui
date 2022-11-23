@@ -48,7 +48,7 @@ class QtWidget(
                 pox_x+1, pos_y+1, width-2, height-2
             )
             #
-            painter._draw_frame_by_rect_(
+            painter._draw_focus_frame_by_rect_(
                 frame_rect,
                 border_color=border_color,
                 background_color=(0, 0, 0, 0),
@@ -2075,7 +2075,7 @@ class QtLineEdit_(
             pass
         elif self._value_type is str:
             pass
-            # self._set_validator_use_as_string_()
+            # self._set_validator_use_as_name_()
         elif self._value_type is int:
             self._set_validator_use_as_integer_()
         elif self._value_type is float:
@@ -2104,7 +2104,7 @@ class QtLineEdit_(
             )
             self.addAction(i_action)
 
-    def _set_validator_use_as_string_(self):
+    def _set_validator_use_as_name_(self):
         reg = QtCore.QRegExp(r'^[a-zA-Z0-9_]+$')
         validator = QtGui.QRegExpValidator(reg, self)
         self.setValidator(validator)
@@ -2313,6 +2313,8 @@ class QtPopupChooseFrame(
         #
         self._frame_background_color = QtBackgroundColors.Dark
 
+        self._read_only_mark = None
+
     def paintEvent(self, event):
         painter = QtPainter(self)
         #
@@ -2347,12 +2349,12 @@ class QtPopupChooseFrame(
         widget, event = args
         if widget == self._popup_entry:
             if event.type() == QtCore.QEvent.FocusOut:
-                self._set_popup_activated_(False)
+                self._close_popup_()
             elif event.type() == QtCore.QEvent.InputMethod:
                 self._keyword_filter_line_edit.inputMethodEvent(event)
             elif event.type() == QtCore.QEvent.KeyPress:
                 if event.key() == QtCore.Qt.Key_Escape:
-                    self._set_popup_activated_(False)
+                    self._close_popup_()
                 else:
                     self._keyword_filter_line_edit.keyPressEvent(event)
         return False
@@ -2544,6 +2546,11 @@ class QtPopupChooseFrame(
                     # show
                     self._item_list_widget._refresh_view_all_items_viewport_showable_()
 
+                    if isinstance(self._popup_entry, QtWidgets.QLineEdit):
+                        self._read_only_mark = self._popup_entry.isReadOnly()
+                        #
+                        self._popup_entry.setReadOnly(True)
+
                     if self._tag_filter_is_enable is True:
                         tags = list(set([i for k, v in tag_filter_dict.items() for i in v]))
                         tags = bsc_core.TextsMtd.set_sort_by_initial(tags)
@@ -2576,7 +2583,7 @@ class QtPopupChooseFrame(
             parent._send_choose_changed_emit_()
             parent._send_user_choose_changed_emit_()
         #
-        self._set_popup_activated_(False)
+        self._close_popup_()
 
     def _set_popup_entry_(self, widget):
         self._popup_entry = widget
@@ -2613,6 +2620,10 @@ class QtPopupChooseFrame(
         [i._set_checked_(False) for i in self._item_list_widget._get_all_item_widgets_() if i._get_is_visible_() is True]
 
     def _close_popup_(self):
+        if isinstance(self._popup_entry, QtWidgets.QLineEdit):
+            if self._read_only_mark is not None:
+                self._popup_entry.setReadOnly(self._read_only_mark)
+        #
         self._set_popup_activated_(False)
 
     def _execute_auto_resize_(self):
@@ -2700,10 +2711,10 @@ class QtPopupCompletionFrame(
         widget, event = args
         if widget == self._popup_entry:
             if event.type() == QtCore.QEvent.FocusOut:
-                self._set_popup_activated_(False)
+                self._close_popup_()
             elif event.type() == QtCore.QEvent.KeyPress:
                 if event.key() == QtCore.Qt.Key_Escape:
-                    self._set_popup_activated_(False)
+                    self._close_popup_()
         return False
 
     def _set_popup_entry_(self, widget):
@@ -2798,7 +2809,7 @@ class QtPopupCompletionFrame(
 
             self._popup_is_activated = True
         else:
-            self._set_popup_activated_(False)
+            self._close_popup_()
 
     def _end_action_popup_(self, *args, **kwargs):
         parent = self.parent()
@@ -2811,7 +2822,7 @@ class QtPopupCompletionFrame(
             #
             self.completion_finished.emit(name_text)
 
-        self._set_popup_activated_(False)
+        self._close_popup_()
 
     def _close_popup_(self):
         self._set_popup_activated_(False)
@@ -2904,15 +2915,15 @@ class QtPopupForGuide(
         widget, event = args
         if widget == self._popup_entry:
             if event.type() == QtCore.QEvent.MouseButtonPress:
-                self._set_popup_activated_(False)
+                self._close_popup_()
             elif event.type() == QtCore.QEvent.WindowDeactivate:
-                self._set_popup_activated_(False)
+                self._close_popup_()
             #
             elif event.type() == QtCore.QEvent.FocusOut:
-                self._set_popup_activated_(False)
+                self._close_popup_()
             elif event.type() == QtCore.QEvent.KeyPress:
                 if event.key() == QtCore.Qt.Key_Escape:
-                    self._set_popup_activated_(False)
+                    self._close_popup_()
                 else:
                     self._keyword_filter_line_edit.keyPressEvent(event)
         return False
@@ -3036,7 +3047,7 @@ class QtPopupForGuide(
             #
             self._popup_is_activated = True
         else:
-            self._set_popup_activated_(False)
+            self._close_popup_()
 
     def _end_action_popup_(self):
         if self._choose_index is not None:
@@ -3064,10 +3075,11 @@ class QtPopupForGuide(
             parent._send_action_guide_item_press_clicked_emit_()
             parent._clear_guide_current_()
         #
-        self._set_popup_activated_(False)
+        self._close_popup_()
 
     def _set_popup_activated_(self, boolean):
         super(QtPopupForGuide, self)._set_popup_activated_(boolean)
+        #
         if self._choose_index is not None:
             parent = self.parent()
             parent._set_guide_choose_item_collapse_at_(self._choose_index)
@@ -3089,6 +3101,9 @@ class QtPopupForGuide(
             h = rect.height()
             return y+h+1+4
         return 0
+
+    def _close_popup_(self):
+        self._set_popup_activated_(False)
 
 
 class QtEntryFrame(

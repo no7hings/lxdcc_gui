@@ -820,6 +820,10 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                             content.set(
                                 '{}.properties.icon_name'.format(i_gui_path), i_hook_option.get('gui_icon_name')
                             )
+                        if 'gui_sub_icon_name' in i_hook_option:
+                            content.set(
+                                '{}.properties.sub_icon_name'.format(i_gui_path), i_hook_option.get('gui_sub_icon_name')
+                            )
                     #
                     content.set(
                         '{}.properties.executable_fnc'.format(i_gui_path), i_session.get_is_executable

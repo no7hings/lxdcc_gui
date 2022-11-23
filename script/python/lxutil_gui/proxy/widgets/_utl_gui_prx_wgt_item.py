@@ -260,8 +260,8 @@ class PrxTreeItem(
     def set_gui_menu_raw_extend(self, raw):
         self._gui_menu_raw.extend(raw)
 
-    def set_tool_tip(self, raw, column=0, markdown_style=False):
-        self.widget._set_tool_tip_(raw, column, markdown_style)
+    def set_tool_tip(self, raw, column=0):
+        self.widget._set_tool_tip_(raw, column)
 
     def set_tool_tips(self, texts):
         for column, text in enumerate(texts):

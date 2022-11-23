@@ -55,18 +55,6 @@ class QtTreeWidgetItem(
 
         self._status = self.ValidatorStatus.Normal
 
-    def _set_child_add_(self):
-        item = self.__class__()
-        self.addChild(item)
-        item._set_item_show_connect_()
-        return item
-
-    def _get_item_is_hidden_(self):
-        return self.isHidden()
-
-    def _refresh_widget_draw_(self):
-        self._get_view_().update()
-
     def setCheckState(self, column, state):
         self.setData(column, QtCore.Qt.CheckStateRole, state, emit_send_enable=False)
 
@@ -95,6 +83,18 @@ class QtTreeWidgetItem(
             tree_widget._set_item_check_action_run_(self, column)
             tree_widget._set_item_toggle_emit_send_(self, column, checked)
             tree_widget.update()
+
+    def _set_child_add_(self):
+        item = self.__class__()
+        self.addChild(item)
+        item._set_item_show_connect_()
+        return item
+
+    def _get_item_is_hidden_(self):
+        return self.isHidden()
+
+    def _refresh_widget_draw_(self):
+        self._get_view_().update()
 
     def _set_icon_(self, icon, column=0):
         self._icon = icon
@@ -454,7 +454,7 @@ class QtTreeWidgetItem(
             self.setText(column, _)
             self.setFont(column, utl_gui_qt_core.Font.NAME)
 
-    def _set_tool_tip_(self, raw, column=0, as_markdown_style=False):
+    def _set_tool_tip_(self, raw, column=0):
         if raw is not None:
             if isinstance(raw, (tuple, list)):
                 _ = u'\n'.join(raw)
@@ -466,38 +466,32 @@ class QtTreeWidgetItem(
             self._set_tool_tip_text_(
                 _,
                 column,
-                as_markdown_style
             )
 
-    def _set_tool_tip_text_(self, text, column=0, markdown_style=False):
+    def _set_tool_tip_text_(self, text, column=0):
         if hasattr(self, 'setToolTip'):
-            if markdown_style is True:
-                import markdown
-                html = markdown.markdown(text)
-                # noinspection PyCallingNonCallable
-                self.setToolTip(column, html)
+            css = u'<html>\n<body>\n<style>.no_wrap{white-space:nowrap;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
+            name_text_orig = self._get_name_text_orig_()
+            if name_text_orig is not None:
+                title_text = name_text_orig
             else:
-                css = u'<html>\n<body>\n<style>.no_wrap{white-space:nowrap;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
-                name_text_orig = self._get_name_text_orig_()
-                if name_text_orig is not None:
-                    title_text = name_text_orig
-                else:
-                    title_text = self._get_name_text_(column)
-                #
-                title_text = title_text.replace(u'<', u'&lt;').replace(u'>', u'&gt;')
-                css += u'<h3><p class="no_warp_and_center">{}</p></h3>\n'.format(title_text)
-                #
-                css += u'<p><hr></p>\n'
-                if isinstance(text, (str, unicode)):
-                    texts = text.split('\n')
-                else:
-                    texts = text
-                #
-                for i in texts:
-                    css += u'<ul><li><i><p class="nowrap">{}</p></i></li></ul>\n'.format(i)
-                css += u'</body>\n</html>'
-                # noinspection PyCallingNonCallable
-                self.setToolTip(column, css)
+                title_text = self._get_name_text_(column)
+            #
+            title_text = title_text.replace(u'<', u'&lt;').replace(u'>', u'&gt;')
+            css += u'<h3><p class="no_warp_and_center">{}</p></h3>\n'.format(title_text)
+            #
+            css += u'<p><hr></p>\n'
+            if isinstance(text, (str, unicode)):
+                texts = text.split('\n')
+            else:
+                texts = text
+            #
+            for i in texts:
+                css += u'<ul><li><i><p class="no_wrap">{}</p></i></li></ul>\n'.format(i)
+
+            css += u'</body>\n</html>'
+            # noinspection PyCallingNonCallable
+            self.setToolTip(column, css)
 
     def _get_item_widget_(self):
         pass

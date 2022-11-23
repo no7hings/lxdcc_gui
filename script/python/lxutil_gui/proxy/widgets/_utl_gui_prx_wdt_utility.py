@@ -613,8 +613,8 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
     def set_name(self, text):
         self.widget._set_name_text_(text)
 
-    def set_tool_tip(self, raw, as_markdown_style=False):
-        self.widget._set_tool_tip_(raw, as_markdown_style)
+    def set_tool_tip(self, raw):
+        self.widget._set_tool_tip_(raw)
 
     def set_check_clicked_connect_to(self, fnc):
         self.widget.check_clicked.connect(fnc)
@@ -1109,7 +1109,6 @@ class PrxSessionWindow(PrxToolWindow):
     def __init__(self, session, *args, **kwargs):
         super(PrxSessionWindow, self).__init__(*args, **kwargs)
         self._debug_run_(self._main_fnc_, session)
-
     @property
     def session(self):
         return self._session

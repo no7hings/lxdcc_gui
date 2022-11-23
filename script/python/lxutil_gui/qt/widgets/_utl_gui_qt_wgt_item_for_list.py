@@ -218,7 +218,7 @@ class _QtListItemWidget(
             if self._name_frame_draw_enable is True:
                 if self._get_has_names_():
                     painter._draw_frame_by_rect_(
-                        self._name_frame_rect,
+                        self._name_frame_draw_rect,
                         border_color=QtBorderColors.Transparent,
                         background_color=self._get_name_frame_background_color_(),
                         offset=offset
@@ -419,7 +419,7 @@ class _QtListItemWidget(
             name_w_, name_h_ = w, name_c*name_f_h
             name_x_, name_y_ = x, y+h-name_h_
             #
-            self._name_frame_rect.setRect(
+            self._name_frame_draw_rect.setRect(
                 name_x_, name_y_,
                 name_w_, name_h_
             )
@@ -489,7 +489,7 @@ class _QtListItemWidget(
             name_x_, name_y_ = x+(icn_w_+f_spacing)+(image_w_+f_spacing), y
             name_w_, name_h_ = width-(icn_w_+f_spacing)-(image_w_+f_spacing)-f_side*2, h
             #
-            self._name_frame_rect.setRect(
+            self._name_frame_draw_rect.setRect(
                 name_x_, name_y_,
                 name_w_, name_h_
             )
@@ -581,7 +581,7 @@ class _QtListItemWidget(
         if self._get_has_names_():
             name_indices = self._get_name_indices_()
             #
-            rect = self._name_frame_rect
+            rect = self._name_frame_draw_rect
             x, y = rect.x(), rect.y()
             w, h = rect.width(), rect.height()
             #

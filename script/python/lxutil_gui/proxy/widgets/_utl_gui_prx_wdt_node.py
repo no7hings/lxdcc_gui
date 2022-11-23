@@ -160,7 +160,7 @@ class AbsRsvTypeQtEntry(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_tool_tip(self, *args, **kwargs):
         if hasattr(self._qt_entry_widget, '_set_tool_tip_'):
-            self._qt_entry_widget._set_tool_tip_(args[0])
+            self._qt_entry_widget._set_tool_tip_(args[0], **kwargs)
 
 
 class _PrxStgObjEntry(AbsRsvTypeQtEntry):
@@ -1394,7 +1394,7 @@ class _AbsPrxTypeEntry(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_tool_tip(self, *args, **kwargs):
         if hasattr(self._prx_entry_widget._qt_widget, '_set_tool_tip_'):
-            self._prx_entry_widget._qt_widget._set_tool_tip_(args[0])
+            self._prx_entry_widget._qt_widget._set_tool_tip_(args[0], **kwargs)
 
     def set_clear(self):
         pass
@@ -1936,6 +1936,7 @@ class AbsPrxTypePort(AbsPrxPortDef):
             self.set(default)
 
     def set_tool_tip(self, *args, **kwargs):
+        kwargs['name'] = 'entry for "{}"'.format(self._label)
         self._prx_port_entry.set_tool_tip(*args, **kwargs)
 
     def get(self):
@@ -2013,6 +2014,13 @@ class PrxPortForString(PrxConstantPort):
     ENTRY_CLASS = _PrxEntryForString
     def __init__(self, *args, **kwargs):
         super(PrxPortForString, self).__init__(*args, **kwargs)
+
+
+class PrxPortForName(PrxConstantPort):
+    ENTRY_CLASS = _PrxEntryForString
+    def __init__(self, *args, **kwargs):
+        super(PrxPortForName, self).__init__(*args, **kwargs)
+        self._prx_port_entry._qt_entry_widget._set_value_entry_validator_use_as_name_()
 
 
 class PrxFramesPort(PrxConstantPort):
@@ -2857,6 +2865,17 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
 
         if widget_ in ['string']:
             port = PrxPortForString(
+                port_path,
+                node_widget=self.widget
+            )
+            lock = option.get('lock') or False
+            if lock is True:
+                port.set_locked(True)
+            #
+            port.set(value_)
+            port.set_default(value_)
+        elif widget_ in ['name']:
+            port = PrxPortForName(
                 port_path,
                 node_widget=self.widget
             )

@@ -1228,7 +1228,7 @@ def set_qt_window_show(qt_window, pos=None, size=None, use_exec=False):
         qt_window.raise_()
 
 
-def set_window_show_standalone(prx_window_class, **kwargs):
+def set_window_show_standalone(prx_window_class, show_kwargs=None, **kwargs):
     exists_app = QtWidgets.QApplication.instance()
     if exists_app is None:
         app = QtWidgets.QApplication(sys.argv)
@@ -1245,13 +1245,19 @@ def set_window_show_standalone(prx_window_class, **kwargs):
         system_tray_icon.setIcon(window.windowIcon())
         system_tray_icon.show()
         window._set_window_system_tray_icon_(system_tray_icon)
-        prx_window.set_window_show()
+        if isinstance(show_kwargs, dict):
+            prx_window.set_window_show(**show_kwargs)
+        else:
+            prx_window.set_window_show()
         # sys.exit(app.exec_())
         QtDccMtd.exit_app(app)
     else:
         prx_window = prx_window_class(**kwargs)
         prx_window.set_main_window_geometry(QtDccMtd.get_main_window_geometry())
-        prx_window.set_window_show()
+        if isinstance(show_kwargs, dict):
+            prx_window.set_window_show(**show_kwargs)
+        else:
+            prx_window.set_window_show()
         if QtDccMtd.get_is_clarisse():
             QtDccMtd.exit_app(exists_app)
 
@@ -2800,14 +2806,14 @@ class QtPainter(QtGui.QPainter):
     def _set_icon_name_text_draw_by_rect_(self, rect, text, border_color=None, background_color=None, font_color=None, offset=0, border_radius=0, border_width=1, is_hovered=False, is_enable=True):
         if offset != 0:
             rect_offset = QtCore.QRect(
-                rect.x() + offset, rect.y() + offset,
-                rect.width() - offset, rect.height() - offset
+                rect.x()+offset, rect.y()+offset,
+                rect.width()-offset, rect.height()-offset
             )
         else:
             rect_offset = rect
         #
-        x, y = rect_offset.x()+offset, rect_offset.y()+offset
-        w, h = rect_offset.width()-offset, rect_offset.height()-offset
+        x, y = rect_offset.x(), rect_offset.y()
+        w, h = rect_offset.width(), rect_offset.height()
         #
         frame_rect = QtCore.QRect(
             x, y,
@@ -2914,6 +2920,27 @@ class QtPainter(QtGui.QPainter):
             )
         else:
             self.drawRect(rect_)
+
+    def _draw_focus_frame_by_rect_(self, rect, border_color=None, background_color=None, border_width=1, offset=0):
+        if background_color is None:
+            background_color = 0, 0, 0, 0
+        if border_color is None:
+            border_color = 63, 255, 127, 255
+        #
+        self._set_background_color_(background_color)
+        self._set_border_color_(border_color)
+        self._set_border_width_(border_width)
+        #
+        l_ = 32
+        p1, p2, p3, p4 = rect.topLeft(), rect.topRight(), rect.bottomRight(), rect.bottomLeft()
+        (x1, y1), (x2, y2), (x3, y3), (x4, y4) = (p1.x(), p1.y()), (p2.x(), p2.y()), (p3.x(), p3.y()), (p4.x(), p4.y())
+        point_coords = (
+            ((x1, y1+l_), (x1, y1), (x1+l_, y1)),
+            ((x2-l_, y2), (x2, y2), (x2, y2+l_)),
+            ((x3, y3-l_), (x3, y3), (x3-l_, y3)),
+            ((x4+l_, y4), (x4, y4), (x4, y4-l_))
+        )
+        [self._set_path_draw_by_coords_(i) for i in point_coords]
 
     def _draw_line_by_rect_(self, rect, border_color, background_color, border_width=1):
         self._set_border_color_(border_color)
@@ -4023,6 +4050,16 @@ def set_qt_layout_clear(layout):
 
     #
     rcs_fnc_(layout)
+
+
+def get_lx_window_by_unique_id(unique_id):
+    windows = get_all_lx_windows()
+    for window in windows:
+        if hasattr(window, 'gui_proxy'):
+            window_gui_proxy = window.gui_proxy
+            if hasattr(window_gui_proxy, 'PRX_TYPE'):
+                if window_gui_proxy.get_window_unique_id() == unique_id:
+                    return window_gui_proxy
 
 
 class AsbQtMenuSetup(object):

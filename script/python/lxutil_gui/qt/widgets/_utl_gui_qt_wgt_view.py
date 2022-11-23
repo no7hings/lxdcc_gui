@@ -636,21 +636,21 @@ class _QtGuideBar(
                         i_item._icon_frame_draw_rect,
                         border_color=QtBackgroundColors.Transparent,
                         background_color=background_color,
-                        border_radius=4,
+                        border_radius=3,
                         offset=i_icon_offset
                     )
                 elif index == self._guide_current_index:
                     background_color = painter._get_item_background_color_1_by_rect_(
-                        i_item._name_frame_rect,
+                        i_item._name_frame_draw_rect,
                         is_hovered=guide_is_hovered,
                         is_actioned=self._get_is_actioned_(),
                     )
                     name_offset = [0, 2][self._get_action_flag_() is not None]
                     painter._draw_frame_by_rect_(
-                        i_item._name_frame_rect,
+                        i_item._name_frame_draw_rect,
                         border_color=QtBackgroundColors.Transparent,
                         background_color=background_color,
-                        border_radius=4,
+                        border_radius=3,
                         offset=name_offset
                     )
                 #
@@ -662,17 +662,18 @@ class _QtGuideBar(
                 #
                 i_type_text = i_item._type_text
                 painter._draw_text_by_rect_(
-                    i_item._type_rect,
+                    rect=i_item._type_rect,
                     text=i_type_text,
                     text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                     font_color=bsc_core.TextOpt(i_type_text).to_rgb(),
                     font=get_font(size=10, italic=True),
-                    offset=name_offset
+                    offset=name_offset,
+                    is_hovered=guide_is_hovered,
                 )
                 #
                 i_name_text = i_item._name_text
                 painter._draw_text_by_rect_(
-                    i_item._name_draw_rect,
+                    rect=i_item._name_draw_rect,
                     text=i_name_text,
                     text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
                     font=get_font(size=12),
@@ -723,7 +724,7 @@ class _QtGuideBar(
                 if i_item._icon_frame_draw_rect.contains(p) is True:
                     self._set_guide_choose_current_index_(index)
                     break
-                elif i_item._name_frame_rect.contains(p) is True:
+                elif i_item._name_frame_draw_rect.contains(p) is True:
                     self._set_view_guide_current_index_(index)
                     break
         #

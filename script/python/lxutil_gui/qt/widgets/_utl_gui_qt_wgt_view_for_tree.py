@@ -11,8 +11,9 @@ from lxutil_gui import utl_gui_core
 class QtTreeWidget(
     utl_gui_qt_abstract.AbsQtTreeWidget
 ):
-    PEN_BRANCH = QtGui.QPen(Brush.tree_branch, DpiScale(1))
-    PEN_BRANCH_HIGHLIGHT = QtGui.QPen(Brush.tree_branch_highlight, DpiScale(1))
+    PEN_LINE = QtGui.QPen(QtBackgroundColors.Basic, DpiScale(1))
+    PEN_BRANCH = QtGui.QPen(QtBackgroundColors.Button, DpiScale(1))
+    PEN_BRANCH_HIGHLIGHT = QtGui.QPen(QtBackgroundColors.Selected, DpiScale(1))
     cachedAncestors = None
     _is_expand_descendants = False
     #
@@ -63,7 +64,7 @@ class QtTreeWidget(
             utl_gui_core.QtStyleMtd.get('QHeaderView')
         )
         self.header().setFont(Font.NAME)
-        # self.header().setAutoFillBackground(True)
+        self.header().setAutoFillBackground(True)
         # noinspection PyUnresolvedReferences
         self.header().sortIndicatorChanged.connect(
             self._refresh_view_items_viewport_showable_by_sort_
@@ -118,7 +119,7 @@ class QtTreeWidget(
         highlight = self.selectionModel().isSelected(index)
 
         # Line width
-        lineWidth = DpiScale(1)
+        line_w = DpiScale(1)
 
         # Cell width
         cell_w = int(rect.width() / (level + 1))
@@ -131,8 +132,8 @@ class QtTreeWidget(
         h = rect.height()
 
         # Center of the cell
-        cx = x + int(w / 2) - int(lineWidth / 2)
-        cy = y + int(h / 2) - int(lineWidth / 2)
+        cx = x + int(w / 2) - int(line_w / 2)
+        cy = y + int(h / 2) - int(line_w / 2)
 
         # Backup the old pen
         tmp_pen = painter.pen()
@@ -140,43 +141,42 @@ class QtTreeWidget(
         # Draw the branch indicator on the right most
         if self._get_item_has_visible_children_by_index_(index):
             # Branch icon properties
-            rectRadius = DpiScale(4)
-            crossMargin = DpiScale(1)
+            r_rect = DpiScale(4)
+            cross_margin = DpiScale(1)
             # Is the row expanded ?
-            isExpanded = self.isExpanded(index)
+            is_expanded = self.isExpanded(index)
             # [+] and [-] are using different color when highlighted
             painter.setPen(self.PEN_BRANCH_HIGHLIGHT if highlight else self.PEN_BRANCH)
             # Draw a rectangle [ ] as the branch indicator
             painter.drawRect(
-                cx - rectRadius,
-                cy - rectRadius,
-                rectRadius * 2,
-                rectRadius * 2
+                cx - r_rect,
+                cy - r_rect,
+                r_rect * 2,
+                r_rect * 2
             )
             # Draw the '-' into the rectangle. i.e. [-]
             painter.drawLine(
-                cx - rectRadius + crossMargin + lineWidth,
+                cx - r_rect + cross_margin + line_w,
                 cy,
-                cx + rectRadius - crossMargin - lineWidth,
+                cx + r_rect - cross_margin - line_w,
                 cy
             )
             # Draw the '|' into the rectangle. i.e. [+]
-            if not isExpanded:
+            if not is_expanded:
                 painter.drawLine(
                     cx,
-                    cy - rectRadius + crossMargin + lineWidth,
+                    cy - r_rect + cross_margin + line_w,
                     cx,
-                    cy + rectRadius - crossMargin - lineWidth
+                    cy + r_rect - cross_margin - line_w
                 )
-
             # Other ornaments are not highlighted
-            painter.setPen(self.PEN_BRANCH)
+            painter.setPen(self.PEN_LINE)
             # Draw the '|' on the bottom. i.e. [-]
             #                                   |
-            if isExpanded:
+            if is_expanded:
                 painter.drawLine(
                     cx,
-                    cy + rectRadius + crossMargin + lineWidth,
+                    cy + r_rect + cross_margin + line_w,
                     cx,
                     y + h
                 )
@@ -187,27 +187,27 @@ class QtTreeWidget(
                 painter.drawLine(
                     x,
                     cy,
-                    cx - rectRadius - crossMargin - lineWidth,
+                    cx - r_rect - cross_margin - line_w,
                     cy
                 )
         else:
             # Circle is not highlighted
-            painter.setPen(self.PEN_BRANCH)
+            painter.setPen(self.PEN_LINE)
             # Draw the line and circle. i.e. --o
             if level > 0:
                 painter.drawLine(x, cy, cx, cy)
                 # Backup the old brush
                 oldBrush = painter.brush()
-                painter.setBrush(self.PEN_BRANCH.brush())
+                painter.setBrush(self.PEN_BRANCH_HIGHLIGHT.brush() if highlight else self.PEN_BRANCH.brush())
                 # A filled circle
-                circleRadius = DpiScale(2)
+                circle_r = DpiScale(2)
+                # painter.setPen(self.PEN_BRANCH_HIGHLIGHT if highlight else self.PEN_BRANCH)
                 painter.drawEllipse(
-                    cx - circleRadius,
-                    cy - circleRadius,
-                    circleRadius * 2,
-                    circleRadius * 2
+                    cx - circle_r,
+                    cy - circle_r,
+                    circle_r * 2,
+                    circle_r * 2
                 )
-
                 # Restore the old brush
                 painter.setBrush(oldBrush)
         # Draw other vertical and horizental lines on the left of the indicator

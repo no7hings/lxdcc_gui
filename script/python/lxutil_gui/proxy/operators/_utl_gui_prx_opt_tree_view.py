@@ -328,7 +328,7 @@ class PrxDccObjTreeViewAddOpt(object):
             #
             prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
             prx_item.set_expanded(True)
-            prx_item.set_checked(True)
+            prx_item.set_checked(False)
             prx_item.set_icon_by_name_text(obj.type_name, 1)
             self._obj_add_dict[obj_path] = prx_item
             return prx_item
@@ -365,7 +365,7 @@ class PrxDccObjTreeViewAddOpt(object):
             )
         prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
         prx_item.set_expanded(True)
-        prx_item.set_checked(True)
+        prx_item.set_checked(False)
         self._obj_add_dict[obj.path] = prx_item
         return prx_item
 
@@ -469,7 +469,7 @@ class PrxStgObjTreeViewAddOpt(object):
                     **kwargs
                 )
             #
-            prx_item.set_checked(True)
+            prx_item.set_checked(False)
             prx_item.set_icon_by_color(bsc_core.TextOpt(obj.type).to_rgb(), 1)
             self._obj_add_dict[obj_key] = prx_item
             return True, prx_item
@@ -532,7 +532,7 @@ class PrxStgObjTreeViewAddOpt(object):
                 )
             #
             self._obj_add_dict[obj_key] = prx_item
-            prx_item.set_checked(True)
+            prx_item.set_checked(False)
             prx_item.update_keyword_filter_keys_tgt([obj.path, obj.type])
             obj.set_obj_gui(prx_item)
             prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
@@ -823,7 +823,7 @@ class PrxDccObjTreeViewAddOpt1(object):
             obj.set_obj_gui(prx_item)
             prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
             prx_item.set_expanded(True)
-            prx_item.set_checked(True)
+            prx_item.set_checked(False)
             prx_item.set_icon_by_color(bsc_core.TextOpt(obj.type.name).to_rgb(), 1)
             self._obj_add_dict[obj_path] = prx_item
             return prx_item
@@ -873,7 +873,7 @@ class PrxDccObjTreeViewAddOpt1(object):
         obj.set_obj_gui(prx_item)
         prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
         prx_item.set_expanded(True)
-        prx_item.set_checked(True)
+        prx_item.set_checked(False)
 
         self._obj_add_dict[obj.path] = prx_item
         # prx_item.set_show_method(
@@ -1120,7 +1120,7 @@ class PrxObjTreeViewAddOpt(object):
                 item_class=self._prx_tree_item_cls,
             )
         #
-        tree_item.set_checked(True)
+        tree_item.set_checked(False)
         tree_item.set_gui_dcc_obj(path_dag_opt, namespace=self._dcc_namespace)
         #
         self._obj_add_dict[path_dag_opt.path] = tree_item

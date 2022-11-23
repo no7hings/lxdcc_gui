@@ -180,7 +180,7 @@ class AbsValidatorOpt(object):
             tool_tip=file_path,
         )
         prx_item.set_expanded(True)
-        prx_item.set_checked(True)
+        prx_item.set_checked(False)
 
         prx_item._validation_name = name
         prx_item._validation_result = collections.OrderedDict(
@@ -203,7 +203,7 @@ class AbsValidatorOpt(object):
             name=group_name,
             icon=utl_gui_core.RscIconFile.get('application/python'),
         )
-        prx_item.set_checked(True)
+        prx_item.set_checked(False)
         #
         prx_item._validation_name = group_name
         prx_item._validation_result = collections.OrderedDict(
@@ -230,7 +230,7 @@ class AbsValidatorOpt(object):
             icon=dcc_obj.icon,
             tool_tip=dcc_obj.path,
         )
-        prx_item.set_checked(True)
+        prx_item.set_checked(False)
         prx_item.set_status(status)
         prx_item.set_gui_dcc_obj(
             dcc_obj, self.DCC_NAMESPACE
@@ -249,7 +249,7 @@ class AbsValidatorOpt(object):
             icon=dcc_obj.icon,
             tool_tip=dcc_obj.path,
         )
-        prx_item.set_checked(True)
+        prx_item.set_checked(False)
         prx_item.set_status(status)
         prx_item.set_gui_dcc_obj(
             dcc_obj, self.DCC_NAMESPACE
@@ -265,7 +265,7 @@ class AbsValidatorOpt(object):
             tool_tip=stg_file.path
         )
         prx_item.set_status(status)
-        prx_item.set_checked(True)
+        prx_item.set_checked(False)
         return prx_item
 
     def _get_directory_(self, scene_prx_item, node_prx_item, directory_path, description, status):
@@ -277,7 +277,7 @@ class AbsValidatorOpt(object):
             tool_tip=stg_directory.path
         )
         prx_item.set_status(status)
-        prx_item.set_checked(True)
+        prx_item.set_checked(False)
         return prx_item
 
 
