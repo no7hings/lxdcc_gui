@@ -337,7 +337,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                     build_fnc=self.__gui_build_fnc_for_resources_
                 )
             ts.set_start()
-
+            #
             self.set_window_close_connect_to(quit_fnc_)
         else:
             with utl_core.gui_progress(maximum=len(rsv_tags), label='gui-add for resource') as g_p:
@@ -476,7 +476,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                     self.__batch_gui_build_fnc_for_tasks_and_units_
                 )
             ts.set_start()
-
+            #
             self.set_window_close_connect_to(quit_fnc_)
         else:
             with utl_core.gui_progress(maximum=len(rsv_entities_map), label='gui-add for task unit') as g_p:
@@ -518,7 +518,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                     self.__gui_build_fnc_for_tasks_and_units_
                 )
             ts.set_start()
-
+            #
             self.set_window_close_connect_to(quit_fnc_)
         else:
             with utl_core.gui_progress(maximum=len(rsv_tasks_map), label='gui-add for task unit') as g_p:

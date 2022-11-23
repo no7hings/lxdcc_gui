@@ -122,7 +122,7 @@ class GuiTypeOpt(object):
             if i_dtb_entity is not None:
                 if i_dtb_entity.entity_type == self._dtb.EntityTypes.Type:
                     i_dtb_assigns = self._dtb.get_entities(
-                        entity_type=self._dtb.EntityTypes.Assign,
+                        entity_type=self._dtb.EntityTypes.Types,
                         filters=[
                             ('kind', 'is', self._dtb.Kinds.ResourceType),
                             #
@@ -705,6 +705,8 @@ class AbsPnlAbsLib(prx_widgets.PrxSessionWindow):
                 )
                 #
                 ts.set_start()
+                #
+                self.set_window_close_connect_to(quit_fnc_)
         else:
             with utl_core.gui_progress(maximum=len(dtb_categories_map), label='gui-add for type') as g_p:
                 for i_dtb_categories in dtb_categories_map:
@@ -779,6 +781,8 @@ class AbsPnlAbsLib(prx_widgets.PrxSessionWindow):
                 )
             #
             ts.set_start()
+            #
+            self.set_window_close_connect_to(quit_fnc_)
         else:
             with utl_core.gui_progress(maximum=len(dtb_types_map), label='batch gui-add resource') as g_p:
                 for i_dtb_types in dtb_types_map:
@@ -790,15 +794,15 @@ class AbsPnlAbsLib(prx_widgets.PrxSessionWindow):
     def __batch_gui_cache_fnc_for_resources_by_entities_(self, dtb_types, thread_stack_index):
         if thread_stack_index == self.__thread_stack_index:
             if dtb_types:
-                dtb_resource_assigns = self._dtb.get_entities(
-                    entity_type=self._dtb.EntityTypes.Assign,
+                dtb_type_assigns = self._dtb.get_entities(
+                    entity_type=self._dtb.EntityTypes.Types,
                     filters=[
                         ('kind', 'is', self._dtb.Kinds.ResourceType),
                         #
                         ('value', 'in', [i.path for i in dtb_types])
                     ]
                 )
-                return dtb_resource_assigns, thread_stack_index
+                return dtb_type_assigns, thread_stack_index
 
     def __batch_gui_build_fnc_for_resources_(self, *args):
         def post_fnc_():
@@ -810,29 +814,31 @@ class AbsPnlAbsLib(prx_widgets.PrxSessionWindow):
         if args[0] is None:
             return
 
-        dtb_resource_assigns, thread_stack_index = args[0]
+        dtb_type_assigns, thread_stack_index = args[0]
         if thread_stack_index == self.__thread_stack_index:
             if thread_stack_index == self.__thread_stack_index:
-                dtb_resource_assigns_map = bsc_core.ListMtd.set_grid_to(
-                    dtb_resource_assigns, self.THREAD_STEP
+                dtb_type_assigns_map = bsc_core.ListMtd.set_grid_to(
+                    dtb_type_assigns, self.THREAD_STEP
                 )
                 if self._qt_thread_enable is True:
                     ts = utl_gui_qt_core.QtBuildThreadStack(self.widget)
                     self.__running_threads_stacks.append(ts)
                     ts.run_finished.connect(post_fnc_)
-                    for i_dtb_resource_assigns in dtb_resource_assigns_map:
+                    for i_dtb_type_assigns in dtb_type_assigns_map:
                         ts.set_register(
-                            functools.partial(self.__gui_cache_fnc_for_resources_, i_dtb_resource_assigns, thread_stack_index),
+                            functools.partial(self.__gui_cache_fnc_for_resources_, i_dtb_type_assigns, thread_stack_index),
                             self.__gui_build_fnc_for_resources_
                         )
                     #
                     ts.set_start()
+                    #
+                    self.set_window_close_connect_to(quit_fnc_)
                 else:
-                    with utl_core.gui_progress(maximum=len(dtb_resource_assigns_map), label='gui-add resources') as g_p:
-                        for i_dtb_resource_assigns in dtb_resource_assigns_map:
+                    with utl_core.gui_progress(maximum=len(dtb_type_assigns_map), label='gui-add resources') as g_p:
+                        for i_dtb_type_assigns in dtb_type_assigns_map:
                             g_p.set_update()
                             self.__gui_build_fnc_for_resources_(
-                                self.__gui_cache_fnc_for_resources_(i_dtb_resource_assigns)
+                                self.__gui_cache_fnc_for_resources_(i_dtb_type_assigns)
                             )
 
     def __gui_cache_fnc_for_resources_(self, dtb_resource_assigns, thread_stack_index):
@@ -845,8 +851,8 @@ class AbsPnlAbsLib(prx_widgets.PrxSessionWindow):
         build_args = []
         for i_dtb_resource in dtb_resources:
             self.__test_set.add(i_dtb_resource.name)
-            i_dtb_resource_assigns = self._dtb.get_entities(
-                entity_type=self._dtb.EntityTypes.Assign,
+            i_dtb_tag_assigns = self._dtb.get_entities(
+                entity_type=self._dtb.EntityTypes.Tags,
                 filters=[
                     ('kind', 'in', [self._dtb.Kinds.ResourcePrimarySemanticTag, self._dtb.Kinds.ResourcePropertyTag]),
                     #
@@ -855,11 +861,11 @@ class AbsPnlAbsLib(prx_widgets.PrxSessionWindow):
             )
             i_semantic_tag_filter_data = {}
             i_tag_args = []
-            for j_dtb_resource_assign in i_dtb_resource_assigns:
+            for j_dtb_tag_assign in i_dtb_tag_assigns:
                 j_dtb_tag = self._dtb.get_entity(
                     entity_type=self._dtb.EntityTypes.Tag,
                     filters=[
-                        ('path', 'is', j_dtb_resource_assign.value)
+                        ('path', 'is', j_dtb_tag_assign.value)
                     ]
                 )
                 if j_dtb_tag is not None:
@@ -867,7 +873,7 @@ class AbsPnlAbsLib(prx_widgets.PrxSessionWindow):
                     j_tag_key = j_dtb_tag.group
                     i_tag_args.append(j_dtb_tag)
                 else:
-                    j_tag = j_dtb_resource_assign.value
+                    j_tag = j_dtb_tag_assign.value
                     j_tag_key = bsc_core.DccPathDagOpt(j_tag).get_parent_path()
                     i_tag_args.append(j_tag)
 
@@ -876,7 +882,7 @@ class AbsPnlAbsLib(prx_widgets.PrxSessionWindow):
                 ).add(j_tag)
 
                 self._gui_tag_opt.register_count(
-                    j_dtb_resource_assign.node, j_dtb_resource_assign.value
+                    j_dtb_tag_assign.node, j_dtb_tag_assign.value
                 )
             #
             build_args.append(
