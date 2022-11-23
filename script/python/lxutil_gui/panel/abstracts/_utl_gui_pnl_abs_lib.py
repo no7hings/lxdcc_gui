@@ -11,6 +11,8 @@ from lxutil import utl_core
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
+from lxdatabase import dtb_configure
+
 import lxdatabase.objects as dtb_objects
 
 from lxutil_gui import utl_gui_core
@@ -597,7 +599,7 @@ class AbsPnlAbsLib(prx_widgets.PrxSessionWindow):
 
     def refresh_all(self):
         self._dtb = dtb_objects.DtbResourceLib(
-            '/data/e/myworkspace/td/lynxi/script/python/lxdatabase/.data/lib-configure.yml'
+            dtb_configure.DataFile.LIBRARY_BASIC
         )
 
         self._gui_type_opt = GuiTypeOpt(

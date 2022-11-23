@@ -5,6 +5,12 @@ import enum
 
 
 class Root(object):
+    MAIN = '/'.join(
+        os.path.dirname(__file__.replace('\\', '/')).split('/')
+    )
+    DATA = '{}/.data'.format(MAIN)
+    DOCUMENT = '{}/.doc'.format(MAIN)
+    #
     main = '/'.join(
         os.path.dirname(__file__.replace('\\', '/')).split('/')
     )
