@@ -83,6 +83,6 @@ class PnlAssetGeometryComparer(utl_gui_pnl_abstracts.AbsPnlGeometryComparer):
         super(PnlAssetGeometryComparer, self).__init__(session, *args, **kwargs)
 
 
-class PnlAssetLookLib(utl_gui_pnl_abstracts.AbsPnlAbsLib):
+class PnlAssetLookLib(utl_gui_pnl_abstracts.AbsPnlAbsResourceLibrary):
     def __init__(self, session, *args, **kwargs):
         super(PnlAssetLookLib, self).__init__(session, *args, **kwargs)

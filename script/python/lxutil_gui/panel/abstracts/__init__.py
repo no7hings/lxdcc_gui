@@ -1,7 +1,7 @@
 # coding:utf-8
 from ._utl_gui_pnl_abs_comparer import *
 
-from ._utl_gui_pnl_abs_lib import *
+from ._utl_gui_pnl_abs_resource_library import *
 
 from ._utl_gui_pnl_abs_loader import *
 

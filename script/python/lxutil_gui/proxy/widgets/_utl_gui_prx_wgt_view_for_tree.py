@@ -68,6 +68,9 @@ class PrxTreeView(
     def filter_bar(self):
         return self._prx_filter_bar
 
+    def set_filter_entry_tip(self, text):
+        self._prx_filter_bar.set_entry_tip(text)
+
     def set_loading_item_add(self, item_prx):
         if not item_prx in self._loading_item_prxes:
             self._loading_item_prxes.append(item_prx)

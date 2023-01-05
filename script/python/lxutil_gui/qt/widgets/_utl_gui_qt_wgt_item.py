@@ -1399,7 +1399,6 @@ class QtValueEntryForScript(
         super(QtValueEntryForScript, self)._set_value_entry_enable_(boolean)
 
         self._value_entry.setReadOnly(not boolean)
-
         self._frame_background_color = [
             QtBackgroundColors.Basic, QtBackgroundColors.Dark
         ][boolean]
@@ -1679,9 +1678,7 @@ class QtValueEntryForEnumerate(
         self._value_entry._set_enter_enable_(boolean)
         self._value_choose_button.setHidden(not boolean)
 
-        self._frame_background_color = [
-            QtBackgroundColors.Basic, QtBackgroundColors.Dark
-        ][boolean]
+        self._update_background_color_by_locked_(boolean)
         #
         self._refresh_widget_()
 
@@ -1820,22 +1817,26 @@ class QtValueEntryForArray(
         self._main_layout = QtVBoxLayout(self)
         self._main_layout.setContentsMargins(0, 0, 0, 0)
         self._main_layout.setSpacing(0)
+        #
         entry_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
         self._main_layout.addWidget(entry_widget)
         #
         self._value_entry_layout = QtHBoxLayout(entry_widget)
         self._value_entry_layout.setContentsMargins(2, 2, 2, 2)
-        self._value_entry_layout.setSpacing(2)
+        self._value_entry_layout.setSpacing(0)
         #
         self._value_entry = self.QT_VALUE_ENTRY_CLASS()
         self._value_entry_layout.addWidget(self._value_entry)
         self._value_entry._set_entry_frame_(self)
         #
-        button_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+        button_widget = _utl_gui_qt_wgt_utility.QtLineWidget()
+        button_widget._set_line_styles_(
+            [button_widget.Style.Null, button_widget.Style.Null, button_widget.Style.Solid, button_widget.Style.Null]
+        )
         self._value_entry_layout.addWidget(button_widget)
         self._entry_button_layout = QtVBoxLayout(button_widget)
         self._entry_button_layout._set_align_top_()
-        self._entry_button_layout.setContentsMargins(0, 0, 0, 0)
+        self._entry_button_layout.setContentsMargins(2, 0, 0, 0)
         self._entry_button_layout.setSpacing(2)
 
         self._value_choose_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
@@ -1862,7 +1863,7 @@ class QtValueEntryForArray(
         super(QtValueEntryForArray, self)._set_value_entry_enable_(boolean)
 
         self._value_entry._set_entry_enable_(boolean)
-        self._frame_background_color = [QtBackgroundColors.Basic, QtBackgroundColors.Dark][boolean]
+        self._update_background_color_by_locked_(boolean)
         self._refresh_widget_draw_()
 
     def _set_value_entry_drop_enable_(self, boolean):
@@ -1976,17 +1977,20 @@ class QtValueEntryForArrayAsChoose(
         #
         self._value_entry_layout = QtHBoxLayout(entry_widget)
         self._value_entry_layout.setContentsMargins(2, 2, 2, 2)
-        self._value_entry_layout.setSpacing(2)
+        self._value_entry_layout.setSpacing(0)
         #
         self._value_entry = self.QT_VALUE_ENTRY_CLASS()
         self._value_entry_layout.addWidget(self._value_entry)
         self._value_entry._set_entry_frame_(self)
         #
-        button_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+        button_widget = _utl_gui_qt_wgt_utility.QtLineWidget()
+        button_widget._set_line_styles_(
+            [button_widget.Style.Null, button_widget.Style.Null, button_widget.Style.Solid, button_widget.Style.Null]
+        )
         self._value_entry_layout.addWidget(button_widget)
         self._entry_button_layout = QtVBoxLayout(button_widget)
         self._entry_button_layout._set_align_top_()
-        self._entry_button_layout.setContentsMargins(0, 0, 0, 0)
+        self._entry_button_layout.setContentsMargins(2, 0, 0, 0)
         self._entry_button_layout.setSpacing(2)
 
         self._value_choose_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
@@ -2013,7 +2017,7 @@ class QtValueEntryForArrayAsChoose(
         super(QtValueEntryForArrayAsChoose, self)._set_value_entry_enable_(boolean)
 
         self._value_entry._set_entry_enable_(boolean)
-        self._frame_background_color = [QtBackgroundColors.Basic, QtBackgroundColors.Dark][boolean]
+        self._update_background_color_by_locked_(boolean)
         self._refresh_widget_draw_()
 
     def _set_value_entry_drop_enable_(self, boolean):
@@ -2262,6 +2266,9 @@ class QtFilterBar(
 
         self._entry_completion_frame.completion_finished.connect(self._add_entry_history_value_)
     #
+    def _set_entry_tip_(self, text):
+        self._value_entry._set_entry_tip_(text)
+
     def _refresh_filter_(self):
         self._match_case_button._set_icon_file_path_(
             utl_gui_core.RscIconFile.get(self._match_case_icon_names[self._is_match_case])

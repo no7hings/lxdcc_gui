@@ -157,7 +157,6 @@ class AbsQtStatusDef(object):
             color = QtBackgroundColors.Transparent
             hover_color = QtBackgroundColors.Transparent
         return color, hover_color
-
     @classmethod
     def _get_text_color_by_validator_status_(cls, status):
         if status in [bsc_configure.ValidatorStatus.Warning]:
@@ -191,7 +190,6 @@ class AbsQtStatusDef(object):
             color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
             hover_color = r, g, b
         return color, hover_color
-
     @classmethod
     def _get_border_color_by_validator_status_(cls, status):
         if status in [bsc_configure.ValidatorStatus.Warning]:
@@ -223,9 +221,8 @@ class AbsQtStatusDef(object):
             color = QtBackgroundColors.Transparent
             hover_color = QtBackgroundColors.Transparent
         return color, hover_color
-
     @classmethod
-    def _get_background_color_by_validator_status(cls, status):
+    def _get_background_color_by_validator_status_(cls, status):
         if status in [bsc_configure.ValidatorStatus.Warning]:
             r, g, b = 255, 255, 63
             h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
@@ -438,7 +435,7 @@ class AbsQtValidatorDef(object):
 
     def _set_validator_status_at_(self, index, status):
         self._validator_statuses[index] = status
-        color, hover_color = AbsQtStatusDef._get_background_color_by_validator_status(status)
+        color, hover_color = AbsQtStatusDef._get_background_color_by_validator_status_(status)
         self._validator_status_colors[index] = color
         self._hover_validator_status_colors[index] = hover_color
         #
@@ -457,7 +454,7 @@ class AbsQtValidatorDef(object):
             self._validator_status_colors = []
             self._hover_validator_status_colors = []
             for i_status in statuses:
-                i_color, i_hover_color = AbsQtStatusDef._get_background_color_by_validator_status(i_status)
+                i_color, i_hover_color = AbsQtStatusDef._get_background_color_by_validator_status_(i_status)
                 self._validator_status_colors.append(i_color)
                 self._hover_validator_status_colors.append(i_hover_color)
         else:
@@ -3250,6 +3247,16 @@ class AbsQtShowForItemDef(
 
     def _set_item_show_force_(self):
         self._set_item_show_start_all_(force=True)
+
+
+class ShowFnc(object):
+    def __init__(self):
+        pass
+
+
+class AbsQtShowStackForItemDef(object):
+    def _init_show_stack_for_item_(self):
+        pass
 
 
 class AbsQtShowForViewDef(object):

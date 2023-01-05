@@ -694,6 +694,9 @@ class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):
     def __init__(self, *args, **kwargs):
         super(PrxFilterBar, self).__init__(*args, **kwargs)
 
+    def set_entry_tip(self, text):
+        self._qt_widget._set_entry_tip_(text)
+
     def get_enter_widget(self):
         return self.widget._get_qt_entry_()
 

@@ -108,6 +108,56 @@ class QtLine(
             )
 
 
+class QtLineWidget(QtWidgets.QWidget):
+    class Style(object):
+        Null = 0x00
+        Solid = 0x01
+
+    def __init__(self, *args, **kwargs):
+        super(QtLineWidget, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        # self.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+        # top, bottom, left, right
+        self._line_styles = [self.Style.Null]*4
+        self._lines = [QtCore.QLine(), QtCore.QLine(), QtCore.QLine(), QtCore.QLine()]
+        self._line_border_color = QtBorderColors.Light
+
+    def _set_line_styles_(self, line_styles):
+        self._line_styles = line_styles
+
+    def _update_line_geometry_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        t_l, b_l, l_l, r_l = self._lines
+        # top
+        t_l.setP1(QtCore.QPoint(x, y+1))
+        t_l.setP2(QtCore.QPoint(x+w, y+1))
+        # bottom
+        b_l.setP1(QtCore.QPoint(x, y+h-1))
+        b_l.setP2(QtCore.QPoint(x+w, y+h-1))
+        # left
+        l_l.setP1(QtCore.QPoint(x+1, y))
+        l_l.setP2(QtCore.QPoint(x+1, y+h))
+        # right
+        r_l.setP1(QtCore.QPoint(x+w-1, y))
+        r_l.setP2(QtCore.QPoint(x+w-1, y+h))
+
+    def resizeEvent(self, event):
+        self._update_line_geometry_()
+
+    def paintEvent(self, event):
+        painter = QtPainter(self)
+        painter.setRenderHints(
+            painter.Antialiasing
+        )
+        for seq, i in enumerate(self._line_styles):
+            i_line = self._lines[seq]
+            painter._set_border_color_(self._line_border_color)
+            # painter._set_border_width_(2)
+            if i == self.Style.Solid:
+                painter.drawLine(i_line)
+
+
 class _QtTranslucentWidget(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super(_QtTranslucentWidget, self).__init__(*args, **kwargs)
@@ -1957,6 +2007,11 @@ class QtLineEdit_(
         self._set_entry_drop_def_init_(self)
         self.setAcceptDrops(self._entry_drop_is_enable)
 
+        # self.setPlaceholderText()
+
+    def _set_entry_tip_(self, text):
+        self.setPlaceholderText(text)
+
     def _execute_action_wheel_(self, event):
         if self._value_type in [int, float]:
             delta = event.angleDelta().y()
@@ -3166,7 +3221,7 @@ class QtEntryFrame(
         self._set_frame_def_init_()
         self._set_status_def_init_()
         #
-        self._frame_border_color = QtBackgroundColors.Light
+        self._frame_border_color = QtBorderColors.Light
         self._hovered_frame_border_color = QtBorderColors.Hovered
         self._selected_frame_border_color = QtBorderColors.Selected
         #
@@ -3200,6 +3255,11 @@ class QtEntryFrame(
                 # border_radius=1,
                 # border_width=2,
             )
+
+    def _update_background_color_by_locked_(self, boolean):
+        self._frame_background_color = [
+            QtBackgroundColors.Basic, QtBackgroundColors.Dim
+        ][boolean]
 
     def _set_focused_(self, boolean):
         self._is_focused = boolean

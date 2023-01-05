@@ -5,6 +5,8 @@ import functools
 
 import uuid
 
+from contextlib import contextmanager
+
 from lxbasic import bsc_configure, bsc_core
 
 from lxutil import utl_core
@@ -582,20 +584,25 @@ class AbsPrxProgressingDef(object):
         self._qt_progressing_char._refresh_widget_draw_()
 
     def set_progress_create(self, maximum, label=None):
-        p = self.PROGRESS_FNC_CLASS(
+        g_p = self.PROGRESS_FNC_CLASS(
             proxy=self,
             qt_progress=self._qt_progressing_char,
             maximum=maximum,
             label=label
         )
         if self._current_progress is None:
-            self._current_progress = p
+            self._current_progress = g_p
         else:
             if self._current_progress.get_is_stop() is True:
-                self._current_progress = p
+                self._current_progress = g_p
             else:
-                self._current_progress.set_child_add(p)
-        return p
+                self._current_progress.set_child_add(g_p)
+        return g_p
+    @contextmanager
+    def gui_progress(self, maximum, label=None):
+        g_p = self.set_progress_create(maximum, label)
+        yield g_p
+        g_p.set_stop()
 
 
 class AbsPrxMenuDef(object):

@@ -325,7 +325,7 @@ class AbsPnlAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
                     i_texture_src = utl_dcc_objects.OsTexture(
                         i_file_path
                     )
-
+                    #
                     i_texture_src.set_link_to_directory(
                         directory_path_tgt
                     )

@@ -336,6 +336,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                     cache_fnc=functools.partial(self.__gui_cache_fnc_for_resources_by_tag_, i_rsv_tag),
                     build_fnc=self.__gui_build_fnc_for_resources_
                 )
+            #
             ts.set_start()
             #
             self.set_window_close_connect_to(quit_fnc_)
@@ -475,6 +476,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                     functools.partial(self.__batch_gui_cache_fnc_for_tasks_and_units_by_entities_, i_rsv_entities, thread_stack_index),
                     self.__batch_gui_build_fnc_for_tasks_and_units_
                 )
+            #
             ts.set_start()
             #
             self.set_window_close_connect_to(quit_fnc_)
@@ -517,6 +519,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                     functools.partial(self.__gui_cache_fnc_for_tasks_and_units_by_entities_, i_rsv_tasks, thread_stack_index),
                     self.__gui_build_fnc_for_tasks_and_units_
                 )
+            #
             ts.set_start()
             #
             self.set_window_close_connect_to(quit_fnc_)
