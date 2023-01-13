@@ -456,6 +456,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                 ]:
                     self.__batch_add_tasks_and_units_by_entities_([rsv_entity], self.__thread_stack_index)
     # refresh task unit by any entity
+    # todo: thread bug in katana
     def __batch_add_tasks_and_units_by_entities_(self, rsv_entities, thread_stack_index):
         def post_fnc_():
             pass
@@ -494,9 +495,15 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             if type_name in [
                 'role', 'sequence',
             ]:
-                return [j for i in rsv_entities for j in i.get_rsv_resources(**self._rsv_filter_opt.value)], thread_stack_index
+                return [
+                    [j for i in rsv_entities for j in i.get_rsv_resources(**self._rsv_filter_opt.value)],
+                    thread_stack_index
+                ]
             else:
-                return rsv_entities, thread_stack_index
+                return [
+                    rsv_entities,
+                    thread_stack_index
+                ]
 
     def __batch_gui_build_fnc_for_tasks_and_units_(self, *args):
         def post_fnc_():
@@ -534,9 +541,15 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
     def __gui_cache_fnc_for_tasks_and_units_by_entities_(self, rsv_entities, thread_stack_index):
         if rsv_entities:
             if rsv_entities[0].type_name == 'task':
-                return rsv_entities, thread_stack_index
+                return [
+                    rsv_entities,
+                    thread_stack_index
+                ]
             else:
-                return [j for i in rsv_entities for j in i.get_rsv_tasks(**self._rsv_filter_opt.value)], thread_stack_index
+                return [
+                    [j for i in rsv_entities for j in i.get_rsv_tasks(**self._rsv_filter_opt.value)],
+                    thread_stack_index
+                ]
 
     def __gui_build_fnc_for_tasks_and_units_(self, *args):
         rsv_tasks, thread_stack_index = args[0]
