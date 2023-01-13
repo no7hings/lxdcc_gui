@@ -377,6 +377,7 @@ class PrxDialogWindow1(AbsPrxDialogWindow):
         self._central_widget = _utl_gui_qt_wgt_utility.QtWidget()
         layout.addWidget(self._central_widget)
         self._central_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._central_widget)
+        self._central_layout.setContentsMargins(*[4]*4)
 
     def set_yes_run(self):
         self._result = True

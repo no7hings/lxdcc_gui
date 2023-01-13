@@ -121,6 +121,9 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
             utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum
         )
 
+    def set_expand_changed_connect_to(self, fnc):
+        self._head.expand_clicked.connect(fnc)
+
     def set_clear(self):
         def rcs_fnc_(layout_):
             c = layout_.count()
@@ -1076,7 +1079,7 @@ class PrxToolWindow(
                 '\n'.join(text)
             )
 
-    def set_window_show(self, pos=None, size=None, exclusive=False):
+    def set_window_show(self, pos=None, size=None, exclusive=True):
         # show unique
         if exclusive is True:
             gui_proxies = utl_gui_prx_core.get_gui_proxy_by_class(self.__class__)

@@ -15,180 +15,20 @@ from lxdatabase import dtb_configure
 
 import lxdatabase.objects as dtb_objects
 
-from lxutil_gui import utl_gui_core
+from lxutil_gui import utl_gui_configure, utl_gui_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
 import lxsession.commands as ssn_commands
 
 
-class _GuiTypeOpt(object):
-    ROOT_NAME = 'All'
-    DCC_NAMESPACE = 'database'
-    def __init__(self, window, session, database_opt, prx_view):
+class _GuiBaseOpt(object):
+    def __init__(self, window, session, database_opt):
         self._window = window
         self._session = session
         self._dtb_opt = database_opt
-        self._tree_prx_view = prx_view
 
-        self._item_dict = self._tree_prx_view._item_dict
-
-        self._keys = set()
-
-    def restore(self):
-        self._tree_prx_view.set_clear()
-        #
-        self._keys.clear()
-
-    def gui_get_is_exists(self, path):
-        return path in self._item_dict
-
-    def gui_get(self, path):
-        return self._item_dict[path]
-
-    def gui_add_root(self):
-        path = '/'
-        if self.gui_get_is_exists(path) is False:
-            prx_item = self._tree_prx_view.set_item_add(
-                self.ROOT_NAME,
-                icon=utl_gui_core.RscIconFile.get('database/all'),
-            )
-            self._item_dict[path] = prx_item
-            prx_item.set_expanded(True)
-            prx_item.set_checked(False)
-            return prx_item
-        return self.gui_get(path)
-
-    def gui_add_all_category_groups(self):
-        dtb_category_groups = self._dtb_opt.get_entities(
-            entity_type=self._dtb_opt.EntityTypes.CategoryGroup,
-            filters=[
-                ('kind', 'is', self._dtb_opt.Kinds.ResourceCategoryGroup)
-            ]
-        )
-        [self.gui_add_category_group(i) for i in dtb_category_groups]
-
-    def gui_add_category_group(self, dtb_entity):
-        path = dtb_entity.path
-        if self.gui_get_is_exists(path) is False:
-            parent_gui = self.gui_get(dtb_entity.group)
-            prx_item = parent_gui.set_child_add(
-                dtb_entity.gui_name,
-                icon=utl_gui_core.RscIconFile.get(dtb_entity.gui_icon_name),
-            )
-            self._tree_prx_view._item_dict[path] = prx_item
-            #
-            prx_item.set_gui_dcc_obj(dtb_entity, namespace=self.DCC_NAMESPACE)
-            prx_item.set_tool_tip(dtb_entity.to_string())
-            prx_item.set_expanded(True)
-            prx_item.set_checked(False)
-            #
-            menu_content = self.get_menu_content(dtb_entity)
-            if menu_content:
-                prx_item.set_menu_content(menu_content)
-            return prx_item
-        return self.gui_get(path)
-
-    def gui_add_all_categories(self):
-        pass
-
-    def gui_add_category(self, dtb_entity):
-        path = dtb_entity.path
-        if self.gui_get_is_exists(path) is False:
-            parent_gui = self.gui_get(dtb_entity.group)
-            prx_item = parent_gui.set_child_add(
-                dtb_entity.gui_name,
-                icon=utl_gui_core.RscIconFile.get(dtb_entity.gui_icon_name),
-            )
-            prx_item.set_gui_dcc_obj(dtb_entity, namespace=self.DCC_NAMESPACE)
-            self._tree_prx_view._item_dict[path] = prx_item
-            #
-            prx_item.set_status(
-                prx_item.ValidatorStatus.Disable
-            )
-            prx_item.set_tool_tip(dtb_entity.to_string())
-            #
-            self._tree_prx_view.set_item_expand_connect_to(
-                prx_item,
-                lambda *args, **kwargs: self.__execute_gui_refresh_for_type_by_category_expand_changed_(prx_item),
-                time=100
-            )
-            #
-            menu_content = self.get_menu_content(dtb_entity)
-            if menu_content:
-                prx_item.set_menu_content(menu_content)
-            #
-            prx_item.set_checked(False)
-            return prx_item
-        return self.gui_get(path)
-
-    def __execute_gui_refresh_for_type_by_category_expand_changed_(self, prx_item):
-        child_prx_items = prx_item.get_children()
-        for i_prx_item in child_prx_items:
-            i_dtb_entity = i_prx_item.get_gui_dcc_obj(namespace=self.DCC_NAMESPACE)
-            if i_dtb_entity is not None:
-                if i_dtb_entity.entity_type == self._dtb_opt.EntityTypes.Type:
-                    i_dtb_assigns = self._dtb_opt.get_entities(
-                        entity_type=self._dtb_opt.EntityTypes.Types,
-                        filters=[
-                            ('kind', 'is', self._dtb_opt.Kinds.ResourceType),
-                            #
-                            ('value', 'is', i_dtb_entity.path),
-                        ]
-                    )
-                    i_count = len(i_dtb_assigns)
-                    i_prx_item.set_name(str(i_count), 1)
-                    if i_count > 0:
-                        i_prx_item.set_status(
-                            prx_item.ValidatorStatus.Normal
-                        )
-                    else:
-                        i_prx_item.set_status(
-                            prx_item.ValidatorStatus.Disable
-                        )
-
-    def gui_add_type(self, dtb_entity):
-        path = dtb_entity.path
-        if self.gui_get_is_exists(path) is False:
-            parent_gui = self.gui_get(dtb_entity.group)
-            parent_gui.set_status(parent_gui.ValidatorStatus.Normal)
-
-            name = dtb_entity.name
-            gui_name = dtb_entity.gui_name
-            prx_item = parent_gui.set_child_add(
-                gui_name,
-                icon=utl_gui_core.RscIconFile.get(dtb_entity.gui_icon_name),
-            )
-            self._tree_prx_view._item_dict[path] = prx_item
-            prx_item.set_status(prx_item.ValidatorStatus.Disable)
-            prx_item.set_gui_dcc_obj(dtb_entity, namespace=self.DCC_NAMESPACE)
-            # for keyword filter
-            prx_item.update_keyword_filter_keys_tgt([name, gui_name])
-            #
-            prx_item.set_tool_tip(dtb_entity.to_string())
-            #
-            menu_content = self.get_menu_content(dtb_entity)
-            if menu_content:
-                prx_item.set_menu_content(menu_content)
-            #
-            prx_item.set_checked(False)
-            return prx_item
-        return self.gui_get(path)
-    # for type
-    def gui_cache_fnc_for_types_by_categories(self, dtb_categories):
-        dtb_types = self._dtb_opt.get_entities(
-            entity_type=self._dtb_opt.EntityTypes.Type,
-            filters=[
-                ('group', 'in', [i.path for i in dtb_categories]),
-            ]
-        )
-        self._keys.update(set([i.name for i in dtb_types]))
-        return dtb_types
-
-    def gui_build_fnc_for_types(self, dtb_types):
-        [self.gui_add_type(i) for i in dtb_types]
-
-    def get_menu_content(self, dtb_entity):
+    def get_dtb_entity_menu_content(self, dtb_entity):
         options = []
         c = self._session.configure.get(
             'entity-actions.{}.option-hooks'.format(dtb_entity.entity_type)
@@ -218,23 +58,231 @@ class _GuiTypeOpt(object):
                 )
             return ssn_commands.get_menu_content_by_hook_options(options)
 
+    def get_dtb_extra_menu_content(self, dtb_entity, sub_path):
+        options = []
+        c = self._session.configure.get(
+            'entity-extra-actions.{}-{}.{}.option-hooks'.format(dtb_entity.entity_type, dtb_entity.kind, sub_path)
+        )
+        if c:
+            for i in c:
+                if isinstance(i, dict):
+                    i_key = i.keys()[0]
+                    i_value = i.values()[0]
+                else:
+                    i_key = i
+                    i_value = {}
+                #
+                i_kwargs = dict(
+                    option_hook_key=i_key,
+                    #
+                    window_unique_id=self._window.get_window_unique_id(),
+                    database=self._dtb_opt.get_database(),
+                    database_configure=self._dtb_opt.get_database_configure(),
+                    #
+                    entity_type=dtb_entity.entity_type,
+                    entity=dtb_entity.path,
+                )
+                i_kwargs.update(**{k: v for k, v in i_value.items() if v})
+                options.append(
+                    bsc_core.KeywordArgumentsOpt(i_kwargs).to_string(),
+                )
+            return ssn_commands.get_menu_content_by_hook_options(options)
 
-class _GuiTagOpt(object):
+    def get_dtb_entity_location(self, dtb_entity):
+        dtb_port = self._dtb_opt.get_entity(
+            entity_type=self._dtb_opt.EntityTypes.Attribute,
+            filters=[
+                ('node', 'is', dtb_entity.path),
+                ('port', 'is', 'location'),
+            ]
+        )
+        return dtb_port.value
+
+
+class _GuiTypeOpt(_GuiBaseOpt):
+    ROOT_NAME = 'All'
+    DCC_NAMESPACE = 'database'
+    def __init__(self, window, session, database_opt, prx_view):
+        super(_GuiTypeOpt, self).__init__(window, session, database_opt)
+        #
+        self._tree_prx_view = prx_view
+        self._item_dict = self._tree_prx_view._item_dict
+        self._keys = set()
+
+    def restore(self):
+        self._tree_prx_view.set_clear()
+        #
+        self._keys.clear()
+
+    def get_gui_is_exists(self, path):
+        return path in self._item_dict
+
+    def get_gui(self, path):
+        return self._item_dict[path]
+
+    def gui_add_root(self):
+        path = '/'
+        if self.get_gui_is_exists(path) is False:
+            prx_item = self._tree_prx_view.set_item_add(
+                self.ROOT_NAME,
+                icon=utl_gui_core.RscIconFile.get('database/all'),
+            )
+            self._item_dict[path] = prx_item
+            prx_item.set_expanded(True)
+            # prx_item.set_checked(False)
+            return prx_item
+        return self.get_gui(path)
+
+    def gui_add_all_category_groups(self):
+        dtb_category_groups = self._dtb_opt.get_entities(
+            entity_type=self._dtb_opt.EntityTypes.CategoryGroup,
+            filters=[
+                ('kind', 'is', self._dtb_opt.Kinds.ResourceCategoryGroup)
+            ]
+        )
+        [self.gui_add_category_group(i) for i in dtb_category_groups]
+
+    def gui_add_category_group(self, dtb_entity):
+        path = dtb_entity.path
+        if self.get_gui_is_exists(path) is False:
+            parent_gui = self.get_gui(dtb_entity.group)
+            prx_item = parent_gui.set_child_add(
+                dtb_entity.gui_name,
+                icon=utl_gui_core.RscIconFile.get(dtb_entity.gui_icon_name),
+            )
+            self._tree_prx_view._item_dict[path] = prx_item
+            #
+            prx_item.set_gui_dcc_obj(dtb_entity, namespace=self.DCC_NAMESPACE)
+            prx_item.set_tool_tip(dtb_entity.to_string())
+            prx_item.set_expanded(True)
+            # prx_item.set_checked(False)
+            #
+            menu_content = self.get_dtb_entity_menu_content(dtb_entity)
+            if menu_content:
+                prx_item.set_menu_content(menu_content)
+            return prx_item
+        return self.get_gui(path)
+
+    def gui_add_all_categories(self):
+        pass
+
+    def gui_add_category(self, dtb_entity):
+        path = dtb_entity.path
+        if self.get_gui_is_exists(path) is False:
+            parent_gui = self.get_gui(dtb_entity.group)
+            prx_item = parent_gui.set_child_add(
+                dtb_entity.gui_name,
+                icon=utl_gui_core.RscIconFile.get(dtb_entity.gui_icon_name),
+            )
+            prx_item.set_gui_dcc_obj(dtb_entity, namespace=self.DCC_NAMESPACE)
+            self._tree_prx_view._item_dict[path] = prx_item
+            #
+            prx_item.set_status(
+                prx_item.ValidatorStatus.Disable
+            )
+            prx_item.set_tool_tip(dtb_entity.to_string())
+            #
+            self._tree_prx_view.set_item_expand_connect_to(
+                prx_item,
+                lambda *args, **kwargs: self.__execute_gui_refresh_for_type_by_category_expand_changed_(prx_item),
+                time=100
+            )
+            #
+            menu_content = self.get_dtb_entity_menu_content(dtb_entity)
+            if menu_content:
+                prx_item.set_menu_content(menu_content)
+            #
+            # prx_item.set_checked(False)
+            return prx_item
+        return self.get_gui(path)
+
+    def __execute_gui_refresh_for_type_by_category_expand_changed_(self, prx_item):
+        child_prx_items = prx_item.get_children()
+        for i_prx_item in child_prx_items:
+            i_dtb_entity = i_prx_item.get_gui_dcc_obj(namespace=self.DCC_NAMESPACE)
+            if i_dtb_entity is not None:
+                if i_dtb_entity.entity_type == self._dtb_opt.EntityTypes.Type:
+                    i_dtb_assigns = self._dtb_opt.get_entities(
+                        entity_type=self._dtb_opt.EntityTypes.Types,
+                        filters=[
+                            ('kind', 'is', self._dtb_opt.Kinds.ResourceType),
+                            #
+                            ('value', 'is', i_dtb_entity.path),
+                        ]
+                    )
+                    i_count = len(i_dtb_assigns)
+                    i_prx_item.set_name(str(i_count), 1)
+                    if i_count > 0:
+                        i_prx_item.set_status(
+                            prx_item.ValidatorStatus.Normal
+                        )
+                    else:
+                        i_prx_item.set_status(
+                            prx_item.ValidatorStatus.Disable
+                        )
+
+    def gui_add_type(self, dtb_entity):
+        path = dtb_entity.path
+        if self.get_gui_is_exists(path) is False:
+            parent_gui = self.get_gui(dtb_entity.group)
+            parent_gui.set_status(parent_gui.ValidatorStatus.Normal)
+
+            name = dtb_entity.name
+            gui_name = dtb_entity.gui_name
+            prx_item = parent_gui.set_child_add(
+                gui_name,
+                icon=utl_gui_core.RscIconFile.get(dtb_entity.gui_icon_name),
+            )
+            self._tree_prx_view._item_dict[path] = prx_item
+            prx_item.set_status(prx_item.ValidatorStatus.Disable)
+            prx_item.set_gui_dcc_obj(dtb_entity, namespace=self.DCC_NAMESPACE)
+            # for keyword filter
+            prx_item.update_keyword_filter_keys_tgt([name, gui_name])
+            #
+            prx_item.set_tool_tip(dtb_entity.to_string())
+            #
+            menu_content = self.get_dtb_entity_menu_content(dtb_entity)
+            if menu_content:
+                prx_item.set_menu_content(menu_content)
+            #
+            # prx_item.set_checked(False)
+            return prx_item
+        return self.get_gui(path)
+    # for type
+    def gui_cache_fnc_for_types_by_categories(self, dtb_categories):
+        dtb_types = self._dtb_opt.get_entities(
+            entity_type=self._dtb_opt.EntityTypes.Type,
+            filters=[
+                ('group', 'in', [i.path for i in dtb_categories]),
+            ]
+        )
+        self._keys.update(set([i.name for i in dtb_types]))
+        return dtb_types
+
+    def gui_build_fnc_for_types(self, dtb_types):
+        [self.gui_add_type(i) for i in dtb_types]
+
+
+class _GuiTagOpt(_GuiBaseOpt):
     ROOT_NAME = 'All'
     DCC_NAMESPACE = 'database'
     def __init__(self, window, session, database_opt, tree_prx_view):
-        self._window = window
-        self._session = session
-        self._dtb_opt = database_opt
-        self._tree_prx_view = tree_prx_view
+        super(_GuiTagOpt, self).__init__(window, session, database_opt)
         #
+        self._tree_prx_view = tree_prx_view
         self._key_item_dict = {}
         self._value_item_dict = {}
         self._count_dict = {}
-
+        #
         self._tag_group_kinds = [
             self._dtb_opt.Kinds.ResourceSemanticTagGroup,
-            self._dtb_opt.Kinds.ResourcePropertyTagGroup
+            self._dtb_opt.Kinds.ResourcePropertyTagGroup,
+            self._dtb_opt.Kinds.ResourceStorageTagGroup
+        ]
+        self._tag_kinds = [
+            self._dtb_opt.Kinds.ResourcePrimarySemanticTag,
+            self._dtb_opt.Kinds.ResourcePropertyTag,
+            self._dtb_opt.Kinds.ResourceFileTag
         ]
 
     def restore(self):
@@ -295,15 +343,15 @@ class _GuiTagOpt(object):
         else:
             return self.gui_get_group(path)
 
-    def gui_get_is_exists(self, path):
+    def get_gui_is_exists(self, path):
         return path in self._value_item_dict
 
-    def gui_get(self, path):
+    def get_gui(self, path):
         return self._value_item_dict[path]
 
-    def gui_add(self, dtb_entity):
+    def add_gui(self, dtb_entity):
         path = dtb_entity.path
-        if self.gui_get_is_exists(path) is False:
+        if self.get_gui_is_exists(path) is False:
             parent_path = dtb_entity.group
             parent_gui = self.gui_get_group(parent_path)
             prx_item = parent_gui.set_child_add(
@@ -321,10 +369,10 @@ class _GuiTagOpt(object):
             #
             prx_item.set_name('0', 1)
             return prx_item
-        return self.gui_get(path)
+        return self.get_gui(path)
 
     def gui_add_by_path(self, path):
-        if self.gui_get_is_exists(path) is False:
+        if self.get_gui_is_exists(path) is False:
             path_opt = bsc_core.DccPathDagOpt(path)
             parent_path = path_opt.get_parent_path()
             parent_gui = self.gui_get_group(parent_path)
@@ -341,7 +389,7 @@ class _GuiTagOpt(object):
             #
             prx_item.set_name('0', 1)
             return prx_item
-        return self.gui_get(path)
+        return self.get_gui(path)
 
     def reset(self):
         self._count_dict.clear()
@@ -369,7 +417,7 @@ class _GuiTagOpt(object):
             prx_item = self.gui_add_by_path(dtb_tag)
         elif isinstance(dtb_tag, dict):
             tag_path = dtb_tag.path
-            prx_item = self.gui_add(dtb_tag)
+            prx_item = self.add_gui(dtb_tag)
         else:
             raise TypeError()
 
@@ -385,32 +433,64 @@ class _GuiTagOpt(object):
         return dict_
 
 
-class _GuiNodeOpt(object):
+class _GuiResourceOpt(_GuiBaseOpt):
     DCC_NAMESPACE = 'database'
     def __init__(self, window, session, database_opt, list_prx_view):
-        self._window = window
-        self._session = session
-        self._dtb_opt = database_opt
+        super(_GuiResourceOpt, self).__init__(window, session, database_opt)
+        #
         self._list_prx_view = list_prx_view
-
         self._item_dict = self._list_prx_view._item_dict
-
         self._keys = set()
 
     def restore(self):
         self._list_prx_view.set_clear()
         self._keys.clear()
 
-    def gui_get_is_exists(self, path):
+    def get_gui_is_exists(self, path):
         return path in self._item_dict
 
-    def gui_get(self, path):
+    def get_gui(self, path):
         return self._item_dict[path]
+
+    def add_gui(self, dtb_resource, semantic_tag_filter_data):
+        def cache_fnc_():
+            _list = []
+            return _list
+
+        def build_fnc_(data):
+            self.__gui_show_deferred_fnc_(
+                dtb_resource, prx_item, semantic_tag_filter_data, data
+            )
+
+        path = dtb_resource.path
+        if self.get_gui_is_exists(path) is False:
+            self._keys.add(dtb_resource.name)
+            #
+            prx_item = self._list_prx_view.set_item_add()
+            # print path, semantic_tag_filter_data
+            prx_item.get_item()._set_item_semantic_tag_filter_key_update_(semantic_tag_filter_data)
+            prx_item.set_gui_dcc_obj(
+                dtb_resource, namespace=self.DCC_NAMESPACE
+            )
+            prx_item.set_show_fnc(
+                cache_fnc_, build_fnc_
+            )
+            self._item_dict[path] = prx_item
+
+            return prx_item
+        return self.get_gui(path)
+
+    def get_checked_dtb_resources(self):
+        list_ = []
+        _ = self._list_prx_view.get_checked_items()
+        for i in _:
+            i_dtb_resource = i.get_gui_dcc_obj(self.DCC_NAMESPACE)
+            list_.append(i_dtb_resource)
+        return list_
 
     def __gui_show_deferred_fnc_(self, dtb_resource, prx_item, semantic_tag_filter_data, data):
         # type_ = dtb_resource.type
         prx_item.set_check_enable(True)
-
         # r, g, b = bsc_core.TextOpt(type_).to_rgb_()
         # prx_item.set_name_frame_background_color((r, g, b, 127))
         name_dict = collections.OrderedDict()
@@ -427,16 +507,46 @@ class _GuiNodeOpt(object):
             filters=[
                 ('node', 'is', dtb_resource.path),
                 ('port', 'is', 'version')
-            ]
+            ],
         )
 
-        menu_content = self.get_menu_content(dtb_resource)
-        prx_item.set_menu_content(menu_content)
-
+        dtb_version = self._dtb_opt.get_entity(
+            entity_type=self._dtb_opt.EntityTypes.Version,
+            filters=[
+                ('path', 'is', dtb_version_port.value),
+            ],
+        )
+        # drag action
+        prx_item.set_drag_enable(True)
+        if self._session.get_application() == 'katana':
+            prx_item.set_drag_data(
+                {
+                    'nodegraph/noderefs': 'rootNode',
+                    'pre-import/hook-option': self._get_callback_hook_option_(
+                        option_hook_key='dtb-callbacks/katana/resource-pre-import-by-drag',
+                        dtb_entity=dtb_resource
+                    ),
+                    'import/hook-option': self._get_callback_hook_option_(
+                        option_hook_key='dtb-callbacks/katana/resource-import-by-drag',
+                        dtb_entity=dtb_resource
+                    )
+                }
+            )
+            prx_item.set_drag_pressed_connect_to(
+                self._drag_pressed_fnc_
+            )
+            prx_item.set_drag_released_connect_to(
+                self._drag_release_fnc_
+            )
+        # menu
+        dtb_resource_menu_content = self.get_dtb_entity_menu_content(dtb_resource)
+        dtb_version_menu_content = self.get_dtb_entity_menu_content(dtb_version)
+        dtb_resource_menu_content.set_update(dtb_version_menu_content.get_value())
+        prx_item.set_menu_content(dtb_resource_menu_content)
+        #
         prx_item.set_name_dict(
             name_dict
         )
-
         prx_item.set_tool_tip(dtb_resource.to_string())
 
         preview_image_dtb_port = self._dtb_opt.get_entity(
@@ -464,60 +574,173 @@ class _GuiNodeOpt(object):
                 utl_gui_core.RscIconFile.get('image_loading_failed_error')
             )
 
-    def get_menu_content(self, dtb_resource):
-        options = []
-        resource_c = self._session.configure.get(
-            'entity-actions.resource.option-hooks'
+    def _get_callback_hook_option_(self, option_hook_key, dtb_entity):
+        return bsc_core.KeywordArgumentsOpt(
+            option=dict(
+                option_hook_key=option_hook_key,
+                #
+                window_unique_id=self._window.get_window_unique_id(),
+                database=self._dtb_opt.get_database(),
+                database_configure=self._dtb_opt.get_database_configure(),
+                #
+                entity_type=dtb_entity.entity_type,
+                entity=dtb_entity.path,
+            )
+        ).to_string()
+
+    def _drag_pressed_fnc_(self, *args, **kwargs):
+        mime_data, = args[0]
+        key = 'pre-import/hook-option'
+        if mime_data.hasFormat(key):
+            hook_option = mime_data.data(key).data()
+            ssn_commands.set_option_hook_execute(
+                hook_option
+            )
+
+    def _drag_release_fnc_(self, *args, **kwargs):
+        flag, mime_data = args[0]
+        if flag in [
+            utl_gui_configure.DragFlag.Copy,
+            utl_gui_configure.DragFlag.Move
+        ]:
+            key = 'import/hook-option'
+            if mime_data.hasFormat(key):
+                hook_option = mime_data.data(key).data()
+                ssn_commands.set_option_hook_execute(
+                    hook_option
+                )
+
+
+class _GuiDirectoryOpt(_GuiBaseOpt):
+    ROOT_NAME = 'All'
+    DCC_NAMESPACE = 'database'
+    def __init__(self, window, session, database_opt, tree_prx_view):
+        super(_GuiDirectoryOpt, self).__init__(window, session, database_opt)
+        #
+        self._tree_prx_view = tree_prx_view
+        self._item_dict = self._tree_prx_view._item_dict
+
+    def restore(self):
+        self._tree_prx_view.set_clear()
+
+    def get_gui_is_exists(self, path):
+        return path in self._item_dict
+
+    def get_gui(self, path):
+        return self._item_dict[path]
+
+    def gui_add_all(self, dtb_version):
+        version_path = dtb_version.path
+        version_path_opt = bsc_core.DccPathDagOpt(version_path)
+        #
+        self.gui_add_root(version_path_opt.name)
+        dtb_directories = self._dtb_opt.get_entities(
+            entity_type=self._dtb_opt.EntityTypes.Storage,
+            filters=[
+                ('kind', 'is', self._dtb_opt.Kinds.Directory),
+                ('group', 'startswith', dtb_version.path),
+            ]
         )
-        for i in resource_c:
-            if isinstance(i, dict):
-                i_key = i.keys()[0]
-                i_value = i.values()[0]
-                i_kwargs = dict(
-                    option_hook_key=i_key,
-                    #
-                    window_unique_id=self._window.get_window_unique_id(),
-                    database=self._dtb_opt.get_database(),
-                    database_configure=self._dtb_opt.get_database_configure(),
-                    #
-                    entity_type=dtb_resource.entity_type,
-                    entity=dtb_resource.path,
-                )
-                i_kwargs.update(**{k: v for k, v in i_value.items() if v})
-                options.append(
-                    bsc_core.KeywordArgumentsOpt(i_kwargs).to_string(),
-                )
-        return ssn_commands.get_menu_content_by_hook_options(options)
-
-    def gui_add(self, dtb_resource, semantic_tag_filter_data):
-        def cache_fnc_():
-            _list = []
-            return _list
-
-        def build_fnc_(data):
-            self.__gui_show_deferred_fnc_(
-                dtb_resource, prx_item, semantic_tag_filter_data, data
-            )
-
-        path = dtb_resource.path
-        if self.gui_get_is_exists(path) is False:
-            self._keys.add(dtb_resource.name)
+        for i_dtb_directory in dtb_directories:
+            i_path = i_dtb_directory.path
+            i_sub_path = i_path[len(version_path):]
             #
-            prx_item = self._list_prx_view.set_item_add()
+            self.gui_add_one(i_sub_path, i_dtb_directory)
 
-            # print path, semantic_tag_filter_data
-            prx_item.get_item()._set_item_semantic_tag_filter_key_update_(semantic_tag_filter_data)
+    def gui_add_one(self, sub_path, dtb_directory):
+        path_opt = bsc_core.DccPathDagOpt(sub_path)
+        ancestors = path_opt.get_ancestors()
+        if ancestors:
+            ancestors.reverse()
+            #
+            for i_ancestor in ancestors:
+                i_ancestor_path = i_ancestor.path
+                self.gui_add_group(i_ancestor_path)
+        #
+        self.add_gui(sub_path, dtb_directory)
 
-            prx_item.set_gui_dcc_obj(
-                dtb_resource, namespace=self.DCC_NAMESPACE
-            )
-            prx_item.set_show_fnc(
-                cache_fnc_, build_fnc_
+    def gui_add_root(self, name):
+        path = '/'
+        if self.get_gui_is_exists(path) is False:
+            prx_item = self._tree_prx_view.set_item_add(
+                name,
+                icon=utl_gui_core.RscIconFile.get('database/group'),
             )
             self._item_dict[path] = prx_item
-
+            prx_item.set_expanded(True)
+            # prx_item.set_checked(False)
             return prx_item
-        return self.gui_get(path)
+        else:
+            return self.get_gui(path)
+
+    def gui_add_group(self, sub_path):
+        if self.get_gui_is_exists(sub_path) is False:
+            path_opt = bsc_core.DccPathDagOpt(sub_path)
+            #
+            parent_gui = self.get_gui(path_opt.get_parent_path())
+            #
+            prx_item = parent_gui.set_child_add(
+                path_opt.name,
+                icon=utl_gui_core.RscIconFile.get('database/group'),
+            )
+            self._item_dict[sub_path] = prx_item
+            prx_item.set_tool_tip(sub_path)
+            prx_item.set_expanded(True)
+            # prx_item.set_checked(False)
+            return prx_item
+        return self.get_gui(sub_path)
+
+    def add_gui(self, sub_path, dtb_directory):
+        if self.get_gui_is_exists(sub_path) is False:
+            path_opt = bsc_core.DccPathDagOpt(sub_path)
+            #
+            parent_gui = self.get_gui(path_opt.get_parent_path())
+            #
+            prx_item = parent_gui.set_child_add(
+                path_opt.name,
+                icon=utl_gui_core.RscIconFile.get('database/objects'),
+            )
+            self._item_dict[sub_path] = prx_item
+            prx_item.set_tool_tip(sub_path)
+            #
+            dtb_entity_menu_content = self.get_dtb_entity_menu_content(dtb_directory)
+            dtb_extra_menu_content = self.get_dtb_extra_menu_content(dtb_directory, sub_path)
+            if dtb_extra_menu_content:
+                dtb_entity_menu_content.set_update(dtb_extra_menu_content)
+            #
+            if dtb_entity_menu_content:
+                prx_item.set_menu_content(dtb_entity_menu_content)
+            #
+            location = self.get_dtb_entity_location(dtb_directory)
+            if bsc_core.StoragePathMtd.get_is_exists(location) is True:
+                prx_item.set_status(prx_item.ValidatorStatus.Normal)
+            else:
+                prx_item.set_status(prx_item.ValidatorStatus.Disable)
+            #
+            prx_item.set_expanded(True)
+            # prx_item.set_checked(False)
+            return prx_item
+        return self.get_gui(sub_path)
+
+
+class _GuiFileOpt(_GuiBaseOpt):
+    DCC_NAMESPACE = 'database'
+    def __init__(self, window, session, database_opt, list_prx_view):
+        super(_GuiFileOpt, self).__init__(window, session, database_opt)
+        #
+        self._list_prx_view = list_prx_view
+        self._item_dict = self._list_prx_view._item_dict
+        self._keys = set()
+
+    def restore(self):
+        self._list_prx_view.set_clear()
+        self._keys.clear()
+
+    def get_gui_is_exists(self, path):
+        return path in self._item_dict
+
+    def get_gui(self, path):
+        return self._item_dict[path]
 
 
 class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
@@ -529,26 +752,26 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._item_icon_frame_size = self._session.gui_configure.get('item_icon_frame_size')
         self._item_icon_size = self._session.gui_configure.get('item_icon_size')
 
-        s = prx_widgets.PrxScrollArea()
-        self.set_widget_add(s)
-        #
-        e_0 = prx_widgets.PrxExpandedGroup()
-        s.set_widget_add(e_0)
-        e_0.set_name('viewers')
-        e_0.set_expanded(True)
+        main_scroll_area = prx_widgets.PrxScrollArea()
+        self.set_widget_add(main_scroll_area)
         #
         self._guide_bar = prx_widgets.PrxGuideBar()
-        e_0.set_widget_add(self._guide_bar)
+        main_scroll_area.set_widget_add(self._guide_bar)
         #
         h_s_0 = prx_widgets.PrxHSplitter()
-        e_0.set_widget_add(h_s_0)
+        main_scroll_area.set_widget_add(h_s_0)
         #
         v_s_0 = prx_widgets.PrxVSplitter()
         h_s_0.set_widget_add(v_s_0)
+        # type
+        self._type_expand_group = prx_widgets.PrxExpandedGroup()
+        v_s_0.set_widget_add(self._type_expand_group)
+        self._type_expand_group.set_expanded(True)
+        self._type_expand_group.set_name('type')
         #
         self._type_prx_view = prx_widgets.PrxTreeView()
+        self._type_expand_group.set_widget_add(self._type_prx_view)
         self._type_prx_view.set_filter_entry_tip('fiter by type ...')
-        v_s_0.set_widget_add(self._type_prx_view)
         self._type_prx_view.set_selection_use_single()
         self._type_prx_view.set_header_view_create(
             [('type', 3), ('count', 1)],
@@ -563,10 +786,15 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._type_prx_view.set_item_select_changed_connect_to(
             self.__refresh_guide_bar_
         )
+        # tag
+        self._tag_expand_group = prx_widgets.PrxExpandedGroup()
+        v_s_0.set_widget_add(self._tag_expand_group)
+        self._tag_expand_group.set_expanded(True)
+        self._tag_expand_group.set_name('tag')
         #
         self._tag_prx_view = prx_widgets.PrxTreeView()
+        self._tag_expand_group.set_widget_add(self._tag_prx_view)
         self._tag_prx_view.set_filter_entry_tip('filter by tag ...')
-        v_s_0.set_widget_add(self._tag_prx_view)
         self._tag_prx_view.set_selection_disable()
         self._tag_prx_view.set_header_view_create(
             [('tag', 3), ('count', 1)],
@@ -575,9 +803,18 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._tag_prx_view.set_item_check_changed_connect_to(
             self.__execute_gui_refresh_for_resources_by_property_check_
         )
+        #
+        view_scroll_area_1_0 = prx_widgets.PrxScrollArea()
+        h_s_0.set_widget_add(view_scroll_area_1_0)
         # resource
+        self._resource_expand_group = prx_widgets.PrxExpandedGroup()
+        view_scroll_area_1_0.set_widget_add(self._resource_expand_group)
+        self._resource_expand_group.set_expanded(True)
+        self._resource_expand_group.set_name('resource')
+        #
         self._resource_prx_view = prx_widgets.PrxListView()
-        h_s_0.set_widget_add(self._resource_prx_view)
+        self._resource_expand_group.set_widget_add(self._resource_prx_view)
+        # self._resource_prx_view.set_draw_enable(True)
         self._resource_prx_view.set_item_frame_size(*self._item_frame_size)
         self._resource_prx_view.set_item_icon_frame_size(*self._item_icon_frame_size)
         self._resource_prx_view.set_item_icon_size(*self._item_icon_size)
@@ -588,8 +825,41 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._resource_prx_view.set_item_select_changed_connect_to(
             self.__refresh_guide_bar_
         )
+        self._resource_prx_view.set_item_select_changed_connect_to(
+            self.__execute_gui_refresh_for_textures_
+        )
+        # texture
+        self._storage_expand_group = prx_widgets.PrxExpandedGroup()
+        view_scroll_area_1_0.set_widget_add(self._storage_expand_group)
+        self._storage_expand_group.set_expanded(True)
+        self._storage_expand_group.set_name('storage')
+        self._storage_expand_group.set_expand_changed_connect_to(
+            self.__execute_gui_refresh_for_textures_
+        )
+        #
+        texture_v_splitter = prx_widgets.PrxHSplitter()
+        self._storage_expand_group.set_widget_add(texture_v_splitter)
+        #
+        self._directory_prx_view = prx_widgets.PrxTreeView()
+        texture_v_splitter.set_widget_add(self._directory_prx_view)
+        self._directory_prx_view.set_header_view_create(
+            [('directory', 1)]
+        )
+        #
+        self._file_prx_view = prx_widgets.PrxListView()
+        texture_v_splitter.set_widget_add(self._file_prx_view)
+        self._file_prx_view.set_item_frame_size(*self._item_frame_size)
+        self._file_prx_view.set_item_icon_frame_size(*self._item_icon_frame_size)
+        self._file_prx_view.set_item_icon_size(*self._item_icon_size)
+        self._file_prx_view.set_item_icon_frame_draw_enable(True)
+        self._file_prx_view.set_item_name_frame_draw_enable(True)
+        self._file_prx_view.set_item_names_draw_range([None, 1])
+        self._file_prx_view.set_item_image_frame_draw_enable(True)
+        #
         h_s_0.set_stretches([1, 3])
-        v_s_0.set_stretches([1, 1])
+        v_s_0.set_stretches([2, 1])
+        #
+        texture_v_splitter.set_stretches([1, 2])
 
         self.refresh_all()
 
@@ -627,9 +897,6 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                 )
             return ssn_commands.get_menu_content_by_hook_options(options)
 
-    def __add_resources_by_quixel_fnc_(self):
-        pass
-
     def set_variants_restore(self):
         self.__running_threads_stacks = None
 
@@ -654,11 +921,21 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._gui_tag_opt = _GuiTagOpt(
             self, self._session, self._dtb_opt, self._tag_prx_view
         )
-        self._gui_node_opt = _GuiNodeOpt(
+        self._gui_resource_opt = _GuiResourceOpt(
             self, self._session, self._dtb_opt, self._resource_prx_view
+        )
+        #
+        self._gui_directory_opt = _GuiDirectoryOpt(
+            self, self._session, self._dtb_opt, self._directory_prx_view
+        )
+        self._gui_file_opt = _GuiFileOpt(
+            self, self._session, self._dtb_opt, self._file_prx_view
         )
 
         self.__gui_refresh_for_all_()
+
+    def get_gui_resource_opt(self):
+        return self._gui_resource_opt
 
     def __refresh_guide_bar_(self):
         def get_path_args_fnc_(dtb_entity_):
@@ -704,7 +981,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
     def __gui_refresh_for_all_(self):
         self._gui_type_opt.restore()
         self._gui_tag_opt.restore()
-        self._gui_node_opt.restore()
+        self._gui_resource_opt.restore()
         #
         self._guide_bar.set_clear()
         # type
@@ -854,7 +1131,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                         ('value', 'in', [i.path for i in dtb_types])
                     ]
                 )
-                return dtb_type_assigns, thread_stack_index
+                return [dtb_type_assigns, thread_stack_index]
 
     def __batch_gui_build_fnc_for_resources_(self, *args):
         def post_fnc_():
@@ -906,7 +1183,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             i_dtb_tag_assigns = self._dtb_opt.get_entities(
                 entity_type=self._dtb_opt.EntityTypes.Tags,
                 filters=[
-                    ('kind', 'in', [self._dtb_opt.Kinds.ResourcePrimarySemanticTag, self._dtb_opt.Kinds.ResourcePropertyTag]),
+                    ('kind', 'in', self._gui_tag_opt._tag_kinds),
                     #
                     ('node', 'is', i_dtb_resource.path)
                 ]
@@ -940,7 +1217,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             build_args.append(
                 (i_dtb_resource, i_tag_args, i_semantic_tag_filter_data)
             )
-        return build_args, thread_stack_index
+        return [build_args, thread_stack_index]
 
     def __gui_build_fnc_for_resources_(self, *args):
         build_args, thread_stack_index = args[0]
@@ -950,7 +1227,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
 
         if thread_stack_index == self.__thread_stack_index:
             for i_dtb_resource, i_dtb_tags, i_semantic_tag_filter_data in build_args:
-                self._gui_node_opt.gui_add(
+                self._gui_resource_opt.add_gui(
                     i_dtb_resource, i_semantic_tag_filter_data
                 )
                 #
@@ -958,3 +1235,30 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                     self._gui_tag_opt.gui_register(
                         j_dtb_tag
                     )
+    # build for textures
+    def __execute_gui_refresh_for_textures_(self):
+        self._gui_directory_opt.restore()
+        self._gui_file_opt.restore()
+        #
+        if self._storage_expand_group.get_is_expanded():
+            resource_selected_prx_items = self._resource_prx_view.get_selected_items()
+            if resource_selected_prx_items:
+                dtb_entity = resource_selected_prx_items[-1].get_gui_dcc_obj(self.DCC_NAMESPACE)
+                if dtb_entity is not None:
+                    self.__gui_add_directories_(dtb_entity)
+
+    def __gui_add_directories_(self, dtb_resource):
+        dtb_resource_version_port = self._dtb_opt.get_entity(
+            entity_type=self._dtb_opt.EntityTypes.Attribute,
+            filters=[
+                ('node', 'is', dtb_resource.path),
+                ('port', 'is', 'version'),
+            ]
+        )
+        dtb_version = self._dtb_opt.get_entity(
+            entity_type=self._dtb_opt.EntityTypes.Version,
+            filters=[
+                ('path', 'is', dtb_resource_version_port.value),
+            ],
+        )
+        self._gui_directory_opt.gui_add_all(dtb_version)

@@ -615,7 +615,7 @@ class _QtNGConnection(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
         )
 
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_hover_def_init_()
         self._set_action_press_def_init_()
         self._set_action_select_def_init_()
@@ -897,7 +897,7 @@ class _QtNGNode(
         self._set_image_def_init_()
         self._set_menu_def_init_()
         #
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_hover_def_init_()
         self._set_action_press_def_init_()
         self._set_action_select_def_init_()
@@ -1201,7 +1201,7 @@ class _QtNGGraph(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
         )
         #
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_rect_select_def_init_(self)
         self._set_action_frame_def_init_(self)
         #

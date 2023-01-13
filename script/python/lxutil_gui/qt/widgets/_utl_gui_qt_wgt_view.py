@@ -472,14 +472,6 @@ class QtTabView(
                 )
 
 
-class QtStyledItemDelegate(QtWidgets.QStyledItemDelegate):
-    def __init__(self, parent=None):
-        super(QtStyledItemDelegate, self).__init__(parent)
-
-    def updateEditorGeometry(self, editor, option, index):
-        editor.setGeometry(option.rect)
-
-
 class _QtGuideBar(
     _utl_gui_qt_wgt_utility.QtEntryFrame,
     #
@@ -527,7 +519,7 @@ class _QtGuideBar(
         self._set_menu_def_init_()
         #
         self._set_action_hover_def_init_()
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_press_def_init_()
         self._set_action_entry_def_init_()
         #
@@ -654,7 +646,7 @@ class _QtGuideBar(
                         offset=name_offset
                     )
                 #
-                painter._set_icon_file_draw_by_rect_(
+                painter._draw_icon_file_by_rect_(
                     i_item._icon_file_draw_rect,
                     file_path=i_item._get_icon_file_path_(),
                     offset=i_icon_offset

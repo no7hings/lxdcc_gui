@@ -62,6 +62,16 @@ class ActionFlag(enum.IntEnum):
     KeyControlPress = 0x82
     KeyShiftPress = 0x83
     KeyControlShiftPress = 0x84
+    #
+    DragPress = 0x91
+    DragMove = 0x92
+    DragRelease = 0x93
+
+
+class DragFlag(enum.IntEnum):
+    Ignore = 0x00
+    Copy = 0x01
+    Move = 0x02
 
 
 class RectRegion(enum.IntEnum):

@@ -411,8 +411,8 @@ class AbsPnlAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
                     break
                 #
                 if i_cmd:
-                    bsc_core.CmdSubProcessThread.set_wait()
-                    i_t = bsc_core.CmdSubProcessThread.set_start(i_cmd, i_index)
+                    bsc_core.SPCmdThread.set_wait()
+                    i_t = bsc_core.SPCmdThread.set_start(i_cmd, i_index)
                     i_t.status_changed.set_connect_to(status_update_at_fnc_)
                     i_t.finished.set_connect_to(finished_fnc_)
                 else:
@@ -906,7 +906,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                                         )
         else:
             contents.append(
-                u'checked some node and retry'
+                u'check one or more node and retry'
             )
 
         if contents:
@@ -945,8 +945,8 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                     break
                 #
                 if i_cmd:
-                    bsc_core.CmdSubProcessThread.set_wait()
-                    i_t = bsc_core.CmdSubProcessThread.set_start(i_cmd, i_index)
+                    bsc_core.SPCmdThread.set_wait()
+                    i_t = bsc_core.SPCmdThread.set_start(i_cmd, i_index)
                     i_t.status_changed.set_connect_to(status_update_at_fnc_)
                     i_t.finished.set_connect_to(finished_fnc_)
                 else:
@@ -1058,7 +1058,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                 return True
         else:
             contents.append(
-                u'checked some node and retry'
+                u'check one or more node and retry'
             )
 
         if contents:
@@ -1106,7 +1106,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                 return True
         else:
             contents.append(
-                u'checked some node and retry'
+                u'check one or more node and retry'
             )
 
         if contents:

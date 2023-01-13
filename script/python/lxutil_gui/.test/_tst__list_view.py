@@ -19,7 +19,6 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
                 # wdt.set_loading_update()
                 item_prx.set_image(thumbnail_file_path)
                 if i_ % 2 == 0:
-                    print 'AAA'
                     item_prx.set_icons_by_pixmap(
                         [
                             utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
@@ -53,14 +52,39 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
 
             item_prx = wdt.set_item_add()
             item_prx.set_show_method(show_fnc_)
+            item_prx.set_drag_enable(True)
+            item_prx.set_drag_data(
+                {
+                    'nodegraph/nodes': 'stained_concrete_wall_vdxicg2',
+                    # 'nodegraph/noderefs': 'rootNode',
+                    # 'python/text': 'NodegraphAPI.GetNode(\'worn_painted_wall_vjyifef\')',
+                    # 'python/GetGeometryProducer': 'Nodes3DAPI.GetGeometryProducer(NodegraphAPI.GetNode(\'worn_painted_wall_vjyifef\'))',
+                    # 'nodegraph/fileref': '/data/f/katana_drop_test/test_1.katana',
+                    # 'application/x-maya-data': ''
+                }
+            )
+            item_prx.set_drag_pressed_connect_to(
+                self._drag_pressed_fnc_
+            )
+            item_prx.set_drag_released_connect_to(
+                self._drag_released_fnc_
+            )
         #
         wdt = _utl_gui_prx_wgt_view_for_list.PrxListView()
+        # wdt.set_draw_enable(True)
         wdt.set_item_icon_frame_size(30, 30)
         wdt.set_item_icon_size(20, 20)
         wdt.set_clear()
         self.set_widget_add(wdt)
         for i in range(10):
             add_fnc_(i)
+
+    def _drag_pressed_fnc_(self, *args, **kwargs):
+        print args[0]
+
+    def _drag_released_fnc_(self, *args, **kwargs):
+        flag, mime_data = args[0]
+        print mime_data.data('nodegraph/noderefs').data()
 
 
 if __name__ == '__main__':

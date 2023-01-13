@@ -1,11 +1,68 @@
 # coding=utf-8
+from lxutil_gui import utl_gui_configure
+
 from lxutil_gui.qt.utl_gui_qt_core import *
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
 
 import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
-from lxutil_gui.qt import utl_gui_qt_core
+
+class QtDrag(QtGui.QDrag):
+    released = qt_signal(tuple)
+    ACTION_MAPPER = {
+        QtCore.Qt.IgnoreAction: utl_gui_configure.DragFlag.Ignore,
+        QtCore.Qt.CopyAction: utl_gui_configure.DragFlag.Copy,
+        QtCore.Qt.MoveAction: utl_gui_configure.DragFlag.Move
+    }
+    def __init__(self, *args, **kwargs):
+        super(QtDrag, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+
+        self._current_action = QtCore.Qt.IgnoreAction
+
+        self.actionChanged.connect(self._update_action_)
+
+    def _execute_start_(self, point_offset):
+        drag = self
+        widget = self.parent()
+
+        """
+        text/plain ArnoldSceneBake
+        nodegraph/nodes ArnoldSceneBake
+        nodegraph/noderefs ArnoldSceneBake
+        'python/text': 'NodegraphAPI.GetNode('ArnoldSceneBake')',
+        python/getParameters NodegraphAPI.GetNode('ArnoldSceneBake').getParameters()
+        'python/GetGeometryProducer': 'Nodes3DAPI.GetGeometryProducer(NodegraphAPI.GetNode(\'ArnoldSceneBake\'))',
+        'python/GetRenderProducer': Nodes3DAPI.GetRenderProducer(NodegraphAPI.GetNode('ArnoldSceneBake'), useMaxSamples=True)
+        """
+        #
+        w, h = widget.width(), widget.height()
+        p = QtGui.QPixmap(w, h)
+        p.fill(QtCore.Qt.white)
+        widget.render(p)
+        drag.setPixmap(p)
+        drag.setHotSpot(point_offset)
+        drag.exec_(QtCore.Qt.CopyAction)
+
+    def _release_(self):
+        pass
+
+    def _update_action_(self, *args, **kwargs):
+        self._current_action = args[0]
+
+    def _execute_release_(self):
+        if self._current_action in self.ACTION_MAPPER:
+            self.released.emit(
+                (self.ACTION_MAPPER[self._current_action], self.mimeData())
+            )
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.DeferredDelete:
+                self._execute_release_()
+        return False
 
 
 class _QtListItemWidget(
@@ -26,6 +83,7 @@ class _QtListItemWidget(
     utl_gui_qt_abstract.AbsQtActionCheckDef,
     utl_gui_qt_abstract.AbsQtActionPressDef,
     utl_gui_qt_abstract.AbsQtActionSelectDef,
+    utl_gui_qt_abstract.AbsQtActionDragDef,
     #
     utl_gui_qt_abstract.AbsQtStateDef,
     #
@@ -33,6 +91,9 @@ class _QtListItemWidget(
 ):
     viewport_show = qt_signal()
     viewport_hide = qt_signal()
+    #
+    drag_pressed = qt_signal(tuple)
+    drag_released = qt_signal(tuple)
     #
     QT_MENU_CLASS = _utl_gui_qt_wgt_utility.QtMenu
 
@@ -76,12 +137,13 @@ class _QtListItemWidget(
         self._set_movie_def_init_()
         #
         self._set_action_hover_def_init_()
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_check_def_init_()
         self._check_icon_file_path_0 = utl_gui_core.RscIconFile.get('filter_unchecked')
         self._check_icon_file_path_1 = utl_gui_core.RscIconFile.get('filter_checked')
         self._set_action_press_def_init_()
         self._set_action_select_def_init_()
+        self._init_action_drag_def_(self)
         #
         self._set_item_movie_action_def_init_()
         #
@@ -109,6 +171,12 @@ class _QtListItemWidget(
 
         self._signals = QtItemSignals()
 
+        self._drag = None
+
+    def _set_drag_enable_(self, boolean):
+        super(_QtListItemWidget, self)._set_drag_enable_(boolean)
+        self.setAcceptDrops(True)
+
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
@@ -120,7 +188,14 @@ class _QtListItemWidget(
             elif event.type() == QtCore.QEvent.Resize:
                 self.update()
             elif event.type() == QtCore.QEvent.MouseMove:
-                if event.button() == QtCore.Qt.NoButton:
+                if self._get_action_flag_is_match_(self.ActionFlag.PressClick):
+                    if self._drag_is_enable is True:
+                        self._update_mime_data_()
+                        self._drag = QtDrag(self)
+                        self._drag.setMimeData(self._drag_mime_data)
+                        self._drag._execute_start_(self._drag_point_offset)
+                        self._drag.released.connect(self._execute_drag_released_)
+                else:
                     self._execute_action_hover_(event)
             #
             elif event.type() == QtCore.QEvent.MouseButtonPress:
@@ -137,6 +212,7 @@ class _QtListItemWidget(
                         self.press_clicked.emit()
                         self._set_pressed_(True)
                         self._set_action_flag_(self.ActionFlag.PressClick)
+                        self._drag_point_offset = event.pos()
             #
             elif event.type() == QtCore.QEvent.MouseButtonDblClick:
                 if event.button() == QtCore.Qt.LeftButton:
@@ -159,7 +235,30 @@ class _QtListItemWidget(
                 #
                 self._set_pressed_(False)
                 self._set_action_flag_clear_()
+            #
+            elif event.type() == QtCore.QEvent.ChildAdded:
+                self._execute_drag_pressed_((self._drag_mime_data, ))
+                #
+                self._set_pressed_(False)
+                self._set_action_flag_clear_()
+            elif event.type() == QtCore.QEvent.ChildRemoved:
+                pass
+        else:
+            print event.type()
         return False
+
+    def _execute_drag_pressed_(self, *args, **kwargs):
+        self.drag_pressed.emit(
+            args[0]
+        )
+
+    def _execute_drag_released_(self, *args, **kwargs):
+        self.drag_released.emit(
+            args[0]
+        )
+
+    def dragMoveEvent(self, event):
+        print event
 
     def paintEvent(self, event):
         painter = QtPainter(self)
@@ -234,7 +333,7 @@ class _QtListItemWidget(
                     )
             # check icon
             if self._check_is_enable is True:
-                painter._set_icon_file_draw_by_rect_(
+                painter._draw_icon_file_by_rect_(
                     rect=self._check_icon_draw_rect,
                     file_path=self._check_icon_file_path_current,
                     offset=offset,
@@ -257,7 +356,7 @@ class _QtListItemWidget(
                         icon_file_paths = self._get_icon_file_paths_()
                         if icon_file_paths:
                             for icon_index in icon_indices:
-                                painter._set_icon_file_draw_by_rect_(
+                                painter._draw_icon_file_by_rect_(
                                     self._get_icon_rect_at_(icon_index),
                                     self._get_icon_file_path_at_(icon_index),
                                     offset=offset
@@ -283,12 +382,12 @@ class _QtListItemWidget(
                     name_text_dict = self._get_name_text_dict_()
                     if name_text_dict:
                         painter.setFont(get_font())
-                        key_text_width = utl_gui_qt_core.QtTextMtd.get_draw_width_maximum(
+                        key_text_width = QtTextMtd.get_draw_width_maximum(
                             painter, self._name_text_dict.keys()
                         )
                         if self._list_widget._get_is_grid_mode_():
                             if self._names_draw_range is not None:
-                                key_text_width = utl_gui_qt_core.QtTextMtd.get_draw_width_maximum(
+                                key_text_width = QtTextMtd.get_draw_width_maximum(
                                     painter, self._name_text_dict.keys()[self._names_draw_range[0]:self._names_draw_range[1]]
                                 )
                         for i_name_index, (i_key, i_value) in enumerate(name_text_dict.items()):
@@ -610,7 +709,7 @@ class _QtListItemWidget(
     def __str__(self):
         return '{}(names={})'.format(
             self.__class__.__name__,
-            ', '.join(map(lambda x: '"{}"'.format(x), self.get_names()))
+            ', '.join(map(lambda x: '"{}"'.format(x), self._get_name_texts_()))
         )
 
     def __repr__(self):

@@ -118,10 +118,17 @@ class QtTreeWidgetItem(
 
     def _set_icon_name_text_(self, text, column=0):
         self._icon_name_text = text
-        self.setIcon(
-            column,
-            utl_gui_qt_core.QtUtilMtd.get_name_text_icon_(text)
+        icon = QtGui.QIcon()
+        pixmap = QtPixmapMtd.get_by_name(
+            self._icon_name_text,
+            size=(14, 14)
         )
+        icon.addPixmap(
+            pixmap,
+            QtGui.QIcon.Normal,
+            QtGui.QIcon.On
+        )
+        self.setIcon(column, icon)
 
     def _set_icon_state_update_(self, column=0):
         if column == 0:
@@ -171,7 +178,7 @@ class QtTreeWidgetItem(
                         x, y+h-s_h, s_w, s_h
                     )
                     if self._icon_state == utl_gui_core.State.LOCKED:
-                        painter._set_icon_file_draw_by_rect_(
+                        painter._draw_icon_file_by_rect_(
                             state_rect,
                             file_path=utl_gui_core.RscIconFile.get(
                                 'state-locked'
@@ -179,7 +186,7 @@ class QtTreeWidgetItem(
                         )
                         painter.end()
                     elif self._icon_state == utl_gui_core.State.LOST:
-                        painter._set_icon_file_draw_by_rect_(
+                        painter._draw_icon_file_by_rect_(
                             state_rect,
                             file_path=utl_gui_core.RscIconFile.get(
                                 'state-lost'
@@ -229,7 +236,12 @@ class QtTreeWidgetItem(
             self._status = status
 
             self._set_name_status_(status, column)
-            self._set_icon_status_(status, column)
+            #
+            self._update_wgt_icon_(status, column)
+
+    def _set_menu_content_(self, content):
+        super(QtTreeWidgetItem, self)._set_menu_content_(content)
+        self._update_wgt_icon_(status=None)
 
     def _set_name_status_(self, status, column=0):
         font = get_font()
@@ -255,7 +267,7 @@ class QtTreeWidgetItem(
         else:
             raise TypeError()
 
-    def _set_icon_status_(self, status, column=0):
+    def _update_wgt_icon_(self, status, column=0):
         if column == 0:
             icon = QtGui.QIcon()
             pixmap = None
@@ -270,46 +282,55 @@ class QtTreeWidgetItem(
                 )
             #
             if pixmap:
-                if status == self.ValidatorStatus.Normal:
-                    background_color = Color.NORMAL
-                    icon.addPixmap(
-                        pixmap,
-                        QtGui.QIcon.Normal,
-                        QtGui.QIcon.On
-                    )
-                    self.setIcon(column, icon)
-                    return
-                elif status == self.ValidatorStatus.Correct:
-                    background_color = Color.CORRECT
-                elif status == self.ValidatorStatus.Warning:
-                    background_color = Color.WARNING
-                elif status == self.ValidatorStatus.Error:
-                    background_color = Color.ERROR
-                elif status == self.ValidatorStatus.Active:
-                    background_color = Color.ACTIVE
-                elif status == self.ValidatorStatus.Disable:
-                    background_color = Color.DISABLE
-                else:
-                    raise TypeError()
-                #
                 painter = QtPainter(pixmap)
                 rect = pixmap.rect()
                 x, y = rect.x(), rect.y()
                 w, h = rect.width(), rect.height()
                 #
-                border_color = QtBorderColors.Icon
+                if status is not None:
+                    draw_status = True
+                    if status == self.ValidatorStatus.Normal:
+                        draw_status = False
+                        background_color = Color.NORMAL
+                    elif status == self.ValidatorStatus.Correct:
+                        background_color = Color.CORRECT
+                    elif status == self.ValidatorStatus.Warning:
+                        background_color = Color.WARNING
+                    elif status == self.ValidatorStatus.Error:
+                        background_color = Color.ERROR
+                    elif status == self.ValidatorStatus.Active:
+                        background_color = Color.ACTIVE
+                    elif status == self.ValidatorStatus.Disable:
+                        background_color = Color.DISABLE
+                    else:
+                        raise TypeError()
+                    #
+                    if draw_status is True:
+                        border_color = QtBorderColors.Icon
+                        #
+                        s_w, s_h = w * .25, h * .25
+                        status_rect = QtCore.QRect(
+                            x + w - s_w - 1, y + h - s_h - 1, s_w, s_h
+                        )
+                        # draw status
+                        painter._draw_frame_by_rect_(
+                            rect=status_rect,
+                            border_color=border_color,
+                            background_color=background_color,
+                            border_width=2,
+                            border_radius=w / 2
+                        )
                 #
-                s_w, s_h = w*.25, h*.25
-                state_rect = QtCore.QRect(
-                    x+w-s_w-1, y+h-s_h-1, s_w, s_h
-                )
-                painter._draw_frame_by_rect_(
-                    state_rect,
-                    border_color=border_color,
-                    background_color=background_color,
-                    border_width=2,
-                    border_radius=w/2
-                )
+                if self._menu_content is not None:
+                    m_w, m_h = w/2, h/2
+                    menu_mark_rect = QtCore.QRect(
+                        x, y, m_w, m_h
+                    )
+                    painter._draw_icon_file_by_rect_(
+                        rect=menu_mark_rect,
+                        file_path=utl_gui_core.RscIconFile.get('menu_mark'),
+                    )
+
                 painter.end()
             #
             icon.addPixmap(

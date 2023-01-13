@@ -695,7 +695,7 @@ class QtUtilMtd(object):
         w, h = rect.width(), rect.height()
         rd = min(w, h)
         icon_rect = QtCore.QRect(
-            x + (w - c_w) / 2, y + (h - c_h) / 2,
+            x+(w-c_w)/2, y+(h-c_h)/2,
             c_w, c_h
         )
         if text is not None:
@@ -813,7 +813,9 @@ class QtPixmapMtd(object):
             QtBorderColors.Icon
         )
         rd = min(w, h)
-        icon_rect = rect
+        icon_rect = QtCore.QRect(
+            x, y, w-1, h-1
+        )
         if text is not None:
             name = text.split('/')[-1] or ' '
             painter.setPen(QtBorderColors.Icon)
@@ -1370,6 +1372,11 @@ class QtMethodThread(QtCore.QThread):
         finally:
             #
             self.run_finished.emit()
+
+    def set_quit(self):
+        self.quit()
+        self.wait()
+        self.deleteLater()
 
 
 class QtBuildThread(QtCore.QThread):
@@ -2518,11 +2525,11 @@ class QtPainter(QtGui.QPainter):
         rect = QtCore.QRect(
             x + (w - frm_w) / 2, y + (h - frm_h) / 2, frm_w, frm_h
         )
-        self._set_icon_file_draw_by_rect_(
+        self._draw_icon_file_by_rect_(
             rect=rect, file_path=utl_gui_core.RscIconFile.get('empty')
         )
 
-    def _set_icon_file_draw_by_rect_(self, rect, file_path, offset=0, frame_rect=None, is_hovered=False):
+    def _draw_icon_file_by_rect_(self, rect, file_path, offset=0, frame_rect=None, is_hovered=False):
         if file_path:
             if frame_rect is not None:
                 background_color = self._get_item_background_color_1_by_rect_(
@@ -3056,7 +3063,7 @@ class QtPainter(QtGui.QPainter):
             text_ = self.fontMetrics().elidedText(
                 text,
                 QtCore.Qt.ElideLeft,
-                rect.width()-2,
+                rect.width(),
                 QtCore.Qt.TextShowMnemonic
             )
         #

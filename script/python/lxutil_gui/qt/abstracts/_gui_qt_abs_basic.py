@@ -395,9 +395,14 @@ class AbsQtSubProcessDef(object):
             kwargs = dict(
                 value=self._sub_process_finished_value,
                 maximum=self._sub_process_finished_maximum,
-                costed_time=bsc_core.IntegerMtd.second_to_time_prettify(self._sub_process_timestamp_costed),
+                costed_time=bsc_core.IntegerMtd.second_to_time_prettify(
+                    self._sub_process_timestamp_costed,
+                    mode=1
+                ),
                 estimated_time=bsc_core.IntegerMtd.second_to_time_prettify(
-                    self._sub_process_finished_timestamp_estimated),
+                    self._sub_process_finished_timestamp_estimated,
+                    mode=1
+                ),
             )
             if int(self._sub_process_finished_timestamp_estimated) > 0:
                 return self._sub_process_status_text_format_2.format(
@@ -786,14 +791,46 @@ class AbsQtEntryBaseDef(object):
         self._entry_use_as_storage = boolean
 
 
-class AbsQtEntryDropDef(object):
-    def _set_entry_drop_def_init_(self, widget):
+class AbsQtActionDropDef(object):
+    def _init_action_drop_def_(self, widget):
         self._widget = widget
+        self._drop_is_enable = False
 
-        self._entry_drop_is_enable = False
+    def _set_drop_enable_(self, boolean):
+        self._drop_is_enable = boolean
 
-    def _set_entry_drop_enable_(self, boolean):
-        self._entry_drop_is_enable = boolean
+
+class AbsQtActionDragDef(object):
+    def _init_action_drag_def_(self, widget):
+        self._widget = widget
+        self._drag_is_enable = False
+
+        self._drag_point_offset = QtCore.QPoint()
+        self._drag_urls = []
+        self._drag_data = {}
+
+        self._drag_mime_data = QtCore.QMimeData()
+
+    def _set_drag_enable_(self, boolean):
+        self._drag_is_enable = boolean
+
+    def _set_drag_urls_(self, urls):
+        self._drag_urls = urls
+
+    def _set_drag_data_(self, data):
+        if isinstance(data, dict):
+            self._drag_data = data
+
+    def _update_mime_data_(self):
+        self._drag_mime_data = QtCore.QMimeData()
+        for k, v in self._drag_data.items():
+            self._drag_mime_data.setData(k, v)
+
+    def _get_drag_data_(self):
+        return self._drag_data
+
+    def _get_drag_mime_data_(self):
+        return self._drag_mime_data
 
 
 class AbsQtIconDef(object):
@@ -1623,7 +1660,7 @@ class AbsQtActionDef(object):
     def _refresh_widget_draw_(self):
         raise NotImplementedError()
 
-    def _set_action_def_init_(self, widget):
+    def _init_action_def_(self, widget):
         self._widget = widget
         self._action_flag = None
         #
@@ -1649,7 +1686,7 @@ class AbsQtActionDef(object):
     def _set_action_flag_(self, flag):
         if flag is not None:
             self._action_flag = flag
-            self.__set_action_cursor_update_()
+            self._update_action_cursor_()
         #
         self._refresh_widget_draw_()
 
@@ -1663,7 +1700,7 @@ class AbsQtActionDef(object):
         #
         self._refresh_widget_draw_()
 
-    def __set_action_cursor_update_(self):
+    def _update_action_cursor_(self):
         if self._action_flag is not None:
             if self._action_flag in [
                 self.ActionFlag.PressClick,
@@ -1754,7 +1791,7 @@ class AbsQtActionDef(object):
     def _set_action_flag_clear_(self):
         self._action_flag = None
         #
-        self.__set_action_cursor_update_()
+        self._update_action_cursor_()
         #
         self._refresh_widget_draw_()
 
@@ -3306,7 +3343,7 @@ class AbsQtValueEntryDef(object):
         self._value_entry_is_enable = boolean
 
     def _set_value_entry_drop_enable_(self, boolean):
-        self._value_entry._set_entry_drop_enable_(boolean)
+        self._value_entry._set_drop_enable_(boolean)
 
     def _set_value_validation_fnc_(self, fnc):
         pass

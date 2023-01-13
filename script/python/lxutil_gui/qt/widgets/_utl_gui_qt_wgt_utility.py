@@ -648,7 +648,7 @@ class QtIconPressItem(
         self._set_status_def_init_()
         self._set_state_def_init_()
         #
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_hover_def_init_()
         self._set_action_press_def_init_()
 
@@ -716,7 +716,7 @@ class QtIconPressItem(
                     if self._hover_icon_file_path is not None:
                         icon_file_path = self._hover_icon_file_path
                 #
-                painter._set_icon_file_draw_by_rect_(
+                painter._draw_icon_file_by_rect_(
                     rect=self._icon_file_draw_rect,
                     file_path=icon_file_path,
                     offset=offset
@@ -737,14 +737,14 @@ class QtIconPressItem(
                 )
             #
             if self._sub_icon_file_path is not None:
-                painter._set_icon_file_draw_by_rect_(
+                painter._draw_icon_file_by_rect_(
                     rect=self._sub_icon_file_draw_rect,
                     file_path=self._sub_icon_file_path,
                     offset=offset
                 )
         #
         if self._action_state in [self.ActionState.Disable]:
-            painter._set_icon_file_draw_by_rect_(
+            painter._draw_icon_file_by_rect_(
                 self._action_state_rect,
                 utl_gui_core.RscIconFile.get('state-disable')
             )
@@ -1009,6 +1009,14 @@ class QtStyledItemDelegate(QtWidgets.QStyledItemDelegate):
         size = super(QtStyledItemDelegate, self).sizeHint(option, index)
         size.setHeight(utl_configure.GuiSize.item_height)
         return size
+
+
+class QtListWidgetStyledItemDelegate(QtWidgets.QStyledItemDelegate):
+    def __init__(self, *args, **kwargs):
+        super(QtListWidgetStyledItemDelegate, self).__init__(*args, **kwargs)
+
+    def updateEditorGeometry(self, editor, option, index):
+        editor.setGeometry(option.rect)
 
 
 class QtLineEdit0(QtWidgets.QLineEdit):
@@ -1707,7 +1715,7 @@ class _QtHItem(
         self._set_delete_def_init_(self)
         #
         self._set_action_hover_def_init_()
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_press_def_init_()
         self._set_action_check_def_init_()
         self._check_icon_file_path_0 = utl_gui_core.RscIconFile.get('filter_unchecked')
@@ -1774,7 +1782,7 @@ class _QtHItem(
         )
         # check
         if self._check_is_enable is True:
-            painter._set_icon_file_draw_by_rect_(
+            painter._draw_icon_file_by_rect_(
                 rect=self._check_icon_draw_rect,
                 file_path=self._check_icon_file_path_current,
                 offset=offset,
@@ -1792,7 +1800,7 @@ class _QtHItem(
             )
 
         if self._icon_file_path is not None:
-            painter._set_icon_file_draw_by_rect_(
+            painter._draw_icon_file_by_rect_(
                 rect=self._icon_file_draw_rect,
                 file_path=self._icon_file_path,
             )
@@ -1826,7 +1834,7 @@ class _QtHItem(
             )
         #
         if self._delete_draw_is_enable is True:
-            painter._set_icon_file_draw_by_rect_(
+            painter._draw_icon_file_by_rect_(
                 rect=self._delete_icon_draw_rect,
                 file_path=self._delete_icon_file_path,
                 offset=offset,
@@ -1941,7 +1949,7 @@ class _QtHItem(
 class _QtPopupListWidget(utl_gui_qt_abstract.AbsQtListWidget):
     def __init__(self, *args, **kwargs):
         super(_QtPopupListWidget, self).__init__(*args, **kwargs)
-        self.setDragDropMode(QtWidgets.QListWidget.DragOnly)
+        self.setDragDropMode(self.DragOnly)
         self.setDragEnabled(False)
         self.setSelectionMode(QtWidgets.QListWidget.SingleSelection)
         self.setResizeMode(QtWidgets.QListWidget.Adjust)
@@ -1967,7 +1975,7 @@ class QtLineEdit_(
     utl_gui_qt_abstract.AbsQtValueDef,
     #
     utl_gui_qt_abstract.AbsQtEntryBaseDef,
-    utl_gui_qt_abstract.AbsQtEntryDropDef,
+    utl_gui_qt_abstract.AbsQtActionDropDef,
 ):
     entry_changed = qt_signal()
     entry_cleared = qt_signal()
@@ -1978,12 +1986,13 @@ class QtLineEdit_(
     #
     up_key_pressed = qt_signal()
     down_key_pressed = qt_signal()
+    #
     def __init__(self, *args, **kwargs):
         super(QtLineEdit_, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
         self.setPalette(QtDccMtd.get_palette())
         self.setFont(Font.NAME)
-        self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
         # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
         self._value_type = str
@@ -2004,8 +2013,8 @@ class QtLineEdit_(
         )
         self._set_value_def_init_(self)
         self._set_entry_base_def_init_(self)
-        self._set_entry_drop_def_init_(self)
-        self.setAcceptDrops(self._entry_drop_is_enable)
+        self._init_action_drop_def_(self)
+        self.setAcceptDrops(self._drop_is_enable)
 
         # self.setPlaceholderText()
 
@@ -2058,8 +2067,8 @@ class QtLineEdit_(
                     self.down_key_pressed.emit()
         return False
 
-    def _set_entry_drop_enable_(self, boolean):
-        super(QtLineEdit_, self)._set_entry_drop_enable_(boolean)
+    def _set_drop_enable_(self, boolean):
+        super(QtLineEdit_, self)._set_drop_enable_(boolean)
         self.setAcceptDrops(boolean)
 
     def dropEvent(self, event):
@@ -3169,6 +3178,9 @@ class QtEntryFrame(
     utl_gui_qt_abstract.AbsQtStatusDef,
 ):
     geometry_changed = qt_signal(int, int, int, int)
+    entry_focus_in = qt_signal()
+    entry_focus_out = qt_signal()
+    entry_focus_changed = qt_signal()
     def _refresh_widget_draw_(self):
         self.update()
 
@@ -3264,6 +3276,15 @@ class QtEntryFrame(
     def _set_focused_(self, boolean):
         self._is_focused = boolean
         self._refresh_widget_draw_()
+        self.entry_focus_changed.emit()
+
+    def _set_focus_in_(self):
+        self._set_focused_(True)
+        self.entry_focus_in.emit()
+
+    def set_focus_out_(self):
+        self._set_focused_(False)
+        self.entry_focus_out.emit()
 
     def _set_entry_count_(self, size):
         self._entry_count = size
@@ -3314,7 +3335,7 @@ class QtVResizeFrame(
         self._set_frame_def_init_()
         self._set_resize_def_init_(self)
 
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_hover_def_init_()
         self._set_action_press_def_init_()
         #
@@ -3361,7 +3382,7 @@ class QtVResizeFrame(
 
     def paintEvent(self, event):
         painter = QtPainter(self)
-        painter._set_icon_file_draw_by_rect_(
+        painter._draw_icon_file_by_rect_(
             rect=self._resize_icon_file_draw_rect,
             file_path=self._resize_icon_file_path,
             is_hovered=self._action_is_hovered,
@@ -3422,7 +3443,7 @@ class _QtScreenshotFrame(
         self._set_screenshot_def_init_(self)
         self._set_help_def_init_(self)
 
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_hover_def_init_()
         self._set_action_press_def_init_()
 

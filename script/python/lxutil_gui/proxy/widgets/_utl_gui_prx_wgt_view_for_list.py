@@ -181,6 +181,12 @@ class PrxListView(
     def set_restore(self):
         self.view._set_clear_()
 
+    def set_filter_bar_visible(self, boolean):
+        self._prx_filter_bar.set_visible(boolean)
+
+    def set_draw_enable(self, boolean):
+        self._qt_view._set_drag_enable_(boolean)
+
 
 class PrxImageView(PrxListView):
     def __init__(self, *args, **kwargs):

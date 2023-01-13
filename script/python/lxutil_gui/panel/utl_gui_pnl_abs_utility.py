@@ -437,7 +437,7 @@ class AbsSceneTextureManagerPanel(
                                                 texture_color_space, self.DSC_IDX_COLORS_SPACE
                                             )
                                             #
-                                            texture_used_color_space = j_file.get_used_color_space()
+                                            texture_used_color_space = j_file.get_tx_color_space()
                                             j_file_prx_item.set_name(
                                                 texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
                                             )

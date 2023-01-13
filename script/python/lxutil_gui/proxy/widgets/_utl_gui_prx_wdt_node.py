@@ -90,8 +90,9 @@ class _PrxPortLabel(utl_gui_prx_abstract.AbsPrxWidget):
     def set_info_tool_tip(self, text):
         pass
 
-    def set_name_tool_tip(self, text):
-        self._qt_widget.setToolTip(text)
+    def set_name_tool_tip(self, *args, **kwargs):
+        if hasattr(self._qt_widget, '_set_tool_tip_'):
+            self._qt_widget._set_tool_tip_(args[0], **kwargs)
 
     def get_name_draw_width(self):
         return self._qt_widget._get_name_text_draw_width_()
@@ -533,6 +534,7 @@ class _PrxStgObjsEntry(AbsRsvTypeQtEntry):
         pass
 
 
+# files
 class PrxFilesOpenEntry(_PrxStgObjsEntry):
     def __init__(self, *args, **kwargs):
         super(PrxFilesOpenEntry, self).__init__(*args, **kwargs)
@@ -1567,7 +1569,7 @@ class PrxRsvObjChooseEntry(_AbsPrxTypeEntry):
 class PrxComponentsEntry(_AbsPrxTypeEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
     PRX_ENTRY_CLASS = _utl_gui_prx_wgt_view_for_tree.PrxTreeView
-    NAMESPACE = 'resolver'
+    NAMESPACE = 'component'
     def __init__(self, *args, **kwargs):
         super(PrxComponentsEntry, self).__init__(*args, **kwargs)
         self.widget.setMaximumHeight(160)
@@ -1619,8 +1621,6 @@ class PrxComponentsEntry(_AbsPrxTypeEntry):
 
     def __set_item_show_deferred_(self, prx_item, use_as_tree=True):
         obj = prx_item.get_gui_dcc_obj(namespace=self.NAMESPACE)
-        obj_name = obj.name
-        obj_path = obj.path
         menu_raw = []
         menu_raw.extend(
             obj.get_gui_menu_raw() or []
@@ -1637,8 +1637,6 @@ class PrxComponentsEntry(_AbsPrxTypeEntry):
                     ('Collapse branch', None, prx_item.set_collapse_branch),
                 ]
             )
-        #
-        prx_item.set_names([obj_name])
         #
         prx_item.set_gui_menu_raw(menu_raw)
         prx_item.set_menu_content(obj.get_gui_menu_content())
@@ -1657,23 +1655,25 @@ class PrxComponentsEntry(_AbsPrxTypeEntry):
         self.__set_item_comp_add_as_tree_(obj, use_show_thread=True)
 
     def __set_item_add_as_list_(self, obj):
-        obj_path = obj.path
-        obj_type = obj.type_name
+        name = obj.name
+        path = obj.path
+        type_name = obj.type_name
         #
         create_kwargs = dict(
-            name='...',
-            icon_name_text=obj_type,
-            filter_key=obj_path
+            name=name,
+            icon_name_text=type_name,
+            filter_key=path
         )
         prx_item = self._prx_entry_widget.set_item_add(
             **create_kwargs
         )
         #
         prx_item.set_checked(True)
-        prx_item.update_keyword_filter_keys_tgt([obj_path, obj_type])
+        prx_item.update_keyword_filter_keys_tgt([path, type_name])
         obj.set_obj_gui(prx_item)
         prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
-        self._obj_add_dict[obj_path] = prx_item
+        prx_item.set_tool_tip(path)
+        self._obj_add_dict[path] = prx_item
         #
         self.__set_item_show_deferred_(prx_item, use_as_tree=False)
 
@@ -1700,10 +1700,30 @@ class PrxComponentsEntry(_AbsPrxTypeEntry):
         else:
             pass
 
+    def set_checked_by_include_paths(self, paths):
+        _ = self._prx_entry_widget.get_all_items()
+        if _:
+            for i in _:
+                if i.get_gui_dcc_obj(namespace=self.NAMESPACE).path in paths:
+                    i.set_checked(True)
+
+    def set_unchecked_by_include_paths(self, paths):
+        _ = self._prx_entry_widget.get_all_items()
+        if _:
+            for i in _:
+                if i.get_gui_dcc_obj(namespace=self.NAMESPACE).path not in paths:
+                    i.set_checked(False)
+
     def get(self):
         _ = self._prx_entry_widget.get_all_items()
         if _:
             return [i.get_gui_dcc_obj(namespace=self.NAMESPACE) for i in _ if i.get_is_checked()]
+        return []
+
+    def get_all(self):
+        _ = self._prx_entry_widget.get_all_items()
+        if _:
+            return [i.get_gui_dcc_obj(namespace=self.NAMESPACE) for i in _]
         return []
 
     def set_changed_connect_to(self, fnc):
@@ -1813,7 +1833,8 @@ class AbsPrxTypePort(AbsPrxPortDef):
             'path: {}\nname: {}'.format(
                 self._port_path,
                 self._name
-            )
+            ),
+            name='label for "{}"'.format(self._label)
         )
         #
         self._prx_port_entry = self.ENTRY_CLASS(node_widget)
@@ -2399,6 +2420,18 @@ class PrxComponentsPort(AbsPrxTypePort):
     ENTRY_CLASS = PrxComponentsEntry
     def __init__(self, *args, **kwargs):
         super(PrxComponentsPort, self).__init__(*args, **kwargs)
+
+    def get_all(self):
+        return self._prx_port_entry.get_all()
+
+    def set_checked_by_include_paths(self, paths):
+        self._prx_port_entry.set_checked_by_include_paths(paths)
+
+    def set_unchecked_by_include_paths(self, paths):
+        self._prx_port_entry.set_unchecked_by_include_paths(paths)
+
+    def get_prx_tree(self):
+        return self._prx_port_entry._prx_entry_widget
 
 
 class PrxPortStack(obj_abstract.AbsObjStack):

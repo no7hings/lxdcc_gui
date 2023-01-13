@@ -121,7 +121,7 @@ class QtColorChooseChart(
         )
         #
         self._set_widget_def_init_(self)
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_chart_def_init_()
         self._set_build_()
     #

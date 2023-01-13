@@ -84,18 +84,21 @@ class AbsQtTreeWidget(
         _rcs_fnc(None)
         return list_
 
-    def _set_view_header_(self, raw, max_width):
-        texts, widths = zip(*raw)
+    def _set_view_header_(self, raw, max_width=0):
+        texts, width_ps = zip(*raw)
         count = len(texts)
-        max_division = sum(widths)
-        w = int(max_width / max_division)
         #
         self.setColumnCount(count)
         self.setHeaderLabels(texts)
-        set_column_enable = len(raw) > 1
+        set_column_enable = count > 1
+        w = 0
+        if set_column_enable is True:
+            max_division = sum(width_ps)
+            w = int(max_width/max_division)
+        #
         for index in range(0, count):
             if set_column_enable is True:
-                self.setColumnWidth(index, w*(widths[index]))
+                self.setColumnWidth(index, w*(width_ps[index]))
             #
             icon = QtGui.QIcon()
             icon.addPixmap(
@@ -141,6 +144,7 @@ class AbsQtListWidget(
     def __init__(self, *args, **kwargs):
         super(AbsQtListWidget, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
         #
         self._set_view_select_action_def_init_()
         self._set_view_scroll_action_def_init_()
@@ -175,6 +179,13 @@ class AbsQtListWidget(
 
         self._set_show_for_view_def_init_(self)
 
+    def _set_drag_enable_(self, boolean):
+        super(AbsQtListWidget, self)._set_drag_enable_(boolean)
+        # self.acceptDrops()
+        # self.setDragEnabled(True)
+        self.setDragDropMode(self.InternalMove)
+        self.setDefaultDropAction(QtCore.Qt.MoveAction)
+
     def _get_view_h_scroll_bar_(self):
         return self.horizontalScrollBar()
 
@@ -191,7 +202,6 @@ class AbsQtListWidget(
         item_widget = self.itemWidget(item)
         if item_widget:
             item_widget._set_selected_(boolean)
-
     # select
     def _get_selected_item_widgets_(self):
         return [self.itemWidget(i) for i in self.selectedItems()]
@@ -233,7 +243,6 @@ class AbsQtListWidget(
     def _refresh_widget_draw_(self):
         self.update()
         self.viewport().update()
-
     #
     def _get_viewport_size_(self):
         return self.viewport().width(), self.viewport().height()

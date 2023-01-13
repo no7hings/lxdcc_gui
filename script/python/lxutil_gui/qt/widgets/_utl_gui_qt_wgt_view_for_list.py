@@ -17,12 +17,12 @@ class QtListWidget(
         super(QtListWidget, self).__init__(*args, **kwargs)
         qt_palette = QtDccMtd.get_palette()
         self.setPalette(qt_palette)
-        self.setDragDropMode(self.DragOnly)
-        self.setDragEnabled(False)
+        # self.setDragDropMode(self.DragOnly)
+        # self.setDragEnabled(False)
         self.setSelectionMode(self.SingleSelection)
         #
         self.setResizeMode(self.Adjust)
-        # self.setItemDelegate(QtStyledItemDelegate())
+        # self.setItemDelegate(_utl_gui_qt_wgt_utility.QtListWidgetStyledItemDelegate(self))
         self.setVerticalScrollMode(self.ScrollPerItem)
         #
         self._item_frame_icon_width, self._item_frame_icon_height = 40, 128
@@ -101,8 +101,6 @@ class QtListWidget(
                 parent = self.parent()
                 if isinstance(parent, _utl_gui_qt_wgt_utility.QtEntryFrame):
                     parent._set_focused_(False)
-            elif event.type() == QtCore.QEvent.Drop:
-                print 'AAAA'
         if widget == self.verticalScrollBar():
             pass
         return False
@@ -113,6 +111,7 @@ class QtListWidget(
             painter._set_empty_draw_by_rect_(
                 self.rect()
             )
+        # super(QtListWidget, self).paintEvent(event)
 
     def _refresh_info_(self, *args, **kwargs):
         c = sum([self.item(i)._get_is_checked_() for i in range(self.count())])
@@ -245,14 +244,20 @@ class QtListWidget(
         view = self
         #
         item = _utl_gui_qt_wgt_utility.QtListWidgetItem('', view)
+        view.addItem(item)
+        # debug for position error
+        index = self.row(item)
+        if index > 0:
+            item.setHidden(True)
+            item.setHidden(False)
+        #
         item.setSizeHint(QtCore.QSize(*self._grid_size))
+        view.setItemWidget(item, item_widget)
         item.gui_proxy = item_widget.gui_proxy
+        #
         item_widget.user_check_toggled.connect(
             item._set_checked_for_user_
         )
-        #
-        view.addItem(item)
-        view.setItemWidget(item, item_widget)
         item._set_item_show_connect_()
         item_widget._set_view_(view)
         item_widget._set_item_(item)
@@ -292,6 +297,9 @@ class QtListWidget(
             self._item_image_frame_draw_enable
         )
 
+    def _set_item_create_(self):
+        pass
+
     def _set_clear_(self):
         for i in self._get_all_items_():
             i._set_item_show_kill_all_()
@@ -300,3 +308,4 @@ class QtListWidget(
         self._pre_selected_items = []
         #
         self.clear()
+

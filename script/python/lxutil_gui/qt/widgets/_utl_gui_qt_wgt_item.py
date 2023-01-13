@@ -18,7 +18,7 @@ class _QtListEntry(
     utl_gui_qt_abstract.AbsQtValuesDef,
     #
     utl_gui_qt_abstract.AbsQtEntryBaseDef,
-    utl_gui_qt_abstract.AbsQtEntryDropDef,
+    utl_gui_qt_abstract.AbsQtActionDropDef,
 ):
     entry_changed = qt_signal()
     entry_added = qt_signal()
@@ -39,9 +39,9 @@ class _QtListEntry(
         self._set_values_def_init_(self)
         #
         self._set_entry_base_def_init_(self)
-        self._set_entry_drop_def_init_(self)
+        self._init_action_drop_def_(self)
 
-        self.setAcceptDrops(self._entry_drop_is_enable)
+        self.setAcceptDrops(self._drop_is_enable)
 
         self._set_shortcut_register_()
 
@@ -192,14 +192,16 @@ class _QtListEntry(
     def _get_selected_item_widgets_(self):
         return [self.itemWidget(i) for i in self.selectedItems()]
 
-    def _set_entry_drop_enable_(self, boolean):
-        super(_QtListEntry, self)._set_entry_drop_enable_(boolean)
+    def _set_drop_enable_(self, boolean):
+        super(_QtListEntry, self)._set_drop_enable_(boolean)
         self.setAcceptDrops(boolean)
         # self.setDragDropMode(self.DropOnly)
         # self.setDropIndicatorShown(True)
 
     def _execute_action_drop_(self, event):
         data = event.mimeData()
+        # for i in data.formats():
+        #     print i, data.data(i).data()
         if data.hasUrls():
             urls = event.mimeData().urls()
             if urls:
@@ -438,7 +440,7 @@ class QtTextItem(
         self._set_name_def_init_()
         #
         self._set_action_hover_def_init_()
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_press_def_init_()
 
         self._set_status_def_init_()
@@ -543,7 +545,7 @@ class QtPressItem(
         self._set_progress_def_init_()
         #
         self._set_action_hover_def_init_()
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_press_def_init_()
         self._set_action_check_def_init_()
         self._set_item_option_press_action_def_init_()
@@ -795,6 +797,7 @@ class QtPressItem(
                 border_radius=4,
                 offset=offset
             )
+        # sub process
         if self._get_sub_process_is_enable_() is True:
             status_colors = [self._sub_process_status_colors, self._hover_sub_process_status_colors][self._action_is_hovered]
             painter._set_elements_status_draw_by_rect_(
@@ -803,6 +806,7 @@ class QtPressItem(
                 offset=offset,
                 border_radius=2,
             )
+        # validator
         elif self._get_validator_is_enable_() is True:
             status_colors = [self._validator_status_colors, self._hover_validator_status_colors][self._action_is_hovered]
             painter._set_elements_status_draw_by_rect_(
@@ -822,7 +826,7 @@ class QtPressItem(
             )
         # check
         if self._get_check_action_is_enable_() is True:
-            painter._set_icon_file_draw_by_rect_(
+            painter._draw_icon_file_by_rect_(
                 self._check_icon_draw_rect,
                 self._check_icon_file_path_current,
                 offset=offset
@@ -830,7 +834,7 @@ class QtPressItem(
         # icon
         if self._icon_is_enable is True:
             if self._icon_file_path is not None:
-                painter._set_icon_file_draw_by_rect_(
+                painter._draw_icon_file_by_rect_(
                     self._icon_file_draw_rect, self._icon_file_path, offset=offset
                 )
             elif self._icon_color_rgb is not None:
@@ -867,7 +871,7 @@ class QtPressItem(
             )
         # option
         if self._get_item_option_click_enable_() is True:
-            painter._set_icon_file_draw_by_rect_(
+            painter._draw_icon_file_by_rect_(
                 self._option_click_icon_rect,
                 self._option_icon_file_path,
                 offset=offset
@@ -905,7 +909,7 @@ class _QtCheckItem(
         self._set_name_def_init_()
         #
         self._set_action_hover_def_init_()
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_check_def_init_()
         self._set_check_enable_(True)
         #
@@ -985,7 +989,7 @@ class _QtCheckItem(
         )
         if self._check_is_enable is True:
             if self._check_icon_file_path_current is not None:
-                painter._set_icon_file_draw_by_rect_(
+                painter._draw_icon_file_by_rect_(
                     rect=self._check_icon_draw_rect,
                     file_path=self._check_icon_file_path_current,
                     offset=offset
@@ -1039,7 +1043,7 @@ class _QtEnableItem(
         self._set_name_def_init_()
         #
         self._set_action_hover_def_init_()
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_check_def_init_()
         self._set_check_enable_(True)
         #
@@ -1115,7 +1119,7 @@ class _QtEnableItem(
         #
         if self._icon_is_enable is True:
             if self._icon_file_path is not None:
-                painter._set_icon_file_draw_by_rect_(
+                painter._draw_icon_file_by_rect_(
                     rect=self._icon_file_draw_rect,
                     file_path=self._icon_file_path,
                     offset=offset
@@ -1156,7 +1160,7 @@ class _QtStatusItem(
         self._set_icon_def_init_()
         #
         self._set_action_hover_def_init_()
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_check_def_init_()
         #
         self._set_check_update_draw_()
@@ -1435,7 +1439,7 @@ class QtaValueEntryForRgba(
         self._set_rgba_def_init_()
         #
         self._set_action_hover_def_init_()
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_press_def_init_()
         #
         self._set_value_entry_def_init_(self)
@@ -1575,7 +1579,7 @@ class QtValueEntryForEnumerate(
         self._set_value_entry_enumerate_init_(self)
         self._set_value_default_def_init_()
         #
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_entry_def_init_(self)
         #
         self._set_choose_def_init_()
@@ -1683,7 +1687,7 @@ class QtValueEntryForEnumerate(
         self._refresh_widget_()
 
     def _set_value_entry_drop_enable_(self, boolean):
-        self._value_entry._set_entry_drop_enable_(boolean)
+        self._value_entry._set_drop_enable_(boolean)
 
     def _set_value_validation_fnc_(self, fnc):
         self._value_entry._set_value_validation_fnc_(fnc)
@@ -1867,7 +1871,7 @@ class QtValueEntryForArray(
         self._refresh_widget_draw_()
 
     def _set_value_entry_drop_enable_(self, boolean):
-        self._value_entry._set_entry_drop_enable_(boolean)
+        self._value_entry._set_drop_enable_(boolean)
 
     def _set_value_entry_choose_enable_(self, boolean):
         self._value_choose_button._set_action_enable_(boolean)
@@ -2021,7 +2025,7 @@ class QtValueEntryForArrayAsChoose(
         self._refresh_widget_draw_()
 
     def _set_value_entry_drop_enable_(self, boolean):
-        self._value_entry._set_entry_drop_enable_(boolean)
+        self._value_entry._set_drop_enable_(boolean)
 
     def _set_value_entry_choose_enable_(self, boolean):
         self._value_choose_button._set_action_enable_(boolean)
@@ -2134,7 +2138,7 @@ class QtFilterBar(
         #
         self._set_value_entry_def_init_(self)
         #
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_entry_def_init_(self)
         #
         self._set_choose_def_init_()
@@ -2442,7 +2446,7 @@ class _QtHExpandItem0(
         self._icon_name_is_enable = True
         #
         self._set_action_hover_def_init_()
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_press_def_init_()
         self._set_item_expand_action_def_init_()
         #
@@ -2580,13 +2584,13 @@ class _QtHExpandItem0(
             offset=offset
         )
         # file-icon
-        painter._set_icon_file_draw_by_rect_(
+        painter._draw_icon_file_by_rect_(
             self._icon_file_draw_rect,
             self._icon_file_path,
             offset=offset
         )
         if self._sub_icon_file_path is not None:
-            painter._set_icon_file_draw_by_rect_(
+            painter._draw_icon_file_by_rect_(
                 rect=self._sub_icon_file_draw_rect,
                 file_path=self._sub_icon_file_path,
                 offset=offset
@@ -2653,7 +2657,7 @@ class _QtHExpandItem1(
         self._set_icon_def_init_()
         #
         self._set_action_hover_def_init_()
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_press_def_init_()
         self._set_item_expand_action_def_init_()
         #
@@ -2702,7 +2706,7 @@ class _QtHExpandItem1(
             offset=offset
         )
         # icon
-        painter._set_icon_file_draw_by_rect_(
+        painter._draw_icon_file_by_rect_(
             rect=self._icon_file_draw_rect,
             file_path=self._icon_file_path,
             offset=offset
@@ -2872,7 +2876,7 @@ class _AbsQtSplitterHandle(
         #
         self._set_frame_def_init_()
         self._set_action_hover_def_init_()
-        self._set_action_def_init_(self)
+        self._init_action_def_(self)
         self._set_action_press_def_init_()
         #
         self._set_state_def_init_()
