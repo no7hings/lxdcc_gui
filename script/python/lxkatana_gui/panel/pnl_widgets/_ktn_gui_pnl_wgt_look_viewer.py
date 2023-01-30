@@ -71,12 +71,12 @@ class AssetLookViewerPanel(utl_gui_pnl_abs_look_viewer.AbsAssetLookViewerPanel):
             def expanded_shaders_fnc_():
                 if _material_obj is not None:
                     objs = _material_obj.get_all_source_objs()
-                    [ktn_core.NGObjOpt(i.ktn_obj).set_gui_expanded() for i in objs]
+                    [ktn_core.NGObjOpt(i.ktn_obj).set_shader_gui_expanded() for i in objs]
             #
             def collapsed_shaders_fnc_():
                 if _material_obj is not None:
                     objs = _material_obj.get_all_source_objs()
-                    [ktn_core.NGObjOpt(i.ktn_obj).set_gui_collapsed() for i in objs]
+                    [ktn_core.NGObjOpt(i.ktn_obj).set_shader_gui_collapsed() for i in objs]
             #
             def colour_shaders_fnc_():
                 if _material_obj is not None:

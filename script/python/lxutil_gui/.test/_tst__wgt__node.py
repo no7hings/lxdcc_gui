@@ -61,6 +61,12 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
                 'test_script'
             )
         )
+
+        p = n.set_port_add(
+            utl_prx_widgets.PrxRgbaPort(
+                'test_rgb'
+            )
+        )
         # p.set(
         #     '/l/temp/td/dongchangbao/texture_manager'
         # )
