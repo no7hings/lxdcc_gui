@@ -657,7 +657,7 @@ class _QtGuideBar(
                     rect=i_item._type_rect,
                     text=i_type_text,
                     text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
-                    font_color=bsc_core.TextOpt(i_type_text).to_rgb(),
+                    font_color=bsc_core.RawTextOpt(i_type_text).to_rgb(),
                     font=get_font(size=10, italic=True),
                     offset=name_offset,
                     is_hovered=guide_is_hovered,
@@ -769,8 +769,8 @@ class _QtGuideBar(
             i_path_key = i_item._type_text
             i_path_value = i_item._name_text
             #
-            i_path_w_0, i_path_h_0 = TextMtd.get_size(10, i_path_key)
-            i_path_w_1, i_path_h_1 = TextMtd.get_size(12, i_path_value)
+            i_path_w_0, i_path_h_0 = RawTextMtd.get_size(10, i_path_key)
+            i_path_w_1, i_path_h_1 = RawTextMtd.get_size(12, i_path_value)
             i_path_w = i_path_w_0 + i_path_w_1 + spacing*8
             i_item._set_name_frame_rect_(
                 i_x-spacing*2, i_y, i_path_w, i_f_h

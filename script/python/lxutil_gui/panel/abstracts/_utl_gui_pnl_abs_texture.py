@@ -249,7 +249,7 @@ class AbsPnlAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
             self._dcc_objs
         )
 
-        unlocked_directory_paths = [i for i in directory_paths if bsc_core.StoragePathMtd.get_is_writeable(i) is True]
+        unlocked_directory_paths = [i for i in directory_paths if bsc_core.StorageBaseMtd.get_is_writeable(i) is True]
         if unlocked_directory_paths:
             w = utl_core.DialogWindow.set_create(
                 self._session.gui_name,
@@ -314,7 +314,7 @@ class AbsPnlAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
                 i_method(*i_args)
     @classmethod
     def _set_wsp_texture_pull_as_link_(cls, directory_path_src, directory_path_tgt):
-        file_paths_src = bsc_core.DirectoryMtd.get_file_paths__(
+        file_paths_src = bsc_core.StgDirectoryMtd.get_file_paths__(
             directory_path_src
         )
         if file_paths_src:
@@ -362,7 +362,7 @@ class AbsPnlAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
                 g_p.set_update()
 
     def _set_tx_create_data_update_at_(self, directory_path_src, directory_path_tgt, force_enable=False, ext_tgt='.tx'):
-        file_paths_src = bsc_core.DirectoryMtd.get_file_paths__(
+        file_paths_src = bsc_core.StgDirectoryMtd.get_file_paths__(
             directory_path_src
         )
         if file_paths_src:
@@ -397,7 +397,7 @@ class AbsPnlAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
 
         def run_fnc_():
             for i_index, (i_file_path, i_output_directory_path) in enumerate(self._create_data):
-                bsc_core.StoragePathMtd.set_directory_create(
+                bsc_core.StorageBaseMtd.set_directory_create(
                     i_output_directory_path
                 )
 
@@ -411,8 +411,8 @@ class AbsPnlAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
                     break
                 #
                 if i_cmd:
-                    bsc_core.SPCmdThread.set_wait()
-                    i_t = bsc_core.SPCmdThread.set_start(i_cmd, i_index)
+                    bsc_core.PrcCmdThread.set_wait()
+                    i_t = bsc_core.PrcCmdThread.set_start(i_cmd, i_index)
                     i_t.status_changed.set_connect_to(status_update_at_fnc_)
                     i_t.finished.set_connect_to(finished_fnc_)
                 else:
@@ -513,7 +513,7 @@ class AbsPnlAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
             directory_paths_src = ['{}/src'.format(i) for i in directory_paths]
             directory_paths_tgt = ['{}/{}'.format(i, ext_tgt[1:]) for i in directory_paths]
 
-            j_option_opt = bsc_core.KeywordArgumentsOpt(
+            j_option_opt = bsc_core.ArgDictStringOpt(
                 option=dict(
                     option_hook_key='methods/texture/texture-convert',
                     #
@@ -933,7 +933,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
 
         def run_fnc_():
             for i_index, (i_file_path, i_output_directory_path) in enumerate(self._create_data):
-                bsc_core.StoragePathMtd.set_directory_create(
+                bsc_core.StorageBaseMtd.set_directory_create(
                     i_output_directory_path
                 )
 
@@ -945,8 +945,8 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                     break
                 #
                 if i_cmd:
-                    bsc_core.SPCmdThread.set_wait()
-                    i_t = bsc_core.SPCmdThread.set_start(i_cmd, i_index)
+                    bsc_core.PrcCmdThread.set_wait()
+                    i_t = bsc_core.PrcCmdThread.set_start(i_cmd, i_index)
                     i_t.status_changed.set_connect_to(status_update_at_fnc_)
                     i_t.finished.set_connect_to(finished_fnc_)
                 else:

@@ -55,7 +55,7 @@ class QtColorChooseChart(
                     v = color_h_multiply_ / 100.0
                     v = float(max(min(v, 1.0), 0.0))
                     #
-                    r, g, b = bsc_core.ColorMtd.hsv2rgb(_color_h, s, v)
+                    r, g, b = bsc_core.RawColorMtd.hsv2rgb(_color_h, s, v)
                     i_background_rgba = r, g, b, 255
                     i_border_rgba = 0, 0, 0, 0
                     #
@@ -291,7 +291,7 @@ class QtColorChooseChart(
         if pre_color != cur_color:
             r, g, b, a = cur_color
             self._color_rgba_255 = r, g, b, a
-            self._color_hsv = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
+            self._color_hsv = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
             self._color_css = hex(r)[2:].zfill(2)+hex(g)[2:].zfill(2)+hex(b)[2:].zfill(2)
             #
             self.color_choose_changed.emit()
@@ -308,7 +308,7 @@ class QtColorChooseChart(
         radix = 3
         #
         pre_count = self._count
-        cur_count = bsc_core.ValueMtd.step_to(
+        cur_count = bsc_core.RawValueMtd.step_to(
             value=pre_count,
             delta=-delta,
             step=radix,
@@ -341,7 +341,7 @@ class QtColorChooseChart(
         yDelta = point.y()
         xRadix = 5.0
         yRadix = 5.0
-        self._color_v_multiply = bsc_core.ValueMtd.step_to(
+        self._color_v_multiply = bsc_core.RawValueMtd.step_to(
             value=self._color_v_multiply,
             delta=-yDelta,
             step=yRadix,
@@ -631,7 +631,7 @@ class QtWaitingChart(
         # ApplicationOpt().set_process_run_0()
 
     def _refresh_waiting_draw_(self):
-        self._waiting_timestamp = int(bsc_core.SystemMtd.get_timestamp() * 5)
+        self._waiting_timestamp = int(bsc_core.TimeBaseMtd.get_timestamp() * 5)
         self._refresh_widget_draw_()
         # ApplicationOpt().set_process_run_0()
 
@@ -662,7 +662,7 @@ class QtWaitingChart(
             cur_index = c-timestamp % (c+1)
             i_c_h = abs(cur_index-seq) * (360 / c)
             i_h, i_s, i_v = i_c_h, 0.5, 1.0
-            i_c_r, i_c_g, i_c_b = bsc_core.ColorMtd.hsv2rgb(i_h, i_s, i_v)
+            i_c_r, i_c_g, i_c_b = bsc_core.RawColorMtd.hsv2rgb(i_h, i_s, i_v)
             #
             painter._set_border_color_(0, 0, 0, 0)
             painter._set_background_color_(i_c_r, i_c_g, i_c_b, 255)
@@ -1228,16 +1228,16 @@ class QtSequenceChart(
             #
             index_array_0 = range(index_range[0], index_range[1]+1)
             self._chart_index_array = index_array
-            index_array_1 = bsc_core.ListMtd.get_intersection(
+            index_array_1 = bsc_core.RawListMtd.get_intersection(
                 index_array_0, index_array
             )
-            self._chart_index_merge_array = bsc_core.IntegerArrayMtd.set_merge_to(
+            self._chart_index_merge_array = bsc_core.RawIntArrayMtd.set_merge_to(
                 index_array_1
             )
-            self._chart_index_lost_array = bsc_core.ListMtd.get_addition(
+            self._chart_index_lost_array = bsc_core.RawListMtd.get_addition(
                 index_array_0, index_array_1
             )
-            self._chart_index_lost_merge_array = bsc_core.IntegerArrayMtd.set_merge_to(
+            self._chart_index_lost_merge_array = bsc_core.RawIntArrayMtd.set_merge_to(
                 self._chart_index_lost_array
             )
             self._chart_index_check_range = index_range
@@ -1379,10 +1379,10 @@ class QtSequenceChart(
                         #
                         i_rect = QtCore.QRect(i_x, i_y, i_w, i_h)
                         i_c_h = c_h-(1-i_percent)*c_h
-                        i_c_r, i_c_g, i_c_b = bsc_core.ColorMtd.hsv2rgb(i_c_h, c_s, c_v)
+                        i_c_r, i_c_g, i_c_b = bsc_core.RawColorMtd.hsv2rgb(i_c_h, c_s, c_v)
                         if self._hover_flag is True:
                             if i_rect.contains(self._hover_point):
-                                i_c_r, i_c_g, i_c_b = bsc_core.ColorMtd.hsv2rgb(i_c_h, c_s*.75, c_v)
+                                i_c_r, i_c_g, i_c_b = bsc_core.RawColorMtd.hsv2rgb(i_c_h, c_s*.75, c_v)
                         #
                         painter._set_border_color_(i_c_r, i_c_g, i_c_b, 255)
                         painter._set_background_color_(i_c_r, i_c_g, i_c_b, 255)
@@ -1409,10 +1409,10 @@ class QtSequenceChart(
                         i_c_h = c_h-(1-i_percent)*c_h
                         if i_percent == 1:
                             i_c_h = 140
-                        i_c_r, i_c_g, i_c_b = bsc_core.ColorMtd.hsv2rgb(i_c_h, c_s, c_v)
+                        i_c_r, i_c_g, i_c_b = bsc_core.RawColorMtd.hsv2rgb(i_c_h, c_s, c_v)
                         if self._hover_flag is True:
                             if i_rect.contains(self._hover_point):
-                                i_c_r, i_c_g, i_c_b = bsc_core.ColorMtd.hsv2rgb(i_c_h, c_s*.75, c_v)
+                                i_c_r, i_c_g, i_c_b = bsc_core.RawColorMtd.hsv2rgb(i_c_h, c_s*.75, c_v)
                         #
                         painter._set_border_color_(i_c_r, i_c_g, i_c_b, 255)
                         painter._set_background_color_(i_c_r, i_c_g, i_c_b, 255)

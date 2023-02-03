@@ -132,7 +132,7 @@ class AssetLookViewerPanel(utl_gui_pnl_abs_look_viewer.AbsAssetLookViewerPanel):
                 dcc_obj=_material_obj
             )
             _geometry_obj_gui.set_name(_sub_material_key, self.DESCRIPTION_INDEX)
-            _material_color = bsc_core.TextOpt(_sub_material_key).to_rgb()
+            _material_color = bsc_core.RawTextOpt(_sub_material_key).to_rgb()
             _geometry_obj_gui.set_icon_by_color(_material_color, self.DESCRIPTION_INDEX)
         #
         self._prx_dcc_obj_tree_view_add_opt.set_restore()

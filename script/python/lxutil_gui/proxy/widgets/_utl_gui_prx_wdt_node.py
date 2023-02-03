@@ -1,5 +1,8 @@
 # coding:utf-8
+import six
+
 import glob
+
 import os
 
 import functools
@@ -675,7 +678,7 @@ class PrxMediasOpenEntry(_PrxStgObjsEntry):
         if s:
             _ = s[0]
             if _:
-                cs = bsc_core.MultiplyFileMtd.set_merge_to(
+                cs = bsc_core.StgFileMultiplyMtd.set_merge_to(
                     _,
                     ['*.####.*']
                 )
@@ -684,8 +687,8 @@ class PrxMediasOpenEntry(_PrxStgObjsEntry):
                 self.set_history_update()
     @staticmethod
     def _get_tmp_screenshot_file_path_():
-        d = bsc_core.SystemMtd.get_user_directory_path()
-        return u'{}/screenshot/scp_{}.jpg'.format(d, bsc_core.SystemMtd.get_time_tag_36())
+        d = bsc_core.SystemMtd.get_user_home_directory()
+        return u'{}/screenshot/scp_{}.jpg'.format(d, bsc_core.TimeExtraMtd.get_time_tag_36())
 
     def _set_save_(self, g):
         f = self._get_tmp_screenshot_file_path_()
@@ -872,7 +875,7 @@ class _PrxEntryForShotgunEntitiesAsChoose(AbsRsvTypeQtEntry):
                     i_filter_keys.insert(0, 'ALL')
                     tag_filter_dict[i_key] = i_filter_keys
             #
-            names = bsc_core.TextsMtd.set_sort_by_initial(names)
+            names = bsc_core.RawTextsMtd.set_sort_by_initial(names)
             self._qt_entry_widget._set_choose_values_(names)
             self._qt_entry_widget._set_choose_image_url_dict_(image_url_dict)
             self._qt_entry_widget._set_choose_keyword_filter_dict_(keyword_filter_dict)
@@ -882,11 +885,11 @@ class _PrxEntryForShotgunEntitiesAsChoose(AbsRsvTypeQtEntry):
         tags = set()
         for i_tag_filter_field in fields:
             i_data = data.get(i_tag_filter_field)
-            if isinstance(i_data, (str, unicode)):
+            if isinstance(i_data, six.string_types):
                 tags.add(i_data.decode('utf-8'))
             elif isinstance(i_data, (tuple, list)):
                 for j_data in i_data:
-                    if isinstance(j_data, (str, unicode)):
+                    if isinstance(j_data, six.string_types):
                         tags.add(j_data)
                     elif isinstance(j_data, dict):
                         tags.add(
@@ -938,7 +941,7 @@ class _PrxEntryForRsvProject(AbsRsvTypeQtEntry):
             rsv_project = resolver.get_rsv_project(project=project)
             project_directory_path = rsv_project.get_directory_path()
             work_directory_path = '{}/work'.format(project_directory_path)
-            if bsc_core.StoragePathOpt(work_directory_path).get_is_exists() is True:
+            if bsc_core.StgPathOpt(work_directory_path).get_is_exists() is True:
                 utl_core.History.set_append(
                     self.HISTORY_KEY,
                     project
@@ -1125,7 +1128,7 @@ class _PrxEntryForEnumerate(AbsRsvTypeQtEntry):
             if raw:
                 self.set(raw[-1])
                 self.set_default(raw[-1])
-        elif isinstance(raw, (str, unicode)):
+        elif isinstance(raw, six.string_types):
             self._qt_entry_widget._set_value_(raw)
         elif isinstance(raw, (int, float)):
             self._qt_entry_widget._set_value_enumerate_string_at_(int(raw))
@@ -1136,7 +1139,7 @@ class _PrxEntryForEnumerate(AbsRsvTypeQtEntry):
         )
 
     def set_default(self, raw, **kwargs):
-        if isinstance(raw, (str, unicode)):
+        if isinstance(raw, six.string_types):
             self._qt_entry_widget._set_value_default_(raw)
         elif isinstance(raw, (int, float)):
             self._qt_entry_widget._set_value_default_by_enumerate_index_(raw)
@@ -1489,7 +1492,7 @@ class PrxRsvObjChooseEntry(_AbsPrxTypeEntry):
         prx_item.set_names([obj_name, update])
         prx_item.set_tool_tip(obj.description)
         if result:
-            if bsc_core.StoragePathOpt(result).get_is_file():
+            if bsc_core.StgPathOpt(result).get_is_file():
                 prx_item.set_icon_by_file(utl_dcc_objects.OsFile(result).icon)
         #
         prx_item.set_gui_menu_raw(menu_raw)
@@ -1744,7 +1747,7 @@ class AbsPrxPortDef(object):
         if label is not None:
             self._label = label
         else:
-            self._label = bsc_core.StrUnderlineOpt(self._name).to_prettify(capitalize=False)
+            self._label = bsc_core.RawStringUnderlineOpt(self._name).to_prettify(capitalize=False)
 
     def _set_node_(self, obj):
         self._prx_node = obj

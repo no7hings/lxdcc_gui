@@ -1,5 +1,7 @@
 # coding:utf-8
-from ..qt import utl_gui_qt_core
+import six
+
+from lxutil_gui.qt import utl_gui_qt_core
 
 import lxutil_gui.qt.widgets as qt_widgets
 
@@ -416,7 +418,7 @@ class AbsSceneCheckerToolPanel(
         gui_description = inspection.loader.get_gui_description_at(check_index)
         obj_path = dcc_obj.path
         obj_type_name = dcc_obj.type
-        if not isinstance(obj_type_name, (str, unicode)):
+        if not isinstance(obj_type_name, six.string_types):
             obj_type_name = dcc_obj.type.name
         #
         obj_name = dcc_obj.name

@@ -17,14 +17,14 @@ from lxutil import utl_configure
 def _set_texture_tx_load(window, item_prx):
     def set_processing_update(time_cost):
         c = 'Load Texture-tx(s) [ {} ] [ {} ]'.format(
-            str(p_m.get_status()), bsc_core.IntegerMtd.second_to_time_prettify(time_cost)
+            str(p_m.get_status()), bsc_core.RawIntegerMtd.second_to_time_prettify(time_cost)
         )
         item_prx.set_name(c)
 
     def set_status_changed_update(status):
         c = 'Load Texture-tx(s) [ {} ] [ {} ]'.format(
             str(status),
-            bsc_core.IntegerMtd.second_to_time_prettify(p_m.get_running_time_cost())
+            bsc_core.RawIntegerMtd.second_to_time_prettify(p_m.get_running_time_cost())
         )
         item_prx.set_name(c)
         item_prx.set_status(status)

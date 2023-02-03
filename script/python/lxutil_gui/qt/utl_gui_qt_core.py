@@ -1,4 +1,6 @@
 # coding:utf-8
+import six
+
 import functools
 
 import glob
@@ -41,7 +43,7 @@ else:
         raise ImportError()
 
 cgitb.enable(
-    logdir=bsc_core.SystemMtd.get_debug_directory_path(tag='qt', create=True),
+    logdir=bsc_core.StgUserMtd.get_user_debug_directory(tag='qt', create=True),
     format='text'
 )
 
@@ -276,7 +278,7 @@ class Font(object):
     button = get_font(size=10)
 
 
-class TextMtd(object):
+class RawTextMtd(object):
     @classmethod
     def get_size(cls, font_size, text):
         f = get_font()
@@ -704,9 +706,9 @@ class QtUtilMtd(object):
             if background_color is not None:
                 r, g, b = background_color
             else:
-                r, g, b = bsc_core.TextOpt(name).to_rgb()
+                r, g, b = bsc_core.RawTextOpt(name).to_rgb()
 
-            background_color_, text_color_ = QtColorMtd._get_image_draw_args_by_color_(r, g, b)
+            background_color_, text_color_ = QtRawColorMtd._get_image_draw_args_by_color_(r, g, b)
             #
             painter.setPen(QtBorderColors.Icon)
             painter.setBrush(QtGui.QBrush(QtGui.QColor(*background_color_)))
@@ -714,7 +716,7 @@ class QtUtilMtd(object):
             painter.setPen(QtGui.QColor(*text_color_))
             painter.setFont(get_font(size=int(rd*.675), italic=True))
             painter.drawText(
-                rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(bsc_core.TextMtd.get_first_word(name)).capitalize()
+                rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(bsc_core.RawTextMtd.get_first_word(name)).capitalize()
             )
         #
         painter.end()
@@ -759,14 +761,14 @@ class QtIconMtd(object):
         if text is not None:
             name = text.split('/')[-1] or ' '
             painter.setPen(QtBorderColors.Icon)
-            r, g, b = bsc_core.TextOpt(name).to_rgb()
+            r, g, b = bsc_core.RawTextOpt(name).to_rgb()
             if background_color is not None:
                 r, g, b = background_color
             painter.setBrush(QtGui.QBrush(QtGui.QColor(r, g, b, 255)))
             painter.drawRect(icon_rect)
             # painter.drawRoundedRect(icon_rect, f_w/2, f_w/2, QtCore.Qt.AbsoluteSize)
             #
-            # t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(r, g, b)
+            # t_r, t_g, t_b = bsc_core.RawColorMtd.get_complementary_rgb(r, g, b)
             painter.setPen(QtFontColors.Basic)
             painter.setFont(get_font(italic=True))
             painter.drawText(
@@ -819,7 +821,7 @@ class QtPixmapMtd(object):
         if text is not None:
             name = text.split('/')[-1] or ' '
             painter.setPen(QtBorderColors.Icon)
-            r, g, b = bsc_core.TextOpt(name).to_rgb()
+            r, g, b = bsc_core.RawTextOpt(name).to_rgb()
             if background_color is not None:
                 r, g, b = background_color
             painter.setBrush(QtGui.QBrush(QtGui.QColor(r, g, b, 255)))
@@ -893,7 +895,7 @@ class QtPixmapMtd(object):
         tag_rect = QtCore.QRect(
             x+w-txt_w-2, y+h-txt_h-2, txt_w, txt_h
         )
-        background_color_, text_color_ = QtColorMtd._get_image_draw_args_by_text_(tag)
+        background_color_, text_color_ = QtRawColorMtd._get_image_draw_args_by_text_(tag)
         painter.setPen(QtBorderColors.Icon)
         painter.setBrush(QtGui.QBrush(QtGui.QColor(*background_color_)))
         painter.drawRoundedRect(tag_rect, txt_w/2, txt_h/2, QtCore.Qt.AbsoluteSize)
@@ -1679,7 +1681,7 @@ class QtSectorChartDrawData(object):
         explain, value_maximum, value = subDatum
         percent = float(value) / float(max(value_maximum, 1))
         #
-        text = '{} : {}%'.format(explain, bsc_core.ValueMtd.get_percent_prettify(value=value, maximum=value_maximum))
+        text = '{} : {}%'.format(explain, bsc_core.RawValueMtd.get_percent_prettify(value=value, maximum=value_maximum))
         #
         color_percent = max(min(percent, 1), .005)
         if value_maximum == 0:
@@ -1696,11 +1698,11 @@ class QtSectorChartDrawData(object):
                     r, g, b = 63, 255, 127
             #
             elif percent > 1:
-                r, g, b = bsc_core.ColorMtd.hsv2rgb(240 - min(percent * 15, 45), 1, 1)
+                r, g, b = bsc_core.RawColorMtd.hsv2rgb(240 - min(percent * 15, 45), 1, 1)
             else:
-                r, g, b = bsc_core.ColorMtd.hsv2rgb(45 * color_percent, 1, 1)
+                r, g, b = bsc_core.RawColorMtd.hsv2rgb(45 * color_percent, 1, 1)
                 if mode is utl_configure.GuiSectorChartMode.Error:
-                    r, g, b = bsc_core.ColorMtd.hsv2rgb(45 - 45 * color_percent, 1, 1)
+                    r, g, b = bsc_core.RawColorMtd.hsv2rgb(45 - 45 * color_percent, 1, 1)
             #
             background_rgba = r, g, b, 255
             border_rgba = r, g, b, 255
@@ -1830,7 +1832,7 @@ class QtProgressingChartDrawMtd(object):
         colors = []
         for i in range(c):
             i_p = float(i)/float(c)
-            i_color = QtGui.QColor(*bsc_core.ColorMtd.hsv2rgb(140*(1-i_p), .5, 1))
+            i_color = QtGui.QColor(*bsc_core.RawColorMtd.hsv2rgb(140*(1-i_p), .5, 1))
             colors.append(i_color)
             annulus_sector_color.setColorAt(i_p, i_color)
 
@@ -1850,7 +1852,7 @@ class QtProgressingChartDrawMtd(object):
             text = '{}% {}'.format('%3d' % (int(percent*100)), label)
         else:
             text = '{}% process-{}'.format('%3d' % (int(percent*100)), index)
-        text_color = QtGui.QColor(*bsc_core.ColorMtd.hsv2rgb(140*percent_end, .5, 1))
+        text_color = QtGui.QColor(*bsc_core.RawColorMtd.hsv2rgb(140*percent_end, .5, 1))
         return annulus_sector_path, annulus_sector_color, text_rect_f, text_option, text, text_color
 
 
@@ -1990,11 +1992,11 @@ class QtRadarChartDrawData(object):
         percent_sub = float(value_sub) / float(max(value_src, 1))
         text_0 = explain
         if value_sub == 0:
-            text_1 = '{}'.format(bsc_core.IntegerMtd.get_prettify(value_tgt))
+            text_1 = '{}'.format(bsc_core.RawIntegerMtd.get_prettify(value_tgt))
         else:
             text_1 = '{} ( {}% )'.format(
-                bsc_core.IntegerMtd.get_prettify(value_tgt),
-                bsc_core.ValueMtd.get_percent_prettify(value=value_sub, maximum=value_src)
+                bsc_core.RawIntegerMtd.get_prettify(value_tgt),
+                bsc_core.RawValueMtd.get_percent_prettify(value=value_sub, maximum=value_src)
             )
         #
         if value_maximum == 0:
@@ -2004,9 +2006,9 @@ class QtRadarChartDrawData(object):
             if percent_sub == 0:
                 r, g, b = 64, 255, 127
             elif percent_sub > 0:
-                r, g, b = bsc_core.ColorMtd.hsv2rgb(45 * (1 - min(percent_sub, 1)), 1, 1)
+                r, g, b = bsc_core.RawColorMtd.hsv2rgb(45 * (1 - min(percent_sub, 1)), 1, 1)
             else:
-                r, g, b = bsc_core.ColorMtd.hsv2rgb(120 + 45 * (1 - min(percent_sub, 1)), 1, 1)
+                r, g, b = bsc_core.RawColorMtd.hsv2rgb(120 + 45 * (1 - min(percent_sub, 1)), 1, 1)
             #
             background_rgba = r, g, b, 255
             border_rgba = r, g, b, 255
@@ -2092,7 +2094,7 @@ class QtPieChartDrawData(object):
     def _get_basic_data_(cls, data, position, size, side):
         def rcs_fnc_(i_data_, i_seq_=0, qa=90, ma=0):
             _i_name, _i_value, color = i_data_[i_seq_]
-            _i_color = bsc_core.TextOpt(_i_name).to_rgb()
+            _i_color = bsc_core.RawTextOpt(_i_name).to_rgb()
             #
             p = float(_i_value) / float(maximum)
             _a = 360 * p
@@ -2112,7 +2114,7 @@ class QtPieChartDrawData(object):
             _i_shadow_path = rimPath - piePath
             #
             _i_percent = '{}%'.format(
-                bsc_core.ValueMtd.get_percent_prettify(value=_i_value, maximum=maximum)
+                bsc_core.RawValueMtd.get_percent_prettify(value=_i_value, maximum=maximum)
             )
             #
             lis.append(
@@ -2293,7 +2295,7 @@ class QtMenuOpt(object):
             widget_action.triggered.connect(
                 fnc
             )
-        elif isinstance(execute_fnc, (str, unicode)):
+        elif isinstance(execute_fnc, six.string_types):
             cmd = execute_fnc
             widget_action.triggered.connect(
                 lambda *args, **kwargs: self._set_cmd_debug_run_(cmd)
@@ -2329,11 +2331,11 @@ class QtPainterPath(QtGui.QPainterPath):
         self.addPolygon(QtGui.QPolygonF(points_))
 
 
-class QtColorMtd(object):
+class QtRawColorMtd(object):
     @classmethod
     def _get_image_draw_args_by_text_(cls, text):
         return cls._get_image_draw_args_by_color_(
-            *bsc_core.TextOpt(text).to_rgb()
+            *bsc_core.RawTextOpt(text).to_rgb()
         )
     @classmethod
     def _get_image_draw_args_by_color_(cls, *args):
@@ -2344,7 +2346,7 @@ class QtColorMtd(object):
             b_r, b_g, b_b, b_a = args
         else:
             raise TypeError()
-        t_r, t_g, t_b = bsc_core.ColorMtd.get_complementary_rgb(b_r, b_g, b_b)
+        t_r, t_g, t_b = bsc_core.RawColorMtd.get_complementary_rgb(b_r, b_g, b_b)
         b_l = QtGui.qGray(t_r, t_g, t_b)
         if b_l >= 127:
             t_l = 239
@@ -2614,7 +2616,7 @@ class QtPainter(QtGui.QPainter):
                 frm_w, frm_h = rect_offset.width(), rect_offset.height()
                 img_w, img_h = image.width(), image.height()
 
-                img_rect_x, img_rect_y, img_rect_w, img_rect_h = bsc_core.RectMtd.set_fit_to(
+                img_rect_x, img_rect_y, img_rect_w, img_rect_h = bsc_core.RawRectMtd.set_fit_to(
                     (frm_x, frm_y), (img_w, img_h), (frm_w, frm_h)
                 )
 
@@ -2659,7 +2661,7 @@ class QtPainter(QtGui.QPainter):
             get_font(size=t_f_s)
         )
         #
-        background_color, font_color = QtColorMtd._get_image_draw_args_by_text_(draw_text)
+        background_color, font_color = QtRawColorMtd._get_image_draw_args_by_text_(draw_text)
         self._set_border_color_(QtBorderColors.Icon)
         self._set_background_color_(background_color)
         self.drawRect(
@@ -2717,7 +2719,7 @@ class QtPainter(QtGui.QPainter):
             rect.width()-offset, rect.height()-offset
         )
         #
-        thumbnail_file_path = bsc_core.ImageOpt(file_path).get_thumbnail()
+        thumbnail_file_path = bsc_core.ImgFileOpt(file_path).get_thumbnail()
         rect_size = rect.size()
         image = QtGui.QImage(thumbnail_file_path)
         new_image = image.scaled(
@@ -2739,7 +2741,7 @@ class QtPainter(QtGui.QPainter):
             rect.width() - offset, rect.height() - offset
         )
         #
-        thumbnail_file_path = bsc_core.VedioOpt(file_path).get_thumbnail()
+        thumbnail_file_path = bsc_core.VdoFileOpt(file_path).get_thumbnail()
         rect_size = rect.size()
         image = QtGui.QImage(thumbnail_file_path)
         new_image = image.scaled(
@@ -2834,9 +2836,9 @@ class QtPainter(QtGui.QPainter):
         if background_color is not None:
             background_color__ = Color._get_rgba_(background_color)
         else:
-            background_color__ = bsc_core.TextOpt(text).to_rgb()
+            background_color__ = bsc_core.RawTextOpt(text).to_rgb()
 
-        background_color_, text_color_ = QtColorMtd._get_image_draw_args_by_color_(*background_color__)
+        background_color_, text_color_ = QtRawColorMtd._get_image_draw_args_by_color_(*background_color__)
         if font_color is not None:
             text_color_ = font_color
         #
@@ -3400,7 +3402,7 @@ class QtPainter(QtGui.QPainter):
             for i_index, i_value in enumerate(value_array):
                 i_color_percent = float(i_value) / float(maximum)
                 #
-                i_r, i_g, i_b = bsc_core.ColorMtd.hsv2rgb(140 * i_color_percent, 1, 1)
+                i_r, i_g, i_b = bsc_core.RawColorMtd.hsv2rgb(140 * i_color_percent, 1, 1)
                 #
                 self._set_background_color_(i_r, i_g, i_b, 255)
                 self._set_border_color_(i_r, i_g, i_b, 255)
@@ -3446,7 +3448,7 @@ class QtPainter(QtGui.QPainter):
                     '{2} ( {0} )\r\n{3} ( {1} )'.format(
                         label_x, label_y,
                         current_x,
-                        bsc_core.IntegerMtd.get_prettify_(current_y, mode=mode)
+                        bsc_core.RawIntegerMtd.get_prettify_(current_y, mode=mode)
                     )
                 )
 
@@ -3512,7 +3514,7 @@ class QtPainter(QtGui.QPainter):
             for seq, i_point in enumerate(points):
                 if (seq - axis_index) % 5 == 0:
                     value = (seq - axis_index)/scale+value_offset
-                    text = bsc_core.IntegerMtd.get_prettify_(
+                    text = bsc_core.RawIntegerMtd.get_prettify_(
                         value,
                         grid_value_show_mode
                     )
@@ -4089,7 +4091,7 @@ class AsbQtMenuSetup(object):
         if method is not None:
             if isinstance(method, (types.FunctionType, types.MethodType)):
                 action_item.triggered.connect(method)
-            elif isinstance(method, (str, unicode)):
+            elif isinstance(method, six.string_types):
                 action_item.triggered.connect(lambda *args, **kwargs: cls.get_fnc(method))
     @classmethod
     def set_menu_setup(cls, menu, menu_raw):
@@ -4131,7 +4133,7 @@ class AsbQtMenuSetup(object):
         name = configure.get('option.name')
         keys = configure.get('option.tool')
         for i_key in keys:
-            if isinstance(i_key, (str, unicode)):
+            if isinstance(i_key, six.string_types):
                 if i_key.startswith('separator'):
                     menu_raw.append(())
                 else:
@@ -4242,7 +4244,7 @@ class QtPixmapDrawer(object):
         i_x_0, i_y_0 = 0, h-g_h
         for i in guide_data:
             i_text, i_c = i
-            i_background_rgb = bsc_core.TextOpt(i_text).to_rgb()
+            i_background_rgb = bsc_core.RawTextOpt(i_text).to_rgb()
             # background
             i_p = i_c/float(max_c)
             i_x_1, i_y_1 = int(i_x_0+i_p*w), h-1
@@ -4259,7 +4261,7 @@ class QtPixmapDrawer(object):
 
             painter._set_font_(get_font(g_h*.8))
 
-            i_t_r, i_t_g, i_t_b = bsc_core.ColorMtd.get_complementary_rgb(*i_background_rgb)
+            i_t_r, i_t_g, i_t_b = bsc_core.RawColorMtd.get_complementary_rgb(*i_background_rgb)
             i_t_a = QtGui.qGray(i_t_r, i_t_g, i_t_b )
             if i_t_a >= 127:
                 i_t_r_ = 223

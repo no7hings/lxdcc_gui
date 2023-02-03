@@ -13,7 +13,7 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
     def _test_(self):
         def add_fnc_(i_):
             def show_fnc_():
-                thumbnail_file_path = bsc_core.ImageOpt(
+                thumbnail_file_path = bsc_core.ImgFileOpt(
                     '/l/temp/td/dongchangbao/Arnold_Shader_Suite_for_MAYA_v2.0/09-ADVANCED/Del_Cracks_11_1_1_1.jpg'
                 ).get_thumbnail()
                 # wdt.set_loading_update()

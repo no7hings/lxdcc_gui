@@ -131,7 +131,7 @@ class AbsSceneShaderViewerPanel(
                         if shader_type_name:
                             shader_gui = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as(shader, mode='list')
                             shader_gui.set_name(shader_type_name, 2)
-                            shader_gui.set_icon_by_color(bsc_core.TextOpt(shader_type_name).to_rgb(), 2)
+                            shader_gui.set_icon_by_color(bsc_core.RawTextOpt(shader_type_name).to_rgb(), 2)
                             #
                             tag_filter_key = 'shader.{}'.format(shader_type_name)
                             self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(

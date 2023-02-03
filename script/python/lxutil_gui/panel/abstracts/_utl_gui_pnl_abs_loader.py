@@ -1,4 +1,6 @@
 # coding:utf-8
+import six
+
 import fnmatch
 
 import collections
@@ -6,7 +8,6 @@ import collections
 import os
 
 import functools
-import time
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
@@ -74,7 +75,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             else:
                 self._rsv_filter = self._rsv_filters_dict[key]
             #
-            self._rsv_filter_opt = bsc_core.KeywordArgumentsOpt(self._rsv_filter)
+            self._rsv_filter_opt = bsc_core.ArgDictStringOpt(self._rsv_filter)
         #
         self.__gui_refresh_for_all_()
         # self.set_filter_refresh()
@@ -140,7 +141,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             _ = fnmatch.filter(
                 self.__asset_keys, '*{}*'.format(keyword)
             )
-            return bsc_core.TextsMtd.set_sort_by_initial(_)[:50]
+            return bsc_core.RawTextsMtd.set_sort_by_initial(_)[:50]
         return []
 
     def __filter_completion_gain_fnc_(self, *args, **kwargs):
@@ -149,7 +150,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             _ = fnmatch.filter(
                 self.__task_keys, '*{}*'.format(keyword)
             )
-            return bsc_core.TextsMtd.set_sort_by_initial(_)
+            return bsc_core.RawTextsMtd.set_sort_by_initial(_)
         return []
 
     def __setup_gui_viewers_(self):
@@ -240,7 +241,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
 
     def __setup_gui_options_(self):
         self._rsv_keywords = self._get_available_rsv_keywords_()
-        self._rsv_filter_opt = bsc_core.KeywordArgumentsOpt(self._rsv_filter)
+        self._rsv_filter_opt = bsc_core.ArgDictStringOpt(self._rsv_filter)
         self._filter_project = self._rsv_filter_opt.get('project')
         #
         self._options_prx_node = prx_widgets.PrxNode_('options')
@@ -308,7 +309,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
     #
     def __gui_add_for_all_resources_(self, rsv_project):
         def post_fnc_():
-            self._end_timestamp = bsc_core.SystemMtd.get_timestamp()
+            self._end_timestamp = bsc_core.TimeBaseMtd.get_timestamp()
             #
             utl_core.Log.set_module_result_trace(
                 'load asset/shot from "{}"'.format(
@@ -316,7 +317,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                 ),
                 'count={}, cost-time="{}"'.format(
                     self.__resource_count,
-                    bsc_core.IntegerMtd.second_to_time_prettify(self._end_timestamp-self._start_timestamp)
+                    bsc_core.RawIntegerMtd.second_to_time_prettify(self._end_timestamp-self._start_timestamp)
                 )
             )
 
@@ -324,7 +325,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             ts.set_quit()
         #
         self.__resource_count = 0
-        self._start_timestamp = bsc_core.SystemMtd.get_timestamp()
+        self._start_timestamp = bsc_core.TimeBaseMtd.get_timestamp()
         #
         rsv_tags = rsv_project.get_rsv_tags(**self._rsv_filter_opt.value)
         #
@@ -440,7 +441,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         #
         self.__thread_stack_index += 1
         #
-        self._start_timestamp = bsc_core.SystemMtd.get_timestamp()
+        self._start_timestamp = bsc_core.TimeBaseMtd.get_timestamp()
         #
         self._rsv_uint_list_view_0.set_clear()
         if tree_item_prxes:
@@ -464,7 +465,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         def quit_fnc_():
             ts.set_quit()
 
-        rsv_entities_map = bsc_core.ListMtd.set_grid_to(
+        rsv_entities_map = bsc_core.RawListMtd.set_grid_to(
             rsv_entities, self.THREAD_STEP
         )
         #
@@ -513,7 +514,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             ts.set_quit()
 
         rsv_tasks, thread_stack_index = args[0]
-        rsv_tasks_map = bsc_core.ListMtd.set_grid_to(
+        rsv_tasks_map = bsc_core.RawListMtd.set_grid_to(
             rsv_tasks, self.THREAD_STEP
         )
 
@@ -619,7 +620,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         list_ = []
         keywords = self._hook_configure.get('resolver.task_unit.keywords') or []
         for i_raw in keywords:
-            if isinstance(i_raw, (str, unicode)):
+            if isinstance(i_raw, six.string_types):
                 i_keyword = i_raw
                 list_.append(i_keyword)
             elif isinstance(i_raw, dict):
@@ -675,7 +676,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         )
         if movie_file_path:
             session, execute_fnc = ssn_commands.get_option_hook_args(
-                bsc_core.KeywordArgumentsOpt(
+                bsc_core.ArgDictStringOpt(
                     dict(
                         option_hook_key='actions/movie-open',
                         file=movie_file_path,
@@ -685,7 +686,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                 ).to_string()
             )
             #
-            movie_file_opt = bsc_core.StorageFileOpt(movie_file_path)
+            movie_file_opt = bsc_core.StgFileOpt(movie_file_path)
             show_info_dict['update'] = bsc_core.TimeMtd.to_prettify_by_timestamp(
                 movie_file_opt.get_modify_timestamp(),
                 language=1
@@ -695,7 +696,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             rsv_task_unit_prx_item.set_press_db_clicked_connect_to(
                 execute_fnc
             )
-            image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
+            image_file_path, image_sub_process_cmds = bsc_core.VdoFileOpt(movie_file_path).get_thumbnail_create_args()
             rsv_task_unit_prx_item.set_image(image_file_path)
             rsv_task_unit_prx_item.set_movie_enable(True)
             if image_sub_process_cmds is not None:
@@ -712,7 +713,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             rsv_task_unit_prx_item.set_menu_content(unit_menu_content)
 
         rsv_task_unit_prx_item.set_name_dict(show_info_dict)
-        r, g, b = bsc_core.TextOpt(task).to_rgb()
+        r, g, b = bsc_core.RawTextOpt(task).to_rgb()
         rsv_task_unit_prx_item.set_name_frame_background_color((r, g, b, 127))
         rsv_task_unit_prx_item.set_icon_by_name_text(step)
         rsv_task_unit_prx_item.set_icons_by_pixmap(pixmaps)
@@ -721,7 +722,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         )
     @classmethod
     def _get_current_application_(cls):
-        return utl_core.Application.get_current()
+        return bsc_core.ApplicationMtd.get_current()
     @classmethod
     def _get_current_project_(cls):
         _ = os.environ.get('PG_SHOW')
@@ -771,7 +772,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
     def _get_menu_content_by_hook_keys_(cls, session_dict, hooks, *args, **kwargs):
         content = bsc_objects.Dict()
         for i_hook in hooks:
-            if isinstance(i_hook, (str, unicode)):
+            if isinstance(i_hook, six.string_types):
                 i_hook_key = i_hook
                 i_hook_option = None
             elif isinstance(i_hook, dict):
@@ -858,8 +859,8 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         if session_path in session_dict:
             return session_dict[session_path]
         else:
-            python_file_path = ssn_core.RscHookFile.get_python(key)
-            yaml_file_path = ssn_core.RscHookFile.get_yaml(key)
+            python_file_path = ssn_core.SsnHookFileMtd.get_python(key)
+            yaml_file_path = ssn_core.SsnHookFileMtd.get_yaml(key)
             if python_file_path and yaml_file_path:
                 python_file = utl_dcc_objects.OsPythonFile(python_file_path)
                 yaml_file = utl_dcc_objects.OsFile(yaml_file_path)

@@ -33,7 +33,7 @@ class AbsRenderSubmitterDef(object):
     TD_ENABLE = True
     def _set_render_submitter_def_init_(self, hook_option):
         if hook_option is not None:
-            self._hook_option_opt = bsc_core.KeywordArgumentsOpt(hook_option)
+            self._hook_option_opt = bsc_core.ArgDictStringOpt(hook_option)
             self._file_path = self._hook_option_opt.get('file')
             self._hook_option_opt.set(
                 'option_hook_key', self.OPTION_HOOK_KEY
@@ -224,7 +224,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
     def set_all_refresh(self):
         if self._file_path:
-            self._file_path = bsc_core.StoragePathMtd.set_map_to_platform(self._file_path)
+            self._file_path = bsc_core.StorageBaseMtd.set_map_to_platform(self._file_path)
             self._resolver = rsv_commands.get_resolver()
             self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
             if self._rsv_scene_properties:
@@ -497,7 +497,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             version = rsv_properties.get('version')
             show_info_dict['version'] = version
             show_info_dict['update'] = bsc_core.TimeMtd.to_prettify_by_timestamp(
-                bsc_core.StorageFileOpt(
+                bsc_core.StgFileOpt(
                     movie_file_path
                 ).get_modify_timestamp(),
                 language=1
@@ -506,7 +506,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 version=version
             )
             if render_info_file_path:
-                render_info = bsc_core.StorageFileOpt(render_info_file_path).set_read()
+                render_info = bsc_core.StgFileOpt(render_info_file_path).set_read()
                 show_info_dict['user'] = render_info['user']
                 # show_info_dict['submit_time'] = bsc_core.TimeMtd.to_prettify_by_time_tag(
                 #     render_info['time_tag'],
@@ -515,12 +515,12 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 if variants['camera'] == 'shot':
                     show_info_dict['shot'] = render_info['shot']
             #
-            image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
+            image_file_path, image_sub_process_cmds = bsc_core.VdoFileOpt(movie_file_path).get_thumbnail_create_args()
             prx_item.set_image(image_file_path)
             prx_item.set_movie_enable(True)
             #
             session, execute_fnc = ssn_commands.get_option_hook_args(
-                bsc_core.KeywordArgumentsOpt(
+                bsc_core.ArgDictStringOpt(
                     dict(
                         option_hook_key='actions/movie-open',
                         file=movie_file_path,
@@ -536,14 +536,14 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             #
             hook_options.extend(
                 [
-                    bsc_core.KeywordArgumentsOpt(
+                    bsc_core.ArgDictStringOpt(
                         dict(
                             option_hook_key='actions/movie-open',
                             file=movie_file_path,
                             gui_group_name='movie',
                         )
                     ).to_string(),
-                    bsc_core.KeywordArgumentsOpt(
+                    bsc_core.ArgDictStringOpt(
                         dict(
                             option_hook_key='actions/file-directory-open',
                             file=movie_file_path,
@@ -551,7 +551,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                             gui_name='open movie directory'
                         )
                     ).to_string(),
-                    bsc_core.KeywordArgumentsOpt(
+                    bsc_core.ArgDictStringOpt(
                         dict(
                             option_hook_key='actions/movie-upload',
                             file=movie_file_path,
@@ -580,7 +580,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 pixmaps.append(i_pixmap)
 
                 hook_options.append(
-                    bsc_core.KeywordArgumentsOpt(
+                    bsc_core.ArgDictStringOpt(
                         dict(
                             option_hook_key='actions/file-directory-open',
                             file=i_file_path,
@@ -596,7 +596,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
         prx_item.set_name_dict(show_info_dict)
         prx_item.set_icons_by_pixmap(pixmaps)
-        r, g, b = bsc_core.TextOpt(variable_name).to_rgb()
+        r, g, b = bsc_core.RawTextOpt(variable_name).to_rgb()
         prx_item.set_name_frame_background_color((r, g, b, 127))
 
         prx_item.set_tool_tip(
@@ -706,7 +706,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
         def cache_fnc_():
             return [
-                bsc_core.VariablesMtd.get_all_combinations(
+                bsc_core.RawVariablesMtd.get_all_combinations(
                     self._variable_variants_dic
                 )
             ]
@@ -936,7 +936,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
     def get_file_is_changed(self):
         # file_path_src = self._file_path
         # file_path_tgt = self._output_scene_file_rsv_unit.get_result('latest')
-        # return not bsc_core.StorageFileOpt(file_path_src).get_timestamp_is_same_to(file_path_tgt)
+        # return not bsc_core.StgFileOpt(file_path_src).get_timestamp_is_same_to(file_path_tgt)
         return True
 
     @utl_gui_qt_core.set_prx_window_waiting
@@ -945,7 +945,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             version='latest'
         )
         if camera_work_maya_scene_scr_file_path:
-            hook_option_opt = bsc_core.KeywordArgumentsOpt(
+            hook_option_opt = bsc_core.ArgDictStringOpt(
                 option=dict(
                     option_hook_key='rsv-task-batchers/asset/maya/camera-export',
                     #
@@ -982,7 +982,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 if self.get_file_is_changed() is True:
                     hook_option_dic['user'] = bsc_core.SystemMtd.get_user_name()
                     hook_option_dic['option_hook_key'] = 'rsv-task-batchers/asset/gen-cmb-render-submit'
-                    option_opt = bsc_core.KeywordArgumentsOpt(hook_option_dic)
+                    option_opt = bsc_core.ArgDictStringOpt(hook_option_dic)
                     #
                     ssn_commands.set_option_hook_execute_by_deadline(
                         option=option_opt.to_string()
@@ -1083,18 +1083,18 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             version = rsv_properties.get('version')
             variants['version'] = version
             variants['update'] = bsc_core.TimeMtd.to_prettify_by_timestamp(
-                bsc_core.StorageFileOpt(
+                bsc_core.StgFileOpt(
                     movie_file_path
                 ).get_modify_timestamp(),
                 language=1
             )
             #
-            image_file_path, image_sub_process_cmds = bsc_core.VedioOpt(movie_file_path).get_thumbnail_create_args()
+            image_file_path, image_sub_process_cmds = bsc_core.VdoFileOpt(movie_file_path).get_thumbnail_create_args()
             prx_item.set_image(image_file_path)
             prx_item.set_movie_enable(True)
             #
             session, execute_fnc = ssn_commands.get_option_hook_args(
-                bsc_core.KeywordArgumentsOpt(
+                bsc_core.ArgDictStringOpt(
                     dict(
                         option_hook_key='actions/movie-open',
                         file=movie_file_path,
@@ -1110,7 +1110,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             #
             hook_options.extend(
                 [
-                    bsc_core.KeywordArgumentsOpt(
+                    bsc_core.ArgDictStringOpt(
                         dict(
                             option_hook_key='actions/movie-open',
                             file=movie_file_path,
@@ -1118,7 +1118,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                             gui_name='open movie'
                         )
                     ).to_string(),
-                    bsc_core.KeywordArgumentsOpt(
+                    bsc_core.ArgDictStringOpt(
                         dict(
                             option_hook_key='actions/file-directory-open',
                             file=movie_file_path,
@@ -1148,7 +1148,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 pixmaps.append(i_pixmap)
 
                 hook_options.append(
-                    bsc_core.KeywordArgumentsOpt(
+                    bsc_core.ArgDictStringOpt(
                         dict(
                             option_hook_key='actions/file-directory-open',
                             file=i_file_path,
@@ -1164,7 +1164,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
         prx_item.set_name_dict(variants)
         prx_item.set_icons_by_pixmap(pixmaps)
-        r, g, b = bsc_core.TextOpt(variable_name).to_rgb()
+        r, g, b = bsc_core.RawTextOpt(variable_name).to_rgb()
         prx_item.set_name_frame_background_color((r, g, b, 127))
 
         prx_item.set_tool_tip(
@@ -1173,7 +1173,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
     def set_all_refresh(self):
         if self._file_path:
-            self._file_path = bsc_core.StoragePathMtd.set_map_to_platform(self._file_path)
+            self._file_path = bsc_core.StorageBaseMtd.set_map_to_platform(self._file_path)
             self._resolver = rsv_commands.get_resolver()
             self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
             if self._rsv_scene_properties:
@@ -1398,7 +1398,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         self._variable_keys = self._hook_build_configure.get_branch_keys(
             'variables.character'
         )
-        combinations = bsc_core.VariablesMtd.get_all_combinations(
+        combinations = bsc_core.RawVariablesMtd.get_all_combinations(
             self._variable_variants_dic
         )
         for i_seq, i_variants in enumerate(combinations):
@@ -1476,7 +1476,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
     def get_file_is_changed(self):
         file_path_src = self._file_path
         file_path_tgt = self._output_scene_file_rsv_unit.get_result('latest')
-        # return not bsc_core.StorageFileOpt(file_path_src).get_timestamp_is_same_to(file_path_tgt)
+        # return not bsc_core.StgFileOpt(file_path_src).get_timestamp_is_same_to(file_path_tgt)
         return True
 
     @utl_gui_qt_core.set_prx_window_waiting
@@ -1487,7 +1487,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 hook_option_dic['user'] = bsc_core.SystemMtd.get_user_name()
                 hook_option_dic['option_hook_key'] = 'rsv-task-batchers/shot/tmp-render-submit'
                 #
-                option_opt = bsc_core.KeywordArgumentsOpt(hook_option_dic)
+                option_opt = bsc_core.ArgDictStringOpt(hook_option_dic)
                 #
                 ssn_commands.set_option_hook_execute_by_deadline(
                     option=option_opt.to_string()

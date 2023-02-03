@@ -1,4 +1,6 @@
 # coding:utf-8
+import six
+
 from lxutil import utl_core
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
@@ -206,7 +208,7 @@ class PrxTreeItem(
         return '/'
 
     def set_icon_by_file(self, icon, column=0):
-        if isinstance(icon, (str, unicode)):
+        if isinstance(icon, six.string_types):
             self.widget._set_icon_file_path_(icon, column)
         elif isinstance(icon, utl_gui_qt_core.QtGui.QIcon):
             qt_icon = icon

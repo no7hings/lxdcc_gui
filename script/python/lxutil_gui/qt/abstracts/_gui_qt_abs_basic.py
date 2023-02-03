@@ -125,33 +125,33 @@ class AbsQtStatusDef(object):
     def _get_sub_process_status_color_(cls, status):
         if status in [bsc_configure.Status.Started]:
             r, g, b = 255, 255, 255
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
             hover_color = r, g, b
         elif status in [bsc_configure.Status.Failed, bsc_configure.Status.Error, bsc_configure.Status.Killed]:
             r, g, b = 255, 0, 63
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
             hover_color = r, g, b
         elif status in [bsc_configure.Status.Waiting]:
             r, g, b = 255, 127, 63
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
             hover_color = r, g, b
         elif status in [bsc_configure.Status.Suspended]:
             r, g, b = 255, 255, 63
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
             hover_color = r, g, b
         elif status in [bsc_configure.Status.Running]:
             r, g, b = 63, 127, 255
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
             hover_color = r, g, b
         elif status in [bsc_configure.Status.Completed]:
             r, g, b = 63, 255, 127
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
             hover_color = r, g, b
         else:
             color = QtBackgroundColors.Transparent
@@ -161,61 +161,61 @@ class AbsQtStatusDef(object):
     def _get_text_color_by_validator_status_(cls, status):
         if status in [bsc_configure.ValidatorStatus.Warning]:
             r, g, b = 255, 255, 63
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
             hover_color = r, g, b
         elif status in [bsc_configure.ValidatorStatus.Error]:
             r, g, b = 255, 0, 63
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
             hover_color = r, g, b
         elif status in [bsc_configure.ValidatorStatus.Correct]:
             r, g, b = 63, 255, 127
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
             hover_color = r, g, b
         elif status in [bsc_configure.ValidatorStatus.Locked]:
             r, g, b = 127, 127, 255
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
             hover_color = r, g, b
         elif status in [bsc_configure.ValidatorStatus.Active]:
             r, g, b = 63, 127, 255
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
             hover_color = r, g, b
         else:
             r, g, b = 255, 255, 255
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
             hover_color = r, g, b
         return color, hover_color
     @classmethod
     def _get_border_color_by_validator_status_(cls, status):
         if status in [bsc_configure.ValidatorStatus.Warning]:
             r, g, b = 255, 255, 63
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
             hover_color = r, g, b
         elif status in [bsc_configure.ValidatorStatus.Error]:
             r, g, b = 255, 0, 63
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
             hover_color = r, g, b
         elif status in [bsc_configure.ValidatorStatus.Correct]:
             r, g, b = 63, 255, 127
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
             hover_color = r, g, b
         elif status in [bsc_configure.ValidatorStatus.Locked]:
             r, g, b = 127, 127, 255
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
             hover_color = r, g, b
         elif status in [bsc_configure.ValidatorStatus.Active]:
             r, g, b = 63, 127, 255
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
             hover_color = r, g, b
         else:
             color = QtBackgroundColors.Transparent
@@ -225,23 +225,23 @@ class AbsQtStatusDef(object):
     def _get_background_color_by_validator_status_(cls, status):
         if status in [bsc_configure.ValidatorStatus.Warning]:
             r, g, b = 255, 255, 63
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
             hover_color = r, g, b
         elif status in [bsc_configure.ValidatorStatus.Error]:
             r, g, b = 255, 0, 63
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
             hover_color = r, g, b
         elif status in [bsc_configure.ValidatorStatus.Correct]:
             r, g, b = 63, 255, 127
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
             hover_color = r, g, b
         elif status in [bsc_configure.ValidatorStatus.Locked]:
             r, g, b = 127, 127, 255
-            h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.ColorMtd.hsv2rgb(h, s*.875, v*.875)
+            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
             hover_color = r, g, b
         else:
             color = QtBackgroundColors.Transparent
@@ -326,7 +326,7 @@ class AbsQtSubProcessDef(object):
             self._hover_sub_process_status_colors = [hover_color]*count
             self._sub_process_finished_results = [False]*count
 
-            self._sub_process_timestamp_started = bsc_core.SystemMtd.get_timestamp()
+            self._sub_process_timestamp_started = bsc_core.TimeBaseMtd.get_timestamp()
         else:
             self._set_sub_process_restore_()
 
@@ -345,7 +345,7 @@ class AbsQtSubProcessDef(object):
                 self._hover_sub_process_status_colors.append(i_hover_color)
 
             self._sub_process_finished_results = [False]*count
-            self._sub_process_timestamp_started = bsc_core.SystemMtd.get_timestamp()
+            self._sub_process_timestamp_started = bsc_core.TimeBaseMtd.get_timestamp()
         else:
             self._set_sub_process_restore_()
         #
@@ -380,14 +380,14 @@ class AbsQtSubProcessDef(object):
         self._sub_process_finished_value = sum(self._sub_process_finished_results)
         self._sub_process_finished_maximum = len(self._sub_process_finished_results)
         #
-        self._sub_process_timestamp_costed = bsc_core.SystemMtd.get_timestamp()-self._sub_process_timestamp_started
+        self._sub_process_timestamp_costed = bsc_core.TimeBaseMtd.get_timestamp()-self._sub_process_timestamp_started
         if self._sub_process_finished_value > 1:
             self._sub_process_finished_timestamp_estimated = (self._sub_process_timestamp_costed/self._sub_process_finished_value)*self._sub_process_finished_maximum
         else:
             self._sub_process_finished_timestamp_estimated = 0
 
     def _set_sub_process_update_draw_(self):
-        self._sub_process_timestamp_costed = bsc_core.SystemMtd.get_timestamp()-self._sub_process_timestamp_started
+        self._sub_process_timestamp_costed = bsc_core.TimeBaseMtd.get_timestamp()-self._sub_process_timestamp_started
         self._refresh_widget_draw_()
 
     def _get_sub_process_status_text_(self):
@@ -395,11 +395,11 @@ class AbsQtSubProcessDef(object):
             kwargs = dict(
                 value=self._sub_process_finished_value,
                 maximum=self._sub_process_finished_maximum,
-                costed_time=bsc_core.IntegerMtd.second_to_time_prettify(
+                costed_time=bsc_core.RawIntegerMtd.second_to_time_prettify(
                     self._sub_process_timestamp_costed,
                     mode=1
                 ),
-                estimated_time=bsc_core.IntegerMtd.second_to_time_prettify(
+                estimated_time=bsc_core.RawIntegerMtd.second_to_time_prettify(
                     self._sub_process_finished_timestamp_estimated,
                     mode=1
                 ),
@@ -646,7 +646,7 @@ class AbsQtPopupDef(object):
         width_ = view_width + margin*2 + side*2 + shadow_radius
         height_ = view_height + margin*2 + side*2 + shadow_radius
         #
-        r_x, r_y, region = bsc_core.CoordMtd.set_region_to(
+        r_x, r_y, region = bsc_core.RawCoordMtd.set_region_to(
             position=(press_x, press_y),
             size=(width_, height_),
             maximum_size=(width_maximum, height_maximum),
@@ -1110,7 +1110,7 @@ class AbsQtTypeDef(object):
 
     def _set_type_text_(self, text):
         self._type_text = text
-        self._type_color = bsc_core.TextOpt(
+        self._type_color = bsc_core.RawTextOpt(
             self._type_text
         ).to_rgb()
 
@@ -1194,7 +1194,7 @@ class AbsQtNameDef(object):
     def _set_tool_tip_(self, raw, **kwargs):
         if isinstance(raw, (tuple, list)):
             _ = u'\n'.join(raw)
-        elif isinstance(raw, (str, unicode)):
+        elif isinstance(raw, six.string_types):
             _ = raw
         else:
             raise TypeError()
@@ -1213,7 +1213,7 @@ class AbsQtNameDef(object):
                 css += u'<h3><p class="no_warp_and_center">{}</p></h3>\n'.format(name_text)
             #
             css += u'<p><hr></p>\n'
-            if isinstance(text, (str, unicode)):
+            if isinstance(text, six.string_types):
                 texts = text.split('\n')
             else:
                 texts = text
@@ -1327,7 +1327,7 @@ class AbsQtProgressDef(object):
         #
         if self._progress_map_maximum > 1:
             map_value = int(
-                bsc_core.RangeMtd.set_map_to(
+                bsc_core.RawValueRangeMtd.set_map_to(
                     (1, self._progress_maximum), (1, self._progress_map_maximum),
                     self._progress_value
                 )
@@ -1575,7 +1575,7 @@ class AbsQtNamesDef(object):
         if raw is not None:
             if isinstance(raw, (tuple, list)):
                 _ = u'\n'.join(raw)
-            elif isinstance(raw, (str, unicode)):
+            elif isinstance(raw, six.string_types):
                 _ = raw
             else:
                 raise TypeError()
@@ -1596,7 +1596,7 @@ class AbsQtNamesDef(object):
                         css += u'<ul><li><i><p class="no_wrap">{}</p></i></li></ul>\n'.format(i)
 
             css += u'<p><hr></p>\n'
-            if isinstance(text, (str, unicode)):
+            if isinstance(text, six.string_types):
                 texts = text.split('\n')
             else:
                 texts = text
@@ -1620,8 +1620,8 @@ class AbsQtChartDef(object):
         self._hover_point = QtCore.QPoint()
         #
         r, g, b = 143, 143, 143
-        h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-        color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+        h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+        color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
         hover_color = r, g, b
         #
         self._chart_border_color = color
@@ -3561,7 +3561,7 @@ class AbsQtTrackActionDef(object):
         track_offset_x, track_offset_y = self._tmp_track_offset_x, self._tmp_track_offset_y
         track_d_offset_x, track_d_offset_y = track_point.x(), track_point.y()
         #
-        self._track_offset_x = bsc_core.ValueMtd.set_offset_range_to(
+        self._track_offset_x = bsc_core.RawValueMtd.set_offset_range_to(
             value=track_offset_x,
             d_value=track_d_offset_x,
             radix=self._track_offset_radix_x,
@@ -3569,7 +3569,7 @@ class AbsQtTrackActionDef(object):
             direction=self._track_offset_direction_x
         )
         #
-        self._track_offset_y = bsc_core.ValueMtd.set_offset_range_to(
+        self._track_offset_y = bsc_core.RawValueMtd.set_offset_range_to(
             value=track_offset_y,
             d_value=track_d_offset_y,
             radix=self._track_offset_radix_y,
@@ -3600,7 +3600,7 @@ class AbsQtZoomActionDef(object):
 
     def _execute_action_zoom_scale_(self, event):
         delta = event.angleDelta().y()
-        self._zoom_scale_x = bsc_core.ValueMtd.step_to(
+        self._zoom_scale_x = bsc_core.RawValueMtd.step_to(
             value=self._zoom_scale_x,
             delta=delta,
             step=self._zoom_scale_radix_x,
@@ -3608,7 +3608,7 @@ class AbsQtZoomActionDef(object):
             direction=1
         )
 
-        self._zoom_scale_y = bsc_core.ValueMtd.step_to(
+        self._zoom_scale_y = bsc_core.RawValueMtd.step_to(
             value=self._zoom_scale_y,
             delta=delta,
             step=self._zoom_scale_radix_y,
@@ -3897,7 +3897,7 @@ class AbsQtScreenshotDef(object):
         return x + x_0, y + y_0, w_0, h_0
     @classmethod
     def _set_screenshot_save_to_(cls, geometry, file_path):
-        bsc_core.StorageFileOpt(file_path).set_directory_create()
+        bsc_core.StgFileOpt(file_path).set_directory_create()
         rect = QtCore.QRect(*geometry)
 
         if bsc_core.ApplicationMtd.get_is_maya():

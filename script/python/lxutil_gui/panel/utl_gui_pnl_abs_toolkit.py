@@ -1,4 +1,6 @@
 # coding:utf-8
+import six
+
 import fnmatch
 
 import lxutil_gui.proxy.widgets as prx_widgets
@@ -157,7 +159,7 @@ class AbsToolkitPanel(prx_widgets.PrxToolWindow):
             type_ = v['type']
             value = v['value']
             #
-            if isinstance(value, (str, unicode)):
+            if isinstance(value, six.string_types):
                 if fnmatch.filter([value], 'fnc(*)'):
                     value = eval(value[4:-1])
             #

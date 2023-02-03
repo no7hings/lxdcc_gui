@@ -655,7 +655,7 @@ class _QtListItemWidget(
             w, h = rect.width(), rect.height()
             i_w_0, i_h_0 = self._get_image_size_()
             if (i_w_0, i_h_0) != (0, 0):
-                i_x, i_y, icn_w, icn_h = bsc_core.SizeMtd.set_fit_to(
+                i_x, i_y, icn_w, icn_h = bsc_core.RawSizeMtd.set_fit_to(
                     (i_w_0, i_h_0), (w, h)
                 )
                 if self._get_movie_enable_() is True:

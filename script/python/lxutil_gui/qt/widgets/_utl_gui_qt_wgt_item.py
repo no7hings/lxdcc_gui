@@ -84,7 +84,7 @@ class _QtListEntry(
             item_widget = self.itemWidget(item)
             if item_widget is not None:
                 _ = item_widget._get_name_text_()
-                bsc_core.StoragePathOpt(_).set_open_in_system()
+                bsc_core.StgPathOpt(_).set_open_in_system()
 
     def eventFilter(self, *args):
         widget, event = args
@@ -212,7 +212,7 @@ class _QtListEntry(
                     if self._get_value_is_valid_(i_value):
                         values.append(i_value)
                 #
-                cs = bsc_core.MultiplyFileMtd.set_merge_to(
+                cs = bsc_core.StgFileMultiplyMtd.set_merge_to(
                     values,
                     ['*.####.*']
                 )
@@ -555,16 +555,16 @@ class QtPressItem(
         self._set_name_draw_font_(QtFonts.Button)
         #
         r, g, b = 167, 167, 167
-        h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-        color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+        h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+        color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
         hover_color = r, g, b
         #
         self._frame_border_color = color
         self._hovered_frame_border_color = hover_color
         #
         r, g, b = 151, 151, 151
-        h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-        color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+        h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+        color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
         hover_color = r, g, b
         self._frame_background_color = color
         self._hovered_frame_background_color = hover_color
@@ -2462,24 +2462,24 @@ class _QtHExpandItem0(
         self._refresh_expand_()
         #
         r, g, b = 207, 207, 207
-        h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-        color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+        h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+        color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
         hover_color = r, g, b
         #
         self._name_color = color
         self._hover_name_color = hover_color
         #
         r, g, b = 135, 135, 135
-        h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-        color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+        h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+        color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
         hover_color = r, g, b
         #
         self._frame_border_color = color
         self._hovered_frame_border_color = hover_color
         #
         r, g, b = 119, 119, 119
-        h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-        color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+        h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+        color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
         hover_color = r, g, b
         self._frame_background_color = color
         self._hovered_frame_background_color = hover_color
@@ -2668,15 +2668,15 @@ class _QtHExpandItem1(
         self._item_expand_icon_file_path_2 = utl_gui_core.RscIconFile.get('qt-style/arrow-up')
         #
         r, g, b = 135, 135, 135
-        h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-        color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+        h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+        color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
         hover_color = r, g, b
         self._frame_border_color = color
         self._hovered_frame_border_color = hover_color
         #
         r, g, b = 119, 119, 119
-        h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-        color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+        h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+        color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
         hover_color = r, g, b
         self._frame_background_color = color
         self._hovered_frame_background_color = hover_color

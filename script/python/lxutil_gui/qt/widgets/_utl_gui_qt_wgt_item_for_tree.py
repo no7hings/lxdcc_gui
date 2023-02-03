@@ -479,7 +479,7 @@ class QtTreeWidgetItem(
         if raw is not None:
             if isinstance(raw, (tuple, list)):
                 _ = u'\n'.join(raw)
-            elif isinstance(raw, (str, unicode)):
+            elif isinstance(raw, six.string_types):
                 _ = raw
             else:
                 raise TypeError()
@@ -502,7 +502,7 @@ class QtTreeWidgetItem(
             css += u'<h3><p class="no_warp_and_center">{}</p></h3>\n'.format(title_text)
             #
             css += u'<p><hr></p>\n'
-            if isinstance(text, (str, unicode)):
+            if isinstance(text, six.string_types):
                 texts = text.split('\n')
             else:
                 texts = text

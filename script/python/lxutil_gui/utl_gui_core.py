@@ -1,4 +1,6 @@
 # coding:utf-8
+import six
+
 import math
 
 import re
@@ -18,7 +20,7 @@ class HtmlText(object):
         arg = args[0]
         if isinstance(arg, (float, int)):
             return utl_gui_configure.Html.COLORS[int(arg)]
-        elif isinstance(arg, (str, unicode)):
+        elif isinstance(arg, six.string_types):
             return utl_gui_configure.Html.COLOR_DICT.get(arg, '#dfdfdf')
         return '#dfdfdf'
     @classmethod

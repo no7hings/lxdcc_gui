@@ -1,5 +1,8 @@
 # coding:utf-8
+import six
+
 import collections
+
 import functools
 
 from lxbasic import bsc_core
@@ -155,7 +158,7 @@ class PrxDccObjTreeViewTagFilterOpt(object):
         leaf_paths = self._filter_content.get_leaf_key_as_paths()
         all_paths = self._filter_content.get_key_as_paths()
         all_paths.sort()
-        all_paths = bsc_core.TextsOpt(all_paths).set_sort_to()
+        all_paths = bsc_core.RawTextsOpt(all_paths).set_sort_to()
         for path in all_paths:
             i_is_create, i_prx_item_src = self._set_prx_item_src_add_(path)
             if path in leaf_paths:
@@ -470,7 +473,7 @@ class PrxStgObjTreeViewAddOpt(object):
                 )
             #
             prx_item.set_checked(False)
-            prx_item.set_icon_by_color(bsc_core.TextOpt(obj.type).to_rgb(), 1)
+            prx_item.set_icon_by_color(bsc_core.RawTextOpt(obj.type).to_rgb(), 1)
             self._obj_add_dict[obj_key] = prx_item
             return True, prx_item
 
@@ -621,7 +624,7 @@ class PrxStgObjTreeViewAddOpt(object):
                     _ = file_tiles
                 #
                 for i_file_tile in _:
-                    if isinstance(i_file_tile, (str, unicode)):
+                    if isinstance(i_file_tile, six.string_types):
                         tool_tip_.append(i_file_tile)
                     else:
                         readable = i_file_tile.get_is_readable()
@@ -733,7 +736,7 @@ class PrxStgTextureTreeViewAddOpt(PrxStgObjTreeViewAddOpt):
                     _ = file_tiles
                 #
                 for i_file_tile in _:
-                    if isinstance(i_file_tile, (str, unicode)):
+                    if isinstance(i_file_tile, six.string_types):
                         tool_tip_.append(i_file_tile)
                     else:
                         st_mode = i_file_tile.get_permission()
@@ -824,7 +827,7 @@ class PrxDccObjTreeViewAddOpt1(object):
             prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
             prx_item.set_expanded(True)
             prx_item.set_checked(False)
-            prx_item.set_icon_by_color(bsc_core.TextOpt(obj.type.name).to_rgb(), 1)
+            prx_item.set_icon_by_color(bsc_core.RawTextOpt(obj.type.name).to_rgb(), 1)
             self._obj_add_dict[obj_path] = prx_item
             return prx_item
 

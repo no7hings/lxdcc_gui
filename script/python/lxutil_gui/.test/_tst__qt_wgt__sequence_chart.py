@@ -69,21 +69,21 @@ class W(prx_widgets.PrxToolWindow):
     def _get_check_dict_(cls, directory_path, name_pattern):
         array_dict = collections.OrderedDict()
         file_dict = collections.OrderedDict()
-        _ = bsc_core.DirectoryMtd.get_all_file_paths__(directory_path)
+        _ = bsc_core.StgDirectoryMtd.get_all_file_paths__(directory_path)
         if _:
             g_p = utl_core.GuiProgressesRunner(
                 maximum=len(_)
             )
             for i_file_path in _:
                 g_p.set_update()
-                i_opt = bsc_core.StorageFileOpt(i_file_path)
-                i_match_args = bsc_core.MultiplyFileMtd.get_match_args(
+                i_opt = bsc_core.StgFileOpt(i_file_path)
+                i_match_args = bsc_core.StgFileMultiplyMtd.get_match_args(
                     i_opt.name, name_pattern
                 )
                 if i_match_args:
                     i_pattern, i_numbers = i_match_args
                     if len(i_numbers) == 1:
-                        i_relative_path_dir_path = bsc_core.DirectoryMtd.get_file_relative_path(
+                        i_relative_path_dir_path = bsc_core.StgDirectoryMtd.get_file_relative_path(
                             directory_path, i_opt.directory_path
                         )
                         i_key = '{}/{}'.format(
@@ -112,7 +112,7 @@ class W(prx_widgets.PrxToolWindow):
 
     def _set_gui_build_(self, frame_range):
         def show_in_explorer_fnc_(file_path_):
-            bsc_core.StorageFileOpt(file_path_).set_open_in_system()
+            bsc_core.StgFileOpt(file_path_).set_open_in_system()
 
         def set_frame_range_fnc_(frame_range_):
             self._frame_range_port.set(frame_range_)

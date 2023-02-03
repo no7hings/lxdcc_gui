@@ -31,7 +31,7 @@ class AbsRezGraph(prx_widgets.PrxToolWindow):
     def __init__(self, hook_option, *args, **kwargs):
         super(AbsRezGraph, self).__init__(*args, **kwargs)
         if hook_option is not None:
-            self._hook_option_opt = bsc_core.KeywordArgumentsOpt(hook_option)
+            self._hook_option_opt = bsc_core.ArgDictStringOpt(hook_option)
             self._hook_option_opt.set(
                 'option_hook_key', self.OPTION_HOOK_KEY
             )
@@ -102,7 +102,7 @@ class AbsRezGraph(prx_widgets.PrxToolWindow):
         r = r_c.ResolvedContext(
             packages,
             package_paths=[
-                bsc_core.StoragePathMtd.set_map_to_platform(i) for i in [
+                bsc_core.StorageBaseMtd.set_map_to_platform(i) for i in [
                     "/l/packages/pg/prod",
                     "/l/packages/pg/dept",
                     "/l/packages/pg/third_party/app",
@@ -242,7 +242,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
         self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
         #
         if hook_option is not None:
-            self._hook_option_opt = bsc_core.KeywordArgumentsOpt(hook_option)
+            self._hook_option_opt = bsc_core.ArgDictStringOpt(hook_option)
             self._hook_option_opt.set(
                 'option_hook_key', self.OPTION_HOOK_KEY
             )
@@ -343,7 +343,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
         self._rsv_project = self._resolver.get_rsv_project(project=self._project)
         self._rsv_filter = self._hook_resolver_configure.get('filter')
 
-        self._rsv_filter_opt = bsc_core.KeywordArgumentsOpt(self._rsv_filter)
+        self._rsv_filter_opt = bsc_core.ArgDictStringOpt(self._rsv_filter)
 
         self._rsv_project.set_gui_attribute_restore()
         self._prx_dcc_obj_tree_view_add_opt.set_restore()
@@ -367,7 +367,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
     #
     def _set_add_rsv_entities_(self, rsv_project):
         def post_fnc_():
-            self._end_timestamp = bsc_core.SystemMtd.get_timestamp()
+            self._end_timestamp = bsc_core.TimeBaseMtd.get_timestamp()
             #
             utl_core.Log.set_module_result_trace(
                 'load asset/shot from "{}"'.format(
@@ -375,14 +375,14 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
                 ),
                 'count={}, cost-time="{}"'.format(
                     self._count,
-                    bsc_core.IntegerMtd.second_to_time_prettify(int(self._end_timestamp - self._start_timestamp))
+                    bsc_core.RawIntegerMtd.second_to_time_prettify(int(self._end_timestamp - self._start_timestamp))
                 )
             )
 
             self._set_graph_reload_()
 
         self._count = 0
-        self._start_timestamp = bsc_core.SystemMtd.get_timestamp()
+        self._start_timestamp = bsc_core.TimeBaseMtd.get_timestamp()
         #
         rsv_tags = rsv_project.get_rsv_tags(**self._rsv_filter_opt.value)
         #
@@ -513,7 +513,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
     def _get_menu_content_by_hook_keys_(cls, session_dict, hooks, *args, **kwargs):
         content = bsc_objects.Dict()
         for i_hook in hooks:
-            if isinstance(i_hook, (str, unicode)):
+            if isinstance(i_hook, six.string_types):
                 i_hook_key = i_hook
                 i_hook_option = None
             elif isinstance(i_hook, dict):
@@ -596,8 +596,8 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
         if session_path in session_dict:
             return session_dict[session_path]
         else:
-            python_file_path = ssn_core.RscHookFile.get_python(key)
-            yaml_file_path = ssn_core.RscHookFile.get_yaml(key)
+            python_file_path = ssn_core.SsnHookFileMtd.get_python(key)
+            yaml_file_path = ssn_core.SsnHookFileMtd.get_yaml(key)
             if python_file_path and yaml_file_path:
                 python_file = utl_dcc_objects.OsPythonFile(python_file_path)
                 yaml_file = utl_dcc_objects.OsFile(yaml_file_path)
@@ -639,7 +639,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
                 content='"{}" save is completed'.format(file_path),
                 status=utl_core.DialogWindow.ValidatorStatus.Correct,
                 #
-                yes_label='Open Folder', yes_method=bsc_core.StoragePathOpt(file_path).set_open_in_system,
+                yes_label='Open Folder', yes_method=bsc_core.StgPathOpt(file_path).set_open_in_system,
                 no_label='Close',
                 #
                 cancel_visible=False

@@ -1,10 +1,5 @@
 # coding:utf-8
 import collections
-import threading
-
-import time
-
-import copy
 
 from lxbasic import bsc_configure, bsc_core
 
@@ -17,6 +12,8 @@ from lxutil_gui.qt import utl_gui_qt_core
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
 import lxutil_gui.proxy.operators as utl_prx_operators
+
+from lxsession import ssn_core
 
 import lxsession.commands as ssn_commands
 
@@ -295,20 +292,20 @@ class DccPublisherOpt(object):
         version_type = self._kwargs['version_type']
         scene_file_path = self._scene_file_path
 
-        scene_file_opt = bsc_core.StorageFileOpt(scene_file_path)
+        scene_file_opt = bsc_core.StgFileOpt(scene_file_path)
         movie_file_path = None
         if media_files:
-            user_directory_path = bsc_core.TemporaryMtd.get_user_directory('vedio-converter')
+            user_directory_path = bsc_core.StgTmpBaseMtd.get_user_directory('vedio-converter')
 
             movie_file_path = '{}/{}.mov'.format(
                 user_directory_path,
                 scene_file_opt.name_base,
                 bsc_core.TimestampOpt(
-                    bsc_core.StorageFileOpt(scene_file_path).get_modify_timestamp()
+                    bsc_core.StgFileOpt(scene_file_path).get_modify_timestamp()
                 ).get_as_tag_36()
             )
 
-            movie_file_opt = bsc_core.StorageFileOpt(movie_file_path)
+            movie_file_opt = bsc_core.StgFileOpt(movie_file_path)
             movie_file_opt.set_directory_create()
 
             utl_core.RvLauncher().set_convert_to_mov(
@@ -328,7 +325,7 @@ class DccPublisherOpt(object):
             description=self._kwargs['description'],
         )
 
-        extra_key = bsc_core.SessionMtd.set_extra_data_save(extra_data)
+        extra_key = ssn_core.SsnHookFileMtd.set_extra_data_save(extra_data)
 
         application = self._rsv_scene_properties.get('application')
         if application == 'katana':
@@ -338,7 +335,7 @@ class DccPublisherOpt(object):
         else:
             raise RuntimeError()
 
-        option_opt = bsc_core.KeywordArgumentsOpt(
+        option_opt = bsc_core.ArgDictStringOpt(
             option=dict(
                 option_hook_key='rsv-task-batchers/asset/gen-surface-export',
                 #
@@ -508,16 +505,16 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
 
     def _get_validation_info_file_path_(self):
         if self._rsv_scene_properties:
-            file_opt = bsc_core.StorageFileOpt(
+            file_opt = bsc_core.StgFileOpt(
                 self._scene_file_path
             )
             return '{directory}/validation/{date}-{user}/{name}-{tag}{ext}.info'.format(
                 **dict(
                     directory=file_opt.directory_path,
                     name=file_opt.name_base,
-                    date=bsc_core.SystemMtd.get_date_tag(),
+                    date=bsc_core.TimeBaseMtd.get_date_tag(),
+                    tag=bsc_core.TimeExtraMtd.get_time_tag_36(),
                     user=bsc_core.SystemMtd.get_user_name(),
-                    tag=bsc_core.SystemMtd.get_time_tag_36(),
                     ext=file_opt.ext
                 )
             )
@@ -540,7 +537,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
         self._validation_info_file = self._get_validation_info_file_path_()
         if self._validation_info_file is not None:
             info = '\n'.join(self._get_validation_info_texts_())
-            bsc_core.StorageFileOpt(
+            bsc_core.StgFileOpt(
                 self._validation_info_file
             ).set_write(
                 info
@@ -649,7 +646,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
 
     def _set_dcc_validation_execute_(self, option_hook_key):
         s = ssn_commands.set_option_hook_execute(
-            bsc_core.KeywordArgumentsOpt(
+            bsc_core.ArgDictStringOpt(
                 option=dict(
                     option_hook_key=option_hook_key,
                     file=self._scene_file_path,
@@ -669,7 +666,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
             pass
         #
         s = ssn_commands.get_option_hook_session(
-            bsc_core.KeywordArgumentsOpt(
+            bsc_core.ArgDictStringOpt(
                 option=dict(
                     option_hook_key=option_hook_key,
                     file=self._scene_file_path,

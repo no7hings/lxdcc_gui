@@ -1,4 +1,6 @@
 # coding:utf-8
+import six
+
 import uuid
 
 from lxbasic import bsc_core
@@ -418,7 +420,7 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
                 self._qt_text_browser_0.setHtml(html)
 
     def set_add(self, text):
-        if isinstance(text, (str, unicode)):
+        if isinstance(text, six.string_types):
             self._qt_text_browser_0.append(
                 text
             )
@@ -765,9 +767,9 @@ class PrxToolWindow(
     def __init__(self, *args, **kwargs):
         super(PrxToolWindow, self).__init__(*args, **kwargs)
         #
-        if utl_core.System.get_is_windows():
+        if bsc_core.PlatformMtd.get_is_windows():
             self.set_log_file_path(bsc_configure.LogDirectory.WINDOWS)
-        elif utl_core.System.get_is_linux():
+        elif bsc_core.PlatformMtd.get_is_linux():
             self.set_log_file_path(bsc_configure.LogDirectory.LINUX)
         else:
             raise TypeError()
@@ -1050,7 +1052,7 @@ class PrxToolWindow(
             )
 
     def set_help_content(self, text):
-        if isinstance(text, (str, unicode)):
+        if isinstance(text, six.string_types):
             self._help_text_browser.set_content(text)
         elif isinstance(text, (tuple, list)):
             self._help_text_browser.set_content(
@@ -1064,7 +1066,7 @@ class PrxToolWindow(
         self.set_current_unit('exception_0')
 
     def set_exception_content(self, text):
-        if isinstance(text, (str, unicode)):
+        if isinstance(text, six.string_types):
             self._exception_text_browser.set_content(text)
         elif isinstance(text, (tuple, list)):
             self._exception_text_browser.set_content(
@@ -1072,7 +1074,7 @@ class PrxToolWindow(
             )
 
     def set_exception_content_add(self, text):
-        if isinstance(text, (str, unicode)):
+        if isinstance(text, six.string_types):
             self._exception_text_browser.set_add(text)
         elif isinstance(text, (tuple, list)):
             self._exception_text_browser.set_add(

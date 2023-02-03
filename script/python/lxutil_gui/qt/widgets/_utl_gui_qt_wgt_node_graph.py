@@ -121,7 +121,7 @@ class AbsQtNGGraphDef(object):
 
         self._ng_graph_translate_point = QtCore.QPoint(0, 0)
         #
-        self._ng_graph_composite_matrix = bsc_core.Matrix33Opt.get_identity()
+        self._ng_graph_composite_matrix = bsc_core.RawMatrix33Opt.get_identity()
         #
         self._ng_graph_translate_x, self._ng_graph_translate_y = 0, 0
         self._ng_graph_translate_x_enable, self._ng_graph_translate_y_enable = True, True
@@ -237,19 +237,19 @@ class AbsQtNGGraphDef(object):
     def _set_ng_graph_translate_matrix_(self, d_t_x, d_t_y):
         m = self._ng_graph_composite_matrix
         #
-        m_t = bsc_core.Matrix33Opt.get_default()
-        m_t = bsc_core.Matrix33Opt.set_identity(m_t)
+        m_t = bsc_core.RawMatrix33Opt.get_default()
+        m_t = bsc_core.RawMatrix33Opt.set_identity(m_t)
         #
         m_t[0][2] = d_t_x
         m_t[1][2] = d_t_y
         #
-        self._ng_graph_composite_matrix = bsc_core.Matrix33Opt(m_t).set_multiply_to(m)
+        self._ng_graph_composite_matrix = bsc_core.RawMatrix33Opt(m_t).set_multiply_to(m)
     #
     def _set_ng_graph_scale_matrix_(self, c_x, c_y, d_s_x, d_s_y):
         m = self._ng_graph_composite_matrix
         #
-        s_m = bsc_core.Matrix33Opt.get_default()
-        s_m = bsc_core.Matrix33Opt.set_identity(s_m)
+        s_m = bsc_core.RawMatrix33Opt.get_default()
+        s_m = bsc_core.RawMatrix33Opt.set_identity(s_m)
         #
         s_m[0][0] = d_s_x
         s_m[0][2] = (1-d_s_x)*c_x
@@ -257,7 +257,7 @@ class AbsQtNGGraphDef(object):
         s_m[1][1] = d_s_y
         s_m[1][2] = (1-d_s_y)*c_y
         #
-        self._ng_graph_composite_matrix = bsc_core.Matrix33Opt(s_m).set_multiply_to(m)
+        self._ng_graph_composite_matrix = bsc_core.RawMatrix33Opt(s_m).set_multiply_to(m)
     #
     def _set_ng_graph_transformation_matrix_update_(self):
         m = self._ng_graph_composite_matrix
@@ -270,7 +270,7 @@ class AbsQtNGGraphDef(object):
             self._ng_graph_point_1, m
         )
         #
-        self._ng_graph_composite_matrix = bsc_core.Matrix33Opt.set_identity(m)
+        self._ng_graph_composite_matrix = bsc_core.RawMatrix33Opt.set_identity(m)
     @staticmethod
     def __set_ng_graph_point_update_bt_matrix_(point, matrix):
         i_x_0, i_y_0 = point.x(), point.y()
@@ -1573,7 +1573,7 @@ class _QtNGGraph(
         o_w, o_h = self.width(), self.height()
         x_0, y_0, x_1, y_1, w_0, h_0 = self._get_ng_graph_frame_args_(ng_nodes)
         #
-        i_x, i_y, i_w, i_h = bsc_core.SizeMtd.set_fit_to(
+        i_x, i_y, i_w, i_h = bsc_core.RawSizeMtd.set_fit_to(
             (w_0, h_0), (o_w, o_h)
         )
         o_r = (i_w*.75)
@@ -1648,7 +1648,7 @@ class _QtNGGraph(
         #
         if c2o_dict:
             for column, v in c2o_dict.items():
-                v = bsc_core.TextsMtd.set_sort_to(v)
+                v = bsc_core.RawTextsMtd.set_sort_to(v)
                 row_count = len(v)
                 if dir_x == 'r-l':
                     s_x = x-column*w*2

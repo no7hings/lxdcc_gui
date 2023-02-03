@@ -254,7 +254,7 @@ class DatabaseGeometryManagerPanel(utl_gui_pnl_abs_utility.AbsDatabaseGeometryMa
             port = self._hash_uv_node_prx.get_port('geometry_unify')
             port.set_name(
                 'Unify Geometry by Select(s) [ Running {} ]'.format(
-                    bsc_core.IntegerMtd.second_to_time_prettify(running_time_cost)
+                    bsc_core.RawIntegerMtd.second_to_time_prettify(running_time_cost)
                 )
             )
 
@@ -334,7 +334,7 @@ class DatabaseGeometryManagerPanel(utl_gui_pnl_abs_utility.AbsDatabaseGeometryMa
     def _set_geometry_unify_next_(self):
         import lxmaya.fnc.importers as mya_fnc_importers
         #
-        if bsc_core.StoragePathOpt(self._geometry_unify_output_file_path).get_is_exists() is True:
+        if bsc_core.StgPathOpt(self._geometry_unify_output_file_path).get_is_exists() is True:
             mya_fnc_importers.GeometryUsdImporter_(
                 self._geometry_unify_output_file_path,
                 option=dict(
@@ -366,7 +366,7 @@ class DatabaseGeometryManagerPanel(utl_gui_pnl_abs_utility.AbsDatabaseGeometryMa
             port = self._hash_uv_node_prx.get_port('geometry_uv_map_assign')
             port.set_name(
                 'Assign Geometry UV-map By Select(s) [ Running {} ]'.format(
-                    bsc_core.IntegerMtd.second_to_time_prettify(running_time_cost)
+                    bsc_core.RawIntegerMtd.second_to_time_prettify(running_time_cost)
                 )
             )
 
@@ -446,7 +446,7 @@ class DatabaseGeometryManagerPanel(utl_gui_pnl_abs_utility.AbsDatabaseGeometryMa
     def _set_geometry_uv_map_assign_next_(self):
         import lxmaya.fnc.importers as mya_fnc_importers
         #
-        if bsc_core.StoragePathOpt(self._geometry_uv_map_assign_output_file_path).get_is_exists() is True:
+        if bsc_core.StgPathOpt(self._geometry_uv_map_assign_output_file_path).get_is_exists() is True:
             mya_fnc_importers.GeometryUsdImporter_(
                 self._geometry_uv_map_assign_output_file_path,
                 option=dict(

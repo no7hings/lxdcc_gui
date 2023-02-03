@@ -54,7 +54,7 @@ class _GuiBaseOpt(object):
                 )
                 i_kwargs.update(**{k: v for k, v in i_value.items() if v})
                 options.append(
-                    bsc_core.KeywordArgumentsOpt(i_kwargs).to_string(),
+                    bsc_core.ArgDictStringOpt(i_kwargs).to_string(),
                 )
             return ssn_commands.get_menu_content_by_hook_options(options)
 
@@ -84,7 +84,7 @@ class _GuiBaseOpt(object):
                 )
                 i_kwargs.update(**{k: v for k, v in i_value.items() if v})
                 options.append(
-                    bsc_core.KeywordArgumentsOpt(i_kwargs).to_string(),
+                    bsc_core.ArgDictStringOpt(i_kwargs).to_string(),
                 )
             return ssn_commands.get_menu_content_by_hook_options(options)
 
@@ -376,7 +376,7 @@ class _GuiTagOpt(_GuiBaseOpt):
             path_opt = bsc_core.DccPathDagOpt(path)
             parent_path = path_opt.get_parent_path()
             parent_gui = self.gui_get_group(parent_path)
-            gui_name = bsc_core.StrUnderlineOpt(path_opt.name).to_prettify()
+            gui_name = bsc_core.RawStringUnderlineOpt(path_opt.name).to_prettify()
             prx_item = parent_gui.set_child_add(
                 gui_name,
                 icon=utl_gui_core.RscIconFile.get('database/tag'),
@@ -412,7 +412,7 @@ class _GuiTagOpt(_GuiBaseOpt):
         ).add(resource_path)
 
     def gui_register(self, dtb_tag):
-        if isinstance(dtb_tag, (str, unicode)):
+        if isinstance(dtb_tag, six.string_types):
             tag_path = dtb_tag
             prx_item = self.gui_add_by_path(dtb_tag)
         elif isinstance(dtb_tag, dict):
@@ -491,7 +491,7 @@ class _GuiResourceOpt(_GuiBaseOpt):
     def __gui_show_deferred_fnc_(self, dtb_resource, prx_item, semantic_tag_filter_data, data):
         # type_ = dtb_resource.type
         prx_item.set_check_enable(True)
-        # r, g, b = bsc_core.TextOpt(type_).to_rgb_()
+        # r, g, b = bsc_core.RawTextOpt(type_).to_rgb_()
         # prx_item.set_name_frame_background_color((r, g, b, 127))
         name_dict = collections.OrderedDict()
         name_dict['resource'] = dtb_resource.gui_name
@@ -559,11 +559,11 @@ class _GuiResourceOpt(_GuiBaseOpt):
         )
         if preview_image_dtb_port:
             image = preview_image_dtb_port.value
-            if bsc_core.StorageFileOpt(image).get_is_exists() is True:
+            if bsc_core.StgFileOpt(image).get_is_exists() is True:
                 prx_item.set_image(
                     image
                 )
-                image_file_path, image_sub_process_cmds = bsc_core.ImageOpt(image).get_thumbnail_create_args(
+                image_file_path, image_sub_process_cmds = bsc_core.ImgFileOpt(image).get_thumbnail_create_args(
                     width=256, ext='.png'
                 )
                 prx_item.set_image(image_file_path)
@@ -575,7 +575,7 @@ class _GuiResourceOpt(_GuiBaseOpt):
             )
 
     def _get_callback_hook_option_(self, option_hook_key, dtb_entity):
-        return bsc_core.KeywordArgumentsOpt(
+        return bsc_core.ArgDictStringOpt(
             option=dict(
                 option_hook_key=option_hook_key,
                 #
@@ -712,7 +712,7 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
                 prx_item.set_menu_content(dtb_entity_menu_content)
             #
             location = self.get_dtb_entity_location(dtb_directory)
-            if bsc_core.StoragePathMtd.get_is_exists(location) is True:
+            if bsc_core.StorageBaseMtd.get_is_exists(location) is True:
                 prx_item.set_status(prx_item.ValidatorStatus.Normal)
             else:
                 prx_item.set_status(prx_item.ValidatorStatus.Disable)
@@ -893,7 +893,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                 )
                 i_kwargs.update(**{k: v for k, v in i_value.items() if v})
                 options.append(
-                    bsc_core.KeywordArgumentsOpt(i_kwargs).to_string(),
+                    bsc_core.ArgDictStringOpt(i_kwargs).to_string(),
                 )
             return ssn_commands.get_menu_content_by_hook_options(options)
 
@@ -969,7 +969,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             _ = fnmatch.filter(
                 self._gui_type_opt._keys, '*{}*'.format(keyword)
             )
-            return bsc_core.TextsMtd.set_sort_by_initial(_)[:self.FILTER_MAXIMUM]
+            return bsc_core.RawTextsMtd.set_sort_by_initial(_)[:self.FILTER_MAXIMUM]
         return []
 
     def __restore_thread_stack_(self):
@@ -994,20 +994,20 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
     # build for types
     def __gui_add_for_all_types_(self):
         def post_fnc_():
-            self._end_timestamp = bsc_core.SystemMtd.get_timestamp()
+            self._end_timestamp = bsc_core.TimeBaseMtd.get_timestamp()
             #
             utl_core.Log.set_module_result_trace(
                 'load all types',
                 'count={}, cost-time="{}"'.format(
                     len(self._gui_type_opt._keys),
-                    bsc_core.IntegerMtd.second_to_time_prettify(self._end_timestamp - self.__start_timestamp)
+                    bsc_core.RawIntegerMtd.second_to_time_prettify(self._end_timestamp - self.__start_timestamp)
                 )
             )
 
         def quit_fnc_():
             ts.set_quit()
         #
-        self.__start_timestamp = bsc_core.SystemMtd.get_timestamp()
+        self.__start_timestamp = bsc_core.TimeBaseMtd.get_timestamp()
         #
         dtb_categories = self._dtb_opt.get_entities(
             entity_type=self._dtb_opt.EntityTypes.Category,
@@ -1015,7 +1015,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                 ('kind', 'is', self._dtb_opt.Kinds.ResourceCategory)
             ]
         )
-        dtb_categories_map = bsc_core.ListMtd.set_grid_to(
+        dtb_categories_map = bsc_core.RawListMtd.set_grid_to(
             dtb_categories, self.THREAD_STEP
         )
         # use thread
@@ -1094,7 +1094,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         def quit_fnc_():
             ts.set_quit()
         #
-        dtb_types_map = bsc_core.ListMtd.set_grid_to(
+        dtb_types_map = bsc_core.RawListMtd.set_grid_to(
             dtb_types, self.THREAD_STEP
         )
         if self._qt_thread_enable is True:
@@ -1146,7 +1146,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         dtb_type_assigns, thread_stack_index = args[0]
         if thread_stack_index == self.__thread_stack_index:
             if thread_stack_index == self.__thread_stack_index:
-                dtb_type_assigns_map = bsc_core.ListMtd.set_grid_to(
+                dtb_type_assigns_map = bsc_core.RawListMtd.set_grid_to(
                     dtb_type_assigns, self.THREAD_STEP
                 )
                 if self._qt_thread_enable is True:

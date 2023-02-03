@@ -1,4 +1,6 @@
 # coding=utf-8
+import six
+
 import collections
 
 import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
@@ -69,8 +71,8 @@ class QtLine(
         self._set_frame_def_init_()
 
         r, g, b = 119, 119, 119
-        h, s, v = bsc_core.ColorMtd.rgb_to_hsv(r, g, b)
-        color = bsc_core.ColorMtd.hsv2rgb(h, s*.75, v*.75)
+        h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+        color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
         hover_color = r, g, b
         self._frame_border_color = color
         self._hovered_frame_border_color = hover_color
@@ -305,7 +307,7 @@ class QtMenu(QtWidgets.QMenu):
                 #
                 qt_widget_action.setText(name)
                 if icon_name is not None:
-                    if isinstance(icon_name, (str, unicode)):
+                    if isinstance(icon_name, six.string_types):
                         if icon_name:
                             qt_widget_action.setIcon(QtUtilMtd.get_qt_icon(icon_name))
                         else:
@@ -323,7 +325,7 @@ class QtMenu(QtWidgets.QMenu):
                     if isinstance(method_args, (types.FunctionType, types.MethodType, functools.partial)):
                         fnc = method_args
                         qt_widget_action.triggered.connect(fnc)
-                    elif isinstance(method_args, (str, unicode)):
+                    elif isinstance(method_args, six.string_types):
                         cmd_str = method_args
                         qt_widget_action.triggered.connect(lambda *args, **kwargs: cls._set_cmd_run_(cmd_str))
                     elif isinstance(method_args, (tuple, list)):
@@ -414,7 +416,7 @@ class QtMenu(QtWidgets.QMenu):
                     i_name, i_icon_name, sub_menu_raws = i
                     qt_action_item = self.addAction(i_name)
                     if i_icon_name is not None:
-                        if isinstance(i_icon_name, (str, unicode)):
+                        if isinstance(i_icon_name, six.string_types):
                             qt_action_item.setIcon(QtUtilMtd.get_qt_icon(i_icon_name))
                     else:
                         qt_action_item.setIcon(QtUtilMtd.get_name_text_icon_(i_name, background_color=(64, 64, 64)))
@@ -493,7 +495,7 @@ class QtMenu(QtWidgets.QMenu):
         if isinstance(execute_fnc, (types.FunctionType, types.MethodType)):
             fnc = execute_fnc
             widget_action.triggered.connect(fnc)
-        elif isinstance(execute_fnc, (str, unicode)):
+        elif isinstance(execute_fnc, six.string_types):
             cmd_str = execute_fnc
             widget_action.triggered.connect(lambda *args, **kwargs: cls._set_cmd_run_(cmd_str))
 
@@ -2151,7 +2153,7 @@ class QtLineEdit_(
     def _set_open_in_system_(self):
         _ = self.text()
         if _:
-            bsc_core.StoragePathOpt(_).set_open_in_system()
+            bsc_core.StgPathOpt(_).set_open_in_system()
 
     def _set_validator_use_as_storage_(self, boolean=True):
         super(QtLineEdit_, self)._set_validator_use_as_storage_(boolean)
@@ -2586,7 +2588,7 @@ class QtPopupChooseFrame(
                             if isinstance(current_values, (tuple, list)):
                                 if i_name_text == current_values[-1]:
                                     i_item.setSelected(True)
-                            elif isinstance(current_values, (str, unicode)):
+                            elif isinstance(current_values, six.string_types):
                                 if i_name_text == current_values:
                                     i_item.setSelected(True)
                             # scroll to selected
@@ -2617,7 +2619,7 @@ class QtPopupChooseFrame(
 
                     if self._tag_filter_is_enable is True:
                         tags = list(set([i for k, v in tag_filter_dict.items() for i in v]))
-                        tags = bsc_core.TextsMtd.set_sort_by_initial(tags)
+                        tags = bsc_core.RawTextsMtd.set_sort_by_initial(tags)
                         for i_tag in tags:
                             i_item_widget = _QtHItem()
                             i_item = QtListWidgetItem()

@@ -9,7 +9,7 @@ import lxutil_gui.proxy.widgets as utl_prx_widgets
 
 y_f = '{}.yml'.format(os.path.splitext(__file__)[0])
 
-c = bsc_core.StorageFileOpt(y_f).set_read()
+c = bsc_core.StgFileOpt(y_f).set_read()
 
 
 class TestWindow(utl_prx_widgets.PrxToolWindow):

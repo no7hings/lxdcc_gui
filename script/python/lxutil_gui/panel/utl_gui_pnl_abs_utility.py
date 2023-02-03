@@ -20,14 +20,14 @@ def _set_texture_tx_create(window, item_prx, texture_references, includes, force
     def set_processing_update(time_cost):
         c = 'Load Texture-tx(s) [ {} ] [ {} ]'.format(
             str(p_m.get_status()),
-            bsc_core.IntegerMtd.second_to_time_prettify(time_cost)
+            bsc_core.RawIntegerMtd.second_to_time_prettify(time_cost)
         )
         item_prx.set_name(c)
 
     def set_status_changed_update(status):
         c = 'Load Texture-tx(s) [ {} ] [ {} ]'.format(
             str(status),
-            bsc_core.IntegerMtd.second_to_time_prettify(p_m.get_running_time_cost())
+            bsc_core.RawIntegerMtd.second_to_time_prettify(p_m.get_running_time_cost())
         )
         item_prx.set_name(c)
         item_prx.set_status(status)
@@ -79,7 +79,7 @@ def _set_texture_jpg_create(window, item_prx, texture_references, includes, forc
         c = '{} [ {} ] [ {} ]'.format(
             label,
             str(p_m.get_status()),
-            bsc_core.IntegerMtd.second_to_time_prettify(time_cost)
+            bsc_core.RawIntegerMtd.second_to_time_prettify(time_cost)
         )
         item_prx.set_name(c)
 
@@ -87,7 +87,7 @@ def _set_texture_jpg_create(window, item_prx, texture_references, includes, forc
         c = '{} [ {} ] [ {} ]'.format(
             label,
             str(status),
-            bsc_core.IntegerMtd.second_to_time_prettify(p_m.get_running_time_cost())
+            bsc_core.RawIntegerMtd.second_to_time_prettify(p_m.get_running_time_cost())
         )
         item_prx.set_name(c)
         item_prx.set_status(status)
@@ -839,7 +839,6 @@ class AbsDatabaseGeometryManagerPanel(
             prx_widgets.PrxFileSavePort('save_usd_file', 'Save USD-file')
         )
         _port.set_ext_filter('All USD File (*.usd *.usda)')
-        # _port.set(bsc_core.SystemMtd.get_temporary_directory_path(create=True))
         _port.set_tool_tip(
             [
                 'choose / enter a usd "file-path"'
@@ -860,7 +859,6 @@ class AbsDatabaseGeometryManagerPanel(
             prx_widgets.PrxFileOpenPort('open_usd_file', 'Open USD-file')
         )
         _port.set_ext_filter('All USD File (*.usd *.usda)')
-        # _port.set(bsc_core.SystemMtd.get_temporary_directory_path(create=True))
         _port.set_tool_tip(
             [
                 'choose / enter a usd "file-path"'

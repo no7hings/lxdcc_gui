@@ -22,7 +22,7 @@ class W(_utl_gui_prx_wdt_utility.PrxToolWindow):
         self._timer = QtCore.QTimer(self.widget)
         self._sub_process = None
         if os.path.exists(f):
-            thumbnail_file_path, cmds = bsc_core.VedioOpt(f).get_thumbnail_create_args()
+            thumbnail_file_path, cmds = bsc_core.VdoFileOpt(f).get_thumbnail_create_args()
             if cmds:
                 pass
             else:
