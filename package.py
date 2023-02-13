@@ -13,7 +13,8 @@ requires = []
 
 
 def commands():
-    env.PYTHONPATH.append('{root}/lib/python/site-packages')
+    env.LXDCC_GUI_BASE = '{root}'
+    #
     env.PYTHONPATH.append('{root}/script/python')
 
 
