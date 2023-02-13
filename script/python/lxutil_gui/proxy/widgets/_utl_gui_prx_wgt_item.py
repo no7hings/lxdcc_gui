@@ -507,6 +507,9 @@ class PrxTreeItem(
         prx_item_tgt.set_visible_tgt_key(key)
         prx_item_tgt.set_hidden(self.get_is_hidden())
 
+    def set_visible_connection_clear(self):
+        pass
+
     def set_visible_tgt_view(self, view_prx):
         self.set_gui_attribute(
             'visible_tgt_view',
@@ -526,9 +529,9 @@ class PrxTreeItem(
                 if tgt_raw is not None:
                     if src_key in tgt_raw:
                         tgt_item_prxes = tgt_raw[src_key]
-                        for prx_item_tgt in tgt_item_prxes:
-                            prx_item_tgt.set_hidden(self.get_is_hidden())
-                            prx_item_tgt.widget._get_item_()._set_item_show_start_auto_()
+                        for i_prx_item_tgt in tgt_item_prxes:
+                            i_prx_item_tgt.set_hidden(self.get_is_hidden())
+                            i_prx_item_tgt.widget._get_item_()._set_item_show_start_auto_()
 
     def set_loading_start(self):
         # view = self.get_view()

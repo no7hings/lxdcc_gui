@@ -11,7 +11,7 @@ from lxutil import utl_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxobj import core_objects
+from lxobj import objects
 
 
 class W(prx_widgets.PrxToolWindow):
@@ -29,7 +29,7 @@ class W(prx_widgets.PrxToolWindow):
     def test(self):
         self._g = prx_widgets.PrxNGGraph()
         self.set_widget_add(self._g)
-        u = core_objects.ObjUniverse()
+        u = objects.ObjUniverse()
 
         r_s_t = u._get_obj_type_force_('rez', 'system')
         r_p_t = u._get_obj_type_force_('rez', 'package')

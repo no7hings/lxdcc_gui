@@ -141,7 +141,7 @@ class AssetLookViewerPanel(utl_gui_pnl_abs_look_viewer.AbsAssetLookViewerPanel):
             self._set_dcc_objs_update_from_scene_,
         ]
         if methods:
-            with utl_core.gui_progress(maximum=len(methods), label='execute gui method') as g_p:
+            with utl_core.GuiProgressesRunner.create(maximum=len(methods), label='execute gui method') as g_p:
                 for i_method in methods:
                     g_p.set_update()
                     i_method()
@@ -151,7 +151,7 @@ class AssetLookViewerPanel(utl_gui_pnl_abs_look_viewer.AbsAssetLookViewerPanel):
         nmc_material_dict = ktn_dcc_objects.Materials.get_nmc_material_dict()
         nme_material_dict = ktn_dcc_objects.Materials.get_nme_material_dict()
         if geometry_objs:
-            with utl_core.gui_progress(maximum=len(geometry_objs), label='gui-add for geometry') as g_p:
+            with utl_core.GuiProgressesRunner.create(maximum=len(geometry_objs), label='gui-add for geometry') as g_p:
                 for geometry_obj in geometry_objs:
                     g_p.set_update()
                     add_geometry_gui_fnc_(geometry_obj)

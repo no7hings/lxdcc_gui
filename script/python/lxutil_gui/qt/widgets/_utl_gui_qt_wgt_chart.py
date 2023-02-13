@@ -631,7 +631,7 @@ class QtWaitingChart(
         # ApplicationOpt().set_process_run_0()
 
     def _refresh_waiting_draw_(self):
-        self._waiting_timestamp = int(bsc_core.TimeBaseMtd.get_timestamp() * 5)
+        self._waiting_timestamp = int(bsc_core.TimeMtd.get_timestamp() * 5)
         self._refresh_widget_draw_()
         # ApplicationOpt().set_process_run_0()
 

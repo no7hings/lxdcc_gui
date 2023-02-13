@@ -326,7 +326,7 @@ class AbsQtSubProcessDef(object):
             self._hover_sub_process_status_colors = [hover_color]*count
             self._sub_process_finished_results = [False]*count
 
-            self._sub_process_timestamp_started = bsc_core.TimeBaseMtd.get_timestamp()
+            self._sub_process_timestamp_started = bsc_core.TimeMtd.get_timestamp()
         else:
             self._set_sub_process_restore_()
 
@@ -345,7 +345,7 @@ class AbsQtSubProcessDef(object):
                 self._hover_sub_process_status_colors.append(i_hover_color)
 
             self._sub_process_finished_results = [False]*count
-            self._sub_process_timestamp_started = bsc_core.TimeBaseMtd.get_timestamp()
+            self._sub_process_timestamp_started = bsc_core.TimeMtd.get_timestamp()
         else:
             self._set_sub_process_restore_()
         #
@@ -380,14 +380,14 @@ class AbsQtSubProcessDef(object):
         self._sub_process_finished_value = sum(self._sub_process_finished_results)
         self._sub_process_finished_maximum = len(self._sub_process_finished_results)
         #
-        self._sub_process_timestamp_costed = bsc_core.TimeBaseMtd.get_timestamp()-self._sub_process_timestamp_started
+        self._sub_process_timestamp_costed = bsc_core.TimeMtd.get_timestamp()-self._sub_process_timestamp_started
         if self._sub_process_finished_value > 1:
             self._sub_process_finished_timestamp_estimated = (self._sub_process_timestamp_costed/self._sub_process_finished_value)*self._sub_process_finished_maximum
         else:
             self._sub_process_finished_timestamp_estimated = 0
 
     def _set_sub_process_update_draw_(self):
-        self._sub_process_timestamp_costed = bsc_core.TimeBaseMtd.get_timestamp()-self._sub_process_timestamp_started
+        self._sub_process_timestamp_costed = bsc_core.TimeMtd.get_timestamp()-self._sub_process_timestamp_started
         self._refresh_widget_draw_()
 
     def _get_sub_process_status_text_(self):

@@ -111,7 +111,7 @@ class AbsSceneShaderViewerPanel(
         #
         materials = self.DCC_MATERIALS_CLS().get_objs()
         if materials:
-            with utl_core.gui_progress(maximum=len(materials), label='gui-add for material') as g_p:
+            with utl_core.GuiProgressesRunner.create(maximum=len(materials), label='gui-add for material') as g_p:
                 for i_material in materials:
                     g_p.set_update()
                     #

@@ -95,6 +95,8 @@ class PrxDccObjTreeViewTagFilterOpt(object):
         )
 
     def set_restore(self):
+        self._prx_tree_view_src.set_restore()
+        #
         self._filter_content = bsc_objects.Content(
             value=collections.OrderedDict()
         )
@@ -1098,6 +1100,9 @@ class PrxRsvObjTreeViewAddOpt(object):
         return is_create, prx_item, show_threads
 
     def set_prx_item_add_as_list_mode(self, obj):
+        pass
+
+    def set_visible_connection_clear(self):
         pass
 
 

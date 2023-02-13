@@ -7,8 +7,6 @@ import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-import lxutil.methods as utl_methods
-
 from lxutil_gui import utl_gui_core
 
 
@@ -442,15 +440,6 @@ class QtMenu(QtWidgets.QMenu):
 
     def _set_menu_content_(self, content):
         QtMenuOpt(self).set_create_by_content(content)
-        # if isinstance(content, bsc_obj_abs.AbsContent):
-        #     keys = content.get_keys(regex='*.properties')
-        #     for i_key in keys:
-        #         type_ = content.get('{}.type'.format(i_key))
-        #         i_content = content.get_content(i_key)
-        #         if type_ == 'separator':
-        #             self._set_separator_add__(self, i_content)
-        #         elif type_ == 'action':
-        #             self._set_action_add__(self, i_content)
     @classmethod
     def _set_action_create_by_menu_content_(cls, menu):
         menu.clear()
@@ -983,7 +972,7 @@ class QtStyledItemDelegate(QtWidgets.QStyledItemDelegate):
                         rect = option.rect
                         x, y = rect.x(), rect.y()
                         w, h = rect.width(), rect.height()
-                        spans = methods.String.find_spans(content, filter_keyword)
+                        spans = bsc_core.RawTextMtd.find_spans(content, filter_keyword)
                         if spans:
                             line = QtCore.QLine(
                                 x, y+h, x+w, y+h
@@ -1103,7 +1092,7 @@ class QtProgressBar(
                 w, h = self.width(), self.height()
                 w -= 2
                 layer_count = len(self._progress_raw)
-                r, g, b = utl_methods.Color.hsv2rgb(120, .5, 1)
+                r, g, b = bsc_core.RawColorMtd.hsv2rgb(120, .5, 1)
                 for layer_index, i in enumerate(self._progress_raw):
                     i_percent, (i_range_start, i_range_end), i_label = i
                     p_w = w*(i_range_end-i_range_start)*i_percent
@@ -1114,7 +1103,7 @@ class QtProgressBar(
                     i_rect = QtCore.QRect(i_x, i_y, p_w+1, p_h)
                     #
                     i_p = float(layer_index)/float(layer_count)
-                    r_1, g_1, b_1 = utl_methods.Color.hsv2rgb(120*i_p, .5, 1)
+                    r_1, g_1, b_1 = bsc_core.RawColorMtd.hsv2rgb(120*i_p, .5, 1)
                     i_cur_color = QtGui.QColor(r_1, g_1, b_1, 255)
                     if layer_index == 0:
                         i_pre_color = QtGui.QColor(r, g, b, 255)
@@ -2356,9 +2345,9 @@ class QtPopupChooseFrame(
         self._keyword_filter_line_edit.setAlignment(
             QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
         )
-        self._keyword_filter_line_edit.entry_changed.connect(
-            self._execute_popup_filter_
-        )
+        # self._keyword_filter_line_edit.entry_changed.connect(
+        #     self._execute_popup_filter_
+        # )
         self._keyword_filter_line_edit.installEventFilter(self)
         #
         self._item_list_widget = _QtPopupListWidget(self)

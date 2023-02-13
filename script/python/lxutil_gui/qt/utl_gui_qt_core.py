@@ -17,17 +17,17 @@ import types
 #
 from lxbasic import bsc_configure, bsc_core
 
-from lxbasic.objects import bsc_obj_abs
+import lxbasic.abstracts as bsc_abstracts
 
-import lxutil.modifiers as utl_modifiers
+import lxbasic.objects as bsc_objects
+
+from lxutil.core import _utl_cor_utility
 #
-from lxutil import utl_configure, utl_core, utl_abstract, methods
+from lxutil import utl_configure, utl_core, utl_abstract
 
 from lxutil_gui import utl_gui_core
 
-import lxutil.objects as utl_objects
-
-_pyqt5 = utl_objects.PyModule('PyQt5')
+_pyqt5 = bsc_objects.PyModule('PyQt5')
 
 if _pyqt5.get_is_exists() is True:
     LOAD_INDEX = 0
@@ -35,7 +35,7 @@ if _pyqt5.get_is_exists() is True:
     from PyQt5 import QtGui, QtCore, QtWidgets, QtSvg
 else:
     LOAD_INDEX = 1
-    _pyside2 = utl_objects.PyModule('PySide2')
+    _pyside2 = bsc_objects.PyModule('PySide2')
     if _pyside2.get_is_exists() is True:
         # noinspection PyUnresolvedReferences
         from PySide2 import QtGui, QtCore, QtWidgets, QtSvg
@@ -96,7 +96,7 @@ def qt_signal(*args):
     # noinspection PyUnresolvedReferences
     key = sys._getframe().f_code.co_name
     module_name, method_name = load_dic[key][LOAD_INDEX]
-    module = utl_objects.PyModule(load_dic[key][LOAD_INDEX][0])
+    module = bsc_objects.PyModule(load_dic[key][LOAD_INDEX][0])
     method = module.get_method(method_name)
     return method(*args)
 
@@ -105,7 +105,7 @@ def qt_wrapinstance(*args):
     # noinspection PyUnresolvedReferences
     key = sys._getframe().f_code.co_name
     module_name, method_name = load_dic[key][LOAD_INDEX]
-    module = utl_objects.PyModule(load_dic[key][LOAD_INDEX][0])
+    module = bsc_objects.PyModule(load_dic[key][LOAD_INDEX][0])
     method = module.get_method(method_name)
     return method(*args)
 
@@ -114,7 +114,7 @@ def qt_is_deleted(*args):
     # noinspection PyUnresolvedReferences
     key = sys._getframe().f_code.co_name
     module_name, method_name = load_dic[key][LOAD_INDEX]
-    module = utl_objects.PyModule(load_dic[key][LOAD_INDEX][0])
+    module = bsc_objects.PyModule(load_dic[key][LOAD_INDEX][0])
     method = module.get_method(method_name)
     return method(*args)
 
@@ -821,7 +821,7 @@ class QtPixmapMtd(object):
         if text is not None:
             name = text.split('/')[-1] or ' '
             painter.setPen(QtBorderColors.Icon)
-            r, g, b = bsc_core.RawTextOpt(name).to_rgb()
+            r, g, b = bsc_core.RawTextOpt(name).to_rgb_(s_p=25, v_p=35)
             if background_color is not None:
                 r, g, b = background_color
             painter.setBrush(QtGui.QBrush(QtGui.QColor(r, g, b, 255)))
@@ -1306,7 +1306,7 @@ class QtTreeMtd(object):
             b_w, b_h = 2, 2
             foregrounds = user_data.get('foregrounds')
             if foregrounds is not None:
-                array_grid = methods.List.set_grid_to(foregrounds, 8)
+                array_grid = bsc_core.RawListMtd.set_grid_to(foregrounds, 8)
                 for column, a in enumerate(array_grid):
                     for row, b in enumerate(a):
                         b_x, b_y = x + (w - b_w * column) - 2, y + (h - b_h * row) - 4
@@ -2194,10 +2194,10 @@ class QtMenuOpt(object):
             }
         else:
             raise RuntimeError()
-    @utl_modifiers.set_method_exception_catch
+    @utl_core.Modifier.exception_catch
     def _set_cmd_debug_run_(self, cmd_str):
         exec cmd_str
-    @utl_modifiers.set_method_exception_catch
+    @utl_core.Modifier.exception_catch
     def _set_fnc_debug_run_(self, fnc):
         fnc()
 
@@ -2206,7 +2206,7 @@ class QtMenuOpt(object):
         self._item_dic = {
             '/': self._root_menu
         }
-        if isinstance(content, bsc_obj_abs.AbsContent):
+        if isinstance(content, bsc_abstracts.AbsContent):
             keys = content.get_keys(regex='*.properties')
             for i_key in keys:
                 i_atr_path_opt = bsc_core.DccAttrPathOpt(i_key)
@@ -3987,9 +3987,9 @@ def set_qt_log_error_trace(text):
 
 
 def set_qt_log_connect_create():
-    utl_core.__dict__['QT_LOG_RESULT_TRACE_METHOD'] = set_qt_log_result_trace
-    utl_core.__dict__['QT_LOG_WARNING_TRACE_METHOD'] = set_qt_log_result_trace
-    utl_core.__dict__['QT_LOG_ERROR_TRACE_METHOD'] = set_qt_log_result_trace
+    _utl_cor_utility.__dict__['QT_LOG_RESULT_TRACE_METHOD'] = set_qt_log_result_trace
+    _utl_cor_utility.__dict__['QT_LOG_WARNING_TRACE_METHOD'] = set_qt_log_result_trace
+    _utl_cor_utility.__dict__['QT_LOG_ERROR_TRACE_METHOD'] = set_qt_log_result_trace
 
 
 def set_log_write(text):
@@ -4018,7 +4018,7 @@ def get_all_tool_windows():
 
 
 def set_log_writer_connect():
-    utl_core.__dict__['LOG_WRITE_METHOD'] = set_log_write
+    _utl_cor_utility.__dict__['LOG_WRITE_METHOD'] = set_log_write
 
 
 # progress
@@ -4036,7 +4036,7 @@ def create_gui_progress_method(maximum, label=None):
 
 
 def set_qt_progress_connect_create():
-    utl_core.__dict__['QT_PROGRESS_CREATE_METHOD'] = create_gui_progress_method
+    _utl_cor_utility.__dict__['QT_PROGRESS_CREATE_METHOD'] = create_gui_progress_method
 
 
 def set_qt_layout_clear(layout):

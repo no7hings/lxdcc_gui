@@ -214,7 +214,7 @@ class AbsAssetComparerPanel(
         sector_chart_data_dict = {}
         count = len(comparer_results)
         if comparer_results:
-            with utl_core.gui_progress(maximum=count, label='gui-add for geometry-comparer result') as g_p:
+            with utl_core.GuiProgressesRunner.create(maximum=count, label='gui-add for geometry-comparer result') as g_p:
                 for i_src_geometry_path, i_tgt_geometry_path, i_check_statuses in comparer_results:
                     g_p.set_update()
 
@@ -378,7 +378,7 @@ class AbsAssetComparerPanel(
     def _set_checked_geometry_import_from_model_(self):
         checked_src_geometries = self._get_checked_geometry_objs_()
         if checked_src_geometries:
-            with utl_core.gui_progress(maximum=len(checked_src_geometries), label='import geometry') as g_p:
+            with utl_core.GuiProgressesRunner.create(maximum=len(checked_src_geometries), label='import geometry') as g_p:
                 for i_src_geometry_item_prx, i_src_dcc_geometry in checked_src_geometries:
                     g_p.set_update()
                     if i_src_dcc_geometry.type_name in ['Mesh', 'mesh']:
@@ -650,7 +650,7 @@ class AbsPnlGeometryComparer(prx_widgets.PrxSessionWindow):
 
         self._comparer_opt.set_restore()
 
-        with utl_core.gui_progress(maximum=count, label='gui-add for geometry-comparer result') as g_p:
+        with utl_core.GuiProgressesRunner.create(maximum=count, label='gui-add for geometry-comparer result') as g_p:
             for i_path_src, i_path_tgt, i_description in self._comparer_results:
                 i_keys = i_description.split('+')
 
@@ -713,7 +713,7 @@ class AbsPnlGeometryComparer(prx_widgets.PrxSessionWindow):
             # comparer
             (self.__build_data_fnc_, ())
         ]
-        with utl_core.gui_progress(maximum=len(ms), label='execute gui-build method') as g_p:
+        with utl_core.GuiProgressesRunner.create(maximum=len(ms), label='execute gui-build method') as g_p:
             for i_method, i_args in ms:
                 g_p.set_update()
                 i_method(*i_args)

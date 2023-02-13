@@ -109,7 +109,7 @@ class SceneBuildToolPanel(utl_gui_pnl_abstract.AbsShotBuildToolPanel):
     def _set_dcc_pst_build_(self):
         self._set_default_shader_create_()
         self._set_dcc_frame_range_()
-    @utl_core._debug_
+    @utl_core.Modifier.debug_trace
     def _set_dcc_frame_range_(self):
         from lxshotgun import commands
         shot_opt = None

@@ -409,7 +409,7 @@ class AbsSceneTextureManagerPanel(
                 self._dcc_objs = self._texture_references.get_objs()
             #
             if self._dcc_objs:
-                with utl_core.gui_progress(maximum=len(self._dcc_objs), label='gui-add for texture') as g_p:
+                with utl_core.GuiProgressesRunner.create(maximum=len(self._dcc_objs), label='gui-add for texture') as g_p:
                     for i_dcc_obj in self._dcc_objs:
                         g_p.set_update()
                         i_files = i_dcc_obj.get_file_objs()

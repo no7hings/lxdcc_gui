@@ -3,13 +3,13 @@ import six
 
 import fnmatch
 
+from lxutil import utl_core
+
 import lxutil_gui.proxy.widgets as prx_widgets
 
 import lxbasic.objects as bsc_objects
 
 import lxutil_gui.qt.widgets as qt_widgets
-
-import lxutil.modifiers as utl_modifiers
 
 
 class AbsToolkitPanel(prx_widgets.PrxToolWindow):
@@ -85,11 +85,11 @@ class AbsToolkitPanel(prx_widgets.PrxToolWindow):
 
     def get_item_prxes(self):
         return self._item_prxes
-    @utl_modifiers.set_method_exception_catch
+    @utl_core.Modifier.exception_catch
     def _set_method_run_(self, method):
         method()
 
-    @utl_modifiers.set_method_exception_catch
+    @utl_core.Modifier.exception_catch
     def _set_method_run_with_status_(self, method, item_prx):
         method(item_prx)
 

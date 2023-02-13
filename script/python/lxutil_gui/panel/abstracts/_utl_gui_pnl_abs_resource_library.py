@@ -1,4 +1,6 @@
 # coding:utf-8
+import six
+
 import fnmatch
 
 import collections
@@ -712,7 +714,7 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
                 prx_item.set_menu_content(dtb_entity_menu_content)
             #
             location = self.get_dtb_entity_location(dtb_directory)
-            if bsc_core.StorageBaseMtd.get_is_exists(location) is True:
+            if bsc_core.StorageMtd.get_is_exists(location) is True:
                 prx_item.set_status(prx_item.ValidatorStatus.Normal)
             else:
                 prx_item.set_status(prx_item.ValidatorStatus.Disable)
@@ -994,7 +996,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
     # build for types
     def __gui_add_for_all_types_(self):
         def post_fnc_():
-            self._end_timestamp = bsc_core.TimeBaseMtd.get_timestamp()
+            self._end_timestamp = bsc_core.TimeMtd.get_timestamp()
             #
             utl_core.Log.set_module_result_trace(
                 'load all types',
@@ -1007,7 +1009,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         def quit_fnc_():
             ts.set_quit()
         #
-        self.__start_timestamp = bsc_core.TimeBaseMtd.get_timestamp()
+        self.__start_timestamp = bsc_core.TimeMtd.get_timestamp()
         #
         dtb_categories = self._dtb_opt.get_entities(
             entity_type=self._dtb_opt.EntityTypes.Category,
@@ -1022,7 +1024,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         if self._qt_thread_enable is True:
             ts = utl_gui_qt_core.QtBuildThreadStack(self.widget)
             ts.run_finished.connect(post_fnc_)
-            with utl_core.gui_progress(maximum=len(dtb_categories_map), label='gui-add for type') as g_p:
+            with utl_core.GuiProgressesRunner.create(maximum=len(dtb_categories_map), label='gui-add for type') as g_p:
                 for i_dtb_categories in dtb_categories_map:
                     g_p.set_update()
                     [self._gui_type_opt.gui_add_category(i) for i in i_dtb_categories]
@@ -1035,7 +1037,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             #
             self.set_window_close_connect_to(quit_fnc_)
         else:
-            with utl_core.gui_progress(maximum=len(dtb_categories_map), label='gui-add for type') as g_p:
+            with utl_core.GuiProgressesRunner.create(maximum=len(dtb_categories_map), label='gui-add for type') as g_p:
                 for i_dtb_categories in dtb_categories_map:
                     g_p.set_update()
                     #
@@ -1101,7 +1103,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             ts = utl_gui_qt_core.QtBuildThreadStack(self.widget)
             self.__running_threads_stacks.append(ts)
             ts.run_finished.connect(post_fnc_)
-            with utl_core.gui_progress(maximum=len(dtb_types_map), label='batch gui-add resource') as g_p:
+            with utl_core.GuiProgressesRunner.create(maximum=len(dtb_types_map), label='batch gui-add resource') as g_p:
                 for i_dtb_types in dtb_types_map:
                     g_p.set_update()
                     ts.set_register(
@@ -1113,7 +1115,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             #
             self.set_window_close_connect_to(quit_fnc_)
         else:
-            with utl_core.gui_progress(maximum=len(dtb_types_map), label='batch gui-add resource') as g_p:
+            with utl_core.GuiProgressesRunner.create(maximum=len(dtb_types_map), label='batch gui-add resource') as g_p:
                 for i_dtb_types in dtb_types_map:
                     g_p.set_update()
                     self.__batch_gui_build_fnc_for_resources_(
@@ -1163,7 +1165,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                     #
                     self.set_window_close_connect_to(quit_fnc_)
                 else:
-                    with utl_core.gui_progress(maximum=len(dtb_type_assigns_map), label='gui-add resources') as g_p:
+                    with utl_core.GuiProgressesRunner.create(maximum=len(dtb_type_assigns_map), label='gui-add resources') as g_p:
                         for i_dtb_type_assigns in dtb_type_assigns_map:
                             g_p.set_update()
                             self.__gui_build_fnc_for_resources_(

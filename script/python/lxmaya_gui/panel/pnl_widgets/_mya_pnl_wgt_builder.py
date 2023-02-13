@@ -62,7 +62,7 @@ class SceneBuildToolPanel(utl_gui_pnl_abstract.AbsShotBuildToolPanel):
             obj.get_port('selection').set('''*.(@node == 'image')''')
             obj.get_port('match').set('''/l/prod/cg7''')
             obj.get_port('replace').set('''l:/prod/cg7''')
-    @utl_core._debug_
+    @utl_core.Modifier.debug_trace
     def _set_dcc_frame_range_(self):
         from lxshotgun import commands
         #
@@ -80,7 +80,7 @@ class SceneBuildToolPanel(utl_gui_pnl_abstract.AbsShotBuildToolPanel):
             if shotgun_frame_range:
                 dcc_scn.set_frame_range(*shotgun_frame_range)
                 dcc_scn.set_render_frame_range(*shotgun_frame_range)
-    @utl_core._debug_
+    @utl_core.Modifier.debug_trace
     def _set_dcc_render_resolution_(self):
         from lxshotgun import commands
         self._scene_opt = self.SCENE_OPT_CLASS(project='cg7', stage='publish')

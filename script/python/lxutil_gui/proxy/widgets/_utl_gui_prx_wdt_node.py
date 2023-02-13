@@ -19,8 +19,6 @@ from lxbasic import bsc_configure
 #
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
-import lxutil.modifiers as utl_modifiers
-
 from lxutil_gui import utl_gui_configure, utl_gui_core
 
 from lxutil_gui.qt import utl_gui_qt_core
@@ -1292,7 +1290,7 @@ class PrxButtonEntry(AbsRsvTypeQtEntry):
 
     def get(self):
         return None
-    @utl_modifiers.set_method_exception_catch
+    @utl_core.Modifier.exception_catch
     def _set_fnc_debug_run_(self, fnc):
         fnc()
 
@@ -1322,7 +1320,7 @@ class PrxSubProcessEntry(AbsRsvTypeQtEntry):
 
     def get(self):
         return None
-    @utl_modifiers.set_method_exception_catch
+    @utl_core.Modifier.exception_catch
     def _set_fnc_debug_run_(self, fnc):
         fnc()
 
@@ -1355,7 +1353,7 @@ class PrxValidatorEntry(AbsRsvTypeQtEntry):
 
     def get(self):
         return None
-    @utl_modifiers.set_method_exception_catch
+    @utl_core.Modifier.exception_catch
     def _set_fnc_debug_run_(self, fnc):
         fnc()
 
@@ -1546,7 +1544,7 @@ class PrxRsvObjChooseEntry(_AbsPrxTypeEntry):
             self.__set_item_clear_()
             objs = raw
             if objs:
-                with utl_core.gui_progress(maximum=len(objs), label='gui-add for resolver object') as g_p:
+                with utl_core.GuiProgressesRunner.create(maximum=len(objs), label='gui-add for resolver object') as g_p:
                     for i in objs:
                         g_p.set_update()
                         #

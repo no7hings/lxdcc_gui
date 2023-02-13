@@ -11,7 +11,7 @@ import lxbasic.objects as bsc_objects
 
 import lxresolver.commands as rsv_commands
 
-from lxobj import core_objects
+from lxobj import objects
 
 import lxutil_gui.proxy.operators as utl_prx_operators
 
@@ -224,7 +224,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
     def set_all_refresh(self):
         if self._file_path:
-            self._file_path = bsc_core.StorageBaseMtd.set_map_to_platform(self._file_path)
+            self._file_path = bsc_core.StorageMtd.set_map_to_platform(self._file_path)
             self._resolver = rsv_commands.get_resolver()
             self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
             if self._rsv_scene_properties:
@@ -241,17 +241,17 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 self._rsv_project = self._rsv_task.get_rsv_project()
                 self._rsv_entity = self._rsv_task.get_rsv_resource()
                 self._render_movie_file_rsv_unit = self._rsv_task.get_rsv_unit(
-                    keyword='{branch}-output-katana-render-video-mov-file'
+                    keyword='{branch}-temporary-katana-render-video-mov-file'
                 )
                 self._render_info_file_rsv_unit = self._rsv_task.get_rsv_unit(
-                    keyword='{branch}-output-render-info-yaml-file'
+                    keyword='{branch}-temporary-render-info-yaml-file'
                 )
                 self._camera_rsv_task = self._rsv_entity.get_rsv_task(
                     step='cam', task='camera'
                 )
                 if self._camera_rsv_task is not None:
                     self._camera_work_maya_scene_src_file_rsv_unit = self._camera_rsv_task.get_rsv_unit(
-                        keyword='{branch}-work-maya-scene-src-file'
+                        keyword='{branch}-source-maya-scene-src-file'
                     )
                     self._camera_abc_file_rsv_unit = self._camera_rsv_task.get_rsv_unit(
                         keyword='{branch}-camera-main-abc-file'
@@ -261,7 +261,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                         #     keyword='{branch}-component-usd-file'
                         # ),
                         # self._rsv_task.get_rsv_unit(
-                        #     keyword='{branch}-output-component-usd-file'
+                        #     keyword='{branch}-temporary-component-usd-file'
                         # ),
                         self._camera_work_maya_scene_src_file_rsv_unit,
                         self._camera_abc_file_rsv_unit
@@ -419,7 +419,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             self.set_renderers_refresh,
             self.set_usd_refresh,
         ]
-        with utl_core.gui_progress(maximum=len(methods), label='execute refresh method') as g_p:
+        with utl_core.GuiProgressesRunner.create(maximum=len(methods), label='execute refresh method') as g_p:
             for i in methods:
                 g_p.set_update()
                 result = i()
@@ -496,7 +496,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             )
             version = rsv_properties.get('version')
             show_info_dict['version'] = version
-            show_info_dict['update'] = bsc_core.TimeMtd.to_prettify_by_timestamp(
+            show_info_dict['update'] = bsc_core.TimePrettifyMtd.to_prettify_by_timestamp(
                 bsc_core.StgFileOpt(
                     movie_file_path
                 ).get_modify_timestamp(),
@@ -508,7 +508,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             if render_info_file_path:
                 render_info = bsc_core.StgFileOpt(render_info_file_path).set_read()
                 show_info_dict['user'] = render_info['user']
-                # show_info_dict['submit_time'] = bsc_core.TimeMtd.to_prettify_by_time_tag(
+                # show_info_dict['submit_time'] = bsc_core.TimePrettifyMtd.to_prettify_by_time_tag(
                 #     render_info['time_tag'],
                 #     language=1
                 # )
@@ -1082,7 +1082,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             )
             version = rsv_properties.get('version')
             variants['version'] = version
-            variants['update'] = bsc_core.TimeMtd.to_prettify_by_timestamp(
+            variants['update'] = bsc_core.TimePrettifyMtd.to_prettify_by_timestamp(
                 bsc_core.StgFileOpt(
                     movie_file_path
                 ).get_modify_timestamp(),
@@ -1173,7 +1173,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
     def set_all_refresh(self):
         if self._file_path:
-            self._file_path = bsc_core.StorageBaseMtd.set_map_to_platform(self._file_path)
+            self._file_path = bsc_core.StorageMtd.set_map_to_platform(self._file_path)
             self._resolver = rsv_commands.get_resolver()
             self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
             if self._rsv_scene_properties:
@@ -1182,13 +1182,13 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 )
                 self._rsv_entity = self._rsv_task.get_rsv_resource()
                 self._render_movie_file_rsv_unit = self._rsv_task.get_rsv_unit(
-                    keyword='{branch}-output-katana-render-video-mov-file'
+                    keyword='{branch}-temporary-katana-render-video-mov-file'
                 )
                 self._component_usd_file_unit = self._rsv_task.get_rsv_unit(
                     keyword='{branch}-component-usd-file'
                 )
                 self._output_component_usd_file_unit = self._rsv_task.get_rsv_unit(
-                    keyword='{branch}-output-component-usd-file'
+                    keyword='{branch}-temporary-component-usd-file'
                 )
                 self._check_rsv_units = [
                     self._component_usd_file_unit,
@@ -1214,7 +1214,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             self.set_renderers_refresh,
             self.set_combinations_refresh,
         ]
-        with utl_core.gui_progress(maximum=len(methods), label='execute refresh method') as g_p:
+        with utl_core.GuiProgressesRunner.create(maximum=len(methods), label='execute refresh method') as g_p:
             for i in methods:
                 g_p.set_update()
                 result = i()
@@ -1333,7 +1333,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             output_component_usd_file_path = self._output_component_usd_file_unit.get_result('latest')
             if output_component_usd_file_path:
                 paths = self._rsv_entity_set_usd_creator.get_effect_component_paths(output_component_usd_file_path)
-                u = core_objects.ObjUniverse()
+                u = objects.ObjUniverse()
                 o_t = u._get_obj_type_force_('usd', 'effect')
                 for i_path in paths:
                     o_t.set_obj_create(i_path)

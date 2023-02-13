@@ -411,9 +411,9 @@ class AbsSceneMethodRunnerPanel(
         work_scene_src_file_path = self._configure_gui.get_port('work_scene_src_file_path').get()
         scheme = self._configure_gui.get_port('scheme').get()
         if work_scene_src_file_path:
-            rsv_task = self._resolver.get_rsv_task_by_work_scene_src_file_path(file_path=work_scene_src_file_path)
+            rsv_task = self._resolver.get_rsv_task_by_any_file_path(file_path=work_scene_src_file_path)
             version_rsv_unit = rsv_task.get_rsv_unit(
-                keyword='{branch}-version-dir'
+                keyword='{branch}-release-version-dir'
             )
             new_version = version_rsv_unit.get_new_version()
             work_task_properties = self._resolver.get_task_properties_by_work_scene_src_file_path(file_path=work_scene_src_file_path)
@@ -458,12 +458,12 @@ class AbsSceneMethodRunnerPanel(
             version_scheme = self._configure_gui.get_port('version').get()
             if version_scheme == 'latest':
                 version_rsv_unit = self._rsv_task.get_rsv_unit(
-                    keyword='{branch}-version-dir'
+                    keyword='{branch}-release-version-dir'
                 )
                 version = version_rsv_unit.get_latest_version()
             elif version_scheme == 'new':
                 version_rsv_unit = self._rsv_task.get_rsv_unit(
-                    keyword='{branch}-version-dir'
+                    keyword='{branch}-release-version-dir'
                 )
                 version = version_rsv_unit.get_new_version()
             else:

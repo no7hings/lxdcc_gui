@@ -101,7 +101,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
 
         if rsv_task:
             rsv_unit = rsv_task.get_rsv_unit(
-                keyword='asset-work-katana-scene-src-file'
+                keyword='asset-source-katana-scene-src-file'
             )
             file_path = rsv_unit.get_result(
                 version='latest'
@@ -113,7 +113,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
                 (ktn_dcc_objects.AssetWorkspace().set_variables_registry, ())
             ]
 
-            with utl_core.gui_progress(maximum=len(ms), label='load workspace') as g_p:
+            with utl_core.GuiProgressesRunner.create(maximum=len(ms), label='load workspace') as g_p:
                 for i_m, i_as in ms:
                     g_p.set_update()
                     if i_as:

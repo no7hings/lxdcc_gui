@@ -11,7 +11,7 @@ from lxutil_gui.qt import utl_gui_qt_core
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
-from lxobj import core_objects
+from lxobj import objects
 
 import lxbasic.objects as bsc_objects
 
@@ -86,7 +86,7 @@ class AbsRezGraph(prx_widgets.PrxToolWindow):
     def test(self, packages):
         import rez.resolved_context as r_c
 
-        u = core_objects.ObjUniverse()
+        u = objects.ObjUniverse()
 
         r_s_t = u._get_obj_type_force_('rez', 'system')
         r_p_t = u._get_obj_type_force_('rez', 'package')
@@ -102,7 +102,7 @@ class AbsRezGraph(prx_widgets.PrxToolWindow):
         r = r_c.ResolvedContext(
             packages,
             package_paths=[
-                bsc_core.StorageBaseMtd.set_map_to_platform(i) for i in [
+                bsc_core.StorageMtd.set_map_to_platform(i) for i in [
                     "/l/packages/pg/prod",
                     "/l/packages/pg/dept",
                     "/l/packages/pg/third_party/app",
@@ -367,7 +367,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
     #
     def _set_add_rsv_entities_(self, rsv_project):
         def post_fnc_():
-            self._end_timestamp = bsc_core.TimeBaseMtd.get_timestamp()
+            self._end_timestamp = bsc_core.TimeMtd.get_timestamp()
             #
             utl_core.Log.set_module_result_trace(
                 'load asset/shot from "{}"'.format(
@@ -382,7 +382,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
             self._set_graph_reload_()
 
         self._count = 0
-        self._start_timestamp = bsc_core.TimeBaseMtd.get_timestamp()
+        self._start_timestamp = bsc_core.TimeMtd.get_timestamp()
         #
         rsv_tags = rsv_project.get_rsv_tags(**self._rsv_filter_opt.value)
         #
@@ -399,7 +399,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
                 )
             ts.set_start()
         else:
-            with utl_core.gui_progress(maximum=len(rsv_tags), label='gui-add for entity') as g_p:
+            with utl_core.GuiProgressesRunner.create(maximum=len(rsv_tags), label='gui-add for entity') as g_p:
                 for i_rsv_tag in rsv_tags:
                     g_p.set_update()
                     self._set_gui_add_rsv_entities_(
@@ -452,7 +452,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
             )
             if component_registry_usd_file_path:
                 preview_rsv_unit = model_rsv_task.get_rsv_unit(
-                    keyword='asset-output-katana-render-video-png-file'
+                    keyword='asset-temporary-katana-render-video-png-file'
                 )
                 result = preview_rsv_unit.get_result(
                     version='latest',
@@ -483,7 +483,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
             )
 
     def _set_graph_reload_(self):
-        self._universe = core_objects.ObjUniverse()
+        self._universe = objects.ObjUniverse()
 
         self._u_asset_type = self._universe._get_obj_type_force_('lynxi', 'asset')
 

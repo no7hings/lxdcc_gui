@@ -7,7 +7,7 @@ import lxutil.dcc.dcc_objects as utl_dcc_objects
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_view
 
-from lxobj import core_objects
+from lxobj import objects
 
 
 class W(prx_widgets.PrxToolWindow):
@@ -16,7 +16,7 @@ class W(prx_widgets.PrxToolWindow):
         #
         c = prx_widgets.PrxNGImageGraph()
         self.set_widget_add(c)
-        u = core_objects.ObjUniverse()
+        u = objects.ObjUniverse()
 
         o_t = u._get_obj_type_force_('lynxi', 'shader')
 

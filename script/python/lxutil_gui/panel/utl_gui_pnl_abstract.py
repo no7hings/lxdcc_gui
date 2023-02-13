@@ -13,7 +13,7 @@ import lxutil_gui.proxy.widgets as prx_widgets
 
 from lxutil import utl_core
 
-from lxobj import obj_core, core_objects
+from lxobj import obj_core, objects
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 

@@ -70,7 +70,7 @@ class AbsValidatorOpt(object):
         self._result_tree_view.set_items_expand_by_depth(1)
 
     def _set_sub_check_results_build_at_(self, scene_prx_item, rsv_scene_properties, results):
-        with utl_core.gui_progress(maximum=len(results), label='gui-add for check result') as g_p:
+        with utl_core.GuiProgressesRunner.create(maximum=len(results), label='gui-add for check result') as g_p:
             for i_result in results:
                 g_p.set_update()
                 #
@@ -512,7 +512,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
                 **dict(
                     directory=file_opt.directory_path,
                     name=file_opt.name_base,
-                    date=bsc_core.TimeBaseMtd.get_date_tag(),
+                    date=bsc_core.TimeMtd.get_date_tag(),
                     tag=bsc_core.TimeExtraMtd.get_time_tag_36(),
                     user=bsc_core.SystemMtd.get_user_name(),
                     ext=file_opt.ext

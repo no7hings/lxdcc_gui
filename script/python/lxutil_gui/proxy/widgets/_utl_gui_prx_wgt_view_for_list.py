@@ -179,7 +179,7 @@ class PrxListView(
         return [i.gui_proxy for i in self._qt_view._get_checked_item_widgets_()]
 
     def set_restore(self):
-        self.view._set_clear_()
+        self.set_clear()
 
     def set_filter_bar_visible(self, boolean):
         self._prx_filter_bar.set_visible(boolean)
