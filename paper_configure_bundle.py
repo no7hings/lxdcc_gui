@@ -16,7 +16,7 @@ platform_name = platform.system().lower()
 environ_data = [
     ('LXDCC_GUI_BASE', '{root}', 'set'),
     #
-    ('PYTHON_PATH', '{root}/script/python', 'append_to_path'),
+    ('PYTHONPATH', '{root}/script/python', 'append_to_path'),
 ]
 
 environ_data_linux = []
