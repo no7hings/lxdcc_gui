@@ -5,9 +5,9 @@ import math
 
 import re
 
-import enum
+from lxbasic import bsc_core
 
-from lxutil import utl_configure, utl_core
+from lxutil import utl_configure
 
 from lxutil_gui import utl_gui_configure
 
@@ -148,7 +148,7 @@ class RscIconFile(object):
     ICON_KEY_PATTERN = r'[@](.*?)[@]'
     @classmethod
     def get(cls, key):
-        return utl_core.Resources.get(
+        return bsc_core.RscFileMtd.get(
             '{}/{}.*'.format(cls.BRANCH, key)
         )
     @classmethod
@@ -165,7 +165,7 @@ class RcsIconDirectory(object):
     ICON_KEY_PATTERN = r'[@](.*?)[@]'
     @classmethod
     def get(cls, key):
-        return utl_core.Resources.get(
+        return bsc_core.RscFileMtd.get(
             '{}/{}'.format(cls.BRANCH, key)
         )
 
@@ -174,12 +174,12 @@ class RscFontFile(object):
     BRANCH = 'fonts'
     @classmethod
     def get(cls, key):
-        return utl_core.Resources.get(
+        return bsc_core.RscFileMtd.get(
             '{}/{}.*'.format(cls.BRANCH, key)
         )
     @classmethod
     def get_all(cls, sub_key='*'):
-        return utl_core.Resources.get_all(
+        return bsc_core.RscFileMtd.get_all(
             '{}/{}.*'.format(cls.BRANCH, sub_key)
         )
 

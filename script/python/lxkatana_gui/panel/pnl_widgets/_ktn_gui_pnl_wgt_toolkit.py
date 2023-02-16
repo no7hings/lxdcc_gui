@@ -252,7 +252,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
                     user=user, time_tag=time_tag
                 )
             )
-            katana_look_export.set_run_with_deadline()
+            katana_look_export.execute_with_deadline()
         #
         utl_core.DialogWindow.set_create(
             label='Look-update',

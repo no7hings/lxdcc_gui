@@ -1353,7 +1353,7 @@ class QtValueEntryForConstant(
         self._value_entry.setReadOnly(not boolean)
 
         self._frame_background_color = [
-            QtBackgroundColors.Basic, QtBackgroundColors.Dark
+            QtBackgroundColors.Basic, QtBackgroundColors.Dim
         ][boolean]
         self._refresh_widget_draw_()
 
@@ -1374,6 +1374,8 @@ class QtValueEntryForScript(
         self._set_value_default_def_init_()
         #
         self._build_entry_(self._value_type)
+
+        # self._frame_background_color = QtBackgroundColors.Dark
 
     def _build_entry_(self, value_type):
         self._value_type = value_type
@@ -1404,7 +1406,7 @@ class QtValueEntryForScript(
 
         self._value_entry.setReadOnly(not boolean)
         self._frame_background_color = [
-            QtBackgroundColors.Basic, QtBackgroundColors.Dark
+            QtBackgroundColors.Basic, QtBackgroundColors.Dim
         ][boolean]
         self._refresh_widget_draw_()
 

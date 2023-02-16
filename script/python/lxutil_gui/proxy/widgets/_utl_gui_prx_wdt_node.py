@@ -685,7 +685,7 @@ class PrxMediasOpenEntry(_PrxStgObjsEntry):
                 self.set_history_update()
     @staticmethod
     def _get_tmp_screenshot_file_path_():
-        d = bsc_core.SystemMtd.get_user_home_directory()
+        d = bsc_core.SystemMtd.get_home_directory()
         return u'{}/screenshot/scp_{}.jpg'.format(d, bsc_core.TimeExtraMtd.get_time_tag_36())
 
     def _set_save_(self, g):

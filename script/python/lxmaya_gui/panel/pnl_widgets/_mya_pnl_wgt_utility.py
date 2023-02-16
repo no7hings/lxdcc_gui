@@ -314,7 +314,7 @@ class DatabaseGeometryManagerPanel(utl_gui_pnl_abs_utility.AbsDatabaseGeometryMa
                 )
             )
             #
-            method.set_run_with_deadline()
+            method.execute_with_deadline()
             job_id = method.get_ddl_job_id()
             self._geometry_unify_ddl_job_process = ddl_objects.DdlJobProcess(job_id)
             if self._geometry_unify_ddl_job_process is not None:
@@ -426,7 +426,7 @@ class DatabaseGeometryManagerPanel(utl_gui_pnl_abs_utility.AbsDatabaseGeometryMa
                 )
             )
             #
-            method.set_run_with_deadline()
+            method.execute_with_deadline()
             job_id = method.get_ddl_job_id()
             self._geometry_uv_assign_ddl_job_process = ddl_objects.DdlJobProcess(job_id)
             if self._geometry_uv_assign_ddl_job_process is not None:

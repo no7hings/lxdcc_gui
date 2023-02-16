@@ -1,4 +1,6 @@
 # coding:utf-8
+import six
+
 import functools
 
 from lxbasic import bsc_core

@@ -58,6 +58,8 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         self._hook_configure = self._session.configure
         self._hook_gui_configure = self._session.gui_configure
 
+        self._resolver = rsv_commands.get_resolver()
+
         self._rsv_filter = self._hook_configure.get('resolver.filter')
         #
         self._item_frame_size = self._hook_gui_configure.get('item_frame_size')
@@ -93,8 +95,6 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
     def __gui_refresh_for_all_(self):
-        self._resolver = rsv_commands.get_resolver()
-        #
         project = self._options_prx_node.get_port(
             'project'
         ).get()
@@ -248,6 +248,9 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         self._rsv_filter_opt = bsc_core.ArgDictStringOpt(self._rsv_filter)
         self._filter_project = self._rsv_filter_opt.get('project')
         #
+        projects = map(lambda x: x.get_name(), self._resolver.get_rsv_projects())
+        print projects
+        #
         self._options_prx_node = prx_widgets.PrxNode_('options')
         self.set_widget_add(self._options_prx_node)
         self._options_prx_node.set_expanded(False)
@@ -261,13 +264,6 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                 self._rsv_filters_dict.keys()
             )
         #
-        projects = [
-            'shl',
-            'cg7',
-            'cjd',
-            'lib',
-        ]
-        #
         current_project = self._get_current_project_()
         if current_project:
             if current_project in projects:
@@ -279,17 +275,21 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             'gui.projects',
             projects
         )
-        histories = utl_core.History.get(
-            'gui.projects'
-        )
         #
         _port = self._options_prx_node.set_port_add(
-            prx_widgets.PrxPortForRsvProject('project')
+            prx_widgets.PrxPortForEnumerate('project')
         )
+        _port.set(projects)
         if self._filter_project is not None:
-            _port.set(self._filter_project)
+            if self._filter_project in projects:
+                _port.set(self._filter_project)
         else:
-            _port.set(histories[-1])
+            project_history = utl_core.History.get_latest(
+                'gui.projects'
+            )
+            if project_history is not None:
+                if project_history in projects:
+                    _port.set(project_history)
         #
         _port = self._options_prx_node.set_port_add(
             prx_widgets.PrxButtonPort('refresh')

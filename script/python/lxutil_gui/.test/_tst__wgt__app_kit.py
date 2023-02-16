@@ -1,4 +1,6 @@
 # coding:utf-8
+from lxbasic import bsc_core
+
 from lxutil import utl_core
 
 import lxutil_gui.proxy.widgets as prx_widgets
@@ -6,7 +8,7 @@ import lxutil_gui.proxy.widgets as prx_widgets
 import lxsession.commands as ssn_commands
 
 utl_core.Environ.set_add(
-    utl_core.Resources.ENVIRON_KEY, '/data/e/myworkspace/td/lynxi/script/python/.resources'
+    bsc_core.RscFileMtd.ENVIRON_KEY, '/data/e/myworkspace/td/lynxi/script/python/.resources'
 )
 
 
