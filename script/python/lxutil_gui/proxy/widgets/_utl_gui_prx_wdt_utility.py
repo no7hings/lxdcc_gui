@@ -1030,7 +1030,7 @@ class PrxToolWindow(
     def set_log_file_path(self, file_path):
         if file_path is not None:
             f = utl_dcc_objects.OsFile(file_path)
-            f.set_directory_create()
+            f.create_directory()
             self._log_file_path = file_path
 
     def set_log_write(self, text):

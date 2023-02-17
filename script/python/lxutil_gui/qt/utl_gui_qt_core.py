@@ -1041,27 +1041,29 @@ class QtKatanaMtd(object):
     @classmethod
     def get_menu_bar(cls):
         main_window = cls.get_qt_main_window()
-        if main_window:
-            return main_window.getMenuBar()
-        else:
+        if main_window is None:
             utl_core.Log.set_module_warning_trace(
                 'qt-katana',
                 'main-window is non-exists'
             )
+            return
+        #
+        return main_window.getMenuBar()
     @classmethod
     def get_menu(cls, name):
         menu_bar = cls.get_menu_bar()
-        if menu_bar:
-            for i_child in menu_bar.children():
-                if isinstance(i_child, QtWidgets.QMenu):
-                    i_name = i_child.title()
-                    if i_name == name:
-                        return i_child
-        else:
+        if menu_bar is None:
             utl_core.Log.set_module_warning_trace(
                 'qt-katana',
                 'menu-bar is non-exists'
             )
+            return
+        #
+        for i_child in menu_bar.children():
+            if isinstance(i_child, QtWidgets.QMenu):
+                i_name = i_child.title()
+                if i_name == name:
+                    return i_child
 
 
 class QtWindowForClarisse(QtWidgets.QWidget):

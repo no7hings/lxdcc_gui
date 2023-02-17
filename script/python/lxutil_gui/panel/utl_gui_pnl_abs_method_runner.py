@@ -447,13 +447,14 @@ class AbsSceneMethodRunnerPanel(
             self._rsv_scene_properties = None
 
     def _set_properties_update_(self):
+        rsv_scene_properties = self._rsv_scene_properties
         scheme = self._configure_gui.get_port('scheme').get()
         #
-        if scheme == 'work':
+        if scheme == rsv_scene_properties.get('workspaces.source'):
             version = self._rsv_scene_properties.get('version')
             self._rsv_scene_properties.set('option.workspace', 'work')
             self._rsv_scene_properties.set('option.version', version)
-        elif scheme == 'publish':
+        elif scheme == rsv_scene_properties.get('workspaces.release'):
             self._rsv_scene_properties.set('option.workspace', 'publish')
             version_scheme = self._configure_gui.get_port('version').get()
             if version_scheme == 'latest':

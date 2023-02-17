@@ -11,7 +11,7 @@ import types
 
 from lxbasic import bsc_core
 
-from lxobj import obj_abstract
+import lxuniverse.abstracts as unr_abstracts
 #
 from lxutil import utl_core
 
@@ -19,7 +19,7 @@ from lxbasic import bsc_configure
 #
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
-from lxutil_gui import utl_gui_configure, utl_gui_core
+from lxutil_gui import utl_gui_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
@@ -2435,7 +2435,7 @@ class PrxComponentsPort(AbsPrxTypePort):
         return self._prx_port_entry._prx_entry_widget
 
 
-class PrxPortStack(obj_abstract.AbsObjStack):
+class PrxPortStack(unr_abstracts.AbsObjStack):
     def __init__(self):
         super(PrxPortStack, self).__init__()
 
@@ -2776,7 +2776,7 @@ class PrxGroupPort_(
         return self.__str__()
 
 
-class PrxNodePortStack_(obj_abstract.AbsObjStack):
+class PrxNodePortStack_(unr_abstracts.AbsObjStack):
     def __init__(self):
         super(PrxNodePortStack_, self).__init__()
 

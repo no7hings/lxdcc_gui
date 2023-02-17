@@ -5,13 +5,11 @@ from lxutil import utl_configure
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_view
-
 from lxutil import utl_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxobj import objects
+import lxuniverse.objects as unr_objects
 
 
 class W(prx_widgets.PrxToolWindow):
@@ -29,7 +27,7 @@ class W(prx_widgets.PrxToolWindow):
     def test(self):
         self._g = prx_widgets.PrxNGGraph()
         self.set_widget_add(self._g)
-        u = objects.ObjUniverse()
+        u = unr_objects.ObjUniverse()
 
         r_s_t = u._get_obj_type_force_('rez', 'system')
         r_p_t = u._get_obj_type_force_('rez', 'package')

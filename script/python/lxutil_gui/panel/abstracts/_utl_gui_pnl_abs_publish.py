@@ -306,7 +306,7 @@ class DccPublisherOpt(object):
             )
 
             movie_file_opt = bsc_core.StgFileOpt(movie_file_path)
-            movie_file_opt.set_directory_create()
+            movie_file_opt.create_directory()
 
             utl_core.RvLauncher().set_convert_to_mov(
                 input=media_files,

@@ -13,7 +13,7 @@ from lxutil_gui.qt import utl_gui_qt_core
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
-from lxobj import objects
+import lxuniverse.objects as unr_objects
 
 import lxbasic.objects as bsc_objects
 
@@ -88,7 +88,7 @@ class AbsRezGraph(prx_widgets.PrxToolWindow):
     def test(self, packages):
         import rez.resolved_context as r_c
 
-        u = objects.ObjUniverse()
+        u = unr_objects.ObjUniverse()
 
         r_s_t = u._get_obj_type_force_('rez', 'system')
         r_p_t = u._get_obj_type_force_('rez', 'package')
@@ -485,7 +485,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
             )
 
     def _set_graph_reload_(self):
-        self._universe = objects.ObjUniverse()
+        self._universe = unr_objects.ObjUniverse()
 
         self._u_asset_type = self._universe._get_obj_type_force_('lynxi', 'asset')
 

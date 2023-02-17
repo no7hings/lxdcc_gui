@@ -3897,7 +3897,7 @@ class AbsQtScreenshotDef(object):
         return x + x_0, y + y_0, w_0, h_0
     @classmethod
     def _set_screenshot_save_to_(cls, geometry, file_path):
-        bsc_core.StgFileOpt(file_path).set_directory_create()
+        bsc_core.StgFileOpt(file_path).create_directory()
         rect = QtCore.QRect(*geometry)
 
         if bsc_core.ApplicationMtd.get_is_maya():

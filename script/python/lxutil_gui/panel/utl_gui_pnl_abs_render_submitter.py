@@ -11,7 +11,7 @@ import lxbasic.objects as bsc_objects
 
 import lxresolver.commands as rsv_commands
 
-from lxobj import objects
+import lxuniverse.objects as unr_objects
 
 import lxutil_gui.proxy.operators as utl_prx_operators
 
@@ -1333,7 +1333,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             output_component_usd_file_path = self._output_component_usd_file_unit.get_result('latest')
             if output_component_usd_file_path:
                 paths = self._rsv_entity_set_usd_creator.get_effect_component_paths(output_component_usd_file_path)
-                u = objects.ObjUniverse()
+                u = unr_objects.ObjUniverse()
                 o_t = u._get_obj_type_force_('usd', 'effect')
                 for i_path in paths:
                     o_t.set_obj_create(i_path)

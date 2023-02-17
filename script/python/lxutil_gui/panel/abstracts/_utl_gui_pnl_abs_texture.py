@@ -397,7 +397,7 @@ class AbsPnlAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
 
         def run_fnc_():
             for i_index, (i_file_path, i_output_directory_path) in enumerate(self._create_data):
-                bsc_core.StorageMtd.set_directory_create(
+                bsc_core.StorageMtd.create_directory(
                     i_output_directory_path
                 )
 
@@ -933,7 +933,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
 
         def run_fnc_():
             for i_index, (i_file_path, i_output_directory_path) in enumerate(self._create_data):
-                bsc_core.StorageMtd.set_directory_create(
+                bsc_core.StorageMtd.create_directory(
                     i_output_directory_path
                 )
 
