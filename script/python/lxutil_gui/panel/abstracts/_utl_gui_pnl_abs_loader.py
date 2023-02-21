@@ -21,7 +21,7 @@ import lxutil_gui.proxy.operators as utl_prx_operators
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
-import lxutil.extra.methods as utl_etr_methods
+import lxbasic.extra.methods as bsc_etr_methods
 
 import lxresolver.commands as rsv_commands
 
@@ -730,7 +730,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         return bsc_core.ApplicationMtd.get_current()
     @classmethod
     def _get_current_project_(cls):
-        return utl_etr_methods.EtrUtility.get_project()
+        return bsc_etr_methods.EtrUtility.get_project()
 
     def _get_resolver_application_filter_(self):
         _ = self._hook_configure.get('resolver.application_filter') or {}
