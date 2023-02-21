@@ -411,8 +411,8 @@ class AbsPnlAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
                     break
                 #
                 if i_cmd:
-                    bsc_core.PrcCmdThread.set_wait()
-                    i_t = bsc_core.PrcCmdThread.set_start(i_cmd, i_index)
+                    bsc_core.TrdCmdProcess.set_wait()
+                    i_t = bsc_core.TrdCmdProcess.set_start(i_cmd, i_index)
                     i_t.status_changed.set_connect_to(status_update_at_fnc_)
                     i_t.finished.set_connect_to(finished_fnc_)
                 else:
@@ -945,8 +945,8 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                     break
                 #
                 if i_cmd:
-                    bsc_core.PrcCmdThread.set_wait()
-                    i_t = bsc_core.PrcCmdThread.set_start(i_cmd, i_index)
+                    bsc_core.TrdCmdProcess.set_wait()
+                    i_t = bsc_core.TrdCmdProcess.set_start(i_cmd, i_index)
                     i_t.status_changed.set_connect_to(status_update_at_fnc_)
                     i_t.finished.set_connect_to(finished_fnc_)
                 else:

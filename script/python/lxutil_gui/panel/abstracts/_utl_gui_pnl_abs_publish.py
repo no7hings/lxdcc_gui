@@ -7,6 +7,8 @@ import lxutil_gui.proxy.widgets as prx_widgets
 
 from lxutil import utl_core
 
+import lxutil.extra.methods as utl_etr_methods
+
 from lxutil_gui.qt import utl_gui_qt_core
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
@@ -308,7 +310,7 @@ class DccPublisherOpt(object):
             movie_file_opt = bsc_core.StgFileOpt(movie_file_path)
             movie_file_opt.create_directory()
 
-            utl_core.RvLauncher().set_convert_to_mov(
+            utl_etr_methods.EtrRv.convert_to_mov(
                 input=media_files,
                 output=movie_file_path
             )

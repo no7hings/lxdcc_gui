@@ -29,9 +29,9 @@ class ScpGuiTextureCreate(object):
             self._ts = []
             #
             for _i_index, _i_cmd in enumerate(self._cmds):
-                bsc_core.PrcCmdThread.set_wait()
+                bsc_core.TrdCmdProcess.set_wait()
                 #
-                _i_t = bsc_core.PrcCmdThread.set_start(_i_cmd, _i_index)
+                _i_t = bsc_core.TrdCmdProcess.set_start(_i_cmd, _i_index)
                 self._ts.append(_i_t)
                 _i_t.status_changed.set_connect_to(status_changed_fnc_)
                 _i_t.finished.set_connect_to(finished_fnc_)
@@ -50,8 +50,8 @@ class ScpGuiTextureCreate(object):
 
             c = len(cmds)
 
-            button.set_status(bsc_core.PrcCmdThread.Status.Started)
-            button.set_initialization(c, bsc_core.PrcCmdThread.Status.Started)
+            button.set_status(bsc_core.TrdCmdProcess.Status.Started)
+            button.set_initialization(c, bsc_core.TrdCmdProcess.Status.Started)
 
             q_t = utl_gui_qt_core.QtMethodThread(self._window.widget)
             q_t.set_method_add(
