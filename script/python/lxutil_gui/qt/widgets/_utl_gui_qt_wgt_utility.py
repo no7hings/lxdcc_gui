@@ -7,13 +7,13 @@ import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-from lxutil_gui import utl_gui_core
+from lxutil_gui import utl_gui_configure, utl_gui_core
 
 
 class QtItemDelegate(QtWidgets.QItemDelegate):
     def sizeHint(self, option, index):
         size = super(QtItemDelegate, self).sizeHint(option, index)
-        size.setHeight(utl_configure.GuiSize.item_height)
+        size.setHeight(utl_gui_configure.Size.ITEM_HEIGHT)
         return size
 
 
@@ -998,7 +998,7 @@ class QtStyledItemDelegate(QtWidgets.QStyledItemDelegate):
 
     def sizeHint(self, option, index):
         size = super(QtStyledItemDelegate, self).sizeHint(option, index)
-        size.setHeight(utl_configure.GuiSize.item_height)
+        size.setHeight(utl_gui_configure.Size.ITEM_HEIGHT)
         return size
 
 

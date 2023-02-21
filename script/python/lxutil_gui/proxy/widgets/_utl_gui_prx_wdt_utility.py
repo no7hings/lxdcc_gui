@@ -767,12 +767,7 @@ class PrxToolWindow(
     def __init__(self, *args, **kwargs):
         super(PrxToolWindow, self).__init__(*args, **kwargs)
         #
-        if bsc_core.PlatformMtd.get_is_windows():
-            self.set_log_file_path(bsc_configure.LogDirectory.WINDOWS)
-        elif bsc_core.PlatformMtd.get_is_linux():
-            self.set_log_file_path(bsc_configure.LogDirectory.LINUX)
-        else:
-            raise TypeError()
+        self.set_log_file_path(bsc_core.StgUserMtd.get_log_directory())
         #
         self._log_file_path = None
         #

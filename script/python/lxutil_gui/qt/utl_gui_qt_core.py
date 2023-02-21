@@ -23,9 +23,9 @@ import lxbasic.objects as bsc_objects
 
 from lxutil.core import _utl_cor_utility
 #
-from lxutil import utl_configure, utl_core, utl_abstract
+from lxutil import utl_core, utl_abstract
 
-from lxutil_gui import utl_gui_core
+from lxutil_gui import utl_gui_configure, utl_gui_core
 
 _pyqt5 = bsc_objects.PyModule('PyQt5')
 
@@ -1692,18 +1692,18 @@ class QtSectorChartDrawData(object):
         else:
             if percent == 1:
                 r, g, b = 63, 255, 127
-                if mode is utl_configure.GuiSectorChartMode.Error:
+                if mode is utl_gui_configure.SectorChartMode.Error:
                     r, g, b = 255, 0, 63
             elif percent == 0:
                 r, g, b = 255, 0, 63
-                if mode is utl_configure.GuiSectorChartMode.Error:
+                if mode is utl_gui_configure.SectorChartMode.Error:
                     r, g, b = 63, 255, 127
             #
             elif percent > 1:
                 r, g, b = bsc_core.RawColorMtd.hsv2rgb(240 - min(percent * 15, 45), 1, 1)
             else:
                 r, g, b = bsc_core.RawColorMtd.hsv2rgb(45 * color_percent, 1, 1)
-                if mode is utl_configure.GuiSectorChartMode.Error:
+                if mode is utl_gui_configure.SectorChartMode.Error:
                     r, g, b = bsc_core.RawColorMtd.hsv2rgb(45 - 45 * color_percent, 1, 1)
             #
             background_rgba = r, g, b, 255

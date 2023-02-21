@@ -1614,7 +1614,7 @@ class AbsQtChartDef(object):
     def _set_chart_def_init_(self):
         self._chart_data = None
         self._chart_draw_data = None
-        self._chart_mode = utl_configure.GuiSectorChartMode.Completion
+        self._chart_mode = utl_gui_configure.SectorChartMode.Completion
         #
         self._hover_flag = False
         self._hover_point = QtCore.QPoint()

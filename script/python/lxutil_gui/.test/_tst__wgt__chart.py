@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxutil import utl_configure
+from lxutil_gui import utl_gui_configure
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
@@ -34,7 +34,7 @@ class W(prx_widgets.PrxToolWindow):
                 ('text-{}'.format(i), 10, i)
             )
         s_c.set_chart_data(
-            a, utl_configure.GuiSectorChartMode.Error
+            a, utl_gui_configure.SectorChartMode.Error
         )
         #
         r_c = prx_widgets.PrxRadarChart()
@@ -52,7 +52,7 @@ class W(prx_widgets.PrxToolWindow):
                     ('text-{}'.format(i), i, i - 1)
                 )
         r_c.set_chart_data(
-            b, utl_configure.GuiSectorChartMode.Error
+            b, utl_gui_configure.SectorChartMode.Error
         )
 
     def test(self):

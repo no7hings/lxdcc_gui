@@ -106,6 +106,15 @@ class TagFilterMode(enum.IntEnum):
     MatchOne = 1
 
 
+class Size(object):
+    ITEM_HEIGHT = 20
+
+
+class SectorChartMode(enum.IntEnum):
+    Completion = 0
+    Error = 1
+
+
 class State(object):
     NORMAL = 'normal'
     ENABLE = 'enable'

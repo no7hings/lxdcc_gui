@@ -775,7 +775,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                         'render.shot.frames', frames
                     )
 
-        if bsc_core.EnvironMtd.get_td_enable() is True:
+        if bsc_core.EnvExtraMtd.get_td_enable() is True:
             self._settings_prx_node.set_default(
                 'td.test_scheme', 'td_enable'
             )
@@ -1355,7 +1355,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 'render.frames', frames
             )
 
-        if bsc_core.EnvironMtd.get_td_enable() is True:
+        if bsc_core.EnvExtraMtd.get_td_enable() is True:
             self._settings_prx_node.set(
                 'td.test_scheme', 'td_enable'
             )

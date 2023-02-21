@@ -5,7 +5,7 @@ import lxbasic.objects as bsc_objects
 #
 from lxutil import utl_configure, utl_core
 
-from lxutil_gui import utl_gui_core
+from lxutil_gui import utl_gui_configure, utl_gui_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
@@ -278,7 +278,7 @@ class AbsAssetComparerPanel(
         #
         self._sector_chart.set_chart_data(
             sector_chart_data,
-            utl_configure.GuiSectorChartMode.Error
+            utl_gui_configure.SectorChartMode.Error
         )
 
     def _set_radar_chart_refresh_(self):
@@ -690,7 +690,7 @@ class AbsPnlGeometryComparer(prx_widgets.PrxSessionWindow):
         #
         self._sector_chart.set_chart_data(
             sector_chart_data,
-            utl_configure.GuiSectorChartMode.Error
+            utl_gui_configure.SectorChartMode.Error
         )
 
         self._comparer_opt.set_accept()

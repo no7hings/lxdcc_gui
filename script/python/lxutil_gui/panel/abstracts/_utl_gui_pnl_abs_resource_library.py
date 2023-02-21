@@ -1169,7 +1169,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                         for i_dtb_type_assigns in dtb_type_assigns_map:
                             g_p.set_update()
                             self.__gui_build_fnc_for_resources_(
-                                self.__gui_cache_fnc_for_resources_(i_dtb_type_assigns)
+                                self.__gui_cache_fnc_for_resources_(i_dtb_type_assigns, thread_stack_index)
                             )
 
     def __gui_cache_fnc_for_resources_(self, dtb_resource_assigns, thread_stack_index):
