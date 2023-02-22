@@ -43,7 +43,7 @@ else:
         raise ImportError()
 
 cgitb.enable(
-    logdir=bsc_core.StgUserMtd.get_user_debug_directory(tag='qt', create=True),
+    logdir=(bsc_core.EnvExtraMtd.get_user_debug_directory(tag='qt', create=True) or bsc_core.StgUserMtd.get_user_debug_directory(tag='qt', create=True)),
     format='text'
 )
 
