@@ -222,5 +222,5 @@ class QtStyleMtd(object):
 
 if __name__ == '__main__':
     import os
-    os.environ['LYNXI_RESOURCES'] = '/data/e/myworkspace/td/lynxi/script/python/.resources'
+    os.environ['PAPER_EXTEND_RESOURCES'] = '/data/e/myworkspace/td/lynxi/script/python/.resources'
     print RcsIconDirectory.get('qt-style')
