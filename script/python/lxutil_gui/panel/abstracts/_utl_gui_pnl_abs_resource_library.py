@@ -914,8 +914,8 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         super(AbsPnlAbsResourceLibrary, self).__init__(session, *args, **kwargs)
 
     def refresh_all(self):
-        self._dtb_cfg = dtb_configure.DataFile.LIBRARY_BASIC
-        self._dtb_opt = dtb_objects.DtbResourceLibraryOpt(self._dtb_cfg)
+        self._dtb_cfg_file_path = bsc_core.CfgFileMtd.get_yaml('database/library/basic')
+        self._dtb_opt = dtb_objects.DtbResourceLibraryOpt(self._dtb_cfg_file_path)
 
         self._gui_type_opt = _GuiTypeOpt(
             self, self._session, self._dtb_opt, self._type_prx_view

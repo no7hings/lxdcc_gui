@@ -84,11 +84,11 @@ class AssetLookViewerPanel(utl_gui_pnl_abs_look_viewer.AbsAssetLookViewerPanel):
             #
             def layout_shaders_with_expanded_fnc_():
                 if _material_obj is not None:
-                    ktn_core.NGObjOpt(_material_obj.ktn_obj).set_gui_layout(size=(320, 960), expanded=True)
+                    ktn_core.NGObjOpt(_material_obj.ktn_obj).gui_layout_shader_graph(size=(320, 960), expanded=True)
             #
             def layout_shaders_with_collapsed_fnc_():
                 if _material_obj is not None:
-                    ktn_core.NGObjOpt(_material_obj.ktn_obj).set_gui_layout(size=(320, 240), collapsed=True)
+                    ktn_core.NGObjOpt(_material_obj.ktn_obj).gui_layout_shader_graph(size=(320, 240), collapsed=True)
             #
             geometry_obj_.set_gui_attribute(
                 'gui_menu',
