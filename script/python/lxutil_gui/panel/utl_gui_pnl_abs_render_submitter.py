@@ -760,7 +760,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 'shot'
             )
             if rsv_shot is not None:
-                stg_shot_query = self._stg_connector.get_stg_entity_query(
+                stg_shot_query = self._stg_connector.get_stg_resource_query(
                     **rsv_shot.properties.value
                 )
                 if stg_shot_query:
@@ -1195,7 +1195,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     self._output_component_usd_file_unit
                 ]
                 #
-                self._stg_entity_query = self._stg_connector.get_stg_entity_query(
+                self._stg_entity_query = self._stg_connector.get_stg_resource_query(
                     **self._rsv_entity.properties.value
                 )
                 if self._stg_entity_query:
