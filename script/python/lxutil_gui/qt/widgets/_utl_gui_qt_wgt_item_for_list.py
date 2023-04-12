@@ -86,6 +86,7 @@ class _QtListItemWidget(
     utl_gui_qt_abstract.AbsQtActionDragDef,
     #
     utl_gui_qt_abstract.AbsQtStateDef,
+    utl_gui_qt_abstract.AbsQtStatusDef,
     #
     utl_gui_qt_abstract.AbsQtItemMovieActionDef,
 ):
@@ -96,7 +97,7 @@ class _QtListItemWidget(
     drag_released = qt_signal(tuple)
     #
     QT_MENU_CLASS = _utl_gui_qt_wgt_utility.QtMenu
-
+    #
     def _refresh_widget_draw_(self):
         # noinspection PyUnresolvedReferences
         self.update()
@@ -148,6 +149,7 @@ class _QtListItemWidget(
         self._set_item_movie_action_def_init_()
         #
         self._set_state_def_init_()
+        self._set_status_def_init_()
         #
         self._file_type_icon = None
         #
@@ -278,12 +280,16 @@ class _QtListItemWidget(
             is_pressed=self._is_pressed,
             is_selected=self._is_selected
         )
-        background_color = painter._get_item_background_color_by_rect_(
-            bkg_rect,
-            is_hovered=self._action_is_hovered,
-            is_selected=self._is_selected,
-            is_actioned=self._get_is_actioned_()
-        )
+        if self._get_status_is_enable_() is True:
+            bdr_color_, bdr_hover_color = self._get_border_color_by_validator_status_(
+                self._status
+            )
+            if self._press_is_hovered is True:
+                bdr_color = bdr_hover_color
+            else:
+                bdr_color = bdr_color_
+        else:
+            bdr_color = QtBackgroundColors.Transparent
         #
         item = self._get_item_()
         if item._item_show_status in [item.ShowStatus.Loading, item.ShowStatus.Waiting]:
@@ -299,7 +305,7 @@ class _QtListItemWidget(
             #     )
             painter._draw_frame_by_rect_(
                 bkg_rect,
-                border_color=QtBackgroundColors.Transparent,
+                border_color=bdr_color,
                 background_color=bkg_color,
                 border_radius=1,
                 offset=offset
@@ -337,7 +343,7 @@ class _QtListItemWidget(
                     rect=self._check_icon_draw_rect,
                     file_path=self._check_icon_file_path_current,
                     offset=offset,
-                    frame_rect=self._check_icon_frame_draw_rect,
+                    # frame_rect=self._check_icon_frame_draw_rect,
                     is_hovered=self._check_is_hovered
                 )
             # icons
@@ -359,7 +365,8 @@ class _QtListItemWidget(
                                 painter._draw_icon_file_by_rect_(
                                     self._get_icon_rect_at_(icon_index),
                                     self._get_icon_file_path_at_(icon_index),
-                                    offset=offset
+                                    offset=offset,
+                                    is_hovered=self._check_is_hovered
                                 )
             # icon
             if self._icon_is_enable is True:

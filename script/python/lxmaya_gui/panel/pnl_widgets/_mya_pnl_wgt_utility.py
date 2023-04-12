@@ -189,7 +189,7 @@ class SceneCleanerToolPanel(prx_widgets.PrxToolWindow):
             qt_button.set_icon_name(icon)
             qt_button.set_tool_tip(tool_tip)
             self._qt_layout_0.addWidget(qt_button.widget, *pos_args)
-            qt_button.set_press_clicked_connect_to(fnc)
+            qt_button.connect_press_clicked_to(fnc)
 
 
 class DatabaseGeometryManagerPanel(utl_gui_pnl_abs_utility.AbsDatabaseGeometryManagerPanel):

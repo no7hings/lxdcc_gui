@@ -162,7 +162,7 @@ class AbsSceneComposeToolPanel(
             [('Name(s)', 4), ('Type(s)', 2), ('Instance(s)', 2), ('Version(s)', 2), ('Data(s)', 2), ('Description(s)', 4)],
             self.get_definition_window_size()[0] - 16
         )
-        self._tree_viewer.set_item_select_changed_connect_to(self._set_dcc_obj_select_)
+        self._tree_viewer.connect_item_select_changed_to(self._set_dcc_obj_select_)
         self._tree_viewer.set_gui_menu_raw(
             [
                 [

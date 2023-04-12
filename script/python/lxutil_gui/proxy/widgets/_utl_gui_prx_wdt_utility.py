@@ -56,7 +56,7 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_name(self, name):
         self._head._set_name_text_(name)
-        self._head._set_icon_name_text_(name)
+        # self._head._set_icon_name_text_(name)
 
     def set_name_icon_enable(self, boolean):
         self._head._set_icon_name_enable_(boolean)
@@ -178,6 +178,9 @@ class PrxScrollArea(utl_gui_prx_abstract.AbsPrxWidget):
                                 spacer.deleteLater()
         #
         rcs_fnc_(self._layout)
+
+    def restore(self):
+        self.set_clear()
 
 
 class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
@@ -556,7 +559,7 @@ class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
     def set_icon_frame_size(self, w, h):
         self._qt_widget._set_icon_frame_draw_size_(w, h)
 
-    def set_press_clicked_connect_to(self, fnc):
+    def connect_press_clicked_to(self, fnc):
         self.widget.clicked.connect(fnc)
 
     def set_click(self):
@@ -594,9 +597,9 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget.update()
 
     def set_icon_name(self, icon_name):
-        self.widget._icon_file_path = utl_core.Icon.get(icon_name)
-        self.widget._icon_is_enable = True
-        self.widget.update()
+        self._qt_widget._set_icon_file_path_(
+            bsc_core.RscIconFileMtd.get(icon_name)
+        )
 
     def set_icon_by_color(self, color):
         self.widget._icon_color_rgb = color
@@ -624,7 +627,7 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
     def set_check_clicked_connect_to(self, fnc):
         self.widget.check_clicked.connect(fnc)
 
-    def set_press_clicked_connect_to(self, fnc):
+    def connect_press_clicked_to(self, fnc):
         self.widget.clicked.connect(fnc)
 
     def set_press_clicked(self):
@@ -745,6 +748,23 @@ class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_widget._set_entry_completion_gain_fnc_(fnc)
 
 
+class PrxToolGroup(utl_gui_prx_abstract.AbsPrxWidget):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
+    def __init__(self, *args, **kwargs):
+        super(PrxToolGroup, self).__init__(*args, **kwargs)
+        self._layout = _utl_gui_qt_wgt_utility.QtGridLayout(
+            self._qt_widget
+        )
+        self._layout.setContentsMargins(2, 2, 2, 2)
+        self._layout.setSpacing(4)
+
+    def set_widget_add(self, widget):
+        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+            self._layout._add_widget_(widget)
+        else:
+            self._layout._add_widget_(widget.widget)
+
+
 class PrxToolWindow(
     utl_gui_prx_abstract.AbsPrxWindow,
     #
@@ -753,6 +773,7 @@ class PrxToolWindow(
     utl_gui_prx_abstract.AbsPrxProgressingDef,
     utl_gui_prx_abstract.AbsPrxWaitingDef,
 ):
+    PRX_CATEGORY = 'tool_window'
     PRX_TYPE = 'tool_window'
     #
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtMainWindow
@@ -1107,8 +1128,12 @@ class PrxToolWindow(
         text_browser = self.get_log_text_browser()
         text_browser.set_print_add_use_thread(text)
 
+    def get_is_active_window(self):
+        return self._qt_widget.isActiveWindow()
+
 
 class PrxSessionWindow(PrxToolWindow):
+    PRX_TYPE = 'session_window'
     def __init__(self, session, *args, **kwargs):
         super(PrxSessionWindow, self).__init__(*args, **kwargs)
         self._debug_run_(self._main_fnc_, session)
@@ -1152,11 +1177,11 @@ class PrxSessionWindow(PrxToolWindow):
         self._session = args[0]
         self._session.set_configure_reload()
         if self._session.get_td_enable() is True:
-            self.set_window_title('[TD] {} for {}'.format(self._session.gui_configure.get('name'), self._session.application))
+            self.set_window_title('[TD] {} for {}'.format(self._session.gui_configure.get('name'), str(self._session.application).capitalize()))
         elif self._session.get_rez_beta() is True:
-            self.set_window_title('[BETA] {} for {}'.format(self._session.gui_configure.get('name'), self._session.application))
+            self.set_window_title('[BETA] {} for {}'.format(self._session.gui_configure.get('name'), str(self._session.application).capitalize()))
         else:
-            self.set_window_title(self._session.gui_configure.get('name'))
+            self.set_window_title('{} for {}'.format(self._session.gui_configure.get('name'), str(self._session.application).capitalize()))
         #
         self.set_definition_window_size(self._session.gui_configure.get('size'))
         #

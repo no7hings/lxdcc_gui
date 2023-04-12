@@ -753,6 +753,7 @@ class QtMainWindow(
     key_escape_pressed = qt_signal()
     key_help_pressed = qt_signal()
     size_changed = qt_signal()
+    window_activate_changed = qt_signal()
     def __init__(self, *args, **kwargs):
         super(QtMainWindow, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -803,6 +804,10 @@ class QtMainWindow(
                         self.key_escape_pressed.emit()
                 elif event.type() == QtCore.QEvent.Resize:
                     self.size_changed.emit()
+                elif event.type() == QtCore.QEvent.WindowActivate:
+                    self.window_activate_changed.emit()
+                elif event.type() == QtCore.QEvent.WindowDeactivate:
+                    self.window_activate_changed.emit()
         return False
 
     def _set_size_changed_connect_to_(self, fnc):

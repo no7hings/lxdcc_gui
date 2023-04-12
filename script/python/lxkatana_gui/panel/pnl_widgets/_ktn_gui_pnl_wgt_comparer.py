@@ -8,7 +8,7 @@ import lxkatana.fnc.comparers as ktn_fnc_comparers
 from lxkatana import ktn_core
 
 
-class AssetComparerPanel(utl_gui_pnl_abstracts.AbsAssetComparerPanel):
+class PnlAssetGeometryComparer(utl_gui_pnl_abstracts.AbsPnlAssetGeometryComparer):
     DCC_OBJ_CLASS = ktn_dcc_objects.Node
     #
     FNC_GEOMETRY_COMPARER = ktn_fnc_comparers.GeometryComparer
@@ -16,10 +16,14 @@ class AssetComparerPanel(utl_gui_pnl_abstracts.AbsAssetComparerPanel):
     DCC_SELECTION_CLS = ktn_core.KtnSGSelectionOpt
     DCC_NAMESPACE = 'dcc'
     DCC_OBJ_PATHSEP = '|'
-    def __init__(self, *args, **kwargs):
-        super(AssetComparerPanel, self).__init__(*args, **kwargs)
-        work_source_file_path = ktn_dcc_objects.Scene.get_current_file_path()
-        self._configure_gui.get_port('scene_file_path').set(work_source_file_path)
+    def __init__(self, session, *args, **kwargs):
+        super(PnlAssetGeometryComparer, self).__init__(session, *args, **kwargs)
+
+    def _post_setup_(self):
+        scene_src_file_path = ktn_dcc_objects.Scene.get_current_file_path()
+        self._options_prx_node.set(
+            'scene.file', scene_src_file_path
+        )
 
     def _set_radar_chart_refresh_(self):
         pass

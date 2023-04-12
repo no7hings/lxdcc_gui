@@ -133,7 +133,7 @@ class AbsPrxDialogWindow(
         self._yes_button.set_name('Yes')
         self._yes_button.set_icon_by_name_text('Yes')
         self._yes_button.set_width(self.BUTTON_WIDTH)
-        self._yes_button.set_press_clicked_connect_to(self.set_yes_run)
+        self._yes_button.connect_press_clicked_to(self.set_yes_run)
         #
         self._no_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         # self._no_button.set_visible(False)
@@ -141,7 +141,7 @@ class AbsPrxDialogWindow(
         self._no_button.set_name('No')
         self._no_button.set_icon_by_name_text('No')
         self._no_button.set_width(self.BUTTON_WIDTH)
-        self._no_button.set_press_clicked_connect_to(self.set_no_run)
+        self._no_button.connect_press_clicked_to(self.set_no_run)
         #
         self._cancel_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         # self._cancel_button.set_visible(False)
@@ -149,7 +149,7 @@ class AbsPrxDialogWindow(
         self._cancel_button.set_name('Cancel')
         self._cancel_button.set_icon_by_name_text('Cancel')
         self._cancel_button.set_width(self.BUTTON_WIDTH)
-        self._cancel_button.set_press_clicked_connect_to(self.set_cancel_run)
+        self._cancel_button.connect_press_clicked_to(self.set_cancel_run)
         #
         # self._close_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         # self._close_button.set_visible(False)
@@ -468,7 +468,7 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._stop_button.set_name('Stop')
         self._stop_button.set_icon_by_name_text('Stop')
         self._stop_button.set_width(80)
-        self._stop_button.set_press_clicked_connect_to(self.set_process_stop)
+        self._stop_button.connect_press_clicked_to(self.set_process_stop)
         #
         self._process = utl_gui_qt_core.QtCore.QProcess(self.widget)
         self._process_name = None

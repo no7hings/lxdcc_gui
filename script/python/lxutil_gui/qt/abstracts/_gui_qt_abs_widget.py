@@ -101,16 +101,20 @@ class AbsQtTreeWidget(
                 self.setColumnWidth(index, w*(width_ps[index]))
             #
             icon = QtGui.QIcon()
+            p = QtGui.QPixmap(16, 16)
+            p.load(utl_gui_core.RscIconFile.get('qt-style/line-v'))
             icon.addPixmap(
-                QtGui.QPixmap(utl_gui_core.RscIconFile.get('qt-style/line-v')),
+                p,
                 QtGui.QIcon.Normal,
                 QtGui.QIcon.On
             )
             #
             self.headerItem().setBackground(index, Brush.BACKGROUND_NORMAL)
-            self.headerItem().setForeground(index, Brush.default_text)
+            self.headerItem().setForeground(index, QtGui.QBrush(QtGui.QColor(255, 255, 255, 255)))
             self.headerItem().setFont(index, Font.NAME)
-            self.headerItem().setIcon(index, icon)
+            # todo: in katana will make text display error, PyQt?
+            if LOAD_INDEX == 1:
+                self.headerItem().setIcon(index, icon)
 
     def _get_view_h_scroll_bar_(self):
         return self.horizontalScrollBar()

@@ -561,6 +561,9 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
     def set_variants_restore(self):
         self._create_data = []
 
+    def _post_setup_(self):
+        pass
+
     def set_all_setup(self):
         self._tab_view = prx_widgets.PrxTabView()
         self.set_widget_add(self._tab_view)
@@ -613,7 +616,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             dcc_selection_cls=self.DCC_SELECTION_CLS,
             dcc_namespace=self.DCC_NAMESPACE
         )
-        self._tree_view.set_item_select_changed_connect_to(
+        self._tree_view.connect_item_select_changed_to(
             self._tree_view_selection_opt.set_select
         )
 
@@ -622,7 +625,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             prx_tree_view_tgt=self._tree_view,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
         )
-        self.set_refresh_action_create(self._set_gui_refresh_)
+        self.connect_refresh_action_to(self._set_gui_refresh_)
         #
         self._options_prx_node = prx_widgets.PrxNode_('options')
         s_a_0.set_widget_add(self._options_prx_node)
@@ -658,7 +661,9 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         self._refresh_button = prx_widgets.PrxPressItem()
         self.set_button_add(self._refresh_button)
         self._refresh_button.set_name('refresh')
-        self._refresh_button.set_press_clicked_connect_to(self._set_gui_refresh_)
+        self._refresh_button.connect_press_clicked_to(self._set_gui_refresh_)
+
+        self._post_setup_()
 
         self.set_refresh_all()
 
@@ -702,7 +707,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                                 use_show_thread=True
                             )
                             if j_is_create is True:
-                                j_file_prx_item.set_press_db_clicked_connect_to(
+                                j_file_prx_item.connect_press_db_clicked_to(
                                     self._set_detail_show_
                                 )
                             #

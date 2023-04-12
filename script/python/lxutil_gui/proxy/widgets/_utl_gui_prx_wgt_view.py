@@ -67,7 +67,7 @@ class AbsPrxViewDef(object):
     def view(self):
         raise NotImplementedError()
     #
-    def set_item_select_changed_connect_to(self, fnc):
+    def connect_item_select_changed_to(self, fnc):
         self.view.itemSelectionChanged.connect(fnc)
     # select
     def _get_selected_items_(self):

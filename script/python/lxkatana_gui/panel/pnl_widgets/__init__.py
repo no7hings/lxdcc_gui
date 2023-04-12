@@ -9,13 +9,16 @@ from ._ktn_gui_pnl_wgt_comparer import *
 
 from ._ktn_gui_pnl_wgt_shader_viewer import *
 
-from ._ktn_gui_pnl_wgt_look_viewer import *
+from ._ktn_gui_pnl_wgt_material_viewer import *
 
 from ._ktn_gui_pnl_wgt_manager import *
 
 from ._ktn_gui_pnl_wgt_texture import *
 
 from ._ktn_gui_pnl_wgt_publish import *
+
+from ._ktn_gui_pnl_wgt_render_submit import *
+
 
 
 

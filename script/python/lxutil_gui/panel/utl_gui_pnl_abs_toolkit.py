@@ -76,7 +76,7 @@ class AbsToolkitPanel(prx_widgets.PrxToolWindow):
             if click_method:
                 if hasattr(self, click_method) is True:
                     method = self.__getattribute__(click_method)
-                    item_prx.set_press_clicked_connect_to(
+                    item_prx.connect_press_clicked_to(
                         lambda *args, **kwargs: method(item_prx)
                     )
     @classmethod
@@ -123,23 +123,23 @@ class AbsToolkitPanel(prx_widgets.PrxToolWindow):
                 item_prx.set_enable(True)
                 if option_attributes is not None:
                     item_prx.set_option_click_enable(True)
-                    item_prx.set_press_clicked_connect_to(
+                    item_prx.connect_press_clicked_to(
                         lambda: self._set_option_create_(name, method, option_attributes)
                     )
                 else:
                     if click_status_enable is True:
-                        item_prx.set_press_clicked_connect_to(
+                        item_prx.connect_press_clicked_to(
                             lambda *args, **kwargs: self._set_method_run_with_status_(method, item_prx)
                         )
                     else:
-                        item_prx.set_press_clicked_connect_to(
+                        item_prx.connect_press_clicked_to(
                             lambda *args, **kwargs: self._set_method_run_(method)
                         )
             else:
                 item_prx.set_enable(False)
         #
         elif click_command:
-            item_prx.set_press_clicked_connect_to(lambda *args, **kwargs: self._get_click_fnc_(click_command))
+            item_prx.connect_press_clicked_to(lambda *args, **kwargs: self._get_click_fnc_(click_command))
         else:
             item_prx.set_enable(False)
         #
@@ -181,17 +181,17 @@ class AbsToolkitPanel(prx_widgets.PrxToolWindow):
         apply_button.set_name('Apply')
         apply_button.set_icon_by_name_text('Apply')
         #
-        apply_button.set_press_clicked_connect_to(
+        apply_button.connect_press_clicked_to(
             lambda: method(**prx_node.get_as_kwargs())
         )
         apply_and_close_button = prx_widgets.PrxPressItem()
         layout.addWidget(apply_and_close_button.widget)
         apply_and_close_button.set_name('Apply and Close')
         apply_and_close_button.set_icon_by_name_text('Apply and Close')
-        apply_and_close_button.set_press_clicked_connect_to(
+        apply_and_close_button.connect_press_clicked_to(
             lambda: method(**prx_node.get_as_kwargs())
         )
-        apply_and_close_button.set_press_clicked_connect_to(
+        apply_and_close_button.connect_press_clicked_to(
             self.set_option_unit_hide
         )
         #
@@ -199,6 +199,6 @@ class AbsToolkitPanel(prx_widgets.PrxToolWindow):
         layout.addWidget(close_button.widget)
         close_button.set_name('Close')
         close_button.set_icon_by_name_text('Close')
-        close_button.set_press_clicked_connect_to(
+        close_button.connect_press_clicked_to(
             self.set_option_unit_hide
         )

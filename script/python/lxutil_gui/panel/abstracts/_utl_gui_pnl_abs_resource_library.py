@@ -534,10 +534,10 @@ class _GuiResourceOpt(_GuiBaseOpt):
                     )
                 }
             )
-            prx_item.set_drag_pressed_connect_to(
+            prx_item.connect_drag_pressed_to(
                 self._drag_pressed_fnc_
             )
-            prx_item.set_drag_released_connect_to(
+            prx_item.connect_drag_released_to(
                 self._drag_release_fnc_
             )
         # menu
@@ -779,13 +779,13 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             [('type', 3), ('count', 1)],
             self.get_definition_window_size()[0] * (1.0 / 4.0) - 48
         )
-        self._type_prx_view.set_item_select_changed_connect_to(
+        self._type_prx_view.connect_item_select_changed_to(
             self.__execute_gui_refresh_for_resources_by_type_selection_
         )
         self._type_prx_view.set_filter_completion_gain_fnc(
             self.__type_completion_gain_fnc_
         )
-        self._type_prx_view.set_item_select_changed_connect_to(
+        self._type_prx_view.connect_item_select_changed_to(
             self.__refresh_guide_bar_
         )
         # tag
@@ -824,16 +824,16 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._resource_prx_view.set_item_name_frame_draw_enable(True)
         self._resource_prx_view.set_item_names_draw_range([None, 1])
         self._resource_prx_view.set_item_image_frame_draw_enable(True)
-        self._resource_prx_view.set_item_select_changed_connect_to(
+        self._resource_prx_view.connect_item_select_changed_to(
             self.__refresh_guide_bar_
         )
-        self._resource_prx_view.set_item_select_changed_connect_to(
+        self._resource_prx_view.connect_item_select_changed_to(
             self.__execute_gui_refresh_for_textures_
         )
         # texture
         self._storage_expand_group = prx_widgets.PrxExpandedGroup()
         view_scroll_area_1_0.set_widget_add(self._storage_expand_group)
-        self._storage_expand_group.set_expanded(True)
+        # self._storage_expand_group.set_expanded(True)
         self._storage_expand_group.set_name('storage')
         self._storage_expand_group.set_expand_changed_connect_to(
             self.__execute_gui_refresh_for_textures_

@@ -59,7 +59,7 @@ class AppKit(prx_widgets.PrxToolWindow):
                     i_tool_tip = i_gui_option.get('tool_tip')
                     i_list_item.set_name(i_name)
                     i_list_item.set_image_by_name(i_name)
-                    i_list_item.set_press_db_clicked_connect_to(
+                    i_list_item.connect_press_db_clicked_to(
                         i_execute_fnc
                     )
                     i_list_item.set_tool_tip(i_tool_tip)

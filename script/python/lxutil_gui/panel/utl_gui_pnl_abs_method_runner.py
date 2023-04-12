@@ -203,19 +203,19 @@ class AbsSceneMethodRunnerPanel(
         self._check_button.set_icon_by_name_text('Check')
         self._check_button.set_name('Check')
         self.set_button_add(self._check_button)
-        self._check_button.set_press_clicked_connect_to(self._set_checked_methods_check_run_)
+        self._check_button.connect_press_clicked_to(self._set_checked_methods_check_run_)
         #
         self._repair_button = prx_widgets.PrxPressItem()
         self._repair_button.set_icon_by_name_text('Repair')
         self._repair_button.set_name('Repair')
         self.set_button_add(self._repair_button)
-        self._repair_button.set_press_clicked_connect_to(self._set_checked_methods_repair_run_)
+        self._repair_button.connect_press_clicked_to(self._set_checked_methods_repair_run_)
         #
         self._export_button = prx_widgets.PrxPressItem()
         self._export_button.set_icon_by_name_text('Export')
         self._export_button.set_name('Export')
         self.set_button_add(self._export_button)
-        self._export_button.set_press_clicked_connect_to(self._set_checked_methods_export_run_)
+        self._export_button.connect_press_clicked_to(self._set_checked_methods_export_run_)
 
     def _set_viewer_groups_build_(self):
         # viewer
@@ -229,7 +229,7 @@ class AbsSceneMethodRunnerPanel(
             [('Name(s)', 2), ('Type(s)', 2), ('Description(s)', 2)],
             self.get_definition_window_size()[0] - 16
         )
-        self._tree_viewer.set_item_select_changed_connect_to(self._set_dcc_obj_select_)
+        self._tree_viewer.connect_item_select_changed_to(self._set_dcc_obj_select_)
 
     def _set_configure_groups_build_(self):
         expand_box_0 = prx_widgets.PrxExpandedGroup()

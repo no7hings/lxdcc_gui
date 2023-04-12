@@ -215,10 +215,10 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
         )
         #
-        self._result_tree_view.set_item_select_changed_connect_to(
+        self._result_tree_view.connect_item_select_changed_to(
             self.__refresh_guide_bar_
         )
-        self._result_tree_view.set_item_select_changed_connect_to(
+        self._result_tree_view.connect_item_select_changed_to(
             self.__execute_gui_refresh_tasks_and_units_by_selection_
         )
         #
@@ -230,10 +230,10 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         self._rsv_uint_list_view_0.set_item_names_draw_range([None, 3])
         self._rsv_uint_list_view_0.set_item_image_frame_draw_enable(True)
         #
-        self._rsv_uint_list_view_0.set_item_select_changed_connect_to(
+        self._rsv_uint_list_view_0.connect_item_select_changed_to(
             self.__refresh_guide_bar_
         )
-        self._rsv_uint_list_view_0.set_refresh_connect_to(self.__execute_gui_refresh_tasks_and_units_by_selection_)
+        self._rsv_uint_list_view_0.connect_refresh_action_to(self.__execute_gui_refresh_tasks_and_units_by_selection_)
         #
         self._guide_bar.set_item_clicked_connect_to(self._set_rsv_obj_select_)
         # self._guide_bar.set_item_changed_connect_to(self._set_rsv_obj_select_)
@@ -251,7 +251,6 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         self._filter_project = self._rsv_filter_opt.get('project')
         #
         projects = map(lambda x: x.get_name(), self._resolver.get_rsv_projects())
-        print projects
         #
         self._options_prx_node = prx_widgets.PrxNode_('options')
         self.set_widget_add(self._options_prx_node)
@@ -698,7 +697,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             )
             show_info_dict['user'] = movie_file_opt.get_user()
             #
-            rsv_task_unit_prx_item.set_press_db_clicked_connect_to(
+            rsv_task_unit_prx_item.connect_press_db_clicked_to(
                 execute_fnc
             )
             image_file_path, image_sub_process_cmds = bsc_core.VdoFileOpt(movie_file_path).get_thumbnail_create_args()

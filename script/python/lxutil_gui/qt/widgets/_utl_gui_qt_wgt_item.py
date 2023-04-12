@@ -829,13 +829,17 @@ class QtPressItem(
             painter._draw_icon_file_by_rect_(
                 self._check_icon_draw_rect,
                 self._check_icon_file_path_current,
-                offset=offset
+                offset=offset,
+                is_hovered=self._action_is_hovered
             )
         # icon
         if self._icon_is_enable is True:
             if self._icon_file_path is not None:
                 painter._draw_icon_file_by_rect_(
-                    self._icon_file_draw_rect, self._icon_file_path, offset=offset
+                    self._icon_file_draw_rect,
+                    self._icon_file_path,
+                    offset=offset,
+                    is_hovered=self._action_is_hovered
                 )
             elif self._icon_color_rgb is not None:
                 painter._set_color_icon_draw_(
@@ -874,7 +878,8 @@ class QtPressItem(
             painter._draw_icon_file_by_rect_(
                 self._option_click_icon_rect,
                 self._option_icon_file_path,
-                offset=offset
+                offset=offset,
+                is_hovered=self._action_is_hovered
             )
 
 
@@ -992,7 +997,8 @@ class _QtCheckItem(
                 painter._draw_icon_file_by_rect_(
                     rect=self._check_icon_draw_rect,
                     file_path=self._check_icon_file_path_current,
-                    offset=offset
+                    offset=offset,
+                    is_hovered=self._action_is_hovered
                 )
         #
         if self._name_text is not None:
@@ -1122,7 +1128,8 @@ class _QtEnableItem(
                 painter._draw_icon_file_by_rect_(
                     rect=self._icon_file_draw_rect,
                     file_path=self._icon_file_path,
-                    offset=offset
+                    offset=offset,
+                    is_hovered=self._action_is_hovered
                 )
         #
         if self._name_text is not None:
@@ -2488,6 +2495,8 @@ class _QtHExpandItem0(
         # font
         self.setFont(Font.NAME)
 
+        self._icon_file_draw_percent = .65
+
     def _refresh_widget_draw_(self):
         self.update()
 
@@ -2575,8 +2584,7 @@ class _QtHExpandItem0(
         #
         frame_color = Color.BAR_FRAME_NORMAL
         painter._set_border_color_(frame_color)
-        background_color = [self._frame_background_color, self._hovered_frame_background_color][self._action_is_hovered]
-        # painter.setBrush(background_color)
+        background_color = self._frame_background_color
         #
         painter._draw_frame_by_rect_(
             self._frame_draw_rect,
@@ -2589,13 +2597,15 @@ class _QtHExpandItem0(
         painter._draw_icon_file_by_rect_(
             self._icon_file_draw_rect,
             self._icon_file_path,
-            offset=offset
+            offset=offset,
+            is_hovered=self._action_is_hovered
         )
         if self._sub_icon_file_path is not None:
             painter._draw_icon_file_by_rect_(
                 rect=self._sub_icon_file_draw_rect,
                 file_path=self._sub_icon_file_path,
-                offset=offset
+                offset=offset,
+                is_hovered=self._action_is_hovered
             )
         # name-icon
         if self._icon_name_is_enable is True:
@@ -2605,11 +2615,11 @@ class _QtHExpandItem0(
                     self._icon_name_text,
                     # background_color=background_color,
                     offset=offset,
-                    border_radius=2,
+                    border_radius=2
                 )
         # text
         if self._name_text is not None:
-            color = [self._name_color, self._hover_name_color][self._action_is_hovered]
+            color = self._name_color
             painter._draw_text_by_rect_(
                 self._name_draw_rect,
                 self._name_text,
@@ -2711,7 +2721,8 @@ class _QtHExpandItem1(
         painter._draw_icon_file_by_rect_(
             rect=self._icon_file_draw_rect,
             file_path=self._icon_file_path,
-            offset=offset
+            offset=offset,
+            is_hovered=self._action_is_hovered
         )
 
     def eventFilter(self, *args):

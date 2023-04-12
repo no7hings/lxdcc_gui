@@ -558,7 +558,7 @@ class PrxTreeItem(
     def set_show_method(self, method):
         self.widget._set_item_show_method_(method)
 
-    def set_press_db_clicked_connect_to(self, fnc):
+    def connect_press_db_clicked_to(self, fnc):
         self._qt_widget._signals.press_db_clicked.connect(fnc)
 
     def __str__(self):
@@ -685,12 +685,10 @@ class PrxListItem(
     def __init__(self, *args, **kwargs):
         super(PrxListItem, self).__init__(*args, **kwargs)
         self._visible_tgt_key = None
-    @property
-    def item(self):
-        return self._qt_widget._get_item_()
 
     def get_item(self):
         return self._qt_widget._get_item_()
+    item = property(get_item)
 
     def set_gui_menu_raw(self, raw):
         self.widget._set_menu_raw_(raw)
@@ -742,7 +740,10 @@ class PrxListItem(
         self.widget._set_name_texts_(name_texts)
 
     def set_name_dict(self, name_dict):
-        self.widget._set_name_text_dict_(name_dict)
+        self._qt_widget._set_name_text_dict_(name_dict)
+
+    def get_name_dict(self):
+        return self._qt_widget._get_name_text_dict_()
 
     def get_names(self):
         return self.widget._get_name_texts_()
@@ -817,10 +818,10 @@ class PrxListItem(
     def set_image_loading_start(self):
         self.widget._get_item_()._set_item_show_image_start_loading_()
 
-    def set_press_clicked_connect_to(self, fnc):
+    def connect_press_clicked_to(self, fnc):
         self.widget.press_clicked.connect(fnc)
 
-    def set_press_db_clicked_connect_to(self, fnc):
+    def connect_press_db_clicked_to(self, fnc):
         self.widget.press_db_clicked.connect(fnc)
 
     def set_press_db_clicked_method_add_(self, fnc):
@@ -845,11 +846,23 @@ class PrxListItem(
     def get_drag_mime_data(self):
         return self._qt_widget._get_drag_mime_data_()
 
-    def set_drag_pressed_connect_to(self, fnc):
+    def connect_drag_pressed_to(self, fnc):
         self._qt_widget.drag_pressed.connect(fnc)
 
-    def set_drag_released_connect_to(self, fnc):
+    def connect_drag_released_to(self, fnc):
         self._qt_widget.drag_released.connect(fnc)
+
+    def set_status(self, status):
+        self.widget._set_status_(status)
+
+    def get_is_checked(self):
+        return self._qt_widget._get_is_checked_()
+
+    def get_is_visible(self):
+        return self.get_item()._get_is_visible_()
+
+    def set_visible(self, boolean, **kwargs):
+        self.get_item()._set_visible_(boolean)
 
     def __str__(self):
         return '{}(names={})'.format(

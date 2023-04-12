@@ -42,7 +42,7 @@ class SceneOverviewToolPanel(utl_gui_pnl_abstract.AbsUtilToolPanel):
             [('Name(s)', 4), ('Type(s)', 1)],
             self.get_definition_window_size()[0] - 16
         )
-        self._tree_viewer.set_item_select_changed_connect_to(self.set_select)
+        self._tree_viewer.connect_item_select_changed_to(self.set_select)
         # log
         expand_box_1 = prx_widgets.PrxExpandedGroup()
         expand_box_1.set_name('Log')
@@ -206,7 +206,7 @@ class AttributeConstantTool(utl_gui_pnl_abstract.AbsUtilToolPanel):
             self.get_definition_window_size()[0] - 24
         )
         expand_box_0.set_widget_add(self._obj_tree_viewer_0)
-        self._obj_tree_viewer_0.set_item_select_changed_connect_to(self.set_attribute_selected)
+        self._obj_tree_viewer_0.connect_item_select_changed_to(self.set_attribute_selected)
         # log
         expand_box_1 = prx_widgets.PrxExpandedGroup()
         expand_box_1.set_name('Log')

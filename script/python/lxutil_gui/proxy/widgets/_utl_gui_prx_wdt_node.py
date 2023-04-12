@@ -466,7 +466,7 @@ class _PrxStgObjsEntry(AbsRsvTypeQtEntry):
 
         self._open_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self._qt_entry_widget._set_value_entry_button_add_(self._open_button.widget)
-        self._open_button.set_press_clicked_connect_to(self._set_open_)
+        self._open_button.connect_press_clicked_to(self._set_open_)
         self._open_button.set_name('open file')
         self._open_button.set_icon_name('file/file')
         self._open_button.set_icon_frame_size(18, 18)
@@ -641,7 +641,7 @@ class PrxMediasOpenEntry(_PrxStgObjsEntry):
 
         self._create_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self._qt_entry_widget._set_value_entry_button_add_(self._create_button.widget)
-        self._create_button.set_press_clicked_connect_to(self._set_create_)
+        self._create_button.connect_press_clicked_to(self._set_create_)
         self._create_button.set_name('create file')
         self._create_button.set_icon_name('camera')
         self._create_button.set_sub_icon_name('create')
@@ -732,7 +732,7 @@ class _PrxEntryForValueArray(AbsRsvTypeQtEntry):
 
         self._add_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self._qt_entry_widget._set_value_entry_button_add_(self._add_button.widget)
-        self._add_button.set_press_clicked_connect_to(self._set_add_)
+        self._add_button.connect_press_clicked_to(self._set_add_)
         self._add_button.set_name('add')
         self._add_button.set_icon_name('add')
         self._add_button.set_icon_frame_size(18, 18)
@@ -1562,7 +1562,7 @@ class PrxRsvObjChooseEntry(_AbsPrxTypeEntry):
             return _.get_gui_dcc_obj(namespace=self.NAMESPACE)
 
     def set_changed_connect_to(self, fnc):
-        self._prx_entry_widget.set_item_select_changed_connect_to(
+        self._prx_entry_widget.connect_item_select_changed_to(
             fnc
         )
 
@@ -1728,7 +1728,7 @@ class PrxComponentsEntry(_AbsPrxTypeEntry):
         return []
 
     def set_changed_connect_to(self, fnc):
-        self._prx_entry_widget.set_item_select_changed_connect_to(
+        self._prx_entry_widget.connect_item_select_changed_to(
             fnc
         )
 

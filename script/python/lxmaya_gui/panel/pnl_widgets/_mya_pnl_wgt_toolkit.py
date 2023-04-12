@@ -444,7 +444,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
     @classmethod
     def set_asset_comparer_panel_open(cls):
         from lxmaya_gui.panel import pnl_widgets
-        w = pnl_widgets.AssetComparerPanel()
+        w = pnl_widgets.PnlAssetGeometryComparer()
         w.set_window_show()
     @classmethod
     def set_method_runner_panel_open(cls):

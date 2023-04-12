@@ -2897,6 +2897,9 @@ class AbsQtVisibleDef(object):
     # noinspection PyUnresolvedReferences
     def _set_visible_(self, boolean):
         self.setHidden(not boolean)
+    # noinspection PyUnresolvedReferences
+    def _get_is_visible_(self):
+        return not self.isHidden()
 
     # noinspection PyUnresolvedReferences
     def _set_hidden_(self, boolean, **kwargs):

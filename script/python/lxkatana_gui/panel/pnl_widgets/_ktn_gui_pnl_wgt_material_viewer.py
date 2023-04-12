@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxutil_gui.panel import utl_gui_pnl_abs_look_viewer
+import lxutil_gui.panel.abstracts as utl_gui_pnl_abstracts
 
 from lxbasic import bsc_core
 
@@ -7,16 +7,14 @@ from lxutil import utl_core
 
 import lxkatana.dcc.dcc_objects as ktn_dcc_objects
 
-import lxkatana.dcc.dcc_operators as ktn_dcc_operators
+import lxkatana.scripts as ktn_scripts
 
 import lxkatana.fnc.importers as ktn_fnc_importers
-
-import lxkatana.fnc.builders as ktn_fnc_builders
 
 from lxkatana import ktn_core
 
 
-class AssetLookViewerPanel(utl_gui_pnl_abs_look_viewer.AbsAssetLookViewerPanel):
+class PnlMaterialViewer(utl_gui_pnl_abstracts.AbsPnlMaterialViewer):
     DCC_SCENE_CLASS = ktn_dcc_objects.Scene
     DCC_FNC_LOOK_IMPORTER_CLASS = ktn_fnc_importers.LookAssImporter
     DCC_SELECTION_CLS = ktn_dcc_objects.Selection
@@ -37,17 +35,54 @@ class AssetLookViewerPanel(utl_gui_pnl_abs_look_viewer.AbsAssetLookViewerPanel):
     #
     DCC_MATERIALS_CLS = ktn_dcc_objects.Materials
     def __init__(self, *args, **kwargs):
-        super(AssetLookViewerPanel, self).__init__(*args, **kwargs)
+        super(PnlMaterialViewer, self).__init__(*args, **kwargs)
 
-        self._configure_gui.get_port('geometry_root').set(
-            self.DCC_GEOMETRY_ROOT
+    def _post_setup_(self):
+        ns = ktn_scripts.ScpLookOutput.get_all_source_nodes()
+        p = self._options_prx_node.get_port('dcc.node')
+        if ns:
+            p.set(
+                [i.get_path() for i in ns]
+            )
+
+    def _set_dcc_objs_update_from_scene_(self):
+        self._scene_obj_scene = self.DCC_SCENE_CLASS()
+
+        self._scene_geometry_objs = []
+
+        node_path = self._options_prx_node.get('dcc.node')
+        if not node_path:
+            return
+        obj_opt = ktn_core.NGObjOpt(node_path)
+
+        self._scene_obj_scene.set_load_by_root(
+            ktn_obj=obj_opt.get_name(),
+            root=self._options_prx_node.get('dcc.geometry_root')
         )
-        self._configure_gui.get_port('material_root').set(
-            self.DCC_MATERIAL_ROOT
+        self._scene_obj_scene.set_load_by_root(
+            ktn_obj=obj_opt.get_name(),
+            root=self._options_prx_node.get('dcc.material_root')
         )
-        self._configure_gui.get_port('look_pass').set(
-            ktn_dcc_objects.AssetWorkspace().get_look_pass_names()
-        )
+
+        self._scene_obj_universe = self._scene_obj_scene.universe
+        #
+        self._scene_geometry_root = self._scene_obj_universe.get_obj(self.DCC_GEOMETRY_ROOT)
+        geometry_types = [self._scene_obj_universe.get_obj_type(i) for i in self.DCC_GEOMETRY_TYPES]
+        for geometry_type in geometry_types:
+            if geometry_type is not None:
+                self._scene_geometry_objs.extend(
+                    geometry_type.get_objs()
+                )
+        #
+        self._scene_material_objs = []
+        #
+        self._scene_material_root = self._scene_obj_universe.get_obj(self.DCC_MATERIAL_ROOT)
+        material_types = [self._scene_obj_universe.get_obj_type(i) for i in self.DCC_MATERIAL_TYPES]
+        for material_type in material_types:
+            if material_type is not None:
+                self._scene_material_objs.extend(
+                    material_type.get_objs()
+                )
 
     def _set_dcc_obj_guis_build_(self):
         def add_geometry_gui_fnc_(geometry_obj_):
@@ -109,10 +144,8 @@ class AssetLookViewerPanel(utl_gui_pnl_abs_look_viewer.AbsAssetLookViewerPanel):
             )
             #
             _geometry_obj_gui = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as(
-                geometry_obj, mode='list'
+                i_geometry_node, mode='list'
             )
-            #
-            _key = 'material-assign'
             #
             _obj_opt = geometry_obj_.obj_opt
             _material_scene_graph_path = _obj_opt.get_port_raw('materialAssign')
@@ -124,7 +157,7 @@ class AssetLookViewerPanel(utl_gui_pnl_abs_look_viewer.AbsAssetLookViewerPanel):
                 _sub_material_key = 'non-exists'
                 _material_obj = None
             #
-            _material_tag_filter_key = '{}.{}.{}'.format(_key, geometry_obj_.type.name, _sub_material_key)
+            _material_tag_filter_key = '{}.{}'.format(geometry_obj_.type.name, _sub_material_key)
             #
             self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
                 _material_tag_filter_key,
@@ -147,20 +180,11 @@ class AssetLookViewerPanel(utl_gui_pnl_abs_look_viewer.AbsAssetLookViewerPanel):
                     i_method()
         #
         geometry_objs = self._scene_geometry_objs
-        material_dict = ktn_dcc_objects.Materials.get_material_dict()
-        nmc_material_dict = ktn_dcc_objects.Materials.get_nmc_material_dict()
-        nme_material_dict = ktn_dcc_objects.Materials.get_nme_material_dict()
         if geometry_objs:
+            material_dict = ktn_dcc_objects.Materials.get_material_dict()
+            nmc_material_dict = ktn_dcc_objects.Materials.get_nmc_material_dict()
+            nme_material_dict = ktn_dcc_objects.Materials.get_nme_material_dict()
             with utl_core.GuiProgressesRunner.create(maximum=len(geometry_objs), label='gui-add for geometry') as g_p:
-                for geometry_obj in geometry_objs:
+                for i_geometry_node in geometry_objs:
                     g_p.set_update()
-                    add_geometry_gui_fnc_(geometry_obj)
-
-
-if __name__ == '__main__':
-    import lxkatana
-    lxkatana.set_reload()
-    #
-    import lxkatana_gui.panel.pnl_widgets as ktn_pnl_widgets
-    w = ktn_pnl_widgets.AssetLookViewerPanel()
-    w.set_window_show()
+                    add_geometry_gui_fnc_(i_geometry_node)

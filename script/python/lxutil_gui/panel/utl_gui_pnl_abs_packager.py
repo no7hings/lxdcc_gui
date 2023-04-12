@@ -91,7 +91,7 @@ class AbsScenePackagerPanel(
         self._refresh_button_0 = prx_widgets.PrxPressItem()
         self._refresh_button_0.set_name('Refresh')
         self.set_button_add(self._refresh_button_0)
-        self._refresh_button_0.set_press_clicked_connect_to(self._set_refresh_all_)
+        self._refresh_button_0.connect_press_clicked_to(self._set_refresh_all_)
 
     def _set_filter_tree_view_build_(self):
         self._filter_tree_viewer_0.set_header_view_create(
@@ -129,7 +129,7 @@ class AbsScenePackagerPanel(
             dcc_selection_cls=self.DCC_SELECTION_CLS,
             dcc_namespace=self.DCC_NAMESPACE
         )
-        self._obj_tree_viewer_0.set_item_select_changed_connect_to(
+        self._obj_tree_viewer_0.connect_item_select_changed_to(
             self._prx_dcc_obj_tree_view_selection_opt.set_select
         )
         #

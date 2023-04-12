@@ -13,6 +13,7 @@ class QtListWidget(
     f5_key_pressed = qt_signal()
     item_checked = qt_signal(object, int)
     info_changed = qt_signal(str)
+    focus_changed = qt_signal()
     def __init__(self, *args, **kwargs):
         super(QtListWidget, self).__init__(*args, **kwargs)
         qt_palette = QtDccMtd.get_palette()
@@ -96,11 +97,13 @@ class QtListWidget(
                 parent = self.parent()
                 if isinstance(parent, _utl_gui_qt_wgt_utility.QtEntryFrame):
                     parent._set_focused_(True)
+                self.focus_changed.emit()
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
                 if isinstance(parent, _utl_gui_qt_wgt_utility.QtEntryFrame):
                     parent._set_focused_(False)
+                self.focus_changed.emit()
         if widget == self.verticalScrollBar():
             pass
         return False

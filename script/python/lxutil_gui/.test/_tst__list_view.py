@@ -63,10 +63,10 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
                     # 'application/x-maya-data': ''
                 }
             )
-            item_prx.set_drag_pressed_connect_to(
+            item_prx.connect_drag_pressed_to(
                 self._drag_pressed_fnc_
             )
-            item_prx.set_drag_released_connect_to(
+            item_prx.connect_drag_released_to(
                 self._drag_released_fnc_
             )
         #

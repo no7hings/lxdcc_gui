@@ -530,7 +530,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 ).to_string()
             )
             #
-            prx_item.set_press_db_clicked_connect_to(
+            prx_item.connect_press_db_clicked_to(
                 execute_fnc
             )
             #
@@ -1104,7 +1104,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 ).to_string()
             )
             #
-            prx_item.set_press_db_clicked_connect_to(
+            prx_item.connect_press_db_clicked_to(
                 execute_fnc
             )
             #

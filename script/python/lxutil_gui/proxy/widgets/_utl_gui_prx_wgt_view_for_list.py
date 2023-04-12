@@ -172,7 +172,7 @@ class PrxListView(
     def set_loading_update(self):
         self.view._set_loading_update_()
 
-    def set_refresh_connect_to(self, fnc):
+    def connect_refresh_action_to(self, fnc):
         self._qt_view.f5_key_pressed.connect(fnc)
 
     def get_checked_items(self):

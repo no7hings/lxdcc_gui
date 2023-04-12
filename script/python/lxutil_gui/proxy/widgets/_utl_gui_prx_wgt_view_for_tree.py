@@ -195,7 +195,7 @@ class PrxTreeView(
     def set_restore(self):
         self.set_clear()
 
-    def set_item_select_changed_connect_to(self, fnc):
+    def connect_item_select_changed_to(self, fnc):
         self.view.itemSelectionChanged.connect(fnc)
 
     def set_item_check_changed_connect_to(self, fnc):
@@ -389,7 +389,7 @@ class PrxTreeView(
     def set_view_update(self):
         self.view.update()
 
-    def set_refresh_connect_to(self, fnc):
+    def connect_refresh_action_to(self, fnc):
         self._qt_view.f5_key_pressed.connect(fnc)
 
     def set_filter_history_key(self, key):

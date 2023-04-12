@@ -35,7 +35,7 @@ class AbsPrx(object):
     MODEL_CLASS = None
     DCC_OBJ_KEY = 'dcc_obj'
     #
-    PRX_TYPE = None
+    PRX_CATEGORY = None
     def __init__(self, *args, **kwargs):
         self._qt_widget = self.QT_WIDGET_CLASS(*args, **kwargs)
         self._qt_widget.gui_proxy = self
@@ -131,8 +131,11 @@ class AbsPrxViewDef(object):
     def set_item_add(self, *args, **kwargs):
         raise NotImplementedError()
     #
-    def set_item_select_changed_connect_to(self, fnc):
-        self.view.itemSelectionChanged.connect(fnc)
+    def connect_item_select_changed_to(self, fnc):
+        self._qt_view.itemSelectionChanged.connect(fnc)
+
+    def connect_focus_changed_to(self, fnc):
+        self._qt_view.focus_changed.connect(fnc)
     # select
     def _get_selected_items_(self):
         return self.view.selectedItems()
@@ -227,10 +230,11 @@ class AbsPrxWindow(AbsPrx):
         super(AbsPrxWindow, self).__init__(*args, **kwargs)
         self._window_unicode_id = str(uuid.uuid1()).upper()
         #
-        main_window = utl_gui_qt_core.QtDccMtd.get_qt_main_window()
         if kwargs.get('parent'):
             pass
+            # print kwargs['parent']
         else:
+            main_window = utl_gui_qt_core.QtDccMtd.get_qt_main_window()
             # print main_window.font()
             if main_window != self.widget:
                 self.widget.setParent(
@@ -327,10 +331,13 @@ class AbsPrxWindow(AbsPrx):
     def set_status(self, status):
         self._status = status
 
-    def set_refresh_action_create(self, fnc):
+    def connect_refresh_action_to(self, fnc):
         self._qt_widget._create_window_shortcut_action_(
             fnc, 'F5'
         )
+
+    def connect_window_activate_changed_to(self, fnc):
+        self._qt_widget.window_activate_changed.connect(fnc)
 
 
 class AbsWidgetContentDef(object):

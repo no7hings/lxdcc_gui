@@ -66,20 +66,20 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
         #
         self._resolver = rsv_commands.get_resolver()
         work_source_file_path = ktn_dcc_objects.Scene.get_current_file_path()
-        self._task_properties = self._resolver.get_task_properties_by_work_scene_src_file_path(file_path=work_source_file_path)
-        if self._task_properties is not None:
-            self._toolkit_configure.set('properties.task', self._task_properties.get('task'))
+        self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(file_path=work_source_file_path)
+        if self._rsv_scene_properties is not None:
+            self._toolkit_configure.set('properties.task', self._rsv_scene_properties.get('task'))
             self._toolkit_configure.set_flatten()
             self._set_build_by_configure_(self._toolkit_configure)
     # scene
     def set_system_workspace_create(self):
         import lxutil_fnc.commands as utl_fnc_commands
-        task_properties = self._task_properties
+        task_properties = self._rsv_scene_properties
         utl_fnc_commands.set_surface_system_workspace_create(task_properties)
 
     def set_system_workspace_open(self):
         import lxutil_fnc.commands as utl_fnc_commands
-        task_properties = self._task_properties
+        task_properties = self._rsv_scene_properties
         utl_fnc_commands.set_surface_system_workspace_open(task_properties)
     @classmethod
     def set_dcc_workspace_create(cls):
@@ -88,7 +88,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
 
     def set_dcc_workspace_load(self):
 
-        task_properties = self._task_properties
+        task_properties = self._rsv_scene_properties
         project = task_properties.get('project')
         r = rsv_commands.get_resolver()
 
@@ -140,7 +140,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
     def set_work_look_ass_export(self):
         import lxkatana_fnc.scripts as ktn_fnc_scripts
 
-        task_properties = self._task_properties
+        task_properties = self._rsv_scene_properties
         ktn_fnc_scripts.set_asset_work_look_ass_export(task_properties, force=True)
 
     def set_work_look_ass_import(self, **kwargs):
@@ -184,7 +184,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
     def get_work_look_ass_files(self, **kwargs):
         import lxresolver.operators as rsv_operators
         #
-        task_properties = self._task_properties
+        task_properties = self._rsv_scene_properties
         return rsv_operators.RsvAssetLookQuery(task_properties).get_ass_work_file(version='all') or []
     #
     def _set_timer_method_start_(self, time, method):
@@ -228,7 +228,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
             #
             katana_scene_src_file_path = kwargs['scene_src_file']
             #
-            rsv_task_properties = self._task_properties
+            rsv_task_properties = self._rsv_scene_properties
             #
             user = utl_core.System.get_user_name()
             time_tag = utl_core.System.get_time_tag()
@@ -261,12 +261,12 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
         )
 
     def get_project(self, **kwargs):
-        work_task_properties = self._task_properties
+        work_task_properties = self._rsv_scene_properties
         return work_task_properties.get('project')
 
     def get_scene_src_files(self, **kwargs):
         import lxresolver.operators as rsv_operators
-        work_task_properties = self._task_properties
+        work_task_properties = self._rsv_scene_properties
         return rsv_operators.RsvAssetSceneQuery(work_task_properties).get_katana_src_file(version='all') or []
     # texture
     def set_texture_tx_load(self, item_prx):
@@ -274,7 +274,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
 
     def set_light_rig_import(self):
         from lxkatana import commands
-        task_properties = self._task_properties
+        task_properties = self._rsv_scene_properties
         commands.set_surface_light_rig_update_(task_properties)
     @classmethod
     def set_method_runner_panel_open(cls):
@@ -289,7 +289,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
     @classmethod
     def set_scene_shader_viewer_panel_open(cls):
         import lxkatana_gui.panel.pnl_widgets as ktn_pnl_widgets
-        w = ktn_pnl_widgets.SceneShaderViewerPanel()
+        w = ktn_pnl_widgets.PnlShaderViewer()
         w.set_window_show()
 
 

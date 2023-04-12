@@ -268,14 +268,14 @@ class Font(object):
     NameTextKey = get_font(size=8, italic=True)
     NameTextValue = get_font(size=8)
     #
-    GROUP = get_font(size=10, weight=75, italic=True)
+    GROUP = get_font(size=9, weight=75, italic=True)
     #
     default = get_font()
     title = get_font(size=12)
     #
     disable = get_font(italic=True, strike_out=True)
     #
-    button = get_font(size=10)
+    button = get_font(size=8)
 
 
 class RawTextMtd(object):
@@ -1652,6 +1652,28 @@ class QtGridLayout(QtWidgets.QGridLayout):
         self.setContentsMargins(*Util.LAYOUT_MARGINS)
         self.setSpacing(Util.LAYOUT_SPACING)
 
+    def _get_widget_count_(self):
+        return self.count()
+
+    def _clear_widgets_(self):
+        layout = self
+        c = layout.count()
+        if c:
+            for i in range(c):
+                item = layout.itemAt(i)
+                if item:
+                    widget = item.widget()
+                    widget.deleteLater()
+
+    def _add_widget_(self, widget, d=2):
+        c = self.count()
+
+        index = c
+        #
+        column = index % d
+        row = int(index/d)
+        self.addWidget(widget, row, column, 1, 1)
+
 
 class QtFileDialog(QtWidgets.QFileDialog):
     def __init__(self, *args, **kwargs):
@@ -2705,13 +2727,34 @@ class QtPainter(QtGui.QPainter):
             'loading .{}'.format('.'*(loading_index % 3))
         )
 
-    def _set_svg_file_path_draw_by_rect_(self, rect, file_path, offset=0, is_hovered=False):
+    def _set_svg_file_path_draw_by_rect_(self, rect, file_path, offset=0, is_hovered=False, use_hover=False):
         rectF = QtCore.QRectF(
             rect.x()+offset, rect.y()+offset,
             rect.width()-offset, rect.height()-offset
         )
         svg_render = QtSvg.QSvgRenderer(file_path)
-        svg_render.render(self, rectF)
+        if is_hovered is True:
+            svg_render.render(self, rectF)
+            #
+            image = QtGui.QImage(
+                rect.width()+4, rect.height()+4, QtGui.QImage.Format_ARGB32
+            )
+            image.fill(QtCore.Qt.green)
+            painter = QtGui.QPainter(image)
+            svg_render.render(painter, rectF)
+            painter.end()
+            #
+            pixmap = QtGui.QPixmap(image)
+            mask_bitmap = QtGui.QPixmap(image)
+            mask = mask_bitmap.createMaskFromColor(QtCore.Qt.green)
+            pixmap.fill(QtGui.QColor(255, 127, 63, 127))
+            pixmap.setMask(mask)
+            self.drawPixmap(
+                0, 0,
+                pixmap
+            )
+        else:
+            svg_render.render(self, rectF)
         #
         self.device()
 
@@ -3967,8 +4010,8 @@ def set_qt_log_result_trace(text):
     if windows:
         window = windows[0]
         window_gui_proxy = window.gui_proxy
-        if hasattr(window_gui_proxy, 'PRX_TYPE'):
-            if window_gui_proxy.PRX_TYPE == 'tool_window':
+        if hasattr(window_gui_proxy, 'PRX_CATEGORY'):
+            if window_gui_proxy.PRX_CATEGORY == 'tool_window':
                 return set_gui_proxy_set_print(window_gui_proxy, text)
 
 
@@ -4000,8 +4043,8 @@ def set_log_write(text):
     for window in windows:
         if hasattr(window, 'gui_proxy'):
             window_gui_proxy = window.gui_proxy
-            if hasattr(window_gui_proxy, 'PRX_TYPE'):
-                if window_gui_proxy.PRX_TYPE == 'tool_window':
+            if hasattr(window_gui_proxy, 'PRX_CATEGORY'):
+                if window_gui_proxy.PRX_CATEGORY == 'tool_window':
                     lis.append(window_gui_proxy)
     if lis:
         lis[0].set_log_write(text)
@@ -4013,8 +4056,8 @@ def get_all_tool_windows():
     for window in windows:
         if hasattr(window, 'gui_proxy'):
             window_gui_proxy = window.gui_proxy
-            if hasattr(window_gui_proxy, 'PRX_TYPE'):
-                if window_gui_proxy.PRX_TYPE == 'tool_window':
+            if hasattr(window_gui_proxy, 'PRX_CATEGORY'):
+                if window_gui_proxy.PRX_CATEGORY == 'tool_window':
                     lis.append(window_gui_proxy)
     return lis
 
@@ -4027,13 +4070,14 @@ def set_log_writer_connect():
 def create_gui_progress_method(maximum, label=None):
     lis = []
     windows = get_all_lx_windows()
-    for window in windows:
-        if hasattr(window, 'gui_proxy'):
-            window_gui_proxy = window.gui_proxy
-            if hasattr(window_gui_proxy, 'PRX_TYPE'):
-                if window_gui_proxy.PRX_TYPE == 'tool_window':
-                    p = window_gui_proxy.set_progress_create(maximum, label=label)
-                    lis.append(p)
+    for i_window in windows:
+        if hasattr(i_window, 'gui_proxy'):
+            window_gui_proxy = i_window.gui_proxy
+            if hasattr(window_gui_proxy, 'PRX_CATEGORY'):
+                if window_gui_proxy.PRX_CATEGORY == 'tool_window':
+                    if window_gui_proxy.get_is_active_window() is True:
+                        p = window_gui_proxy.set_progress_create(maximum, label=label)
+                        lis.append(p)
     return lis
 
 
@@ -4065,12 +4109,23 @@ def set_qt_layout_clear(layout):
 
 def get_lx_window_by_unique_id(unique_id):
     windows = get_all_lx_windows()
-    for window in windows:
-        if hasattr(window, 'gui_proxy'):
-            window_gui_proxy = window.gui_proxy
-            if hasattr(window_gui_proxy, 'PRX_TYPE'):
+    for i_window in windows:
+        if hasattr(i_window, 'gui_proxy'):
+            window_gui_proxy = i_window.gui_proxy
+            if hasattr(window_gui_proxy, 'PRX_CATEGORY'):
                 if window_gui_proxy.get_window_unique_id() == unique_id:
                     return window_gui_proxy
+
+
+def get_session_window_by_name(name):
+    windows = get_all_lx_windows()
+    for i_window in windows:
+        if hasattr(i_window, 'gui_proxy'):
+            window_gui_proxy = i_window.gui_proxy
+            if hasattr(window_gui_proxy, 'PRX_TYPE'):
+                if window_gui_proxy.PRX_TYPE == 'session_window':
+                    if window_gui_proxy.session.get_name() == name:
+                        return window_gui_proxy
 
 
 class AsbQtMenuSetup(object):

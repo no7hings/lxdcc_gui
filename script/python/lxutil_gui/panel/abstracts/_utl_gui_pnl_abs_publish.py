@@ -35,7 +35,7 @@ class AbsValidatorOpt(object):
         self._result_tree_view = result_tree_view
         self._obj_add_dict = self._result_tree_view._item_dict
 
-        self._result_tree_view.set_item_select_changed_connect_to(
+        self._result_tree_view.connect_item_select_changed_to(
             self.set_select
         )
 
@@ -461,14 +461,14 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
         self.set_button_add(
             self._validation_button
         )
-        self._validation_button.set_press_clicked_connect_to(self._set_validation_execute_)
+        self._validation_button.connect_press_clicked_to(self._set_validation_execute_)
 
         self._publish_button = prx_widgets.PrxPressItem()
         self._publish_button.set_name('publish')
         self.set_button_add(
             self._publish_button
         )
-        self._publish_button.set_press_clicked_connect_to(self._set_publish_execute_)
+        self._publish_button.connect_press_clicked_to(self._set_publish_execute_)
         self._publish_button.set_option_click_enable(True)
 
         self._validation_checker = None
