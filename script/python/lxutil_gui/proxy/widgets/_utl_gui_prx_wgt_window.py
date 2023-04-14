@@ -19,10 +19,14 @@ class AbsPrxDialogWindow(
     utl_gui_prx_abstract.AbsPrxWaitingDef,
     utl_gui_prx_abstract.AbsPrxProgressingDef,
 ):
+    PRX_CATEGORY = 'dialog_window'
+    #
     QT_WIDGET_CLASS = None
     BUTTON_WIDTH = 120
-    QT_WAITING_CHART_CLASS = _utl_gui_qt_wgt_chart.QtWaitingChart
+    #
     PROGRESS_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtProgressBar
+    #
+    QT_WAITING_CHART_CLASS = _utl_gui_qt_wgt_chart.QtWaitingChart
     QT_PROGRESSING_CHART_CLASS = _utl_gui_qt_wgt_chart.QtProgressingChart
     #
     ValidatorStatus = bsc_configure.ValidatorStatus

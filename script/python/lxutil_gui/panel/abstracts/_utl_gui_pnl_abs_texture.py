@@ -24,12 +24,12 @@ import lxresolver.methods as rsv_methods
 import lxutil.rsv.objects as utl_rsv_objects
 
 
-class AbsPnlAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
+class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
     DCC_NAMESPACE = None
     DCC_SELECTION_CLS = None
     TEXTURE_WORKSPACE_CLS = None
     def __init__(self, session, *args, **kwargs):
-        super(AbsPnlAssetWorkspaceTextureManager, self).__init__(session, *args, **kwargs)
+        super(AbsPnlAssetTextureManager, self).__init__(session, *args, **kwargs)
 
     def set_variants_restore(self):
         self._dcc_texture_references = None
@@ -101,7 +101,7 @@ class AbsPnlAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
         self._dcc_objs = []
 
     def _set_texture_workspace_update_(self):
-        self._rsv_workspace_texture_opt = utl_rsv_objects.RsvAssetWorkspaceTextureOpt(self._rsv_task)
+        self._rsv_workspace_texture_opt = utl_rsv_objects.RsvAssetTextureOpt(self._rsv_task)
         current_variant = 'main'
         self._rsv_workspace_texture_opt.set_current_variant(current_variant)
         if self._set_workspace_check_(current_variant) is True:
@@ -236,7 +236,7 @@ class AbsPnlAssetWorkspaceTextureManager(prx_widgets.PrxSessionWindow):
             if unlocked_directory_paths:
                 with utl_core.GuiProgressesRunner.create(maximum=len(unlocked_directory_paths), label='lock version directory') as g_p:
                     for _i in unlocked_directory_paths:
-                        self._rsv_workspace_texture_opt.set_directory_locked(_i)
+                        bsc_core.StgPathPermissionMtd.lock(_i)
                         g_p.set_update()
             #
             time.sleep(2)

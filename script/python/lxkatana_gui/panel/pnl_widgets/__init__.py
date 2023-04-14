@@ -1,6 +1,4 @@
 # coding:utf-8
-from _ktn_gui_pnl_wgt_toolkit import *
-
 from ._ktn_gui_pnl_wgt_method_runner import *
 
 from ._ktn_gui_pnl_wgt_scene_packager import *

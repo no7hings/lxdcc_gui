@@ -371,7 +371,7 @@ class _QtListItemWidget(
             # icon
             if self._icon_is_enable is True:
                 if self._icon_name_text:
-                    painter._set_icon_name_text_draw_by_rect_(
+                    painter._draw_icon_with_name_text_by_rect_(
                         self._icon_name_draw_rect,
                         self._icon_name_text,
                         offset=offset,
@@ -433,7 +433,7 @@ class _QtListItemWidget(
                     image_name_text = self._image_name_text
                     # draw by text
                     if image_name_text:
-                        painter._set_icon_name_text_draw_by_rect_(
+                        painter._draw_icon_with_name_text_by_rect_(
                             self._get_image_rect_(),
                             image_name_text,
                             border_radius=4,

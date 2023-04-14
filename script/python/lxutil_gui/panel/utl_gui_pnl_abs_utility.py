@@ -793,29 +793,15 @@ class AbsShotgunEntitiesCreatorPanel(
         raise NotImplementedError()
 
 
-class AbsDatabaseGeometryManagerPanel(
-    prx_widgets.PrxToolWindow
+class AbsPnlHashGeometry(
+    prx_widgets.PrxSessionWindow
 ):
     CONFIGURE_FILE_PATH = 'utility/panel/database-geometry-manager'
-    def __init__(self, *args, **kwargs):
-        super(AbsDatabaseGeometryManagerPanel, self).__init__(*args, **kwargs)
-        self._window_configure = utl_configure.MainData.get_as_configure(
-            self.CONFIGURE_FILE_PATH
-        )
-        self.set_window_title(
-            self._window_configure.get('window.name')
-        )
-        self.set_definition_window_size(
-            self._window_configure.get('window.size')
-        )
-        #
+    def __init__(self, session, *args, **kwargs):
+        super(AbsPnlHashGeometry, self).__init__(session, *args, **kwargs)
+
+    def set_all_setup(self):
         self._set_panel_build_()
-        self.get_log_bar().set_expanded(True)
-        #
-        self.set_loading_start(
-            time=1000,
-            method=self._set_tool_panel_setup_
-        )
 
     def _set_panel_build_(self):
         self._set_utility_group_build_()

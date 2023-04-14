@@ -1230,7 +1230,7 @@ class PrxRgbaEntry(_PrxEntryForConstant):
 
 class PrxBooleanEntry(AbsRsvTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item._QtCheckItem
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtCheckItem
     def __init__(self, *args, **kwargs):
         super(PrxBooleanEntry, self).__init__(*args, **kwargs)
 

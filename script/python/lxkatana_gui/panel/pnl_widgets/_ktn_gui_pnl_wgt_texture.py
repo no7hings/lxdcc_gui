@@ -8,11 +8,11 @@ import lxkatana.scripts as ktn_scripts
 import lxutil_gui.panel.abstracts as utl_gui_pnl_abstracts
 
 
-class PnlAssetWorkspaceTextureManager(utl_gui_pnl_abstracts.AbsPnlAssetWorkspaceTextureManager):
+class PnlAssetTextureManager(utl_gui_pnl_abstracts.AbsPnlAssetTextureManager):
     DCC_SELECTION_CLS = ktn_dcc_objects.Selection
     DCC_NAMESPACE = 'katana'
     def __init__(self, session, *args, **kwargs):
-        super(PnlAssetWorkspaceTextureManager, self).__init__(session, *args, **kwargs)
+        super(PnlAssetTextureManager, self).__init__(session, *args, **kwargs)
 
     def _set_dcc_scene_update_(self):
         self._file_path = ktn_dcc_objects.Scene.get_current_file_path()
@@ -24,9 +24,14 @@ class PnlAssetWorkspaceTextureManager(utl_gui_pnl_abstracts.AbsPnlAssetWorkspace
         if self._dcc_texture_references is not None:
             root = self._options_prx_node.get('dcc.location')
             geometry_location = '/root/world/geo'
+            w_s = ktn_core.WorkspaceSetting()
+            opt = w_s.get_current_look_output_opt_force()
+            if opt is None:
+                return
+
+            s = ktn_scripts.ScpLookOutput(opt)
             location = '{}{}'.format(geometry_location, root)
-            dcc_workspace = ktn_dcc_objects.AssetWorkspace()
-            dcc_shaders = dcc_workspace.get_all_dcc_geometry_shaders_by_location(location)
+            dcc_shaders = s.get_all_dcc_geometry_shaders_by_location(location)
             self._dcc_objs = self._dcc_texture_references.get_objs(
                 include_paths=[i.path for i in dcc_shaders]
             )

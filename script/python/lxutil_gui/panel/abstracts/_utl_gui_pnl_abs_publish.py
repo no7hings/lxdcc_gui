@@ -486,7 +486,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
         )
 
         self.set_help_content(
-            self._session.configure.get('option.gui.tool_tip'),
+            self._session.configure.get('option.gui.content'),
         )
 
         self._cfg_options_prx_node.set(

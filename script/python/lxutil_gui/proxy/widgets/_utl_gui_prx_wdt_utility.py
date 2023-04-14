@@ -659,7 +659,7 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxCheckItem(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item._QtCheckItem
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item.QtCheckItem
     def __init__(self, *args, **kwargs):
         super(PrxCheckItem, self).__init__(*args, **kwargs)
         self.widget.setMaximumHeight(20)
@@ -758,11 +758,11 @@ class PrxToolGroup(utl_gui_prx_abstract.AbsPrxWidget):
         self._layout.setContentsMargins(2, 2, 2, 2)
         self._layout.setSpacing(4)
 
-    def set_widget_add(self, widget):
+    def set_widget_add(self, widget, d=2):
         if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
-            self._layout._add_widget_(widget)
+            self._layout._add_widget_(widget, d)
         else:
-            self._layout._add_widget_(widget.widget)
+            self._layout._add_widget_(widget.widget, d)
 
 
 class PrxToolWindow(
@@ -1127,9 +1127,6 @@ class PrxToolWindow(
     def set_print_add_use_thread(self, text):
         text_browser = self.get_log_text_browser()
         text_browser.set_print_add_use_thread(text)
-
-    def get_is_active_window(self):
-        return self._qt_widget.isActiveWindow()
 
 
 class PrxSessionWindow(PrxToolWindow):

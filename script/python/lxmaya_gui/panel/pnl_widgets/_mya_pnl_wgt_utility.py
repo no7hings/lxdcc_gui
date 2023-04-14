@@ -192,9 +192,9 @@ class SceneCleanerToolPanel(prx_widgets.PrxToolWindow):
             qt_button.connect_press_clicked_to(fnc)
 
 
-class DatabaseGeometryManagerPanel(utl_gui_pnl_abs_utility.AbsDatabaseGeometryManagerPanel):
-    def __init__(self, *args, **kwargs):
-        super(DatabaseGeometryManagerPanel, self).__init__(*args, **kwargs)
+class PnlHashGeometry(utl_gui_pnl_abs_utility.AbsPnlHashGeometry):
+    def __init__(self, session, *args, **kwargs):
+        super(PnlHashGeometry, self).__init__(session, *args, **kwargs)
 
     def _set_usd_file_export_(self):
         import lxmaya.dcc.dcc_objects as maya_dcc_objects

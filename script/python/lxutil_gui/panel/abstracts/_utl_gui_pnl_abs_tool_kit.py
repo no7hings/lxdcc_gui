@@ -1,11 +1,5 @@
 # coding:utf-8
-import collections
-
 import six
-
-from lxbasic import bsc_configure, bsc_core
-
-import lxresolver.scripts as rsv_scripts
 
 from lxutil import utl_core
 
@@ -24,28 +18,56 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
         super(AbsPnlToolKit, self).__init__(session, *args, **kwargs)
 
     def set_all_setup(self):
+        self._tool_bar = prx_widgets.PrxHToolBar()
+        self.set_widget_add(self._tool_bar)
+        self._tool_bar.set_expanded(True)
+        #
         self._scroll_bar = prx_widgets.PrxScrollArea()
         self.set_widget_add(self._scroll_bar)
+
+        self._d = 2
+
+        self.add_layout_buttons()
 
         self.connect_refresh_action_to(self.refresh_all)
 
         self.refresh_all()
 
+    def add_layout_buttons(self):
+        def click_fnc_(i_):
+            _pre = self._d
+            if i_ != _pre:
+                self._d = i_
+                self.build_tools()
+
+        import functools
+
+        for i in range(4):
+            i_b = prx_widgets.PrxIconPressItem()
+            self._tool_bar.set_widget_add(i_b)
+            i_b.set_icon_by_name_text(str(i+1))
+            i_b.connect_press_clicked_to(
+                functools.partial(click_fnc_, i+1)
+            )
+
     def refresh_all(self):
-        self._match_dict = rsv_scripts.ScpEnvironmentOpt.get_as_dict()
+        import lxresolver.scripts as rsv_scripts
+
+        self._match_dict = rsv_scripts.ScpEnvironment.get_as_dict()
+
+        self.build_tools()
+
+    def build_tools(self):
         self._tool_group_dict = {}
-        #
         self._scroll_bar.restore()
-
         c = self._session.get_configure()
-
         self.build_tool_by_hook_data(c.get('hooks'))
         self.build_tool_by_option_hook_data(c.get('option-hooks'))
 
     def build_tool_by_hook_data(self, data):
         import lxsession.commands as ssn_commands
 
-        d = 2
+        d = self._d
 
         with utl_core.GuiProgressesRunner.create(maximum=len(data), label='gui-add for hook') as g_p:
             for i_args in data:
@@ -66,56 +88,12 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
                     raise RuntimeError()
                 #
                 if i_hook_args is not None:
-                    i_session, i_execute_fnc = i_hook_args
-                    if i_session.get_is_loadable() is True:
-                        if i_session.get_is_match_condition(
-                            self._match_dict
-                        ) is True:
-                            i_gui_configure = i_session.gui_configure
-                            if 'gui_parent' in i_extend_kwargs:
-                                i_gui_configure.set('group_name', i_extend_kwargs.get('gui_parent'))
-                            #
-                            i_group_name = i_gui_configure.get('group_name')
-                            if i_group_name not in self._tool_group_dict:
-                                i_expanded_group = prx_widgets.PrxExpandedGroup()
-                                self._scroll_bar.set_widget_add(i_expanded_group)
-                                i_expanded_group.set_name(i_group_name)
-                                i_expanded_group.set_expanded(True)
-                                #
-                                i_tool_group = prx_widgets.PrxToolGroup()
-                                i_expanded_group.set_widget_add(i_tool_group)
-                                self._tool_group_dict[i_group_name] = i_tool_group
-                            else:
-                                i_tool_group = self._tool_group_dict[i_group_name]
-
-                            i_name = i_gui_configure.get('name')
-                            i_icon_name = i_gui_configure.get('icon_name')
-                            i_tool_tip = i_gui_configure.get('tool_tip') or ''
-
-                            i_press_item = prx_widgets.PrxPressItem()
-                            i_tool_group.set_widget_add(i_press_item)
-                            i_press_item.set_name(i_name)
-                            if i_icon_name:
-                                i_press_item.set_icon_name(i_icon_name)
-                            else:
-                                i_press_item.set_icon_color_by_name(i_name)
-
-                            if i_session.configure.get('option.type').endswith('-panel'):
-                                i_tool_tip = '"LMB-click" to open tool-panel'
-                                i_press_item.set_option_click_enable(True)
-                            else:
-                                i_tool_tip = '"LMB-click" to execute'
-
-                            i_press_item.set_tool_tip(i_tool_tip)
-
-                            i_press_item.connect_press_clicked_to(
-                                i_execute_fnc
-                            )
+                    self.add_tool(i_hook_args, i_extend_kwargs, d)
 
     def build_tool_by_option_hook_data(self, data):
         import lxsession.commands as ssn_commands
 
-        d = 2
+        d = self._d
 
         with utl_core.GuiProgressesRunner.create(maximum=len(data), label='gui-add for hook') as g_p:
             for i_args in data:
@@ -136,48 +114,59 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
                     raise RuntimeError()
                 #
                 if i_hook_args is not None:
-                    i_session, i_execute_fnc = i_hook_args
-                    if i_session.get_is_loadable() is True:
-                        if i_session.get_is_match_condition(
-                                self._match_dict
-                        ) is True:
-                            i_gui_configure = i_session.gui_configure
-                            if 'gui_parent' in i_extend_kwargs:
-                                i_gui_configure.set('group_name', i_extend_kwargs.get('gui_parent'))
-                            #
-                            i_group_name = i_gui_configure.get('group_name')
-                            if i_group_name not in self._tool_group_dict:
-                                i_expanded_group = prx_widgets.PrxExpandedGroup()
-                                self._scroll_bar.set_widget_add(i_expanded_group)
-                                i_expanded_group.set_name(i_group_name)
-                                i_expanded_group.set_expanded(True)
-                                #
-                                i_tool_group = prx_widgets.PrxToolGroup()
-                                i_expanded_group.set_widget_add(i_tool_group)
-                                self._tool_group_dict[i_group_name] = i_tool_group
-                            else:
-                                i_tool_group = self._tool_group_dict[i_group_name]
+                    self.add_tool(i_hook_args, i_extend_kwargs, d)
 
-                            i_name = i_gui_configure.get('name')
-                            i_icon_name = i_gui_configure.get('icon_name')
-                            i_tool_tip = i_gui_configure.get('tool_tip') or ''
+    def add_tool(self, hook_args, extend_kwargs, d):
+        session, execute_fnc = hook_args
+        if session.get_is_loadable() is True:
+            if session.get_is_match_condition(
+                    self._match_dict
+            ) is True:
+                gui_configure = session.gui_configure
+                if 'gui_parent' in extend_kwargs:
+                    gui_configure.set('group_name', extend_kwargs.get('gui_parent'))
+                #
+                group_name = gui_configure.get('group_name')
+                if group_name not in self._tool_group_dict:
+                    expanded_group = prx_widgets.PrxExpandedGroup()
+                    self._scroll_bar.set_widget_add(expanded_group)
+                    expanded_group.set_name(group_name)
+                    expanded_group.set_expanded(True)
+                    #
+                    tool_group = prx_widgets.PrxToolGroup()
+                    expanded_group.set_widget_add(tool_group)
+                    self._tool_group_dict[group_name] = tool_group
+                else:
+                    tool_group = self._tool_group_dict[group_name]
 
-                            i_press_item = prx_widgets.PrxPressItem()
-                            i_tool_group.set_widget_add(i_press_item)
-                            i_press_item.set_name(i_name)
-                            if i_icon_name:
-                                i_press_item.set_icon_name(i_icon_name)
-                            else:
-                                i_press_item.set_icon_color_by_name(i_name)
+                name = gui_configure.get('name')
+                icon_name = gui_configure.get('icon_name')
+                tool_tip_ = gui_configure.get('tool_tip') or ''
 
-                            if i_session.configure.get('option.type').endswith('-panel'):
-                                i_tool_tip = '"LMB-click" to open tool-panel'
-                                i_press_item.set_option_click_enable(True)
-                            else:
-                                i_tool_tip = '"LMB-click" to execute'
+                press_item = prx_widgets.PrxPressItem()
+                tool_group.set_widget_add(press_item, d)
+                press_item.set_name(name)
+                if icon_name:
+                    press_item.set_icon_name(icon_name)
+                else:
+                    press_item.set_icon_color_by_name(name)
 
-                            i_press_item.set_tool_tip(i_tool_tip)
+                tool_tip = []
+                if session.configure.get('option.type').endswith('-panel'):
+                    tool_tip_add = '"LMB-click" to open tool-panel'
+                    press_item.set_option_click_enable(True)
+                else:
+                    tool_tip_add = '"LMB-click" to execute'
 
-                            i_press_item.connect_press_clicked_to(
-                                i_execute_fnc
-                            )
+                tool_tip.append(tool_tip_add)
+
+                if isinstance(tool_tip_, (tuple, list)):
+                    tool_tip.extend(tool_tip_)
+                elif isinstance(tool_tip_, six.string_types):
+                    tool_tip.append(tool_tip_)
+
+                press_item.set_tool_tip(tool_tip)
+
+                press_item.connect_press_clicked_to(
+                    execute_fnc
+                )

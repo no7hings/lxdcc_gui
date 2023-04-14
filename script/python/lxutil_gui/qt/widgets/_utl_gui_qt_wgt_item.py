@@ -846,7 +846,7 @@ class QtPressItem(
                     self._icon_color_draw_rect, self._icon_color_rgb, offset=offset
                 )
             elif self._icon_name_text is not None:
-                painter._set_icon_name_text_draw_by_rect_(
+                painter._draw_icon_with_name_text_by_rect_(
                     self._icon_name_draw_rect,
                     self._icon_name_text,
                     offset=offset,
@@ -883,7 +883,7 @@ class QtPressItem(
             )
 
 
-class _QtCheckItem(
+class QtCheckItem(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract.AbsQtIconDef,
@@ -896,7 +896,7 @@ class _QtCheckItem(
     utl_gui_qt_abstract.AbsQtValueDefaultDef,
 ):
     def __init__(self, *args, **kwargs):
-        super(_QtCheckItem, self).__init__(*args, **kwargs)
+        super(QtCheckItem, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         qt_palette = QtDccMtd.get_palette()
         self.setPalette(qt_palette)
@@ -980,18 +980,6 @@ class _QtCheckItem(
         #
         offset = self._get_action_offset_()
         #
-        background_color = painter._get_item_background_color_1_by_rect_(
-            self._check_action_rect,
-            is_hovered=self._action_is_hovered,
-            is_actioned=self._get_is_actioned_()
-        )
-        painter._draw_frame_by_rect_(
-            self._check_action_rect,
-            border_color=QtBorderColors.Transparent,
-            background_color=background_color,
-            border_radius=4,
-            offset=offset
-        )
         if self._check_is_enable is True:
             if self._check_icon_file_path_current is not None:
                 painter._draw_icon_file_by_rect_(
@@ -1209,7 +1197,7 @@ class _QtStatusItem(
         #
         if self._get_is_checked_():
             background_color = [(255, 255, 63), (255, 127, 63)][is_hovered]
-            painter._set_icon_name_text_draw_by_rect_(
+            painter._draw_icon_with_name_text_by_rect_(
                 rect=self._icon_color_draw_rect,
                 text='l',
                 background_color=background_color,
@@ -1218,7 +1206,7 @@ class _QtStatusItem(
             )
         else:
             background_color = [(71, 71, 71), (255, 127, 63)][is_hovered]
-            painter._set_icon_name_text_draw_by_rect_(
+            painter._draw_icon_with_name_text_by_rect_(
                 rect=self._icon_color_draw_rect,
                 text='d',
                 background_color=background_color,
@@ -1579,6 +1567,7 @@ class QtValueEntryForEnumerate(
                     else:
                         self._value_index_label.hide()
             else:
+                self._value_entry._set_value_clear_()
                 self._value_index_label.hide()
 
     def __init__(self, *args, **kwargs):
@@ -2610,7 +2599,7 @@ class _QtHExpandItem0(
         # name-icon
         if self._icon_name_is_enable is True:
             if self._icon_name_text is not None:
-                painter._set_icon_name_text_draw_by_rect_(
+                painter._draw_icon_with_name_text_by_rect_(
                     self._icon_name_draw_rect,
                     self._icon_name_text,
                     # background_color=background_color,

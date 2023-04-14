@@ -235,7 +235,7 @@ class QtIconButton(QtWidgets.QPushButton):
         )
         if self._icon_file_path is not None:
             icn = QtCore.QRect(f_x, f_y, i_w, i_h)
-            painter._set_svg_file_path_draw_by_rect_(icn, self._icon_file_path)
+            painter._draw_svg_by_rect_(icn, self._icon_file_path)
         elif self._icon_color_rgb is not None:
             pass
 
@@ -677,28 +677,10 @@ class QtIconPressItem(
         return False
 
     def paintEvent(self, event):
-        w, h = self.width(), self.height()
-        i_w, i_h = self._icon_file_draw_size
         painter = QtPainter(self)
         self._refresh_widget_draw_geometry_()
 
-        if self._get_action_is_enable_() is True:
-            offset = self._get_action_offset_()
-            #
-            background_color = painter._get_item_background_color_1_by_rect_(
-                self._icon_frame_draw_rect,
-                is_hovered=self._action_is_hovered,
-                is_actioned=self._get_is_actioned_()
-            )
-            painter._draw_frame_by_rect_(
-                self._icon_frame_draw_rect,
-                border_color=QtBorderColors.Transparent,
-                background_color=background_color,
-                border_radius=4,
-                offset=offset
-            )
-        else:
-            offset = 0
+        offset = self._get_action_offset_()
         # icon
         if self._icon_is_enable is True:
             if self._icon_file_path is not None:
@@ -710,7 +692,8 @@ class QtIconPressItem(
                 painter._draw_icon_file_by_rect_(
                     rect=self._icon_file_draw_rect,
                     file_path=icon_file_path,
-                    offset=offset
+                    offset=offset,
+                    is_hovered=self._action_is_hovered
                 )
             elif self._icon_color_rgb is not None:
                 painter._set_color_icon_draw_(
@@ -719,7 +702,7 @@ class QtIconPressItem(
                     offset=offset
                 )
             elif self._icon_name_text is not None:
-                painter._set_icon_name_text_draw_by_rect_(
+                painter._draw_icon_with_name_text_by_rect_(
                     self._icon_name_draw_rect,
                     self._icon_name_text,
                     offset=offset,
@@ -731,7 +714,8 @@ class QtIconPressItem(
                 painter._draw_icon_file_by_rect_(
                     rect=self._sub_icon_file_draw_rect,
                     file_path=self._sub_icon_file_path,
-                    offset=offset
+                    offset=offset,
+                    is_hovered=self._action_is_hovered
                 )
         #
         if self._action_state in [self.ActionState.Disable]:
@@ -1782,12 +1766,12 @@ class _QtHItem(
                 rect=self._check_icon_draw_rect,
                 file_path=self._check_icon_file_path_current,
                 offset=offset,
-                frame_rect=self._check_action_rect,
+                # frame_rect=self._check_action_rect,
                 is_hovered=self._check_is_hovered
             )
         # icon
         if self._icon_name_text is not None:
-            painter._set_icon_name_text_draw_by_rect_(
+            painter._draw_icon_with_name_text_by_rect_(
                 self._icon_name_draw_rect,
                 self._icon_name_text,
                 background_color=background_color,
@@ -1834,7 +1818,7 @@ class _QtHItem(
                 rect=self._delete_icon_draw_rect,
                 file_path=self._delete_icon_file_path,
                 offset=offset,
-                frame_rect=self._delete_rect,
+                # frame_rect=self._delete_rect,
                 is_hovered=self._delete_is_hovered
             )
 

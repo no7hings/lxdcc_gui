@@ -192,7 +192,7 @@ class AssetToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
             option=dict(
                 project=project,
                 asset=asset,
-                with_work_surface_geometry_uv_map=True,
+                with_surface_work_geometry_uv_map=True,
             )
         ).set_run()
 
@@ -346,7 +346,7 @@ class SurfaceToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
             option=dict(
                 project=project,
                 asset=asset,
-                with_work_surface_geometry_uv_map=True,
+                with_surface_work_geometry_uv_map=True,
             )
         ).set_run()
 

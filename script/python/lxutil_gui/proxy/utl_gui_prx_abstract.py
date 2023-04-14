@@ -35,7 +35,7 @@ class AbsPrx(object):
     MODEL_CLASS = None
     DCC_OBJ_KEY = 'dcc_obj'
     #
-    PRX_CATEGORY = None
+    PRX_CATEGORY = 'dialog_window'
     def __init__(self, *args, **kwargs):
         self._qt_widget = self.QT_WIDGET_CLASS(*args, **kwargs)
         self._qt_widget.gui_proxy = self
@@ -338,6 +338,9 @@ class AbsPrxWindow(AbsPrx):
 
     def connect_window_activate_changed_to(self, fnc):
         self._qt_widget.window_activate_changed.connect(fnc)
+
+    def get_is_active_window(self):
+        return self._qt_widget.isActiveWindow()
 
 
 class AbsWidgetContentDef(object):
