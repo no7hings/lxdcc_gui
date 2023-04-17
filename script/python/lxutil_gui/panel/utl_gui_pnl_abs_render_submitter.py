@@ -184,23 +184,23 @@ class AbsRenderSubmitterPanel(
         self.set_all_refresh()
 
     def _set_prx_node_build_(self):
-        self._schemes_prx_node.set_ports_create_by_configure(
+        self._schemes_prx_node.create_ports_by_configure(
             self._hook_build_configure.get('node.schemes')
         )
         #
-        self._options_prx_node.set_ports_create_by_configure(
+        self._options_prx_node.create_ports_by_configure(
             self._hook_build_configure.get('node.options')
         )
         # usd
-        self._usd_prx_node.set_ports_create_by_configure(
+        self._usd_prx_node.create_ports_by_configure(
             self._hook_build_configure.get('node.usd')
         )
 
-        self._variables_prx_node.set_ports_create_by_configure(
+        self._variables_prx_node.create_ports_by_configure(
             self._hook_build_configure.get('node.variables')
         )
 
-        self._settings_prx_node.set_ports_create_by_configure(
+        self._settings_prx_node.create_ports_by_configure(
             self._hook_build_configure.get('node.settings')
         )
 
@@ -278,10 +278,12 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                         content='file="{}" camera task is non-exists, please call for TD get more help'.format(self._file_path),
                         status=utl_core.DialogWindow.ValidatorStatus.Error,
                         #
-                        yes_label='Close', yes_method=self.set_window_close,
+                        yes_label='Close', yes_method=self.set_window_close_later,
                         #
                         no_visible=False, cancel_visible=False,
-                        use_exec=False
+                        use_exec=False,
+                        #
+                        parent=self._qt_widget
                     )
 
     def set_scheme_save(self):
@@ -432,22 +434,22 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         # self._schemes_prx_node.set(
         #     'save', self.set_scheme_save
         # )
-        self._schemes_prx_node.set_changed_connect_to(
+        self._schemes_prx_node.connect_value_changed_to(
             'variables', self.set_combinations_load_from_scheme
         )
-        self._schemes_prx_node.set_changed_connect_to(
+        self._schemes_prx_node.connect_value_changed_to(
             'settings', self.set_settings_load_from_scheme
         )
 
         self._options_prx_node.get_port(
             'shot'
-        ).set_changed_connect_to(
+        ).connect_value_changed_to(
             self.set_usd_refresh
         )
 
         self._options_prx_node.get_port(
             'shot'
-        ).set_changed_connect_to(
+        ).connect_value_changed_to(
             self.set_settings_refresh
         )
 
@@ -1029,11 +1031,11 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         # self._schemes_prx_node.set(
         #     'save', self.set_scheme_save
         # )
-        self._schemes_prx_node.set_changed_connect_to(
+        self._schemes_prx_node.connect_value_changed_to(
             'variables', self.set_combinations_load_from_scheme
         )
 
-        self._schemes_prx_node.set_changed_connect_to(
+        self._schemes_prx_node.connect_value_changed_to(
             'settings', self.set_settings_load_from_scheme
         )
 

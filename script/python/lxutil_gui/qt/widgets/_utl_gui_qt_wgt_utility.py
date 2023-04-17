@@ -2081,7 +2081,7 @@ class QtLineEdit_(
             menu_raw.extend(
                 [
                     ('system',),
-                    ('open folder', 'file/folder', (True, self._set_open_in_system_, False), QtGui.QKeySequence.Open)
+                    ('open folder', 'file/folder', (True, self._execute_open_in_system_, False), QtGui.QKeySequence.Open)
                 ]
             )
         #
@@ -2128,17 +2128,21 @@ class QtLineEdit_(
     def _get_value_type_(self):
         return self._value_type
 
-    def _set_open_in_system_(self):
+    def _execute_open_in_system_(self):
         _ = self.text()
         if _:
-            bsc_core.StgPathOpt(_).set_open_in_system()
+            _exist_comp = bsc_core.StgExtraMtd.get_exists_component(_)
+            if _exist_comp is not None:
+                bsc_core.StgExtraMtd.set_directory_open(
+                    _exist_comp
+                )
 
     def _set_validator_use_as_storage_(self, boolean=True):
         super(QtLineEdit_, self)._set_validator_use_as_storage_(boolean)
         if boolean is True:
             i_action = QtWidgets.QAction(self)
             i_action.triggered.connect(
-                self._set_open_in_system_
+                self._execute_open_in_system_
             )
             i_action.setShortcut(
                 QtGui.QKeySequence.Open
@@ -2180,7 +2184,7 @@ class QtLineEdit_(
 
     def _set_validator_use_as_frames_(self):
         self._set_value_type_(str)
-        reg = QtCore.QRegExp(r'^[0-9-,]+$')
+        reg = QtCore.QRegExp(r'^[0-9-,:]+$')
         validator = QtGui.QRegExpValidator(reg, self)
         self.setValidator(validator)
         # self.setToolTip(

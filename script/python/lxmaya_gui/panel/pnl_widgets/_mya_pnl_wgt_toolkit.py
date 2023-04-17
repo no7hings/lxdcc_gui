@@ -234,7 +234,7 @@ class AssetToolkitPanel(utl_gui_pnl_abs_toolkit.AbsToolkitPanel):
             option=dict(
                 project=project,
                 asset=asset,
-                with_work_surface_look_preview=True,
+                with_surface_work_look_preview=True,
             )
         ).set_run()
 

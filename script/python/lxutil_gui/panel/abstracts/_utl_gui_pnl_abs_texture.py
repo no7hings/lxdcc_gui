@@ -54,7 +54,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
 
         self._options_prx_node = prx_widgets.PrxNode_('options')
         s_0.set_widget_add(self._options_prx_node)
-        self._options_prx_node.set_ports_create_by_configure(
+        self._options_prx_node.create_ports_by_configure(
             self._session.configure.get('build.node.options'),
         )
 
@@ -63,7 +63,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
         )
         self._options_prx_node.get_port(
             'control.variant'
-        ).set_changed_connect_to(
+        ).connect_value_changed_to(
             self._set_wsp_texture_directories_update_
         )
 
@@ -629,7 +629,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         #
         self._options_prx_node = prx_widgets.PrxNode_('options')
         s_a_0.set_widget_add(self._options_prx_node)
-        self._options_prx_node.set_ports_create_by_configure(
+        self._options_prx_node.create_ports_by_configure(
             self._session.configure.get('build.node.options'),
         )
 

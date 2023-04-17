@@ -442,7 +442,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
 
         self._cfg_options_prx_node = prx_widgets.PrxNode_('options')
         sa_1.set_widget_add(self._cfg_options_prx_node)
-        self._cfg_options_prx_node.set_ports_create_by_configure(
+        self._cfg_options_prx_node.create_ports_by_configure(
             self._session.configure.get('build.node.publish_options'),
         )
 
@@ -481,7 +481,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
 
         self._cfg_options_prx_node.get_port(
             'publish.ignore_validation_error'
-        ).set_changed_connect_to(
+        ).connect_value_changed_to(
             self._set_publish_enable_refresh_
         )
 

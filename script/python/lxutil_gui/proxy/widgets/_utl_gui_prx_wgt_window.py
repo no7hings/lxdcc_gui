@@ -185,6 +185,7 @@ class AbsPrxDialogWindow(
                 self.set_content(self._completed_content)
                 self.set_status(self.ValidatorStatus.Correct)
                 return
+        #
         self.set_window_close_later()
 
     def _set_failed_(self, log):
@@ -313,7 +314,7 @@ class AbsPrxDialogWindow(
         return self._options_prx_node
 
     def set_options_create_by_configure(self, configure):
-        self._options_prx_node.set_ports_create_by_configure(configure)
+        self._options_prx_node.create_ports_by_configure(configure)
 
     def set_print_add_use_thread(self, text):
         self._tip_text_browser.set_print_add_use_thread(text)

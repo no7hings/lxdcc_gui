@@ -301,7 +301,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
         v_s.set_widget_add(s)
         self._options_prx_node = prx_widgets.PrxNode_('options')
         s.set_widget_add(self._options_prx_node)
-        self._options_prx_node.set_ports_create_by_configure(
+        self._options_prx_node.create_ports_by_configure(
             self._hook_build_configure.get('node.options')
         )
 

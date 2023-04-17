@@ -30,7 +30,7 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
     def _test_(self):
         n = utl_prx_widgets.PrxNode_('root')
         self.set_widget_add(n)
-        n.set_ports_create_by_configure(
+        n.create_ports_by_configure(
             c
         )
 

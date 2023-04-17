@@ -56,7 +56,7 @@ class AbsPnlRenderSubmitter(prx_widgets.PrxSessionWindow):
 
         self._options_prx_node = prx_widgets.PrxNode_('options')
         sa_0.set_widget_add(self._options_prx_node)
-        self._options_prx_node.set_ports_create_by_configure(
+        self._options_prx_node.create_ports_by_configure(
             self._session.configure.get('build.node.options'),
         )
         self._options_prx_node.set(

@@ -70,7 +70,7 @@ class _QtListEntry(
         items = self._get_selected_items_()
         if items:
             menu_raw.append(
-                ('open folder', 'file/folder', (True, self._set_open_in_system_, False), QtGui.QKeySequence.Open)
+                ('open folder', 'file/folder', (True, self._execute_open_in_system_, False), QtGui.QKeySequence.Open)
             )
         #
         if menu_raw:
@@ -78,7 +78,7 @@ class _QtListEntry(
             self._qt_menu._set_menu_raw_(menu_raw)
             self._qt_menu._set_show_()
 
-    def _set_open_in_system_(self):
+    def _execute_open_in_system_(self):
         item = self._get_item_current_()
         if item is not None:
             item_widget = self.itemWidget(item)
@@ -297,7 +297,7 @@ class _QtListEntry(
         if boolean is True:
             i_action = QtWidgets.QAction(self)
             i_action.triggered.connect(
-                self._set_open_in_system_
+                self._execute_open_in_system_
             )
             i_action.setShortcut(
                 QtGui.QKeySequence.Open
@@ -323,7 +323,7 @@ class QtTextBrowser_(
         qt_palette = QtDccMtd.get_palette()
         self.setPalette(qt_palette)
         self.setAutoFillBackground(True)
-        self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
         #
         self._print_signals = QtPrintSignals(self)
         self._print_signals.added.connect(self._set_content_add_)
@@ -964,6 +964,8 @@ class QtCheckItem(
                 if event.button() == QtCore.Qt.LeftButton:
                     if self._get_action_flag_() == self.ActionFlag.CheckClick:
                         self._set_item_check_action_run_()
+                    #
+                    self.user_check_clicked.emit()
                     #
                     self._set_action_flag_clear_()
             # elif event.type() == QtCore.QEvent.ToolTip:
@@ -2785,6 +2787,213 @@ class _QtVExpandItem1(
         self._expand_icon_file_path_0 = utl_gui_core.RscIconFile.get('qt-style/arrow-right')
         self._expand_icon_file_path_1 = utl_gui_core.RscIconFile.get('qt-style/arrow-down')
         self._item_expand_icon_file_path_2 = utl_gui_core.RscIconFile.get('qt-style/arrow-left')
+
+
+class QtCapsuleItem(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtNameDef,
+    #
+    utl_gui_qt_abstract.AbsQtActionDef,
+    utl_gui_qt_abstract.AbsQtActionHoverDef,
+    utl_gui_qt_abstract.AbsQtActionPressDef,
+    #
+    utl_gui_qt_abstract.AbsQtValueDef,
+    utl_gui_qt_abstract.AbsQtValueDefaultDef,
+):
+    value_changed = qt_signal()
+    def __init__(self, *args, **kwargs):
+        super(QtCapsuleItem, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setMouseTracking(True)
+
+        self.installEventFilter(self)
+        #
+        self._set_name_def_init_()
+        self._set_frame_def_init_()
+
+        self._init_action_def_(self)
+        self._set_action_hover_def_init_()
+        self._set_action_press_def_init_()
+
+        self._set_value_def_init_(self)
+        self._set_value_default_def_init_()
+
+        self._capsule_per_width = 0
+
+        self._capsule_use_exclusive = True
+
+        self._capsule_hovered_index = None
+        self._capsule_index_current = None
+
+        self._capsule_value_current = None
+
+        self._capsule_texts = []
+        self._capsule_indices = []
+        #
+        self._capsule_draw_rects = []
+        #
+        self._capsule_states = []
+
+        self._capsule_height = 18
+
+    def _set_capsule_strings_(self, texts):
+        self._capsule_texts = texts
+        c = len(texts)
+        self._capsule_indices = range(c)
+        self._capsule_draw_rects = []
+        self._capsule_states = []
+        for _ in self._capsule_indices:
+            self._capsule_draw_rects.append(QtCore.QRect())
+            self._capsule_states.append(False)
+        #
+        self._refresh_widget_draw_()
+
+    def _set_value_(self, value):
+        if self._capsule_use_exclusive:
+            index = self._capsule_texts.index(value)
+            self._capsule_index_current = index
+            self._capsule_states = [True if i in [index] else False for i in self._capsule_indices]
+        else:
+            if value:
+                indices = [self._capsule_texts.index(i) for i in value if i in self._capsule_texts]
+                self._capsule_index_current = indices[0]
+                self._capsule_states = [True if i in indices else False for i in self._capsule_indices]
+
+        self._update_value_current_()
+        #
+        self._refresh_widget_draw_()
+
+    def _get_value_(self):
+        return self._capsule_value_current
+
+    def _get_value_fnc_(self):
+        _ = [self._capsule_texts[i] for i in self._capsule_indices if self._capsule_states[i] is True]
+        if self._capsule_use_exclusive:
+            if _:
+                return _[0]
+            return ''
+        return _
+
+    def _update_value_current_(self):
+        value_pre = self._capsule_value_current
+        self._capsule_value_current = self._get_value_fnc_()
+        if value_pre != self._capsule_value_current:
+            self.value_changed.emit()
+
+    def _set_capsule_use_exclusive_(self, boolean):
+        self._capsule_use_exclusive = boolean
+
+    def _refresh_widget_draw_(self):
+        self.update()
+
+    def _refresh_widget_draw_geometry_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        #
+        self._set_frame_draw_geometry_(
+            x+1, y+1, w-2, h-2
+        )
+        #
+        if self._capsule_texts:
+            c_h = self._capsule_height
+            self._capsule_per_width = int(max([self.fontMetrics().width(i) for i in self._capsule_texts]))+20
+            for i, i_text in enumerate(self._capsule_texts):
+                i_x, i_y = x+i*self._capsule_per_width, y
+                i_w, i_h = self._capsule_per_width, h
+                self._capsule_draw_rects[i].setRect(
+                    x+i_x, y+(h-c_h)/2, i_w, c_h
+                )
+
+    def _execute_capsule_action_hover_move_(self, event):
+        if not self._capsule_per_width:
+            return
+        p = event.pos()
+        x, y = p.x(), p.y()
+        self._capsule_hovered_index = int(x/self._capsule_per_width)
+        self._refresh_widget_draw_()
+
+    def _execute_capsule_action_press_click_(self, event):
+        if not self._capsule_per_width:
+            return
+        p = event.pos()
+        x, y = p.x(), p.y()
+        index_pre = self._capsule_index_current
+        index = int(x/self._capsule_per_width)
+        if index in self._capsule_indices:
+            self._capsule_index_current = index
+            if self._capsule_use_exclusive is True:
+                if index_pre is not None:
+                    self._capsule_states[index_pre] = False
+                self._capsule_states[self._capsule_index_current] = True
+            else:
+                self._capsule_states[self._capsule_index_current] = not self._capsule_states[self._capsule_index_current]
+
+            self._capsule_press_state = self._capsule_states[self._capsule_index_current]
+
+            self._update_value_current_()
+
+    def _execute_capsule_action_press_move_(self, event):
+        if not self._capsule_per_width:
+            return
+        p = event.pos()
+        x, y = p.x(), p.y()
+        index_pre = self._capsule_index_current
+        index = int(x/self._capsule_per_width)
+        if index in self._capsule_indices:
+            self._capsule_index_current = index
+            if index_pre != self._capsule_index_current:
+                if self._capsule_use_exclusive is True:
+                    if index_pre is not None:
+                        self._capsule_states[index_pre] = False
+                    self._capsule_states[self._capsule_index_current] = True
+                else:
+                    self._capsule_states[self._capsule_index_current] = self._capsule_press_state
+                #
+                self._update_value_current_()
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.Resize:
+                self._refresh_widget_draw_geometry_()
+            elif event.type() == QtCore.QEvent.Enter:
+                pass
+            elif event.type() == QtCore.QEvent.Leave:
+                self._capsule_hovered_index = None
+                self._refresh_widget_draw_()
+            #
+            elif event.type() == QtCore.QEvent.MouseButtonPress:
+                if event.button() == QtCore.Qt.LeftButton:
+                    self._execute_capsule_action_press_click_(event)
+                    self._set_action_flag_(
+                        self.ActionFlag.PressClick
+                    )
+            elif event.type() == QtCore.QEvent.MouseButtonDblClick:
+                if event.button() == QtCore.Qt.LeftButton:
+                    self._execute_capsule_action_press_click_(event)
+                    self._set_action_flag_(
+                        self.ActionFlag.PressClick
+                    )
+            elif event.type() == QtCore.QEvent.MouseMove:
+                if self._get_action_flag_is_match_(self.ActionFlag.PressClick):
+                    self._execute_capsule_action_press_move_(event)
+                #
+                self._execute_capsule_action_hover_move_(event)
+            elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                self._set_action_flag_clear_()
+        return False
+
+    def paintEvent(self, event):
+        painter = QtPainter(self)
+
+        if self._capsule_texts:
+            painter._draw_capsule_by_rect_(
+                rects=self._capsule_draw_rects,
+                texts=self._capsule_texts,
+                states=self._capsule_states,
+                hovered_index=self._capsule_hovered_index
+            )
 
 
 class _AbsQtSplitterHandle(

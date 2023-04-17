@@ -821,7 +821,7 @@ class QtPixmapMtd(object):
         if text is not None:
             name = text.split('/')[-1] or ' '
             painter.setPen(QtBorderColors.Icon)
-            r, g, b = bsc_core.RawTextOpt(name).to_rgb_(s_p=25, v_p=35)
+            r, g, b = bsc_core.RawTextOpt(name).to_rgb__(s_p=35, v_p=35)
             if background_color is not None:
                 r, g, b = background_color
             painter.setBrush(QtGui.QBrush(QtGui.QColor(r, g, b, 255)))
@@ -1372,7 +1372,8 @@ class QtMethodThread(QtCore.QThread):
             #
             self.completed.emit()
         except:
-            self.failed.emit(bsc_core.ExceptionMtd.get_stack())
+            bsc_core.ExceptionMtd.set_print()
+            self.failed.emit(bsc_core.ExceptionMtd.get_stack_())
         finally:
             #
             self.run_finished.emit()
@@ -2359,7 +2360,7 @@ class QtRawColorMtd(object):
     @classmethod
     def _get_image_draw_args_by_text_(cls, text):
         return cls._get_image_draw_args_by_color_(
-            *bsc_core.RawTextOpt(text).to_rgb()
+            *bsc_core.RawTextOpt(text).to_rgb__(s_p=35, v_p=35)
         )
     @classmethod
     def _get_image_draw_args_by_color_(cls, *args):
@@ -2404,6 +2405,82 @@ class QtPainter(QtGui.QPainter):
     def __init__(self, *args, **kwargs):
         super(QtPainter, self).__init__(*args, **kwargs)
         self.setRenderHint(self.Antialiasing)
+
+    def _draw_capsule_by_rect_(self, rects, texts, states, hovered_index):
+        c = len(texts)
+        self._set_antialiasing_()
+        for i, i_text in enumerate(texts):
+            i_rect = rects[i]
+            i_x, i_y = i_rect.x()+1, i_rect.y()
+            i_w, i_h = i_rect.width()-2, i_rect.height()
+            i_new_rect = QtCore.QRect(
+                i_x, i_y, i_w, i_h
+            )
+            i_border_radius = i_h/2
+            i_state = states[i]
+            if i_state is True:
+                i_background_color, i_font_color = QtRawColorMtd._get_image_draw_args_by_text_(i_text)
+                self._set_background_color_(i_background_color)
+            else:
+                i_font_color = QtFontColors.Dark
+                self._set_background_color_(QtBackgroundColors.Dim)
+            #
+            if i == hovered_index:
+                self._set_border_color_(QtBorderColors.Hovered)
+            else:
+                self._set_border_color_(QtBorderColors.Button)
+            self._set_border_width_(2)
+            if i == 0:
+                if c == 1:
+                    i_path_0 = QtGui.QPainterPath()
+                    i_path_0.addRoundedRect(
+                        QtCore.QRectF(i_x, i_y, i_w, i_h),
+                        i_border_radius, i_border_radius, QtCore.Qt.AbsoluteSize
+                    )
+                    self.drawPath(
+                        i_path_0
+                    )
+                else:
+                    i_path_0 = QtGui.QPainterPath()
+                    i_path_0.addRoundedRect(
+                        QtCore.QRectF(i_x, i_y, i_w-2, i_h),
+                        i_border_radius, i_border_radius, QtCore.Qt.AbsoluteSize
+                    )
+                    i_path_1 = QtGui.QPainterPath()
+                    i_path_1.addRect(
+                        QtCore.QRectF(i_x+i_w/2, i_y, i_w/2, i_h)
+                    )
+                    self.drawPath(
+                        i_path_0+i_path_1
+                    )
+            elif i == (c-1):
+                if c > 1:
+                    i_path_0 = QtGui.QPainterPath()
+                    i_path_0.addRoundedRect(
+                        QtCore.QRectF(i_x, i_y, i_w, i_h),
+                        i_border_radius, i_border_radius, QtCore.Qt.AbsoluteSize
+                    )
+                    i_path_1 = QtGui.QPainterPath()
+                    i_path_1.addRect(
+                        QtCore.QRectF(i_x, i_y, i_w/2, i_h)
+                    )
+                    self.drawPath(
+                        i_path_0+i_path_1
+                    )
+            else:
+                if c > 1:
+                    self.drawRect(
+                        i_new_rect
+                    )
+            #
+            self._set_font_color_(i_font_color)
+            # noinspection PyArgumentEqualDefault
+            self.drawText(
+                i_new_rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+                bsc_core.RawStringUnderlineOpt(i_text).to_prettify(
+                    capitalize=True
+                )
+            )
 
     def _draw_popup_frame_(self, rect, margin, side, shadow_radius, region, border_color, background_color):
         x, y = rect.x(), rect.y()
@@ -2910,7 +2987,7 @@ class QtPainter(QtGui.QPainter):
         if background_color is not None:
             background_color__ = Color._get_rgba_(background_color)
         else:
-            background_color__ = bsc_core.RawTextOpt(text).to_rgb_(s_p=50, v_p=50)
+            background_color__ = bsc_core.RawTextOpt(text).to_rgb__(s_p=35, v_p=35)
 
         background_color_, text_color_ = QtRawColorMtd._get_image_draw_args_by_color_(*background_color__)
         if font_color is not None:
