@@ -19,7 +19,7 @@ from lxutil import utl_core
 
 
 class AbsTaskMethodObjGuiDef(object):
-    DCC_OBJ_PATHSEP = None
+    DCC_PATHSEP = None
     @classmethod
     def _set_method_group_obj_gui_add_(cls, obj, obj_gui_parent=None, tree_viewer=None):
         obj_gui = obj.get_obj_gui()
@@ -164,7 +164,7 @@ class AbsSceneMethodRunnerPanel(
     AbsTaskMethodObjGuiDef
 ):
     PANEL_KEY = 'scene_method_runner'
-    DCC_OBJ_CLASS = None
+    DCC_NODE_CLASS = None
     OBJ_COMP_CLASS = None
     #
     DCC_SELECTION_CLS = None
@@ -193,7 +193,7 @@ class AbsSceneMethodRunnerPanel(
         )
 
     def _set_tool_panel_setup_(self):
-        self._set_refresh_all_()
+        self.refresh_all_fnc()
 
     def _set_panel_build_(self):
         self._set_viewer_groups_build_()
@@ -248,12 +248,12 @@ class AbsSceneMethodRunnerPanel(
         )
         _port.set_use_as_storage()
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxPortForEnumerate('scene_src_file_path', 'Scene-src-file')
+            prx_widgets.PrxPortAsEnumerate('scene_src_file_path', 'Scene-src-file')
         )
         _port.set_use_as_storage()
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxPortForEnumerate('scheme', 'Scheme')
+            prx_widgets.PrxPortAsEnumerate('scheme', 'Scheme')
         )
         _port.set(
             [
@@ -263,14 +263,14 @@ class AbsSceneMethodRunnerPanel(
         )
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxPortForEnumerate('version', 'Version')
+            prx_widgets.PrxPortAsEnumerate('version', 'Version')
         )
         _port.set(['latest', 'new'])
         #
         _port = self._configure_gui.set_port_add(
-            prx_widgets.PrxButtonPort('refresh', 'Refresh')
+            prx_widgets.PrxPortAsButton('refresh', 'Refresh')
         )
-        _port.set(self._set_refresh_all_)
+        _port.set(self.refresh_all_fnc)
 
     def _set_dcc_obj_select_(self):
         if self.DCC_SELECTION_CLS is not None:
@@ -283,7 +283,7 @@ class AbsSceneMethodRunnerPanel(
                 if dcc_obj is not None:
                     dcc_paths.append(dcc_obj.path)
             if dcc_paths:
-                self.DCC_SELECTION_CLS(dcc_paths).set_all_select()
+                self.DCC_SELECTION_CLS(dcc_paths).select_all()
             else:
                 self.DCC_SELECTION_CLS.set_clear()
 
@@ -292,7 +292,7 @@ class AbsSceneMethodRunnerPanel(
         for obj_path, v in method.check_results.value.items():
             check_tags = method.get_obj_check_tags(obj_path)
             #
-            dcc_obj = self.DCC_OBJ_CLASS(obj_path)
+            dcc_obj = self.DCC_NODE_CLASS(obj_path)
             dcc_obj_gui = self._set_prx_item_add_(
                 dcc_obj, obj_gui_parent=method_obj_gui
             )
@@ -498,7 +498,7 @@ class AbsSceneMethodRunnerPanel(
             #
             p_0.set_stop()
 
-    def _set_refresh_all_(self):
+    def refresh_all_fnc(self):
         self._method_obj_paths = []
         self._get_task_properties_()
         if self._rsv_scene_properties is not None:

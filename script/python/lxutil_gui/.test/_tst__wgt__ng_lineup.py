@@ -14,7 +14,7 @@ class W(prx_widgets.PrxToolWindow):
         self.set_widget_add(c)
         u = unr_objects.ObjUniverse()
 
-        o_t = u._get_obj_type_force_('lynxi', 'shader')
+        o_t = u.get_or_create_obj_type('lynxi', 'shader')
 
         t = u._get_type_force_(u.Category.CONSTANT, u.Type.STRING)
 

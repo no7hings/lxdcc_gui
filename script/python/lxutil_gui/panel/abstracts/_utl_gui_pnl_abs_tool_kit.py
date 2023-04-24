@@ -133,7 +133,7 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
                     expanded_group.set_name(group_name)
                     expanded_group.set_expanded(True)
                     #
-                    tool_group = prx_widgets.PrxToolGroup()
+                    tool_group = prx_widgets.PrxButtonGroup()
                     expanded_group.set_widget_add(tool_group)
                     self._tool_group_dict[group_name] = tool_group
                 else:

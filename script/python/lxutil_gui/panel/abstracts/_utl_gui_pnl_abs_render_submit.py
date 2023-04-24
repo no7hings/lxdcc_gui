@@ -63,11 +63,11 @@ class AbsPnlRenderSubmitter(prx_widgets.PrxSessionWindow):
             'submit', self.submit_to_farm
         )
 
-        self._post_setup_()
+        self.post_setup_fnc()
 
         self.set_refresh_all()
 
-    def _post_setup_(self):
+    def post_setup_fnc(self):
         pass
 
     def node_selection_fnc(self):

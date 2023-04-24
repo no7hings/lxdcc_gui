@@ -90,9 +90,9 @@ class AbsRezGraph(prx_widgets.PrxToolWindow):
 
         u = unr_objects.ObjUniverse()
 
-        r_s_t = u._get_obj_type_force_('rez', 'system')
-        r_p_t = u._get_obj_type_force_('rez', 'package')
-        r_v_t = u._get_obj_type_force_('rez', 'v')
+        r_s_t = u.get_or_create_obj_type('rez', 'system')
+        r_p_t = u.get_or_create_obj_type('rez', 'package')
+        r_v_t = u.get_or_create_obj_type('rez', 'v')
 
         t = u._get_type_force_(u.Category.CONSTANT, u.Type.NODE)
 
@@ -104,7 +104,7 @@ class AbsRezGraph(prx_widgets.PrxToolWindow):
         r = r_c.ResolvedContext(
             packages,
             package_paths=[
-                bsc_core.StorageMtd.set_map_to_platform(i) for i in [
+                bsc_core.StgPathMapMtd.map_to_current(i) for i in [
                     "/l/packages/pg/prod",
                     "/l/packages/pg/dept",
                     "/l/packages/pg/third_party/app",
@@ -487,7 +487,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
     def _set_graph_reload_(self):
         self._universe = unr_objects.ObjUniverse()
 
-        self._u_asset_type = self._universe._get_obj_type_force_('lynxi', 'asset')
+        self._u_asset_type = self._universe.get_or_create_obj_type('lynxi', 'asset')
 
         self._u_image_type = self._universe._get_type_force_(
             self._universe.Category.CONSTANT, self._universe.Type.STRING

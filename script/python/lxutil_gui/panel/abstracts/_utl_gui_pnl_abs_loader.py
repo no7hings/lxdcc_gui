@@ -257,7 +257,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         self._options_prx_node.set_expanded(False)
         #
         _port = self._options_prx_node.set_port_add(
-            prx_widgets.PrxPortForEnumerate('filter')
+            prx_widgets.PrxPortAsEnumerate('filter')
         )
         self._rsv_filters_dict = self._hook_configure.get('resolver.filters')
         if self._rsv_filters_dict is not None:
@@ -278,7 +278,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         )
         #
         _port = self._options_prx_node.set_port_add(
-            prx_widgets.PrxPortForEnumerate('project')
+            prx_widgets.PrxPortAsEnumerate('project')
         )
         _port.set(projects)
         if self._filter_project is not None:
@@ -293,7 +293,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                     _port.set(project_history)
         #
         _port = self._options_prx_node.set_port_add(
-            prx_widgets.PrxButtonPort('refresh')
+            prx_widgets.PrxPortAsButton('refresh')
         )
         _port.set(self.set_refresh_all)
 

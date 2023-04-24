@@ -131,7 +131,7 @@ class AbsSceneComposeToolPanel(
     prx_widgets.PrxToolWindow,
 ):
     DCC_SELECTION_CLS = None
-    DCC_OBJ_CLASS = None
+    DCC_NODE_CLASS = None
     #
     OBJ_OP_CLASS = None
     OP_REFERENCE_OBJ_CLASS = None
@@ -202,13 +202,13 @@ class AbsSceneComposeToolPanel(
                     if dcc_obj is not None:
                         paths.append(dcc_obj.path)
             if paths:
-                self.DCC_SELECTION_CLS(paths).set_all_select()
+                self.DCC_SELECTION_CLS(paths).select_all()
             else:
                 self.DCC_SELECTION_CLS.set_clear()
 
     def _set_dcc_groups_add_(self, obj_opt, prod_obj_gui):
         dcc_group_paths = obj_opt.get_dcc_group_paths()
-        dcc_objs = [self.DCC_OBJ_CLASS(i) for i in dcc_group_paths]
+        dcc_objs = [self.DCC_NODE_CLASS(i) for i in dcc_group_paths]
         for dcc_obj in dcc_objs:
             obj_gui = prod_obj_gui.set_child_add(
                 name=(dcc_obj.name, dcc_obj.type),
@@ -224,7 +224,7 @@ class AbsSceneComposeToolPanel(
     def _set_dcc_path_check_(self, obj_opt, obj_gui):
         dcc_name = obj_opt.dcc_name
         if dcc_name:
-            dcc_obj = self.DCC_OBJ_CLASS(dcc_name)
+            dcc_obj = self.DCC_NODE_CLASS(dcc_name)
             if dcc_obj.get_is_exists() is True:
                 obj_gui.set_gui_attribute('dcc_obj', dcc_obj)
                 obj_gui.set_icon_by_file(dcc_obj.icon)
@@ -294,19 +294,19 @@ class AbsSceneComposeToolPanel(
             obj_opt = self.OBJ_OP_CLASS(obj)
             if not obj_opt.reference_key:
                 dcc_path = obj_opt.dcc_path
-                dcc_obj = self.DCC_OBJ_CLASS(dcc_path)
+                dcc_obj = self.DCC_NODE_CLASS(dcc_path)
                 dcc_obj.set_ancestors_create()
 
         for obj in objs:
             obj_opt = self.OBJ_OP_CLASS(obj)
             if obj_opt.reference_key == 'reference':
                 dcc_name = obj_opt.dcc_name
-                exists_dcc_obj = self.DCC_OBJ_CLASS(dcc_name)
+                exists_dcc_obj = self.DCC_NODE_CLASS(dcc_name)
                 if exists_dcc_obj.get_is_exists() is True:
                     exists_path = exists_dcc_obj.path
                     dcc_path = obj_opt.dcc_path
                     if not exists_path == dcc_path:
-                        parent_path = self.DCC_OBJ_CLASS(dcc_path).get_parent_path()
+                        parent_path = self.DCC_NODE_CLASS(dcc_path).get_parent_path()
                         exists_dcc_obj.set_parent_path(parent_path)
 
         self.set_refresh()

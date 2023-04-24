@@ -56,7 +56,7 @@ class AbsScenePackagerPanel(
         )
 
     def _set_tool_panel_setup_(self):
-        self._set_refresh_all_()
+        self.refresh_all_fnc()
 
     def _get_is_tree_mode_(self):
         return self._is_tree_mode
@@ -91,7 +91,7 @@ class AbsScenePackagerPanel(
         self._refresh_button_0 = prx_widgets.PrxPressItem()
         self._refresh_button_0.set_name('Refresh')
         self.set_button_add(self._refresh_button_0)
-        self._refresh_button_0.connect_press_clicked_to(self._set_refresh_all_)
+        self._refresh_button_0.connect_press_clicked_to(self.refresh_all_fnc)
 
     def _set_filter_tree_view_build_(self):
         self._filter_tree_viewer_0.set_header_view_create(
@@ -161,7 +161,7 @@ class AbsScenePackagerPanel(
             )
         )
         self._replace_start_attribute = attribute_box_0.set_port_add(
-            prx_widgets.PrxPortForEnumerate(
+            prx_widgets.PrxPortAsEnumerate(
                 'replace_with', 'Replace With'
             )
         )
@@ -192,17 +192,17 @@ class AbsScenePackagerPanel(
         _port.set('/data/package_temporary')
         #
         _port = self._package_node_gui.set_port_add(
-            prx_widgets.PrxPortForBoolean('ignore_structure', 'Ignore-structure')
+            prx_widgets.PrxPortAsBoolean('ignore_structure', 'Ignore-structure')
         )
         _port.set(False)
         #
         _port = self._package_node_gui.set_port_add(
-            prx_widgets.PrxPortForBoolean('repath', 'Repath')
+            prx_widgets.PrxPortAsBoolean('repath', 'Repath')
         )
         _port.set_enable(False)
         #
         _port = self._package_node_gui.set_port_add(
-            prx_widgets.PrxButtonPort('package_file', 'Package-file(s)')
+            prx_widgets.PrxPortAsButton('package_file', 'Package-file(s)')
         )
         _port.set(self.set_package)
     # search
@@ -221,11 +221,11 @@ class AbsScenePackagerPanel(
             prx_widgets.PrxTextPort('target_directory', 'Target-directory')
         )
         _port = self._search_node_gui.set_port_add(
-            prx_widgets.PrxPortForBoolean('ignore_source_resolved', 'Ignore-source-resolved')
+            prx_widgets.PrxPortAsBoolean('ignore_source_resolved', 'Ignore-source-resolved')
         )
         _port.set(True)
         _port = self._search_node_gui.set_port_add(
-            prx_widgets.PrxButtonPort('search_file', 'Search-file(s)')
+            prx_widgets.PrxPortAsButton('search_file', 'Search-file(s)')
         )
         _port.set(self.set_search)
     # copy & repath
@@ -244,7 +244,7 @@ class AbsScenePackagerPanel(
             prx_widgets.PrxTextPort('target_directory', 'Target-directory')
         )
         _port = self._copy_and_repath_node_gui.set_port_add(
-            prx_widgets.PrxButtonPort('copy_and_repath_file', 'Copy & repath-file(s)')
+            prx_widgets.PrxPortAsButton('copy_and_repath_file', 'Copy & repath-file(s)')
         )
         _port.set(self.set_copy_and_repath)
 
@@ -259,7 +259,7 @@ class AbsScenePackagerPanel(
                     if dcc_obj is not None:
                         paths.append(dcc_obj.path)
             if paths:
-                self.DCC_SELECTION_CLS(paths).set_all_select()
+                self.DCC_SELECTION_CLS(paths).select_all()
             else:
                 self.DCC_SELECTION_CLS.set_clear()
 
@@ -290,7 +290,7 @@ class AbsScenePackagerPanel(
                     ignore_source_resolved=ignore_source_resolved
                 )
         #
-        self._set_refresh_all_()
+        self.refresh_all_fnc()
 
     def set_copy_and_repath(self):
         target_directory = self._copy_and_repath_node_gui.get_port('target_directory').get()
@@ -300,7 +300,7 @@ class AbsScenePackagerPanel(
                     self._texture_references
                 ).set_copy_and_repath_to(target_directory)
         #
-        self._set_refresh_all_()
+        self.refresh_all_fnc()
 
     def _get_checked_os_objs_(self):
         lis = []
@@ -361,7 +361,7 @@ class AbsScenePackagerPanel(
                 #
                 self._obj_tree_viewer_0.set_items_expand_by_depth(depth=2)
 
-    def _set_refresh_all_(self):
+    def refresh_all_fnc(self):
         self._set_file_references_update_()
         self._set_file_guis_refresh_()
         #

@@ -55,7 +55,7 @@ class AbsAssetBuilderPanel(
         self._set_group_0_build_()
 
     def _set_tool_panel_setup_(self):
-        self._set_refresh_all_()
+        self.refresh_all_fnc()
 
     def _set_group_0_build_(self):
         self._options_prx_node = prx_widgets.PrxNode_('options')
@@ -76,7 +76,7 @@ class AbsAssetBuilderPanel(
                     current_project
                 )
         #
-        self._options_prx_node.set('refresh', self._set_refresh_all_)
+        self._options_prx_node.set('refresh', self.refresh_all_fnc)
         self._options_prx_node.set('check_all', self._set_check_all_)
         self._options_prx_node.set('check_clear', self._set_check_clear_)
         self._options_prx_node.set('build', self._set_build_run_)
@@ -108,7 +108,7 @@ class AbsAssetBuilderPanel(
             i.set(False)
 
     @utl_gui_qt_core.set_prx_window_waiting
-    def _set_refresh_all_(self):
+    def refresh_all_fnc(self):
         self._set_assets_()
 
     @utl_gui_qt_core.set_prx_window_waiting

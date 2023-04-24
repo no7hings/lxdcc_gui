@@ -66,7 +66,7 @@ class SceneOverviewToolPanel(utl_gui_pnl_abstract.AbsUtilToolPanel):
                     if dcc_obj is not None:
                         paths.append(dcc_obj.path)
             if paths:
-                self.DCC_SELECTION_CLS(paths).set_all_select()
+                self.DCC_SELECTION_CLS(paths).select_all()
             else:
                 self.DCC_SELECTION_CLS.set_clear()
 

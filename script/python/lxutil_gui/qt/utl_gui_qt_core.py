@@ -407,6 +407,9 @@ class QtBorderColors(object):
         *utl_gui_core.QtStyleMtd.get_border('color-transparent')
     )
 
+    Dim = QtGui.QColor(
+        *utl_gui_core.QtStyleMtd.get_border('color-dim')
+    )
     Dark = QtGui.QColor(
         *utl_gui_core.QtStyleMtd.get_border('color-dark')
     )
@@ -603,14 +606,8 @@ class QtUtilMtd(object):
             )
     @classmethod
     def get_qt_icon(cls, icon_name):
-        os_icon_file = utl_core.Icon.get(icon_name)
-        qt_icon = QtGui.QIcon()
-        qt_icon.addPixmap(
-            QtGui.QPixmap(os_icon_file),
-            QtGui.QIcon.Normal,
-            QtGui.QIcon.On
-        )
-        return qt_icon
+        if QtWidgets.QApplication.instance() is not None:
+            return QtIconMtd.get_by_icon_name(icon_name)
     @classmethod
     def _get_qt_icon_(cls, file_path):
         qt_icon = QtGui.QIcon()
@@ -821,7 +818,7 @@ class QtPixmapMtd(object):
         if text is not None:
             name = text.split('/')[-1] or ' '
             painter.setPen(QtBorderColors.Icon)
-            r, g, b = bsc_core.RawTextOpt(name).to_rgb__(s_p=35, v_p=35)
+            r, g, b = bsc_core.RawTextOpt(name).to_rgb__(s_p=50, v_p=50)
             if background_color is not None:
                 r, g, b = background_color
             painter.setBrush(QtGui.QBrush(QtGui.QColor(r, g, b, 255)))
@@ -1863,21 +1860,22 @@ class QtProgressingChartDrawMtd(object):
 
         annulus_sector_color.setColorAt(1, colors[0])
         #
-        text_w, text_h = 320, 16
+        text_w, text_h = 480, 16
         text_spacing = 2
         #
         text_rect_f = QtCore.QRectF(
-            x+w+text_h, y-index*(text_h+text_spacing), text_w, text_h
+            x+(w-text_w)/2, y+h+index*(text_h+text_spacing)+48, text_w, text_h
         )
         text_option = QtGui.QTextOption(
-            QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+            QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
         )
         text_option.setUseDesignMetrics(True)
         if label:
             text = '{}% {}'.format('%3d' % (int(percent*100)), label)
         else:
             text = '{}% process-{}'.format('%3d' % (int(percent*100)), index)
-        text_color = QtGui.QColor(*bsc_core.RawColorMtd.hsv2rgb(140*percent_end, .5, 1))
+        #
+        text_color = QtGui.QColor(*bsc_core.RawColorMtd.hsv2rgb(140*percent, .5, 1))
         return annulus_sector_path, annulus_sector_color, text_rect_f, text_option, text, text_color
 
 
@@ -2360,7 +2358,7 @@ class QtRawColorMtd(object):
     @classmethod
     def _get_image_draw_args_by_text_(cls, text):
         return cls._get_image_draw_args_by_color_(
-            *bsc_core.RawTextOpt(text).to_rgb__(s_p=35, v_p=35)
+            *bsc_core.RawTextOpt(text).to_rgb__(s_p=50, v_p=50)
         )
     @classmethod
     def _get_image_draw_args_by_color_(cls, *args):
@@ -2406,30 +2404,44 @@ class QtPainter(QtGui.QPainter):
         super(QtPainter, self).__init__(*args, **kwargs)
         self.setRenderHint(self.Antialiasing)
 
-    def _draw_capsule_by_rect_(self, rects, texts, states, hovered_index):
+    def _draw_capsule_by_rect_(self, rects, texts, states, hovered_index, pressed_index, use_exclusive=False):
         c = len(texts)
         self._set_antialiasing_()
         for i, i_text in enumerate(texts):
             i_rect = rects[i]
             i_x, i_y = i_rect.x()+1, i_rect.y()
             i_w, i_h = i_rect.width()-2, i_rect.height()
+            if i == pressed_index:
+                i_x += 2
+                i_w -= 2
+                i_y += 2
+                i_h -= 2
+            #
             i_new_rect = QtCore.QRect(
                 i_x, i_y, i_w, i_h
             )
-            i_border_radius = i_h/2
+            if use_exclusive is True:
+                i_border_radius = 3
+            else:
+                i_border_radius = i_h/2
+
             i_state = states[i]
             if i_state is True:
-                i_background_color, i_font_color = QtRawColorMtd._get_image_draw_args_by_text_(i_text)
+                if use_exclusive is True:
+                    i_background_color, i_font_color = QtBackgroundColors.Selected, QtFontColors.Black
+                else:
+                    i_background_color, i_font_color = QtRawColorMtd._get_image_draw_args_by_text_(i_text)
                 self._set_background_color_(i_background_color)
+                self._set_border_color_(QtBorderColors.Button)
             else:
                 i_font_color = QtFontColors.Dark
                 self._set_background_color_(QtBackgroundColors.Dim)
+                self._set_border_color_(QtBorderColors.Dim)
             #
             if i == hovered_index:
                 self._set_border_color_(QtBorderColors.Hovered)
-            else:
-                self._set_border_color_(QtBorderColors.Button)
             self._set_border_width_(2)
+            # left
             if i == 0:
                 if c == 1:
                     i_path_0 = QtGui.QPainterPath()
@@ -2453,6 +2465,7 @@ class QtPainter(QtGui.QPainter):
                     self.drawPath(
                         i_path_0+i_path_1
                     )
+            # right
             elif i == (c-1):
                 if c > 1:
                     i_path_0 = QtGui.QPainterPath()
@@ -2467,19 +2480,19 @@ class QtPainter(QtGui.QPainter):
                     self.drawPath(
                         i_path_0+i_path_1
                     )
+            # middle
             else:
                 if c > 1:
                     self.drawRect(
                         i_new_rect
                     )
             #
+            self._set_font_(QtFonts.Label)
             self._set_font_color_(i_font_color)
             # noinspection PyArgumentEqualDefault
             self.drawText(
                 i_new_rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
-                bsc_core.RawStringUnderlineOpt(i_text).to_prettify(
-                    capitalize=True
-                )
+                i_text
             )
 
     def _draw_popup_frame_(self, rect, margin, side, shadow_radius, region, border_color, background_color):
@@ -2987,7 +3000,7 @@ class QtPainter(QtGui.QPainter):
         if background_color is not None:
             background_color__ = Color._get_rgba_(background_color)
         else:
-            background_color__ = bsc_core.RawTextOpt(text).to_rgb__(s_p=35, v_p=35)
+            background_color__ = bsc_core.RawTextOpt(text).to_rgb__(s_p=50, v_p=50)
 
         background_color_, text_color_ = QtRawColorMtd._get_image_draw_args_by_color_(*background_color__)
         if font_color is not None:
@@ -4204,9 +4217,8 @@ def create_gui_progress_method(maximum, label=None):
             window_gui_proxy = i_window.gui_proxy
             if hasattr(window_gui_proxy, 'PRX_CATEGORY'):
                 if window_gui_proxy.PRX_CATEGORY in {'tool_window', 'dialog_window'}:
-                    if window_gui_proxy.get_is_active_window() is True:
-                        p = window_gui_proxy.set_progress_create(maximum, label=label)
-                        lis.append(p)
+                    p = window_gui_proxy.set_progress_create(maximum, label=label)
+                    lis.append(p)
     return lis
 
 

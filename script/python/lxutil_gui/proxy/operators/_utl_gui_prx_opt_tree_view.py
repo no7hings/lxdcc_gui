@@ -15,32 +15,46 @@ from lxutil_gui.proxy import utl_gui_prx_core
 
 
 class PrxDccObjTreeViewSelectionOpt(object):
-    def __init__(self, prx_tree_view, dcc_selection_cls, dcc_namespace):
+    def __init__(self, prx_tree_view, dcc_selection_cls, dcc_namespace, dcc_geometry_location=None, dcc_pathsep=None):
         self._prx_tree_view = prx_tree_view
         self._dcc_selection_cls = dcc_selection_cls
+        self._dcc_geometry_location = dcc_geometry_location
+        self._dcc_pathsep = dcc_pathsep
         #
         self._dcc_namespace = dcc_namespace
     @classmethod
-    def _set_dcc_select_(cls, prx_tree_view, dcc_selection_cls, dcc_namespace):
+    def select_fnc(cls, prx_tree_view, dcc_selection_cls, dcc_namespace, dcc_geometry_location=None, dcc_pathsep=None):
         if dcc_selection_cls is not None:
             obj_paths = []
             gui_items = prx_tree_view._get_selected_items_()
-            for gui_item in gui_items:
-                prx_item = gui_item.gui_proxy
-                dcc_obj = prx_item.get_gui_dcc_obj(namespace=dcc_namespace)
-                if dcc_obj is not None:
-                    obj_paths.append(dcc_obj.path)
+            for i_gui_item in gui_items:
+                i_prx_item = i_gui_item.gui_proxy
+                i_dcc_obj = i_prx_item.get_gui_dcc_obj(namespace=dcc_namespace)
+                if i_dcc_obj is not None:
+                    if dcc_geometry_location is not None:
+                        i_path = dcc_geometry_location+i_dcc_obj.path
+                    else:
+                        i_path = i_dcc_obj.path
+                    #
+                    if dcc_pathsep is not None:
+                        i_path = bsc_core.DccPathDagOpt(i_path).translate_to(
+                            dcc_pathsep
+                        ).get_value()
+                    #
+                    obj_paths.append(i_path)
             #
             if obj_paths:
-                dcc_selection_cls(obj_paths).set_all_select()
+                dcc_selection_cls(obj_paths).select_all()
             else:
                 dcc_selection_cls.set_clear()
 
     def set_select(self):
-        self._set_dcc_select_(
+        self.select_fnc(
             prx_tree_view=self._prx_tree_view,
             dcc_selection_cls=self._dcc_selection_cls,
-            dcc_namespace=self._dcc_namespace
+            dcc_namespace=self._dcc_namespace,
+            dcc_geometry_location=self._dcc_geometry_location,
+            dcc_pathsep=self._dcc_pathsep
         )
 
 
@@ -51,11 +65,11 @@ class PrxDccObjTreeViewGainOpt(object):
 
     def get_checked_args(self):
         lis = []
-        for prx_item in self._prx_tree_view.get_all_items():
-            if prx_item.get_is_checked() is True:
-                obj = prx_item.get_gui_dcc_obj(namespace=self._dcc_namespace)
+        for i_prx_item in self._prx_tree_view.get_all_items():
+            if i_prx_item.get_is_checked() is True:
+                obj = i_prx_item.get_gui_dcc_obj(namespace=self._dcc_namespace)
                 if obj is not None:
-                    lis.append((prx_item, obj))
+                    lis.append((i_prx_item, obj))
         return lis
 
 
@@ -88,7 +102,7 @@ class PrxDccObjTreeViewTagFilterOpt(object):
         self._dcc_namespace = dcc_namespace
 
     def set_select(self):
-        PrxDccObjTreeViewSelectionOpt._set_dcc_select_(
+        PrxDccObjTreeViewSelectionOpt.select_fnc(
             prx_tree_view=self._prx_tree_view_src,
             dcc_selection_cls=self._dcc_selection_cls,
             dcc_namespace=self._dcc_namespace
@@ -253,7 +267,7 @@ class PrxDccObjTreeViewTagFilterOpt(object):
                 i_path, ancestors=True
             )
             prx_item_tgt.set_tag_filter_tgt_statistic_enable(True)
-            self._filter_content.set_element_add(
+            self._filter_content.add_element(
                 i_key,
                 prx_item_tgt
             )
@@ -875,11 +889,12 @@ class PrxDccObjTreeViewAddOpt1(object):
             prx_item = self._prx_tree_view.set_item_add(
                 **kwargs
             )
+        #
         obj.set_obj_gui(prx_item)
         prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
         prx_item.set_expanded(True)
-        prx_item.set_checked(False)
-
+        prx_item.set_checked(True)
+        #
         self._obj_add_dict[obj.path] = prx_item
         # prx_item.set_show_method(
         #     functools.partial(
@@ -929,6 +944,7 @@ class PrxDccObjTreeViewAddOpt1(object):
     def set_prx_item_add_as_list_mode(self, obj):
         root = obj.get_root()
         self._set_prx_item_add_0_(root)
+        #
         parent = obj.get_parent()
         self._set_prx_item_add_1_(parent, root)
         #
@@ -948,11 +964,12 @@ class PrxDccObjTreeViewAddOpt1(object):
 
 
 class PrxUsdMeshTreeviewAddOpt(PrxDccObjTreeViewAddOpt1):
-    def __init__(self, prx_tree_view, prx_tree_item_cls, tgt_obj_namespace, tgt_obj_pathsep, tgt_obj_class):
+    def __init__(self, prx_tree_view, prx_tree_item_cls, dcc_namespace, dcc_pathsep, dcc_node_class, dcc_geometry_location=None):
         super(PrxUsdMeshTreeviewAddOpt, self).__init__(prx_tree_view, prx_tree_item_cls, dcc_namespace='usd')
-        self._tgt_obj_namespace = tgt_obj_namespace
-        self._tgt_obj_pathsep = tgt_obj_pathsep
-        self._tgt_obj_class = tgt_obj_class
+        self._dcc_namespace = dcc_namespace
+        self._dcc_pathsep = dcc_pathsep
+        self._dcc_node_class = dcc_node_class
+        self._dcc_geometry_location = dcc_geometry_location
 
     def set_prx_item_add_as_list_mode(self, obj):
         root = obj.get_root()
@@ -975,12 +992,12 @@ class PrxUsdMeshTreeviewAddOpt(PrxDccObjTreeViewAddOpt1):
         src_path = src_obj.path
         prx_item = src_obj.get_obj_gui()
         if prx_item is not None:
-            src_mesh_path_dag_opt = bsc_core.DccPathDagOpt(src_path)
-            tgt_mesh_path_dag_opt = src_mesh_path_dag_opt.set_translate_to(self._tgt_obj_pathsep)
-            tgt_mesh = self._tgt_obj_class(tgt_mesh_path_dag_opt.get_value())
-            if tgt_mesh.get_is_exists() is True:
-                prx_item.set_icon_by_file(tgt_mesh.icon)
-                prx_item.set_gui_dcc_obj(tgt_mesh, namespace=self._tgt_obj_namespace)
+            path_opt_src = bsc_core.DccPathDagOpt(src_path)
+            path_opt_tgt = path_opt_src.translate_to(self._dcc_pathsep)
+            dcc_node = self._dcc_node_class(path_opt_tgt.get_value())
+            if dcc_node.get_is_exists() is True:
+                prx_item.set_icon_by_file(dcc_node.icon)
+                prx_item.set_gui_dcc_obj(dcc_node, namespace=self._dcc_namespace)
             else:
                 prx_item.set_temporary_state()
 

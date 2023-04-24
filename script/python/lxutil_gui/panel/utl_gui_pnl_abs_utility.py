@@ -173,12 +173,12 @@ class AbsSceneTextureManagerPanel(
         self._refresh_button_0 = prx_widgets.PrxPressItem()
         self._refresh_button_0.set_name('Refresh')
         self.set_button_add(self._refresh_button_0)
-        self._refresh_button_0.connect_press_clicked_to(self._set_refresh_all_)
+        self._refresh_button_0.connect_press_clicked_to(self.refresh_all_fnc)
 
     def _set_tool_panel_setup_(self):
-        self._set_refresh_all_()
+        self.refresh_all_fnc()
 
-    def _set_refresh_all_(self, includes=None):
+    def refresh_all_fnc(self, includes=None):
         self._set_dcc_texture_references_update_()
         self._set_gui_texture_refresh_(includes)
         #
@@ -232,7 +232,7 @@ class AbsSceneTextureManagerPanel(
         qt_layout_0.addWidget(self._tool_node_prx.widget)
         #
         _port = self._tool_node_prx.set_port_add(
-            prx_widgets.PrxButtonPort('auto_switch_color_space', 'Auto Switch Color-space(s)')
+            prx_widgets.PrxPortAsButton('auto_switch_color_space', 'Auto Switch Color-space(s)')
         )
         _port.set_tool_tip(
             [
@@ -243,7 +243,7 @@ class AbsSceneTextureManagerPanel(
         _port.set(self.set_color_space_auto_switch)
         # tx-create
         _port = self._tool_node_prx.set_port_add(
-            prx_widgets.PrxPortForBoolean('create_and_repath_to_tx_force', 'Create & Repath to tx(s) force', join_to_next=True)
+            prx_widgets.PrxPortAsBoolean('create_and_repath_to_tx_force', 'Create & Repath to tx(s) force', join_to_next=True)
         )
         _port.set_tool_tip(
             [
@@ -262,7 +262,7 @@ class AbsSceneTextureManagerPanel(
         _port.set(self.set_tx_create_and_repath_use_thread)
         #
         _port = self._tool_node_prx.set_port_add(
-            prx_widgets.PrxButtonPort('repath_tx_to_orig', 'Repath tx(s) to Orig EXT')
+            prx_widgets.PrxPortAsButton('repath_tx_to_orig', 'Repath tx(s) to Orig EXT')
         )
         _port.set_tool_tip(
             [
@@ -272,7 +272,7 @@ class AbsSceneTextureManagerPanel(
         _port.set(self.set_tx_repath_to_orig)
         # jpg-create
         _port = self._tool_node_prx.set_port_add(
-            prx_widgets.PrxPortForBoolean('create_and_repath_to_jpg_force', 'Create & Repath to jpg(s) force', join_to_next=True)
+            prx_widgets.PrxPortAsBoolean('create_and_repath_to_jpg_force', 'Create & Repath to jpg(s) force', join_to_next=True)
         )
         _port.set_tool_tip(
             [
@@ -290,7 +290,7 @@ class AbsSceneTextureManagerPanel(
         )
         _port.set(self.set_jpg_create_and_repath_use_thread)
         _port = self._tool_node_prx.set_port_add(
-            prx_widgets.PrxButtonPort('repath_jpg_to_orig', 'Repath jpg(s) to Orig EXT')
+            prx_widgets.PrxPortAsButton('repath_jpg_to_orig', 'Repath jpg(s) to Orig EXT')
         )
         _port.set_tool_tip(
             [
@@ -300,7 +300,7 @@ class AbsSceneTextureManagerPanel(
         _port.set(self.set_jpg_repath_to_orig)
         #
         _port = self._tool_node_prx.set_port_add(
-            prx_widgets.PrxButtonPort('map_to_windows', 'Map to Platform')
+            prx_widgets.PrxPortAsButton('map_to_windows', 'Map to Platform')
         )
         _port.set(
             self.set_map_to_platform_platform
@@ -321,11 +321,11 @@ class AbsSceneTextureManagerPanel(
             prx_widgets.PrxDirectoryOpenPort('target_directory', 'Target-directory')
         )
         _port = self._search_node_gui.set_port_add(
-            prx_widgets.PrxPortForBoolean('ignore_source_resolved', 'Ignore Source-resolved')
+            prx_widgets.PrxPortAsBoolean('ignore_source_resolved', 'Ignore Source-resolved')
         )
         _port.set(True)
         _port = self._search_node_gui.set_port_add(
-            prx_widgets.PrxButtonPort('search', 'Search in Directory(s)')
+            prx_widgets.PrxPortAsButton('search', 'Search in Directory(s)')
         )
         _port.set_tool_tip(
             [
@@ -350,7 +350,7 @@ class AbsSceneTextureManagerPanel(
             prx_widgets.PrxDirectoryOpenPort('target_directory', 'Target-directory')
         )
         _port = self._copy_and_repath_node_gui.set_port_add(
-            prx_widgets.PrxButtonPort('copy_and_repath', 'Copy & Repath to target')
+            prx_widgets.PrxPortAsButton('copy_and_repath', 'Copy & Repath to target')
         )
         _port.set_tool_tip(
             [
@@ -554,12 +554,12 @@ class AbsSceneTextureManagerPanel(
                 includes=includes
             ).set_color_space_auto_switch()
             #
-            self._set_refresh_all_(includes)
+            self.refresh_all_fnc(includes)
 
     def set_tx_create_and_repath_use_thread(self):
         def complete_fnc():
             _set_texture_tx_repath(self._texture_references, includes)
-            self._set_refresh_all_()
+            self.refresh_all_fnc()
 
         method_signals = utl_gui_qt_core.QtMethodSignals(self.widget)
         method_signals.stated.connect(complete_fnc)
@@ -585,12 +585,12 @@ class AbsSceneTextureManagerPanel(
                 includes=includes
             ).set_tx_repath_to_orig()
             #
-            self._set_refresh_all_(includes)
+            self.refresh_all_fnc(includes)
 
     def set_jpg_create_and_repath_use_thread(self):
         def complete_fnc():
             _set_texture_jpg_repath(self._texture_references, includes)
-            self._set_refresh_all_()
+            self.refresh_all_fnc()
 
         method_signals = utl_gui_qt_core.QtMethodSignals(self.widget)
         method_signals.stated.connect(complete_fnc)
@@ -616,7 +616,7 @@ class AbsSceneTextureManagerPanel(
                 includes=includes
             ).set_repath_to_orig_as_tgt_ext('.jpg')
             #
-            self._set_refresh_all_(includes)
+            self.refresh_all_fnc(includes)
 
     def set_map_to_platform_platform(self):
         if self._texture_references is not None:
@@ -624,9 +624,9 @@ class AbsSceneTextureManagerPanel(
             utl_dcc_operators.DccTexturesOpt(
                 self._texture_references,
                 includes=includes
-            ).set_map_to_platform()
+            ).map_to_current()
             #
-            self._set_refresh_all_()
+            self.refresh_all_fnc()
 
     def set_search(self):
         target_directory = self._search_node_gui.get_port('target_directory').get()
@@ -645,7 +645,7 @@ class AbsSceneTextureManagerPanel(
                     ignore_source_resolved=ignore_source_resolved
                 )
         #
-        self._set_refresh_all_()
+        self.refresh_all_fnc()
 
     def set_copy_and_repath(self):
         target_directory = self._copy_and_repath_node_gui.get_port('target_directory').get()
@@ -657,7 +657,7 @@ class AbsSceneTextureManagerPanel(
                     includes=includes
                 ).set_copy_and_repath_to(target_directory)
         #
-        self._set_refresh_all_()
+        self.refresh_all_fnc()
 
 
 class AbsShotgunEntitiesCreatorPanel(
@@ -698,7 +698,7 @@ class AbsShotgunEntitiesCreatorPanel(
         self._set_tool_group_0_build_()
 
     def _set_tool_panel_setup_(self):
-        self._set_refresh_all_()
+        self.refresh_all_fnc()
 
     def _set_tool_group_0_build_(self):
         expand_box_0 = prx_widgets.PrxExpandedGroup()
@@ -713,10 +713,10 @@ class AbsShotgunEntitiesCreatorPanel(
         qt_layout_0.addWidget(self._tool_node_prx.widget)
         #
         _port = self._tool_node_prx.set_port_add(
-            prx_widgets.PrxPortForEnumerate('project', 'Project-name')
+            prx_widgets.PrxPortAsEnumerate('project', 'Project-name')
         )
         _port = self._tool_node_prx.set_port_add(
-            prx_widgets.PrxPortForEnumerate('task_template', 'Task-template')
+            prx_widgets.PrxPortAsEnumerate('task_template', 'Task-template')
         )
         _port.set_tool_tip(self._shotgun_template_configure.get_str_as_yaml_style())
         #
@@ -731,7 +731,7 @@ class AbsShotgunEntitiesCreatorPanel(
         )
         #
         _port = self._tool_node_prx.set_port_add(
-            prx_widgets.PrxButtonPort('create', 'Create')
+            prx_widgets.PrxPortAsButton('create', 'Create')
         )
         _port.set_tool_tip(
             [
@@ -742,7 +742,7 @@ class AbsShotgunEntitiesCreatorPanel(
             self._set_create_
         )
 
-    def _set_refresh_all_(self):
+    def refresh_all_fnc(self):
         self._set_projects_refresh_()
         self._set_task_templates_refresh_()
         # self._tool_node_prx.get_port('entities').set('asset_add_0_test, asset_add_1_test')
@@ -832,7 +832,7 @@ class AbsPnlHashGeometry(
         )
         #
         _port = self._utility_node_prx.set_port_add(
-            prx_widgets.PrxButtonPort('export_select_to_usd_file', 'Export Select(s) to USD-file')
+            prx_widgets.PrxPortAsButton('export_select_to_usd_file', 'Export Select(s) to USD-file')
         )
         _port.set_tool_tip(
             [
@@ -852,7 +852,7 @@ class AbsPnlHashGeometry(
         )
         #
         _port = self._utility_node_prx.set_port_add(
-            prx_widgets.PrxButtonPort('import_from_usd_file', 'Import from USD-file')
+            prx_widgets.PrxPortAsButton('import_from_usd_file', 'Import from USD-file')
         )
         _port.set_tool_tip(
             [
@@ -874,7 +874,7 @@ class AbsPnlHashGeometry(
         qt_layout_0.addWidget(self._database_export_node_prx.widget)
         #
         _port = self._database_export_node_prx.set_port_add(
-            prx_widgets.PrxPortForBoolean('export_uv_map_force', 'Export UV-map(s) Force')
+            prx_widgets.PrxPortAsBoolean('export_uv_map_force', 'Export UV-map(s) Force')
         )
         _port.set_tool_tip(
             [
@@ -882,7 +882,7 @@ class AbsPnlHashGeometry(
             ]
         )
         _port = self._database_export_node_prx.set_port_add(
-            prx_widgets.PrxButtonPort('export_uv_map_to_database_from_select', 'Export Database UV-map(s) from Select(s)')
+            prx_widgets.PrxPortAsButton('export_uv_map_to_database_from_select', 'Export Database UV-map(s) from Select(s)')
         )
         _port.set_tool_tip(
             [
@@ -904,7 +904,7 @@ class AbsPnlHashGeometry(
         qt_layout_0.addWidget(self._database_import_node_prx.widget)
         #
         _port = self._database_import_node_prx.set_port_add(
-            prx_widgets.PrxButtonPort('import_database_uv_map_to_select', 'Import Database UV-map(s) to Select(s)')
+            prx_widgets.PrxPortAsButton('import_database_uv_map_to_select', 'Import Database UV-map(s) to Select(s)')
         )
         _port.set_tool_tip(
             [
@@ -950,9 +950,9 @@ class AbsPnlHashGeometry(
         self._geometry_uv_assign_ddl_job_process = None
 
     def _set_tool_panel_setup_(self):
-        self._set_refresh_all_()
+        self.refresh_all_fnc()
 
-    def _set_refresh_all_(self):
+    def refresh_all_fnc(self):
         pass
 
     def _set_usd_file_export_(self):
@@ -1022,9 +1022,9 @@ class AbsGeometryCheckerPanel(
         pass
 
     def _set_tool_panel_setup_(self):
-        self._set_refresh_all_()
+        self.refresh_all_fnc()
 
-    def _set_refresh_all_(self):
+    def refresh_all_fnc(self):
         pass
 
 

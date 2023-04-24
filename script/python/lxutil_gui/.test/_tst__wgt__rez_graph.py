@@ -29,9 +29,9 @@ class W(prx_widgets.PrxToolWindow):
         self.set_widget_add(self._g)
         u = unr_objects.ObjUniverse()
 
-        r_s_t = u._get_obj_type_force_('rez', 'system')
-        r_p_t = u._get_obj_type_force_('rez', 'package')
-        r_v_t = u._get_obj_type_force_('rez', 'v')
+        r_s_t = u.get_or_create_obj_type('rez', 'system')
+        r_p_t = u.get_or_create_obj_type('rez', 'package')
+        r_v_t = u.get_or_create_obj_type('rez', 'v')
 
         t = u._get_type_force_(u.Category.CONSTANT, u.Type.NODE)
 

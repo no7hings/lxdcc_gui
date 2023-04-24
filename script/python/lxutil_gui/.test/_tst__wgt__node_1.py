@@ -7,28 +7,25 @@ import lxutil_gui.proxy.widgets as utl_prx_widgets
 
 import lxresolver.commands as rsv_commands
 
+import lxutil.dcc.dcc_objects as utl_dcc_objects
+
 
 class TestWindow(utl_prx_widgets.PrxToolWindow):
     def __init__(self, *args, **kwargs):
         super(TestWindow, self).__init__(*args, **kwargs)
         self.set_definition_window_size([640, 640])
-        self._test_1_()
+        self._test_capsule_()
 
     def _value_completion_gain_fnc_(self, *args, **kwargs):
         return fnmatch.filter(
             ['test'], '*{}*'.format(args[0])
         )
 
-    def _test_1_(self):
-        f = utl_prx_widgets.PrxFilterBar()
-        f.set_history_key('filter.test')
-        self.set_widget_add(f)
-
-        f.set_filter_completion_gain_fnc(self._value_completion_gain_fnc_)
-        self._n = utl_prx_widgets.PrxNode_('root')
+    def _test_capsule_(self):
+        self._n = utl_prx_widgets.PrxNode_('options')
         self.set_widget_add(self._n)
         p = self._n.set_port_add(
-            utl_prx_widgets.PrxCapsuleStringPort(
+            utl_prx_widgets.PrxPortAsCapsuleString(
                 'test_capsule_string'
             )
         )
@@ -38,7 +35,7 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
         p.set('model')
 
         p = self._n.set_port_add(
-            utl_prx_widgets.PrxButtonPort(
+            utl_prx_widgets.PrxPortAsButton(
                 'test_capsule_string_button'
             )
         )
@@ -48,7 +45,7 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
         )
 
         p = self._n.set_port_add(
-            utl_prx_widgets.PrxCapsuleStringsPort(
+            utl_prx_widgets.PrxPortAsCapsuleStrings(
                 'test_capsule_strings'
             )
         )
@@ -60,7 +57,7 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
         )
 
         p = self._n.set_port_add(
-            utl_prx_widgets.PrxButtonPort(
+            utl_prx_widgets.PrxPortAsButton(
                 'test_capsule_strings_button'
             )
         )
@@ -72,13 +69,39 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
     def _test_print_(self, key):
         print self._n.get(key)
 
+    def _test_components_(self):
+        self._n = utl_prx_widgets.PrxNode_('options')
+        self.set_widget_add(self._n)
+        p = self._n.set_port_add(
+            utl_prx_widgets.PrxNodeTreeViewPort(
+                'test_components'
+            )
+        )
+        p.set(
+            [
+                utl_dcc_objects.Obj(i, icon_name='obj/renderable') for i in [
+                    '/master/mod/hi',
+                    '/master/mod/lo',
+                    '/master/hair',
+                    '/master/plant',
+                    '/master/light'
+                ]
+            ]+[
+                utl_dcc_objects.Obj(i, icon_name='obj/non-renderable') for i in [
+                    '/master/grm',
+                    '/master/cfx',
+                    '/master/efx',
+                    '/master/misc'
+                ]
+            ]
+        )
     def _test_(self):
         f = utl_prx_widgets.PrxFilterBar()
         f.set_history_key('filter.test')
         self.set_widget_add(f)
 
         f.set_filter_completion_gain_fnc(self._value_completion_gain_fnc_)
-        n = utl_prx_widgets.PrxNode_('root')
+        n = utl_prx_widgets.PrxNode_('options')
         self.set_widget_add(n)
         p = n.set_port_add(
             utl_prx_widgets.PrxPortForShotgunEntitiesAsChoose(
@@ -113,13 +136,13 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
         )
 
         p = n.set_port_add(
-            utl_prx_widgets.PrxPortForScript(
+            utl_prx_widgets.PrxPortAsScript(
                 'test_script'
             )
         )
 
         p = n.set_port_add(
-            utl_prx_widgets.PrxPortForEnumerate(
+            utl_prx_widgets.PrxPortAsEnumerate(
                 'text_enumerate'
             )
         )

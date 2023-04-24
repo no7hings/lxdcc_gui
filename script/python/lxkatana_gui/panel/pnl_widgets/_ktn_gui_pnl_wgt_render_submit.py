@@ -33,7 +33,7 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
         if parent_opt.get('type') == 'RenderLayer_Wsp':
             return parent_opt
 
-    def _post_setup_(self):
+    def post_setup_fnc(self):
         file_path = ktn_dcc_objects.Scene.get_current_file_path()
         self._options_prx_node.set('scene', file_path)
         self._options_prx_node.get_port('scene').set_locked(True)
@@ -57,7 +57,7 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
                 else:
                     list_.append(i_render_node_opt.get_path())
 
-        ktn_dcc_objects.Selection(list_).set_all_select()
+        ktn_dcc_objects.Selection(list_).select_all()
 
     def get_all_render_layers(self):
         return ktn_core.NGObjsMtd.find_nodes(

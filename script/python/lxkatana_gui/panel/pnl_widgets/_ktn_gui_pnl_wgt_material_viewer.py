@@ -37,7 +37,7 @@ class PnlMaterialViewer(utl_gui_pnl_abstracts.AbsPnlMaterialViewer):
     def __init__(self, *args, **kwargs):
         super(PnlMaterialViewer, self).__init__(*args, **kwargs)
 
-    def _post_setup_(self):
+    def post_setup_fnc(self):
         ns = ktn_scripts.ScpLookOutput.get_all_source_nodes()
         p = self._options_prx_node.get_port('dcc.node')
         if ns:
@@ -55,11 +55,11 @@ class PnlMaterialViewer(utl_gui_pnl_abstracts.AbsPnlMaterialViewer):
             return
         obj_opt = ktn_core.NGObjOpt(node_path)
 
-        self._scene_obj_scene.set_load_by_root(
+        self._scene_obj_scene.load_from_location(
             ktn_obj=obj_opt.get_name(),
             root=self._options_prx_node.get('dcc.geometry_root')
         )
-        self._scene_obj_scene.set_load_by_root(
+        self._scene_obj_scene.load_from_location(
             ktn_obj=obj_opt.get_name(),
             root=self._options_prx_node.get('dcc.material_root')
         )
@@ -88,17 +88,17 @@ class PnlMaterialViewer(utl_gui_pnl_abstracts.AbsPnlMaterialViewer):
         def add_geometry_gui_fnc_(geometry_obj_):
             def select_material_fnc_():
                 if _material_obj is not None:
-                    self.DCC_SELECTION_CLS([_material_obj.path]).set_all_select()
+                    self.DCC_SELECTION_CLS([_material_obj.path]).select_all()
             #
             def select_nmc_material_fnc_():
                 if _material_obj is not None:
                     _nmc_material_obj = nmc_material_dict[_material_scene_graph_path]
-                    self.DCC_SELECTION_CLS([_nmc_material_obj.path]).set_all_select()
+                    self.DCC_SELECTION_CLS([_nmc_material_obj.path]).select_all()
             #
             def select_nme_material_fnc_():
                 if _material_obj is not None:
                     _nme_material_obj = nme_material_dict[_material_scene_graph_path]
-                    self.DCC_SELECTION_CLS([_nme_material_obj.path]).set_all_select()
+                    self.DCC_SELECTION_CLS([_nme_material_obj.path]).select_all()
             #
             def get_nme_material_is_exists_fnc():
                 return _material_scene_graph_path in nme_material_dict

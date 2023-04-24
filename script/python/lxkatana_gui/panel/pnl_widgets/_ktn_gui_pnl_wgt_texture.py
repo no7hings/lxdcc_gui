@@ -50,7 +50,7 @@ class PnlAssetDccTextureManager(utl_gui_pnl_abstracts.AbsPnlAssetDccTextureManag
     def __init__(self, *args, **kwargs):
         super(PnlAssetDccTextureManager, self).__init__(*args, **kwargs)
 
-    def _post_setup_(self):
+    def post_setup_fnc(self):
         ns = ktn_scripts.ScpLookOutput.get_look_output_node_opts()
         p = self._options_prx_node.get_port('dcc.node')
         if ns:

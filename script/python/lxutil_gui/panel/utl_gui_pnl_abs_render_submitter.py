@@ -224,7 +224,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
     def set_all_refresh(self):
         if self._file_path:
-            self._file_path = bsc_core.StorageMtd.set_map_to_platform(self._file_path)
+            self._file_path = bsc_core.StgPathMapMtd.map_to_current(self._file_path)
             self._resolver = rsv_commands.get_resolver()
             self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
             if self._rsv_scene_properties:
@@ -1175,7 +1175,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
     def set_all_refresh(self):
         if self._file_path:
-            self._file_path = bsc_core.StorageMtd.set_map_to_platform(self._file_path)
+            self._file_path = bsc_core.StgPathMapMtd.map_to_current(self._file_path)
             self._resolver = rsv_commands.get_resolver()
             self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
             if self._rsv_scene_properties:
@@ -1336,7 +1336,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             if output_component_usd_file_path:
                 paths = self._rsv_entity_set_usd_creator.get_effect_component_paths(output_component_usd_file_path)
                 u = unr_objects.ObjUniverse()
-                o_t = u._get_obj_type_force_('usd', 'effect')
+                o_t = u.get_or_create_obj_type('usd', 'effect')
                 for i_path in paths:
                     o_t.set_obj_create(i_path)
                 #

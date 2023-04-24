@@ -20,7 +20,7 @@ import lxresolver.commands as rsv_commands
 import lxresolver.operators as rsv_operators
 
 
-class AbsPnlAssetGeometryComparer(
+class AbsPnlAssetDccGeometryComparer(
     prx_widgets.PrxSessionWindow
 ):
     CONFIGURE_FILE_PATH = utl_configure.MainData.get_configure_file('utility/panel/asset-comparer')
@@ -28,7 +28,7 @@ class AbsPnlAssetGeometryComparer(
     #
     PANEL_KEY = 'asset_comparer'
     #
-    DCC_OBJ_CLASS = None
+    DCC_NODE_CLASS = None
     #
     FNC_GEOMETRY_COMPARER = None
     #
@@ -39,16 +39,24 @@ class AbsPnlAssetGeometryComparer(
     USD_NAMESPACE = 'usd'
     #
     DCC_NAMESPACE = None
-    DCC_OBJ_PATHSEP = None
+    DCC_PATHSEP = None
+    #
+    RSV_KEYWORD = 'asset-geometry-usd-payload-file'
+    #
+    DCC_LOCATION = None
+    DCC_LOCATION_SOURCE = None
+    #
+    DCC_GEOMETRY_LOCATION = None
     def __init__(self, session, *args, **kwargs):
-        super(AbsPnlAssetGeometryComparer, self).__init__(session, *args, **kwargs)
+        super(AbsPnlAssetDccGeometryComparer, self).__init__(session, *args, **kwargs)
 
     def set_all_setup(self):
         self._set_panel_build_()
-        self._post_setup_()
-        self._set_refresh_all_()
+        self.post_setup_fnc()
+        #
+        self.refresh_all_fnc()
 
-    def _post_setup_(self):
+    def post_setup_fnc(self):
         pass
 
     def _set_panel_build_(self):
@@ -64,7 +72,7 @@ class AbsPnlAssetGeometryComparer(
             ]
         )
         self.set_button_add(self._update_geometry_from_model_item)
-        self._update_geometry_from_model_item.connect_press_clicked_to(self._set_checked_geometry_import_from_model_)
+        self._update_geometry_from_model_item.connect_press_clicked_to(self.import_fnc)
 
     def _set_viewer_groups_build_(self):
         expand_box_0 = prx_widgets.PrxExpandedGroup()
@@ -81,6 +89,7 @@ class AbsPnlAssetGeometryComparer(
         v_splitter_0.set_widget_add(self._sector_chart)
         self._radar_chart = prx_widgets.PrxRadarChart()
         v_splitter_0.set_widget_add(self._radar_chart)
+        #
         self._obj_tree_viewer_0 = prx_widgets.PrxTreeView()
         h_splitter_0.set_widget_add(self._obj_tree_viewer_0)
         h_splitter_0.set_stretches([1, 2])
@@ -101,15 +110,18 @@ class AbsPnlAssetGeometryComparer(
         self._prx_usd_mesh_tree_view_add_opt = utl_prx_operators.PrxUsdMeshTreeviewAddOpt(
             prx_tree_view=self._obj_tree_viewer_0,
             prx_tree_item_cls=prx_widgets.PrxDccObjTreeItem,
-            tgt_obj_namespace=self.DCC_NAMESPACE,
-            tgt_obj_pathsep=self.DCC_OBJ_PATHSEP,
-            tgt_obj_class=self.DCC_OBJ_CLASS
+            dcc_namespace=self.DCC_NAMESPACE,
+            dcc_pathsep=self.DCC_PATHSEP,
+            dcc_node_class=self.DCC_NODE_CLASS,
+            dcc_geometry_location=self.DCC_GEOMETRY_LOCATION,
         )
         #
         self._prx_dcc_obj_tree_view_selection_opt = utl_prx_operators.PrxDccObjTreeViewSelectionOpt(
             prx_tree_view=self._obj_tree_viewer_0,
             dcc_selection_cls=self.DCC_SELECTION_CLS,
-            dcc_namespace=self.DCC_NAMESPACE
+            dcc_namespace=self.DCC_NAMESPACE,
+            dcc_geometry_location=self.DCC_GEOMETRY_LOCATION,
+            dcc_pathsep=self.DCC_PATHSEP
         )
         self._obj_tree_viewer_0.connect_item_select_changed_to(
             self._prx_dcc_obj_tree_view_selection_opt.set_select
@@ -132,20 +144,19 @@ class AbsPnlAssetGeometryComparer(
             self._session.configure.get('build.node.options'),
         )
         self._options_prx_node.set(
-            'refresh', self._set_obj_gui_refresh_
+            'refresh', self.refresh_gui_fnc
         )
 
     def _set_tool_panel_setup_(self):
-        self._set_refresh_all_()
+        self.refresh_all_fnc()
 
     def _set_comparer_result_update_(self):
         scene_file_path = self._options_prx_node.get('scene.file')
-        root = self._options_prx_node.get('option.location')
         self._fnc_dcc_geometry_comparer = self.FNC_GEOMETRY_COMPARER(
-            scene_file_path, root
+            scene_file_path, self.DCC_LOCATION, self.DCC_LOCATION_SOURCE
         )
         #
-        self._fnc_dcc_geometry_comparer._set_model_geometry_usd_hi_file_path_(
+        self._fnc_dcc_geometry_comparer.set_source_file(
             self._options_prx_node.get('usd.source_file')
         )
         #
@@ -163,7 +174,7 @@ class AbsPnlAssetGeometryComparer(
             with utl_core.GuiProgressesRunner.create(maximum=count, label='gui-add for geometry-comparer result') as g_p:
                 for i_src_geometry_path, i_tgt_geometry_path, i_check_statuses in comparer_results:
                     g_p.set_update()
-
+                    #
                     i_check_statuses_list = i_check_statuses.split('+')
                     for j_check_status in i_check_statuses_list:
                         sector_chart_data_dict.setdefault(
@@ -171,44 +182,43 @@ class AbsPnlAssetGeometryComparer(
                         ).append(
                             i_src_geometry_path
                         )
-                    i_src_dcc_geometry = self._fnc_dcc_geometry_comparer.get_scene_dcc_geometry(i_src_geometry_path)
-                    if i_src_dcc_geometry is None:
-                        i_src_dcc_geometry = self._fnc_dcc_geometry_comparer.get_model_dcc_geometry(i_src_geometry_path)
-                    #
-                    if i_src_dcc_geometry.type_name in ['Mesh', 'mesh']:
-                        i_src_mesh_item_prx = self._prx_usd_mesh_tree_view_add_opt.set_prx_item_add_as(
-                            i_src_dcc_geometry, mode='list'
+                    i_dcc_geometry = self._fnc_dcc_geometry_comparer.get_geometry_src(i_src_geometry_path)
+                    if i_dcc_geometry is None:
+                        i_dcc_geometry = self._fnc_dcc_geometry_comparer.get_geometry_tgt(i_src_geometry_path)
+                        #
+                    if i_dcc_geometry.type_name in ['Mesh', 'mesh']:
+                        i_mesh_prx_item_src = self._prx_usd_mesh_tree_view_add_opt.set_prx_item_add_as(
+                            i_dcc_geometry, mode='list'
                         )
-                        self._prx_usd_mesh_tree_view_add_opt.set_item_prx_update(i_src_dcc_geometry)
                         #
                         key = 'from-model'
                         if i_check_statuses == utl_configure.DccMeshCheckStatus.NON_CHANGED:
-                            i_src_mesh_item_prx.set_adopt_state()
+                            i_mesh_prx_item_src.set_adopt_state()
                         else:
                             if i_tgt_geometry_path is not None:
-                                i_src_mesh_item_prx.set_warning_state()
+                                i_mesh_prx_item_src.set_warning_state()
                             else:
-                                i_src_mesh_item_prx.set_error_state()
+                                i_mesh_prx_item_src.set_error_state()
                         #
                         tag_filter_key = '{}.{}'.format(key, i_check_statuses)
                         #
                         self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
-                            tag_filter_key, i_src_mesh_item_prx
+                            tag_filter_key, i_mesh_prx_item_src
                         )
                         #
-                        i_src_mesh_item_prx.set_gui_attribute(
+                        i_mesh_prx_item_src.set_gui_attribute(
                             'src_mesh_dcc_path', i_src_geometry_path
                         )
-                        i_src_mesh_item_prx.set_gui_attribute(
+                        i_mesh_prx_item_src.set_gui_attribute(
                             'tgt_mesh_dcc_path', i_tgt_geometry_path
                         )
-                        i_src_mesh_item_prx.set_gui_attribute(
+                        i_mesh_prx_item_src.set_gui_attribute(
                             'check_statuses', i_check_statuses
                         )
                         #
-                        i_src_mesh_item_prx.set_name(i_check_statuses, self.DESCRIPTION_INDEX)
+                        i_mesh_prx_item_src.set_name(i_check_statuses, self.DESCRIPTION_INDEX)
                         if i_tgt_geometry_path is not None:
-                            i_src_mesh_item_prx.set_tool_tip(i_tgt_geometry_path, self.DESCRIPTION_INDEX)
+                            i_mesh_prx_item_src.set_tool_tip(i_tgt_geometry_path, self.DESCRIPTION_INDEX)
         #
         sector_chart_data = []
         for i_check_status in utl_configure.DccMeshCheckStatus.ALL:
@@ -230,7 +240,7 @@ class AbsPnlAssetGeometryComparer(
     def _set_radar_chart_refresh_(self):
         pass
 
-    def _set_refresh_all_(self):
+    def refresh_all_fnc(self):
         self._resolver = rsv_commands.get_resolver()
         scene_file_path = self._options_prx_node.get('scene.file')
         self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(
@@ -239,7 +249,7 @@ class AbsPnlAssetGeometryComparer(
         if self._rsv_scene_properties is not None:
             step = self._rsv_scene_properties.get('step')
             if step in ['mod', 'srf', 'rig', 'grm']:
-                keyword = 'asset-geometry-usd-hi-file'
+                keyword = self.RSV_KEYWORD
                 rsv_resource = self._resolver.get_rsv_resource(
                     **self._rsv_scene_properties.get_value()
                 )
@@ -259,9 +269,9 @@ class AbsPnlAssetGeometryComparer(
                             'usd.source_file', results[-1]
                         )
             #
-            self._set_obj_gui_refresh_()
+            self.refresh_gui_fnc()
     #
-    def _set_obj_gui_refresh_(self):
+    def refresh_gui_fnc(self):
         self._set_dcc_obj_guis_build_()
         self._set_radar_chart_refresh_()
         #
@@ -278,7 +288,7 @@ class AbsPnlAssetGeometryComparer(
                     lis.append((i_item_prx, i_dcc_obj))
         return lis
 
-    def _set_checked_geometry_import_from_model_(self):
+    def import_fnc(self):
         checked_src_geometries = self._get_checked_geometry_objs_()
         if checked_src_geometries:
             with utl_core.GuiProgressesRunner.create(maximum=len(checked_src_geometries), label='import geometry') as g_p:
@@ -289,11 +299,16 @@ class AbsPnlAssetGeometryComparer(
                         if i_tgt_dcc_mesh_path is not None:
                             i_check_statuses = i_src_geometry_item_prx.get_gui_attribute('check_statuses')
                             i_src_mesh_dcc_path = i_src_dcc_geometry.path
-                            self._fnc_dcc_geometry_comparer.set_mesh_repair(
+                            self._fnc_dcc_geometry_comparer.repair_mesh(
                                 i_src_mesh_dcc_path, i_tgt_dcc_mesh_path, i_check_statuses
                             )
         #
-        self._set_obj_gui_refresh_()
+        self.refresh_gui_fnc()
+    @classmethod
+    def get_location(cls):
+        if cls.DCC_LOCATION_SOURCE is not None:
+            return cls.DCC_LOCATION_SOURCE
+        return cls.DCC_LOCATION
 
     def _set_path_exchanged_repair_(self, i_tgt_mesh, i_tgt_data):
         pass
@@ -413,7 +428,7 @@ class AbsDccComparerOpt(object):
         pass
 
 
-class AbsPnlGeometryComparer(prx_widgets.PrxSessionWindow):
+class AbsPnlAssetGeometryComparer(prx_widgets.PrxSessionWindow):
     ERROR_STATUS = [
         utl_configure.DccMeshCheckStatus.DELETION,
         utl_configure.DccMeshCheckStatus.ADDITION,
@@ -495,13 +510,13 @@ class AbsPnlGeometryComparer(prx_widgets.PrxSessionWindow):
         self.set_refresh_all()
 
     def __init__(self, session, *args, **kwargs):
-        super(AbsPnlGeometryComparer, self).__init__(session, *args, **kwargs)
+        super(AbsPnlAssetGeometryComparer, self).__init__(session, *args, **kwargs)
 
     def __set_usd_source_file_refresh_(self):
         step = self._session.option_opt.get('source_step')
         task = self._session.option_opt.get('source_task')
 
-        keyword = 'asset-geometry-usd-var-file'
+        keyword = 'asset-geometry-usd-payload-file'
         rsv_task = self._rsv_asset.get_rsv_task(
             step=step, task=task
         )
@@ -510,7 +525,7 @@ class AbsPnlGeometryComparer(prx_widgets.PrxSessionWindow):
                 keyword=keyword
             )
             file_paths = file_rsv_unit.get_result(
-                version='all', extend_variants=dict(var='hi')
+                version='all'
             )
             self._options_prx_node.set(
                 'usd.source_file', file_paths
@@ -538,7 +553,7 @@ class AbsPnlGeometryComparer(prx_widgets.PrxSessionWindow):
     def __gain_data_fnc_(self, file_path_src, file_path_tgt, location):
         import lxusd.fnc.comparers as usd_fnc_comparers
 
-        self._comparer_results = usd_fnc_comparers.GeometryComparer(
+        self._comparer_results = usd_fnc_comparers.FncGeometryComparer(
             option=dict(
                 file_src=file_path_src,
                 file_tgt=file_path_tgt,

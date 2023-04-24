@@ -164,6 +164,9 @@ class _QtTranslucentWidget(QtWidgets.QWidget):
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         # self.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
 
+    def _set_visible_(self, boolean):
+        self.setVisible(boolean)
+
 
 class QtIconButton(QtWidgets.QPushButton):
     def __init__(self, *args, **kwargs):
@@ -3223,7 +3226,21 @@ class QtEntryFrame(
         #
         self._frame_background_color = QtBackgroundColors.Dim
 
-        self._resize_gui = None
+        self._resize_gui = QtVResizeFrame(self)
+        self._resize_gui.hide()
+        # self._resize_gui._set_resize_target_(self)
+    # resize
+    def _get_resize_gui_(self):
+        return self._resize_gui
+
+    def _set_resize_enable_(self, boolean):
+        self._resize_gui.setVisible(boolean)
+
+    def _set_resize_minimum_(self, value):
+        self._resize_gui._set_resize_minimum_(value)
+
+    def _set_resize_target_(self, widget):
+        self._resize_gui._set_resize_target_(widget)
 
     def eventFilter(self, *args):
         widget, event = args
@@ -3351,15 +3368,15 @@ class QtVResizeFrame(
                 self._set_action_flag_(
                     self.ActionFlag.SplitVClick
                 )
-                self._set_action_resize_move_start_(event)
+                self._execute_action_resize_move_start_(event)
                 self._set_pressed_(True)
             elif event.type() == QtCore.QEvent.MouseMove:
                 self._set_action_flag_(
                     self.ActionFlag.SplitVMove
                 )
-                self._set_action_resize_move_execute_(event)
+                self._execute_action_resize_move_(event)
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
-                self._set_action_resize_move_stop_(event)
+                self._execute_action_resize_move_stop_(event)
                 self._set_pressed_(False)
                 self._set_action_flag_clear_()
         return False
@@ -3372,10 +3389,10 @@ class QtVResizeFrame(
             is_hovered=self._action_is_hovered,
         )
 
-    def _set_action_resize_move_start_(self, event):
+    def _execute_action_resize_move_start_(self, event):
         self._resize_point_start = event.pos()
 
-    def _set_action_resize_move_execute_(self, event):
+    def _execute_action_resize_move_(self, event):
         if self._resize_target is not None:
             p = event.pos() - self._resize_point_start
             d_h = p.y()
@@ -3385,7 +3402,7 @@ class QtVResizeFrame(
                 self._resize_target.setMinimumHeight(h_1)
                 self._resize_target.setMaximumHeight(h_1)
 
-    def _set_action_resize_move_stop_(self, event):
+    def _execute_action_resize_move_stop_(self, event):
         pass
 
 

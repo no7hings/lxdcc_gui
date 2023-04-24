@@ -8,18 +8,23 @@ import lxkatana.fnc.comparers as ktn_fnc_comparers
 from lxkatana import ktn_core
 
 
-class PnlAssetGeometryComparer(utl_gui_pnl_abstracts.AbsPnlAssetGeometryComparer):
-    DCC_OBJ_CLASS = ktn_dcc_objects.Node
+class PnlAssetDccGeometryComparer(utl_gui_pnl_abstracts.AbsPnlAssetDccGeometryComparer):
+    DCC_NODE_CLASS = ktn_dcc_objects.Node
     #
-    FNC_GEOMETRY_COMPARER = ktn_fnc_comparers.GeometryComparer
+    FNC_GEOMETRY_COMPARER = ktn_fnc_comparers.FncGeometryComparer
     #
     DCC_SELECTION_CLS = ktn_core.KtnSGSelectionOpt
-    DCC_NAMESPACE = 'dcc'
-    DCC_OBJ_PATHSEP = '|'
+    #
+    DCC_NAMESPACE = 'usd'
+    DCC_PATHSEP = None
+    #
+    DCC_LOCATION = '/master/hi'
+    #
+    DCC_GEOMETRY_LOCATION = '/root/world/geo'
     def __init__(self, session, *args, **kwargs):
-        super(PnlAssetGeometryComparer, self).__init__(session, *args, **kwargs)
+        super(PnlAssetDccGeometryComparer, self).__init__(session, *args, **kwargs)
 
-    def _post_setup_(self):
+    def post_setup_fnc(self):
         scene_src_file_path = ktn_dcc_objects.Scene.get_current_file_path()
         self._options_prx_node.set(
             'scene.file', scene_src_file_path

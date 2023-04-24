@@ -409,7 +409,7 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
 
     def _set_build_(self):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
-        widget = _utl_gui_qt_wgt_item.QtValueEntryForScript()
+        widget = _utl_gui_qt_wgt_item.QtValueEntryAsScript()
         qt_layout_0.addWidget(widget)
         self._qt_text_browser_0 = widget._value_entry
 
@@ -748,14 +748,15 @@ class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_widget._set_entry_completion_gain_fnc_(fnc)
 
 
-class PrxToolGroup(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtWidget
+class PrxButtonGroup(utl_gui_prx_abstract.AbsPrxWidget):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtLine
     def __init__(self, *args, **kwargs):
-        super(PrxToolGroup, self).__init__(*args, **kwargs)
+        super(PrxButtonGroup, self).__init__(*args, **kwargs)
+        self._qt_widget._set_line_draw_enable_(True)
         self._layout = _utl_gui_qt_wgt_utility.QtGridLayout(
             self._qt_widget
         )
-        self._layout.setContentsMargins(2, 2, 2, 2)
+        self._layout.setContentsMargins(8, 2, 0, 2)
         self._layout.setSpacing(4)
 
     def set_widget_add(self, widget, d=2):
@@ -1188,7 +1189,6 @@ class PrxSessionWindow(PrxToolWindow):
 
     def _setup_fnc_(self):
         self.set_variants_restore()
-        #
         self.set_all_setup()
 
     def _set_collapse_update_(self, collapse_dict):
@@ -1200,6 +1200,52 @@ class PrxSessionWindow(PrxToolWindow):
 
     def set_variants_restore(self):
         pass
+
+    def set_all_setup(self):
+        raise NotImplementedError()
+
+
+class PrxSessionToolWindow(PrxSessionWindow):
+    def __init__(self, session, *args, **kwargs):
+        super(PrxSessionToolWindow, self).__init__(session, *args, **kwargs)
+
+    def _setup_fnc_(self):
+        self.set_variants_restore()
+        self._setup_ssn_tool_()
+        self.set_all_setup()
+
+    def apply_fnc(self):
+        raise NotImplementedError()
+
+    def apply_and_close_fnc(self):
+        self.apply_fnc()
+        self.set_window_close_later()
+
+    def close_fnc(self):
+        self.set_window_close_later()
+
+    def _setup_ssn_tool_(self):
+        self._ssn_tool_apply_and_close_button = PrxPressItem()
+        self.set_button_add(self._ssn_tool_apply_and_close_button)
+        self._ssn_tool_apply_and_close_button.set_name('Apply and Close')
+        self._ssn_tool_apply_and_close_button.connect_press_clicked_to(
+            self.apply_and_close_fnc
+        )
+
+        self._ssn_tool_apply_button = PrxPressItem()
+        self.set_button_add(self._ssn_tool_apply_button)
+        self._ssn_tool_apply_button.set_name('Apply')
+        self._ssn_tool_apply_button.connect_press_clicked_to(
+            self.apply_fnc
+        )
+
+        self._ssn_tool_close_button = PrxPressItem()
+        self.set_button_add(self._ssn_tool_close_button)
+        self._ssn_tool_close_button.set_name('Close')
+        self._ssn_tool_close_button.connect_press_clicked_to(
+            self.close_fnc
+        )
+        self._log_expand_bar.set_visible(False)
 
     def set_all_setup(self):
         raise NotImplementedError()

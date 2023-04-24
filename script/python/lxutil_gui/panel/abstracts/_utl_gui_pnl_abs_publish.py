@@ -46,7 +46,7 @@ class AbsValidatorOpt(object):
         )
 
     def set_select(self):
-        utl_prx_operators.PrxDccObjTreeViewSelectionOpt._set_dcc_select_(
+        utl_prx_operators.PrxDccObjTreeViewSelectionOpt.select_fnc(
             prx_tree_view=self._result_tree_view,
             dcc_selection_cls=self.DCC_SELECTION_CLS,
             dcc_namespace=self.DCC_NAMESPACE
@@ -221,7 +221,7 @@ class AbsValidatorOpt(object):
         pathsep_src = rsv_scene_properties.get('dcc.pathsep')
         if pathsep == pathsep_src:
             if pathsep != self.DCC_PATHSEP:
-                dcc_path = dcc_path_dag_opt.set_translate_to(self.DCC_PATHSEP).to_string()
+                dcc_path = dcc_path_dag_opt.translate_to(self.DCC_PATHSEP).to_string()
         #
         dcc_obj = self.DCC_NODE_CLS(dcc_path)
         prx_item = group_prx_item.set_child_add(
@@ -240,7 +240,7 @@ class AbsValidatorOpt(object):
         dcc_path_dag_opt = bsc_core.DccPathDagOpt(dcc_path)
         pathsep = dcc_path_dag_opt.get_pathsep()
         if pathsep != self.DCC_PATHSEP:
-            dcc_path = dcc_path_dag_opt.set_translate_to(self.DCC_PATHSEP).to_string()
+            dcc_path = dcc_path_dag_opt.translate_to(self.DCC_PATHSEP).to_string()
         #
         dcc_obj = self.DCC_COMPONENT_CLS(dcc_path)
         prx_item = node_prx_item.set_child_add(

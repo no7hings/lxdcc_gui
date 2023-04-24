@@ -561,7 +561,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
     def set_variants_restore(self):
         self._create_data = []
 
-    def _post_setup_(self):
+    def post_setup_fnc(self):
         pass
 
     def set_all_setup(self):
@@ -663,7 +663,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         self._refresh_button.set_name('refresh')
         self._refresh_button.connect_press_clicked_to(self._set_gui_refresh_)
 
-        self._post_setup_()
+        self.post_setup_fnc()
 
         self.set_refresh_all()
 

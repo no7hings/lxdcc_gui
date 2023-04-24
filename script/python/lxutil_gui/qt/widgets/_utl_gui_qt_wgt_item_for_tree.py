@@ -491,6 +491,10 @@ class QtTreeWidgetItem(
 
     def _set_tool_tip_text_(self, text, column=0):
         if hasattr(self, 'setToolTip'):
+            text = text.replace(' ', '&nbsp;')
+            text = text.replace('<', '&lt;')
+            text = text.replace('>', '&gt;')
+            #
             css = u'<html>\n<body>\n<style>.no_wrap{white-space:nowrap;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
             name_text_orig = self._get_name_text_orig_()
             if name_text_orig is not None:
@@ -508,7 +512,7 @@ class QtTreeWidgetItem(
                 texts = text
             #
             for i in texts:
-                css += u'<ul><li><i><p class="no_wrap">{}</p></i></li></ul>\n'.format(i)
+                css += u'<p class="no_wrap">{}</p>\n'.format(i)
 
             css += u'</body>\n</html>'
             # noinspection PyCallingNonCallable

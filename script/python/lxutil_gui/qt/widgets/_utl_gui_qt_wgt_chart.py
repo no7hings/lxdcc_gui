@@ -504,7 +504,7 @@ class QtProgressingChart(
                         QtCore.Qt.TextShowMnemonic
                     )
                     painter.drawText(
-                        i_text_rect_f, i_text_, i_text_option
+                        i_text_rect_f, i_text, i_text_option
                     )
 
 

@@ -40,6 +40,8 @@ class PrxTreeView(
         self._loading_show_index = 0
         # add custom menu
         self._qt_view = self.QT_VIEW_CLASS()
+        self._qt_view.setMinimumHeight(42)
+        self._qt_view.setMaximumHeight(166667)
         self._qt_view.gui_proxy = self
         self._qt_layout_0.addWidget(self._qt_view)
         #
@@ -61,6 +63,15 @@ class PrxTreeView(
         #
         self._prx_filter_bar = self._prx_filer_bar_0
         self._keyword_filter_item_prxes = []
+
+    def set_resize_enable(self, boolean):
+        self._qt_widget._set_resize_enable_(boolean)
+
+    def set_resize_minimum(self, value):
+        self._qt_widget._set_resize_minimum_(value)
+
+    def set_resize_target(self, widget):
+        self._qt_widget._set_resize_target_(widget)
     @property
     def view(self):
         return self._qt_view

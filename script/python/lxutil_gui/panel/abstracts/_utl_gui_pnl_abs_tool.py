@@ -25,10 +25,10 @@ class AbsPnlShaderViewer(
 
     def set_all_setup(self):
         self._set_panel_build_()
-        self._set_refresh_all_()
+        self.refresh_all_fnc()
 
     def _set_tool_panel_setup_(self):
-        self._set_refresh_all_()
+        self.refresh_all_fnc()
 
     def _set_panel_build_(self):
         self._set_viewer_groups_build_()
@@ -85,7 +85,7 @@ class AbsPnlShaderViewer(
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
         )
 
-    def _set_refresh_all_(self):
+    def refresh_all_fnc(self):
         self._set_dcc_obj_viewer_refresh_()
         #
         # self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh()
@@ -129,7 +129,7 @@ class AbsPnlShaderViewer(
 class AbsPnlMaterialViewer(
     prx_widgets.PrxSessionWindow
 ):
-    DCC_OBJ_CLASS = None
+    DCC_NODE_CLASS = None
     DCC_SHAPE_OBJ_CLASS = None
     #
     DCC_SCENE_CLASS = None
@@ -153,10 +153,10 @@ class AbsPnlMaterialViewer(
 
     def set_all_setup(self):
         self._set_panel_build_()
-        self._post_setup_()
-        self._set_refresh_all_()
+        self.post_setup_fnc()
+        self.refresh_all_fnc()
 
-    def _post_setup_(self):
+    def post_setup_fnc(self):
         pass
 
     def _set_panel_build_(self):
@@ -164,7 +164,7 @@ class AbsPnlMaterialViewer(
         self._set_configure_groups_build_()
 
     def _set_tool_panel_setup_(self):
-        self._set_refresh_all_()
+        self.refresh_all_fnc()
 
     def _set_viewer_groups_build_(self):
         expand_box_0 = prx_widgets.PrxExpandedGroup()
@@ -236,10 +236,10 @@ class AbsPnlMaterialViewer(
         self._options_prx_node.get_port(
             'refresh'
         ).set(
-            self._set_refresh_all_
+            self.refresh_all_fnc
         )
 
-    def _set_obj_gui_refresh_(self):
+    def refresh_gui_fnc(self):
         self._set_dcc_obj_guis_build_()
         #
         # self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh()
@@ -249,8 +249,8 @@ class AbsPnlMaterialViewer(
     def _set_dcc_obj_guis_build_(self):
         pass
 
-    def _set_refresh_all_(self):
-        self._set_obj_gui_refresh_()
+    def refresh_all_fnc(self):
+        self.refresh_gui_fnc()
 
     def _set_dcc_objs_update_from_scene_(self):
         pass

@@ -1203,6 +1203,10 @@ class AbsQtNameDef(object):
 
     def _set_tool_tip_text_(self, text, **kwargs):
         if hasattr(self, 'setToolTip'):
+            text = text.replace(' ', '&nbsp;')
+            text = text.replace('<', '&lt;')
+            text = text.replace('>', '&gt;')
+            #
             css = u'<html>\n<body>\n<style>.no_wrap{white-space:nowrap;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
             name_text = self._name_text
             if 'name' in kwargs:
@@ -1219,7 +1223,7 @@ class AbsQtNameDef(object):
                 texts = text
             #
             for i in texts:
-                css += u'<ul><li><i><p class="no_wrap">{}</p></i></li></ul>\n'.format(i)
+                css += u'<p class="no_wrap">{}</p>\n'.format(i)
             css += u'</body>\n</html>'
             # noinspection PyCallingNonCallable
             # self._tool_tip_text = css
@@ -1584,16 +1588,17 @@ class AbsQtNamesDef(object):
 
     def _set_tool_tip_text_(self, text, **kwargs):
         if hasattr(self, 'setToolTip'):
+            text = text.replace(' ', '&nbsp;')
+            text = text.replace('<', '&lt;')
+            text = text.replace('>', '&gt;')
             css = u'<html>\n<body>\n<style>.no_wrap{white-space:nowrap;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
             if self._name_texts:
                 for seq, i in enumerate(self._name_texts):
-                    # if len(i) > 240:
-                    #     i = i[:240] + '...'
                     if seq == 0:
                         css += u'<h2><p class="no_warp_and_center">{}</p></h2>\n'.format(i)
                         css += u'<p><hr></p>\n'
                     else:
-                        css += u'<ul><li><i><p class="no_wrap">{}</p></i></li></ul>\n'.format(i)
+                        css += u'<p class="no_wrap">{}</p>\n'.format(i)
 
             css += u'<p><hr></p>\n'
             if isinstance(text, six.string_types):
@@ -1602,7 +1607,7 @@ class AbsQtNamesDef(object):
                 texts = text
             #
             for i in texts:
-                css += u'<ul><li><i><p class="no_wrap">{}</p></i></li></ul>\n'.format(i)
+                css += u'<p class="no_wrap">{}</p>\n'.format(i)
             css += u'</body>\n</html>'
             self.setToolTip(css)
 

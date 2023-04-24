@@ -11,7 +11,7 @@ from ._mya_pnl_wgt_importer import *
 
 from ._mya_pnl_wgt_utility import *
 
-from ._mya_pnl_wgt_toolkit import *
+from ._mya_pnl_wgt_tool import *
 
 from ._mya_pnl_wgt_method import *
 
