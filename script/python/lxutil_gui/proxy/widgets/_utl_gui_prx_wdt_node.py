@@ -981,13 +981,13 @@ class _PrxEntryAsShotgunEntities(
             self._qt_entry_widget._set_choose_tag_filter_dict_(tag_filter_dict)
 
 
-class _PrxEntryForRsvProject(AbsPrxTypeQtEntry):
+class _PrxEntryAsRsvProject(AbsPrxTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
     QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsEnumerate
     #
     HISTORY_KEY = 'gui.projects'
     def __init__(self, *args, **kwargs):
-        super(_PrxEntryForRsvProject, self).__init__(*args, **kwargs)
+        super(_PrxEntryAsRsvProject, self).__init__(*args, **kwargs)
         #
         self._qt_entry_widget._set_value_entry_enable_(True)
         #
@@ -1536,20 +1536,24 @@ class _AbsPrxTypeEntry(utl_gui_prx_abstract.AbsPrxWidget):
         pass
 
 
-class PrxRsvObjChooseEntry(_AbsPrxTypeEntry):
+class _PrxEntryAsRsvObj(_AbsPrxTypeEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
     PRX_ENTRY_CLASS = _utl_gui_prx_wgt_view_for_tree.PrxTreeView
     NAMESPACE = 'resolver'
     def __init__(self, *args, **kwargs):
-        super(PrxRsvObjChooseEntry, self).__init__(*args, **kwargs)
+        super(_PrxEntryAsRsvObj, self).__init__(*args, **kwargs)
         self.widget.setMaximumHeight(160)
         self.widget.setMinimumHeight(160)
         self._prx_entry_widget.set_header_view_create(
             [('name', 2), ('update', 1)],
-            180
+            320
         )
         self._prx_entry_widget.set_selection_use_single()
         self._prx_entry_widget.set_size_policy_height_fixed_mode()
+        # resize
+        self._prx_entry_widget.set_resize_target(self.widget)
+        self._prx_entry_widget.set_resize_enable(True)
+        self._prx_entry_widget.set_resize_minimum(82)
         self._obj_add_dict = {}
 
     def __set_item_comp_add_as_tree_(self, obj, use_show_thread=False):
@@ -2539,7 +2543,7 @@ class PrxDirectorySavePort(_PrxStgObjPort):
 
 
 class PrxPortForRsvProject(PrxConstantPort):
-    ENTRY_CLASS = _PrxEntryForRsvProject
+    ENTRY_CLASS = _PrxEntryAsRsvProject
     def __init__(self, *args, **kwargs):
         super(PrxPortForRsvProject, self).__init__(*args, **kwargs)
 
@@ -2780,7 +2784,7 @@ class PrxRsvObjChoosePort(AbsPrxTypePort):
     ENABLE_CLASS = _PrxPortStatus
     LABEL_CLASS = _PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLASS = PrxRsvObjChooseEntry
+    ENTRY_CLASS = _PrxEntryAsRsvObj
     def __init__(self, *args, **kwargs):
         super(PrxRsvObjChoosePort, self).__init__(*args, **kwargs)
 

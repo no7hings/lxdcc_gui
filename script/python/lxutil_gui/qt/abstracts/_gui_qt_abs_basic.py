@@ -2142,8 +2142,7 @@ class AbsQtChooseDef(object):
         if isinstance(raw, (tuple, list)):
             self._choose_values = list(raw)
 
-    def _set_choose_values_(self, values, icon_file_path=None):
-        c = len(values)
+    def _set_choose_values_(self, values, *args, **kwargs):
         self._choose_values = values
 
     def _set_choose_values_clear_(self):

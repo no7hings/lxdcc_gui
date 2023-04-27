@@ -23,6 +23,8 @@ import lxresolver.methods as rsv_methods
 
 import lxutil.rsv.objects as utl_rsv_objects
 
+import lxutil.scripts as utl_scripts
+
 
 class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
     DCC_NAMESPACE = None
@@ -738,9 +740,9 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                 #
                 i_descriptions = []
 
-                i_directory_args = self._get_default_directory_args_(i_texture_any, ext_tgt)
-                if i_directory_args:
-                    i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args)
+                i_directory_args_dpt = utl_dcc_objects.OsTexture.get_directory_args_dpt_as_default_fnc(i_texture_any, ext_tgt)
+                if i_directory_args_dpt:
+                    i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args_dpt)
                     if i_texture_src.ext == ext_tgt:
                         i_descriptions.append(
                             u'source is non-exists'
@@ -807,74 +809,6 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         repath_tgt_port.set_statuses(
             repath_tgt_statuses
         )
-    @classmethod
-    def _get_default_directory_args_(cls, texture_any, target_extension):
-        target_format = target_extension[1:]
-        # source
-        if texture_any.directory.get_path_is_matched('*/src') is True:
-            directory_path_src = texture_any.directory.path
-            directory_path_tgt = texture_any.directory.get_as_new_name(target_format).path
-            return directory_path_src, directory_path_tgt
-        # target
-        elif texture_any.directory.get_path_is_matched('*/{}'.format(target_format)) is True:
-            directory_path_src = (texture_any.directory.get_as_new_name('src')).path
-            directory_path_tgt = texture_any.directory.path
-            return directory_path_src, directory_path_tgt
-        #
-        directory_path_src = texture_any.directory.path
-        directory_path_tgt = texture_any.directory.path
-        return directory_path_src, directory_path_tgt
-    @classmethod
-    def _get_default_directory_args_dst_(cls, texture_any, target_extension, target_directory):
-        target_format = target_extension[1:]
-        # source
-        if texture_any.directory.get_path_is_matched('*/src') is True:
-            directory_path_src = '{}/src'.format(target_directory)
-            directory_path_tgt = '{}/{}'.format(target_directory, target_format)
-            return directory_path_src, directory_path_tgt
-        # target
-        elif texture_any.directory.get_path_is_matched('*/{}'.format(target_format)) is True:
-            directory_path_src = '{}/src'.format(target_directory)
-            directory_path_tgt = '{}/{}'.format(target_directory, target_format)
-            return directory_path_src, directory_path_tgt
-        #
-        directory_path_src = target_directory
-        directory_path_tgt = target_directory
-        return directory_path_src, directory_path_tgt
-    @classmethod
-    def _get_separate_directory_args_(cls, texture_any, target_extension):
-        target_format = target_extension[1:]
-        # source
-        if texture_any.directory.get_path_is_matched('*/src') is True:
-            directory_path_src = texture_any.directory.path
-            directory_path_tgt = texture_any.directory.get_as_new_name(target_format).path
-            return directory_path_src, directory_path_tgt
-        # target
-        elif texture_any.directory.get_path_is_matched('*/{}'.format(target_format)) is True:
-            directory_path_src = (texture_any.directory.get_as_new_name('src')).path
-            directory_path_tgt = texture_any.directory.path
-            return directory_path_src, directory_path_tgt
-        #
-        directory_path_src = '{}/src'.format(texture_any.directory.path)
-        directory_path_tgt = '{}/{}'.format(texture_any.directory.path, target_format)
-        return directory_path_src, directory_path_tgt
-    @classmethod
-    def _get_separate_directory_args_dst_(cls, texture_any, target_extension, target_directory):
-        target_format = target_extension[1:]
-        # source
-        if texture_any.directory.get_path_is_matched('*/src') is True:
-            directory_path_src = '{}/src'.format(target_directory)
-            directory_path_tgt = '{}/{}'.format(target_directory, target_format)
-            return directory_path_src, directory_path_tgt
-        # target
-        elif texture_any.directory.get_path_is_matched('*/{}'.format(target_format)) is True:
-            directory_path_src = '{}/src'.format(target_directory)
-            directory_path_tgt = '{}/{}'.format(target_directory, target_format)
-            return directory_path_src, directory_path_tgt
-        #
-        directory_path_src = '{}/src'.format(target_directory)
-        directory_path_tgt = '{}/{}'.format(target_directory, target_format)
-        return directory_path_src, directory_path_tgt
 
     def _set_target_create_data_update_(self, ext_tgt, force_enable):
         contents = []
@@ -889,9 +823,9 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                     if i_texture_any.get_is_readable() is False:
                         continue
                     #
-                    i_directory_args = self._get_default_directory_args_(i_texture_any, ext_tgt)
-                    if i_directory_args:
-                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args)
+                    i_directory_args_dpt = utl_dcc_objects.OsTexture.get_directory_args_dpt_as_default_fnc(i_texture_any, ext_tgt)
+                    if i_directory_args_dpt:
+                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args_dpt)
                         if i_texture_src is not None:
                             i_texture_src_units = i_texture_src.get_exists_files_()
                             i_output_directory_path = i_texture_tgt.directory.path
@@ -1042,9 +976,9 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
 
                     i_texture_prx_item = i_texture_any.get_obj_gui()
 
-                    i_directory_args = self._get_default_directory_args_(i_texture_any, ext_tgt)
-                    if i_directory_args:
-                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args)
+                    i_directory_args_dpt = utl_dcc_objects.OsTexture.get_directory_args_dpt_as_default_fnc(i_texture_any, ext_tgt)
+                    if i_directory_args_dpt:
+                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args_dpt)
                         if i_texture_src is not None:
                             if i_texture_src.get_is_exists() is True:
                                 i_dcc_obj_prx_items = i_texture_prx_item.get_children()
@@ -1055,7 +989,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                                             namespace=self.DCC_NAMESPACE
                                         )
                                         #
-                                        self._dcc_texture_references.set_obj_repath_to(
+                                        self._dcc_texture_references.repath_fnc(
                                             j_dcc_obj, i_port_path, i_texture_src.path
                                         )
                 #
@@ -1093,9 +1027,9 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
 
                     i_texture_prx_item = i_texture_any.get_obj_gui()
 
-                    i_directory_args = self._get_default_directory_args_(i_texture_any, ext_tgt)
-                    if i_directory_args:
-                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args)
+                    i_directory_args_dpt = utl_dcc_objects.OsTexture.get_directory_args_dpt_as_default_fnc(i_texture_any, ext_tgt)
+                    if i_directory_args_dpt:
+                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args_dpt)
                         if i_texture_tgt.get_is_exists() is True:
                             i_dcc_obj_prx_items = i_texture_prx_item.get_children()
                             i_port_path = i_texture_any.get_relevant_dcc_port_path()
@@ -1103,7 +1037,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                                 if j_dcc_obj_prx_item.get_is_checked() is True:
                                     j_dcc_obj = j_dcc_obj_prx_item.get_gui_dcc_obj(namespace=self.DCC_NAMESPACE)
                                     #
-                                    self._dcc_texture_references.set_obj_repath_to(
+                                    self._dcc_texture_references.repath_fnc(
                                         j_dcc_obj, i_port_path, i_texture_tgt.path
                                     )
                 #
@@ -1158,7 +1092,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                                 if j_dcc_obj_prx_item.get_is_checked() is True:
                                     j_dcc_obj = j_dcc_obj_prx_item.get_gui_dcc_obj(namespace=self.DCC_NAMESPACE)
                                     #
-                                    self._dcc_texture_references.set_obj_repath_to(
+                                    self._dcc_texture_references.repath_fnc(
                                         j_dcc_obj, i_port_path, i_result
                                     )
 
@@ -1207,25 +1141,25 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                         i_texture_prx_item = i_texture_any.get_obj_gui()
 
                         if scheme == 'default':
-                            i_directory_args = self._get_default_directory_args_(
+                            i_directory_args_dpt = utl_dcc_objects.OsTexture.get_directory_args_dpt_as_default_fnc(
                                 i_texture_any, target_extension
                             )
-                            i_directory_args_dst = self._get_default_directory_args_dst_(
+                            i_directory_args_dst = utl_dcc_objects.OsTexture.get_directory_args_dst_as_default_fnc(
                                 i_texture_any, target_extension, directory
                             )
                         elif scheme == 'separate':
-                            i_directory_args = self._get_separate_directory_args_(
+                            i_directory_args_dpt = utl_dcc_objects.OsTexture.get_directory_args_dpt_as_separate_fnc(
                                 i_texture_any, target_extension
                             )
-                            i_directory_args_dst = self._get_separate_directory_args_dst_(
+                            i_directory_args_dst = utl_dcc_objects.OsTexture.get_directory_args_dst_as_separate_fnc(
                                 i_texture_any, target_extension, directory
                             )
                         else:
                             raise TypeError()
 
-                        if i_directory_args and i_directory_args_dst:
+                        if i_directory_args_dpt and i_directory_args_dst:
                             i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(
-                                target_extension, i_directory_args
+                                target_extension, i_directory_args_dpt
                             )
                             i_directory_src_dst, i_directory_tgt_dst = i_directory_args_dst
 
@@ -1233,7 +1167,6 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                                 if mode == 'copy':
                                     [j.set_copy_to_directory(i_directory_src_dst, replace=replace_enable) for j in i_texture_src.get_exists_files_()]
                                     [j.set_copy_to_directory(i_directory_tgt_dst, replace=replace_enable) for j in i_texture_tgt.get_exists_files_()]
-                                #
                                 elif mode == 'link':
                                     [j.set_link_to_directory(i_directory_src_dst, replace=replace_enable) for j in i_texture_src.get_exists_files_()]
                                     [j.set_link_to_directory(i_directory_tgt_dst, replace=replace_enable) for j in i_texture_tgt.get_exists_files_()]
@@ -1255,7 +1188,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                                             )
                                         #
                                         if i_texture_any_dst.get_is_exists() is True:
-                                            self._dcc_texture_references.set_obj_repath_to(
+                                            self._dcc_texture_references.repath_fnc(
                                                 j_dcc_obj, i_port_path, i_texture_any_dst.path
                                             )
                 #

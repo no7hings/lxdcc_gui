@@ -2269,7 +2269,7 @@ class QtLineEdit_(
                 value = self._value_type(value)
             #
             if value != pre_value:
-                self.setText(value)
+                self.setText(str(value))
                 # self._send_enter_changed_emit_()
         else:
             self.setText('')

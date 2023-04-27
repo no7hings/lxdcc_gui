@@ -1737,6 +1737,11 @@ class QtValueEntryAsEnumerate(
     def _set_value_index_visible_(self, boolean):
         pass
 
+    def _set_choose_values_(self, values, *args, **kwargs):
+        super(QtValueEntryAsEnumerate, self)._set_choose_values_(values, *args, **kwargs)
+        #
+        self._refresh_choose_index_()
+
     def _get_choose_current_values_(self):
         return [self._get_value_()]
 
