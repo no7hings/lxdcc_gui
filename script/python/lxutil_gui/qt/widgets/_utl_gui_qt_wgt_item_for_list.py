@@ -8,63 +8,6 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
 import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
 
-class QtDrag(QtGui.QDrag):
-    released = qt_signal(tuple)
-    ACTION_MAPPER = {
-        QtCore.Qt.IgnoreAction: utl_gui_configure.DragFlag.Ignore,
-        QtCore.Qt.CopyAction: utl_gui_configure.DragFlag.Copy,
-        QtCore.Qt.MoveAction: utl_gui_configure.DragFlag.Move
-    }
-    def __init__(self, *args, **kwargs):
-        super(QtDrag, self).__init__(*args, **kwargs)
-        self.installEventFilter(self)
-
-        self._current_action = QtCore.Qt.IgnoreAction
-
-        self.actionChanged.connect(self._update_action_)
-
-    def _execute_start_(self, point_offset):
-        drag = self
-        widget = self.parent()
-
-        """
-        text/plain ArnoldSceneBake
-        nodegraph/nodes ArnoldSceneBake
-        nodegraph/noderefs ArnoldSceneBake
-        'python/text': 'NodegraphAPI.GetNode('ArnoldSceneBake')',
-        python/getParameters NodegraphAPI.GetNode('ArnoldSceneBake').getParameters()
-        'python/GetGeometryProducer': 'Nodes3DAPI.GetGeometryProducer(NodegraphAPI.GetNode(\'ArnoldSceneBake\'))',
-        'python/GetRenderProducer': Nodes3DAPI.GetRenderProducer(NodegraphAPI.GetNode('ArnoldSceneBake'), useMaxSamples=True)
-        """
-        #
-        w, h = widget.width(), widget.height()
-        p = QtGui.QPixmap(w, h)
-        p.fill(QtCore.Qt.white)
-        widget.render(p)
-        drag.setPixmap(p)
-        drag.setHotSpot(point_offset)
-        drag.exec_(QtCore.Qt.CopyAction)
-
-    def _release_(self):
-        pass
-
-    def _update_action_(self, *args, **kwargs):
-        self._current_action = args[0]
-
-    def _execute_release_(self):
-        if self._current_action in self.ACTION_MAPPER:
-            self.released.emit(
-                (self.ACTION_MAPPER[self._current_action], self.mimeData())
-            )
-
-    def eventFilter(self, *args):
-        widget, event = args
-        if widget == self:
-            if event.type() == QtCore.QEvent.DeferredDelete:
-                self._execute_release_()
-        return False
-
-
 class _QtListItemWidget(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
@@ -193,7 +136,7 @@ class _QtListItemWidget(
                 if self._get_action_flag_is_match_(self.ActionFlag.PressClick):
                     if self._drag_is_enable is True:
                         self._update_mime_data_()
-                        self._drag = QtDrag(self)
+                        self._drag = _utl_gui_qt_wgt_utility.QtDrag(self)
                         self._drag.setMimeData(self._drag_mime_data)
                         self._drag._execute_start_(self._drag_point_offset)
                         self._drag.released.connect(self._execute_drag_released_)
@@ -697,12 +640,12 @@ class _QtListItemWidget(
             icn_frm_w, icn_frm_h = self._name_frame_size
             icn_w, icn_h = self._name_size
             #
-            self._set_index_draw_geometry_(
+            self._set_index_draw_rect_(
                 x+2, y+h-icn_h, w-4, icn_h
             )
             for i_name_index in name_indices:
                 i_x, i_y = x+(icn_frm_w-icn_w)/2+side, y+(icn_frm_h-icn_h)/2+i_name_index*(icn_frm_h+spacing)
-                self._set_name_text_rect_at_(
+                self._set_name_text_draw_rect_at_(
                     i_x, i_y, w-(i_x-x)-side, icn_h,
                     i_name_index
                 )

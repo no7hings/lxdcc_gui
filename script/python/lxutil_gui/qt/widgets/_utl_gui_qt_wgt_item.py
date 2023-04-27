@@ -18,7 +18,7 @@ class _QtListEntry(
     utl_gui_qt_abstract.AbsQtValuesDef,
     #
     utl_gui_qt_abstract.AbsQtEntryBaseDef,
-    utl_gui_qt_abstract.AbsQtActionDropDef,
+    utl_gui_qt_abstract.AbsQtActionPopupDef,
 ):
     entry_changed = qt_signal()
     entry_added = qt_signal()
@@ -39,9 +39,9 @@ class _QtListEntry(
         self._set_values_def_init_(self)
         #
         self._set_entry_base_def_init_(self)
-        self._init_action_drop_def_(self)
+        self._init_action_popup_def_(self)
 
-        self.setAcceptDrops(self._drop_is_enable)
+        self.setAcceptDrops(self._action_popup_is_enable)
 
         self._set_shortcut_register_()
 
@@ -192,8 +192,8 @@ class _QtListEntry(
     def _get_selected_item_widgets_(self):
         return [self.itemWidget(i) for i in self.selectedItems()]
 
-    def _set_drop_enable_(self, boolean):
-        super(_QtListEntry, self)._set_drop_enable_(boolean)
+    def _set_popup_enable_(self, boolean):
+        super(_QtListEntry, self)._set_popup_enable_(boolean)
         self.setAcceptDrops(boolean)
         # self.setDragDropMode(self.DropOnly)
         # self.setDropIndicatorShown(True)
@@ -950,7 +950,7 @@ class QtCheckItem(
             x+(icn_frm_w-icn_w)/2, y+(icn_frm_h-icn_h)/2, icn_w, icn_h
         )
         x += icn_frm_w+spacing
-        self._set_name_draw_geometry_(
+        self._set_name_draw_rect_(
             x, y, w-x, h
         )
 
@@ -1074,7 +1074,7 @@ class _QtEnableItem(
                 x+(icn_frm_w-icn_w)/2, y+(icn_frm_h-icn_h)/2, icn_w, icn_h
             )
         x += icn_frm_w+spacing
-        self._set_name_draw_geometry_(
+        self._set_name_draw_rect_(
             x, y, w-x, h
         )
 
@@ -1550,12 +1550,12 @@ class QtValueEntryAsEnumerate(
         self._popup_choose_frame._start_action_popup_()
 
     def _refresh_widget_(self):
-        self._refresh_enumerate_()
+        self._refresh_choose_index_()
         self._refresh_widget_draw_()
 
-    def _refresh_enumerate_(self):
-        if self._value_enumerate_index_is_enable is True:
-            values = self._get_value_enumerate_strings_()
+    def _refresh_choose_index_(self):
+        if self._choose_index_showable is True:
+            values = self._get_choose_values_()
             if values:
                 if self._value_entry_is_enable is True:
                     value = self._get_value_()
@@ -1601,7 +1601,7 @@ class QtValueEntryAsEnumerate(
 
     def _execute_action_wheel_(self, event):
         delta = event.angleDelta().y()
-        values = self._get_value_enumerate_strings_()
+        values = self._get_choose_values_()
         pre_value = self._get_value_()
         maximum = len(values)-1
         if pre_value in values:
@@ -1678,6 +1678,9 @@ class QtValueEntryAsEnumerate(
         #
         self._build_entry_completion_(self._value_entry, self)
 
+    def _set_choose_popup_auto_resize_enable_(self, boolean):
+        self._popup_choose_frame._set_popup_auto_resize_enable_(boolean)
+
     def _set_value_entry_enable_(self, boolean):
         super(QtValueEntryAsEnumerate, self)._set_value_entry_enable_(boolean)
 
@@ -1688,8 +1691,8 @@ class QtValueEntryAsEnumerate(
         #
         self._refresh_widget_()
 
-    def _set_value_entry_drop_enable_(self, boolean):
-        self._value_entry._set_drop_enable_(boolean)
+    def _set_value_entry_popup_enable_(self, boolean):
+        self._value_entry._set_popup_enable_(boolean)
 
     def _set_value_validation_fnc_(self, fnc):
         self._value_entry._set_value_validation_fnc_(fnc)
@@ -1733,9 +1736,6 @@ class QtValueEntryAsEnumerate(
 
     def _set_value_index_visible_(self, boolean):
         pass
-    #
-    def _get_choose_values_(self):
-        return self._get_value_enumerate_strings_()
 
     def _get_choose_current_values_(self):
         return [self._get_value_()]
@@ -1745,10 +1745,31 @@ class QtValueEntryAsEnumerate(
         #
         self._refresh_widget_()
 
-    def _set_value_default_by_enumerate_index_(self, index):
-        self._set_value_default_(
-            self._get_value_enumerate_string_at_(index)
+    def _set_choose_value_by_index_(self, index):
+        self._set_value_(
+            self._get_choose_values_(index)
         )
+
+    def _set_choose_value_default_by_index_(self, index):
+        self._set_value_default_(
+            self._get_choose_value_at_(index)
+        )
+
+    def _set_choose_tag_filter_enable_(self, boolean):
+        self._popup_choose_frame._set_popup_tag_filter_enable_(boolean)
+
+    def _set_choose_keyword_filter_enable_(self, boolean):
+        self._popup_choose_frame._set_popup_keyword_filter_enable_(boolean)
+
+    def _set_choose_tag_filter_size_(self, w, h):
+        pass
+
+    def _set_choose_item_size_(self, w, h):
+        self._popup_choose_frame._set_popup_item_size_(w, h)
+
+    def _set_value_clear_(self):
+        self._choose_values = []
+        self._value_entry._set_value_clear_()
 
 
 class QtValueEntryAsCapsule(
@@ -2095,8 +2116,8 @@ class QtValueEntryAsArray(
         self._update_background_color_by_locked_(boolean)
         self._refresh_widget_draw_()
 
-    def _set_value_entry_drop_enable_(self, boolean):
-        self._value_entry._set_drop_enable_(boolean)
+    def _set_value_entry_popup_enable_(self, boolean):
+        self._value_entry._set_popup_enable_(boolean)
 
     def _set_value_entry_choose_enable_(self, boolean):
         self._value_choose_button._set_action_enable_(boolean)
@@ -2156,6 +2177,9 @@ class QtValueEntryAsArray(
 
     def _set_choose_tag_filter_enable_(self, boolean):
         self._popup_choose_frame._set_popup_tag_filter_enable_(boolean)
+
+    def _set_choose_keyword_filter_enable_(self, boolean):
+        self._popup_choose_frame._set_popup_keyword_filter_enable_(boolean)
 
     def _set_choose_item_size_(self, w, h):
         self._popup_choose_frame._set_popup_item_size_(w, h)
@@ -2246,8 +2270,8 @@ class QtValueEntryAsArrayChoose(
         self._update_background_color_by_locked_(boolean)
         self._refresh_widget_draw_()
 
-    def _set_value_entry_drop_enable_(self, boolean):
-        self._value_entry._set_drop_enable_(boolean)
+    def _set_value_entry_popup_enable_(self, boolean):
+        self._value_entry._set_popup_enable_(boolean)
 
     def _set_value_entry_choose_enable_(self, boolean):
         self._value_choose_button._set_action_enable_(boolean)
@@ -2307,6 +2331,9 @@ class QtValueEntryAsArrayChoose(
 
     def _set_choose_tag_filter_enable_(self, boolean):
         self._popup_choose_frame._set_popup_tag_filter_enable_(boolean)
+
+    def _set_choose_keyword_filter_enable_(self, boolean):
+        self._popup_choose_frame._set_popup_keyword_filter_enable_(boolean)
 
     def _set_choose_item_size_(self, w, h):
         self._popup_choose_frame._set_popup_item_size_(w, h)
@@ -2746,7 +2773,7 @@ class _QtHExpandItem0(
                 )
                 c_x += icn_frm_w+spacing
         #
-        self._set_name_draw_geometry_(
+        self._set_name_draw_rect_(
             c_x, c_y, w-c_x, frm_h
         )
 

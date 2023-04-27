@@ -561,6 +561,27 @@ class PrxTreeItem(
     def connect_press_db_clicked_to(self, fnc):
         self._qt_widget._signals.press_db_clicked.connect(fnc)
 
+    def set_drag_enable(self, boolean):
+        self._qt_widget._set_drag_enable_(boolean)
+
+    def set_drag_urls(self, urls):
+        self._qt_widget._set_drag_urls_(urls)
+
+    def set_drag_data(self, data):
+        self._qt_widget._set_drag_data_(data)
+
+    def get_drag_data(self):
+        return self._qt_widget._get_drag_data_()
+
+    def get_drag_mime_data(self):
+        return self._qt_widget._get_drag_mime_data_()
+
+    def connect_drag_pressed_to(self, fnc):
+        self._qt_widget.drag_pressed.connect(fnc)
+
+    def connect_drag_released_to(self, fnc):
+        self._qt_widget.drag_released.connect(fnc)
+
     def __str__(self):
         return '{}(names={})'.format(
             self.__class__.__name__,

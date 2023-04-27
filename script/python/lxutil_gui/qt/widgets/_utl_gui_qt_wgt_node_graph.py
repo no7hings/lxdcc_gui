@@ -939,7 +939,7 @@ class _QtNGNode(
         # name
         n_x, n_y = x_0+c_i_r/2, y_0
         n_w, n_h = w_0-c_i_r, self._ng_draw_name_h
-        self._set_name_draw_geometry_(
+        self._set_name_draw_rect_(
             n_x, n_y, n_w, n_h
         )
         # frame
@@ -2053,7 +2053,7 @@ class _QtNGImage(_QtNGNode):
         # name
         n_x, n_y = x_0, y_0
         n_w, n_h = w_0, self._ng_draw_name_h
-        self._set_name_draw_geometry_(
+        self._set_name_draw_rect_(
             n_x, n_y, n_w, n_h
         )
         # frame

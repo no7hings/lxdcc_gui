@@ -3,6 +3,8 @@ from lxutil_gui.qt.utl_gui_qt_core import *
 
 import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
+
 from lxutil_gui.qt import utl_gui_qt_core
 
 
@@ -24,6 +26,8 @@ class QtTreeWidgetItem(
     utl_gui_qt_abstract.AbsQtVisibleDef,
     #
     utl_gui_qt_abstract.AbsQtItemVisibleConnectionDef,
+    #
+    utl_gui_qt_abstract.AbsQtActionDragDef,
 ):
     ValidatorStatus = bsc_configure.ValidatorStatus
     def __init__(self, *args, **kwargs):
@@ -51,9 +55,23 @@ class QtTreeWidgetItem(
         #
         self._set_item_visible_connection_def_init_()
 
+        self._init_action_drag_def_(self)
+
         self._signals = QtItemSignals()
 
         self._status = self.ValidatorStatus.Normal
+
+        self._signals.drag_move.connect(
+            self._execute_drag_move_
+        )
+
+    def _execute_drag_move_(self, data):
+        if self._drag_is_enable is True:
+            self._update_mime_data_()
+            self._drag = _utl_gui_qt_wgt_utility.QtTreeItemDrag(self.treeWidget())
+            self._drag.set_item(*data)
+            self._drag.setMimeData(self._drag_mime_data)
+            self._drag._execute_start_(self._drag_point_offset)
 
     def setCheckState(self, column, state):
         self.setData(column, QtCore.Qt.CheckStateRole, state, emit_send_enable=False)

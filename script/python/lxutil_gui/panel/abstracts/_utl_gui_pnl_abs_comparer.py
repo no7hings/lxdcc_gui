@@ -87,8 +87,6 @@ class AbsPnlAssetDccGeometryComparer(
         v_splitter_0.set_widget_add(self._filter_tree_viewer_0)
         self._sector_chart = prx_widgets.PrxSectorChart()
         v_splitter_0.set_widget_add(self._sector_chart)
-        self._radar_chart = prx_widgets.PrxRadarChart()
-        v_splitter_0.set_widget_add(self._radar_chart)
         #
         self._obj_tree_viewer_0 = prx_widgets.PrxTreeView()
         h_splitter_0.set_widget_add(self._obj_tree_viewer_0)
@@ -237,9 +235,6 @@ class AbsPnlAssetDccGeometryComparer(
             utl_gui_configure.SectorChartMode.Error
         )
 
-    def _set_radar_chart_refresh_(self):
-        pass
-
     def refresh_all_fnc(self):
         self._resolver = rsv_commands.get_resolver()
         scene_file_path = self._options_prx_node.get('scene.file')
@@ -273,7 +268,6 @@ class AbsPnlAssetDccGeometryComparer(
     #
     def refresh_gui_fnc(self):
         self._set_dcc_obj_guis_build_()
-        self._set_radar_chart_refresh_()
         #
         # self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()

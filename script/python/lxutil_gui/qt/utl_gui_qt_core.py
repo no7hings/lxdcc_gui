@@ -570,6 +570,7 @@ class QtFontColors(object):
 
 
 class QtFonts(object):
+    Default = get_font(size=8)
     Label = get_font(size=8)
     Button = get_font(size=9)
     Group = get_font(size=10, weight=75, italic=True)
@@ -818,7 +819,7 @@ class QtPixmapMtd(object):
         if text is not None:
             name = text.split('/')[-1] or ' '
             painter.setPen(QtBorderColors.Icon)
-            r, g, b = bsc_core.RawTextOpt(name).to_rgb__(s_p=50, v_p=50)
+            r, g, b = bsc_core.RawTextOpt(name).to_rgb_0(s_p=50, v_p=50)
             if background_color is not None:
                 r, g, b = background_color
             painter.setBrush(QtGui.QBrush(QtGui.QColor(r, g, b, 255)))
@@ -2358,7 +2359,7 @@ class QtRawColorMtd(object):
     @classmethod
     def _get_image_draw_args_by_text_(cls, text):
         return cls._get_image_draw_args_by_color_(
-            *bsc_core.RawTextOpt(text).to_rgb__(s_p=50, v_p=50)
+            *bsc_core.RawTextOpt(text).to_rgb_0(s_p=50, v_p=50)
         )
     @classmethod
     def _get_image_draw_args_by_color_(cls, *args):
@@ -2799,7 +2800,7 @@ class QtPainter(QtGui.QPainter):
             get_font(size=t_f_s)
         )
         #
-        background_color, font_color = QtRawColorMtd._get_image_draw_args_by_text_(draw_text)
+        background_color, font_color = QtRawColorMtd._get_image_draw_args_by_text_(text)
         self._set_border_color_(QtBorderColors.Icon)
         self._set_background_color_(background_color)
         self.drawRect(
@@ -3000,7 +3001,7 @@ class QtPainter(QtGui.QPainter):
         if background_color is not None:
             background_color__ = Color._get_rgba_(background_color)
         else:
-            background_color__ = bsc_core.RawTextOpt(text).to_rgb__(s_p=50, v_p=50)
+            background_color__ = bsc_core.RawTextOpt(text).to_rgb_0(s_p=50, v_p=50)
 
         background_color_, text_color_ = QtRawColorMtd._get_image_draw_args_by_color_(*background_color__)
         if font_color is not None:
@@ -4524,6 +4525,8 @@ class QtItemSignals(
     visible = qt_signal(bool)
     expanded = qt_signal(bool)
     #
+    pressed = qt_signal(object, int)
+    #
     press_db_clicked = qt_signal(object, int)
     press_clicked = qt_signal(object, int)
     #
@@ -4532,6 +4535,10 @@ class QtItemSignals(
 
     user_check_clicked = qt_signal(object, int)
     user_check_toggled = qt_signal(object, int, bool)
+    #
+    drag_pressed = qt_signal(tuple)
+    drag_move = qt_signal(tuple)
+    drag_released = qt_signal(tuple)
 
 
 if __name__ == '__main__':

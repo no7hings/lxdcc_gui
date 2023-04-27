@@ -791,13 +791,13 @@ class AbsQtEntryBaseDef(object):
         self._entry_use_as_storage = boolean
 
 
-class AbsQtActionDropDef(object):
-    def _init_action_drop_def_(self, widget):
+class AbsQtActionPopupDef(object):
+    def _init_action_popup_def_(self, widget):
         self._widget = widget
-        self._drop_is_enable = False
+        self._action_popup_is_enable = False
 
-    def _set_drop_enable_(self, boolean):
-        self._drop_is_enable = boolean
+    def _set_popup_enable_(self, boolean):
+        self._action_popup_is_enable = boolean
 
 
 class AbsQtActionDragDef(object):
@@ -805,7 +805,7 @@ class AbsQtActionDragDef(object):
         self._widget = widget
         self._drag_is_enable = False
 
-        self._drag_point_offset = QtCore.QPoint()
+        self._drag_point_offset = QtCore.QPoint(0, 0)
         self._drag_urls = []
         self._drag_data = {}
 
@@ -825,6 +825,11 @@ class AbsQtActionDragDef(object):
         self._drag_mime_data = QtCore.QMimeData()
         for k, v in self._drag_data.items():
             self._drag_mime_data.setData(k, v)
+        #
+        if self._drag_urls:
+            self._drag_mime_data.setUrls(
+                [QtCore.QUrl.fromLocalFile(i) for i in self._drag_urls]
+            )
 
     def _get_drag_data_(self):
         return self._drag_data
@@ -1093,7 +1098,7 @@ class AbsQtIndexDef(object):
     def _get_index_text_(self):
         return self._index_text
 
-    def _set_index_draw_geometry_(self, x, y, w, h):
+    def _set_index_draw_rect_(self, x, y, w, h):
         self._index_rect.setRect(
             x, y, w, h
         )
@@ -1183,7 +1188,7 @@ class AbsQtNameDef(object):
             x, y, w, h
         )
 
-    def _set_name_draw_geometry_(self, x, y, w, h):
+    def _set_name_draw_rect_(self, x, y, w, h):
         self._name_draw_rect.setRect(
             x, y, w, h
         )
@@ -1481,7 +1486,7 @@ class AbsQtNamesDef(object):
         self._names_enable = False
         self._name_texts = []
         self._name_indices = []
-        self._name_text_rects = []
+        self._name_draw_rects = []
         #
         self._name_text_dict = collections.OrderedDict()
         self._name_key_rect = []
@@ -1507,8 +1512,8 @@ class AbsQtNamesDef(object):
         if index in self._get_name_indices_():
             return self._name_texts[index]
 
-    def _set_name_text_rect_at_(self, x, y, w, h, index=0):
-        self._name_text_rects[index].setRect(
+    def _set_name_text_draw_rect_at_(self, x, y, w, h, index=0):
+        self._name_draw_rects[index].setRect(
             x, y, w, h
         )
 
@@ -1522,9 +1527,9 @@ class AbsQtNamesDef(object):
     def _set_name_texts_(self, texts):
         self._name_texts = texts
         self._name_indices = range(len(texts))
-        self._name_text_rects = []
+        self._name_draw_rects = []
         for _ in self._get_name_indices_():
-            self._name_text_rects.append(
+            self._name_draw_rects.append(
                 QtCore.QRect()
             )
         #
@@ -1558,7 +1563,7 @@ class AbsQtNamesDef(object):
         return self._name_frame_background_color
 
     def _get_name_rect_at_(self, index=0):
-        return self._name_text_rects[index]
+        return self._name_draw_rects[index]
 
     def _get_name_indices_(self):
         return self._name_indices
@@ -2174,6 +2179,9 @@ class AbsQtChooseDef(object):
 
     def _get_choose_current_values_(self):
         pass
+
+    def _get_choose_value_at_(self, index):
+        return self._choose_values[index]
 
     def _get_choose_current_values_append_(self, value):
         self._choose_values_current.append(value)
@@ -3350,8 +3358,8 @@ class AbsQtValueEntryDef(object):
     def _set_value_entry_enable_(self, boolean):
         self._value_entry_is_enable = boolean
 
-    def _set_value_entry_drop_enable_(self, boolean):
-        self._value_entry._set_drop_enable_(boolean)
+    def _set_value_entry_popup_enable_(self, boolean):
+        self._value_entry._set_popup_enable_(boolean)
 
     def _set_value_validation_fnc_(self, fnc):
         pass
@@ -3402,7 +3410,7 @@ class AbsQtValueEntryEnumerate(
     def _refresh_widget_(self):
         raise NotImplementedError()
 
-    def _refresh_enumerate_(self):
+    def _refresh_choose_index_(self):
         raise NotImplementedError()
 
     def _set_value_entry_enumerate_init_(self, widget):
@@ -3413,48 +3421,16 @@ class AbsQtValueEntryEnumerate(
         self._item_value_default = None
         #
         self._value_enumerate_strings = []
-        self._value_enumerate_index_is_enable = False
+        self._choose_index_showable = False
 
-    def _set_value_enumerate_strings_(self, values):
-        self._value_enumerate_strings = values
-        #
-        self._refresh_enumerate_()
-
-    def _get_value_enumerate_strings_(self):
-        return self._value_enumerate_strings
-
-    def _append_value_enumerate_string_(self, value):
-        self._value_enumerate_strings.append(value)
-        #
-        self._refresh_enumerate_()
-
-    def _set_value_enumerate_string_at_(self, index):
-        self._set_value_(
-            self._get_value_enumerate_string_at_(index)
-        )
-
-    def _get_value_enumerate_index_(self, value):
-        if value in self._value_enumerate_strings:
-            return self._value_enumerate_strings.index(value)
-
-    def _get_value_enumerate_string_at_(self, index):
-        return self._value_enumerate_strings[index]
-
-    def _set_value_default_by_enumerate_index_(self, index):
-        raise NotImplementedError()
-
-    def _set_value_enumerate_index_enable_(self, boolean):
-        self._value_enumerate_index_is_enable = boolean
-        self._refresh_enumerate_()
-
-    def _set_value_clear_(self):
-        self._value_enumerate_strings = []
-        self._value_entry._set_value_clear_()
+    def _set_choose_index_showable_(self, boolean):
+        self._choose_index_showable = boolean
+        self._refresh_choose_index_()
 
     def _set_value_(self, value):
         super(AbsQtValueEntryEnumerate, self)._set_value_(value)
         #
-        self._refresh_enumerate_()
+        self._refresh_choose_index_()
 
 
 class AbsQtValueEntryForTupleDef(object):

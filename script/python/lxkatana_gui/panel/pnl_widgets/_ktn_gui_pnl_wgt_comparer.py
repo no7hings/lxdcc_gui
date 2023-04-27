@@ -29,10 +29,3 @@ class PnlAssetDccGeometryComparer(utl_gui_pnl_abstracts.AbsPnlAssetDccGeometryCo
         self._options_prx_node.set(
             'scene.file', scene_src_file_path
         )
-
-    def _set_radar_chart_refresh_(self):
-        pass
-        # o = ma_core.CmdMeshesOpt('|master|hi')
-        # self._radar_chart.set_chart_data(
-        #     o.get_radar_chart_data()
-        # )

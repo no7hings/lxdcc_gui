@@ -783,7 +783,7 @@ class _QtGuideBar(
             i_x += i_path_key_w
             #
             i_path_value_w = i_path_w_1 + spacing*4
-            i_item._set_name_draw_geometry_(
+            i_item._set_name_draw_rect_(
                 i_x, i_y, i_path_value_w, i_f_h
             )
             #

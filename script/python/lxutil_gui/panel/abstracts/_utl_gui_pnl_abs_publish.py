@@ -751,7 +751,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
                 #
                 window_size=(480, 720),
                 #
-                parent=self.widget,
+                # parent=self.widget,
                 #
                 use_exec=False,
                 #

@@ -13,7 +13,9 @@ class AbsQtTreeWidget(
     #
     AbsQtViewScrollActionDef,
     AbsQtBuildViewDef,
-    AbsQtShowForViewDef
+    AbsQtShowForViewDef,
+    #
+    # AbsQtActionDragDef,
 ):
     def __init__(self, *args, **kwargs):
         super(AbsQtTreeWidget, self).__init__(*args, **kwargs)
@@ -36,6 +38,7 @@ class AbsQtTreeWidget(
         self._set_build_view_setup_(self)
 
         self._set_show_for_view_def_init_(self)
+        self.setFont(QtFonts.Default)
 
     def _get_all_items_(self, column=0):
         def _rcs_fnc(index_):

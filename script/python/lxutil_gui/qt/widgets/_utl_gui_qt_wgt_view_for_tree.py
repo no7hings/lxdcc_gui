@@ -98,14 +98,22 @@ class QtTreeWidget(
             utl_gui_core.QtStyleMtd.get('QScrollBar')
         )
 
+        self._item_press_current = None
+        self._item_press_index = 0
+
+        self.itemPressed.connect(
+            self._execute_item_pressed_
+        )
         self.itemDoubleClicked.connect(
-            self._set_item_db_clicked_emit_send_
+            self._send_item_db_clicked_emit_
         )
         self.itemClicked.connect(
-            self._set_item_clicked_emit_send_
+            self._send_item_clicked_emit_
         )
 
         self._draw_for_check_state_enable = True
+
+        self._drag_is_enable = True
 
     def drawBranches(self, painter, rect, index):
         # Get the indention level of the row
@@ -262,6 +270,14 @@ class QtTreeWidget(
         #
         super(QtTreeWidget, self).mousePressEvent(event)
 
+    def mouseMoveEvent(self, event):
+        # drag move emit
+        item = self.currentItem()
+        if item:
+            item._signals.drag_move.emit((item, event.pos()))
+        #
+        super(QtTreeWidget, self).mousePressEvent(event)
+
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
@@ -305,6 +321,9 @@ class QtTreeWidget(
         #
         super(QtTreeWidget, self).paintEvent(event)
 
+    def _execute_drag_pressed_(self):
+        pass
+
     def _set_draw_for_check_state_enable_(self, boolean):
         self._draw_for_check_state_enable = boolean
 
@@ -346,12 +365,17 @@ class QtTreeWidget(
                 painter.fillRect(
                     check_rect, QtBackgroundColors.Checked
                 )
+
+    def _execute_item_pressed_(self, item, column):
+        self._item_press_current = item
+        self._item_press_index = column
+        item._signals.pressed.emit(item, column)
     @classmethod
-    def _set_item_db_clicked_emit_send_(cls, item, column):
-        item._signals.press_db_clicked.emit(item, column)
-    @classmethod
-    def _set_item_clicked_emit_send_(cls, item, column):
+    def _send_item_clicked_emit_(cls, item, column):
         item._signals.press_clicked.emit(item, column)
+    @classmethod
+    def _send_item_db_clicked_emit_(cls, item, column):
+        item._signals.press_db_clicked.emit(item, column)
 
     def _set_size_policy_height_fixed_mode_(self):
         self.setSizePolicy(
