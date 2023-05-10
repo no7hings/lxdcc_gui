@@ -16,7 +16,7 @@ class AbsPnlRenderSubmitter(prx_widgets.PrxSessionWindow):
         self._item_icon_frame_size = self._session.gui_configure.get('item_icon_frame_size')
         self._item_icon_size = self._session.gui_configure.get('item_icon_size')
 
-        sa_0 = prx_widgets.PrxScrollArea()
+        sa_0 = prx_widgets.PrxVScrollArea()
         self.set_widget_add(sa_0)
 
         ep_0 = prx_widgets.PrxExpandedGroup()
@@ -39,7 +39,7 @@ class AbsPnlRenderSubmitter(prx_widgets.PrxSessionWindow):
         h_s_0.set_widget_add(self._result_list_view)
         h_s_0.set_stretches([1, 3])
         h_s_0.set_widget_hide_at(0)
-        self._result_list_view.set_item_frame_size(*self._item_frame_size)
+        self._result_list_view.set_item_frame_size_basic(*self._item_frame_size)
         self._result_list_view.set_item_icon_frame_size(*self._item_icon_frame_size)
         self._result_list_view.set_item_icon_size(*self._item_icon_size)
         self._result_list_view.set_item_icon_frame_draw_enable(True)

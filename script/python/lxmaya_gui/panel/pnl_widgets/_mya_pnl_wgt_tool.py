@@ -22,7 +22,7 @@ class PnlSceneClearner(prx_widgets.PrxSessionToolWindow):
     def apply_fnc(self):
         ps = [i_p for i_p in self._options_prx_node.get_ports() if i_p.get_type() == 'check_button' and i_p]
         if ps:
-            with self.gui_progress(maximum=len(ps), label='clean all') as g_p:
+            with self.gui_progressing(maximum=len(ps), label='clean all') as g_p:
                 for i_p in ps:
                     g_p.set_update()
                     #

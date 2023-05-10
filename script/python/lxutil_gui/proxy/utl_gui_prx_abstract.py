@@ -370,12 +370,19 @@ class AbsWidgetContentDef(object):
 
 
 class GuiProgress(object):
+    FORMAT_0 = '{percent}% {costed_time}'
+    FORMAT_1 = '{percent}% {costed_time} / {estimated_time}'
     def __init__(self, proxy, qt_progress, maximum, label=None):
         self._proxy = proxy
         self._qt_progress = qt_progress
         self._maximum = maximum
         self._value = 0
         self._label = label
+        # time
+        self._timestamp_started = bsc_core.TimeMtd.get_timestamp()
+        self._timestamp_costed = 0
+        #
+        self._timestamp_estimated = 0
         # all value map to low
         self._map_maximum = min(maximum, 100)
         self._map_value = 0
@@ -439,8 +446,14 @@ class GuiProgress(object):
                 if map_value != self._map_value:
                     self._map_value = map_value
                     #
+                    self._timestamp_costed = bsc_core.TimeMtd.get_timestamp()-self._timestamp_started
+                    if self._value > 1:
+                        self._timestamp_estimated = (self._timestamp_costed/(self._value-1))*self._maximum
+                    else:
+                        self._timestamp_estimated = 0
+                    #
                     root = self.get_root()
-                    root._set_qt_progress_update_()
+                    root.update_qt_process()
 
     def set_stop(self):
         if self.get_is_root():
@@ -481,14 +494,37 @@ class GuiProgress(object):
         progress_fnc._sub_end = self._get_percent_()
         progress_fnc._sub_start = max(min(round(progress_fnc._sub_end-self._get_span_(), 4), 1.0), 0.0)
 
-    def _set_qt_progress_update_(self):
-        if self.get_qt_progress() is not None:
+    def get_show_percent(self):
+        kwargs = dict(
+            percent=('%3d' % (int(self._get_percent_()*100))),
+            value=self._value,
+            maximum=self._maximum,
+            costed_time=bsc_core.RawIntegerMtd.second_to_time_prettify(
+                self._timestamp_costed,
+                mode=1
+            ),
+            estimated_time=bsc_core.RawIntegerMtd.second_to_time_prettify(
+                self._timestamp_estimated,
+                mode=1
+            ),
+        )
+        if int(self._timestamp_estimated) > 0:
+            return self.FORMAT_1.format(
+                **kwargs
+            )
+        return self.FORMAT_0.format(
+            **kwargs
+        )
+
+    def update_qt_process(self):
+        if self._qt_progress is not None:
             if self.get_is_root() is True:
                 descendants = self.get_descendants()
-                raw = [(self._get_percent_(), (0, 1), self._label)]
+                #
+                raw = [(self._get_percent_(), (0, 1), self._label, self.get_show_percent())]
                 maximums, values = [self._maximum], [self._value]
                 map_maximums, map_values = [self._map_maximum], [self._map_value]
-                for i_descendant in descendants:
+                for i_index, i_descendant in enumerate(descendants):
                     maximums.append(i_descendant._maximum)
                     values.append(i_descendant._value)
                     #
@@ -498,10 +534,12 @@ class GuiProgress(object):
                     i_percent_start = i_descendant._sub_start
                     i_percent_end = i_descendant._sub_end
                     i_percent = i_descendant._get_percent_()
+                    #
                     i_label = i_descendant._label
+                    i_show_percent = i_descendant.get_show_percent()
                     if i_percent < 1:
                         raw.append(
-                            (i_percent, (i_percent_start, i_percent_end), i_label)
+                            (i_percent, (i_percent_start, i_percent_end), i_label, i_show_percent)
                         )
                 #
                 maximum, value = sum(maximums), sum(values)
@@ -609,7 +647,7 @@ class AbsPrxProgressingDef(object):
                 self._current_progress.set_child_add(g_p)
         return g_p
     @contextmanager
-    def gui_progress(self, maximum, label=None):
+    def gui_progressing(self, maximum, label=None):
         g_p = self.set_progress_create(maximum, label)
         yield g_p
         g_p.set_stop()
@@ -703,10 +741,8 @@ class AbsPrxViewFilterTagDef(object):
         return self.view._get_view_item_state_colors_(items)
 
     def set_items_visible_by_any_filter(self):
-        keyword = self.filter_bar.get_keyword()
-        self.view._set_view_items_visible_by_any_filter_(
-            keyword
-        )
+        self.view._set_view_keyword_filter_data_src_([self.filter_bar.get_keyword()])
+        self.view._set_view_items_visible_by_any_filter_()
 
 
 class AbsPrxItemVisibleConnectionDef(object):

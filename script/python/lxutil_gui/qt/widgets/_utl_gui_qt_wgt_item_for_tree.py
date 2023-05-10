@@ -12,6 +12,7 @@ class QtTreeWidgetItem(
     QtWidgets.QTreeWidgetItem,
     utl_gui_qt_abstract.AbsQtItemDagLoading,
     #
+    utl_gui_qt_abstract.AbsQtTypeDef,
     utl_gui_qt_abstract.AbsQtNameDef,
     #
     utl_gui_qt_abstract.AbsQtIconDef,
@@ -42,9 +43,10 @@ class QtTreeWidgetItem(
         self._check_action_is_enable = True
         self._emit_send_enable = False
         #
-        self._set_name_def_init_()
-        self._set_icon_def_init_()
-        self._set_menu_def_init_()
+        self._init_type_def_()
+        self._init_name_def_()
+        self._init_icon_def_()
+        self._init_menu_def_()
         #
         self._set_item_filter_def_init_()
         #
@@ -84,6 +86,8 @@ class QtTreeWidgetItem(
     def setData(self, column, role, value, **kwargs):
         emit_send_enable = False
         tree_widget = self.treeWidget()
+        #
+        check_state_pre = self.checkState(column)
         if role == QtCore.Qt.CheckStateRole:
             if self._check_action_is_enable is False:
                 value = QtCore.Qt.Unchecked
@@ -95,11 +99,14 @@ class QtTreeWidgetItem(
         if emit_send_enable is True:
             self._set_check_state_extra_(column)
             #
-            check_state = self.checkState(column)
-            checked = [False, True][check_state == QtCore.Qt.Checked]
+            check_state_cur = self.checkState(column)
+            checked = [False, True][check_state_cur == QtCore.Qt.Checked]
+            # send emit when value changed
+            if check_state_pre != check_state_cur:
+                tree_widget._send_check_changed_emit_(self, column)
             #
-            tree_widget._set_item_check_action_run_(self, column)
-            tree_widget._set_item_toggle_emit_send_(self, column, checked)
+            tree_widget._send_check_toggled_emit_(self, column, checked)
+            # update draw
             tree_widget.update()
 
     def _set_child_add_(self):
@@ -252,9 +259,8 @@ class QtTreeWidgetItem(
     def _set_status_(self, status, column=0):
         if status != self._status:
             self._status = status
-
-            self._set_name_status_(status, column)
             #
+            self._set_name_status_(status, column)
             self._update_wgt_icon_(status, column)
 
     def _set_menu_content_(self, content):
@@ -264,26 +270,33 @@ class QtTreeWidgetItem(
     def _set_name_status_(self, status, column=0):
         font = get_font()
         if status == self.ValidatorStatus.Normal:
+            color = QtFontColors.Normal
             self.setFont(column, font)
-            self.setForeground(column, QtGui.QBrush(Color.NORMAL))
         elif status == self.ValidatorStatus.Correct:
+            color = QtFontColors.Correct
             self.setFont(column, font)
-            self.setForeground(column, QtGui.QBrush(Color.CORRECT))
         elif status == self.ValidatorStatus.Warning:
+            color = QtFontColors.Warning
             self.setFont(column, font)
-            self.setForeground(column, QtGui.QBrush(Color.WARNING))
         elif status == self.ValidatorStatus.Error:
+            color = QtFontColors.Error
             self.setFont(column, font)
-            self.setForeground(column, QtGui.QBrush(Color.ERROR))
         elif status == self.ValidatorStatus.Active:
+            color = QtFontColors.Active
             self.setFont(column, font)
-            self.setForeground(column, QtGui.QBrush(Color.ACTIVE))
         elif status == self.ValidatorStatus.Disable:
+            color = QtFontColors.Disable
             font.setItalic(True)
             self.setFont(column, font)
-            self.setForeground(column, QtGui.QBrush(Color.DISABLE))
         else:
             raise TypeError()
+        #
+        if column == 0:
+            c = self.treeWidget().columnCount()
+            for i in range(c):
+                self.setForeground(i, QtGui.QBrush(color))
+        else:
+            self.setForeground(column, QtGui.QBrush(color))
 
     def _update_wgt_icon_(self, status, column=0):
         if column == 0:
@@ -560,6 +573,12 @@ class QtTreeWidgetItem(
 
     def _clear_(self):
         self.takeChildren()
+
+    def _set_selected_(self, boolean):
+        self.treeWidget().setItemSelected(self, boolean)
+
+    def _set_current_(self):
+        self.treeWidget().setCurrentItem(self)
 
     def __str__(self):
         return '{}(names="{}")'.format(

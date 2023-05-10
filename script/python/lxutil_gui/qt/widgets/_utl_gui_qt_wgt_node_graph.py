@@ -517,8 +517,8 @@ class _QtNGConnection(
     AbsQtNGConnectionDef,
     #
     utl_gui_qt_abstract.AbsQtActionDef,
-    utl_gui_qt_abstract.AbsQtActionHoverDef,
-    utl_gui_qt_abstract.AbsQtActionPressDef,
+    utl_gui_qt_abstract.AbsQtActionForHoverDef,
+    utl_gui_qt_abstract.AbsQtActionForPressDef,
     #
     utl_gui_qt_abstract.AbsQtActionSelectDef,
 ):
@@ -616,7 +616,7 @@ class _QtNGConnection(
         )
 
         self._init_action_def_(self)
-        self._set_action_hover_def_init_()
+        self._init_action_hover_def_()
         self._set_action_press_def_init_()
         self._set_action_select_def_init_()
 
@@ -872,8 +872,8 @@ class _QtNGNode(
     AbsQtBypassDef,
     #
     utl_gui_qt_abstract.AbsQtActionDef,
-    utl_gui_qt_abstract.AbsQtActionHoverDef,
-    utl_gui_qt_abstract.AbsQtActionPressDef,
+    utl_gui_qt_abstract.AbsQtActionForHoverDef,
+    utl_gui_qt_abstract.AbsQtActionForPressDef,
     #
     utl_gui_qt_abstract.AbsQtActionSelectDef,
     #
@@ -891,14 +891,14 @@ class _QtNGNode(
         )
 
         self._set_frame_def_init_()
-        self._set_type_def_init_()
-        self._set_name_def_init_()
-        self._set_icon_def_init_()
+        self._init_type_def_()
+        self._init_name_def_()
+        self._init_icon_def_()
         self._set_image_def_init_()
-        self._set_menu_def_init_()
+        self._init_menu_def_()
         #
         self._init_action_def_(self)
-        self._set_action_hover_def_init_()
+        self._init_action_hover_def_()
         self._set_action_press_def_init_()
         self._set_action_select_def_init_()
 
@@ -923,7 +923,7 @@ class _QtNGNode(
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
 
-        self._set_frame_draw_geometry_(x, y, w, h)
+        self._set_frame_draw_rect_(x, y, w, h)
 
         b_w_0 = self._ng_draw_border_w
 
@@ -2043,7 +2043,7 @@ class _QtNGImage(_QtNGNode):
         x_0, y_0 = x+b_w_0/2, y+b_w_0/2
         w_0, h_0 = w-b_w_0, h-b_w_0
 
-        self._set_frame_draw_geometry_(
+        self._set_frame_draw_rect_(
             x_0, y_0, w_0, h_0
         )
         # select

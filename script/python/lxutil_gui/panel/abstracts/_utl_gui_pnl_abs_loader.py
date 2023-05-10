@@ -9,15 +9,11 @@ import os
 
 import functools
 
-import lxutil_gui.proxy.widgets as prx_widgets
-
 from lxbasic import bsc_core
 
 import lxbasic.objects as bsc_objects
 
 from lxutil import utl_core
-
-import lxutil_gui.proxy.operators as utl_prx_operators
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
@@ -29,11 +25,84 @@ from lxutil_gui import utl_gui_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
+import lxutil_gui.qt.widgets as qt_widgets
+
+import lxutil_gui.proxy.widgets as prx_widgets
+
+import lxutil_gui.proxy.operators as utl_prx_operators
+
 from lxsession import ssn_core
 
 import lxsession.objects as ssn_objects
 
 import lxsession.commands as ssn_commands
+
+
+class _GuiBaseOpt(object):
+    DCC_NAMESPACE = 'resolver'
+    def __init__(self, window, session, resolver):
+        self._window = window
+        self._session = session
+        self._resolver = resolver
+
+
+class _GuiTaskOpt(_GuiBaseOpt):
+    def __init__(self, window, session, resolver, tree_view):
+        super(_GuiTaskOpt, self).__init__(window, session, resolver)
+        self._tree_view = tree_view
+
+
+class _GuiGuideOpt(_GuiBaseOpt):
+    DCC_NAMESPACE = 'resolver'
+    def __init__(self, window, session, resolver, guide_bar, tree_view, list_view):
+        super(_GuiGuideOpt, self).__init__(window, session, resolver)
+
+        self._guide_bar = guide_bar
+        self._tree_view = tree_view
+        self._list_view = list_view
+
+        branch = self._window._rsv_filter_opt.get('branch')
+        if branch == self._resolver.VariantTypes.Asset:
+            self._types = [
+                self._resolver.VariantTypes.Project,
+                self._resolver.VariantTypes.Role,
+                self._resolver.VariantTypes.Asset,
+                self._resolver.VariantTypes.Step,
+                self._resolver.VariantTypes.Task
+            ]
+        elif branch == self._resolver.VariantTypes.Shot:
+            self._types = [
+                self._resolver.VariantTypes.Project,
+                self._resolver.VariantTypes.Sequence,
+                self._resolver.VariantTypes.Shot,
+                self._resolver.VariantTypes.Step,
+                self._resolver.VariantTypes.Task
+            ]
+        else:
+            raise RuntimeError()
+
+        self._guide_bar.set_dict(self._tree_view._item_dict)
+        self._guide_bar.set_types(self._types)
+
+    def gui_refresh(self):
+        rsv_obj = None
+        #
+        list_item_prxes = self._list_view.get_selected_items()
+        # gain list first
+        if list_item_prxes:
+            list_item_prx = list_item_prxes[-1]
+            rsv_obj = list_item_prx.get_gui_dcc_obj(self.DCC_NAMESPACE)
+        else:
+            tree_item_prxes = self._tree_view.get_selected_items()
+            if tree_item_prxes:
+                tree_item_prx = tree_item_prxes[-1]
+                rsv_obj = tree_item_prx.get_gui_dcc_obj(self.DCC_NAMESPACE)
+        #
+        if rsv_obj is not None:
+            for i in self._window._rsv_project_paths:
+                if i not in self._window._result_tree_view._item_dict:
+                    self._window._result_tree_view._item_dict[i] = None
+            self._guide_bar.set_path(rsv_obj.get_path())
 
 
 class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
@@ -43,16 +112,55 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
 
     THREAD_STEP = 8
     def set_all_setup(self):
-        self.__setup_gui_viewers_()
+        v_qt_widget = qt_widgets.QtWidget()
+        self.set_widget_add(v_qt_widget)
+        v_qt_layout = qt_widgets.QtVBoxLayout(v_qt_widget)
+        v_qt_layout.setContentsMargins(0, 0, 0, 0)
+        # top
+        self._top_tool_bar = prx_widgets.PrxHToolBar()
+        v_qt_layout.addWidget(self._top_tool_bar._qt_widget)
+        self._top_tool_bar.set_expanded(True)
+        #   guide
+        self._guide_tool_box = prx_widgets.PrxHToolBox()
+        self._top_tool_bar.set_widget_add(self._guide_tool_box)
+        self._guide_tool_box.set_expanded(True)
+        self._guide_tool_box.set_size_mode(1)
+        #
+        self._task_guide_bar = prx_widgets.PrxGuideBar()
+        self._guide_tool_box.set_widget_add(self._task_guide_bar)
+        #
+        h_qt_widget = qt_widgets.QtWidget()
+        v_qt_layout.addWidget(h_qt_widget)
+        h_qt_layout = qt_widgets.QtHBoxLayout(h_qt_widget)
+        h_qt_layout.setContentsMargins(0, 0, 0, 0)
+        # left
+        self._left_contract_group = prx_widgets.PrxLeftExpandedGroup()
+        h_qt_layout.addWidget(self._left_contract_group._qt_widget)
+        self._left_contract_group.set_width(320)
+        self._left_contract_group.set_expanded(True)
+        #
+        main_scroll_area = prx_widgets.PrxVScrollArea()
+        h_qt_layout.addWidget(main_scroll_area._qt_widget)
+        #
+        self.__setup_gui_viewers_(main_scroll_area)
         self.__setup_gui_options_()
+
+        self._gui_guide_opt = _GuiGuideOpt(
+            self, self._session, self._resolver,
+            self._task_guide_bar, self._result_tree_view, self._rsv_uint_list_view_0
+        )
+        self._result_tree_view.connect_item_select_changed_to(
+            self._gui_guide_opt.gui_refresh
+        )
+        self._rsv_uint_list_view_0.connect_item_select_changed_to(
+            self._gui_guide_opt.gui_refresh
+        )
 
         self.set_refresh_all()
 
-    def set_variants_restore(self):
+    def restore_variants(self):
         self.__running_threads_stacks = []
-
         self.__thread_stack_index = 0
-
         self.__resource_count = 0
 
     def __init__(self, session, *args, **kwargs):
@@ -81,8 +189,18 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             #
             self._rsv_filter_opt = bsc_core.ArgDictStringOpt(self._rsv_filter)
         #
-        self.__gui_refresh_for_all_()
-        # self.set_filter_refresh()
+        self.gui_refresh_fnc()
+
+    def gui_tree_select_cbk(self, text):
+        if text is not None:
+            self._result_tree_view.select_item_by_key(
+                text,
+                exclusive=True
+            )
+            #
+            if text in self._rsv_project_paths:
+                self._rsv_project_name_cur = bsc_core.DccPathDagOpt(text).get_name()
+                self.set_refresh_all()
 
     def set_filter_update(self):
         self._rsv_uint_list_view_0.set_visible_tgt_raw_update()
@@ -96,11 +214,8 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
-    def __gui_refresh_for_all_(self):
-        project = self._options_prx_node.get_port(
-            'project'
-        ).get()
-        #
+    def gui_refresh_fnc(self):
+        project = self._rsv_project_name_cur
         rsv_project = self._resolver.get_rsv_project(project=project)
         if rsv_project is not None:
             utl_core.History.set_append(
@@ -109,37 +224,15 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             )
         #
         rsv_project.set_gui_attribute_restore()
+        self._result_tree_view.restore_filter()
         self._prx_dcc_obj_tree_view_add_opt.set_restore()
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
-        self._guide_bar.set_clear()
+        self._task_guide_bar.set_clear()
         #
         self.__asset_keys = set()
         self.__task_keys = set()
         #
         self.__gui_add_project_(rsv_project)
-
-    def __refresh_guide_bar_(self):
-        list_item_prxes = self._rsv_uint_list_view_0.get_selected_items()
-        rsv_obj = None
-        if list_item_prxes:
-            list_item_prx = list_item_prxes[-1]
-            rsv_obj = list_item_prx.get_gui_dcc_obj(self.DCC_NAMESPACE)
-        else:
-            tree_item_prxes = self._result_tree_view.get_selected_items()
-            if tree_item_prxes:
-                tree_item_prx = tree_item_prxes[-1]
-                rsv_obj = tree_item_prx.get_gui_dcc_obj(self.DCC_NAMESPACE)
-        #
-        if rsv_obj is not None:
-            self._guide_bar.set_path_args(
-                rsv_obj.get_path_args()
-            )
-            dag_components = rsv_obj.get_ancestors()
-            if dag_components:
-                dag_components.reverse()
-                for index, i in enumerate(dag_components):
-                    content = [i.name for i in i.get_children()]
-                    self._guide_bar.set_item_contents_at(content, index)
     #
     def __asset_completion_gain_fnc_(self, *args, **kwargs):
         keyword = args[0]
@@ -159,24 +252,16 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             return bsc_core.RawTextsMtd.set_sort_by_initial(_)
         return []
 
-    def __setup_gui_viewers_(self):
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
-        expand_box_0.set_name('viewers')
-        expand_box_0.set_expanded(True)
-        self.set_widget_add(expand_box_0)
-        #
-        self._guide_bar = prx_widgets.PrxGuideBar()
-        expand_box_0.set_widget_add(self._guide_bar)
-        #
-        h_s = prx_widgets.PrxHSplitter()
-        expand_box_0.set_widget_add(h_s)
+    def __setup_gui_viewers_(self, scroll_area):
         v_s = prx_widgets.PrxVSplitter()
-        h_s.set_widget_add(v_s)
+        self._left_contract_group.set_widget_add(v_s)
         self._result_tree_view = prx_widgets.PrxTreeView()
         v_s.set_widget_add(self._result_tree_view)
+        self._result_tree_view.get_top_tool_bar().set_expanded(True)
         self._result_tree_view.set_filter_history_key(
             'filter.{}-results'.format(self._session.name)
         )
+        self._result_tree_view.set_filter_entry_tip('fiter by resource ...')
         #
         self._filter_tree_view = prx_widgets.PrxTreeView()
         self._filter_tree_view.set_filter_history_key(
@@ -185,44 +270,48 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         v_s.set_widget_add(self._filter_tree_view)
         #
         self._rsv_uint_list_view_0 = prx_widgets.PrxListView()
-        h_s.set_widget_add(self._rsv_uint_list_view_0)
+        scroll_area.set_widget_add(self._rsv_uint_list_view_0)
+        self._rsv_uint_list_view_0.get_top_tool_bar().set_expanded(True)
+        #
+        self._options_prx_node = prx_widgets.PrxNode_('options')
+        self._left_contract_group.set_widget_add(self._options_prx_node)
+        self._options_prx_node.set_expanded(False)
         #
         v_s.set_stretches([2, 1])
-        h_s.set_stretches([1, 3])
         #
         self._result_tree_view.set_header_view_create(
             [('name', 3)],
-            self.get_definition_window_size()[0] * (1.0 / 4.0) - 24
+            320 - 48
         )
         self._result_tree_view.set_selection_use_single()
         #
         self._filter_tree_view.set_header_view_create(
             [('name', 3), ('count', 1)],
-            self.get_definition_window_size()[0] * (1.0 / 4.0) - 24
+            320 - 48
         )
         self._filter_tree_view.view._set_selection_disable_()
         # self._filter_tree_view.set_selection_use_single()
         #
-        self._prx_dcc_obj_tree_view_add_opt = utl_prx_operators.PrxRsvObjTreeViewAddOpt(
+        self._prx_dcc_obj_tree_view_add_opt = utl_prx_operators.GuiRsvObjOpt(
             prx_tree_view=self._result_tree_view,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem,
-            dcc_namespace=self.DCC_NAMESPACE
         )
         #
-        self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.PrxDccObjTreeViewTagFilterOpt(
+        self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.GuiTagFilterOpt(
             prx_tree_view_src=self._filter_tree_view,
             prx_tree_view_tgt=self._result_tree_view,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
         )
         #
         self._result_tree_view.connect_item_select_changed_to(
-            self.__refresh_guide_bar_
-        )
-        self._result_tree_view.connect_item_select_changed_to(
             self.__execute_gui_refresh_tasks_and_units_by_selection_
         )
         #
-        self._rsv_uint_list_view_0.set_item_frame_size(*self._item_frame_size)
+        self._rsv_uint_list_view_0.set_item_frame_size_basic(*self._item_frame_size)
+        self._rsv_uint_list_view_0.get_check_tool_box().set_visible(True)
+        self._rsv_uint_list_view_0.get_scale_switch_tool_box().set_visible(True)
+        self._rsv_uint_list_view_0.get_sort_switch_tool_box().set_visible(True)
+        #
         self._rsv_uint_list_view_0.set_item_icon_frame_size(*self.ITEM_ICON_FRAME_SIZE)
         self._rsv_uint_list_view_0.set_item_icon_size(*self.ITEM_ICON_SIZE)
         self._rsv_uint_list_view_0.set_item_icon_frame_draw_enable(True)
@@ -230,31 +319,29 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         self._rsv_uint_list_view_0.set_item_names_draw_range([None, 3])
         self._rsv_uint_list_view_0.set_item_image_frame_draw_enable(True)
         #
-        self._rsv_uint_list_view_0.connect_item_select_changed_to(
-            self.__refresh_guide_bar_
-        )
         self._rsv_uint_list_view_0.connect_refresh_action_to(self.__execute_gui_refresh_tasks_and_units_by_selection_)
         #
-        self._guide_bar.set_item_clicked_connect_to(self._set_rsv_obj_select_)
-        # self._guide_bar.set_item_changed_connect_to(self._set_rsv_obj_select_)
+        self._task_guide_bar.connect_user_entry_changed_to(self.gui_tree_select_cbk)
 
-        self._result_tree_view.set_filter_completion_gain_fnc(
+        self._result_tree_view.set_completion_gain_fnc(
             self.__asset_completion_gain_fnc_
         )
-        self._filter_tree_view.set_filter_completion_gain_fnc(
+        self._filter_tree_view.set_completion_gain_fnc(
             self.__filter_completion_gain_fnc_
+        )
+
+        self._result_tree_view.connect_refresh_action_to(
+            self.set_refresh_all
         )
 
     def __setup_gui_options_(self):
         self._available_rsv_show_args = self._get_available_rsv_show_args_()
         self._rsv_filter_opt = bsc_core.ArgDictStringOpt(self._rsv_filter)
-        self._filter_project = self._rsv_filter_opt.get('project')
+        self._project_name_from_filter = self._rsv_filter_opt.get('project')
         #
-        projects = map(lambda x: x.get_name(), self._resolver.get_rsv_projects())
-        #
-        self._options_prx_node = prx_widgets.PrxNode_('options')
-        self.set_widget_add(self._options_prx_node)
-        self._options_prx_node.set_expanded(False)
+        self._rsv_projects = self._resolver.get_rsv_projects()
+        self._rsv_project_paths = [i.get_path() for i in self._rsv_projects]
+        self._rsv_project_names = [i.get_name() for i in self._rsv_projects]
         #
         _port = self._options_prx_node.set_port_add(
             prx_widgets.PrxPortAsEnumerate('filter')
@@ -267,35 +354,26 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         #
         current_project = self._get_current_project_()
         if current_project:
-            if current_project in projects:
-                projects.remove(current_project)
+            if current_project in self._rsv_project_names:
+                self._rsv_project_names.remove(current_project)
             #
-            projects.append(current_project)
+            self._rsv_project_names.append(current_project)
         #
         utl_core.History.set_extend(
             'gui.projects',
-            projects
+            self._rsv_project_names
         )
-        #
-        _port = self._options_prx_node.set_port_add(
-            prx_widgets.PrxPortAsEnumerate('project')
-        )
-        _port.set(projects)
-        if self._filter_project is not None:
-            if self._filter_project in projects:
-                _port.set(self._filter_project)
+        self._rsv_project_name_cur = self._rsv_project_names[0]
+        if self._project_name_from_filter is not None:
+            if self._project_name_from_filter in self._rsv_project_names:
+                self._rsv_project_name_cur = self._project_name_from_filter
         else:
-            project_history = utl_core.History.get_latest(
+            project_name_from_history = utl_core.History.get_latest(
                 'gui.projects'
             )
-            if project_history is not None:
-                if project_history in projects:
-                    _port.set(project_history)
-        #
-        _port = self._options_prx_node.set_port_add(
-            prx_widgets.PrxPortAsButton('refresh')
-        )
-        _port.set(self.set_refresh_all)
+            if project_name_from_history is not None:
+                if project_name_from_history in self._rsv_project_names:
+                    self._rsv_project_name_cur = project_name_from_history
 
     def __restore_thread_stack_(self):
         if self.__running_threads_stacks:
@@ -304,13 +382,13 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         self.__running_threads_stacks = []
     #
     def __gui_add_project_(self, rsv_project):
-        is_create, prx_item, show_threads = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as_tree_mode(
+        is_create, prx_item = self._prx_dcc_obj_tree_view_add_opt.gui_add_as_tree(
             rsv_project
         )
         if is_create is True:
             prx_item.set_expanded(True, ancestors=True)
+            prx_item.set_selected(True)
             self.__gui_add_for_all_resources_(rsv_project)
-        return show_threads
     #
     def __gui_add_for_all_resources_(self, rsv_project):
         def post_fnc_():
@@ -366,7 +444,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         self.__resource_count += len(rsv_resources)
 
     def __gui_add_resource_(self, rsv_resource):
-        is_create, prx_item, show_threads = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as_tree_mode(
+        is_create, prx_item = self._prx_dcc_obj_tree_view_add_opt.gui_add_as_tree(
             rsv_resource
         )
         if is_create is True:
@@ -380,7 +458,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                         asset_menu_content
                     )
             #
-            self._result_tree_view.set_item_expand_connect_to(
+            self._result_tree_view.connect_item_expand_to(
                 prx_item, lambda *args, **kwargs: self.__execute_gui_refresh_for_tasks_by_resource_expand_changed_(rsv_resource),
                 time=100
             )
@@ -415,7 +493,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             self.__task_keys.add(i_rsv_task.name)
 
     def __gui_add_task_(self, rsv_task):
-        is_create, rsv_task_item_prx, show_threads = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as_tree_mode(
+        is_create, rsv_task_item_prx = self._prx_dcc_obj_tree_view_add_opt.gui_add_as_tree(
             rsv_task
         )
         if is_create is True:
@@ -436,7 +514,6 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
                 '{}.{}'.format(step, task), rsv_task_item_prx
             )
-        return show_threads
 
     def __execute_gui_refresh_tasks_and_units_by_selection_(self):
         tree_item_prxes = self._result_tree_view.get_selected_items()
@@ -550,6 +627,9 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                     thread_stack_index
                 ]
             else:
+                # print self._rsv_filter_opt.value
+                # print rsv_entities[0]
+                # print rsv_entities[0].get_rsv_tasks(**self._rsv_filter_opt.value)
                 return [
                     [j for i in rsv_entities for j in i.get_rsv_tasks(**self._rsv_filter_opt.value)],
                     thread_stack_index
@@ -559,11 +639,12 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         rsv_tasks, thread_stack_index = args[0]
         # print rsv_tasks
         if thread_stack_index == self.__thread_stack_index:
-            for i_rsv_task in rsv_tasks:
-                self.__gui_add_task_(i_rsv_task)
-                self.__gui_add_unit_(i_rsv_task)
-                #
-                self.__task_keys.add(i_rsv_task.name)
+            with self.gui_waiting():
+                for i_rsv_task in rsv_tasks:
+                    self.__gui_add_task_(i_rsv_task)
+                    self.__gui_add_unit_(i_rsv_task)
+                    #
+                    self.__task_keys.add(i_rsv_task.name)
     #
     def __gui_add_unit_(self, rsv_task):
         def cache_fnc_():
@@ -595,8 +676,9 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                 rsv_task_unit_prx_item.set_gui_dcc_obj(
                     rsv_task, namespace=self.DCC_NAMESPACE
                 )
-                #
+                rsv_task_unit_prx_item.set_index_draw_enable(True)
                 rsv_task_unit_prx_item.set_check_enable(True)
+                rsv_task_unit_prx_item.set_sort_text_key(rsv_task.get_name())
                 #
                 key = rsv_task.path
                 task_prx_item.set_visible_connect_to(
@@ -637,14 +719,6 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                     else:
                         list_.append((j_keyword, j_hidden))
         return list_
-
-    def _set_rsv_obj_select_(self):
-        obj_path = self._guide_bar.get_current_path()
-        if obj_path is not None:
-            self._result_tree_view.set_item_select_by_filter_key(
-                obj_path,
-                exclusive=True
-            )
 
     def __gui_show_deferred_fnc_for_task_unit_(self, rsv_task, rsv_task_unit_prx_item, show_data):
         project = rsv_task.get('project')
@@ -719,7 +793,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         rsv_task_unit_prx_item.set_name_dict(show_info_dict)
         r, g, b = bsc_core.RawTextOpt(task).to_rgb_(s_p=25, v_p=35)
         rsv_task_unit_prx_item.set_name_frame_background_color((r, g, b, 127))
-        rsv_task_unit_prx_item.set_icon_by_name_text(step)
+        rsv_task_unit_prx_item.set_icon_by_name(step)
         rsv_task_unit_prx_item.set_icons_by_pixmap(pixmaps)
         rsv_task_unit_prx_item.set_tool_tip(
             rsv_task.description

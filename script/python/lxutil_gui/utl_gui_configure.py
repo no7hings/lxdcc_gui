@@ -24,6 +24,21 @@ class Data(object):
     DATA_ROOT = '{}/.data'.format(ROOT)
 
 
+class Orientation(enum.IntEnum):
+    Horizontal = 0
+    Vertical = 1
+
+
+class Alignment(enum.IntEnum):
+    Left = 0
+    Right = 1
+
+
+class Direction(enum.IntEnum):
+    LeftToRight = 0
+    RightToLeft = 1
+
+
 class ActionFlag(enum.IntEnum):
     PressClick = 0x01
     PressDbClick = 0x02
@@ -43,8 +58,8 @@ class ActionFlag(enum.IntEnum):
     #
     SplitHHover = 0x41
     SplitVHover = 0x42
-    SplitHClick = 0x43
-    SplitVClick = 0x44
+    SplitHPess = 0x43
+    SplitVPess = 0x44
     SplitHMove = 0x45
     SplitVMove = 0x46
     #
@@ -104,6 +119,16 @@ class AlignRegion(enum.IntEnum):
 class TagFilterMode(enum.IntEnum):
     MatchAll = 0
     MatchOne = 1
+
+
+class SortMode(enum.IntEnum):
+    Number = 0
+    Name = 1
+
+
+class SortOrder(enum.IntEnum):
+    Ascend = 0
+    Descend = 1
 
 
 class Size(object):

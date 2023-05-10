@@ -1,8 +1,4 @@
 # coding=utf-8
-import six
-
-import collections
-
 import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
 from lxutil_gui.qt.utl_gui_qt_core import *
@@ -60,7 +56,7 @@ class QtLine(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract.AbsQtActionDef,
-    utl_gui_qt_abstract.AbsQtActionPressDef,
+    utl_gui_qt_abstract.AbsQtActionForPressDef,
 ):
     def __init__(self, *args, **kwargs):
         super(QtLine, self).__init__(*args, **kwargs)
@@ -166,81 +162,6 @@ class _QtTranslucentWidget(QtWidgets.QWidget):
 
     def _set_visible_(self, boolean):
         self.setVisible(boolean)
-
-
-class QtIconButton(QtWidgets.QPushButton):
-    def __init__(self, *args, **kwargs):
-        super(QtIconButton, self).__init__(*args, **kwargs)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setPalette(QtDccMtd.get_palette())
-        #
-        self.setFont(Font.NAME)
-        self.setMaximumSize(20, 20)
-        self.setMinimumSize(20, 20)
-        #
-        self._icon_file_path = None
-        self._icon_color_rgb = None
-        #
-        self._icon_file_draw_size = 16, 16
-        self._icon_color_draw_size = 8, 8
-        self._frame_size = 20, 20
-        self._action_is_hovered = False
-        #
-        self.installEventFilter(self)
-        #
-        self.setFocusPolicy(QtCore.Qt.NoFocus)
-
-        self._menu_raw = []
-
-    def _set_menu_raw_(self, menu_raw):
-        self._menu_raw = menu_raw
-
-    def _get_menu_raw_(self):
-        return self._menu_raw
-
-    def _set_menu_show_(self):
-        menu_raw = self._get_menu_raw_()
-        if menu_raw:
-            qt_menu = QtMenu(self)
-            qt_menu._set_menu_raw_(menu_raw)
-            qt_menu._set_show_()
-
-    def eventFilter(self, *args):
-        widget, event = args
-        if widget == self:
-            if event.type() == QtCore.QEvent.Enter:
-                self._action_is_hovered = True
-                self.update()
-            elif event.type() == QtCore.QEvent.Leave:
-                self._action_is_hovered = False
-                self.update()
-            elif event.type() == QtCore.QEvent.MouseButtonPress:
-                self._action_is_hovered = True
-                self._set_menu_show_()
-                self.update()
-        return False
-
-    def paintEvent(self, event):
-        w, h = self.width(), self.height()
-        f_w, f_h = self._frame_size
-        c_w, c_h = self._icon_file_draw_size
-        painter = QtPainter(self)
-        #
-        f_x, f_y = (w-c_w) / 2, (h-c_h) / 2
-        #
-        bkg_rect = QtCore.QRect(1, 1, w-1, h-1)
-        bkg_color = [QtBackgroundColors.Transparent, QtBackgroundColors.Hovered][self._action_is_hovered]
-        painter._draw_frame_by_rect_(
-            bkg_rect,
-            border_color=bkg_color,
-            background_color=bkg_color,
-            border_radius=4
-        )
-        if self._icon_file_path is not None:
-            icn = QtCore.QRect(f_x, f_y, c_w, c_h)
-            painter._draw_svg_by_rect_(icn, self._icon_file_path)
-        elif self._icon_color_rgb is not None:
-            pass
 
 
 class QtPressButton(QtWidgets.QPushButton):
@@ -492,15 +413,59 @@ class QtMenu(QtWidgets.QMenu):
             widget_action.triggered.connect(lambda *args, **kwargs: cls._set_cmd_run_(cmd_str))
 
 
-class _QtLabel(QtWidgets.QWidget):
+class _QtInfoFrame(QtWidgets.QWidget):
+    def _refresh_widget_draw_(self):
+        self.update()
+
     def __init__(self, *args, **kwargs):
-        super(_QtLabel, self).__init__(*args, **kwargs)
-        self._name = None
+        super(_QtInfoFrame, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+        #
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+
+        self.setFont(get_font(size=12, italic=True))
+
+        self._info_text = ''
+
+        self._info_draw_rect = QtCore.QRect()
+        self._info_draw_size = 160, 32
+
+    def _refresh_widget_geometry_(self, x, y, w, h):
+        self.setGeometry(
+            x, y, w, h
+        )
+        self._refresh_widget_draw_()
+
+    def _set_info_text_(self, text):
+        self._info_text = text
+        if text:
+            self.show()
+            self._refresh_widget_draw_()
+        else:
+            self.hide()
+
+    def _clear_(self):
+        self._set_info_text_('')
 
     def paintEvent(self, event):
         painter = QtPainter(self)
-        if self._name is not None:
-            pass
+        if self._info_text:
+            rect = self.rect()
+
+            painter._draw_frame_by_rect_(
+                rect=rect,
+                border_color=QtBorderColors.Transparent,
+                background_color=QtBackgroundColors.ToolTip,
+                border_radius=1
+            )
+            painter._draw_text_by_rect_(
+                rect=self.rect(),
+                text=self._info_text,
+                font=self.font(),
+                font_color=QtFontColors.ToolTip,
+                text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+            )
 
 
 class QtAction(QtWidgets.QAction):
@@ -521,9 +486,40 @@ class QtLabel(QtWidgets.QLabel):
         self.setFont(Font.NAME)
 
 
-class QtScrollArea(QtWidgets.QScrollArea):
+class QtHScrollArea(QtWidgets.QScrollArea):
     def __init__(self, *args, **kwargs):
-        super(QtScrollArea, self).__init__(*args, **kwargs)
+        super(QtHScrollArea, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setWidgetResizable(True)
+        widget = QtWidget()
+        self.setWidget(widget)
+        self._layout = QtHBoxLayout(widget)
+        self._layout.setAlignment(QtCore.Qt.AlignTop)
+        self._layout.setContentsMargins(*[0]*4)
+        self._layout.setSpacing(Util.LAYOUT_SPACING)
+        #
+        qt_palette = QtDccMtd.get_palette()
+        self.setPalette(qt_palette)
+        #
+        self.setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QScrollArea')
+        )
+        #
+        self.verticalScrollBar().setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QScrollBar')
+        )
+        self.horizontalScrollBar().setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QScrollBar')
+        )
+
+    def keyPressEvent(self, event):
+        pass
+
+
+class QtVScrollArea(QtWidgets.QScrollArea):
+    def __init__(self, *args, **kwargs):
+        super(QtVScrollArea, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         self.setWidgetResizable(True)
@@ -570,8 +566,8 @@ class QtIconPressItem(
     utl_gui_qt_abstract.AbsQtStateDef,
     #
     utl_gui_qt_abstract.AbsQtActionDef,
-    utl_gui_qt_abstract.AbsQtActionHoverDef,
-    utl_gui_qt_abstract.AbsQtActionPressDef,
+    utl_gui_qt_abstract.AbsQtActionForHoverDef,
+    utl_gui_qt_abstract.AbsQtActionForPressDef,
 ):
     clicked = qt_signal()
     db_clicked = qt_signal()
@@ -636,14 +632,14 @@ class QtIconPressItem(
         self.installEventFilter(self)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         #
-        self._set_name_def_init_()
-        self._set_icon_def_init_()
-        self._set_menu_def_init_()
+        self._init_name_def_()
+        self._init_icon_def_()
+        self._init_menu_def_()
         self._set_status_def_init_()
         self._set_state_def_init_()
         #
         self._init_action_def_(self)
-        self._set_action_hover_def_init_()
+        self._init_action_hover_def_()
         self._set_action_press_def_init_()
 
     def eventFilter(self, *args):
@@ -734,6 +730,7 @@ class QtIconPressItem(
 class QtMainWindow(
     QtWidgets.QMainWindow,
     utl_gui_qt_abstract.AbsQtIconDef,
+    utl_gui_qt_abstract.AbsQtWaitingDef,
     QtThreadDef
 ):
     close_clicked = qt_signal()
@@ -755,9 +752,9 @@ class QtMainWindow(
         #
         set_shadow(self, radius=2)
         #
-        self._set_icon_def_init_()
-
+        self._init_icon_def_()
         self._window_system_tray_icon = None
+        self._init_waiting_def_(self)
     #
     def _refresh_widget_draw_(self):
         self.update()
@@ -1002,65 +999,6 @@ class QtListWidgetStyledItemDelegate(QtWidgets.QStyledItemDelegate):
         editor.setGeometry(option.rect)
 
 
-class QtLineEdit0(QtWidgets.QLineEdit):
-    def __init__(self, *args, **kwargs):
-        super(QtLineEdit0, self).__init__(*args, **kwargs)
-        self.setPalette(QtDccMtd.get_palette())
-        #
-        self.setFont(Font.NAME)
-        #
-        self.setFocusPolicy(QtCore.Qt.ClickFocus)
-
-    def _set_validator_use_as_integer_(self):
-        self.setValidator(QtGui.QIntValidator())
-
-    def _set_validator_use_as_float_(self):
-        self.setValidator(QtGui.QDoubleValidator())
-
-    def _set_value_maximum_(self, value):
-        pass
-
-    def _set_value_minimum_(self, value):
-        pass
-
-    def _set_value_range_(self, maximum, minimum):
-        pass
-
-
-class QtCheckBox(QtWidgets.QCheckBox):
-    def __init__(self, *args, **kwargs):
-        super(QtCheckBox, self).__init__(*args, **kwargs)
-        self.setPalette(QtDccMtd.get_palette())
-        #
-        self.setFont(Font.NAME)
-
-
-class QtRadioButton(QtWidgets.QRadioButton):
-    def __init__(self, *args, **kwargs):
-        super(QtRadioButton, self).__init__(*args, **kwargs)
-        self.setPalette(QtDccMtd.get_palette())
-        #
-        self.setFont(Font.NAME)
-
-
-class QtComboBox(QtWidgets.QComboBox):
-    def __init__(self, *args, **kwargs):
-        super(QtComboBox, self).__init__(*args, **kwargs)
-        self.setPalette(QtDccMtd.get_palette())
-        self.setItemDelegate(QtStyledItemDelegate())
-        self.view().setAlternatingRowColors(True)
-        self.setFont(Font.NAME)
-        #
-        self.setLineEdit(QtLineEdit0())
-
-
-class QtProgressDialog(QtWidgets.QProgressDialog):
-    def __init__(self, *args, **kwargs):
-        super(QtProgressDialog, self).__init__(*args, **kwargs)
-        self.setWindowModality(QtCore.Qt.ApplicationModal)
-        self.setCancelButton(None)
-
-
 class QtProgressBar(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtProgressDef
@@ -1131,421 +1069,6 @@ class QtProgressBar(
                         background_color=(255, 255, 255, 255),
                         border_radius=1,
                     )
-
-
-class _AbsQtSplitterHandle(QtWidgets.QWidget):
-    QT_ORIENTATION = None
-    def __init__(self, *args, **kwargs):
-        super(_AbsQtSplitterHandle, self).__init__(*args, **kwargs)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        #
-        self._swap_enable = True
-        #
-        qt_palette = QtDccMtd.get_palette()
-        self.setPalette(qt_palette)
-        #
-        self._contract_icon_name_l = ['contract_h_l', 'contract_v_l'][self.QT_ORIENTATION == QtCore.Qt.Horizontal]
-        self._contract_icon_name_r = ['contract_h_r', 'contract_v_r'][self.QT_ORIENTATION == QtCore.Qt.Horizontal]
-        self._swap_icon_name = ['swap_h', 'swap_v'][self.QT_ORIENTATION == QtCore.Qt.Horizontal]
-        #
-        self._contract_frame_size = [(20, 10), (10, 20)][self.QT_ORIENTATION == QtCore.Qt.Horizontal]
-        self._contract_icon_size = [(16, 8), (8, 16)][self.QT_ORIENTATION == QtCore.Qt.Horizontal]
-        #
-        self._is_contract_l = False
-        self._is_contract_r = False
-        #
-        self._qt_layout_class = [QtHBoxLayout, QtVBoxLayout][self.QT_ORIENTATION == QtCore.Qt.Horizontal]
-        #
-        self._size_l = 0
-        self._size_r = 0
-        self._sizes = []
-        #
-        self._index = 0
-        #
-        layout = self._qt_layout_class(self)
-        layout.setAlignment(
-            QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
-        )
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(0)
-        self._contract_l_button = QtIconButton()
-        self._contract_l_button._frame_size = self._contract_frame_size
-        self._contract_l_button._icon_file_draw_size = self._contract_icon_size
-        self._contract_l_button.setMaximumSize(*self._contract_frame_size)
-        self._contract_l_button.setMinimumSize(*self._contract_frame_size)
-        layout.addWidget(self._contract_l_button)
-        self._contract_l_button.clicked.connect(self._set_contract_l_switch_)
-        self._contract_l_button.setToolTip(
-            '"LMB-click" to contact left/top.'
-        )
-        #
-        self._swap_button = QtIconButton()
-        #
-        self._swap_button._icon_file_path = utl_core.Icon.get(self._swap_icon_name)
-        self._swap_button._frame_size = self._contract_frame_size
-        self._swap_button._icon_file_draw_size = self._contract_icon_size
-        self._swap_button.setMaximumSize(*self._contract_frame_size)
-        self._swap_button.setMinimumSize(*self._contract_frame_size)
-        layout.addWidget(self._swap_button)
-        self._swap_button.clicked.connect(self._set_swap_)
-        self._swap_button.setToolTip(
-            '"LMB-click" to swap.'
-        )
-        #
-        self._contract_r_button = QtIconButton()
-        self._contract_r_button._frame_size = self._contract_frame_size
-        self._contract_r_button._icon_file_draw_size = self._contract_icon_size
-        self._contract_r_button.setMaximumSize(*self._contract_frame_size)
-        self._contract_r_button.setMinimumSize(*self._contract_frame_size)
-        layout.addWidget(self._contract_r_button)
-        self._contract_r_button.clicked.connect(self._set_contract_r_update_)
-        self._contract_r_button.setToolTip(
-            '"LMB-click" to contact right/bottom.'
-        )
-        #
-        self._set_contract_buttons_update_()
-        #
-        self.installEventFilter(self)
-        self._action_is_hovered = False
-
-    def eventFilter(self, *args):
-        widget, event = args
-        if widget == self:
-            if event.type() == QtCore.QEvent.Enter:
-                self._action_is_hovered = True
-                if self._get_orientation_() == QtCore.Qt.Horizontal:
-                    self.setCursor(QtCore.Qt.SplitHCursor)
-                elif self._get_orientation_() == QtCore.Qt.Vertical:
-                    self.setCursor(QtCore.Qt.SplitVCursor)
-                self._set_update_()
-            elif event.type() == QtCore.QEvent.Leave:
-                self._action_is_hovered = False
-                self.setCursor(QtCore.Qt.ArrowCursor)
-                self._set_update_()
-            elif event.type() == QtCore.QEvent.MouseMove:
-                self._set_move_(event)
-        return False
-
-    def _set_contract_l_switch_(self):
-        if self._is_contract_r is True:
-            self._set_contract_r_update_()
-        else:
-            splitter = self.splitter()
-            index_l = splitter.indexOf(self)-1
-            index_r = splitter.indexOf(self)
-            indices = index_l, index_r
-            # switch
-            self._is_contract_l = not self._is_contract_l
-            if self._is_contract_l is True:
-                # record size
-                self._sizes = splitter._get_sizes_(indices)
-                #
-                sizes = [0, sum(self._sizes)]
-                splitter._set_adjacent_sizes_(indices, sizes, )
-            else:
-                splitter._set_adjacent_sizes_(indices, self._sizes)
-            #
-            self._set_contract_buttons_update_()
-
-    def _set_contract_r_update_(self):
-        if self._is_contract_l is True:
-            self._set_contract_l_switch_()
-        else:
-            splitter = self.splitter()
-            index_l = splitter.indexOf(self)-1
-            index_r = splitter.indexOf(self)
-            indices = index_l, index_r
-            # switch
-            self._is_contract_r = not self._is_contract_r
-            if self._is_contract_r is True:
-                # record size
-                self._sizes = splitter._get_sizes_(indices)
-                #
-                sizes = [sum(self._sizes), 0]
-                splitter._set_adjacent_sizes_(indices, sizes)
-            else:
-                splitter._set_adjacent_sizes_(indices, self._sizes)
-            #
-            self._set_contract_buttons_update_()
-
-    def _set_swap_(self):
-        splitter = self.splitter()
-        index_l = splitter.indexOf(self)-1
-        index_r = splitter.indexOf(self)
-        widgets = splitter._get_widgets_()
-        widget_l = splitter._get_widget_(index_l)
-        widget_r = splitter._get_widget_(index_r)
-        widgets[index_l], widgets[index_r] = widget_r, widget_l
-        splitter._set_update_()
-
-    def _set_contract_buttons_update_(self):
-        icon_name_l = [self._contract_icon_name_l, self._contract_icon_name_r][self._is_contract_l]
-        self._contract_l_button._icon_file_path = utl_core.Icon.get(icon_name_l)
-        self._contract_l_button.update()
-        icon_name_r = [self._contract_icon_name_r, self._contract_icon_name_l][self._is_contract_r]
-        self._contract_r_button._icon_file_path = utl_core.Icon.get(icon_name_r)
-        self._contract_r_button.update()
-
-    def _set_update_(self):
-        pass
-
-    def _get_orientation_(self):
-        return self.QT_ORIENTATION
-
-    def splitter(self):
-        return self.parent()
-
-    def _set_move_(self, event):
-        p = event.pos()
-        x, y = p.x(), p.y()
-        splitter = self.splitter()
-        index_l = splitter.indexOf(self)-1
-        index_r = splitter.indexOf(self)
-        indices = index_l, index_r
-        s_l_o, s_r_o = splitter._get_size_(index_l), splitter._get_size_(index_r)
-        if self._get_orientation_() == QtCore.Qt.Horizontal:
-            s_l, s_r = s_l_o+x, s_r_o-x
-            splitter._set_adjacent_sizes_(indices, [s_l, s_r])
-        elif self._get_orientation_() == QtCore.Qt.Vertical:
-            s_l, s_r = s_l_o+y, s_r_o-y
-            splitter._set_adjacent_sizes_(indices, [s_l, s_r])
-
-
-class _QtHSplitterHandle(_AbsQtSplitterHandle):
-    QT_ORIENTATION = QtCore.Qt.Horizontal
-    def __init__(self, *args, **kwargs):
-        super(_QtHSplitterHandle, self).__init__(*args, **kwargs)
-
-
-class _QtVSplitterHandle(_AbsQtSplitterHandle):
-    QT_ORIENTATION = QtCore.Qt.Vertical
-    def __init__(self, *args, **kwargs):
-        super(_QtVSplitterHandle, self).__init__(*args, **kwargs)
-
-
-class _AbsQtSplitter(QtWidgets.QWidget):
-    QT_HANDLE_CLASS = None
-    #
-    QT_ORIENTATION = None
-    def __init__(self, *args, **kwargs):
-        super(_AbsQtSplitter, self).__init__(*args, **kwargs)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setMouseTracking(True)
-        self.setSizePolicy(
-            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
-        )
-        self._handle_list = []
-        self._widget_list = []
-        self._rect_list = []
-        #
-        self._spacing = 4
-        self._contents_margins = 0, 0, 0, 0
-        #
-        self._size_dict = collections.OrderedDict()
-        self._pos_dict = collections.OrderedDict()
-        self._sizes = []
-
-    def addWidget(self, widget):
-        index = len(self._handle_list)
-        #
-        widget.setParent(self)
-        self._widget_list.append(widget)
-        # widget.hide()
-        #
-        handle = self.QT_HANDLE_CLASS()
-        handle.setParent(self)
-        self._handle_list.append(handle)
-        #
-        if index not in self._size_dict:
-            self._size_dict[index] = 1
-        #
-        self._rect_list.append(QtCore.QRect())
-
-    def resizeEvent(self, event):
-        self._set_update_()
-
-    def _set_update_(self):
-        self._set_update_by_size_()
-        self._refresh_widget_draw_geometry_()
-
-    def _set_update_by_size_(self):
-        ss = self._size_dict
-        maximum_size = sum(ss.values())
-        if maximum_size > 0:
-            if self.QT_ORIENTATION == QtCore.Qt.Horizontal:
-                x, y = 0, 0
-                w, h = self.width(), self.height()
-                _ = [w*(float(ss[i])/float(maximum_size)) for i in range(len(self._handle_list))]
-                for idx, size in enumerate(_):
-                    self._pos_dict[idx] = sum(_[:idx])+x
-                    self._size_dict[idx] = size
-            elif self.QT_ORIENTATION == QtCore.Qt.Vertical:
-                x, y = 0, 0
-                w, h = self.width(), self.height()
-                _ = [h*(float(ss[i])/float(maximum_size)) for i in range(len(self._handle_list))]
-                for idx, size in enumerate(_):
-                    self._pos_dict[idx] = sum(_[:idx])+y
-                    self._size_dict[idx] = size
-            else:
-                raise TypeError()
-
-    def _refresh_widget_draw_geometry_(self):
-        w, h = self.width(), self.height()
-        c = len(self._handle_list)
-        for idx in range(c):
-            handle = self._handle_list[idx]
-            widget = self._widget_list[idx]
-            rect = self._rect_list[idx]
-            #
-            p = self._pos_dict[idx]
-            s = self._size_dict[idx]
-            ps = self._size_dict.get(idx-1)
-            ns = self._size_dict.get(idx+1)
-            if self.QT_ORIENTATION == QtCore.Qt.Horizontal:
-                # handle
-                hx, hy = p, 0
-                hw, hh = 12, h
-                if idx == 0:
-                    hx, hy = p-12, 0
-                else:
-                    if s == 0:
-                        hx, hy = p-12, 0
-                handle.setGeometry(
-                    hx, hy, hw, hh
-                )
-                rect.setRect(
-                    hx, hy, hw, hh
-                )
-                # widget
-                wx, wy = p+12, 0
-                ww, wh = s-12, h
-                if idx == 0:
-                    wx, wy = p, 0
-                    ww, wh = s, h
-                if ns == 0:
-                    ww, wh = s-12, h
-                #
-                widget.setGeometry(
-                    wx, wy, ww, wh
-                )
-            elif self.QT_ORIENTATION == QtCore.Qt.Vertical:
-                # handle
-                hx, hy = 0, p
-                hw, hh = w, 12
-                if idx == 0:
-                    hx, hy = 0, p-12
-                if s == 0:
-                    hx, hy = 0, p-12
-                handle.setGeometry(
-                    hx, hy, hw, hh
-                )
-                rect.setRect(
-                    hx, hy, hw, hh
-                )
-                # widget
-                wx, wy = 0, p+12
-                ww, wh = w, s-12
-                if idx == 0:
-                    wx, wy = 0, p
-                    ww, wh = w, s
-                if ns == 0:
-                    ww, wh = w, s-12
-                #
-                widget.setGeometry(
-                    wx, wy, ww, wh
-                )
-
-    def _get_size_(self, index):
-        return self._size_dict[index]
-
-    def _set_size_(self, index, size):
-        self._size_dict[index] = size
-        #
-        self._set_update_()
-
-    def _get_sizes_(self, indices=None):
-        if indices is not None:
-            return [self._size_dict[i] for i in indices]
-        return [i for i in self._size_dict.values()]
-
-    def _set_adjacent_sizes_(self, indices, sizes):
-        i_l, i_r = indices[:indices[0]], indices[indices[1]:]
-        #
-        if self._get_orientation_() == QtCore.Qt.Horizontal:
-            size_min, size_max = 0+len(i_l)*12, self.width()-len(i_r)*12
-        elif self._get_orientation_() == QtCore.Qt.Vertical:
-            size_min, size_max = 0+len(i_l)*12, self.height()-len(i_r)*12
-        else:
-            raise TypeError()
-        for seq, size in enumerate(sizes):
-            # clamp size
-            if size <= size_min:
-                size = size_min
-            elif size >= size_max:
-                size = size_max
-            idx = indices[seq]
-            self._size_dict[idx] = size
-        #
-        self._set_update_()
-
-    def _get_indices_(self):
-        return self._size_dict.keys()
-
-    def _get_widgets_(self):
-        return self._widget_list
-
-    def _get_widget_(self, index):
-        return self._widget_list[index]
-
-    def _get_cur_index_(self, qt_point):
-        for idx, rect in enumerate(self._rect_list):
-            if rect.contains(qt_point) is True:
-                return idx
-
-    def _get_orientation_(self):
-        return self.QT_ORIENTATION
-
-    def _set_stretch_factor_(self, index, size):
-        self._size_dict[index] = size
-
-    def _get_stretch_factor_(self, index):
-        return self._size_dict[index]
-
-    def setSizes(self, sizes):
-        pass
-
-    def widget(self, index):
-        return self._widget_list[index]
-
-    def indexOf(self, handle):
-        return self._handle_list.index(handle)
-
-    def setCollapsible(self, index, boolean):
-        pass
-
-
-class _QtHSplitter(_AbsQtSplitter):
-    QT_HANDLE_CLASS = _QtHSplitterHandle
-    QT_ORIENTATION = QtCore.Qt.Horizontal
-    def __init__(self, *args, **kwargs):
-        super(_QtHSplitter, self).__init__(*args, **kwargs)
-
-
-class _QtVSplitter(_AbsQtSplitter):
-    QT_HANDLE_CLASS = _QtVSplitterHandle
-    QT_ORIENTATION = QtCore.Qt.Vertical
-    def __init__(self, *args, **kwargs):
-        super(_QtVSplitter, self).__init__(*args, **kwargs)
-
-
-class QtHSplitter(QtWidgets.QSplitter):
-    def __init__(self, *args, **kwargs):
-        super(QtHSplitter, self).__init__(*args, **kwargs)
-        self.setHandleWidth(2)
-        self.setContentsMargins(0, 0, 0, 0)
-        self.setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QSplitter')
-        )
 
 
 class QtFileDialog(QtWidgets.QFileDialog):
@@ -1630,7 +1153,6 @@ class QtListWidgetItem(
 
     def _set_item_show_connect_(self):
         self._set_item_show_def_setup_(self.listWidget())
-
     # def _get_keyword_filter_keys_tgt_(self):
     #     item_widget = self._get_item_widget_()
     #     if item_widget is not None:
@@ -1672,8 +1194,8 @@ class _QtHItem(
     utl_gui_qt_abstract.AbsQtDeleteDef,
     # action
     utl_gui_qt_abstract.AbsQtActionDef,
-    utl_gui_qt_abstract.AbsQtActionHoverDef,
-    utl_gui_qt_abstract.AbsQtActionPressDef,
+    utl_gui_qt_abstract.AbsQtActionForHoverDef,
+    utl_gui_qt_abstract.AbsQtActionForPressDef,
     utl_gui_qt_abstract.AbsQtActionCheckDef,
     utl_gui_qt_abstract.AbsQtActionSelectDef,
     #
@@ -1688,24 +1210,24 @@ class _QtHItem(
         #
         self._set_frame_def_init_()
         self._set_index_def_init_()
-        self._set_type_def_init_()
-        self._set_icon_def_init_()
-        self._set_name_def_init_()
+        self._init_type_def_()
+        self._init_icon_def_()
+        self._init_name_def_()
         self._set_names_def_init_()
         self._set_path_def_init_()
         self._set_image_def_init_()
         #
-        self._set_menu_def_init_()
+        self._init_menu_def_()
         #
         self._set_delete_def_init_(self)
         #
-        self._set_action_hover_def_init_()
+        self._init_action_hover_def_()
         self._init_action_def_(self)
         self._set_action_press_def_init_()
-        self._set_action_check_def_init_()
+        self._init_action_check_def_(self)
         self._check_icon_file_path_0 = utl_gui_core.RscIconFile.get('filter_unchecked')
         self._check_icon_file_path_1 = utl_gui_core.RscIconFile.get('filter_checked')
-        self._set_check_update_draw_()
+        self._refresh_check_draw_()
         self._set_action_select_def_init_()
         #
         self._set_item_filter_def_init_()
@@ -1923,7 +1445,7 @@ class _QtHItem(
             c_w -= icn_frm_w+spacing
             f_w -= icn_frm_w+spacing
         #
-        self._set_frame_draw_geometry_(
+        self._set_frame_draw_rect_(
             f_x, f_y, f_w, f_h
         )
         #
@@ -1949,1263 +1471,6 @@ class _QtHItem(
 
     def _get_is_visible_(self):
         return self.isVisible()
-
-
-class _QtListWidgetForPopup(utl_gui_qt_abstract.AbsQtListWidget):
-    def __init__(self, *args, **kwargs):
-        super(_QtListWidgetForPopup, self).__init__(*args, **kwargs)
-        self.setDragDropMode(self.DragOnly)
-        self.setDragEnabled(False)
-        self.setSelectionMode(QtWidgets.QListWidget.SingleSelection)
-        self.setResizeMode(QtWidgets.QListWidget.Adjust)
-        self.setViewMode(QtWidgets.QListWidget.ListMode)
-        self.setPalette(QtDccMtd.get_palette())
-
-    def paintEvent(self, event):
-        pass
-
-    def _get_maximum_height_(self, count_maximum, includes=None):
-        adjust = 1+8
-        if includes is not None:
-            rects = [self.visualItemRect(i) for i in includes[:count_maximum]]
-        else:
-            rects = [self.visualItemRect(self.item(i)) for i in range(self.count())[:count_maximum]]
-        if rects:
-            return sum([i.height() for i in rects])+adjust
-        return 20+adjust
-
-
-class QtLineEdit_(
-    QtWidgets.QLineEdit,
-    utl_gui_qt_abstract.AbsQtValueDef,
-    #
-    utl_gui_qt_abstract.AbsQtEntryBaseDef,
-    utl_gui_qt_abstract.AbsQtActionPopupDef,
-):
-    entry_changed = qt_signal()
-    entry_cleared = qt_signal()
-    #
-    user_entry_changed = qt_signal()
-    user_entry_cleared = qt_signal()
-    user_entry_finished = qt_signal()
-    #
-    up_key_pressed = qt_signal()
-    down_key_pressed = qt_signal()
-    #
-    def __init__(self, *args, **kwargs):
-        super(QtLineEdit_, self).__init__(*args, **kwargs)
-        self.installEventFilter(self)
-        self.setPalette(QtDccMtd.get_palette())
-        self.setFont(Font.NAME)
-        self.setFocusPolicy(QtCore.Qt.StrongFocus)
-        # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        #
-        self._value_type = str
-        #
-        self._item_value_default = None
-        #
-        self._maximum = 1
-        self._minimum = 0
-        #
-        self.returnPressed.connect(self._send_user_enter_finished_emit_)
-        # emit send by setText
-        self.textChanged.connect(self._send_enter_changed_emit_)
-        # user enter
-        self.textEdited.connect(self._send_user_enter_changed_emit_)
-        #
-        self.setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QLineEdit')
-        )
-        self._set_value_def_init_(self)
-        self._set_entry_base_def_init_(self)
-        self._init_action_popup_def_(self)
-        self.setAcceptDrops(self._action_popup_is_enable)
-
-        # self.setPlaceholderText()
-
-    def _set_entry_tip_(self, text):
-        self.setPlaceholderText(text)
-
-    def _execute_action_wheel_(self, event):
-        if self._value_type in [int, float]:
-            delta = event.angleDelta().y()
-            pre_value = self._get_value_()
-            if delta > 0:
-                self._set_value_(pre_value+1)
-            else:
-                self._set_value_(pre_value-1)
-            #
-            self._send_enter_changed_emit_()
-
-    def _execute_action_drop_(self, event):
-        data = event.mimeData()
-        if data.hasUrls():
-            urls = event.mimeData().urls()
-            if urls:
-                value = urls[0].toLocalFile()
-                if self._get_value_is_valid_(value):
-                    self._set_value_(value)
-                    return True
-        return False
-
-    def eventFilter(self, *args):
-        widget, event = args
-        if widget == self:
-            if event.type() == QtCore.QEvent.FocusIn:
-                self._is_focused = True
-                entry_frame = self._get_entry_frame_()
-                if isinstance(entry_frame, QtEntryFrame):
-                    entry_frame._set_focused_(True)
-            elif event.type() == QtCore.QEvent.FocusOut:
-                self._is_focused = False
-                entry_frame = self._get_entry_frame_()
-                if isinstance(entry_frame, QtEntryFrame):
-                    entry_frame._set_focused_(False)
-                #
-                self._set_value_completion_()
-            elif event.type() == QtCore.QEvent.Wheel:
-                self._execute_action_wheel_(event)
-            elif event.type() == QtCore.QEvent.KeyPress:
-                if event.key() == QtCore.Qt.Key_Up:
-                    self.up_key_pressed.emit()
-                if event.key() == QtCore.Qt.Key_Down:
-                    self.down_key_pressed.emit()
-        return False
-
-    def _set_popup_enable_(self, boolean):
-        super(QtLineEdit_, self)._set_popup_enable_(boolean)
-        self.setAcceptDrops(boolean)
-
-    def dropEvent(self, event):
-        if self._execute_action_drop_(event) is True:
-            event.accept()
-        else:
-            event.ignore()
-
-    def contextMenuEvent(self, event):
-        menu_raw = [
-            ('basic', ),
-            ('copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
-            ('paste', None, (True, self.paste, False), QtGui.QKeySequence.Paste),
-            ('cut', None, (True, self.cut, False), QtGui.QKeySequence.Cut),
-            ('extend', ),
-            ('undo', None, (True, self.undo, False), QtGui.QKeySequence.Undo),
-            ('redo', None, (True, self.redo, False), QtGui.QKeySequence.Redo),
-            ('select all', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll),
-        ]
-        #
-        if self.isReadOnly():
-            menu_raw = [
-                ('basic',),
-                ('copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
-                ('extend', ),
-                ('select all', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll)
-            ]
-        #
-        if self._entry_use_as_storage is True:
-            menu_raw.extend(
-                [
-                    ('system',),
-                    ('open folder', 'file/folder', (True, self._execute_open_in_system_, False), QtGui.QKeySequence.Open)
-                ]
-            )
-        #
-        if menu_raw:
-            self._qt_menu = QtMenu(self)
-            self._qt_menu._set_menu_raw_(menu_raw)
-            self._qt_menu._set_show_()
-
-    def _send_user_enter_finished_emit_(self):
-        # noinspection PyUnresolvedReferences
-        self.user_entry_finished.emit()
-
-    def _send_enter_changed_emit_(self):
-        # noinspection PyUnresolvedReferences
-        self.entry_changed.emit()
-        text = self.text()
-        if not text:
-            self.entry_cleared.emit()
-
-    def _send_user_enter_changed_emit_(self):
-        # noinspection PyUnresolvedReferences
-        self.user_entry_changed.emit()
-        text = self.text()
-        if not text:
-            self.user_entry_cleared.emit()
-
-    def _set_value_completion_(self):
-        if self._value_type in [int, float]:
-            if not self.text():
-                self._set_value_(0)
-
-    def _set_value_type_(self, value_type):
-        self._value_type = value_type
-        if self._value_type is None:
-            pass
-        elif self._value_type is str:
-            pass
-            # self._set_validator_use_as_name_()
-        elif self._value_type is int:
-            self._set_validator_use_as_integer_()
-        elif self._value_type is float:
-            self._set_validator_use_as_float_()
-
-    def _get_value_type_(self):
-        return self._value_type
-
-    def _execute_open_in_system_(self):
-        _ = self.text()
-        if _:
-            _exist_comp = bsc_core.StgExtraMtd.get_exists_component(_)
-            if _exist_comp is not None:
-                bsc_core.StgExtraMtd.set_directory_open(
-                    _exist_comp
-                )
-
-    def _set_validator_use_as_storage_(self, boolean=True):
-        super(QtLineEdit_, self)._set_validator_use_as_storage_(boolean)
-        if boolean is True:
-            i_action = QtWidgets.QAction(self)
-            i_action.triggered.connect(
-                self._execute_open_in_system_
-            )
-            i_action.setShortcut(
-                QtGui.QKeySequence.Open
-            )
-            i_action.setShortcutContext(
-                QtCore.Qt.WidgetShortcut
-            )
-            self.addAction(i_action)
-
-    def _set_validator_use_as_name_(self):
-        reg = QtCore.QRegExp(r'^[a-zA-Z0-9_]+$')
-        validator = QtGui.QRegExpValidator(reg, self)
-        self.setValidator(validator)
-        # self.setToolTip(
-        #     (
-        #         '"LMB-click" to entry\n'
-        #     )
-        # )
-
-    def _set_validator_use_as_integer_(self):
-        self.setValidator(QtGui.QIntValidator())
-        self._set_value_completion_()
-        # self.setToolTip(
-        #     (
-        #         '"LMB-click" to entry\n'
-        #         '"MMB-wheel" to modify "int" value'
-        #     )
-        # )
-
-    def _set_validator_use_as_float_(self):
-        self.setValidator(QtGui.QDoubleValidator())
-        self._set_value_completion_()
-        # self.setToolTip(
-        #     (
-        #         '"LMB-click" to entry\n'
-        #         '"MMB-wheel" to modify "float" value'
-        #     )
-        # )
-
-    def _set_validator_use_as_frames_(self):
-        self._set_value_type_(str)
-        reg = QtCore.QRegExp(r'^[0-9-,:]+$')
-        validator = QtGui.QRegExpValidator(reg, self)
-        self.setValidator(validator)
-        # self.setToolTip(
-        #     (
-        #         '"LMB-click" to entry\n'
-        #         'etc:\n'
-        #         '   1\n'
-        #         '   1-2\n'
-        #         '   1-5,7,50-100,101'
-        #     )
-        # )
-
-    def _set_validator_use_as_rgba_(self):
-        self._set_value_type_(str)
-        reg = QtCore.QRegExp(r'^[0-9.,]+$')
-        validator = QtGui.QRegExpValidator(reg, self)
-        self.setValidator(validator)
-
-    def _set_value_maximum_(self, value):
-        self._maximum = value
-
-    def _get_value_maximum_(self):
-        return self._maximum
-
-    def _set_value_minimum_(self, value):
-        self._minimum = value
-
-    def _get_value_minimum_(self):
-        return self._minimum
-
-    def _set_value_range_(self, maximum, minimum):
-        self._set_value_maximum_(maximum), self._set_value_minimum_(minimum)
-
-    def _get_value_range_(self):
-        return self._get_value_maximum_(), self._get_value_minimum_()
-
-    def _get_value_(self):
-        _ = self.text()
-        if self._value_type == str:
-            return _
-        elif self._value_type == int:
-            return int(_)
-        elif self._value_type == float:
-            return float(_)
-        return _
-
-    def _set_value_(self, value):
-        pre_value = self.text()
-        if value is not None:
-            if isinstance(value, six.text_type):
-                value = value.encode('utf-8')
-
-            if isinstance(pre_value, six.text_type):
-                pre_value = pre_value.encode('utf-8')
-
-            if self._value_type is not None:
-                value = self._value_type(value)
-            #
-            if value != pre_value:
-                self.setText(str(value))
-                # self._send_enter_changed_emit_()
-        else:
-            self.setText('')
-
-    def _get_value_default_(self):
-        return self._item_value_default
-
-    def _connect_focused_to_(self, widget):
-        pass
-    #
-    def _get_is_selected_(self):
-        boolean = False
-        if self.selectedText():
-            boolean = True
-        return boolean
-
-    def _set_value_clear_(self):
-        self._set_value_('')
-
-    def _set_enter_enable_(self, boolean):
-        self.setReadOnly(not boolean)
-
-    def _set_focused_(self, boolean):
-        if boolean is True:
-            self.setFocus(
-                QtCore.Qt.MouseFocusReason
-            )
-        else:
-            self.setFocus(
-                QtCore.Qt.NoFocusReason
-            )
-
-    def _set_clear_(self):
-        self.clear()
-
-
-class QtPopupChooseFrame(
-    QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameDef,
-    utl_gui_qt_abstract.AbsQtPopupDef,
-):
-    def __init__(self, *args, **kwargs):
-        super(QtPopupChooseFrame, self).__init__(*args, **kwargs)
-        # use popup,
-        self.setWindowFlags(QtCore.Qt.Tool | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowDoesNotAcceptFocus)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setFocusPolicy(QtCore.Qt.NoFocus)
-        #
-        self._set_frame_def_init_()
-        self._set_popup_def_init_(self)
-        #
-        self._popup_item_width, self._popup_item_height = 20, 20
-        self._popup_tag_filter_item_width, self._popup_tag_filter_item_height = 20, 20
-        #
-        self._popup_close_button = QtIconPressItem(self)
-        self._popup_close_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('close'))
-        self._popup_close_button._set_icon_frame_draw_size_(18, 18)
-        self._popup_close_button.press_clicked.connect(self._close_popup_)
-        self._popup_close_button.setToolTip(
-            '"LMB-click" to close'
-        )
-        #
-        self._popup_multiply_is_enable = False
-        self._popup_all_checked_button = QtIconPressItem(self)
-        self._popup_all_checked_button.hide()
-        self._popup_all_checked_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('all_checked'))
-        self._popup_all_checked_button._set_icon_frame_draw_size_(18, 18)
-        self._popup_all_checked_button.setToolTip(
-            '"LMB-click" to checked all'
-        )
-        self._popup_all_checked_button.press_clicked.connect(self._execute_popup_all_checked_)
-        #
-        self._popup_all_unchecked_button = QtIconPressItem(self)
-        self._popup_all_unchecked_button.hide()
-        self._popup_all_unchecked_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('all_unchecked'))
-        self._popup_all_unchecked_button._set_icon_frame_draw_size_(18, 18)
-        self._popup_all_unchecked_button.setToolTip(
-            '"LMB-click" to unchecked all'
-        )
-        self._popup_all_unchecked_button.press_clicked.connect(self._execute_popup_all_unchecked_)
-        # keyword filter
-        self._keyword_filter_is_enable = False
-        self._keyword_filter_line_edit = QtLineEdit_(self)
-        self._keyword_filter_line_edit.hide()
-        self._keyword_filter_line_edit._set_entry_enable_(True)
-        self._keyword_filter_line_edit.setAlignment(
-            QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
-        )
-        self._keyword_filter_line_edit.installEventFilter(self)
-        # tag filter
-        self._tag_filter_is_enable = False
-        self._tag_filter_width_percent = 0.375
-        self._tag_filter_draw_rect = QtCore.QRect()
-        self._tag_filter_list_widget = _QtListWidgetForPopup(self)
-        self._tag_filter_list_widget.hide()
-        self._tag_filter_list_widget.setGridSize(
-            QtCore.QSize(self._popup_item_width, self._popup_item_height)
-        )
-        self._tag_filter_list_widget.setSpacing(2)
-        self._tag_filter_list_widget.setUniformItemSizes(True)
-        #
-        self._item_list_widget = _QtListWidgetForPopup(self)
-        #
-        self._item_count_maximum = 10
-        self._item_list_widget.setGridSize(
-            QtCore.QSize(self._popup_item_width, self._popup_item_height)
-        )
-        self._item_list_widget.setSpacing(2)
-        self._item_list_widget.setUniformItemSizes(True)
-        #
-        self._choose_index = None
-        #
-        self._frame_border_color = QtBackgroundColors.Light
-        self._hovered_frame_border_color = QtBackgroundColors.Hovered
-        self._selected_frame_border_color = QtBackgroundColors.Hovered
-        #
-        self._frame_background_color = QtBackgroundColors.Dark
-
-        self._read_only_mark = None
-
-    def paintEvent(self, event):
-        painter = QtPainter(self)
-        #
-        painter._draw_frame_by_rect_(
-            self._frame_draw_rect,
-            border_color=self._selected_frame_border_color,
-            background_color=self._frame_background_color,
-            # border_radius=4
-        )
-        painter._draw_line_by_points_(
-            point_0=self._popup_toolbar_draw_rect.bottomLeft(),
-            point_1=self._popup_toolbar_draw_rect.bottomRight(),
-            border_color=self._frame_border_color,
-        )
-        if self._keyword_filter_is_enable is True:
-            if not self._keyword_filter_line_edit.text():
-                painter._draw_text_by_rect_(
-                    self._popup_toolbar_draw_tool_tip_rect,
-                    'entry keyword to filter ...',
-                    font=Font.NAME,
-                    font_color=QtFontColors.Disable,
-                    text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
-                )
-        #
-        if self._tag_filter_is_enable is True:
-            painter._draw_line_by_points_(
-                point_0=self._tag_filter_draw_rect.topRight(),
-                point_1=self._tag_filter_draw_rect.bottomRight(),
-                border_color=self._frame_border_color,
-            )
-
-    def eventFilter(self, *args):
-        widget, event = args
-        if widget == self._popup_entry:
-            if event.type() == QtCore.QEvent.FocusOut:
-                self._close_popup_()
-            elif event.type() == QtCore.QEvent.WindowDeactivate:
-                self._close_popup_()
-            elif event.type() == QtCore.QEvent.InputMethod:
-                self._keyword_filter_line_edit.inputMethodEvent(event)
-            elif event.type() == QtCore.QEvent.KeyPress:
-                if event.key() == QtCore.Qt.Key_Escape:
-                    self._close_popup_()
-                else:
-                    self._keyword_filter_line_edit.keyPressEvent(event)
-        return False
-
-    def _refresh_widget_draw_(self):
-        self.update()
-
-    def _refresh_widget_draw_geometry_(self):
-        x, y = 0, 0
-        w, h = self.width(), self.height()
-        #
-        tbr_h = self._popup_toolbar_h
-        spacing = 2
-        c_x, c_y = x+1, y+1
-        c_w, c_h = w-2, h-2
-        #
-        self._frame_draw_rect.setRect(
-            c_x, c_y, c_w, c_h
-        )
-        tbr_w = c_w
-        #
-        self._popup_toolbar_draw_rect.setRect(
-            c_x+2, c_y, c_w-4, tbr_h
-        )
-        tbr_w = c_w
-        # close button
-        self._popup_close_button.setGeometry(
-            c_x+c_w-tbr_h*1, c_y, tbr_h, tbr_h
-        )
-        tbr_w -= (tbr_h+spacing)
-        #
-        if self._popup_multiply_is_enable is True:
-            self._popup_all_checked_button.show()
-            self._popup_all_unchecked_button.show()
-            self._popup_all_checked_button.setGeometry(
-                c_x+c_w-(tbr_h*3+spacing*2), c_y, tbr_h, tbr_h
-            )
-            tbr_w -= (tbr_h+spacing)
-            self._popup_all_unchecked_button.setGeometry(
-                c_x+c_w-(tbr_h*2+spacing*1), c_y, tbr_h, tbr_h
-            )
-            tbr_w -= (tbr_h+spacing)
-        #
-        self._popup_toolbar_draw_tool_tip_rect.setRect(
-            c_x, c_y, tbr_w-tbr_h, tbr_h
-        )
-        self._keyword_filter_line_edit.setGeometry(
-            c_x, c_y, tbr_w-tbr_h, tbr_h
-        )
-        #
-        c_y += tbr_h
-        c_h -= tbr_h
-
-        if self._tag_filter_is_enable is True:
-            t_w = c_w*self._tag_filter_width_percent
-            self._tag_filter_list_widget.setGeometry(
-                c_x+1, c_y+1, t_w-2, c_h-2
-            )
-            self._tag_filter_draw_rect.setRect(
-                c_x, c_y, t_w, c_h
-            )
-            c_x += t_w
-            c_w -= t_w
-        #
-        self._tag_filter_list_widget.updateGeometries()
-
-        self._item_list_widget.setGeometry(
-            c_x+1, c_y+1, c_w-2, c_h-2
-        )
-        self._item_list_widget.updateGeometries()
-
-    def _set_popup_keyword_filter_enable_(self, boolean):
-        self._keyword_filter_is_enable = boolean
-        self._keyword_filter_line_edit.show()
-        self._keyword_filter_line_edit.entry_changed.connect(
-            self._execute_popup_filter_
-        )
-
-    def _set_popup_tag_filter_enable_(self, boolean):
-        self._tag_filter_is_enable = boolean
-        self._tag_filter_list_widget.show()
-        self._tag_filter_list_widget.itemSelectionChanged.connect(
-            self._execute_popup_filter_
-        )
-
-    def _set_popup_multiply_enable_(self, boolean):
-        self._popup_multiply_is_enable = boolean
-
-    def _get_popup_multiply_is_enable_(self):
-        return self._popup_multiply_is_enable
-
-    def _execute_popup_scroll_to_pre_(self):
-        if self._popup_is_activated is True:
-            self._item_list_widget._set_scroll_to_pre_item_()
-
-    def _execute_popup_scroll_to_next_(self):
-        if self._popup_is_activated is True:
-            self._item_list_widget._set_scroll_to_next_item_()
-
-    def _set_popup_item_show_(self, item, item_widget, data):
-        def cache_fnc_():
-            return data
-
-        def build_fnc_(data_):
-            _image_url,  = data_
-            item_widget._set_image_url_(_image_url)
-
-        item._set_item_show_fnc_(cache_fnc_, build_fnc_)
-        item_widget._set_image_draw_enable_(True)
-
-    def _start_action_popup_(self):
-        if self._popup_is_activated is False:
-            parent = self.parent()
-            self._item_list_widget._set_clear_()
-            self._tag_filter_list_widget._set_clear_()
-            self._keyword_filter_line_edit._set_clear_()
-            values = parent._get_choose_values_()
-            if values:
-                if isinstance(values, (tuple, list)):
-                    icon_file_path = parent._get_choose_item_icon_file_path_()
-                    icon_file_path_dict = parent._get_choose_item_icon_file_dict_()
-                    image_url_dict = parent._get_choose_image_url_dict_()
-                    keyword_filter_dict = parent._get_choose_keyword_filter_dict_()
-                    tag_filter_dict = parent._get_choose_tag_filter_dict_()
-                    #
-                    current_values = parent._get_choose_current_values_()
-                    for index, i_name_text in enumerate(values):
-                        i_item_widget = _QtHItem()
-                        i_item = QtListWidgetItem()
-                        i_item.setSizeHint(QtCore.QSize(self._popup_item_width, self._popup_item_height))
-                        #
-                        self._item_list_widget.addItem(i_item)
-                        self._item_list_widget.setItemWidget(i_item, i_item_widget)
-                        i_item._set_item_show_connect_()
-                        #
-                        i_item_widget._set_name_text_(i_name_text)
-                        i_item_widget._set_tool_tip_(i_name_text)
-                        #
-                        if self._get_popup_multiply_is_enable_() is True:
-                            i_item_widget._set_check_action_enable_(True)
-                            i_item_widget._set_check_enable_(True)
-                        #
-                        if i_name_text in image_url_dict:
-                            self._set_popup_item_show_(
-                                i_item, i_item_widget, [image_url_dict[i_name_text]]
-                            )
-                        else:
-                            if icon_file_path:
-                                i_item_widget._set_icon_file_path_(icon_file_path)
-                            else:
-                                if i_name_text in icon_file_path_dict:
-                                    i_icon_file_path = icon_file_path_dict[i_name_text]
-                                    i_item_widget._set_icon_file_path_(i_icon_file_path)
-                                else:
-                                    i_item_widget._set_icon_name_text_(i_name_text)
-                        #
-                        if i_name_text in keyword_filter_dict:
-                            i_filter_keys = keyword_filter_dict[i_name_text]
-                            i_item._set_item_keyword_filter_keys_tgt_update_(i_filter_keys)
-                            i_item_widget._set_name_texts_(
-                                i_filter_keys
-                            )
-                            i_item_widget._set_tool_tip_(
-                                i_filter_keys
-                            )
-                        else:
-                            i_item._set_item_keyword_filter_keys_tgt_update_([i_name_text])
-                        #
-                        if i_name_text in tag_filter_dict:
-                            i_filter_keys = tag_filter_dict[i_name_text]
-                            i_item._set_item_tag_filter_mode_(i_item.TagFilterMode.MatchOne)
-                            i_item._set_item_tag_filter_keys_tgt_update_(i_filter_keys)
-                        #
-                        if current_values:
-                            # auto select last item
-                            if isinstance(current_values, (tuple, list)):
-                                if i_name_text == current_values[-1]:
-                                    i_item.setSelected(True)
-                            elif isinstance(current_values, six.string_types):
-                                if i_name_text == current_values:
-                                    i_item.setSelected(True)
-                            # scroll to selected
-                            self._item_list_widget._set_scroll_to_selected_item_top_()
-                        #
-                        i_item_widget.press_clicked.connect(self._end_action_popup_)
-                    #
-                    press_pos = self._get_popup_pos_(self._popup_entry_frame)
-                    width, height = self._get_popup_size_(self._popup_entry_frame)
-                    height_max = self._item_list_widget._get_maximum_height_(self._item_count_maximum)
-                    height_max += self._popup_toolbar_h
-                    #
-                    self._show_popup_(
-                        press_pos,
-                        (width, height_max)
-                    )
-                    #
-                    self._popup_entry._set_focused_(True)
-                    #
-                    self._popup_is_activated = True
-                    # show
-                    self._item_list_widget._refresh_view_all_items_viewport_showable_()
-
-                    if isinstance(self._popup_entry, QtWidgets.QLineEdit):
-                        self._read_only_mark = self._popup_entry.isReadOnly()
-                        #
-                        self._popup_entry.setReadOnly(True)
-                    # tag filter
-                    if self._tag_filter_is_enable is True:
-                        tags = list(set([i for k, v in tag_filter_dict.items() for i in v]))
-                        tags = bsc_core.RawTextsMtd.set_sort_by_initial(tags)
-                        for i_tag in tags:
-                            i_item_widget = _QtHItem()
-                            i_item = QtListWidgetItem()
-                            i_item.setSizeHint(QtCore.QSize(self._popup_tag_filter_item_width, self._popup_tag_filter_item_height))
-                            #
-                            self._tag_filter_list_widget.addItem(i_item)
-                            self._tag_filter_list_widget.setItemWidget(i_item, i_item_widget)
-                            i_item._set_item_show_connect_()
-                            #
-                            i_item_widget._set_name_text_(i_tag)
-                            i_item_widget._set_icon_name_text_(i_tag)
-                            i_item_widget._set_tool_tip_text_(i_tag)
-                            #
-                            i_item_widget._set_item_tag_filter_keys_src_add_(i_tag)
-
-    def _end_action_popup_(self):
-        parent = self.parent()
-        selected_item_widgets = self._item_list_widget._get_selected_item_widgets_()
-        if selected_item_widgets:
-            parent._extend_choose_current_values_(
-                [i._get_name_text_() for i in selected_item_widgets]
-            )
-            #
-            if parent._get_choose_multiply_is_enable_() is True:
-                checked_item_widgets = self._item_list_widget._get_checked_item_widgets_()
-                parent._extend_choose_current_values_([i._get_name_text_() for i in checked_item_widgets])
-            #
-            parent._send_choose_changed_emit_()
-            parent._send_user_choose_changed_emit_()
-        #
-        self._close_popup_()
-
-    def _set_popup_entry_(self, widget):
-        self._popup_entry = widget
-        self._popup_entry.installEventFilter(self._widget)
-        self._widget.setFocusProxy(self._popup_entry)
-        self._keyword_filter_line_edit.setFocusProxy(self._popup_entry)
-        self._tag_filter_list_widget.setFocusProxy(
-            self._popup_entry
-        )
-        self._item_list_widget.setFocusProxy(
-            self._popup_entry
-        )
-
-    def _set_popup_item_size_(self, w, h):
-        self._popup_item_width, self._popup_item_height = w, h
-        self._item_list_widget.setGridSize(
-            QtCore.QSize(self._popup_item_width, self._popup_item_height)
-        )
-    
-    def _set_popup_tag_filter_item_size_(self, w, h):
-        self._popup_tag_filter_item_width, self._popup_tag_filter_item_height = w, h
-        self._tag_filter_list_widget.setGridSize(
-            QtCore.QSize(self._popup_tag_filter_item_width, self._popup_tag_filter_item_height)
-        )
-
-    def _execute_popup_filter_(self):
-        keyword_filter_text = self._keyword_filter_line_edit.text()
-        selected_item_widgets = self._tag_filter_list_widget._get_selected_item_widgets_()
-        if selected_item_widgets:
-            item_src = selected_item_widgets[0]
-            tags = [item_src._get_name_text_()]
-            self._item_list_widget._set_view_tag_filter_data_src_(tags)
-        #
-        self._item_list_widget._set_view_items_visible_by_any_filter_(
-            keyword_filter_text
-        )
-        self._item_list_widget._refresh_view_all_items_viewport_showable_()
-        #
-        if self._popup_auto_resize_is_enable is True:
-            self._execute_auto_resize_()
-
-    def _execute_popup_all_checked_(self):
-        [i._set_checked_(True) for i in self._item_list_widget._get_all_item_widgets_() if i._get_is_visible_() is True]
-
-    def _execute_popup_all_unchecked_(self):
-        [i._set_checked_(False) for i in self._item_list_widget._get_all_item_widgets_() if i._get_is_visible_() is True]
-
-    def _close_popup_(self):
-        if isinstance(self._popup_entry, QtWidgets.QLineEdit):
-            if self._read_only_mark is not None:
-                self._popup_entry.setReadOnly(self._read_only_mark)
-        #
-        self._set_popup_activated_(False)
-
-    def _execute_auto_resize_(self):
-        visible_items = self._item_list_widget._get_visible_items_()
-        press_pos = self._get_popup_pos_(self._popup_entry_frame)
-        width, height = self._get_popup_size_(self._popup_entry_frame)
-        height_max = self._item_list_widget._get_maximum_height_(self._item_count_maximum, includes=visible_items)
-        height_max += self._popup_toolbar_h
-        #
-        self._show_popup_(
-            press_pos,
-            (width, height_max)
-        )
-
-
-class QtPopupCompletionFrame(
-    QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameDef,
-    utl_gui_qt_abstract.AbsQtPopupDef,
-):
-    completion_finished = qt_signal(str)
-    def __init__(self, *args, **kwargs):
-        super(QtPopupCompletionFrame, self).__init__(*args, **kwargs)
-        self.setWindowFlags(QtCore.Qt.ToolTip | QtCore.Qt.FramelessWindowHint)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setFocusPolicy(QtCore.Qt.NoFocus)
-        #
-        self._set_frame_def_init_()
-        self._set_popup_def_init_(self)
-        #
-        self._popup_close_button = QtIconPressItem(self)
-        self._popup_close_button._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get('close')
-        )
-        self._popup_close_button.press_clicked.connect(self._close_popup_)
-        self._popup_close_button.setToolTip(
-            '"LMB-click" to close'
-        )
-        #
-        self._item_list_widget = _QtListWidgetForPopup(self)
-        #
-        self._item_count_maximum = 10
-        self._popup_item_width, self._popup_item_height = 20, 20
-        self._item_list_widget.setGridSize(QtCore.QSize(self._popup_item_width, self._popup_item_height))
-        self._item_list_widget.setSpacing(2)
-        self._item_list_widget.setUniformItemSizes(True)
-        self._item_list_widget.itemClicked.connect(
-            self._end_action_popup_
-        )
-        #
-        self._choose_index = None
-        #
-        self._frame_border_color = QtBackgroundColors.Light
-        self._hovered_frame_border_color = QtBackgroundColors.Hovered
-        self._selected_frame_border_color = QtBackgroundColors.Hovered
-        #
-        self._frame_background_color = QtBackgroundColors.Dark
-
-    def paintEvent(self, event):
-        painter = QtPainter(self)
-        #
-        painter._draw_frame_by_rect_(
-            self._frame_draw_rect,
-            border_color=self._selected_frame_border_color,
-            background_color=self._frame_background_color,
-            border_radius=4
-        )
-        painter._draw_line_by_points_(
-            point_0=self._popup_toolbar_draw_rect.bottomLeft(),
-            point_1=self._popup_toolbar_draw_rect.bottomRight(),
-            border_color=self._frame_border_color,
-        )
-
-        c = self._item_list_widget._get_all_item_count_()
-        if c:
-            painter._draw_text_by_rect_(
-                self._popup_toolbar_draw_tool_tip_rect,
-                '{} results is matching ...'.format(c),
-                font=Font.NAME,
-                font_color=QtFontColors.Disable,
-                text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
-            )
-
-    def eventFilter(self, *args):
-        widget, event = args
-        if widget == self._popup_entry:
-            if event.type() == QtCore.QEvent.FocusOut:
-                self._close_popup_()
-            elif event.type() == QtCore.QEvent.KeyPress:
-                if event.key() == QtCore.Qt.Key_Escape:
-                    self._close_popup_()
-        return False
-
-    def _set_popup_entry_(self, widget):
-        self._popup_entry = widget
-        self._popup_entry.installEventFilter(self._widget)
-        self._widget.setFocusProxy(self._popup_entry)
-
-    def _refresh_widget_draw_geometry_(self):
-        x, y = 0, 0
-        w, h = self.width(), self.height()
-        #
-        c_x, c_y = x+1, y+1
-        c_w, c_h = w-2, h-2
-        tbr_h = self._popup_toolbar_h
-        spacing = 2
-        #
-        self._frame_draw_rect.setRect(
-            c_x, c_y, c_w, c_h
-        )
-        #
-        self._frame_draw_rect.setRect(
-            c_x, c_y, c_w, c_h
-        )
-        tbr_w = c_w
-        #
-        self._popup_toolbar_draw_rect.setRect(
-            c_x+2, c_y, c_w-4, tbr_h
-        )
-        self._popup_toolbar_draw_tool_tip_rect.setRect(
-            c_x, c_y, tbr_w-tbr_h, tbr_h
-        )
-        tbr_w = c_w
-        # close button
-        self._popup_close_button.setGeometry(
-            c_x+c_w-tbr_h*1, c_y, tbr_h, tbr_h
-        )
-        tbr_w -= (tbr_h+spacing)
-        c_y += tbr_h
-        c_h -= tbr_h
-
-        self._item_list_widget.setGeometry(
-            c_x+1, c_y+1, c_w-2, c_h-2
-        )
-        self._item_list_widget.updateGeometries()
-
-    def _refresh_widget_draw_(self):
-        self.update()
-
-    def _execute_popup_scroll_to_pre_(self):
-        if self._popup_is_activated is True:
-            self._item_list_widget._set_scroll_to_pre_item_()
-
-    def _execute_popup_scroll_to_next_(self):
-        if self._popup_is_activated is True:
-            self._item_list_widget._set_scroll_to_next_item_()
-
-    def _start_action_popup_(self, *args, **kwargs):
-        parent = self.parent()
-        self._item_list_widget._set_clear_()
-        name_texts = parent._get_entry_completion_data_()
-        if name_texts:
-            current_name_text = parent._get_value_()
-            for index, i_name_text in enumerate(name_texts):
-                i_item_widget = _QtHItem()
-                i_item = QtListWidgetItem()
-                i_item.setSizeHint(QtCore.QSize(self._popup_item_width, self._popup_item_height))
-                #
-                self._item_list_widget.addItem(i_item)
-                self._item_list_widget.setItemWidget(i_item, i_item_widget)
-                i_item._set_item_show_connect_()
-                #
-                i_item_widget._set_name_text_(i_name_text)
-                i_item_widget._set_icon_name_text_(i_name_text)
-                i_item_widget._set_index_(index)
-                #
-                if current_name_text == i_name_text:
-                    i_item.setSelected(True)
-
-            press_pos = self._get_popup_pos_0_(self._popup_entry_frame)
-            width, height = self._get_popup_size_(self._popup_entry_frame)
-            height_max = self._item_list_widget._get_maximum_height_(self._item_count_maximum)
-            height_max += self._popup_toolbar_h
-
-            self._show_popup_(
-                press_pos,
-                (width, height_max)
-            )
-
-            self._item_list_widget._set_scroll_to_selected_item_top_()
-
-            self._popup_entry._set_focused_(True)
-
-            self._popup_is_activated = True
-        else:
-            self._close_popup_()
-
-    def _end_action_popup_(self, *args, **kwargs):
-        parent = self.parent()
-        selected_item_widget = self._item_list_widget._get_selected_item_widget_()
-        if selected_item_widget:
-            name_text = selected_item_widget._get_name_text_()
-            parent._set_value_(name_text)
-            #
-            parent._send_completion_finished_emit_()
-            #
-            self.completion_finished.emit(name_text)
-
-        self._close_popup_()
-
-    def _close_popup_(self):
-        self._set_popup_activated_(False)
-
-
-class QtPopupForGuide(
-    QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameDef,
-    utl_gui_qt_abstract.AbsQtPopupDef,
-):
-    def __init__(self, *args, **kwargs):
-        super(QtPopupForGuide, self).__init__(*args, **kwargs)
-        self.setWindowFlags(QtCore.Qt.ToolTip | QtCore.Qt.FramelessWindowHint)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setFocusPolicy(QtCore.Qt.ClickFocus)
-        #
-        self.setPalette(QtDccMtd.get_palette())
-        #
-        self._set_frame_def_init_()
-        self._set_popup_def_init_(self)
-        #
-        self._keyword_filter_line_edit = QtLineEdit_(self)
-        self._keyword_filter_line_edit.hide()
-        self._keyword_filter_line_edit._set_entry_enable_(True)
-        self._keyword_filter_line_edit.setAlignment(
-            QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
-        )
-        self._keyword_filter_line_edit.entry_changed.connect(
-            self._execute_popup_filter_
-        )
-        #
-        self._popup_close_button = QtIconPressItem(self)
-        self._popup_close_button._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get('close')
-        )
-        self._popup_close_button.press_clicked.connect(self._close_popup_)
-        self._popup_close_button.setToolTip(
-            '"LMB-click" to close'
-        )
-        #
-        self._item_list_widget = _QtListWidgetForPopup(self)
-        #
-        self._item_count_maximum = 10
-        self._popup_item_width, self._popup_item_height = 20, 20
-        #
-        self._item_list_widget.setGridSize(QtCore.QSize(self._popup_item_width, self._popup_item_height))
-        self._item_list_widget.setSpacing(2)
-        self._item_list_widget.setUniformItemSizes(True)
-        self._item_list_widget.itemClicked.connect(
-            self._end_action_popup_
-        )
-        #
-        self._choose_index = None
-        #
-        self._frame_border_color = QtBackgroundColors.Light
-        self._hovered_frame_border_color = QtBackgroundColors.Hovered
-        self._selected_frame_border_color = QtBackgroundColors.Selected
-        #
-        self._frame_background_color = QtBackgroundColors.Dark
-
-    def paintEvent(self, event):
-        x, y = 0, 0
-        w, h = self.width(), self.height()
-        #
-        bck_rect = QtCore.QRect(
-            x, y, w-1, h-1
-        )
-        painter = QtPainter(self)
-        #
-        painter._draw_popup_frame_(
-            bck_rect,
-            margin=self._popup_margin,
-            side=self._popup_side,
-            shadow_radius=self._popup_shadow_radius,
-            region=self._popup_region,
-            border_color=self._selected_frame_border_color,
-            background_color=self._frame_background_color,
-        )
-        #
-        if not self._keyword_filter_line_edit.text():
-            painter._draw_text_by_rect_(
-                self._popup_toolbar_draw_tool_tip_rect,
-                'entry keyword to filter ...',
-                font=Font.NAME,
-                font_color=QtFontColors.Disable,
-                text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
-            )
-
-    def eventFilter(self, *args):
-        widget, event = args
-        if widget == self._popup_entry:
-            if event.type() == QtCore.QEvent.MouseButtonPress:
-                self._close_popup_()
-            elif event.type() == QtCore.QEvent.WindowDeactivate:
-                self._close_popup_()
-            #
-            elif event.type() == QtCore.QEvent.FocusOut:
-                self._close_popup_()
-            elif event.type() == QtCore.QEvent.KeyPress:
-                if event.key() == QtCore.Qt.Key_Escape:
-                    self._close_popup_()
-                else:
-                    self._keyword_filter_line_edit.keyPressEvent(event)
-        return False
-
-    def _execute_popup_filter_(self):
-        keyword_filter_text = self._keyword_filter_line_edit.text()
-        self._item_list_widget._set_view_items_visible_by_any_filter_(
-            keyword_filter_text
-        )
-        self._item_list_widget._refresh_view_all_items_viewport_showable_()
-
-    def _set_popup_entry_(self, widget):
-        self._popup_entry = widget
-        self._popup_entry.installEventFilter(self._widget)
-        self._widget.setFocusProxy(self._popup_entry)
-        self._keyword_filter_line_edit.setFocusProxy(self._popup_entry)
-
-        self._popup_entry.up_key_pressed.connect(
-            self._item_list_widget._set_scroll_to_pre_item_
-        )
-        self._popup_entry.down_key_pressed.connect(
-            self._item_list_widget._set_scroll_to_next_item_
-        )
-        self._popup_entry.enter_key_pressed.connect(
-            self._end_action_popup_
-        )
-
-    def _refresh_widget_draw_(self):
-        self.update()
-
-    def _refresh_widget_draw_geometry_(self):
-        side = self._popup_side
-        margin = self._popup_margin
-        shadow_radius = self._popup_shadow_radius
-        #
-        x, y = 0, 0
-        w, h = self.width(), self.height()
-
-        tbr_h = self._popup_toolbar_h
-        spacing = 2
-
-        c_x, c_y = x+margin+side+1, y+margin+side+1
-        c_w, c_h = w-margin*2-side*2-shadow_radius-2, h-margin*2-side*2-shadow_radius - 2
-
-        tbr_w = c_w
-
-        self._popup_toolbar_draw_rect.setRect(
-            c_x+2, c_y, c_w-4, tbr_h
-        )
-        self._popup_toolbar_draw_tool_tip_rect.setRect(
-            c_x, c_y, tbr_w-tbr_h, tbr_h
-        )
-        self._keyword_filter_line_edit.show()
-        self._keyword_filter_line_edit.setGeometry(
-            c_x, c_y, tbr_w-tbr_h, tbr_h
-        )
-        # close button
-        self._popup_close_button.setGeometry(
-            c_x + c_w - tbr_h * 1, c_y, tbr_h, tbr_h
-        )
-        tbr_w -= (tbr_h + spacing)
-        c_y += tbr_h
-        c_h -= tbr_h
-        #
-        self._item_list_widget.setGeometry(
-            c_x, c_y, c_w, c_h
-        )
-        self._item_list_widget.updateGeometries()
-
-    def _start_action_popup_(self, index):
-        parent = self.parent()
-        content_name_texts = list(parent._get_guide_choose_item_content_name_texts_at_(index))
-        if content_name_texts:
-            desktop_rect = get_qt_desktop_rect()
-            #
-            press_pos = parent._get_guide_choose_item_point_at_(index)
-            press_rect = parent._get_guide_choose_item_rect_at_(index)
-            #
-            current_name_text = parent._get_view_guide_item_name_text_at_(index)
-            for seq, i_name_text in enumerate(content_name_texts):
-                i_item_widget = _QtHItem()
-                i_item = QtListWidgetItem()
-                i_item.setSizeHint(QtCore.QSize(self._popup_item_width, self._popup_item_height))
-                #
-                self._item_list_widget.addItem(i_item)
-                self._item_list_widget.setItemWidget(i_item, i_item_widget)
-                i_item._set_item_show_connect_()
-                i_item._set_item_keyword_filter_keys_tgt_update_([i_name_text])
-                #
-                if i_name_text:
-                    i_item_widget._set_name_text_(i_name_text)
-                    i_item_widget._set_icon_name_text_(i_name_text)
-                #
-                i_item_widget._set_index_(seq)
-                if current_name_text == i_name_text:
-                    i_item.setSelected(True)
-            #
-            self.setFocus(QtCore.Qt.PopupFocusReason)
-            #
-            height_max = self._item_list_widget._get_maximum_height_(self._item_count_maximum)
-            height_max += self._popup_toolbar_h
-            popup_width = self._get_popup_width_(content_name_texts)
-            popup_width = max(self._popup_width_minimum, popup_width)
-            #
-            self._show_popup_0_(
-                press_pos, press_rect,
-                desktop_rect,
-                popup_width,
-                height_max
-            )
-            self._choose_index = index
-            parent._set_guide_choose_item_expand_at_(index)
-            #
-            self._item_list_widget._set_scroll_to_selected_item_top_()
-            #
-            self._item_list_widget.itemClicked.connect(
-                self._close_popup_
-            )
-            #
-            self._popup_entry._set_focused_(True)
-            #
-            self._popup_is_activated = True
-        else:
-            self._close_popup_()
-
-    def _end_action_popup_(self):
-        if self._choose_index is not None:
-            parent = self.parent()
-            selected_item_widget = self._item_list_widget._get_selected_item_widget_()
-            if selected_item_widget:
-                name_text = selected_item_widget._get_name_text_()
-                path_text = parent._get_view_guide_item_path_text_at_(
-                    self._choose_index
-                )
-                path_opt = bsc_core.DccPathDagOpt(path_text)
-                path_opt.set_name(name_text)
-                #
-                parent._set_view_guide_item_name_text_at_(
-                    name_text,
-                    self._choose_index
-                )
-                parent._set_view_guide_item_path_text_at_(
-                    str(path_opt),
-                    self._choose_index
-                )
-                parent._refresh_guide_draw_geometry_()
-            #
-            parent._set_view_guide_current_index_(self._choose_index)
-            parent._send_action_guide_item_press_clicked_emit_()
-            parent._clear_guide_current_()
-        #
-        self._close_popup_()
-
-    def _set_popup_activated_(self, boolean):
-        super(QtPopupForGuide, self)._set_popup_activated_(boolean)
-        #
-        if self._choose_index is not None:
-            parent = self.parent()
-            parent._set_guide_choose_item_collapse_at_(self._choose_index)
-            parent._send_guid_finished_emit_()
-
-    def _get_popup_width_(self, texts):
-        count = len(texts)
-        _ = max([self.fontMetrics().width(i) for i in texts]) + 32
-        _count_width = self.fontMetrics().width(str(count))
-        if count > self._item_count_maximum:
-            return _ + _count_width + 24
-        return _ + _count_width
-
-    def _get_maximum_height_(self):
-        rects = [self._item_list_widget.visualItemRect(self._item_list_widget.item(i)) for i in range(self._item_list_widget.count())[:self._item_count_maximum]]
-        if rects:
-            rect = rects[-1]
-            y = rect.y()
-            h = rect.height()
-            return y+h+1+4
-        return 0
-
-    def _close_popup_(self):
-        self._set_popup_activated_(False)
 
 
 class QtEntryFrame(
@@ -3247,10 +1512,10 @@ class QtEntryFrame(
                 frm_x, frm_y, frm_w, frm_h
             )
 
-        if self._resize_gui is not None:
+        if self._resize_handle is not None:
             frm_w, frm_h = 24, 24
             r_x, r_y = x+(w-frm_w), y+(h-frm_h)
-            self._resize_gui.setGeometry(
+            self._resize_handle.setGeometry(
                 r_x, r_y, frm_w, frm_h
             )
 
@@ -3267,31 +1532,30 @@ class QtEntryFrame(
         self._value_entry = None
         self._value_entries = []
         #
-        self._set_name_def_init_()
+        self._init_name_def_()
         self._set_frame_def_init_()
         self._set_status_def_init_()
         #
         self._frame_border_color = QtBorderColors.Light
         self._hovered_frame_border_color = QtBorderColors.Hovered
         self._selected_frame_border_color = QtBorderColors.Selected
-        #
         self._frame_background_color = QtBackgroundColors.Dim
 
-        self._resize_gui = QtVResizeFrame(self)
-        self._resize_gui.hide()
-        # self._resize_gui._set_resize_target_(self)
+        self._resize_handle = QtVResizeHandle(self)
+        self._resize_handle.hide()
+        # self._resize_handle._set_resize_target_(self)
     # resize
-    def _get_resize_gui_(self):
-        return self._resize_gui
+    def _get_resize_handle_(self):
+        return self._resize_handle
 
     def _set_resize_enable_(self, boolean):
-        self._resize_gui.setVisible(boolean)
+        self._resize_handle.setVisible(boolean)
 
     def _set_resize_minimum_(self, value):
-        self._resize_gui._set_resize_minimum_(value)
+        self._resize_handle._set_resize_minimum_(value)
 
     def _set_resize_target_(self, widget):
-        self._resize_gui._set_resize_target_(widget)
+        self._resize_handle._set_resize_target_(widget)
 
     def eventFilter(self, *args):
         widget, event = args
@@ -3310,14 +1574,15 @@ class QtEntryFrame(
         is_hovered = self._action_is_hovered
         is_selected = self._is_focused
         background_color = self._frame_background_color
-        bdr_color = [self._frame_border_color, self._selected_frame_border_color][is_selected]
+        bdr_color = [QtBorderColors.Basic, QtBorderColors.HighLight][is_selected]
+        bdr_w = [1, 2][is_selected]
         for i_rect in self._frame_draw_rects:
             painter._draw_frame_by_rect_(
                 i_rect,
                 border_color=bdr_color,
                 background_color=background_color,
                 # border_radius=1,
-                # border_width=2,
+                border_width=bdr_w,
             )
 
     def _update_background_color_by_locked_(self, boolean):
@@ -3349,17 +1614,20 @@ class QtEntryFrame(
         )
 
 
-class QtVResizeFrame(
+class QtHResizeHandle(
     QtWidgets.QWidget,
     #
     utl_gui_qt_abstract.AbsQtFrameDef,
     utl_gui_qt_abstract.AbsQtResizeDef,
     #
     utl_gui_qt_abstract.AbsQtActionDef,
-    utl_gui_qt_abstract.AbsQtActionHoverDef,
-    utl_gui_qt_abstract.AbsQtActionPressDef,
+    utl_gui_qt_abstract.AbsQtActionForHoverDef,
+    utl_gui_qt_abstract.AbsQtActionForPressDef,
 ):
     press_clicked = qt_signal()
+    size_changed = qt_signal(int)
+    resize_stated = qt_signal()
+    resize_finished = qt_signal()
     def _refresh_widget_draw_(self):
         self.update()
 
@@ -3367,16 +1635,14 @@ class QtVResizeFrame(
         x, y = 0, 0
         w, h = self.width(), self.height()
 
-        r = min(w, h)
         #
-        icn_frm_w, icn_frm_h = r, r
         icn_w, icn_h = self._resize_icon_draw_size
-        self._resize_icon_file_draw_rect.setRect(
-            x+(w-icn_w)/2, y+(icn_frm_h-icn_h)/2, icn_w, icn_h
+        self._resize_icon_draw_rect.setRect(
+            x+(w-icn_w)/2, y+(h-icn_h)/2, icn_w, icn_h
         )
 
     def __init__(self, *args, **kwargs):
-        super(QtVResizeFrame, self).__init__(*args, **kwargs)
+        super(QtHResizeHandle, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -3385,10 +1651,10 @@ class QtVResizeFrame(
         )
         #
         self._set_frame_def_init_()
-        self._set_resize_def_init_(self)
+        self._init_resize_def_(self)
 
         self._init_action_def_(self)
-        self._set_action_hover_def_init_()
+        self._init_action_hover_def_()
         self._set_action_press_def_init_()
         #
         self._hovered_frame_border_color = QtBorderColors.Button
@@ -3407,7 +1673,7 @@ class QtVResizeFrame(
             if event.type() == QtCore.QEvent.Enter:
                 self._set_action_hovered_(True)
                 self._set_action_flag_(
-                    self.ActionFlag.SplitVHover
+                    [self.ActionFlag.SplitHHover, self.ActionFlag.SplitVHover][self._resize_orientation]
                 )
             elif event.type() == QtCore.QEvent.Leave:
                 self._set_action_hovered_(False)
@@ -3417,13 +1683,13 @@ class QtVResizeFrame(
                 self._refresh_widget_draw_()
             elif event.type() == QtCore.QEvent.MouseButtonPress:
                 self._set_action_flag_(
-                    self.ActionFlag.SplitVClick
+                    [self.ActionFlag.SplitHPess, self.ActionFlag.SplitVPess][self._resize_orientation]
                 )
                 self._execute_action_resize_move_start_(event)
                 self._set_pressed_(True)
             elif event.type() == QtCore.QEvent.MouseMove:
                 self._set_action_flag_(
-                    self.ActionFlag.SplitVMove
+                    [self.ActionFlag.SplitHMove, self.ActionFlag.SplitVMove][self._resize_orientation]
                 )
                 self._execute_action_resize_move_(event)
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
@@ -3435,7 +1701,7 @@ class QtVResizeFrame(
     def paintEvent(self, event):
         painter = QtPainter(self)
         painter._draw_icon_file_by_rect_(
-            rect=self._resize_icon_file_draw_rect,
+            rect=self._resize_icon_draw_rect,
             file_path=self._resize_icon_file_path,
             is_hovered=self._action_is_hovered,
         )
@@ -3446,15 +1712,109 @@ class QtVResizeFrame(
     def _execute_action_resize_move_(self, event):
         if self._resize_target is not None:
             p = event.pos() - self._resize_point_start
+            d_w = p.x()
+            w_0 = self._resize_target.minimumWidth()
+            if self._resize_alignment == self.ResizeAlignment.Right:
+                w_1 = w_0+d_w
+            elif self._resize_alignment == self.ResizeAlignment.Left:
+                w_1 = w_0-d_w
+            else:
+                raise RuntimeError()
+            if self._resize_minimum+10 <= w_1 <= self._resize_maximum+10:
+                self._resize_target.setMinimumWidth(w_1)
+                self._resize_target.setMaximumWidth(w_1)
+                self.size_changed.emit(w_1)
+
+    def _execute_action_resize_move_stop_(self, event):
+        self.resize_finished.emit()
+
+
+class QtVResizeHandle(QtHResizeHandle):
+    press_clicked = qt_signal()
+    def __init__(self, *args, **kwargs):
+        super(QtVResizeHandle, self).__init__(*args, **kwargs)
+        self._resize_orientation = self.ResizeOrientation.Vertical
+
+    def _execute_action_resize_move_(self, event):
+        if self._resize_target is not None:
+            p = event.pos() - self._resize_point_start
             d_h = p.y()
             h_0 = self._resize_target.minimumHeight()
             h_1 = h_0+d_h
             if self._resize_minimum+10 <= h_1 <= self._resize_maximum+10:
                 self._resize_target.setMinimumHeight(h_1)
                 self._resize_target.setMaximumHeight(h_1)
+                self.size_changed.emit(h_1)
 
-    def _execute_action_resize_move_stop_(self, event):
-        pass
+
+class QtHResizeFrame(
+    QtWidgets.QWidget,
+):
+    geometry_changed = qt_signal(int, int, int, int)
+    def __init__(self, *args, **kwargs):
+        super(QtHResizeFrame, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+
+        self._resize_handle = QtHResizeHandle(self)
+        self._resize_handle._resize_icon_file_paths = [
+            utl_gui_core.RscIconFile.get('resize-middle'), utl_gui_core.RscIconFile.get('resize-middle')
+        ]
+        self._resize_handle._resize_frame_draw_size = 10, 20
+        self._resize_handle._resize_icon_draw_size = 8, 16
+
+        self._resize_info_frame = _QtInfoFrame(self)
+
+        self._resize_handle.size_changed.connect(self._set_resize_info_)
+        self._resize_handle.resize_finished.connect(self._set_resize_reset_)
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.Resize:
+                self._refresh_widget_draw_geometry_()
+                self.geometry_changed.emit(
+                    self.x(), self.y(), self.width(), self.height()
+                )
+        return False
+
+    def _set_resize_info_(self, value):
+        info = str(value)
+        self._resize_info_frame._set_info_text_(info)
+
+        frm_w, frm_h = self._resize_info_frame._info_draw_size
+        frm_w = self._resize_info_frame.fontMetrics().width(info)+24
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+
+        self._resize_info_frame.setGeometry(
+            x+(w-frm_w)/2, y+(h-frm_h)/2, frm_w, frm_h
+        )
+        self._resize_info_frame.raise_()
+
+    def _set_resize_reset_(self):
+        self._resize_info_frame._set_info_text_('')
+
+    def _refresh_widget_draw_geometry_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        if self._resize_handle._resize_alignment == self._resize_handle.ResizeAlignment.Right:
+            frm_w, frm_h = 10, 20
+            r_x, r_y = x+(w-frm_w), y+(h-frm_h)
+            self._resize_handle.setGeometry(
+                r_x, r_y, frm_w, frm_h
+            )
+        elif self._resize_handle._resize_alignment == self._resize_handle.ResizeAlignment.Left:
+            frm_w, frm_h = 10, 20
+            r_x, r_y = x, y+(h-frm_h)
+            self._resize_handle.setGeometry(
+                r_x, r_y, frm_w, frm_h
+            )
+        self._resize_handle.raise_()
+    # resize
+    def _get_resize_handle_(self):
+        return self._resize_handle
 
 
 class _QtScreenshotFrame(
@@ -3464,8 +1824,8 @@ class _QtScreenshotFrame(
     utl_gui_qt_abstract.AbsQtHelpDef,
     #
     utl_gui_qt_abstract.AbsQtActionDef,
-    utl_gui_qt_abstract.AbsQtActionHoverDef,
-    utl_gui_qt_abstract.AbsQtActionPressDef,
+    utl_gui_qt_abstract.AbsQtActionForHoverDef,
+    utl_gui_qt_abstract.AbsQtActionForPressDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -3496,7 +1856,7 @@ class _QtScreenshotFrame(
         self._set_help_def_init_(self)
 
         self._init_action_def_(self)
-        self._set_action_hover_def_init_()
+        self._init_action_hover_def_()
         self._set_action_press_def_init_()
 
         self._help_text_draw_size = 480, 240
@@ -3588,7 +1948,7 @@ class QtDrag(QtGui.QDrag):
         #
         w, h = widget.width(), widget.height()
         p = QtGui.QPixmap(w, h)
-        p.fill(QtCore.Qt.white)
+        p.fill(QtCore.Qt.transparent)
         widget.render(p)
         drag.setPixmap(p)
         drag.setHotSpot(point_offset)

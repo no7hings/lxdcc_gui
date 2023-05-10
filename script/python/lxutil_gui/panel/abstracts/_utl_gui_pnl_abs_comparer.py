@@ -125,7 +125,7 @@ class AbsPnlAssetDccGeometryComparer(
             self._prx_dcc_obj_tree_view_selection_opt.set_select
         )
         #
-        self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.PrxDccObjTreeViewTagFilterOpt(
+        self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.GuiTagFilterOpt(
             prx_tree_view_src=self._filter_tree_viewer_0,
             prx_tree_view_tgt=self._obj_tree_viewer_0,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
@@ -326,7 +326,7 @@ class AbsDccComparerOpt(object):
             self.set_select
         )
 
-        self._filter_opt = utl_prx_operators.PrxDccObjTreeViewTagFilterOpt(
+        self._filter_opt = utl_prx_operators.GuiTagFilterOpt(
             prx_tree_view_src=self._filter_tree_view,
             prx_tree_view_tgt=self._result_tree_view,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
@@ -439,7 +439,7 @@ class AbsPnlAssetGeometryComparer(prx_widgets.PrxSessionWindow):
     DCC_COMPARER_OPT_CLS = None
 
     def set_all_setup(self):
-        s = prx_widgets.PrxScrollArea()
+        s = prx_widgets.PrxVScrollArea()
         self.set_widget_add(s)
 
         e_g = prx_widgets.PrxExpandedGroup()

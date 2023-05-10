@@ -113,7 +113,7 @@ class AbsRenderSubmitterPanel(
         #
         v_splitter_0 = prx_widgets.PrxVSplitter()
         h_splitter_0.set_widget_add(v_splitter_0)
-        qt_scroll_area_0 = qt_widgets.QtScrollArea()
+        qt_scroll_area_0 = qt_widgets.QtVScrollArea()
         v_splitter_0.set_widget_add(qt_scroll_area_0)
         qt_layout_0 = qt_scroll_area_0._layout
         #
@@ -139,7 +139,7 @@ class AbsRenderSubmitterPanel(
         self._rsv_renderer_list_view = prx_widgets.PrxListView()
         prx_expanded_group_1.set_widget_add(self._rsv_renderer_list_view)
 
-        qt_scroll_area_1 = qt_widgets.QtScrollArea()
+        qt_scroll_area_1 = qt_widgets.QtVScrollArea()
         qt_layout_1 = qt_scroll_area_1._layout
         h_splitter_0.set_widget_add(qt_scroll_area_1)
         #
@@ -163,13 +163,13 @@ class AbsRenderSubmitterPanel(
         )
         self._filter_tree_viewer_0.set_selection_use_single()
 
-        self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.PrxDccObjTreeViewTagFilterOpt(
+        self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.GuiTagFilterOpt(
             prx_tree_view_src=self._filter_tree_viewer_0,
             prx_tree_view_tgt=self._rsv_renderer_list_view,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
         )
 
-        self._rsv_renderer_list_view.set_item_frame_size(
+        self._rsv_renderer_list_view.set_item_frame_size_basic(
             *self._hook_gui_configure.get('item_frame_size')
         )
         self._rsv_renderer_list_view.set_item_icon_frame_draw_enable(True)

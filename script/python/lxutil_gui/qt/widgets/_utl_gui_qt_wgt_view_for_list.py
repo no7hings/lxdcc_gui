@@ -36,6 +36,7 @@ class QtListWidget(
         self._item_spacing = 2
         #
         self._item_frame_size = 128, 128
+        self._item_frame_size_basic = 128, 128
         self._item_frame_draw_enable = False
         #
         self._item_icon_frame_size = 20, 20
@@ -46,6 +47,8 @@ class QtListWidget(
         self._item_name_size = 12, 12
         self._item_name_frame_draw_enable = False
         self._item_names_draw_range = None
+        #
+        self._item_size_scale_percent = 1.0
         #
         self._item_image_frame_draw_enable = False
         #
@@ -63,17 +66,31 @@ class QtListWidget(
         if self._action_control_flag is True:
             delta = event.angleDelta().y()
             step = 4
-            pre_item_frame_w, pre_item_frame_h = self._item_frame_size
+            w_pre, h_pre = self._item_frame_size
             if delta > 0:
-                item_frame_w = pre_item_frame_w+step
+                w_cur = w_pre+step
             else:
-                item_frame_w = pre_item_frame_w-step
+                w_cur = w_pre-step
             #
-            item_frame_w = max(min(item_frame_w, 480), 28)
-            if item_frame_w != pre_item_frame_w:
-                item_frame_h = int(float(pre_item_frame_h)/float(pre_item_frame_w)*item_frame_w)
-                self._set_item_frame_size_(item_frame_w, item_frame_h)
+            w_cur = max(min(w_cur, 480), 28)
+            if w_cur != w_pre:
+                h_cur = int(float(h_pre)/float(w_pre)*w_cur)
+                self._set_item_frame_size_(w_cur, h_cur)
                 self._set_all_item_widgets_update_()
+
+    def _set_item_size_scale_percent_(self, scale):
+        self._item_size_scale_percent = scale
+        #
+        w_pre, h_pre = self._item_frame_size
+        w_bsc, h_bsc = self._item_frame_size_basic
+        w_cur = w_bsc*scale
+        w_cur = max(min(w_cur, 480), 28)
+        w_cur = w_cur + w_cur % 2
+        #
+        if w_cur != w_pre:
+            h_cur = int(float(h_bsc)/float(w_bsc)*w_cur)
+            self._set_item_frame_size_(w_cur, h_cur)
+            self._set_all_item_widgets_update_()
 
     def eventFilter(self, *args):
         widget, event = args
@@ -172,6 +189,10 @@ class QtListWidget(
         #
         self._set_grid_size_(_w, _h)
 
+    def _set_item_size_basic_(self, w, h):
+        self._item_frame_size_basic = w, h
+        self._set_item_frame_size_(w, h)
+
     def _set_item_frame_draw_enable_(self, boolean):
         self._item_frame_draw_enable = boolean
 
@@ -221,7 +242,8 @@ class QtListWidget(
     def _set_all_item_widgets_update_(self):
         [
             (i._set_frame_size_(*self._item_frame_size), i._refresh_widget_draw_geometry_())
-            for i in self._get_all_item_widgets_()]
+            for i in self._get_all_item_widgets_()
+        ]
 
     def _set_all_item_widgets_checked_(self, boolean):
         [
@@ -243,9 +265,10 @@ class QtListWidget(
     def _get_is_grid_mode_(self):
         return self.viewMode() == self.IconMode
 
-    def _set_item_widget_add_(self, item_widget, *args, **kwargs):
+    def _add_item_widget_(self, item_widget, *args, **kwargs):
         view = self
         #
+        index_cur = view._get_item_count_()
         item = _utl_gui_qt_wgt_utility.QtListWidgetItem('', view)
         view.addItem(item)
         # debug for position error
@@ -262,9 +285,13 @@ class QtListWidget(
             item._set_checked_for_user_
         )
         item._set_item_show_connect_()
+        item.setText(str(index_cur).zfill(4))
+        # set view and item first
         item_widget._set_view_(view)
         item_widget._set_item_(item)
-        item_widget._set_index_(view._get_item_count_())
+        # and set other below
+        item_widget._set_sort_number_key_(index_cur)
+        item_widget._set_index_(index_cur)
         #
         item_widget._set_frame_size_(
             *self._item_frame_size

@@ -24,9 +24,6 @@ class AppKit(prx_widgets.PrxToolWindow):
         self.set_window_title('App-kit')
         for i_key in [
             'rsv-panels/asset-loader',
-            'rsv-panels/asset-batcher',
-            'rsv-panels/shot-loader',
-            'tool-panels/texture-converter'
         ]:
             i_hook_args = ssn_commands.get_hook_args(
                 i_key
@@ -44,12 +41,13 @@ class AppKit(prx_widgets.PrxToolWindow):
                         i_group = prx_widgets.PrxExpandedGroup()
                         self.set_widget_add(i_group)
                         i_group.set_name(i_group_name)
+                        i_group.set_icon_by_name(i_group_name)
                         i_group.set_expanded(True)
                         #
                         i_list_view = prx_widgets.PrxListView()
                         i_group.set_widget_add(i_list_view)
                         #
-                        i_list_view.set_item_frame_size(48, 120)
+                        i_list_view.set_item_frame_size_basic(48, 120)
                         #
                         i_list_view.set_item_name_frame_size(48, 72)
                         self._list_view_dict[i_group_name] = i_list_view
@@ -83,7 +81,7 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     #
     w = AppKit()
-    w.set_definition_window_size((480, 960))
+    w.set_definition_window_size((480, 480))
     w.set_window_show()
     #
     sys.exit(app.exec_())

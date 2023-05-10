@@ -11,6 +11,7 @@ import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 class _QtListItemWidget(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtTypeDef,
     utl_gui_qt_abstract.AbsQtIndexDef,
     utl_gui_qt_abstract.AbsQtImageDef,
     utl_gui_qt_abstract.AbsQtMovieDef,
@@ -22,9 +23,9 @@ class _QtListItemWidget(
     utl_gui_qt_abstract.AbsQtNamesDef,
     #
     utl_gui_qt_abstract.AbsQtActionDef,
-    utl_gui_qt_abstract.AbsQtActionHoverDef,
+    utl_gui_qt_abstract.AbsQtActionForHoverDef,
     utl_gui_qt_abstract.AbsQtActionCheckDef,
-    utl_gui_qt_abstract.AbsQtActionPressDef,
+    utl_gui_qt_abstract.AbsQtActionForPressDef,
     utl_gui_qt_abstract.AbsQtActionSelectDef,
     utl_gui_qt_abstract.AbsQtActionDragDef,
     #
@@ -59,7 +60,7 @@ class _QtListItemWidget(
         #
         self._refresh_widget_draw_()
 
-    def _get_check_action_is_available_(self, event):
+    def _get_check_action_is_valid_(self, event):
         if self._check_action_is_enable is True:
             p = event.pos()
             return self._check_action_rect.contains(p)
@@ -72,19 +73,21 @@ class _QtListItemWidget(
         self.setMouseTracking(True)
         #
         self._set_frame_def_init_()
+        self._init_type_def_()
         self._set_index_def_init_()
-        self._set_icon_def_init_()
+        self._init_icon_def_()
         self._set_icons_def_init_()
         self._set_image_def_init_()
         self._set_names_def_init_()
-        self._set_menu_def_init_()
+        self._init_menu_def_()
         self._set_movie_def_init_()
         #
-        self._set_action_hover_def_init_()
+        self._init_action_hover_def_()
         self._init_action_def_(self)
-        self._set_action_check_def_init_()
+        self._init_action_check_def_(self)
         self._check_icon_file_path_0 = utl_gui_core.RscIconFile.get('filter_unchecked')
         self._check_icon_file_path_1 = utl_gui_core.RscIconFile.get('filter_checked')
+        self._check_icon_file_path_current = self._check_icon_file_path_0
         self._set_action_press_def_init_()
         self._set_action_select_def_init_()
         self._init_action_drag_def_(self)
@@ -114,7 +117,8 @@ class _QtListItemWidget(
         #
         self.setFont(get_font())
 
-        self._signals = QtItemSignals()
+        self._sort_name_key = ''
+        self._sort_number_key = 0
 
         self._drag = None
 
@@ -147,7 +151,7 @@ class _QtListItemWidget(
                 if event.button() == QtCore.Qt.RightButton:
                     self._set_menu_show_()
                 elif event.button() == QtCore.Qt.LeftButton:
-                    if self._get_check_action_is_available_(event) is True:
+                    if self._get_check_action_is_valid_(event) is True:
                         self._set_action_check_execute_(event)
                         self.check_clicked.emit()
                         self.check_toggled.emit(self._is_checked)
@@ -161,7 +165,7 @@ class _QtListItemWidget(
             #
             elif event.type() == QtCore.QEvent.MouseButtonDblClick:
                 if event.button() == QtCore.Qt.LeftButton:
-                    if self._get_check_action_is_available_(event) is True:
+                    if self._get_check_action_is_valid_(event) is True:
                         self._set_action_check_execute_(event)
                         self.check_clicked.emit()
                         self.check_toggled.emit(self._is_checked)
@@ -174,7 +178,7 @@ class _QtListItemWidget(
             #
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 if self._get_action_flag_is_match_(self.ActionFlag.PressClick):
-                    self._send_action_press_click_emit_()
+                    self._send_press_clicked_emit_()
                 elif self._get_action_flag_is_match_(self.ActionFlag.PressDbClick):
                     self._set_action_press_db_click_emit_send_()
                 #
@@ -192,16 +196,6 @@ class _QtListItemWidget(
             print event.type()
         return False
 
-    def _execute_drag_pressed_(self, *args, **kwargs):
-        self.drag_pressed.emit(
-            args[0]
-        )
-
-    def _execute_drag_released_(self, *args, **kwargs):
-        self.drag_released.emit(
-            args[0]
-        )
-
     def dragMoveEvent(self, event):
         print event
 
@@ -210,13 +204,18 @@ class _QtListItemWidget(
         #
         self._refresh_widget_draw_geometry_()
         #
+        x, y = 0, 0
         w, h = self.width(), self.height()
+        bsc_x, bsc_y = x+1, y+1
+        bsc_w, bsc_h = w-2, h-2
         #
         offset = self._get_action_offset_()
         #
-        bkg_rect = QtCore.QRect(1, 1, w-2, h-2)
+        base_rect = QtCore.QRect(bsc_x, bsc_y, bsc_w, bsc_h)
+        shadow_rect = QtCore.QRect(bsc_x+2, bsc_y+2, bsc_w-2, bsc_h-2)
+
         bkg_color = painter._get_item_background_color_by_rect__(
-            rect=bkg_rect,
+            rect=base_rect,
             is_check_hovered=self._check_is_hovered,
             is_checked=self._is_checked,
             is_press_hovered=self._press_is_hovered,
@@ -241,17 +240,19 @@ class _QtListItemWidget(
                 item._item_show_loading_index
             )
         else:
-            # if self._is_selected is True:
-            #     painter.fillRect(
-            #         self._select_state_draw_rect,
-            #         QtBackgroundColors.ItemSelected
-            #     )
             painter._draw_frame_by_rect_(
-                bkg_rect,
+                rect=shadow_rect,
+                border_color=QtBorderColors.Transparent,
+                background_color=QtBackgroundColors.Shadow,
+                offset=4
+            )
+            #
+            painter._draw_frame_by_rect_(
+                rect=base_rect,
                 border_color=bdr_color,
                 background_color=bkg_color,
                 border_radius=1,
-                offset=offset
+                offset=offset,
             )
             # icon frame
             if self._icon_frame_draw_enable is True:
@@ -262,13 +263,13 @@ class _QtListItemWidget(
                         background_color=self._frame_background_color,
                         offset=offset
                     )
-            #
+            # name frame
             if self._name_frame_draw_enable is True:
                 if self._get_has_names_():
                     painter._draw_frame_by_rect_(
                         self._name_frame_draw_rect,
                         border_color=QtBorderColors.Transparent,
-                        background_color=self._get_name_frame_background_color_(),
+                        background_color=self._frame_background_color,
                         offset=offset
                     )
             #
@@ -314,14 +315,10 @@ class _QtListItemWidget(
             # icon
             if self._icon_is_enable is True:
                 if self._icon_name_text:
-                    painter._draw_icon_with_name_text_by_rect_(
-                        self._icon_name_draw_rect,
-                        self._icon_name_text,
+                    painter._draw_frame_color_with_name_text_by_rect_(
+                        rect=self._name_frame_draw_rect,
+                        text=self._icon_name_text,
                         offset=offset,
-                        border_radius=2,
-                        border_color=QtBorderColors.Transparent,
-                        background_color=QtBackgroundColors.Transparent,
-                        font_color=self._frame_background_color
                     )
             # name
             if self._get_has_names_() is True:
@@ -340,9 +337,10 @@ class _QtListItemWidget(
                                 key_text_width = QtTextMtd.get_draw_width_maximum(
                                     painter, self._name_text_dict.keys()[self._names_draw_range[0]:self._names_draw_range[1]]
                                 )
+                        #
                         for i_name_index, (i_key, i_value) in enumerate(name_text_dict.items()):
                             painter._set_text_draw_by_rect_use_key_value_(
-                                self._get_name_rect_at_(i_name_index),
+                                rect=self._get_name_rect_at_(i_name_index),
                                 key_text=i_key,
                                 value_text=i_value,
                                 key_text_width=key_text_width,
@@ -382,8 +380,8 @@ class _QtListItemWidget(
                             border_radius=4,
                             offset=offset
                         )
-            #
-            if self._get_movie_enable_():
+            # play button
+            if self._get_play_draw_is_enable_() is True:
                 painter._set_movie_play_button_draw_by_rect_(
                     self._movie_rect,
                     offset=offset,
@@ -391,12 +389,29 @@ class _QtListItemWidget(
                     is_selected=self._is_selected,
                     is_actioned=self._get_is_actioned_()
                 )
+            # index
+            if self._index_draw_enable is True:
+                painter._draw_index_by_rect_(
+                    rect=self._frame_draw_rect,
+                    text=self._index_text,
+                    offset=offset,
+                )
             #
             if item._item_show_image_status in [item.ShowStatus.Loading, item.ShowStatus.Waiting]:
                 painter._set_loading_draw_by_rect_(
                     self._image_frame_rect,
                     item._item_show_image_loading_index
                 )
+
+    def _execute_drag_pressed_(self, *args, **kwargs):
+        self.drag_pressed.emit(
+            args[0]
+        )
+
+    def _execute_drag_released_(self, *args, **kwargs):
+        self.drag_released.emit(
+            args[0]
+        )
 
     def _set_action_hovered_(self, boolean):
         if boolean is True:
@@ -438,14 +453,20 @@ class _QtListItemWidget(
     def _refresh_widget_frame_draw_geometries_(self):
         if self._list_widget is not None:
             side = 4
-            o_x, o_y = 0, 0
-            spacing = 2
-            x, y = side, side
-            w, h = self._frame_size
-            self._set_frame_draw_geometry_(x, y, w, h)
 
-            m_frm_x, m_frm_y = x+o_x, y+o_y
-            m_frm_w, m_frm_h = w-o_x, h-o_y
+            x, y = 0, 0
+            w, h = self.width(), self.height()
+
+            b_x, b_y = side, side
+            b_w, b_h = w-side*2, h-side*2
+            self._set_frame_draw_rect_(b_x, b_y, b_w, b_h)
+
+            frm_x, frm_y = side, side
+            frm_w, frm_h = self._frame_size
+            #
+            m_frm_x, m_frm_y = frm_x+x, frm_y+y
+            m_frm_w, m_frm_h = frm_w-x, frm_h-y
+
             if self._list_widget._get_is_grid_mode_():
                 self._set_widget_frame_geometry_update_as_grid_mode_(
                     (m_frm_x, m_frm_y), (m_frm_w, m_frm_h)
@@ -603,13 +624,14 @@ class _QtListItemWidget(
             rect = self._image_frame_rect
             x, y = rect.x(), rect.y()
             w, h = rect.width(), rect.height()
+            frm_r = min(w, h)
             i_w_0, i_h_0 = self._get_image_size_()
             if (i_w_0, i_h_0) != (0, 0):
                 i_x, i_y, icn_w, icn_h = bsc_core.RawSizeMtd.set_fit_to(
                     (i_w_0, i_h_0), (w, h)
                 )
-                if self._get_movie_enable_() is True:
-                    m_f_w, m_f_h = 32, 32
+                if self._get_play_draw_is_enable_() is True:
+                    m_f_w, m_f_h = frm_r/4, frm_r/4
                     self._set_movie_rect_(
                         x+i_x+(icn_w-m_f_w)/2, y+i_y+(icn_h-m_f_h)/2,
                         m_f_w, m_f_h
@@ -637,24 +659,43 @@ class _QtListItemWidget(
             side = 2
             spacing = 0
             #
-            icn_frm_w, icn_frm_h = self._name_frame_size
-            icn_w, icn_h = self._name_size
+            nme_frm_w, nme_frm_h = self._name_frame_size
+            nme_w, nme_h = self._name_size
             #
             self._set_index_draw_rect_(
-                x+2, y+h-icn_h, w-4, icn_h
+                x+2, y+h-nme_h, w-4, nme_h
             )
             for i_name_index in name_indices:
-                i_x, i_y = x+(icn_frm_w-icn_w)/2+side, y+(icn_frm_h-icn_h)/2+i_name_index*(icn_frm_h+spacing)
-                self._set_name_text_draw_rect_at_(
-                    i_x, i_y, w-(i_x-x)-side, icn_h,
-                    i_name_index
-                )
-
+                i_x, i_y = x+(nme_frm_w-nme_w)/2+side, y+(nme_frm_h-nme_h)/2+i_name_index*(nme_frm_h+spacing)
+                if i_y+nme_h < y+h:
+                    self._set_name_text_draw_rect_at_(
+                        i_x, i_y, w-(i_x-x)-side, nme_h,
+                        i_name_index
+                    )
+                else:
+                    self._set_name_text_draw_rect_at_(
+                        0, 0, 0, 0,
+                        i_name_index
+                    )
+            #
             if self._icon_is_enable is True:
                 if self._icon_name_text:
                     self._icon_name_draw_rect.setRect(
                         x+(w-h), y, h, h
                     )
+
+    def _set_sort_number_key_(self, value):
+        self._sort_number_key = value
+        if self._get_view_()._get_sort_mode_() == utl_gui_configure.SortMode.Number:
+            self._get_item_().setText(str(value).zfill(4))
+
+    def _set_sort_name_key_(self, value):
+        self._sort_name_key = value
+        if self._get_view_()._get_sort_mode_() == utl_gui_configure.SortMode.Name:
+            if isinstance(value, six.text_type):
+                value = value.encode('utf-8')
+            #
+            self._get_item_().setText(str(value))
 
     def __str__(self):
         return '{}(names={})'.format(

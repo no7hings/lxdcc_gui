@@ -30,11 +30,11 @@ class PrxTreeView(
         self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
         self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
-        self._prx_h_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
-        self._qt_layout_0.addWidget(self._prx_h_tool_bar.widget)
-        self._prx_h_tool_bar.set_border_radius(1)
+        self._prx_top_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
+        self._qt_layout_0.addWidget(self._prx_top_tool_bar.widget)
+        self._prx_top_tool_bar.set_border_radius(1)
         self._prx_filer_bar_0 = _utl_gui_prx_wdt_utility.PrxFilterBar()
-        self._prx_h_tool_bar.set_widget_add(self._prx_filer_bar_0)
+        self._prx_top_tool_bar.set_widget_add(self._prx_filer_bar_0)
         #
         self._loading_index = 0
         self._loading_show_index = 0
@@ -44,6 +44,9 @@ class PrxTreeView(
         self._qt_view.setMaximumHeight(166667)
         self._qt_view.gui_proxy = self
         self._qt_layout_0.addWidget(self._qt_view)
+        # self._qt_view.setFocusProxy(
+        #     self._prx_filer_bar_0._qt_widget._value_entry
+        # )
         #
         self._set_prx_tree_def_init_()
         self._qt_view.customContextMenuRequested.connect(
@@ -104,11 +107,11 @@ class PrxTreeView(
             )
 
     def set_filter_start(self):
-        self._prx_h_tool_bar.set_expanded(True)
+        self._prx_top_tool_bar.set_expanded(True)
         self._prx_filer_bar_0.set_entry_focus(True)
 
-    def get_tool_bar(self):
-        return self._prx_filer_bar_0
+    def get_top_tool_bar(self):
+        return self._prx_top_tool_bar
 
     def set_scroll_to_select_item(self):
         selection_items = self.view.selectedItems()
@@ -209,19 +212,19 @@ class PrxTreeView(
     def connect_item_select_changed_to(self, fnc):
         self.view.itemSelectionChanged.connect(fnc)
 
-    def set_item_check_changed_connect_to(self, fnc):
+    def connect_item_check_changed_to(self, fnc):
         self.view.item_check_changed.connect(fnc)
 
-    def set_item_changed_connect_to(self, fnc):
+    def connect_choose_changed_to(self, fnc):
         self.view.itemChanged.connect(fnc)
 
-    def set_item_expand_connect_to(self, prx_item, fnc, time=0):
-        self.view._set_item_expand_connect_to_(prx_item.widget, fnc, time)
+    def connect_item_expand_to(self, prx_item, fnc, time=0):
+        self.view._connect_item_expand_to_(prx_item.widget, fnc, time)
 
     def set_all_items_expand(self):
         self.view.expandAll()
 
-    def set_items_expand_by_depth(self, depth):
+    def expand_items_by_depth(self, depth):
         qt_items = self.view._get_items_by_depth_(depth)
         for qt_item in qt_items:
             qt_item.setExpanded(True)
@@ -384,18 +387,29 @@ class PrxTreeView(
         #
         self._prx_filter_bar.set_result_index(self._occurrence_index_current)
 
-    def get_item_by_filter_key(self, filter_key):
+    def get_item_by_key(self, filter_key):
         return self._item_dict.get(filter_key)
 
-    def set_item_select_by_filter_key(self, filter_key, exclusive=False):
-        item_prx = self.get_item_by_filter_key(filter_key)
+    def get_valid_item_keys(self):
+        list_ = []
+        for k, v in self._item_dict.items():
+            if v.get_is_enable() is True:
+                list_.append(k)
+        return list_
+
+    def get_item_keys(self):
+        return self._item_dict.keys()
+
+    def select_item_by_key(self, filter_key, exclusive=False):
+        prx_item = self.get_item_by_key(filter_key)
         #
-        if item_prx is not None:
-            self.set_item_selected(item_prx, exclusive=exclusive)
-            self.set_scroll_to_select_item()
-            # item_prx.set_select()
-        #
-        self.set_view_update()
+        if prx_item is not None:
+            if prx_item.get_is_enable() is True:
+                self.set_item_selected(prx_item, exclusive=exclusive)
+                self.set_scroll_to_select_item()
+                prx_item.set_select()
+            #
+            self.set_view_update()
 
     def set_view_update(self):
         self.view.update()
@@ -406,8 +420,14 @@ class PrxTreeView(
     def set_filter_history_key(self, key):
         self._prx_filter_bar.set_history_key(key)
 
-    def set_filter_completion_gain_fnc(self, fnc):
-        self._prx_filter_bar.set_filter_completion_gain_fnc(fnc)
+    def set_completion_gain_fnc(self, fnc):
+        self._prx_filter_bar.set_completion_gain_fnc(fnc)
+
+    def restore_filter(self):
+        self._prx_filter_bar.restore()
 
     def set_draw_for_check_state_enable(self, boolean):
         self._qt_view._set_draw_for_check_state_enable_(boolean)
+
+    def gui_waiting(self):
+        return self._qt_view._gui_waiting_()

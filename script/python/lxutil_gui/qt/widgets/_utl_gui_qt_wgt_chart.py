@@ -10,7 +10,7 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
 
 class QtColorChooseChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtWgtDef,
+    utl_gui_qt_abstract.AbsQtWidgetDef,
     utl_gui_qt_abstract.AbsQtActionDef,
     utl_gui_qt_abstract.AbsQtChartDef,
 ):
@@ -120,7 +120,7 @@ class QtColorChooseChart(
             QtWidgets.QSizePolicy.Expanding
         )
         #
-        self._set_widget_def_init_(self)
+        self._init_widget_def_(self)
         self._init_action_def_(self)
         self._set_chart_def_init_()
         self._set_build_()
@@ -465,7 +465,7 @@ class QtProgressingChart(
                     base_rect
                 )
                 for i_index, i in enumerate(self._progress_raw):
-                    i_percent, i_percent_range, i_label = i
+                    i_percent, i_percent_range, i_label, i_show_percent = i
                     if i_index == 0:
                         i_data = QtProgressingChartDrawMtd._get_basic_data_(
                             rect=frame_rect,
@@ -473,6 +473,7 @@ class QtProgressingChart(
                             percent=i_percent,
                             percent_range=i_percent_range,
                             label=i_label,
+                            show_percent=i_show_percent,
                             tape_w=12, spacing=4
                         )
                     else:
@@ -482,10 +483,16 @@ class QtProgressingChart(
                             percent=i_percent,
                             percent_range=i_percent_range,
                             label=i_label,
+                            show_percent=i_show_percent,
                             tape_w=4, spacing=12
                         )
 
-                    i_annulus_sector_path, i_annulus_sector_color, i_text_rect_f, i_text_option, i_text, i_text_color = i_data
+                    (
+                        i_annulus_sector_path, i_annulus_sector_color,
+                        i_show_name_rect_f, i_show_name_option, i_show_name,
+                        i_show_percent_rect_f, i_show_percent_option, i_show_percent,
+                        i_text_color
+                    ) = i_data
                     #
                     painter._set_border_color_(QtBorderColors.Transparent)
                     if i_index == 0:
@@ -497,14 +504,11 @@ class QtProgressingChart(
                     painter._set_font_color_(i_text_color)
                     painter._set_font_(QtFonts.Chart)
 
-                    i_text_ = painter.fontMetrics().elidedText(
-                        i_text,
-                        QtCore.Qt.ElideLeft,
-                        i_text_rect_f.width() - 2,
-                        QtCore.Qt.TextShowMnemonic
+                    painter.drawText(
+                        i_show_name_rect_f, i_show_name, i_show_name_option
                     )
                     painter.drawText(
-                        i_text_rect_f, i_text, i_text_option
+                        i_show_percent_rect_f, i_show_percent, i_show_percent_option
                     )
 
 
@@ -1285,11 +1289,11 @@ class QtSequenceChart(
         #
         self._set_build_()
         #
-        self._set_name_def_init_()
+        self._init_name_def_()
         self._set_chart_def_init_()
         self._set_status_def_init_()
         #
-        self._set_menu_def_init_()
+        self._init_menu_def_()
 
     def eventFilter(self, *args):
         widget, event = args

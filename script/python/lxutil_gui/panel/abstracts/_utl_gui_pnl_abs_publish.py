@@ -39,7 +39,7 @@ class AbsValidatorOpt(object):
             self.set_select
         )
 
-        self._filter_opt = utl_prx_operators.PrxDccObjTreeViewTagFilterOpt(
+        self._filter_opt = utl_prx_operators.GuiTagFilterOpt(
             prx_tree_view_src=self._filter_tree_view,
             prx_tree_view_tgt=self._result_tree_view,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
@@ -69,7 +69,7 @@ class AbsValidatorOpt(object):
             scene_prx_item, rsv_scene_properties, check_results
         )
         #
-        self._result_tree_view.set_items_expand_by_depth(1)
+        self._result_tree_view.expand_items_by_depth(1)
 
     def _set_sub_check_results_build_at_(self, scene_prx_item, rsv_scene_properties, results):
         with utl_core.GuiProgressesRunner.create(maximum=len(results), label='gui-add for check result') as g_p:
@@ -373,7 +373,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
     def __init__(self, session, *args, **kwargs):
         super(AbsPnlAssetPublisher, self).__init__(session, *args, **kwargs)
 
-    def set_variants_restore(self):
+    def restore_variants(self):
         self._scene_file_path = None
         self._rsv_scene_properties = None
 
@@ -395,14 +395,14 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
         self._tab_view = prx_widgets.PrxTabView()
         self.set_widget_add(self._tab_view)
 
-        sa_0 = prx_widgets.PrxScrollArea()
+        sa_0 = prx_widgets.PrxVScrollArea()
         self._tab_view.set_item_add(
             sa_0,
             name='Validation',
             icon_name_text='Validation',
         )
 
-        sa_1 = prx_widgets.PrxScrollArea()
+        sa_1 = prx_widgets.PrxVScrollArea()
         self._tab_view.set_item_add(
             sa_1,
             name='Configure',

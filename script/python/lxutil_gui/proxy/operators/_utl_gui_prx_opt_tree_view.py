@@ -73,7 +73,7 @@ class PrxDccObjTreeViewGainOpt(object):
         return lis
 
 
-class PrxDccObjTreeViewTagFilterOpt(object):
+class GuiTagFilterOpt(object):
     COUNT_COLUMN = 1
     def __init__(self, prx_tree_view_src, prx_tree_view_tgt, prx_tree_item_cls):
         self._prx_tree_view_src = prx_tree_view_src
@@ -93,7 +93,7 @@ class PrxDccObjTreeViewTagFilterOpt(object):
 
         self._obj_add_dict = self._prx_tree_view_src._item_dict
         #
-        self._prx_tree_view_src.set_item_check_changed_connect_to(
+        self._prx_tree_view_src.connect_item_check_changed_to(
             self.set_filter
         )
 
@@ -131,10 +131,10 @@ class PrxDccObjTreeViewTagFilterOpt(object):
         name = bsc_core.SPathMtd.set_unquote_to(path_dag_opt.name)
         path = bsc_core.SPathMtd.set_unquote_to(path_dag_opt.path)
         prx_item.set_name(name)
-        prx_item.set_icon_by_name_text(path, 0)
+        prx_item.set_icon_by_name(path, 0)
         prx_item.set_tool_tip(path)
 
-    def _set_prx_item_src_add_(self, path):
+    def _add_prx_item_src_(self, path):
         path_dag_opt = bsc_core.DccPathDagOpt(path)
         key = path_dag_opt.path
         if key in self._obj_add_dict:
@@ -157,7 +157,7 @@ class PrxDccObjTreeViewTagFilterOpt(object):
                 **_kwargs
             )
         #
-        prx_item.set_checked(True)
+        prx_item.set_checked(False)
         prx_item.set_emit_send_enable(True)
         prx_item.set_gui_dcc_obj(path_dag_opt, self._namespace_src)
         #
@@ -176,7 +176,7 @@ class PrxDccObjTreeViewTagFilterOpt(object):
         all_paths.sort()
         all_paths = bsc_core.RawTextsOpt(all_paths).set_sort_to()
         for path in all_paths:
-            i_is_create, i_prx_item_src = self._set_prx_item_src_add_(path)
+            i_is_create, i_prx_item_src = self._add_prx_item_src_(path)
             if path in leaf_paths:
                 tag_filter_key = path
                 i_prx_item_src.set_tag_filter_src_key_add(tag_filter_key)
@@ -187,7 +187,7 @@ class PrxDccObjTreeViewTagFilterOpt(object):
                     i_prx_item_src.set_gui_dcc_obj(dcc_obj, namespace=self._dcc_namespace)
         #
         if isinstance(expand_depth, int):
-            self._prx_tree_view_src.set_items_expand_by_depth(expand_depth)
+            self._prx_tree_view_src.expand_items_by_depth(expand_depth)
         else:
             self._prx_tree_view_src.set_all_items_expand()
 
@@ -290,12 +290,12 @@ class PrxDccObjTreeViewTagFilterOpt(object):
             #
             for seq, i_ancestor_path in enumerate(ancestor_paths):
                 if i_ancestor_path not in self._obj_add_dict:
-                    i_is_create, i_ancestor_prx_item_src = self._set_prx_item_src_add_(i_ancestor_path)
+                    i_is_create, i_ancestor_prx_item_src = self._add_prx_item_src_(i_ancestor_path)
                     if i_is_create is True:
                         if seq+1 <= expand_depth:
                             i_ancestor_prx_item_src.set_expanded(True)
         #
-        is_create, prx_item_src = self._set_prx_item_src_add_(path)
+        is_create, prx_item_src = self._add_prx_item_src_(path)
         prx_item_src.set_tag_filter_src_key_add(path)
         if is_create is True:
             if self._dcc_namespace is not None:
@@ -305,11 +305,6 @@ class PrxDccObjTreeViewTagFilterOpt(object):
                         namespace=self._dcc_namespace
                     )
         return prx_item_src
-
-
-class PrxDccObjKeywordFilterOpt(object):
-    def __init__(self, prx_tree_view):
-        pass
 
 
 class PrxDccObjTreeViewAddOpt(object):
@@ -348,11 +343,11 @@ class PrxDccObjTreeViewAddOpt(object):
             prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
             prx_item.set_expanded(True)
             prx_item.set_checked(False)
-            prx_item.set_icon_by_name_text(obj.type_name, 1)
+            prx_item.set_icon_by_name(obj.type_name, 1)
             self._obj_add_dict[obj_path] = prx_item
             return prx_item
 
-    def _set_prx_item_add_(self, obj, prx_item_parent, name_use_path_prettify):
+    def gui_add(self, obj, prx_item_parent, name_use_path_prettify):
         tool_tips = [
             'type: {}'.format(obj.type_name),
             'path: {}'.format(obj.path)
@@ -393,7 +388,7 @@ class PrxDccObjTreeViewAddOpt(object):
         if obj_key in self._obj_add_dict:
             return self._obj_add_dict[obj_key]
         else:
-            return self._set_prx_item_add_(
+            return self.gui_add(
                 obj,
                 prx_item_parent,
                 name_use_path_prettify=False
@@ -409,7 +404,7 @@ class PrxDccObjTreeViewAddOpt(object):
                 prx_item_parent = self._obj_add_dict[parent_key]
             else:
                 prx_item_parent = None
-            return self._set_prx_item_add_(obj, prx_item_parent, name_use_path_prettify=False)
+            return self.gui_add(obj, prx_item_parent, name_use_path_prettify=False)
 
     def _set_prx_item_add_1_(self, obj, parent=None):
         obj_key = obj.path
@@ -421,15 +416,15 @@ class PrxDccObjTreeViewAddOpt(object):
                 prx_item_parent = self._obj_add_dict[parent_key]
             else:
                 prx_item_parent = None
-            return self._set_prx_item_add_(obj, prx_item_parent, name_use_path_prettify=True)
+            return self.gui_add(obj, prx_item_parent, name_use_path_prettify=True)
 
     def set_prx_item_add_as(self, obj, mode='tree'):
         if mode == 'tree':
-            return self.set_prx_item_add_as_tree_mode(obj)
+            return self.gui_add_as_tree(obj)
         elif mode == 'list':
-            return self.set_prx_item_add_as_list_mode(obj)
+            return self.gui_add_as_list(obj)
 
-    def set_prx_item_add_as_list_mode(self, obj):
+    def gui_add_as_list(self, obj):
         root = obj.get_root()
         self._set_prx_item_add_0_(root)
         parent = obj.get_parent()
@@ -437,7 +432,7 @@ class PrxDccObjTreeViewAddOpt(object):
         #
         return self._set_prx_item_add_0_(obj, parent)
 
-    def set_prx_item_add_as_tree_mode(self, obj):
+    def gui_add_as_tree(self, obj):
         ancestors = obj.get_ancestors()
         if ancestors:
             ancestors.reverse()
@@ -524,7 +519,7 @@ class PrxStgObjTreeViewAddOpt(object):
                 parent_key = parent.normcase_path
                 return self._obj_add_dict[parent_key]
 
-    def _set_prx_item_add_(self, obj, parent=None, use_show_thread=False, name_use_path_prettify=False):
+    def gui_add(self, obj, parent=None, use_show_thread=False, name_use_path_prettify=False):
         obj_key = obj.normcase_path
         if obj_key in self._obj_add_dict:
             return False, self._obj_add_dict[obj_key]
@@ -571,11 +566,11 @@ class PrxStgObjTreeViewAddOpt(object):
 
     def set_prx_item_add_as(self, obj, mode='tree', use_show_thread=False):
         if mode == 'tree':
-            return self.set_prx_item_add_as_tree_mode(obj)
+            return self.gui_add_as_tree(obj)
         elif mode == 'list':
-            return self.set_prx_item_add_as_list_mode(obj, use_show_thread=use_show_thread)
+            return self.gui_add_as_list(obj, use_show_thread=use_show_thread)
 
-    def set_prx_item_add_as_list_mode(self, obj, use_show_thread=False):
+    def gui_add_as_list(self, obj, use_show_thread=False):
         obj_key = obj.normcase_path
         if obj_key in self._obj_add_dict:
             return False, self._obj_add_dict[obj_key]
@@ -583,19 +578,19 @@ class PrxStgObjTreeViewAddOpt(object):
         if obj.PATHSEP in obj.path:
             root = obj.get_root()
             if root is not None:
-                self._set_prx_item_add_(
+                self.gui_add(
                     obj=root,
                     use_show_thread=use_show_thread
                 )
                 directory = obj.get_parent()
-                self._set_prx_item_add_(
+                self.gui_add(
                     obj=directory,
                     parent=root,
                     use_show_thread=use_show_thread,
                     name_use_path_prettify=True
                 )
                 #
-                return self._set_prx_item_add_(
+                return self.gui_add(
                     obj=obj,
                     parent=directory,
                     use_show_thread=use_show_thread
@@ -603,7 +598,7 @@ class PrxStgObjTreeViewAddOpt(object):
         #
         return False, None
 
-    def set_prx_item_add_as_tree_mode(self, obj):
+    def gui_add_as_tree(self, obj):
         ancestors = obj.get_ancestors()
         if ancestors:
             ancestors.reverse()
@@ -858,13 +853,13 @@ class PrxDccObjTreeViewAddOpt1(object):
         menu_raw = obj.get_gui_menu_raw()
 
         prx_item.set_icon_by_file(icon)
-        prx_item.set_icon_by_name_text(obj_type_name, 1)
+        prx_item.set_icon_by_name(obj_type_name, 1)
         prx_item.set_name(obj_name)
         prx_item.set_tool_tip(obj_path)
 
         prx_item.set_gui_menu_raw(menu_raw)
 
-    def _set_prx_item_add_(self, obj, prx_item_parent, name_use_path_prettify):
+    def gui_add(self, obj, prx_item_parent, name_use_path_prettify):
         if name_use_path_prettify is True:
             kwargs = dict(
                 name=(obj.get_path_prettify_(), obj.type_path),
@@ -913,7 +908,7 @@ class PrxDccObjTreeViewAddOpt1(object):
                 prx_item_parent = self._obj_add_dict[parent_key]
             else:
                 prx_item_parent = None
-            return self._set_prx_item_add_(
+            return self.gui_add(
                 obj,
                 prx_item_parent,
                 name_use_path_prettify=False
@@ -929,7 +924,7 @@ class PrxDccObjTreeViewAddOpt1(object):
                 prx_item_parent = self._obj_add_dict[parent_key]
             else:
                 prx_item_parent = None
-            return self._set_prx_item_add_(
+            return self.gui_add(
                 obj,
                 prx_item_parent,
                 name_use_path_prettify=True
@@ -937,11 +932,11 @@ class PrxDccObjTreeViewAddOpt1(object):
 
     def set_prx_item_add_as(self, obj, mode='tree'):
         if mode == 'tree':
-            return self.set_prx_item_add_as_tree_mode(obj)
+            return self.gui_add_as_tree(obj)
         elif mode == 'list':
-            return self.set_prx_item_add_as_list_mode(obj)
+            return self.gui_add_as_list(obj)
 
-    def set_prx_item_add_as_list_mode(self, obj):
+    def gui_add_as_list(self, obj):
         root = obj.get_root()
         self._set_prx_item_add_0_(root)
         #
@@ -950,7 +945,7 @@ class PrxDccObjTreeViewAddOpt1(object):
         #
         return self._set_prx_item_add_0_(obj, parent)
 
-    def set_prx_item_add_as_tree_mode(self, obj):
+    def gui_add_as_tree(self, obj):
         ancestors = obj.get_ancestors()
         if ancestors:
             ancestors.reverse()
@@ -971,7 +966,7 @@ class PrxUsdMeshTreeviewAddOpt(PrxDccObjTreeViewAddOpt1):
         self._dcc_node_class = dcc_node_class
         self._dcc_geometry_location = dcc_geometry_location
 
-    def set_prx_item_add_as_list_mode(self, obj):
+    def gui_add_as_list(self, obj):
         root = obj.get_root()
         self._set_prx_item_add_0_(root)
         transform = obj.get_parent()
@@ -1000,127 +995,6 @@ class PrxUsdMeshTreeviewAddOpt(PrxDccObjTreeViewAddOpt1):
                 prx_item.set_gui_dcc_obj(dcc_node, namespace=self._dcc_namespace)
             else:
                 prx_item.set_temporary_state()
-
-
-class PrxRsvObjTreeViewAddOpt(object):
-    def __init__(self, prx_tree_view, prx_tree_item_cls, dcc_namespace):
-        self._prx_tree_view = prx_tree_view
-        self._prx_tree_item_cls = prx_tree_item_cls
-        #
-        self._dcc_namespace = dcc_namespace
-        self._obj_add_dict = self._prx_tree_view._item_dict
-
-    def set_restore(self):
-        self._prx_tree_view.set_clear()
-
-    def _set_prx_item_add_(self, obj, use_show_thread=False):
-        obj_name = obj.name
-        obj_path = obj.path
-        obj_type = obj.type
-        if obj_path in self._obj_add_dict:
-            prx_item = self._obj_add_dict[obj_path]
-            return False, prx_item, None
-        else:
-            create_kwargs = dict(
-                name=obj_name,
-                item_class=self._prx_tree_item_cls,
-                filter_key=obj.path
-            )
-            parent = obj.get_parent()
-            if parent is not None:
-                prx_item_parent = self._obj_add_dict[parent.path]
-                prx_item = prx_item_parent.set_child_add(
-                    **create_kwargs
-                )
-            else:
-                prx_item = self._prx_tree_view.set_item_add(
-                    **create_kwargs
-                )
-            #
-            prx_item.set_checked(False)
-            prx_item.update_keyword_filter_keys_tgt(
-                [obj_path, obj_type]
-            )
-            obj.set_obj_gui(prx_item)
-            prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
-            self._obj_add_dict[obj_path] = prx_item
-            #
-            if use_show_thread is True:
-                prx_item.set_show_method(
-                    functools.partial(
-                        self._set_prx_item_show_deferred_as_tree_mode_, prx_item
-                    )
-                )
-                return True, prx_item, None
-            else:
-                self._set_prx_item_show_deferred_as_tree_mode_(prx_item)
-                return True, prx_item, None
-
-    def _set_prx_item_show_deferred_as_tree_mode_(self, prx_item):
-        def expand_by_condition_fnc_(*args):
-            _prx_item = args[0]
-            type_name = _prx_item.get_name(1)
-            return type_name
-        #
-        obj = prx_item.get_gui_dcc_obj(namespace=self._dcc_namespace)
-        obj_type_name = obj.type_name
-        obj_name = obj.name
-        obj_path = obj.path
-        #
-        menu_raw = []
-        menu_raw.extend(
-            obj.get_gui_menu_raw() or []
-        )
-        menu_raw.extend(
-            obj.get_gui_extend_menu_raw() or []
-        )
-        #
-        prx_item.set_icon_by_file(obj.icon)
-        prx_item.set_name(obj_name)
-        prx_item.set_tool_tip(obj.description)
-        #
-        menu_raw.extend(
-            [
-                ('expanded', ),
-                ('Expand branch', None, prx_item.set_expand_branch),
-                ('Collapse branch', None, prx_item.set_collapse_branch),
-                # (),
-                # [
-                #     'Expand branch to', None,
-                #     [
-                #         ('Role / Sequence', None, lambda: prx_item.set_expand_branch_by_condition(expand_by_condition_fnc_, ['role', 'sequence'])),
-                #         ('Asset / Shot', None, lambda: prx_item.set_expand_branch_by_condition(expand_by_condition_fnc_, ['asset', 'shot'])),
-                #         ('Step', None, lambda: prx_item.set_expand_branch_by_condition(expand_by_condition_fnc_, ['step'])),
-                #         ('Task', None, lambda: prx_item.set_expand_branch_by_condition(expand_by_condition_fnc_, ['task']))
-                #     ]
-                # ]
-            ]
-        )
-        prx_item.set_gui_menu_raw(menu_raw)
-        prx_item.set_menu_content(obj.get_gui_menu_content())
-
-    def set_prx_item_add_as_tree_mode(self, obj):
-        show_threads = []
-        ancestors = obj.get_ancestors()
-        if ancestors:
-            ancestors.reverse()
-            for i in ancestors:
-                i_path = i.path
-                if i_path not in self._obj_add_dict:
-                    i_is_create, i_item_prx, i_show_thread = self._set_prx_item_add_(i, use_show_thread=True)
-                    if i_show_thread is not None:
-                        show_threads.append(i_show_thread)
-        #
-        is_create, prx_item, thread = self._set_prx_item_add_(obj, use_show_thread=True)
-        if thread is not None:
-            show_threads.append(thread)
-        return is_create, prx_item, show_threads
-
-    def set_prx_item_add_as_list_mode(self, obj):
-        pass
-
-    def set_visible_connection_clear(self):
-        pass
 
 
 class PrxObjTreeViewAddOpt(object):

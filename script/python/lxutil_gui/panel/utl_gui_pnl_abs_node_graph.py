@@ -297,7 +297,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
         self._rsv_obj_tree_view_0 = prx_widgets.PrxTreeView()
         v_s.set_widget_add(self._rsv_obj_tree_view_0)
 
-        s = prx_widgets.PrxScrollArea()
+        s = prx_widgets.PrxVScrollArea()
         v_s.set_widget_add(s)
         self._options_prx_node = prx_widgets.PrxNode_('options')
         s.set_widget_add(self._options_prx_node)
@@ -316,10 +316,9 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
             self.get_definition_window_size()[0] * (1.0 / 4.0) - 24
         )
         # self._rsv_obj_tree_view_0.set_selection_use_single()
-        self._prx_dcc_obj_tree_view_add_opt = utl_prx_operators.PrxRsvObjTreeViewAddOpt(
+        self._prx_dcc_obj_tree_view_add_opt = utl_prx_operators.GuiRsvObjOpt(
             prx_tree_view=self._rsv_obj_tree_view_0,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem,
-            dcc_namespace=self.DCC_NAMESPACE
         )
         #
         self._node_graph = prx_widgets.PrxNGImageGraph()
@@ -360,12 +359,11 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
         self._set_add_rsv_entities_(self._rsv_project)
 
     def _set_gui_add_rsv_project_(self, rsv_project):
-        is_create, prx_item, show_threads = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as_tree_mode(
+        is_create, prx_item = self._prx_dcc_obj_tree_view_add_opt.gui_add_as_tree(
             rsv_project
         )
         if is_create is True:
             prx_item.set_expanded(True, ancestors=True)
-        return show_threads
     #
     def _set_add_rsv_entities_(self, rsv_project):
         def post_fnc_():
@@ -418,7 +416,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
         self._count += len(rsv_entities)
 
     def _set_gui_add_rsv_entity_(self, rsv_entity):
-        is_create, prx_item, show_threads = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as_tree_mode(
+        is_create, prx_item = self._prx_dcc_obj_tree_view_add_opt.gui_add_as_tree(
             rsv_entity
         )
         if is_create is True:
@@ -495,7 +493,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
 
         if self._image_dict:
             for k, v in self._image_dict.items():
-                i_prx_item = self._rsv_obj_tree_view_0.get_item_by_filter_key(k)
+                i_prx_item = self._rsv_obj_tree_view_0.get_item_by_key(k)
                 i_rsv_entity = i_prx_item.get_gui_dcc_obj(namespace=self.DCC_NAMESPACE)
                 if i_prx_item.get_is_checked() is True:
                     i_n = self._u_asset_type.set_obj_create(

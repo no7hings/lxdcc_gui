@@ -5,7 +5,7 @@ from lxutil import utl_core
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_item_for_list, _utl_gui_qt_wgt_item_for_tree
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_guide, _utl_gui_qt_wgt_item_for_list, _utl_gui_qt_wgt_item_for_tree
 
 from lxutil_gui.qt import utl_gui_qt_core
 
@@ -90,7 +90,7 @@ class AbsPrxTreeDef(object):
         if name_icons is not None:
             for column, i_name_icon in enumerate(name_icons):
                 if i_name_icon is not None:
-                    item_prx.set_icon_by_name_text(i_name_icon, column)
+                    item_prx.set_icon_by_name(i_name_icon, column)
         #
         if name is not None:
             pass
@@ -181,6 +181,9 @@ class PrxTreeItem(
     def item(self):
         return self._qt_widget
 
+    def set_type(self, text):
+        self._qt_widget._set_type_text_(text)
+
     def set_name(self, text, column=0):
         self.widget._set_name_text_(text, column)
 
@@ -217,7 +220,7 @@ class PrxTreeItem(
     def set_icon_by_color(self, color, column=0):
         self.widget._set_color_icon_rgb_(color, column)
 
-    def set_icon_by_name_text(self, text, column=0):
+    def set_icon_by_name(self, text, column=0):
         self.widget._set_icon_name_text_(text, column)
 
     def get_parent(self):
@@ -268,6 +271,12 @@ class PrxTreeItem(
     def set_tool_tips(self, texts):
         for column, text in enumerate(texts):
             self.set_tool_tip(text, column)
+
+    def set_enable(self, boolean):
+        self._qt_widget.setDisabled(not boolean)
+
+    def get_is_enable(self):
+        return self._qt_widget.isDisabled() is False
     # checked
     def set_checked(self, boolean=True, extra=False, column=0):
         self.widget.setCheckState(column, [utl_gui_qt_core.QtCore.Qt.Unchecked, utl_gui_qt_core.QtCore.Qt.Checked][boolean])
@@ -279,7 +288,7 @@ class PrxTreeItem(
 
     def set_check_enable(self, boolean, descendants=False, column=0):
         self.widget.setDisabled(not boolean)
-        self.widget.setForeground(column, [utl_gui_qt_core.Brush.temporary_text, utl_gui_qt_core.Brush.default_text][boolean])
+        # self.widget.setForeground(column, [utl_gui_qt_core.Brush.temporary_text, utl_gui_qt_core.Brush.default_text][boolean])
         self.widget._set_check_enable_(boolean, column=column)
         if descendants is True:
             [i.set_check_enable(boolean, column=column) for i in self.get_descendants()]
@@ -297,6 +306,12 @@ class PrxTreeItem(
         self.widget.setExpanded(True)
         if ancestors is True:
             [i.widget.setExpanded(True) for i in self.get_ancestors()]
+
+    def set_selected(self, boolean):
+        self._qt_widget._set_selected_(boolean)
+
+    def set_current(self):
+        self._qt_widget._set_current_()
 
     def set_ancestors_expand(self):
         [i.widget.setExpanded(True) for i in self.get_ancestors()]
@@ -582,6 +597,9 @@ class PrxTreeItem(
     def connect_drag_released_to(self, fnc):
         self._qt_widget.drag_released.connect(fnc)
 
+    def set_show_fnc(self, cache_fnc, show_fnc):
+        self._qt_widget._set_item_show_fnc_(cache_fnc, show_fnc)
+
     def __str__(self):
         return '{}(names={})'.format(
             self.__class__.__name__,
@@ -720,6 +738,9 @@ class PrxListItem(
     def set_icons_by_pixmap(self, icons):
         self.widget._set_icon_pixmaps_(icons)
 
+    def set_index_draw_enable(self, boolean):
+        self._qt_widget._set_index_draw_enable_(boolean)
+
     def set_icon_by_file(self, icon_name=None, icon_file_path=None):
         if icon_file_path is not None:
             self.widget._set_icon_file_path_(
@@ -743,7 +764,7 @@ class PrxListItem(
             utl_core.Icon.get(icon_name)
         )
 
-    def set_icon_by_name_text(self, text):
+    def set_icon_by_name(self, text):
         self.widget._set_icon_name_text_(
             text
         )
@@ -753,6 +774,9 @@ class PrxListItem(
 
     def set_icon_size(self, w, h):
         self.widget._set_icon_size_(w, h)
+
+    def set_sort_text_key(self, text):
+        self._qt_widget._set_sort_name_key_(text)
 
     def set_name(self, name_text):
         self.widget._set_name_text_(name_text)
@@ -779,7 +803,7 @@ class PrxListItem(
         self.widget._set_image_file_path_(file_path)
 
     def set_movie_enable(self, boolean):
-        self.widget._set_movie_enable_(boolean)
+        self.widget._set_play_draw_enable_(boolean)
 
     def set_image_by_name(self, text):
         self.widget._set_image_name_text_(text)
@@ -897,3 +921,37 @@ class PrxListItem(
 
 class PrxMediaItem(object):
     pass
+
+
+class PrxGuideBar(
+    utl_gui_prx_abstract.AbsPrxWidget,
+):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_guide.QtGuideBar
+    def __init__(self, *args, **kwargs):
+        super(PrxGuideBar, self).__init__(*args, **kwargs)
+
+    def set_name(self, text):
+        self._qt_widget._guide_entry._set_name_text_(text)
+
+    def set_path(self, path):
+        self._qt_widget._guide_entry._set_guide_path_text_(path)
+
+    def set_types(self, texts):
+        self._qt_widget._guide_entry._set_guide_type_texts_(texts)
+
+    def set_dict(self, dict_):
+        self._qt_widget._guide_entry._set_guide_dict_(dict_)
+
+    def connect_user_entry_changed_to(self, fnc):
+        self._qt_widget._guide_entry.guide_user_entry_changed.connect(fnc)
+
+    def set_clear(self):
+        pass
+
+
+class PrxTagBar(
+    utl_gui_prx_abstract.AbsPrxWidget,
+):
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_guide.QtGuideBar
+    def __init__(self, *args, **kwargs):
+        super(PrxTagBar, self).__init__(*args, **kwargs)

@@ -133,7 +133,7 @@ class AbsScenePackagerPanel(
             self._prx_dcc_obj_tree_view_selection_opt.set_select
         )
         #
-        self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.PrxDccObjTreeViewTagFilterOpt(
+        self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.GuiTagFilterOpt(
             prx_tree_view_src=self._filter_tree_viewer_0,
             prx_tree_view_tgt=self._obj_tree_viewer_0,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
@@ -331,7 +331,7 @@ class AbsScenePackagerPanel(
                             is_create, stg_file_item_prx = self._prx_stg_obj_tree_view_add_opt.set_prx_item_add_as(stg_file, mode='list')
                             stg_file_item_prx.set_gui_dcc_obj(stg_file, namespace='storage-file')
                             #
-                            dcc_node_item_prx = self._prx_dcc_obj_tree_view_add_opt._set_prx_item_add_(
+                            dcc_node_item_prx = self._prx_dcc_obj_tree_view_add_opt.gui_add(
                                 dcc_obj,
                                 stg_file_item_prx,
                                 name_use_path_prettify=False
@@ -359,7 +359,7 @@ class AbsScenePackagerPanel(
                 #
                 gp_0.set_stop()
                 #
-                self._obj_tree_viewer_0.set_items_expand_by_depth(depth=2)
+                self._obj_tree_viewer_0.expand_items_by_depth(depth=2)
 
     def refresh_all_fnc(self):
         self._set_file_references_update_()

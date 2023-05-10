@@ -79,7 +79,7 @@ class AbsPnlShaderViewer(
             dcc_namespace=self.DCC_NAMESPACE
         )
         #
-        self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.PrxDccObjTreeViewTagFilterOpt(
+        self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.GuiTagFilterOpt(
             prx_tree_view_src=self._filter_tree_viewer_0,
             prx_tree_view_tgt=self._obj_tree_viewer_0,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
@@ -212,7 +212,7 @@ class AbsPnlMaterialViewer(
             dcc_namespace=self.DCC_NAMESPACE
         )
         #
-        self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.PrxDccObjTreeViewTagFilterOpt(
+        self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.GuiTagFilterOpt(
             prx_tree_view_src=self._filter_tree_viewer_0,
             prx_tree_view_tgt=self._obj_tree_viewer_0,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem

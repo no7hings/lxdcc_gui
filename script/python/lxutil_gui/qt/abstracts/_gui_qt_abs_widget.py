@@ -1,27 +1,32 @@
 # coding:utf-8
-from lxutil_gui.qt.abstracts._gui_qt_abs_basic import *
+from lxutil_gui.qt.utl_gui_qt_core import *
+
+from lxutil_gui.qt.abstracts import _gui_qt_abs_basic
 
 
 class AbsQtTreeWidget(
     QtWidgets.QTreeWidget,
-    AbsQtMenuDef,
+    _gui_qt_abs_basic.AbsQtMenuDef,
     #
-    AbsQtViewFilterDef,
+    _gui_qt_abs_basic.AbsQtViewFilterDef,
     #
-    AbsQtViewStateDef,
-    AbsQtViewVisibleConnectionDef,
+    _gui_qt_abs_basic.AbsQtViewStateDef,
+    _gui_qt_abs_basic.AbsQtViewVisibleConnectionDef,
     #
-    AbsQtViewScrollActionDef,
-    AbsQtBuildViewDef,
-    AbsQtShowForViewDef,
+    _gui_qt_abs_basic.AbsQtViewScrollActionDef,
+    _gui_qt_abs_basic.AbsQtBuildViewDef,
+    _gui_qt_abs_basic.AbsQtShowForViewDef,
+    #
+    _gui_qt_abs_basic.AbsQtWaitingDef,
     #
     # AbsQtActionDragDef,
 ):
     def __init__(self, *args, **kwargs):
         super(AbsQtTreeWidget, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
         #
-        self._set_menu_def_init_()
+        self._init_menu_def_()
         #
         self._set_view_filter_def_init_()
         #
@@ -31,13 +36,15 @@ class AbsQtTreeWidget(
         self._set_view_scroll_action_def_init_()
         # noinspection PyUnresolvedReferences
         self._get_view_v_scroll_bar_().valueChanged.connect(
-            self._refresh_view_all_items_viewport_showable_auto_
+            self._refresh_viewport_showable_auto_
         )
         #
         self._set_build_view_def_init_()
         self._set_build_view_setup_(self)
 
-        self._set_show_for_view_def_init_(self)
+        self._init_show_for_view_def_(self)
+        #
+        self._init_waiting_def_(self)
         self.setFont(QtFonts.Default)
 
     def _get_all_items_(self, column=0):
@@ -137,15 +144,19 @@ class AbsQtTreeWidget(
 class AbsQtListWidget(
     QtWidgets.QListWidget,
     #
-    AbsQtViewSelectActionDef,
-    AbsQtViewScrollActionDef,
+    _gui_qt_abs_basic.AbsQtViewSelectActionDef,
+    _gui_qt_abs_basic.AbsQtViewScrollActionDef,
     #
-    AbsQtViewFilterDef,
-    AbsQtViewStateDef,
-    AbsQtViewVisibleConnectionDef,
-    AbsQtBuildViewDef,
-    AbsQtShowForViewDef
+    _gui_qt_abs_basic.AbsQtViewFilterDef,
+    _gui_qt_abs_basic.AbsQtViewStateDef,
+    _gui_qt_abs_basic.AbsQtViewVisibleConnectionDef,
+    _gui_qt_abs_basic.AbsQtBuildViewDef,
+    _gui_qt_abs_basic.AbsQtShowForViewDef,
+    _gui_qt_abs_basic.AbsQtWaitingDef,
 ):
+    SortMode = utl_gui_configure.SortMode
+    SortOrder = utl_gui_configure.SortOrder
+
     item_show_changed = qt_signal()
 
     def __init__(self, *args, **kwargs):
@@ -165,7 +176,7 @@ class AbsQtListWidget(
         self.itemSelectionChanged.connect(self._set_item_widget_selected_update_)
         # noinspection PyUnresolvedReferences
         self._get_view_v_scroll_bar_().valueChanged.connect(
-            self._refresh_view_all_items_viewport_showable_auto_
+            self._refresh_viewport_showable_auto_
         )
         self._viewport_rect = QtCore.QRect()
         self._item_rects = []
@@ -184,7 +195,55 @@ class AbsQtListWidget(
         self._set_build_view_def_init_()
         self._set_build_view_setup_(self)
 
-        self._set_show_for_view_def_init_(self)
+        self._init_show_for_view_def_(self)
+        self._init_waiting_def_(self)
+
+        self._sort_mode = self.SortMode.Number
+        self._sort_order = self.SortOrder.Ascend
+
+    def _set_sort_enable_(self, boolean):
+        self.setSortingEnabled(boolean)
+
+    def _get_sort_mode_(self):
+        return self._sort_mode
+
+    def _get_sort_order_(self):
+        return self._sort_order
+
+    def _set_item_sort_mode_(self, mode):
+        self._sort_mode = mode
+        self._update_sort_mode_()
+
+    def _update_sort_mode_(self):
+        if self._sort_mode == self.SortMode.Number:
+            items = [self.item(i) for i in range(self.count())]
+            for i_item in items:
+                i_item_widget = self.itemWidget(i_item)
+                i_index = str(i_item_widget._sort_number_key).zfill(4)
+                i_item.setText(i_index)
+            #
+            self._refresh_sort_()
+        elif self._sort_mode == self.SortMode.Name:
+            items = [self.item(i) for i in range(self.count())]
+            for i_item in items:
+                i_item_widget = self.itemWidget(i_item)
+                i_name = str(i_item_widget._sort_name_key).lower()
+                i_item.setText(i_name)
+            #
+            self._refresh_sort_()
+
+    def _swap_item_sort_order_(self):
+        if self._sort_order == self.SortOrder.Ascend:
+            self._sort_order = self.SortOrder.Descend
+        else:
+            self._sort_order = self.SortOrder.Ascend
+        self._refresh_sort_()
+
+    def _refresh_sort_(self):
+        self.sortItems(
+            [QtCore.Qt.AscendingOrder, QtCore.Qt.DescendingOrder][self._sort_order]
+        )
+        self._refresh_viewport_showable_auto_()
 
     def _set_drag_enable_(self, boolean):
         super(AbsQtListWidget, self)._set_drag_enable_(boolean)
@@ -232,7 +291,6 @@ class AbsQtListWidget(
         if selected_items:
             [self._set_item_widget_selected_(i, True) for i in selected_items]
             self._pre_selected_items = selected_items
-
     # scroll
     def _set_scroll_to_item_top_(self, item):
         self.scrollToItem(item, self.PositionAtTop)

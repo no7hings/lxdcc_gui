@@ -97,7 +97,7 @@ class AbsPrxDialogWindow(
             '"LMB-click" to turn window modal "on" / "off"'
         )
         #
-        s = _utl_gui_prx_wdt_utility.PrxScrollArea()
+        s = _utl_gui_prx_wdt_utility.PrxVScrollArea()
         self._central_layout.addWidget(s.widget)
         #
         self._customize_widget = _utl_gui_qt_wgt_utility.QtWidget()
@@ -135,7 +135,7 @@ class AbsPrxDialogWindow(
         # self._yes_button.set_visible(False)
         self._entry_button_layout.addWidget(self._yes_button.widget)
         self._yes_button.set_name('Yes')
-        self._yes_button.set_icon_by_name_text('Yes')
+        self._yes_button.set_icon_by_name('Yes')
         self._yes_button.set_width(self.BUTTON_WIDTH)
         self._yes_button.connect_press_clicked_to(self.set_yes_run)
         #
@@ -143,7 +143,7 @@ class AbsPrxDialogWindow(
         # self._no_button.set_visible(False)
         self._entry_button_layout.addWidget(self._no_button.widget)
         self._no_button.set_name('No')
-        self._no_button.set_icon_by_name_text('No')
+        self._no_button.set_icon_by_name('No')
         self._no_button.set_width(self.BUTTON_WIDTH)
         self._no_button.connect_press_clicked_to(self.set_no_run)
         #
@@ -151,7 +151,7 @@ class AbsPrxDialogWindow(
         # self._cancel_button.set_visible(False)
         self._entry_button_layout.addWidget(self._cancel_button.widget)
         self._cancel_button.set_name('Cancel')
-        self._cancel_button.set_icon_by_name_text('Cancel')
+        self._cancel_button.set_icon_by_name('Cancel')
         self._cancel_button.set_width(self.BUTTON_WIDTH)
         self._cancel_button.connect_press_clicked_to(self.set_cancel_run)
         #
@@ -159,7 +159,7 @@ class AbsPrxDialogWindow(
         # self._close_button.set_visible(False)
         # self._entry_button_layout.addWidget(self._close_button.widget)
         # self._close_button.set_name('Close')
-        # self._close_button.set_icon_by_name_text('close')
+        # self._close_button.set_icon_by_name('close')
         # self._close_button.set_width(self.BUTTON_WIDTH)
         #
         self._yes_methods = []
@@ -250,7 +250,7 @@ class AbsPrxDialogWindow(
 
     def set_yes_label(self, text):
         self._yes_button.set_name(text)
-        self._yes_button.set_icon_by_name_text(text)
+        self._yes_button.set_icon_by_name(text)
 
     def set_yes_method_add(self, method, args=None):
         self._yes_methods.append(method)
@@ -260,7 +260,7 @@ class AbsPrxDialogWindow(
 
     def set_no_label(self, text):
         self._no_button.set_name(text)
-        self._no_button.set_icon_by_name_text(text)
+        self._no_button.set_icon_by_name(text)
 
     def set_no_method_add(self, method, args=None):
         self._no_methods.append(method)
@@ -270,7 +270,7 @@ class AbsPrxDialogWindow(
 
     def set_cancel_label(self, text):
         self._cancel_button.set_name(text)
-        self._cancel_button.set_icon_by_name_text(text)
+        self._cancel_button.set_icon_by_name(text)
 
     def set_cancel_method_add(self, method, args=None):
         self._cancel_methods.append(method)
@@ -471,7 +471,7 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._stop_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         self._entry_button_layout.addWidget(self._stop_button.widget)
         self._stop_button.set_name('Stop')
-        self._stop_button.set_icon_by_name_text('Stop')
+        self._stop_button.set_icon_by_name('Stop')
         self._stop_button.set_width(80)
         self._stop_button.connect_press_clicked_to(self.set_process_stop)
         #
@@ -616,7 +616,7 @@ class PrxMonitorWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._status_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         self._entry_button_layout.addWidget(self._status_button.widget)
         self._status_button.set_name('process')
-        self._status_button.set_icon_by_name_text('process')
+        self._status_button.set_icon_by_name('process')
 
     def set_status(self, status):
         self._central_widget._set_status_(status)

@@ -34,7 +34,7 @@ class _QtWindow(
     def _set_widget_geometries_update_(self):
         pos_x, pos_y = 0, 0
         width, height = self.width(), self.height()
-        self._set_frame_draw_geometry_(
+        self._set_frame_draw_rect_(
             pos_x, pos_y, width, height
         )
 

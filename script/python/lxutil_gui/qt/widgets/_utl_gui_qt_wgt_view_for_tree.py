@@ -591,15 +591,15 @@ class QtTreeWidget(
         for i in list_:
             i._set_item_show_start_auto_()
 
-    def _set_item_expand_connect_to_(self, item, method, time):
+    def _connect_item_expand_to_(self, item, method, time):
         self._item_expand_method_dic[item] = method, time
 
-    def _set_item_check_action_run_(self, item, column):
+    def _send_check_changed_emit_(self, item, column):
         if item._get_emit_send_enable_() is True:
             # noinspection PyUnresolvedReferences
             self.item_check_changed.emit()
 
-    def _set_item_toggle_emit_send_(self, item, column, boolean):
+    def _send_check_toggled_emit_(self, item, column, boolean):
         if item._get_emit_send_enable_() is True:
             # noinspection PyUnresolvedReferences
             self.item_toggled.emit(boolean)

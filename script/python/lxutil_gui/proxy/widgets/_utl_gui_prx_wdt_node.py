@@ -182,7 +182,7 @@ class _PrxStgObjEntry(AbsPrxTypeQtEntry):
         self._qt_entry_widget._set_value_entry_popup_enable_(True)
         self._qt_entry_widget._set_value_entry_use_as_storage_(True)
         self._qt_entry_widget._set_value_validation_fnc_(self._value_validation_fnc_)
-        self._qt_entry_widget._set_entry_completion_gain_fnc_(self._value_completion_gain_fnc_)
+        self._qt_entry_widget._set_popup_completion_gain_fnc_(self._value_completion_gain_fnc_)
         self._qt_entry_widget._set_choose_button_icon_file_path_(
             utl_gui_core.RscIconFile.get('history')
         )
@@ -451,9 +451,9 @@ class _PrxStgObjsEntry(AbsPrxTypeQtEntry):
         #
         self._qt_entry_widget._set_value_entry_popup_enable_(True)
         self._qt_entry_widget._set_value_entry_enable_(True)
-        self._qt_entry_widget._get_resize_gui_()._set_resize_target_(self.widget)
+        self._qt_entry_widget._get_resize_handle_()._set_resize_target_(self.widget)
         self._qt_entry_widget._set_resize_enable_(True)
-        self._qt_entry_widget._get_resize_gui_()._set_resize_minimum_(42)
+        self._qt_entry_widget._get_resize_handle_()._set_resize_minimum_(42)
         self._qt_entry_widget._set_size_policy_height_fixed_mode_()
         self._qt_entry_widget._get_value_entry_gui_()._set_validator_use_as_storage_(True)
         self._qt_entry_widget._get_value_entry_gui_()._set_value_validation_fnc_(self._value_validation_fnc_)
@@ -724,9 +724,9 @@ class _PrxEntryForValueArray(AbsPrxTypeQtEntry):
         #
         self._qt_entry_widget._set_value_entry_popup_enable_(True)
         self._qt_entry_widget._set_value_entry_enable_(True)
-        self._qt_entry_widget._get_resize_gui_()._set_resize_target_(self.widget)
+        self._qt_entry_widget._get_resize_handle_()._set_resize_target_(self.widget)
         self._qt_entry_widget._set_resize_enable_(True)
-        self._qt_entry_widget._get_resize_gui_()._set_resize_minimum_(42)
+        self._qt_entry_widget._get_resize_handle_()._set_resize_minimum_(42)
         self._qt_entry_widget._set_size_policy_height_fixed_mode_()
         self._qt_entry_widget._set_choose_button_icon_file_path_(
             utl_gui_core.RscIconFile.get('attribute')
@@ -770,9 +770,9 @@ class _PrxEntryForValueArrayAsChoose(AbsPrxTypeQtEntry):
         self._history_key = 'gui.values_choose'
         #
         self._qt_entry_widget._set_value_entry_enable_(True)
-        self._qt_entry_widget._get_resize_gui_()._set_resize_target_(self.widget)
+        self._qt_entry_widget._get_resize_handle_()._set_resize_target_(self.widget)
         self._qt_entry_widget._set_resize_enable_(True)
-        self._qt_entry_widget._get_resize_gui_()._set_resize_minimum_(42)
+        self._qt_entry_widget._get_resize_handle_()._set_resize_minimum_(42)
         self._qt_entry_widget._set_size_policy_height_fixed_mode_()
         self._qt_entry_widget._set_choose_button_icon_file_path_(
             utl_gui_core.RscIconFile.get('attribute')
@@ -940,9 +940,9 @@ class _PrxEntryAsShotgunEntities(
         self._qt_entry_widget._set_value_entry_popup_enable_(True)
         self._qt_entry_widget._set_value_entry_enable_(True)
         # resize
-        self._qt_entry_widget._get_resize_gui_()._set_resize_target_(self.widget)
+        self._qt_entry_widget._get_resize_handle_()._set_resize_target_(self.widget)
         self._qt_entry_widget._set_resize_enable_(True)
-        self._qt_entry_widget._get_resize_gui_()._set_resize_minimum_(42)
+        self._qt_entry_widget._get_resize_handle_()._set_resize_minimum_(42)
         self._qt_entry_widget._set_size_policy_height_fixed_mode_()
         #
         self._qt_entry_widget._set_choose_tag_filter_enable_(True)
@@ -1380,7 +1380,7 @@ class _PrxEntryAsScript(AbsPrxTypeQtEntry):
         self.widget.setMaximumHeight(92)
         self.widget.setMinimumHeight(92)
         #
-        self._qt_entry_widget._get_resize_gui_()._set_resize_target_(self.widget)
+        self._qt_entry_widget._get_resize_handle_()._set_resize_target_(self.widget)
         self._qt_entry_widget._set_resize_enable_(True)
         self._qt_entry_widget._set_item_value_entry_enable_(True)
         self._qt_entry_widget._set_size_policy_height_fixed_mode_()
@@ -1442,7 +1442,7 @@ class PrxSubProcessEntry(AbsPrxTypeQtEntry):
         self._stop_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self.set_button_add(self._stop_button)
         self._stop_button.set_name('Stop Process')
-        self._stop_button.set_icon_by_name_text('Stop Process')
+        self._stop_button.set_icon_by_name('Stop Process')
         self._stop_button.set_tool_tip('press to stop process')
 
     def get(self):
@@ -1617,7 +1617,7 @@ class _PrxEntryAsRsvObj(_AbsPrxTypeEntry):
         #
         result = obj.get('result')
         update = obj.get('update')
-        prx_item.set_icon_by_name_text(obj_type_name)
+        prx_item.set_icon_by_name(obj_type_name)
         prx_item.set_names([obj_name, update])
         prx_item.set_tool_tip(obj.description)
         if result:
@@ -3005,7 +3005,7 @@ class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtHBoxLayout(self.widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         #
-        qt_splitter_0 = _utl_gui_qt_wgt_utility.QtHSplitter()
+        qt_splitter_0 = _utl_gui_qt_wgt_utility.QtHSplitter_()
         qt_layout_0.addWidget(qt_splitter_0)
         #
         self._qt_label_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()

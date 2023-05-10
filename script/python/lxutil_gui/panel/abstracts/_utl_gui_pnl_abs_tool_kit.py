@@ -21,8 +21,19 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
         self._tool_bar = prx_widgets.PrxHToolBar()
         self.set_widget_add(self._tool_bar)
         self._tool_bar.set_expanded(True)
+
+        self._switch_tool_box = prx_widgets.PrxHToolBox()
+        self._tool_bar.set_widget_add(self._switch_tool_box)
+        self._switch_tool_box.set_expanded(True)
+
+        self._filter_tool_box = prx_widgets.PrxHToolBox()
+        self._tool_bar.set_widget_add(self._filter_tool_box)
+        self._filter_tool_box.set_size_mode(1)
+
+        self._filter_bar = prx_widgets.PrxFilterBar()
+        self._filter_tool_box.set_widget_add(self._filter_bar)
         #
-        self._scroll_bar = prx_widgets.PrxScrollArea()
+        self._scroll_bar = prx_widgets.PrxVScrollArea()
         self.set_widget_add(self._scroll_bar)
 
         self._d = 2
@@ -44,8 +55,8 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
 
         for i in range(4):
             i_b = prx_widgets.PrxIconPressItem()
-            self._tool_bar.set_widget_add(i_b)
-            i_b.set_icon_by_name_text(str(i+1))
+            self._switch_tool_box.set_widget_add(i_b)
+            i_b.set_icon_by_name(str(i+1))
             i_b.connect_press_clicked_to(
                 functools.partial(click_fnc_, i+1)
             )
@@ -58,7 +69,7 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
         self.build_tools()
 
     def build_tools(self):
-        self._tool_group_dict = {}
+        self._tool_box_dict = {}
         self._scroll_bar.restore()
         c = self._session.get_configure()
         self.build_tool_by_hook_data(c.get('hooks'))
@@ -127,17 +138,18 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
                     gui_configure.set('group_name', extend_kwargs.get('gui_parent'))
                 #
                 group_name = gui_configure.get('group_name')
-                if group_name not in self._tool_group_dict:
+                if group_name not in self._tool_box_dict:
                     expanded_group = prx_widgets.PrxExpandedGroup()
                     self._scroll_bar.set_widget_add(expanded_group)
                     expanded_group.set_name(group_name)
+                    expanded_group.set_icon_by_name(group_name)
                     expanded_group.set_expanded(True)
                     #
                     tool_group = prx_widgets.PrxButtonGroup()
                     expanded_group.set_widget_add(tool_group)
-                    self._tool_group_dict[group_name] = tool_group
+                    self._tool_box_dict[group_name] = tool_group
                 else:
-                    tool_group = self._tool_group_dict[group_name]
+                    tool_group = self._tool_box_dict[group_name]
 
                 name = gui_configure.get('name')
                 icon_name = gui_configure.get('icon_name')

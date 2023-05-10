@@ -43,8 +43,8 @@ class AbsTaskMethodObjGuiDef(object):
             raise TypeError()
         #
         obj.set_obj_gui(obj_gui)
-        obj_gui.set_icon_by_name_text(obj.name)
-        obj_gui.set_icon_by_name_text(obj.type_name, 1)
+        obj_gui.set_icon_by_name(obj.name)
+        obj_gui.set_icon_by_name(obj.type_name, 1)
         return obj_gui
     @classmethod
     def _set_method_unit_obj_gui_add_(cls, method_obj, root_dcc_obj_gui):
@@ -82,12 +82,12 @@ class AbsTaskMethodObjGuiDef(object):
         #
         obj_gui.set_checked(True)
         obj.set_obj_gui(obj_gui)
-        obj_gui.set_icon_by_name_text(obj.name)
-        obj_gui.set_icon_by_name_text(obj.type_name, 1)
+        obj_gui.set_icon_by_name(obj.name)
+        obj_gui.set_icon_by_name(obj.type_name, 1)
         obj_gui.set_gui_dcc_obj(obj, namespace='method')
         return obj_gui
     @classmethod
-    def _set_prx_item_add_(cls, dcc_obj, obj_gui_parent=None, tree_viewer=None):
+    def gui_add(cls, dcc_obj, obj_gui_parent=None, tree_viewer=None):
         kwargs = dict(
             name=(dcc_obj.name, dcc_obj.type),
             item_class=prx_widgets.PrxDccObjTreeItem,
@@ -200,19 +200,19 @@ class AbsSceneMethodRunnerPanel(
         self._set_configure_groups_build_()
         #
         self._check_button = prx_widgets.PrxPressItem()
-        self._check_button.set_icon_by_name_text('Check')
+        self._check_button.set_icon_by_name('Check')
         self._check_button.set_name('Check')
         self.set_button_add(self._check_button)
         self._check_button.connect_press_clicked_to(self._set_checked_methods_check_run_)
         #
         self._repair_button = prx_widgets.PrxPressItem()
-        self._repair_button.set_icon_by_name_text('Repair')
+        self._repair_button.set_icon_by_name('Repair')
         self._repair_button.set_name('Repair')
         self.set_button_add(self._repair_button)
         self._repair_button.connect_press_clicked_to(self._set_checked_methods_repair_run_)
         #
         self._export_button = prx_widgets.PrxPressItem()
-        self._export_button.set_icon_by_name_text('Export')
+        self._export_button.set_icon_by_name('Export')
         self._export_button.set_name('Export')
         self.set_button_add(self._export_button)
         self._export_button.connect_press_clicked_to(self._set_checked_methods_export_run_)
@@ -293,7 +293,7 @@ class AbsSceneMethodRunnerPanel(
             check_tags = method.get_obj_check_tags(obj_path)
             #
             dcc_obj = self.DCC_NODE_CLASS(obj_path)
-            dcc_obj_gui = self._set_prx_item_add_(
+            dcc_obj_gui = self.gui_add(
                 dcc_obj, obj_gui_parent=method_obj_gui
             )
             dcc_obj_gui.check_state.set(check_tags)

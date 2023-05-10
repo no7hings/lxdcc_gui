@@ -41,6 +41,7 @@ option:
         color-dark: '63, 63, 63, 255'
         color-basic: '71, 71, 71, 255'
         color-light: '79, 79, 79, 255'
+        color-high-light: '95, 95, 95, 255'
         color-light-hover: '111, 111, 111, 255'
         #
         color-button: '95, 95, 95, 255'
@@ -75,9 +76,14 @@ option:
         color-value-basic: '255, 255, 255, 255'
         color-value-hovered: '31, 31, 31, 255'
         #
-        color-disable: '127, 127, 127, 255'
-        #
         color-tool-tip: '31, 31, 31, 255'
+        #
+        color-normal: '223, 223, 223, 255'
+        color-correct: '63, 255, 127, 255'
+        color-warning: '255, 255, 63, 255'
+        color-error: '255, 0, 63, 255'
+        color-active: '63, 127, 255, 255'
+        color-disable: '127, 127, 127, 255'
     #
     icon-file:
         collapse: '<option.icon-dir>/collapse.svg'
@@ -206,7 +212,7 @@ widget:
             image: url(<option.icon-dir>/tree-box-check-on-hover.svg);
         }
         QTreeView::indicator:checked:disabled {
-            image: url(<option.icon-dir>/tree-box-check-on-disable.svg);
+            image: url(<option.icon-dir>/tree-box-check-disable.svg);
         }
         QTreeView::indicator:unchecked{
             image: url(<option.icon-dir>/tree-box-check-off.svg);
@@ -215,7 +221,7 @@ widget:
             image: url(<option.icon-dir>/tree-box-check-off-hover.svg);
         }
         QTreeView::indicator:unchecked:disabled {
-            image: url(<option.icon-dir>/tree-box-check-on-disable.svg);
+            image: url(<option.icon-dir>/tree-box-check-disable.svg);
         }
     QHeaderView:
         |-
