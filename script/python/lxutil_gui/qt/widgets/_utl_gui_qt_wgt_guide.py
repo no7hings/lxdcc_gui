@@ -15,16 +15,19 @@ class QtGuideRect(
     utl_gui_qt_abstract.AbsQtPathDef,
     utl_gui_qt_abstract.AbsQtFrameDef,
     #
-    utl_gui_qt_abstract.AbsQtChooseDef,
+    utl_gui_qt_abstract.AbsQtChooseBaseDef,
 ):
     def _refresh_widget_draw_(self):
         pass
 
-    def __init__(self, *args, **kwargs):
-        self._init_icon_def_()
-        self._init_type_def_()
-        self._init_name_def_()
-        self._set_path_def_init_()
+    def update(self):
+        pass
+
+    def __init__(self):
+        self._init_icon_def_(self)
+        self._init_type_def_(self)
+        self._init_name_def_(self)
+        self._init_path_def_(self)
         self._set_frame_def_init_()
         self._set_choose_def_init_()
         #
@@ -45,11 +48,11 @@ class QtGuideEntry(
     utl_gui_qt_abstract.AbsQtNameDef,
     utl_gui_qt_abstract.AbsQtMenuDef,
     #
-    utl_gui_qt_abstract.AbsQtValueEntryDef,
-    #
-    utl_gui_qt_abstract.AbsQtActionDef,
+    utl_gui_qt_abstract.AbsQtActionBaseDef,
     utl_gui_qt_abstract.AbsQtActionForHoverDef,
     utl_gui_qt_abstract.AbsQtActionForPressDef,
+    #
+    utl_gui_qt_abstract.AbsQtDeleteExtraDef,
     #
     utl_gui_qt_abstract.AbsQtFocusDef,
     utl_gui_qt_abstract.AbsQtEntryBaseDef,
@@ -59,10 +62,13 @@ class QtGuideEntry(
     def _refresh_focus_draw_geometry_(self):
         pass
 
-    QT_CHOOSE_RECT_CLS = QtGuideRect
+    QT_GUIDE_RECT_CLS = QtGuideRect
     QT_POPUP_CHOOSE_CLS = _utl_gui_qt_wgt_popup.QtPopupForGuideChoose
     #
     QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry.QtConstantEntry
+    #
+    TYPE_FONT_SIZE = 10
+    NAME_FONT_SIZE = 12
     #
     entry_started = qt_signal()
     # for popup choose
@@ -85,18 +91,19 @@ class QtGuideEntry(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
         )
         #
-        self._init_name_def_()
-        self._init_value_entry_def_(self)
+        self._init_name_def_(self)
         self._init_entry_base_def_(self)
-        self._init_focused_def_(self)
+        self._init_focus_def_(self)
         #
         self._choose_item_icon_file_path = utl_core.Icon.get('choose_close')
         #
         self._init_menu_def_()
         #
-        self._init_action_hover_def_()
-        self._init_action_def_(self)
-        self._set_action_press_def_init_()
+        self._init_action_for_hover_def_(self)
+        self._init_action_base_def_(self)
+        self._init_action_for_press_def_(self)
+        self._init_delete_extra_def_(self)
+        # self._set_delete_enable_(True)
         #
         self._init_guide_entry_def_(self)
 
@@ -104,48 +111,66 @@ class QtGuideEntry(
         self.update()
 
     def _refresh_guide_draw_geometry_(self):
-        side = 2
+        # side = 2
         spacing = 2
         x, y = 0, 0
         w, h = self.width(), self.height()
         #
         frm_w, frm_h = 18, 18
-        icn_w, icn_h = 16, 16
+        icn_w, icn_h = 12, 12
         #
         c_x, c_y = x, (h-frm_h)/2
         #
         for i_index in self._get_guide_item_indices_():
             i_item = self._get_guide_item_at_(i_index)
+            #
+            i_type_text = i_item._type_text
+            i_name_text = i_item._name_text
+            # text
+            i_text_x = c_x
+            i_text_w = 0
+            if i_type_text:
+                i_type_w, _ = RawTextMtd.get_size(self.TYPE_FONT_SIZE, i_type_text)
+                i_type_w_ = i_type_w + spacing*2
+                i_text_w += i_type_w_
+                i_item._set_type_draw_rect_(
+                    c_x, c_y, i_type_w_, frm_h
+                )
+            else:
+                i_type_w_ = 0
+            #
+            i_name_w, _ = RawTextMtd.get_size(self.NAME_FONT_SIZE, i_name_text)
+            i_name_w_ = i_name_w + spacing*2
+            i_text_w += i_name_w_
+            #
+            i_item._set_name_draw_rect_(
+                i_text_x+i_type_w_, c_y, i_name_w_, frm_h
+            )
+            i_item._set_name_frame_rect_(
+                i_text_x, c_y, i_text_w, frm_h
+            )
+            #
+            c_x += i_text_w
+            # popup
             i_item._set_icon_frame_draw_rect_(
                 c_x, c_y, frm_w, frm_h
             )
+
             i_item._set_icon_file_draw_rect_(
                 c_x+(frm_w-icn_w)/2, c_y+(frm_h-icn_h)/2, icn_w, icn_h
             )
-            c_x += frm_w + spacing
-            #
-            i_path_key = i_item._type_text
-            i_path_value = i_item._name_text
-            #
-            i_path_w_0, i_path_h_0 = RawTextMtd.get_size(10, i_path_key)
-            i_path_w_1, i_path_h_1 = RawTextMtd.get_size(12, i_path_value)
-            i_path_w = i_path_w_0 + i_path_w_1 + spacing*8
-            i_item._set_name_frame_rect_(
-                c_x-spacing*2, c_y, i_path_w, frm_h
-            )
-            #
-            i_path_key_w = i_path_w_0 + spacing*4
-            i_item._set_type_rect_(
-                c_x, c_y, i_path_key_w, frm_h
-            )
-            c_x += i_path_key_w
-            #
-            i_path_value_w = i_path_w_1 + spacing*4
-            i_item._set_name_draw_rect_(
-                c_x, c_y, i_path_value_w, frm_h
-            )
-            #
-            c_x += i_path_value_w
+            c_x += frm_w
+        #
+        dlt_w, dlt_h = self._delete_icon_file_draw_size
+        #
+        self._delete_rect.setRect(
+            w-frm_w, c_y, frm_w, frm_h
+        )
+        self._delete_icon_draw_rect.setRect(
+            w-frm_w+(frm_w-dlt_w)/2, c_y+(frm_h-dlt_h)/2, dlt_w, dlt_h
+        )
+        #
+        # self.setFixedWidth(c_x)
 
     def eventFilter(self, *args):
         widget, event = args
@@ -158,6 +183,7 @@ class QtGuideEntry(
                 self.update()
             elif event.type() == QtCore.QEvent.Leave:
                 self._action_is_hovered = False
+                self._delete_is_hovered = False
                 self._clear_guide_choose_current_()
                 self._clear_guide_current_()
                 self.update()
@@ -198,7 +224,7 @@ class QtGuideEntry(
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
                 #
-                self._set_action_flag_clear_()
+                self._clear_action_flag_()
                 #
                 self._action_is_hovered = False
                 self._refresh_widget_draw_()
@@ -210,12 +236,12 @@ class QtGuideEntry(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 entry_frame = self._get_entry_frame_()
-                if isinstance(entry_frame, _utl_gui_qt_wgt_utility.QtEntryFrame):
+                if isinstance(entry_frame, _utl_gui_qt_wgt_entry.QtEntryFrame):
                     entry_frame._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 entry_frame = self._get_entry_frame_()
-                if isinstance(entry_frame, _utl_gui_qt_wgt_utility.QtEntryFrame):
+                if isinstance(entry_frame, _utl_gui_qt_wgt_entry.QtEntryFrame):
                     entry_frame._set_focused_(False)
             #
             elif event.type() == QtCore.QEvent.KeyPress:
@@ -275,9 +301,9 @@ class QtGuideEntry(
             painter._draw_text_by_rect_(
                 rect=i_item._type_rect,
                 text=i_type_text,
-                text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
+                text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
                 font_color=bsc_core.RawTextOpt(i_type_text).to_rgb_0(s_p=100, v_p=100),
-                font=get_font(size=10, italic=True),
+                font=get_font(size=self.TYPE_FONT_SIZE, italic=True),
                 offset=name_offset,
                 is_hovered=guide_is_hovered,
             )
@@ -286,53 +312,65 @@ class QtGuideEntry(
             painter._draw_text_by_rect_(
                 rect=i_item._name_draw_rect,
                 text=i_name_text,
-                text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
-                font=get_font(size=12),
+                text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+                font=get_font(size=self.NAME_FONT_SIZE),
                 offset=name_offset,
                 is_hovered=guide_is_hovered,
             )
 
+        if self._delete_draw_is_enable is True:
+            if self._get_guide_path_text_() is not None:
+                painter._draw_icon_file_by_rect_(
+                    rect=self._delete_icon_draw_rect,
+                    file_path=self._delete_icon_file_path,
+                    is_hovered=self._delete_is_hovered
+                )
+
     def _update_guide_current_(self, event):
         p = event.pos()
         #
+        self._delete_is_hovered = False
         self._clear_guide_choose_current_()
         self._clear_guide_current_()
-        # choose or press
-        for i_index in self._get_guide_item_indices_():
-            i_item = self._get_guide_item_at_(i_index)
-            # popup choose
-            if i_item._icon_frame_draw_rect.contains(p) is True:
-                self._set_guide_choose_current_index_(i_index)
-                break
-            # execute press
-            elif i_item._name_frame_draw_rect.contains(p) is True:
-                self._set_guide_current_index_(i_index)
-                break
-        #
-        if self._guide_choose_index_current is not None:
-            self._set_tool_tip_text_(
-                'LMB-click to popup a choose frame'
-            )
-        elif self._guide_index_current is not None:
-            self._set_tool_tip_text_(
-                (
-                    '1, LMB-click to jump to current\n'
-                    '2, MMB-wheel to jump to previous or next'
-                )
-            )
+        if self._delete_rect.contains(p):
+            self._delete_is_hovered = True
         else:
-            self.setToolTip('')
+            # choose or press
+            for i_index in self._get_guide_item_indices_():
+                i_item = self._get_guide_item_at_(i_index)
+                # popup choose
+                if i_item._icon_frame_draw_rect.contains(p) is True:
+                    self._set_guide_choose_current_index_(i_index)
+                    break
+                # execute press
+                elif i_item._name_frame_draw_rect.contains(p) is True:
+                    self._set_guide_current_index_(i_index)
+                    break
+            #
+            if self._guide_choose_index_current is not None:
+                self._set_tool_tip_text_(
+                    'LMB-click to popup a choose frame'
+                )
+            elif self._guide_index_current is not None:
+                self._set_tool_tip_text_(
+                    (
+                        '1, "LMB-click" to jump to current\n'
+                        '2, "MMB-wheel" to jump to previous or next'
+                    )
+                )
+            else:
+                self.setToolTip('')
         #
         self._refresh_widget_draw_()
 
     def _execute_action_guide_choose_wheel_(self, event):
         index = self._guide_index_current
         delta = event.angleDelta().y()
-        values = self._get_guide_choose_item_values_at_(index)
-        pre_value = self._get_guide_name_text_at_(index)
-        maximum = len(values)-1
-        if pre_value in values:
-            pre_index = values.index(pre_value)
+        name_texts = self._get_guide_choose_name_texts_at_(index)
+        name_text_pre = self._get_guide_name_text_at_(index)
+        maximum = len(name_texts)-1
+        if name_text_pre in name_texts:
+            pre_index = name_texts.index(name_text_pre)
             if delta > 0:
                 cur_index = pre_index-1
             else:
@@ -340,28 +378,9 @@ class QtGuideEntry(
             #
             cur_index = max(min(cur_index, maximum), 0)
             if cur_index != pre_index:
-                value_cur = values[cur_index]
-                self._set_guide_name_text_at_(value_cur, index)
-                self.guide_user_entry_changed.emit(self._get_guide_path_text_at_(self._guide_index_current))
-
-    def _get_guide_choose_item_point_at_(self, index=0):
-        item = self._get_guide_item_at_(index)
-        rect = item._icon_frame_draw_rect
-        return self.mapToGlobal(rect.center())
-
-    def _get_guide_choose_item_rect_at_(self, index=0):
-        item = self._get_guide_item_at_(index)
-        rect = item._icon_frame_draw_rect
-        return rect
-
-    def _get_guide_valid_path_texts_(self):
-        # todo, fnc "get_is_enable" is from proxy
-        return [k for k, v in self._guide_dict.items() if v is None or v.get_is_enable() is True]
-
-    def _get_guide_choose_item_values_(self, item):
-        return bsc_core.DccPathDagMtd.get_dag_sibling_names(
-            item._path_text, self._get_guide_valid_path_texts_()
-        )
+                name_text_cur = name_texts[cur_index]
+                path_text_cur = self._set_guide_name_text_at_(name_text_cur, index)
+                self.guide_user_entry_changed.emit(path_text_cur)
 
     def _get_guide_path_text_(self):
         item = self._get_guide_item_at_(-1)
@@ -375,10 +394,14 @@ class QtGuideEntry(
         components = path_opt.get_components()
         if components:
             components.reverse()
-            for i_index, i_path_opt in enumerate(components[1:]):
+            for i_index, i_path_opt in enumerate(components):
                 i_item = self._create_guide_item_()
                 #
-                i_type_text = self._guide_type_texts[i_index]
+                if self._guide_type_texts:
+                    i_type_text = self._guide_type_texts[i_index]
+                else:
+                    i_type_text = None
+                #
                 i_path_text = i_path_opt.get_path()
                 i_name_text = i_path_opt.get_name()
                 #
@@ -392,7 +415,7 @@ class QtGuideEntry(
 
 class QtGuideBar(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtValueEntryDef,
+    utl_gui_qt_abstract.AbsQtValueEntryBaseDef,
     utl_gui_qt_abstract.AbsQtCompletionAsPopupDef,
 ):
     QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry.QtConstantEntry
@@ -409,17 +432,17 @@ class QtGuideBar(
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
         )
-        self._init_value_entry_def_(self)
+        self._init_value_entry_base_def_(self)
         self._init_completion_as_popup_def_(self)
 
         self._guide_entry_mode = 0
 
         qt_layout_0 = QtHBoxLayout(self)
         qt_layout_0.setContentsMargins(*[0]*4)
-        qt_layout_0.setSpacing(2)
+        qt_layout_0.setSpacing(0)
         qt_layout_0.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
-        self._value_entry_frame = _utl_gui_qt_wgt_utility.QtEntryFrame()
+        self._value_entry_frame = _utl_gui_qt_wgt_entry.QtEntryFrame()
         qt_layout_0.addWidget(self._value_entry_frame)
         #
         self._value_entry_frame.setMinimumHeight(24)
@@ -429,9 +452,9 @@ class QtGuideBar(
         self._value_entry_layout.setContentsMargins(2, 0, 2, 0)
         self._value_entry_layout.setSpacing(2)
 
-        self._guide_tree = _utl_gui_qt_wgt_utility.QtIconPressItem()
-        self._value_entry_layout.addWidget(self._guide_tree)
-        self._guide_tree._set_icon_file_path_(utl_gui_core.RscIconFile.get('tree'))
+        self._guide_tree_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+        self._value_entry_layout.addWidget(self._guide_tree_button)
+        self._guide_tree_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('tree'))
 
         self._guide_entry = QtGuideEntry()
         self._value_entry_layout.addWidget(self._guide_entry)
@@ -442,6 +465,7 @@ class QtGuideBar(
         self._value_entry = self.QT_VALUE_ENTRY_CLASS()
         self._value_entry.hide()
         self._value_entry_layout.addWidget(self._value_entry)
+        # self._value_entry.setFocusPolicy(QtCore.Qt.StrongFocus)
         self._value_entry.key_escape_pressed.connect(self._guide_entry_finished_cbk_)
         self._value_entry.focus_out.connect(self._set_guide_entry_finish_)
         self._value_entry.setMinimumHeight(22)
@@ -454,6 +478,11 @@ class QtGuideBar(
             self._guide_value_popup_completion_gain_fnc_
         )
         self.completion_finished.connect(self._guide_entry_cbk_)
+
+    def _set_guide_entry_started_(self):
+        self._guide_entry_mode = 1
+        self._guide_entry.hide()
+        self._value_entry.show()
 
     def _guide_entry_started_cbk_(self):
         self._guide_entry_mode = 1
@@ -471,7 +500,7 @@ class QtGuideBar(
     def _guide_entry_finished_cbk_(self):
         self._set_guide_entry_finish_()
         self._guide_entry._set_focused_(True)
-
+    # noinspection PyUnusedLocal
     def _guide_value_popup_completion_gain_fnc_(self, *args, **kwargs):
         keyword = args[0]
         if keyword:
@@ -494,3 +523,15 @@ class QtGuideBar(
                         text
                     )
                 self._guide_entry_finished_cbk_()
+
+
+class QtTagEntry(object):
+    pass
+
+
+class QtTagBar(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtValueEntryBaseDef,
+):
+    def __init__(self, *args, **kwargs):
+        super(QtTagBar, self).__init__(*args, **kwargs)

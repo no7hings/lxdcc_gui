@@ -5,13 +5,109 @@ from lxutil_gui.qt.utl_gui_qt_core import *
 
 from lxutil_gui import utl_gui_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_entry
+
+
+class QtPopupForRgbaChoose(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtPopupBaseDef,
+):
+    def _refresh_widget_draw_(self):
+        self.update()
+        self._chart.update()
+
+    def __init__(self, *args, **kwargs):
+        super(QtPopupForRgbaChoose, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.installEventFilter(self)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setFocusProxy(self.parent())
+        self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
+        #
+        self._set_frame_def_init_()
+        self._init_popup_base_def_(self)
+        #
+        self._frame_border_color = QtBackgroundColors.Light
+        self._hovered_frame_border_color = QtBackgroundColors.Hovered
+        self._selected_frame_border_color = QtBackgroundColors.Selected
+        self._frame_background_color = QtBackgroundColors.Dark
+
+        self._chart = _utl_gui_qt_wgt_chart.QtColorChooseChart(self)
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self.parent():
+            if event.type() == QtCore.QEvent.MouseButtonPress:
+                self._close_popup_()
+            elif event.type() == QtCore.QEvent.WindowDeactivate:
+                self._close_popup_()
+        elif widget == self:
+            if event.type() == QtCore.QEvent.Close:
+                self._execute_popup_end_()
+            elif event.type() == QtCore.QEvent.Resize:
+                self._refresh_widget_draw_geometry_()
+            elif event.type() == QtCore.QEvent.Show:
+                self._refresh_widget_draw_geometry_()
+        return False
+
+    def paintEvent(self, event):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        #
+        bck_rect = QtCore.QRect(
+            x, y, w-1, h-1
+        )
+        painter = QtPainter(self)
+        #
+        painter._draw_popup_frame_(
+            bck_rect,
+            margin=self._popup_margin,
+            side=self._popup_side,
+            shadow_radius=self._popup_shadow_radius,
+            region=self._popup_region,
+            border_color=self._selected_frame_border_color,
+            background_color=self._frame_background_color,
+        )
+
+    def _refresh_widget_draw_geometry_(self):
+        side = self._popup_side
+        margin = self._popup_margin
+        shadow_radius = self._popup_shadow_radius
+        #
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        v_x, v_y = x+margin+side+1, y+margin+side+1
+        v_w, v_h = w-margin*2-side*2-shadow_radius-2, h-margin*2-side*2-shadow_radius-2
+        #
+        self._chart.setGeometry(
+            v_x, v_y, v_w, v_h
+        )
+        self._chart.update()
+
+    def _execute_popup_start_(self):
+        parent = self.parent()
+        press_rect = parent._get_color_rect_()
+        press_point = self._get_popup_press_point_(parent, press_rect)
+        desktop_rect = get_qt_desktop_rect()
+        self._show_popup_0_(
+            press_point,
+            press_rect,
+            desktop_rect,
+            320, 320
+        )
+        self._chart._set_color_rgba_(*parent._get_color_rgba_())
+        parent._set_focused_(True)
+
+    def _execute_popup_end_(self, *args, **kwargs):
+        r, g, b, a = self._chart._get_color_rgba_()
+        self.parent()._set_color_rgba_(r, g, b, a)
 
 
 class QtPopupForChoose(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
-    utl_gui_qt_abstract.AbsQtPopupDef,
+    utl_gui_qt_abstract.AbsQtPopupBaseDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -87,7 +183,7 @@ class QtPopupForChoose(
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         #
         self._set_frame_def_init_()
-        self._set_popup_def_init_(self)
+        self._init_popup_base_def_(self)
         #
         self._popup_item_width, self._popup_item_height = 20, 20
         self._popup_tag_filter_item_width, self._popup_tag_filter_item_height = 20, 20
@@ -308,7 +404,7 @@ class QtPopupForChoose(
                         #
                         if i_name_text in keyword_filter_dict:
                             i_filter_keys = keyword_filter_dict[i_name_text]
-                            i_item._set_item_keyword_filter_keys_tgt_update_(i_filter_keys)
+                            i_item._update_item_keyword_filter_keys_tgt_(i_filter_keys)
                             i_item_widget._set_name_texts_(
                                 i_filter_keys
                             )
@@ -316,7 +412,7 @@ class QtPopupForChoose(
                                 i_filter_keys
                             )
                         else:
-                            i_item._set_item_keyword_filter_keys_tgt_update_([i_name_text])
+                            i_item._update_item_keyword_filter_keys_tgt_([i_name_text])
                         #
                         if i_name_text in tag_filter_dict:
                             i_filter_keys = tag_filter_dict[i_name_text]
@@ -428,7 +524,7 @@ class QtPopupForChoose(
         # keyword filter
         self._popup_view._set_view_keyword_filter_data_src_([self._keyword_filter_line_edit.text()])
         #
-        self._popup_view._set_view_items_visible_by_any_filter_()
+        self._popup_view._refresh_view_items_visible_by_any_filter_()
         self._popup_view._refresh_view_all_items_viewport_showable_()
         #
         if self._popup_auto_resize_is_enable is True:
@@ -464,7 +560,7 @@ class QtPopupForChoose(
 class QtPopupForCompletion(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
-    utl_gui_qt_abstract.AbsQtPopupDef,
+    utl_gui_qt_abstract.AbsQtPopupBaseDef,
 ):
     completion_finished = qt_signal(str)
 
@@ -516,7 +612,7 @@ class QtPopupForCompletion(
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         #
         self._set_frame_def_init_()
-        self._set_popup_def_init_(self)
+        self._init_popup_base_def_(self)
         #
         self._popup_close_button = _utl_gui_qt_wgt_utility.QtIconPressItem(self)
         self._popup_close_button._set_icon_file_path_(
@@ -599,7 +695,7 @@ class QtPopupForCompletion(
         self._popup_view._set_clear_()
         name_texts = parent._get_popup_completion_data_()
         if name_texts:
-            current_name_text = parent._get_value_()
+            current_name_text = self._popup_entry._get_value_()
             for index, i_name_text in enumerate(name_texts):
                 i_item_widget = _utl_gui_qt_wgt_utility._QtHItem()
                 i_item = _utl_gui_qt_wgt_utility.QtListWidgetItem()
@@ -652,7 +748,7 @@ class QtPopupForCompletion(
 class QtPopupForGuideChoose(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
-    utl_gui_qt_abstract.AbsQtPopupDef,
+    utl_gui_qt_abstract.AbsQtPopupBaseDef,
 ):
     def __init__(self, *args, **kwargs):
         super(QtPopupForGuideChoose, self).__init__(*args, **kwargs)
@@ -663,7 +759,7 @@ class QtPopupForGuideChoose(
         self.setPalette(QtDccMtd.get_palette())
         #
         self._set_frame_def_init_()
-        self._set_popup_def_init_(self)
+        self._init_popup_base_def_(self)
         #
         self._keyword_filter_line_edit = _utl_gui_qt_wgt_entry.QtConstantEntry(self)
         self._keyword_filter_line_edit.hide()
@@ -752,7 +848,7 @@ class QtPopupForGuideChoose(
         # keyword filter
         self._popup_view._set_view_keyword_filter_data_src_([self._keyword_filter_line_edit.text()])
         #
-        self._popup_view._set_view_items_visible_by_any_filter_()
+        self._popup_view._refresh_view_items_visible_by_any_filter_()
         self._popup_view._refresh_view_all_items_viewport_showable_()
 
     def _set_popup_entry_(self, widget):
@@ -815,12 +911,12 @@ class QtPopupForGuideChoose(
 
     def _execute_popup_start_(self, index):
         parent = self.parent()
-        name_texts = list(parent._get_guide_choose_item_values_at_(index))
+        name_texts = list(parent._get_guide_choose_name_texts_at_(index))
         if name_texts:
             desktop_rect = get_qt_desktop_rect()
             #
-            press_pos = parent._get_guide_choose_item_point_at_(index)
-            press_rect = parent._get_guide_choose_item_rect_at_(index)
+            press_pos = parent._get_guide_choose_point_at_(index)
+            press_rect = parent._get_guide_choose_rect_at_(index)
             #
             current_name_text = parent._get_guide_name_text_at_(index)
             for seq, i_name_text in enumerate(name_texts):
@@ -831,7 +927,7 @@ class QtPopupForGuideChoose(
                 self._popup_view.addItem(i_item)
                 self._popup_view.setItemWidget(i_item, i_item_widget)
                 i_item._set_item_show_connect_()
-                i_item._set_item_keyword_filter_keys_tgt_update_([i_name_text])
+                i_item._update_item_keyword_filter_keys_tgt_([i_name_text])
                 #
                 if i_name_text:
                     i_item_widget._set_name_text_(i_name_text)
@@ -870,15 +966,15 @@ class QtPopupForGuideChoose(
             parent = self.parent()
             selected_item_widget = self._popup_view._get_selected_item_widget_()
             if selected_item_widget:
-                name_text = selected_item_widget._get_name_text_()
+                name_text_cur = selected_item_widget._get_name_text_()
                 #
-                parent._set_guide_name_text_at_(
-                    name_text,
+                path_text_cur = parent._set_guide_name_text_at_(
+                    name_text_cur,
                     self._choose_index
                 )
                 parent._refresh_guide_draw_geometry_()
-            #
-            parent.guide_user_entry_changed.emit(parent._get_guide_path_text_at_(self._choose_index))
+                #
+                parent.guide_user_entry_changed.emit(path_text_cur)
             # clear latest
             parent._clear_guide_current_()
         #
@@ -931,5 +1027,3 @@ class QtPopupProxy(
 
     def _execute_popup_end_(self):
         pass
-
-

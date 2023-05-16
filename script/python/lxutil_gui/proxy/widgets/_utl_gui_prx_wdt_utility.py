@@ -9,7 +9,7 @@ from lxutil import utl_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_window
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize, _utl_gui_qt_wgt_filter, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_window
 
 from lxutil_gui.proxy import utl_gui_prx_configure, utl_gui_prx_core, utl_gui_prx_abstract
 
@@ -36,7 +36,7 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_head.setMaximumHeight(22)
         self._qt_head.setMinimumHeight(22)
         self._qt_head.expand_toggled.connect(self.set_expanded)
-        self._qt_head.setToolTip('"LMB-click" to expand "on" / "off"')
+        self._qt_head._set_tool_tip_text_('"LMB-click" to expand "on" / "off"')
         self._qt_head.press_toggled.connect(self._qt_widget._set_pressed_)
         #
         qt_widget_1 = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
@@ -82,14 +82,14 @@ class PrxExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_head._set_name_font_size_(size)
 
     def set_expanded(self, boolean):
-        self._qt_head._set_item_expanded_(boolean)
+        self._qt_head._set_expanded_(boolean)
         self._refresh_expand_()
 
     def set_head_visible(self, boolean):
         self._qt_head.setHidden(not boolean)
 
     def get_is_expanded(self):
-        return self._qt_head._get_item_is_expanded_()
+        return self._qt_head._get_is_expanded_()
 
     def set_widget_add(self, widget):
         if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
@@ -238,7 +238,7 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(2)
-        qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
+        # qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
         # header
         self._qt_head = _utl_gui_qt_wgt_item._QtHExpandItem1()
         qt_layout_0.addWidget(self._qt_head)
@@ -249,7 +249,7 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
         qt_layout_0.addWidget(qt_widget_1)
         qt_layout_1 = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
         qt_layout_1.setContentsMargins(*[0]*4)
-        qt_layout_1.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
+        # qt_layout_1.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
         self._qt_layout_0 = qt_layout_1
         #
         self._qt_view = qt_widget_1
@@ -282,11 +282,11 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_head.set_name(name)
 
     def set_expanded(self, boolean):
-        self._qt_head._set_item_expanded_(boolean)
+        self._qt_head._set_expanded_(boolean)
         self._refresh_expand_()
 
     def get_is_expanded(self):
-        return self._qt_head._get_item_is_expanded_()
+        return self._qt_head._get_is_expanded_()
 
     def set_widget_add(self, widget):
         if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
@@ -306,10 +306,16 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
         return self._qt_layout_0
 
     def set_top_direction(self):
-        self._qt_head._set_item_expand_direction_(self._qt_head.EXPAND_TOP_TO_BOTTOM)
+        self._qt_head._set_expand_direction_(self._qt_head.EXPAND_TOP_TO_BOTTOM)
 
     def set_bottom_direction(self):
-        self._qt_head._set_item_expand_direction_(self._qt_head.EXPAND_BOTTOM_TO_TOP)
+        self._qt_head._set_expand_direction_(self._qt_head.EXPAND_BOTTOM_TO_TOP)
+
+    def set_alignment_center(self):
+        self._qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignHCenter)
+
+    def set_alignment_left(self):
+        self._qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
 
     def set_border_radius(self, radius):
         self._qt_head._set_frame_border_radius_(radius)
@@ -374,7 +380,7 @@ class PrxVToolBar(PrxHToolBar):
 
 
 class PrxLeftExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtHResizeFrame
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_resize.QtHResizeFrame
     def __init__(self, *args, **kwargs):
         super(PrxLeftExpandedGroup, self).__init__(*args, **kwargs)
         #
@@ -442,11 +448,11 @@ class PrxLeftExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_head.set_name(name)
 
     def set_expanded(self, boolean):
-        self._qt_head._set_item_expanded_(boolean)
+        self._qt_head._set_expanded_(boolean)
         self._refresh_expand_()
 
     def get_is_expanded(self):
-        return self._qt_head._get_item_is_expanded_()
+        return self._qt_head._get_is_expanded_()
 
     def set_widget_add(self, widget):
         if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
@@ -469,10 +475,10 @@ class PrxLeftExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         return self._qt_layout_0
 
     def set_top_direction(self):
-        self._qt_head._set_item_expand_direction_(self._qt_head.EXPAND_TOP_TO_BOTTOM)
+        self._qt_head._set_expand_direction_(self._qt_head.EXPAND_TOP_TO_BOTTOM)
 
     def set_bottom_direction(self):
-        self._qt_head._set_item_expand_direction_(self._qt_head.EXPAND_BOTTOM_TO_TOP)
+        self._qt_head._set_expand_direction_(self._qt_head.EXPAND_BOTTOM_TO_TOP)
 
     def set_border_radius(self, radius):
         self._qt_head._set_frame_border_radius_(radius)
@@ -503,7 +509,7 @@ class PrxRightExpandedGroup(PrxLeftExpandedGroup):
         self._qt_head = _utl_gui_qt_wgt_item._QtHContractItem()
         qt_layout_0.addWidget(self._qt_head)
         self._qt_head.expand_toggled.connect(self.set_expanded)
-        self._qt_head._set_item_expand_direction_(self._qt_head.ContractDirection.LeftToRight)
+        self._qt_head._set_expand_direction_(self._qt_head.ContractDirection.LeftToRight)
         self._qt_head.setToolTip('"LMB-click" to expand "on" / "off"')
         #
         qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
@@ -574,11 +580,11 @@ class PrxHToolBox(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_head.set_name(name)
 
     def set_expanded(self, boolean):
-        self._qt_head._set_item_expanded_(boolean)
+        self._qt_head._set_expanded_(boolean)
         self._refresh_expand_()
 
     def get_is_expanded(self):
-        return self._qt_head._get_item_is_expanded_()
+        return self._qt_head._get_is_expanded_()
 
     def set_widget_add(self, widget):
         if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
@@ -594,10 +600,10 @@ class PrxHToolBox(utl_gui_prx_abstract.AbsPrxWidget):
         return self._qt_layout_0
 
     def set_top_direction(self):
-        self._qt_head._set_item_expand_direction_(self._qt_head.EXPAND_TOP_TO_BOTTOM)
+        self._qt_head._set_expand_direction_(self._qt_head.EXPAND_TOP_TO_BOTTOM)
 
     def set_bottom_direction(self):
-        self._qt_head._set_item_expand_direction_(self._qt_head.EXPAND_BOTTOM_TO_TOP)
+        self._qt_head._set_expand_direction_(self._qt_head.EXPAND_BOTTOM_TO_TOP)
 
     def set_border_radius(self, radius):
         self._qt_head._set_frame_border_radius_(radius)
@@ -652,7 +658,7 @@ class ContentWidget(utl_gui_prx_abstract.AbsPrxWidget):
         qt_layout_0.addWidget(qt_top_widget_0)
         #
         qt_top_layout_1 = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_top_widget_0)
-        self._qt_label_0 = _utl_gui_qt_wgt_item.QtTextItem()
+        self._qt_label_0 = _utl_gui_qt_wgt_utility.QtTextItem()
         self._qt_label_0._set_name_text_option_(
             utl_gui_qt_core.QtCore.Qt.AlignHCenter | utl_gui_qt_core.QtCore.Qt.AlignVCenter
         )
@@ -766,10 +772,10 @@ class PrxMenu(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget.setTitle(name)
 
     def set_setup(self, menu_raws):
-        self.widget._set_menu_raw_(menu_raws)
+        self.widget._set_menu_data_(menu_raws)
 
     def set_menu_raw(self, menu_raws):
-        self.widget._set_menu_raw_(menu_raws)
+        self.widget._set_menu_data_(menu_raws)
 
     def set_menu_content(self, content):
         self.widget._set_menu_content_(content)
@@ -965,27 +971,24 @@ class PrxEnableItem(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item.QtFilterBar
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_filter.QtFilterBar
     def __init__(self, *args, **kwargs):
         super(PrxFilterBar, self).__init__(*args, **kwargs)
 
-    def set_entry_tip(self, text):
-        self._qt_widget._set_entry_tip_(text)
+    def set_tip(self, text):
+        self._qt_widget._set_filter_tip_(text)
 
     def get_enter_widget(self):
-        return self._qt_widget._get_qt_entry_()
+        return self._qt_widget._get_value_entry_()
 
     def set_filter_connect_to(self, proxy):
         proxy._set_filter_bar_(self)
-        self._qt_widget.entry_changed.connect(proxy._set_items_hidden_by_any_filter_)
-        self._qt_widget.user_entry_changed.connect(proxy._set_items_hidden_by_any_filter_)
-        self._qt_widget.occurrence_previous_press_clicked.connect(proxy._execute_occurrence_to_previous_)
-        self._qt_widget.occurrence_next_press_clicked.connect(proxy._execute_occurrence_to_next_)
-        self._qt_widget.user_choose_changed.connect(proxy._execute_occurrence_to_current_)
-        self._qt_widget.completion_finished.connect(proxy._execute_occurrence_to_current_)
 
     def get_keyword(self):
-        return self.get_enter_widget().text()
+        return self.get_enter_widget()._get_value_()
+
+    def get_keywords(self):
+        return self._qt_widget._get_filter_keyword_texts_()
 
     def get_is_match_case(self):
         return self.widget._get_is_match_case_()
@@ -994,10 +997,10 @@ class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):
         return self.widget._get_is_match_word_()
 
     def set_result_count(self, value):
-        self.widget._set_result_count_(value)
+        self.widget._set_filter_result_count_(value)
 
     def set_result_index(self, value):
-        self.widget._set_result_index_(value)
+        self.widget._set_filter_result_index_current_(value)
 
     def set_result_clear(self):
         self.widget._set_result_clear_()
@@ -1075,8 +1078,8 @@ class PrxToolWindow(
         #
         self.set_show_menu_raw(
             [
-                ('log', None, self.set_log_unit_show),
-                ('help', None, self.set_help_unit_show)
+                ('log', 'log', self.set_log_unit_show),
+                ('help', 'help', self.set_help_unit_show)
             ]
         )
 

@@ -13,6 +13,7 @@ class QtTreeWidgetItem(
     utl_gui_qt_abstract.AbsQtItemDagLoading,
     #
     utl_gui_qt_abstract.AbsQtTypeDef,
+    utl_gui_qt_abstract.AbsQtPathDef,
     utl_gui_qt_abstract.AbsQtNameDef,
     #
     utl_gui_qt_abstract.AbsQtIconDef,
@@ -31,6 +32,9 @@ class QtTreeWidgetItem(
     utl_gui_qt_abstract.AbsQtActionDragDef,
 ):
     ValidatorStatus = bsc_configure.ValidatorStatus
+    def update(self):
+        pass
+
     def __init__(self, *args, **kwargs):
         super(QtTreeWidgetItem, self).__init__(*args, **kwargs)
         self.setFlags(
@@ -43,12 +47,13 @@ class QtTreeWidgetItem(
         self._check_action_is_enable = True
         self._emit_send_enable = False
         #
-        self._init_type_def_()
-        self._init_name_def_()
-        self._init_icon_def_()
+        self._init_type_def_(self)
+        self._init_path_def_(self)
+        self._init_name_def_(self)
+        self._init_icon_def_(self)
         self._init_menu_def_()
         #
-        self._set_item_filter_def_init_()
+        self._init_item_filter_extra_def_(self)
         #
         self._set_state_def_init_()
         #
@@ -265,7 +270,11 @@ class QtTreeWidgetItem(
 
     def _set_menu_content_(self, content):
         super(QtTreeWidgetItem, self)._set_menu_content_(content)
-        self._update_wgt_icon_(status=None)
+        self._update_wgt_icon_(status=self._status)
+
+    def _set_menu_data_(self, raw):
+        super(QtTreeWidgetItem, self)._set_menu_data_(raw)
+        self._update_wgt_icon_(status=self._status)
 
     def _set_name_status_(self, status, column=0):
         font = get_font()
@@ -288,6 +297,10 @@ class QtTreeWidgetItem(
             color = QtFontColors.Disable
             font.setItalic(True)
             self.setFont(column, font)
+        elif status == self.ValidatorStatus.Locked:
+            color = QtStatusColors.Locked
+            font.setItalic(True)
+            self.setFont(column, font)
         else:
             raise TypeError()
         #
@@ -300,7 +313,6 @@ class QtTreeWidgetItem(
 
     def _update_wgt_icon_(self, status, column=0):
         if column == 0:
-            icon = QtGui.QIcon()
             pixmap = None
             if self._icon:
                 pixmap = self._icon.pixmap(20, 20)
@@ -333,43 +345,61 @@ class QtTreeWidgetItem(
                         background_color = Color.ACTIVE
                     elif status == self.ValidatorStatus.Disable:
                         background_color = Color.DISABLE
+                    elif status == self.ValidatorStatus.Locked:
+                        background_color = QtStatusColors.Locked
                     else:
                         raise TypeError()
                     #
                     if draw_status is True:
                         border_color = QtBorderColors.Icon
                         #
-                        s_w, s_h = w * .25, h * .25
+                        s_w, s_h = w*.5, h*.5
                         status_rect = QtCore.QRect(
-                            x + w - s_w - 1, y + h - s_h - 1, s_w, s_h
+                            x+w-s_w, y+h-s_h, s_w, s_h
                         )
                         # draw status
-                        painter._draw_frame_by_rect_(
-                            rect=status_rect,
-                            border_color=border_color,
-                            background_color=background_color,
-                            border_width=2,
-                            border_radius=w / 2
-                        )
+                        if status == self.ValidatorStatus.Locked:
+                            painter._draw_icon_file_by_rect_(
+                                rect=status_rect,
+                                file_path=utl_gui_core.RscIconFile.get(
+                                    'state-locked'
+                                )
+                            )
+                        elif status == self.ValidatorStatus.Disable:
+                            painter._draw_icon_file_by_rect_(
+                                rect=status_rect,
+                                file_path=utl_gui_core.RscIconFile.get(
+                                    'state-disable'
+                                )
+                            )
+                        else:
+                            painter._draw_frame_by_rect_(
+                                rect=status_rect,
+                                border_color=border_color,
+                                background_color=background_color,
+                                border_width=2,
+                                border_radius=w/2
+                            )
                 #
-                if self._menu_content is not None:
-                    m_w, m_h = w/2, h/2
+                if self._menu_content is not None or self._menu_raw:
+                    m_w, m_h = w/2, h/4
                     menu_mark_rect = QtCore.QRect(
-                        x, y, m_w, m_h
+                        x+w-m_w, y, m_w, m_h
                     )
                     painter._draw_icon_file_by_rect_(
                         rect=menu_mark_rect,
-                        file_path=utl_gui_core.RscIconFile.get('menu_mark'),
+                        file_path=utl_gui_core.RscIconFile.get('menu-mark-h'),
                     )
-
+                #
                 painter.end()
-            #
-            icon.addPixmap(
-                pixmap,
-                QtGui.QIcon.Normal,
-                QtGui.QIcon.On
-            )
-            self.setIcon(column, icon)
+                #
+                icon = QtGui.QIcon()
+                icon.addPixmap(
+                    pixmap,
+                    QtGui.QIcon.Normal,
+                    QtGui.QIcon.On
+                )
+                self.setIcon(column, icon)
 
     def _get_status_(self, column=0):
         return self._status
@@ -465,7 +495,7 @@ class QtTreeWidgetItem(
         return [self.text(i) for i in range(column_count)]
 
     def _get_name_text_(self, column=0):
-        return self.text(column)
+        return self.text(column) or ''
     # show
     def _set_view_(self, widget):
         self._tree_widget = widget

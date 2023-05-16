@@ -12,15 +12,15 @@ option:
         color-light-hover: '103, 103, 103, 255'
         color-white: '223, 223, 223, 255'
         #
-        color-hovered: '223, 127, 79, 255'
-        color-selected: '79, 127, 223, 255'
-        color-checked: '255, 79, 159, 255'
-        color-pressed: '79, 255, 159, 255'
-        color-actioned: '79, 255, 159, 255'
+        color-hovered: '255, 159, 95, 255'
+        color-selected: '95, 159, 223, 255'
+        color-checked: '255, 95, 159, 255'
+        color-pressed: '95, 255, 159, 255'
+        color-actioned: '95, 255, 159, 255'
         #
-        color-item-selected: '79, 159, 255, 255'
+        color-item-selected: '95, 159, 255, 255'
         color-item-selected-indirect: '39, 79, 127, 255'
-        color-item-hovered: '255, 159, 79, 255'
+        color-item-hovered: '255, 159, 95, 255'
         #
         color-item-loading: '31, 31, 31, 63'
         #

@@ -665,16 +665,16 @@ class AbsPrxMenuDef(object):
         self.widget._set_menu_title_text_(text)
 
     def set_menu_raw(self, raw):
-        self.widget._set_menu_raw_(raw)
+        self.widget._set_menu_data_(raw)
 
     def set_menu_raw_add(self, raw):
-        self.widget._set_menu_raw_add_(raw)
+        self.widget._add_menu_data_(raw)
 
     def set_menu_raw_extend(self, raw):
-        self.widget._set_menu_raw_extend_(raw)
+        self.widget._extend_menu_data_(raw)
 
     def get_menu_raw(self):
-        return self.widget._get_menu_raw_()
+        return self.widget._get_menu_data_()
 
     def set_menu_content(self, content):
         self.widget._set_menu_content_(content)
@@ -709,8 +709,11 @@ class AbsPrxItemFilterTgtDef(object):
     def set_states(self, *args, **kwargs):
         self.item._set_state_(*args, **kwargs)
 
+    def set_keyword_filter_keys_tgt(self, keys):
+        self.item._set_item_keyword_filter_keys_tgt_(keys)
+
     def update_keyword_filter_keys_tgt(self, keys):
-        self.item._set_item_keyword_filter_keys_tgt_update_(keys)
+        self.item._update_item_keyword_filter_keys_tgt_(keys)
 
     def get_keyword_filter_keys_tgt(self):
         return self.item._get_keyword_filter_keys_tgt_()
@@ -729,9 +732,7 @@ class AbsPrxViewFilterTagDef(object):
 
     def set_tag_filter_all_keys_src(self, *args, **kwargs):
         self.view._set_view_tag_filter_data_src_(*args, **kwargs)
-        #
-        self.set_items_visible_by_any_filter()
-        #
+        self.refresh_items_visible_by_any_filter()
         self.view._refresh_view_all_items_viewport_showable_()
 
     def get_item_states(self, items):
@@ -740,9 +741,9 @@ class AbsPrxViewFilterTagDef(object):
     def get_item_state_colors(self, items):
         return self.view._get_view_item_state_colors_(items)
 
-    def set_items_visible_by_any_filter(self):
-        self.view._set_view_keyword_filter_data_src_([self.filter_bar.get_keyword()])
-        self.view._set_view_items_visible_by_any_filter_()
+    def refresh_items_visible_by_any_filter(self):
+        self.view._set_view_keyword_filter_data_src_(self.filter_bar.get_keywords())
+        self.view._refresh_view_items_visible_by_any_filter_()
 
 
 class AbsPrxItemVisibleConnectionDef(object):

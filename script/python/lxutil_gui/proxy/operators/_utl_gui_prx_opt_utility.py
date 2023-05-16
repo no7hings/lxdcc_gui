@@ -17,26 +17,30 @@ class GuiRsvObjOpt(object):
     def gui_get(self, path):
         return self._item_dict[path]
 
+    def gui_register(self, path, prx_item):
+        self._item_dict[path] = prx_item
+        prx_item.set_gui_attribute('path', path)
+
     def set_restore(self):
         self._tree_view.set_clear()
         self._keys.clear()
 
     def gui_add(self, obj, use_show_thread=False):
-        obj_name = obj.name
-        obj_path = obj.path
-        obj_type = obj.type
-        if self.gui_get_is_exists(obj_path) is True:
-            prx_item = self.gui_get(obj_path)
+        name = obj.name
+        path = obj.path
+        type_name = obj.type
+        if self.gui_get_is_exists(path) is True:
+            prx_item = self.gui_get(path)
             return False, prx_item
         else:
             create_kwargs = dict(
-                name=obj_name,
+                name=name,
                 item_class=self._tree_item_cls,
                 filter_key=obj.path
             )
             parent = obj.get_parent()
             if parent is not None:
-                prx_item_parent = self._item_dict[parent.path]
+                prx_item_parent = self.gui_get(parent.path)
                 prx_item = prx_item_parent.set_child_add(
                     **create_kwargs
                 )
@@ -48,11 +52,11 @@ class GuiRsvObjOpt(object):
             prx_item.set_type(obj.get_type_name())
             prx_item.set_checked(False)
             prx_item.update_keyword_filter_keys_tgt(
-                [obj_path, obj_type]
+                [type_name, name]
             )
             obj.set_obj_gui(prx_item)
             prx_item.set_gui_dcc_obj(obj, namespace=self.DCC_NAMESPACE)
-            self._item_dict[obj_path] = prx_item
+            self.gui_register(path, prx_item)
             #
             if use_show_thread is True:
                 prx_item.set_show_method(
@@ -73,8 +77,7 @@ class GuiRsvObjOpt(object):
         #
         obj = prx_item.get_gui_dcc_obj(namespace=self.DCC_NAMESPACE)
         obj_type_name = obj.type_name
-        obj_name = obj.name
-        obj_path = obj.path
+        name = obj.name
         #
         menu_raw = []
         menu_raw.extend(
@@ -85,7 +88,7 @@ class GuiRsvObjOpt(object):
         )
         #
         prx_item.set_icon_by_file(obj.icon)
-        prx_item.set_name(obj_name)
+        prx_item.set_name(name)
         prx_item.set_tool_tip(obj.description)
         #
         menu_raw.extend(

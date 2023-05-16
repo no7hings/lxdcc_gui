@@ -384,7 +384,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
         self._count = 0
         self._start_timestamp = bsc_core.TimeMtd.get_timestamp()
         #
-        rsv_tags = rsv_project.get_rsv_tags(**self._rsv_filter_opt.value)
+        rsv_tags = rsv_project.get_rsv_resource_groups(**self._rsv_filter_opt.value)
         #
         if self._qt_thread_enable is True:
             ts = utl_gui_qt_core.QtBuildThreadStack(self.widget)

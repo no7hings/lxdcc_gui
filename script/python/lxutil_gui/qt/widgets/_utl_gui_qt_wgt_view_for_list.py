@@ -1,7 +1,7 @@
 # coding=utf-8
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry
 
 import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
@@ -48,7 +48,7 @@ class QtListWidget(
         self._item_name_frame_draw_enable = False
         self._item_names_draw_range = None
         #
-        self._item_size_scale_percent = 1.0
+        self._item_scale_percent = 1.0
         #
         self._item_image_frame_draw_enable = False
         #
@@ -78,19 +78,22 @@ class QtListWidget(
                 self._set_item_frame_size_(w_cur, h_cur)
                 self._set_all_item_widgets_update_()
 
-    def _set_item_size_scale_percent_(self, scale):
-        self._item_size_scale_percent = scale
+    def _set_item_scale_percent_(self, scale):
+        self._item_scale_percent = scale
         #
         w_pre, h_pre = self._item_frame_size
         w_bsc, h_bsc = self._item_frame_size_basic
+        #
         w_cur = w_bsc*scale
-        w_cur = max(min(w_cur, 480), 28)
+        w_cur = max(min(w_cur, 480), 48)
         w_cur = w_cur + w_cur % 2
         #
         if w_cur != w_pre:
             h_cur = int(float(h_bsc)/float(w_bsc)*w_cur)
             self._set_item_frame_size_(w_cur, h_cur)
             self._set_all_item_widgets_update_()
+            #
+            self._refresh_viewport_showable_auto_()
 
     def eventFilter(self, *args):
         widget, event = args
@@ -112,13 +115,13 @@ class QtListWidget(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_utility.QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_entry.QtEntryFrame):
                     parent._set_focused_(True)
                 self.focus_changed.emit()
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_utility.QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_entry.QtEntryFrame):
                     parent._set_focused_(False)
                 self.focus_changed.emit()
         if widget == self.verticalScrollBar():
@@ -256,11 +259,13 @@ class QtListWidget(
         ]
         self.item_checked.emit(self, 0)
 
-    def _set_view_mode_swap_(self):
+    def _swap_view_mode_(self):
         if self._get_is_grid_mode_() is True:
             self._set_list_mode_()
         else:
             self._set_grid_mode_()
+
+        self._refresh_viewport_showable_auto_()
 
     def _get_is_grid_mode_(self):
         return self.viewMode() == self.IconMode

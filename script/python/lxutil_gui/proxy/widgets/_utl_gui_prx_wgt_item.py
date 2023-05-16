@@ -175,7 +175,7 @@ class PrxTreeItem(
         #
         self._gui_menu_raw = []
         self._menu_title = None
-
+        #
         self._loading_item_prx = None
     @property
     def item(self):
@@ -253,17 +253,16 @@ class PrxTreeItem(
         return [i.gui_proxy for i in self.widget._get_descendants_()]
 
     def get_gui_menu_raw(self):
-        return self._gui_menu_raw
+        return self._qt_widget._get_menu_data_()
 
     def set_gui_menu_raw(self, raw):
-        if isinstance(raw, list):
-            self._gui_menu_raw = raw
+        self._qt_widget._set_menu_data_(raw)
 
     def set_gui_menu_raw_append(self, raw):
-        self._gui_menu_raw.append(raw)
+        self._qt_widget._add_menu_data_(raw)
 
     def set_gui_menu_raw_extend(self, raw):
-        self._gui_menu_raw.extend(raw)
+        self._qt_widget._extend_menu_data_(raw)
 
     def set_tool_tip(self, raw, column=0):
         self.widget._set_tool_tip_(raw, column)
@@ -502,7 +501,7 @@ class PrxTreeItem(
             user_data
         )
 
-    def _set_filter_occurrence_(self, boolean, column=0):
+    def _set_item_filter_occurrence_(self, boolean, column=0):
         _ = self.widget.data(column, utl_gui_qt_core.QtCore.Qt.UserRole)
         if isinstance(_, dict):
             user_data = _
@@ -730,7 +729,7 @@ class PrxListItem(
     item = property(get_item)
 
     def set_gui_menu_raw(self, raw):
-        self.widget._set_menu_raw_(raw)
+        self.widget._set_menu_data_(raw)
 
     def set_index(self, index):
         self.widget._set_index_(index)
@@ -775,7 +774,7 @@ class PrxListItem(
     def set_icon_size(self, w, h):
         self.widget._set_icon_size_(w, h)
 
-    def set_sort_text_key(self, text):
+    def set_sort_name_key(self, text):
         self._qt_widget._set_sort_name_key_(text)
 
     def set_name(self, name_text):

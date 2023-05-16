@@ -94,7 +94,7 @@ class S(QtWidgets.QGraphicsView):
                 else:
                     event.ignore()
                 #
-                self._set_action_flag_clear_()
+                self._clear_action_flag_()
             #
             elif event.type() == QtCore.QEvent.Wheel:
                 self._set_scale_(event)

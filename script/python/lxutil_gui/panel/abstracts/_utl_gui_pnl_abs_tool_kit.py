@@ -18,16 +18,17 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
         super(AbsPnlToolKit, self).__init__(session, *args, **kwargs)
 
     def set_all_setup(self):
-        self._tool_bar = prx_widgets.PrxHToolBar()
-        self.set_widget_add(self._tool_bar)
-        self._tool_bar.set_expanded(True)
+        self._top_prx_tool_bar = prx_widgets.PrxHToolBar()
+        self.set_widget_add(self._top_prx_tool_bar)
+        self._top_prx_tool_bar.set_expanded(True)
+        self._top_prx_tool_bar.set_alignment_left()
 
         self._switch_tool_box = prx_widgets.PrxHToolBox()
-        self._tool_bar.set_widget_add(self._switch_tool_box)
+        self._top_prx_tool_bar.set_widget_add(self._switch_tool_box)
         self._switch_tool_box.set_expanded(True)
 
         self._filter_tool_box = prx_widgets.PrxHToolBox()
-        self._tool_bar.set_widget_add(self._filter_tool_box)
+        self._top_prx_tool_bar.set_widget_add(self._filter_tool_box)
         self._filter_tool_box.set_size_mode(1)
 
         self._filter_bar = prx_widgets.PrxFilterBar()

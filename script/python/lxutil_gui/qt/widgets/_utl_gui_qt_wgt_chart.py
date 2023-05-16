@@ -11,8 +11,8 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
 class QtColorChooseChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtWidgetDef,
-    utl_gui_qt_abstract.AbsQtActionDef,
-    utl_gui_qt_abstract.AbsQtChartDef,
+    utl_gui_qt_abstract.AbsQtActionBaseDef,
+    utl_gui_qt_abstract.AbsQtChartBaseDef,
 ):
     def _refresh_widget_draw_(self):
         pass
@@ -121,8 +121,8 @@ class QtColorChooseChart(
         )
         #
         self._init_widget_def_(self)
-        self._init_action_def_(self)
-        self._set_chart_def_init_()
+        self._init_action_base_def_(self)
+        self._init_chart_base_def_(self)
         self._set_build_()
     #
     def paintEvent(self, event):
@@ -261,7 +261,7 @@ class QtColorChooseChart(
                     # Circle
                     self._circle_angle_temp = self._color_h_offset
                     self._circle_flag = True
-                self._set_action_flag_clear_()
+                self._clear_action_flag_()
             elif event.type() == QtCore.QEvent.Wheel:
                 self._set_action_flag_(
                     self.ActionFlag.ZoomWheel
@@ -573,7 +573,7 @@ class QtInfoChart(
 
 class QtWaitingChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtChartDef,
+    utl_gui_qt_abstract.AbsQtChartBaseDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -611,7 +611,7 @@ class QtWaitingChart(
         #
         self.installEventFilter(self)
 
-        self._set_chart_def_init_()
+        self._init_chart_base_def_(self)
        
         self._waiting_draw_radius = 64
         self._waiting_draw_item_radius = 12
@@ -690,7 +690,7 @@ class QtWaitingChart(
 
 class QtSectorChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtChartDef
+    utl_gui_qt_abstract.AbsQtChartBaseDef
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -721,7 +721,7 @@ class QtSectorChart(
         #
         self.installEventFilter(self)
         #
-        self._set_chart_def_init_()
+        self._init_chart_base_def_(self)
 
     def eventFilter(self, *args):
         widget, event = args
@@ -754,7 +754,7 @@ class QtSectorChart(
 
 class QtRadarChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtChartDef
+    utl_gui_qt_abstract.AbsQtChartBaseDef
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -795,7 +795,7 @@ class QtRadarChart(
         self._rim_background_color = 39, 39, 39, 255
         self._rim_border_color = 95, 95, 95, 255
         #
-        self._set_chart_def_init_()
+        self._init_chart_base_def_(self)
 
     def eventFilter(self, *args):
         widget, event = args
@@ -868,7 +868,7 @@ class QtRadarChart(
 
 class QtPieChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtChartDef
+    utl_gui_qt_abstract.AbsQtChartBaseDef
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -947,7 +947,7 @@ class QtPieChart(
         self._current_value = None
         self._pen = QtGui.QPen(QtGui.QColor(223, 223, 223, 255))
         #
-        self._set_chart_def_init_()
+        self._init_chart_base_def_(self)
 
     def eventFilter(self, *args):
         widget, event = args
@@ -1020,7 +1020,7 @@ class QtHistogramChart(
     utl_gui_qt_abstract.AbsQtTrackActionDef,
     utl_gui_qt_abstract.AbsQtZoomActionDef,
     #
-    utl_gui_qt_abstract.AbsQtChartDef,
+    utl_gui_qt_abstract.AbsQtChartBaseDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -1075,7 +1075,7 @@ class QtHistogramChart(
         #
         self._set_zoom_action_def_init_(self)
         #
-        self._set_chart_def_init_()
+        self._init_chart_base_def_(self)
         #
         self._set_build_()
 
@@ -1217,7 +1217,7 @@ class QtHistogramChart(
 class QtSequenceChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtNameDef,
-    utl_gui_qt_abstract.AbsQtChartDef,
+    utl_gui_qt_abstract.AbsQtChartBaseDef,
     utl_gui_qt_abstract.AbsQtStatusDef,
     #
     utl_gui_qt_abstract.AbsQtMenuDef,
@@ -1289,8 +1289,8 @@ class QtSequenceChart(
         #
         self._set_build_()
         #
-        self._init_name_def_()
-        self._set_chart_def_init_()
+        self._init_name_def_(self)
+        self._init_chart_base_def_(self)
         self._set_status_def_init_()
         #
         self._init_menu_def_()

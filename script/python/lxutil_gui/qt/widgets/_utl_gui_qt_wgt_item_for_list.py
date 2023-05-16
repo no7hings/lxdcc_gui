@@ -22,9 +22,9 @@ class _QtListItemWidget(
     utl_gui_qt_abstract.AbsQtIconsDef,
     utl_gui_qt_abstract.AbsQtNamesDef,
     #
-    utl_gui_qt_abstract.AbsQtActionDef,
+    utl_gui_qt_abstract.AbsQtActionBaseDef,
     utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionCheckDef,
+    utl_gui_qt_abstract.AbsQtActionForCheckDef,
     utl_gui_qt_abstract.AbsQtActionForPressDef,
     utl_gui_qt_abstract.AbsQtActionSelectDef,
     utl_gui_qt_abstract.AbsQtActionDragDef,
@@ -46,26 +46,6 @@ class _QtListItemWidget(
         # noinspection PyUnresolvedReferences
         self.update()
 
-    def _execute_action_hover_(self, event):
-        p = event.pos()
-        self._check_is_hovered = False
-        self._press_is_hovered = False
-        if self._check_action_is_enable is True:
-            if self._check_action_rect.contains(p):
-                self._check_is_hovered = True
-            else:
-                self._press_is_hovered = True
-        else:
-            self._press_is_hovered = True
-        #
-        self._refresh_widget_draw_()
-
-    def _get_check_action_is_valid_(self, event):
-        if self._check_action_is_enable is True:
-            p = event.pos()
-            return self._check_action_rect.contains(p)
-        return False
-
     def __init__(self, *args, **kwargs):
         super(_QtListItemWidget, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -73,22 +53,22 @@ class _QtListItemWidget(
         self.setMouseTracking(True)
         #
         self._set_frame_def_init_()
-        self._init_type_def_()
+        self._init_type_def_(self)
         self._set_index_def_init_()
-        self._init_icon_def_()
+        self._init_icon_def_(self)
         self._set_icons_def_init_()
         self._set_image_def_init_()
         self._set_names_def_init_()
         self._init_menu_def_()
         self._set_movie_def_init_()
         #
-        self._init_action_hover_def_()
-        self._init_action_def_(self)
-        self._init_action_check_def_(self)
+        self._init_action_for_hover_def_(self)
+        self._init_action_base_def_(self)
+        self._init_action_for_check_def_(self)
         self._check_icon_file_path_0 = utl_gui_core.RscIconFile.get('filter_unchecked')
         self._check_icon_file_path_1 = utl_gui_core.RscIconFile.get('filter_checked')
         self._check_icon_file_path_current = self._check_icon_file_path_0
-        self._set_action_press_def_init_()
+        self._init_action_for_press_def_(self)
         self._set_action_select_def_init_()
         self._init_action_drag_def_(self)
         #
@@ -121,10 +101,6 @@ class _QtListItemWidget(
         self._sort_number_key = 0
 
         self._drag = None
-
-    def _set_drag_enable_(self, boolean):
-        super(_QtListItemWidget, self)._set_drag_enable_(boolean)
-        self.setAcceptDrops(True)
 
     def eventFilter(self, *args):
         widget, event = args
@@ -183,13 +159,13 @@ class _QtListItemWidget(
                     self._set_action_press_db_click_emit_send_()
                 #
                 self._set_pressed_(False)
-                self._set_action_flag_clear_()
+                self._clear_action_flag_()
             #
             elif event.type() == QtCore.QEvent.ChildAdded:
                 self._execute_drag_pressed_((self._drag_mime_data, ))
                 #
                 self._set_pressed_(False)
-                self._set_action_flag_clear_()
+                self._clear_action_flag_()
             elif event.type() == QtCore.QEvent.ChildRemoved:
                 pass
         else:
@@ -240,12 +216,13 @@ class _QtListItemWidget(
                 item._item_show_loading_index
             )
         else:
-            painter._draw_frame_by_rect_(
-                rect=shadow_rect,
-                border_color=QtBorderColors.Transparent,
-                background_color=QtBackgroundColors.Shadow,
-                offset=4
-            )
+            if self._icon_frame_draw_enable is True:
+                painter._draw_frame_by_rect_(
+                    rect=shadow_rect,
+                    border_color=QtBorderColors.Transparent,
+                    background_color=QtBackgroundColors.Shadow,
+                    offset=4
+                )
             #
             painter._draw_frame_by_rect_(
                 rect=base_rect,
@@ -403,6 +380,30 @@ class _QtListItemWidget(
                     item._item_show_image_loading_index
                 )
 
+    def _execute_action_hover_(self, event):
+        p = event.pos()
+        self._check_is_hovered = False
+        self._press_is_hovered = False
+        if self._check_action_is_enable is True:
+            if self._check_action_rect.contains(p):
+                self._check_is_hovered = True
+            else:
+                self._press_is_hovered = True
+        else:
+            self._press_is_hovered = True
+        #
+        self._refresh_widget_draw_()
+
+    def _get_check_action_is_valid_(self, event):
+        if self._check_action_is_enable is True:
+            p = event.pos()
+            return self._check_action_rect.contains(p)
+        return False
+
+    def _set_drag_enable_(self, boolean):
+        super(_QtListItemWidget, self)._set_drag_enable_(boolean)
+        self.setAcceptDrops(True)
+
     def _execute_drag_pressed_(self, *args, **kwargs):
         self.drag_pressed.emit(
             args[0]
@@ -479,47 +480,50 @@ class _QtListItemWidget(
     def _set_widget_frame_geometry_update_as_grid_mode_(self, pos, size):
         x, y = pos
         w, h = size
-        f_spacing = self._frame_spacing
+        frm_s = self._frame_spacing
+        # name
+        name_bsc_w, name_bsc_h = 0, -frm_s
         if self._get_has_names_() is True:
             name_f_w, name_f_h = self._name_frame_size
             name_c = len(self._get_name_indices_())
             if self._names_draw_range is not None:
                 name_c = len(self._get_name_indices_()[self._names_draw_range[0]:self._names_draw_range[1]])
             #
-            name_w_, name_h_ = w, name_c*name_f_h
-            name_x_, name_y_ = x, y+h-name_h_
+            name_bsc_w, name_bsc_h = w, name_c*name_f_h
+            name_x_, name_y_ = x, y+h-name_bsc_h
             #
             self._name_frame_draw_rect.setRect(
                 name_x_, name_y_,
-                name_w_, name_h_
+                name_bsc_w, name_bsc_h
             )
-        else:
-            name_w_, name_h_ = 0, -f_spacing
-        #
+        # icon
+        icon_bsc_w, icon_bsc_h = -frm_s, 0
         if self._get_has_icons_() is True or self._check_is_enable is True:
             #
             icn_frm_w, icn_frm_h = self._icon_frame_draw_size
             icn_x_, icn_y_ = x, y
             # add when check is enable
             icn_c = self._get_icon_count_()+[0, 1][self._check_is_enable]
-            icn_h_ = h-name_h_-f_spacing
-            c_0 = int(float(icn_h_)/icn_frm_h)
-            c_1 = math.ceil(float(icn_c)/c_0)
-            # grid to
-            icn_w_, icn_h_ = icn_frm_w*c_1, icn_h_
-            #
-            self._icon_frame_draw_rect.setRect(
-                icn_x_, icn_y_,
-                icn_w_, icn_h_
-            )
-        else:
-            icn_w_, icn_h_ = -f_spacing, 0
-        #
+            icon_bsc_h = h-name_bsc_h-frm_s
+            c_0 = int(float(icon_bsc_h)/float(icn_frm_h))
+            if c_0 > 0:
+                c_1 = math.ceil(float(icn_c)/c_0)
+                icon_bsc_w, icon_bsc_h = icn_frm_w*c_1, icon_bsc_h
+                #
+                self._icon_frame_draw_rect.setRect(
+                    icn_x_, icn_y_,
+                    icon_bsc_w, icon_bsc_h
+                )
+            else:
+                self._icon_frame_draw_rect.setRect(
+                    -40, -40, 20, 20
+                )
+        # image
         if self._get_has_image_() is True:
-            image_x_, image_y_ = x+icn_w_+f_spacing, y
-            image_w_, image_h_ = w-(icn_w_+f_spacing), h-(name_h_+f_spacing)
+            image_x_, image_y_ = x+icon_bsc_w+frm_s, y
+            image_bsc_w, image_bsc_h = w-(icon_bsc_w+frm_s), h-(name_bsc_h+frm_s)
             self._image_frame_rect.setRect(
-                image_x_, image_y_, image_w_, image_h_
+                image_x_, image_y_, image_bsc_w, image_bsc_h
             )
 
     def _set_widget_frame_geometry_update_as_list_mode_(self, pos, size):
@@ -527,41 +531,46 @@ class _QtListItemWidget(
         w, h = size
         width, height = self.width(), self.height()
         f_side = self._frame_side
-        f_spacing = self._frame_spacing
+        frm_s = self._frame_spacing
+        #
+        # icon
+        icon_bsc_w, icon_bsc_h = -frm_s, 0
         if self._get_has_icons_() is True or self._check_is_enable is True:
             icn_frm_w, icn_frm_h = self._icon_frame_draw_size
             icn_x_, icn_y_ = x, y
             # add when check is enable
             icn_c = self._get_icon_count_() + [0, 1][self._check_is_enable]
-            icn_h_ = h
-            c_0 = int(float(icn_h_) / icn_frm_h)
-            c_1 = math.ceil(float(icn_c) / c_0)
-            # grid to
-            icn_w_, icn_h_ = icn_frm_w*c_1, icn_h_
-            #
-            self._icon_frame_draw_rect.setRect(
-                icn_x_, icn_y_,
-                icn_w_, icn_h_
-            )
-        else:
-            icn_w_, icn_h_ = -f_spacing, 0
+            icon_bsc_h = h
+            c_0 = int(float(icon_bsc_h)/icn_frm_h)
+            if c_0 > 0:
+                c_1 = math.ceil(float(icn_c) / c_0)
+                # grid to
+                icon_bsc_w, icon_bsc_h = icn_frm_w*c_1, icon_bsc_h
+                #
+                self._icon_frame_draw_rect.setRect(
+                    icn_x_, icn_y_,
+                    icon_bsc_w, icon_bsc_h
+                )
+            else:
+                self._icon_frame_draw_rect.setRect(
+                    -40, -40, 20, 20
+                )
         #
+        image_bsc_w, image_bsc_h = -frm_s, 0
         if self._get_has_image_() is True:
-            image_x_, image_y_ = x+(icn_w_+f_spacing), y
-            image_w_, image_h_ = w-(icn_w_+f_spacing), h
+            image_x_, image_y_ = x+(icon_bsc_w+frm_s), y
+            image_bsc_w, image_bsc_h = w-(icon_bsc_w+frm_s), h
             self._image_frame_rect.setRect(
-                image_x_, image_y_, image_w_, image_h_
+                image_x_, image_y_, image_bsc_w, image_bsc_h
             )
-        else:
-            image_w_, image_h_ = -f_spacing, 0
         #
         if self._get_has_names_() is True:
-            name_x_, name_y_ = x+(icn_w_+f_spacing)+(image_w_+f_spacing), y
-            name_w_, name_h_ = width-(icn_w_+f_spacing)-(image_w_+f_spacing)-f_side*2, h
+            name_x_, name_y_ = x+(icon_bsc_w+frm_s)+(image_bsc_w+frm_s), y
+            name_bsc_w, name_bsc_h = width-(icon_bsc_w+frm_s)-(image_bsc_w+frm_s)-f_side*2, h
             #
             self._name_frame_draw_rect.setRect(
                 name_x_, name_y_,
-                name_w_, name_h_
+                name_bsc_w, name_bsc_h
             )
 
     def _refresh_widget_icon_draw_geometries_(self):

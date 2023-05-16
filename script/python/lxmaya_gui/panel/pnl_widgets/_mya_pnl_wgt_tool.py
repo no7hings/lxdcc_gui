@@ -41,7 +41,6 @@ class PnlGeometryExporter(prx_widgets.PrxSessionToolWindow):
         )
 
         self.post_setup_fnc()
-
         self.refresh_components()
 
     def post_setup_fnc(self):
@@ -163,9 +162,9 @@ class PnlGeometryExporter(prx_widgets.PrxSessionToolWindow):
         )
 
 
-class PnlGeometryImporter(prx_widgets.PrxSessionToolWindow):
+class PnlGeometryBuilder(prx_widgets.PrxSessionToolWindow):
     def __init__(self, session, *args, **kwargs):
-        super(PnlGeometryImporter, self).__init__(session, *args, **kwargs)
+        super(PnlGeometryBuilder, self).__init__(session, *args, **kwargs)
 
     def set_all_setup(self):
         self._options_prx_node = prx_widgets.PrxNode_('options')
@@ -173,6 +172,13 @@ class PnlGeometryImporter(prx_widgets.PrxSessionToolWindow):
         self._options_prx_node.create_ports_by_configure(
             self._session.configure.get('build.node.options'),
         )
+        # tip
+        self._tip_group = prx_widgets.PrxExpandedGroup()
+        self.set_widget_add(self._tip_group)
+        self._tip_group.set_expanded(True)
+        self._tip_group.set_name('tips')
+        self._tip_text_browser = prx_widgets.PrxTextBrowser()
+        self._tip_group.set_widget_add(self._tip_text_browser)
 
         self.post_setup_fnc()
 
@@ -200,6 +206,7 @@ class PnlGeometryImporter(prx_widgets.PrxSessionToolWindow):
 
             o.set('geometry.import', self.import_geometry_fnc)
             o.set('geometry_uv_map.import', self.import_geometry_uv_map_fnc)
+            self._tip_text_browser.set_content(self._session.gui_configure.get('content'))
         else:
             utl_core.DialogWindow.set_create(
                 session.gui_name,
@@ -283,9 +290,9 @@ class PnlGeometryImporter(prx_widgets.PrxSessionToolWindow):
         ).execute()
 
 
-class PnlLookImporter(prx_widgets.PrxSessionToolWindow):
+class PnlLookBuilder(prx_widgets.PrxSessionToolWindow):
     def __init__(self, session, *args, **kwargs):
-        super(PnlLookImporter, self).__init__(session, *args, **kwargs)
+        super(PnlLookBuilder, self).__init__(session, *args, **kwargs)
 
     def set_all_setup(self):
         self._options_prx_node = prx_widgets.PrxNode_('options')
@@ -293,6 +300,13 @@ class PnlLookImporter(prx_widgets.PrxSessionToolWindow):
         self._options_prx_node.create_ports_by_configure(
             self._session.configure.get('build.node.options'),
         )
+        # tip
+        self._tip_group = prx_widgets.PrxExpandedGroup()
+        self.set_widget_add(self._tip_group)
+        self._tip_group.set_expanded(True)
+        self._tip_group.set_name('tips')
+        self._tip_text_browser = prx_widgets.PrxTextBrowser()
+        self._tip_group.set_widget_add(self._tip_text_browser)
 
         self.post_setup_fnc()
 
@@ -321,6 +335,7 @@ class PnlLookImporter(prx_widgets.PrxSessionToolWindow):
             o.set('look.import_render', self.import_look_render_fnc)
             o.set('look.import_preview', self.import_look_preview_fnc)
             o.set('geometry_uv_map.import', self.import_geometry_uv_map_fnc)
+            self._tip_text_browser.set_content(self._session.gui_configure.get('content'))
         else:
             utl_core.DialogWindow.set_create(
                 session.gui_name,
@@ -363,7 +378,7 @@ class PnlLookImporter(prx_widgets.PrxSessionToolWindow):
                 project=self._rsv_task.get('project'),
                 asset=self._rsv_task.get('asset'),
                 #
-                with_look=False,
+                with_look=True,
                 #
                 with_surface_preview=True,
                 surface_space=kwargs.get('look.surface.space'),

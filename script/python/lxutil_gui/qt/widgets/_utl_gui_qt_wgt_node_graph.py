@@ -10,7 +10,7 @@ from lxutil_gui.qt.utl_gui_qt_core import *
 
 import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item_for_tree, _utl_gui_qt_wgt_view_for_tree
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry, _utl_gui_qt_wgt_item_for_tree, _utl_gui_qt_wgt_view_for_tree
 
 
 class _NGLayoutFlag(enum.IntEnum):
@@ -516,7 +516,7 @@ class _QtNGConnection(
     QtWidgets.QWidget,
     AbsQtNGConnectionDef,
     #
-    utl_gui_qt_abstract.AbsQtActionDef,
+    utl_gui_qt_abstract.AbsQtActionBaseDef,
     utl_gui_qt_abstract.AbsQtActionForHoverDef,
     utl_gui_qt_abstract.AbsQtActionForPressDef,
     #
@@ -615,9 +615,9 @@ class _QtNGConnection(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
         )
 
-        self._init_action_def_(self)
-        self._init_action_hover_def_()
-        self._set_action_press_def_init_()
+        self._init_action_base_def_(self)
+        self._init_action_for_hover_def_(self)
+        self._init_action_for_press_def_(self)
         self._set_action_select_def_init_()
 
         self._set_ng_connection_def_init_(self)
@@ -871,7 +871,7 @@ class _QtNGNode(
     #
     AbsQtBypassDef,
     #
-    utl_gui_qt_abstract.AbsQtActionDef,
+    utl_gui_qt_abstract.AbsQtActionBaseDef,
     utl_gui_qt_abstract.AbsQtActionForHoverDef,
     utl_gui_qt_abstract.AbsQtActionForPressDef,
     #
@@ -891,15 +891,15 @@ class _QtNGNode(
         )
 
         self._set_frame_def_init_()
-        self._init_type_def_()
-        self._init_name_def_()
-        self._init_icon_def_()
+        self._init_type_def_(self)
+        self._init_name_def_(self)
+        self._init_icon_def_(self)
         self._set_image_def_init_()
         self._init_menu_def_()
         #
-        self._init_action_def_(self)
-        self._init_action_hover_def_()
-        self._set_action_press_def_init_()
+        self._init_action_base_def_(self)
+        self._init_action_for_hover_def_(self)
+        self._init_action_for_press_def_(self)
         self._set_action_select_def_init_()
 
         self._set_ng_node_def_init_(self)
@@ -1082,7 +1082,7 @@ class _QtNGNode(
                 else:
                     event.ignore()
                 #
-                self._set_action_flag_clear_()
+                self._clear_action_flag_()
         return False
 
     def paintEvent(self, event):
@@ -1177,7 +1177,7 @@ class _QtNGGraph(
     utl_gui_qt_abstract.AbsQtDrawGridDef,
     AbsQtNGGraphSbjDef,
     #
-    utl_gui_qt_abstract.AbsQtActionDef,
+    utl_gui_qt_abstract.AbsQtActionBaseDef,
     AbsQtActionRectSelectDef,
     AbsQtActionFrameDef,
     #
@@ -1201,7 +1201,7 @@ class _QtNGGraph(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
         )
         #
-        self._init_action_def_(self)
+        self._init_action_base_def_(self)
         self._set_action_rect_select_def_init_(self)
         self._set_action_frame_def_init_(self)
         #
@@ -1363,7 +1363,7 @@ class _QtNGGraph(
                 else:
                     event.ignore()
                 #
-                self._set_action_flag_clear_()
+                self._clear_action_flag_()
             #
             elif event.type() == QtCore.QEvent.Wheel:
                 self._set_ng_action_graph_scale_execute_(event)
@@ -1371,12 +1371,12 @@ class _QtNGGraph(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_utility.QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_entry.QtEntryFrame):
                     parent._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_utility.QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_entry.QtEntryFrame):
                     parent._set_focused_(False)
         return False
 
@@ -1939,6 +1939,7 @@ class _QtNGTree(
     _utl_gui_qt_wgt_view_for_tree.QtTreeWidget,
     AbsQtNGUniverseDef
 ):
+    QT_MENU_CLASS = _utl_gui_qt_wgt_utility.QtMenu
     def _set_ng_universe_(self, universe):
         self._ng_node_universe = universe
         obj = self._ng_node_universe.get_objs()

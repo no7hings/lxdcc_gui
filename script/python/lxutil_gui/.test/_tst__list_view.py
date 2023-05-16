@@ -1,4 +1,6 @@
 # coding:utf-8
+import collections
+
 from lxbasic import bsc_core
 
 from lxutil_gui.qt import utl_gui_qt_core
@@ -52,14 +54,24 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
 
             item_prx = wdt.set_item_add()
             item_prx.set_show_method(show_fnc_)
+            item_prx.set_check_enable(True)
             item_prx.set_drag_enable(True)
+            item_prx.set_name_dict(
+                collections.OrderedDict(
+                    [
+                        ('type', 'test'),
+                        ('name', 'test'),
+                        ('tag', 'test'),
+                    ]
+                )
+            )
             item_prx.set_drag_data(
                 {
-                    'nodegraph/nodes': 'stained_concrete_wall_vdxicg2',
+                    # 'nodegraph/nodes': 'stained_concrete_wall_vdxicg2',
                     # 'nodegraph/noderefs': 'rootNode',
                     # 'python/text': 'NodegraphAPI.GetNode(\'worn_painted_wall_vjyifef\')',
                     # 'python/GetGeometryProducer': 'Nodes3DAPI.GetGeometryProducer(NodegraphAPI.GetNode(\'worn_painted_wall_vjyifef\'))',
-                    # 'nodegraph/fileref': '/data/f/katana_drop_test/test_1.katana',
+                    'nodegraph/fileref': '/l/resource/td/asset/scene/empty.katana',
                     # 'application/x-maya-data': ''
                 }
             )
@@ -71,8 +83,16 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
             )
         #
         wdt = _utl_gui_prx_wgt_view_for_list.PrxListView()
+        wdt.get_top_tool_bar().set_expanded(True)
         # wdt.set_draw_enable(True)
-        wdt.set_item_icon_frame_size(30, 30)
+        wdt.set_item_icon_frame_draw_enable(True)
+        wdt.set_item_image_frame_draw_enable(True)
+        wdt.set_item_name_frame_draw_enable(True)
+        wdt.get_check_tool_box().set_visible(True)
+        wdt.set_item_names_draw_range([None, 1])
+        wdt.get_scale_switch_tool_box().set_visible(True)
+        wdt.set_item_frame_size_basic(96, 72)
+        wdt.set_item_icon_frame_size(20, 20)
         wdt.set_item_icon_size(20, 20)
         wdt.set_clear()
         self.set_widget_add(wdt)
@@ -81,10 +101,12 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
 
     def _drag_pressed_fnc_(self, *args, **kwargs):
         print args[0]
+        print 'failed'
 
     def _drag_released_fnc_(self, *args, **kwargs):
         flag, mime_data = args[0]
         print mime_data.data('nodegraph/noderefs').data()
+        print 'completed'
 
 
 if __name__ == '__main__':

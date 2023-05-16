@@ -37,7 +37,6 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
         file_path = ktn_dcc_objects.Scene.get_current_file_path()
         self._options_prx_node.set('scene', file_path)
         self._options_prx_node.get_port('scene').set_locked(True)
-
         self._result_list_view.connect_refresh_action_to(self.set_refresh_all)
 
     def set_refresh_all(self):
@@ -189,6 +188,9 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
         # print path, semantic_tag_filter_data
         prx_item.set_gui_dcc_obj(
             render_node_opt, namespace=self.DCC_NAMESPACE
+        )
+        prx_item.set_keyword_filter_keys_tgt(
+            {render_node_opt.get_name()}
         )
         prx_item.set_show_fnc(
             cache_fnc_, build_fnc_

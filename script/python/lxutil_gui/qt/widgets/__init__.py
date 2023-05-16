@@ -1,6 +1,8 @@
 # coding:utf-8
 from ._utl_gui_qt_wgt_utility import *
 
+from ._utl_gui_qt_wgt_resize import *
+
 from ._utl_gui_qt_wgt_split import *
 
 from ._utl_gui_qt_wgt_entry import *
@@ -8,6 +10,8 @@ from ._utl_gui_qt_wgt_entry import *
 from ._utl_gui_qt_wgt_popup import *
 
 from ._utl_gui_qt_wgt_guide import *
+
+from ._utl_gui_qt_wgt_filter import *
 
 from ._utl_gui_qt_wgt_item import *
 

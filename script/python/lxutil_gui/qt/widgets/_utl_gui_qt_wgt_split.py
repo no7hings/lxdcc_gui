@@ -14,7 +14,7 @@ class _AbsQtSplitterHandle(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameDef,
     #
-    utl_gui_qt_abstract.AbsQtActionDef,
+    utl_gui_qt_abstract.AbsQtActionBaseDef,
     utl_gui_qt_abstract.AbsQtActionForHoverDef,
     utl_gui_qt_abstract.AbsQtActionForPressDef,
     #
@@ -28,28 +28,26 @@ class _AbsQtSplitterHandle(
         x, y = 0, 0
         w, h = self.width(), self.height()
         #
-        f_s = 4
-        #
-        b_s = 30
-        #
         if self._get_orientation_() == QtCore.Qt.Horizontal:
+            r_w, r_h = 8, 16
             self._frame_draw_rects[0].setRect(
-                x+(w-f_s)/2, y,
-                f_s, h/2-b_s
+                x+(w-r_w)/2, y+h/4,
+                r_w, r_h
             )
             self._frame_draw_rects[1].setRect(
-                x+(w-f_s)/2, y+h/2+b_s,
-                f_s, h/2-b_s
+                x+(w-r_w)/2, h-h/4-r_h,
+                r_w, r_h
             )
             self._set_frame_draw_rect_(x+1, y, w-3, h)
         elif self._get_orientation_() == QtCore.Qt.Vertical:
+            r_w, r_h = 16, 8
             self._frame_draw_rects[0].setRect(
-                x, y+(h-f_s)/2,
-                w/2-b_s, f_s
+                x+w/4, y+(h-r_h)/2,
+                r_w, r_h
             )
             self._frame_draw_rects[1].setRect(
-                x+w/2+b_s, y+(h-f_s)/2,
-                w/2-b_s, f_s
+                w-w/4-r_w, y+(h-r_h)/2,
+                r_w, r_h
             )
             self._set_frame_draw_rect_(x, y+1, w, h-3)
 
@@ -90,17 +88,19 @@ class _AbsQtSplitterHandle(
         layout.setContentsMargins(*[0]*4)
         layout.setSpacing(2)
         self._contract_l_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+        self._contract_l_button._set_name_text_('contact')
         self._contract_l_button._set_icon_frame_draw_size_(*self._contract_frame_size)
         self._contract_l_button._set_icon_file_draw_percent_(1.0)
         self._contract_l_button.setMaximumSize(*self._contract_frame_size)
         self._contract_l_button.setMinimumSize(*self._contract_frame_size)
         layout.addWidget(self._contract_l_button)
         self._contract_l_button.clicked.connect(self._set_contract_l_switch_)
-        self._contract_l_button.setToolTip(
+        self._contract_l_button._set_tool_tip_text_(
             '"LMB-click" to contact left/top.'
         )
         #
         self._swap_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+        self._swap_button._set_name_text_('swap')
         self._swap_button._set_icon_file_path_(utl_gui_core.RscIconFile.get(self._swap_icon_name))
         self._swap_button._set_icon_frame_draw_size_(*self._contract_frame_size)
         self._swap_button._set_icon_file_draw_percent_(1.0)
@@ -108,18 +108,19 @@ class _AbsQtSplitterHandle(
         self._swap_button.setMinimumSize(*self._contract_frame_size)
         layout.addWidget(self._swap_button)
         self._swap_button.clicked.connect(self._set_swap_)
-        self._swap_button.setToolTip(
+        self._swap_button._set_tool_tip_text_(
             '"LMB-click" to swap.'
         )
         #
         self._contract_r_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+        self._contract_r_button._set_name_text_('contact')
         self._contract_r_button._set_icon_frame_draw_size_(*self._contract_frame_size)
         self._contract_r_button._set_icon_file_draw_percent_(1.0)
         self._contract_r_button.setMaximumSize(*self._contract_frame_size)
         self._contract_r_button.setMinimumSize(*self._contract_frame_size)
         layout.addWidget(self._contract_r_button)
         self._contract_r_button.clicked.connect(self._set_contract_r_switch_)
-        self._contract_r_button.setToolTip(
+        self._contract_r_button._set_tool_tip_text_(
             '"LMB-click" to contact right/bottom.'
         )
         #
@@ -129,9 +130,9 @@ class _AbsQtSplitterHandle(
         self._action_is_hovered = False
         #
         self._set_frame_def_init_()
-        self._init_action_hover_def_()
-        self._init_action_def_(self)
-        self._set_action_press_def_init_()
+        self._init_action_for_hover_def_(self)
+        self._init_action_base_def_(self)
+        self._init_action_for_press_def_(self)
         #
         self._set_state_def_init_()
         #
@@ -140,11 +141,14 @@ class _AbsQtSplitterHandle(
 
         self._actioned_frame_border_color = QtBorderColors.Actioned
         self._actioned_frame_background_color = QtBackgroundColors.Actioned
-
         #
         self._frame_draw_rects = [
             QtCore.QRect(), QtCore.QRect()
         ]
+        if self._get_orientation_() == QtCore.Qt.Horizontal:
+            self._resize_icon_file_path = utl_gui_core.RscIconFile.get('resize-handle-v')
+        elif self._get_orientation_() == QtCore.Qt.Vertical:
+            self._resize_icon_file_path = utl_gui_core.RscIconFile.get('resize-handle-h')
 
     def eventFilter(self, *args):
         widget, event = args
@@ -192,7 +196,7 @@ class _AbsQtSplitterHandle(
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 self._set_action_split_move_stop_(event)
                 self._set_pressed_(False)
-                self._set_action_flag_clear_()
+                self._clear_action_flag_()
         return False
 
     def paintEvent(self, event):
@@ -226,10 +230,9 @@ class _AbsQtSplitterHandle(
             background_color = QtBackgroundColors.ButtonDisable
         #
         for i_rect in self._frame_draw_rects:
-            painter._draw_frame_by_rect_(
-                i_rect,
-                border_color=border_color,
-                background_color=background_color,
+            painter._draw_icon_file_by_rect_(
+                rect=i_rect,
+                file_path=self._resize_icon_file_path,
                 offset=offset,
             )
 
@@ -310,9 +313,9 @@ class _AbsQtSplitterHandle(
         pass
 
     def _set_action_split_move_execute_(self, event):
-        self._contract_l_button._set_action_flag_(self.ActionFlag.PressMove)
-        self._contract_r_button._set_action_flag_(self.ActionFlag.PressMove)
-        self._swap_button._set_action_flag_(self.ActionFlag.PressMove)
+        # self._contract_l_button._set_action_flag_(self.ActionFlag.PressMove)
+        # self._contract_r_button._set_action_flag_(self.ActionFlag.PressMove)
+        # self._swap_button._set_action_flag_(self.ActionFlag.PressMove)
         p = event.pos()
         x, y = p.x(), p.y()
         splitter = self._get_splitter_()
@@ -328,9 +331,10 @@ class _AbsQtSplitterHandle(
             splitter._set_adjacent_sizes_(indices, [s_l, s_r])
 
     def _set_action_split_move_stop_(self, event):
-        self._contract_l_button._set_action_flag_clear_()
-        self._contract_r_button._set_action_flag_clear_()
-        self._swap_button._set_action_flag_clear_()
+        pass
+        # self._contract_l_button._clear_action_flag_()
+        # self._contract_r_button._clear_action_flag_()
+        # self._swap_button._clear_action_flag_()
 
 
 class _QtHSplitterHandle(_AbsQtSplitterHandle):

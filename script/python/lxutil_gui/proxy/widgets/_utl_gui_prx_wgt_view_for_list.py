@@ -1,12 +1,15 @@
 # coding:utf-8
+import fnmatch
+
 import collections
+
 import functools
 
 from lxbasic import bsc_core
 
 from lxutil_gui import utl_gui_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_view_for_list
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_view_for_list
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
@@ -21,14 +24,17 @@ class PrxListView(
     #
     utl_gui_prx_abstract.AbsPrxViewVisibleConnectionDef,
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtEntryFrame
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_entry.QtEntryFrame
     QT_VIEW_CLASS = _utl_gui_qt_wgt_view_for_list.QtListWidget
+    #
+    FILTER_MAXIMUM = 50
     def __init__(self, *args, **kwargs):
         super(PrxListView, self).__init__(*args, **kwargs)
         self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
         self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
         self._prx_top_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
+        self._prx_top_tool_bar.set_alignment_left()
         self._qt_layout_0.addWidget(self._prx_top_tool_bar.widget)
         self._prx_top_tool_bar.set_border_radius(1)
         # check
@@ -98,16 +104,20 @@ class PrxListView(
         self._prx_filter_bar = self._prx_filer_bar_0
 
         self._item_dict = collections.OrderedDict()
+        self._filter_completion_cache = None
 
         self.__add_scale_switch_tools()
         self.__add_sort_mode_switch_tools()
 
-        self._prx_filter_bar._qt_widget.entry_changed.connect(
-            self.__keyword_filter_fnc
-        )
         self._prx_filter_bar._qt_widget.user_entry_changed.connect(
-            self.__keyword_filter_fnc
+            self.__keyword_filter_cbk
         )
+        self._qt_view._set_view_keyword_filter_bar_(self._prx_filter_bar._qt_widget)
+        self._prx_filter_bar._qt_widget._set_popup_completion_gain_fnc_(self.__keyword_filter_completion_gain_fnc)
+        self._prx_filter_bar._qt_widget.user_choose_changed.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_current_)
+        self._prx_filter_bar._qt_widget.completion_finished.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_current_)
+        self._prx_filter_bar._qt_widget.occurrence_previous_press_clicked.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_previous_)
+        self._prx_filter_bar._qt_widget.occurrence_next_press_clicked.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_next_)
     @property
     def view(self):
         return self._qt_view
@@ -115,11 +125,35 @@ class PrxListView(
     def filter_bar(self):
         return self._prx_filter_bar
 
-    def __keyword_filter_fnc(self):
+    def __keyword_filter_completion_gain_fnc(self, *args, **kwargs):
+        keyword = args[0]
+        if keyword:
+            # cache fist
+            if self._filter_completion_cache is None:
+                self._filter_completion_cache = list(
+                    set(
+                        map(
+                            lambda x: x.lower(),
+                            [
+                                j for i in self._qt_view._get_all_items_() for j in i._get_keyword_filter_keys_auto_as_split_()
+                            ]
+                        )
+                    )
+                )
+
+            #
+            _ = fnmatch.filter(
+                self._filter_completion_cache, '*{}*'.format(keyword)
+            )
+            return bsc_core.RawTextsMtd.set_sort_by_initial(_)[:self.FILTER_MAXIMUM]
+        return []
+
+    def __keyword_filter_cbk(self):
         self._qt_view._set_view_keyword_filter_data_src_(
-            [self._prx_filter_bar.get_keyword()]
+            self._prx_filter_bar.get_keywords()
         )
-        self._qt_view._set_view_items_visible_by_any_filter_()
+        self._qt_view._refresh_view_items_visible_by_any_filter_()
+        self._qt_view._refresh_viewport_showable_auto_()
 
     def get_check_tool_box(self):
         return self._prx_check_tool_box
@@ -155,7 +189,7 @@ class PrxListView(
         self._scale_switch_tools[-2]._set_checked_(True)
 
     def __switch_view_scale(self, scale):
-        self._qt_view._set_item_size_scale_percent_(scale)
+        self._qt_view._set_item_scale_percent_(scale)
 
     def __add_sort_mode_switch_tools(self):
         self._sort_mode_switch_tools = []
@@ -196,7 +230,7 @@ class PrxListView(
             )
 
     def __swap_view_mode(self):
-        self._qt_view._set_view_mode_swap_()
+        self._qt_view._swap_view_mode_()
         self._view_mode_swap_button._set_icon_file_path_(
             utl_gui_core.RscIconFile.get(['list_mode', 'grid_mode'][self.view._get_is_grid_mode_()])
         )
@@ -280,6 +314,7 @@ class PrxListView(
 
     def set_clear(self):
         self._item_dict.clear()
+        self._filter_completion_cache = None
         self.view._set_clear_()
 
     def _get_all_items_(self):
@@ -316,7 +351,7 @@ class PrxListView(
         self._prx_filter_bar.set_completion_gain_fnc(fnc)
 
     def set_filter_entry_tip(self, text):
-        self._prx_filter_bar.set_entry_tip(text)
+        self._prx_filter_bar.set_tip(text)
 
 
 class PrxImageView(PrxListView):

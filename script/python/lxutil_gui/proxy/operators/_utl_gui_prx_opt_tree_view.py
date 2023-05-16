@@ -675,18 +675,15 @@ class PrxStgObjTreeViewAddOpt(object):
         #
         if obj.get_is_root() is False:
             if obj.get_is_exists() is False:
-                prx_item.set_state(prx_item.State.LOST)
+                prx_item.set_status(prx_item.ValidatorStatus.Disable)
             elif obj.get_is_writeable() is False:
-                prx_item.set_state(prx_item.State.LOCKED)
+                prx_item.set_status(prx_item.ValidatorStatus.Locked)
             else:
-                prx_item.set_state(prx_item.NORMAL_STATE)
+                prx_item.set_status(prx_item.ValidatorStatus.Normal)
                 if obj.get_is_directory() is True:
                     prx_item.set_expanded(True)
         else:
             prx_item.set_expanded(True)
-
-            # if obj.get_is_writeable() is False:
-            #     prx_item.set_state(prx_item.State.LOCKED)
 
         prx_item.set_tool_tips(descriptions)
         #

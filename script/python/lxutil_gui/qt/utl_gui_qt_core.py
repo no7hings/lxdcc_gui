@@ -443,9 +443,7 @@ class QtBorderColors(object):
         *utl_gui_core.QtStyleMtd.get_border('color-button-disable')
     )
 
-    Popup = QtGui.QColor(
-        63, 255, 127, 255
-    )
+    Popup = QtGui.QColor(63, 255, 127, 255)
 
 
 class QtBackgroundColors(object):
@@ -529,6 +527,9 @@ class QtBackgroundColors(object):
         *utl_gui_core.QtStyleMtd.get_background('color-error')
     )
 
+    Bubble = QtGui.QColor(191, 191, 191, 255)
+    BubbleHovered = QtGui.QColor(255, 159, 95, 255)
+
 
 class QtFontColors(object):
     @staticmethod
@@ -569,8 +570,6 @@ class QtFontColors(object):
         *utl_gui_core.QtStyleMtd.get_font('color-value-hovered')
     )
 
-
-
     ToolTip = QtGui.QColor(
         *utl_gui_core.QtStyleMtd.get_font('color-tool-tip')
     )
@@ -593,6 +592,12 @@ class QtFontColors(object):
     Disable = QtGui.QColor(
         *utl_gui_core.QtStyleMtd.get_font('color-disable')
     )
+
+    Bubble = QtGui.QColor(15, 15, 15, 255)
+
+
+class QtStatusColors(object):
+    Locked = QtGui.QColor(127, 127, 255, 255)
 
 
 class QtFonts(object):
@@ -1655,6 +1660,39 @@ class QtHBoxLayout(QtWidgets.QHBoxLayout):
             QtCore.Qt.AlignTop
         )
 
+    def _get_all_widgets_(self):
+        list_ = []
+        layout = self
+        c = layout.count()
+        if c:
+            for i in range(c):
+                item = layout.itemAt(i)
+                if item:
+                    widget = item.widget()
+                    list_.append(widget)
+        return list_
+
+    def _delete_latest_(self):
+        layout = self
+        c = layout.count()
+        if c:
+            item = layout.itemAt(c-1)
+            if item:
+                widget = item.widget()
+                widget.close()
+                widget.deleteLater()
+
+    def _clear_all_widgets_(self):
+        layout = self
+        c = layout.count()
+        if c:
+            for i in range(c):
+                i_item = layout.itemAt(i)
+                if i_item:
+                    i_widget = i_item.widget()
+                    i_widget.close()
+                    i_widget.deleteLater()
+
 
 class QtVBoxLayout(QtWidgets.QVBoxLayout):
     def __init__(self, *args, **kwargs):
@@ -1680,15 +1718,15 @@ class QtGridLayout(QtWidgets.QGridLayout):
     def _get_widget_count_(self):
         return self.count()
 
-    def _clear_widgets_(self):
+    def _clear_all_widgets_(self):
         layout = self
         c = layout.count()
         if c:
             for i in range(c):
-                item = layout.itemAt(i)
-                if item:
-                    widget = item.widget()
-                    widget.deleteLater()
+                i_item = layout.itemAt(i)
+                if i_item:
+                    i_widget = i_item.widget()
+                    i_widget.deleteLater()
 
     def _add_widget_(self, widget, d=2):
         c = self.count()
@@ -2573,9 +2611,11 @@ class QtPainter(QtGui.QPainter):
             color_hovered = background_color
         #
         start_coord, end_coord = rect.topLeft(), rect.bottomLeft()
-        l_color = QtGui.QLinearGradient(start_coord, end_coord)
-        l_color.setColorAt(0, color_hovered)
-        l_color.setColorAt(0.5, background_color)
+        l_color_0 = QtGui.QLinearGradient(start_coord, end_coord)
+        l_color_1 = QtGui.QLinearGradient(start_coord, end_coord)
+        l_color_0.setColorAt(0, color_hovered)
+        l_color_1.setColorAt(0, color_hovered)
+        l_color_0.setColorAt(0.5, background_color)
         #
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
@@ -2608,17 +2648,22 @@ class QtPainter(QtGui.QPainter):
         #
         self._set_border_color_(QtBorderColors.Dim)
         self._set_border_width_(border_width)
-        self._set_background_color_(l_color)
+        self._set_background_color_(l_color_0)
         self._set_path_draw_by_coords_(frame_coords)
         #
         if icon_name_text is not None:
             coords = [
-                (frm_x+frm_w-frm_h, frm_y+frm_h), (frm_x+frm_w-frm_h*2, frm_y), (frm_x+frm_w-frm_h, frm_y), (frm_x+frm_w, frm_y+frm_h),
+                (frm_x+frm_w-frm_h, frm_y+frm_h), (frm_x+frm_w-frm_h*2, frm_y+1), (frm_x+frm_w-frm_h, frm_y+1), (frm_x+frm_w-1, frm_y+frm_h),
                 (frm_x+frm_w-frm_h, frm_y+frm_h),
             ]
             i_r, i_g, i_b = bsc_core.RawTextOpt(icon_name_text).to_rgb_0(s_p=50, v_p=50)
             self._set_border_width_(1)
-            self._set_background_color_(i_r, i_g, i_b)
+            self._set_border_color_(QtBorderColors.Transparent)
+            l_color_1.setColorAt(0.5, QtGui.QColor(i_r, i_g, i_b, a))
+            if is_hovered is True:
+                self._set_background_color_(l_color_1)
+            else:
+                self._set_background_color_(i_r, i_g, i_b)
             self._set_path_draw_by_coords_(coords)
         #
         if text is not None:
@@ -3127,6 +3172,8 @@ class QtPainter(QtGui.QPainter):
             )
         else:
             rect_ = rect
+        #
+        self._set_antialiasing_()
         #
         x, y = rect_.x(), rect_.y()
         width = rect_.width()

@@ -8,7 +8,7 @@ class AbsQtTreeWidget(
     QtWidgets.QTreeWidget,
     _gui_qt_abs_basic.AbsQtMenuDef,
     #
-    _gui_qt_abs_basic.AbsQtViewFilterDef,
+    _gui_qt_abs_basic.AbsQtViewFilterExtraDef,
     #
     _gui_qt_abs_basic.AbsQtViewStateDef,
     _gui_qt_abs_basic.AbsQtViewVisibleConnectionDef,
@@ -28,7 +28,7 @@ class AbsQtTreeWidget(
         #
         self._init_menu_def_()
         #
-        self._set_view_filter_def_init_()
+        self._init_view_filter_extra_def_(self)
         #
         self._set_view_state_def_init_()
         self._set_view_visible_connection_def_init_()
@@ -46,6 +46,10 @@ class AbsQtTreeWidget(
         #
         self._init_waiting_def_(self)
         self.setFont(QtFonts.Default)
+        #
+        self.customContextMenuRequested.connect(
+            self._popup_menu_cbk_
+        )
 
     def _get_all_items_(self, column=0):
         def _rcs_fnc(index_):
@@ -53,7 +57,7 @@ class AbsQtTreeWidget(
                 row_count = model.rowCount()
             else:
                 row_count = model.rowCount(index_)
-                lis.append(self.itemFromIndex(index_))
+                list_.append(self.itemFromIndex(index_))
             #
             for i_row in range(row_count):
                 if index_ is None:
@@ -64,11 +68,11 @@ class AbsQtTreeWidget(
                 if _index.isValid():
                     _rcs_fnc(_index)
 
-        lis = []
+        list_ = []
         model = self.model()
 
         _rcs_fnc(None)
-        return lis
+        return list_
 
     def _get_all_checked_items_(self, column=0):
         def _rcs_fnc(index_):
@@ -140,6 +144,33 @@ class AbsQtTreeWidget(
     def _set_filter_style_(self):
         pass
 
+    def _popup_menu_cbk_(self, *args):
+        indices = self.selectedIndexes()
+        if indices:
+            index = indices[-1]
+            item = self.itemFromIndex(index)
+            menu_raw = item._get_menu_data_()
+            menu_content = item._get_menu_content_()
+        else:
+            menu_raw = self._get_menu_data_()
+            menu_content = self._get_menu_content_()
+        #
+        menu = None
+        #
+        if menu_content:
+            if menu is None:
+                menu = self.QT_MENU_CLASS(self)
+            #
+            menu._set_menu_content_(menu_content)
+            menu._popup_start_()
+        #
+        if menu_raw:
+            if menu is None:
+                menu = self.QT_MENU_CLASS(self)
+            #
+            menu._set_menu_data_(menu_raw)
+            menu._popup_start_()
+
 
 class AbsQtListWidget(
     QtWidgets.QListWidget,
@@ -147,7 +178,7 @@ class AbsQtListWidget(
     _gui_qt_abs_basic.AbsQtViewSelectActionDef,
     _gui_qt_abs_basic.AbsQtViewScrollActionDef,
     #
-    _gui_qt_abs_basic.AbsQtViewFilterDef,
+    _gui_qt_abs_basic.AbsQtViewFilterExtraDef,
     _gui_qt_abs_basic.AbsQtViewStateDef,
     _gui_qt_abs_basic.AbsQtViewVisibleConnectionDef,
     _gui_qt_abs_basic.AbsQtBuildViewDef,
@@ -167,13 +198,13 @@ class AbsQtListWidget(
         self._set_view_select_action_def_init_()
         self._set_view_scroll_action_def_init_()
         #
-        self._set_view_filter_def_init_()
+        self._init_view_filter_extra_def_(self)
         #
         self._set_view_state_def_init_()
         self._set_view_visible_connection_def_init_()
         #
-        self.itemSelectionChanged.connect(self._set_item_select_update_)
-        self.itemSelectionChanged.connect(self._set_item_widget_selected_update_)
+        self.itemSelectionChanged.connect(self._view_item_select_cbk)
+        self.itemSelectionChanged.connect(self._view_item_widget_select_cbk)
         # noinspection PyUnresolvedReferences
         self._get_view_v_scroll_bar_().valueChanged.connect(
             self._refresh_viewport_showable_auto_
@@ -280,10 +311,10 @@ class AbsQtListWidget(
     def _get_checked_item_widgets_(self):
         return [i for i in self._get_all_item_widgets_() if i._get_is_checked_() is True]
 
-    def _set_item_select_update_(self):
+    def _view_item_select_cbk(self):
         pass
 
-    def _set_item_widget_selected_update_(self):
+    def _view_item_widget_select_cbk(self):
         if self._pre_selected_items:
             [self._set_item_widget_selected_(i, False) for i in self._pre_selected_items]
         #
@@ -292,14 +323,15 @@ class AbsQtListWidget(
             [self._set_item_widget_selected_(i, True) for i in selected_items]
             self._pre_selected_items = selected_items
     # scroll
-    def _set_scroll_to_item_top_(self, item):
+    def _scroll_view_to_item_top_(self, item):
         self.scrollToItem(item, self.PositionAtTop)
+        self.setCurrentItem(item)
 
     def _set_scroll_to_selected_item_top_(self):
         selected_items = self._get_selected_items_()
         if selected_items:
             item = selected_items[-1]
-            self._set_scroll_to_item_top_(item)
+            self._scroll_view_to_item_top_(item)
 
     def _get_grid_size_(self):
         s = self.gridSize()
@@ -376,11 +408,11 @@ class AbsQtListWidget(
                 index_pre = indices[idx_pre]
                 item_pre = self.itemFromIndex(index_pre)
                 item_pre.setSelected(True)
-                self._set_scroll_to_item_top_(item_pre)
+                self._scroll_view_to_item_top_(item_pre)
             else:
                 item = self.itemFromIndex(indices[0])
                 item.setSelected(True)
-                self._set_scroll_to_item_top_(item)
+                self._scroll_view_to_item_top_(item)
                 return
 
     def _set_scroll_to_next_item_(self):
@@ -403,11 +435,11 @@ class AbsQtListWidget(
                 index_next = indices[idx_next]
                 item_next = self.itemFromIndex(index_next)
                 item_next.setSelected(True)
-                self._set_scroll_to_item_top_(item_next)
+                self._scroll_view_to_item_top_(item_next)
             else:
                 item = self.itemFromIndex(indices[0])
                 item.setSelected(True)
-                self._set_scroll_to_item_top_(item)
+                self._scroll_view_to_item_top_(item)
                 return
 
     def _set_item_widget_delete_(self, item):

@@ -47,6 +47,10 @@ class AbsPnlRenderSubmitter(prx_widgets.PrxSessionWindow):
         self._result_list_view.set_item_names_draw_range([None, 1])
         self._result_list_view.set_item_image_frame_draw_enable(True)
 
+        self._result_list_view.get_top_tool_bar().set_expanded(True)
+        self._result_list_view.get_check_tool_box().set_visible(True)
+        self._result_list_view.get_scale_switch_tool_box().set_visible(True)
+
         self._result_list_view.connect_item_select_changed_to(
             self.node_selection_fnc
         )

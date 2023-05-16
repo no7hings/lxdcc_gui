@@ -73,7 +73,7 @@ class _PrxPortStatus(utl_gui_prx_abstract.AbsPrxWidget):
 
 # label
 class _PrxPortLabel(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item.QtTextItem
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtTextItem
     def __init__(self, *args, **kwargs):
         super(_PrxPortLabel, self).__init__(*args, **kwargs)
         # self.widget.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignRight | utl_gui_qt_core.QtCore.Qt.AlignVCenter)
@@ -170,7 +170,7 @@ class AbsPrxTypeQtEntry(utl_gui_prx_abstract.AbsPrxWidget):
 
 class _PrxStgObjEntry(AbsPrxTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsEnumerate
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsPopupConstantChoose
     def __init__(self, *args, **kwargs):
         super(_PrxStgObjEntry, self).__init__(*args, **kwargs)
         self._history_key = 'gui.storage'
@@ -886,7 +886,7 @@ class _PrxEntryAsShotgunEntity(
     _AbsShotgunDef
 ):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsEnumerate
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsPopupConstantChoose
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsShotgunEntity, self).__init__(*args, **kwargs)
         self._shotgun_entity_kwargs = {}
@@ -983,7 +983,7 @@ class _PrxEntryAsShotgunEntities(
 
 class _PrxEntryAsRsvProject(AbsPrxTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsEnumerate
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsPopupConstantChoose
     #
     HISTORY_KEY = 'gui.projects'
     def __init__(self, *args, **kwargs):
@@ -1050,7 +1050,7 @@ class _PrxEntryAsRsvProject(AbsPrxTypeQtEntry):
 
 class PrxEntryForSchemeAsChoose(AbsPrxTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsEnumerate
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsPopupConstantChoose
     #
     HISTORY_KEY = 'gui.schemes'
     def __init__(self, *args, **kwargs):
@@ -1187,7 +1187,7 @@ class _PrxEntryAsConstant(AbsPrxTypeQtEntry):
 
 class _PrxEntryAsEnumerate(AbsPrxTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsEnumerate
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsPopupConstantChoose
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsEnumerate, self).__init__(*args, **kwargs)
         #
@@ -1341,7 +1341,7 @@ class _PrxEntryAsFloatTuple(_PrxEntryAsTuple):
 
 
 class _PrxEntryAsRgba(_PrxEntryAsConstant):
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtaValueEntryAsRgba
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsPopupRgbaChoose
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsRgba, self).__init__(*args, **kwargs)
         # self._qt_entry_widget._build_entry_(3, float)
@@ -1428,7 +1428,7 @@ class _PrxEntryAsButton(AbsPrxTypeQtEntry):
             )
 
     def set_menu_raw(self, raw):
-        self._qt_entry_widget._set_menu_raw_(raw)
+        self._qt_entry_widget._set_menu_data_(raw)
 
     def set_option_enable(self, boolean):
         self._qt_entry_widget._set_item_option_click_enable_(boolean)
@@ -1458,7 +1458,7 @@ class PrxSubProcessEntry(AbsPrxTypeQtEntry):
             )
 
     def set_menu_raw(self, raw):
-        self._qt_entry_widget._set_menu_raw_(raw)
+        self._qt_entry_widget._set_menu_data_(raw)
 
     def set_stop(self, raw):
         if isinstance(raw, (types.MethodType, types.FunctionType)):
@@ -1491,7 +1491,7 @@ class PrxValidatorEntry(AbsPrxTypeQtEntry):
             )
 
     def set_menu_raw(self, raw):
-        self._qt_entry_widget._set_menu_raw_(raw)
+        self._qt_entry_widget._set_menu_data_(raw)
 
 
 class _AbsPrxTypeEntry(utl_gui_prx_abstract.AbsPrxWidget):
@@ -1524,7 +1524,8 @@ class _AbsPrxTypeEntry(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_tool_tip(self, *args, **kwargs):
         if hasattr(self._prx_entry_widget._qt_widget, '_set_tool_tip_'):
-            self._prx_entry_widget._qt_widget._set_tool_tip_(args[0], **kwargs)
+            if args[0]:
+                self._prx_entry_widget._qt_widget._set_tool_tip_(args[0], **kwargs)
 
     def set_clear(self):
         pass
@@ -1534,6 +1535,9 @@ class _AbsPrxTypeEntry(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_locked(self, boolean):
         pass
+
+    def set_height(self, h):
+        self._qt_widget.setFixedHeight(h)
 
 
 class _PrxEntryAsRsvObj(_AbsPrxTypeEntry):
@@ -1610,8 +1614,8 @@ class _PrxEntryAsRsvObj(_AbsPrxTypeEntry):
             menu_raw.extend(
                 [
                     ('expanded',),
-                    ('Expand branch', None, prx_item.set_expand_branch),
-                    ('Collapse branch', None, prx_item.set_collapse_branch),
+                    ('expand branch', 'expand', prx_item.set_expand_branch),
+                    ('collapse branch', 'collapse', prx_item.set_collapse_branch),
                 ]
             )
         #
@@ -1781,8 +1785,8 @@ class _PrxEntryAsNodes(_AbsPrxTypeEntry):
             menu_raw.extend(
                 [
                     ('expanded',),
-                    ('Expand branch', None, prx_item.set_expand_branch),
-                    ('Collapse branch', None, prx_item.set_collapse_branch),
+                    ('expand branch', 'expand', prx_item.set_expand_branch),
+                    ('collapse branch', 'collapse', prx_item.set_collapse_branch),
                 ]
             )
         #
@@ -1887,17 +1891,17 @@ class _PrxEntryAsNodes(_AbsPrxTypeEntry):
         )
 
 
+# files
 class _PrxEntryAsFiles(_AbsPrxTypeEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
     PRX_ENTRY_CLASS = _utl_gui_prx_wgt_view_for_tree.PrxTreeView
     NAMESPACE = 'storage'
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsFiles, self).__init__(*args, **kwargs)
-        self.widget.setMaximumHeight(162)
-        self.widget.setMinimumHeight(162)
+        self._qt_widget.setFixedHeight(162)
         self._prx_entry_widget.set_header_view_create(
             [('name', 3), ('update', 1)],
-            480+160
+            320
         )
         self._prx_entry_widget.set_selection_use_single()
         self._prx_entry_widget.set_size_policy_height_fixed_mode()
@@ -1905,11 +1909,15 @@ class _PrxEntryAsFiles(_AbsPrxTypeEntry):
         self._prx_entry_widget.set_resize_enable(True)
         self._prx_entry_widget.set_resize_minimum(82)
         #
+        self._prx_entry_widget.connect_refresh_action_to(self.refresh)
+        #
         self._obj_add_dict = self._prx_entry_widget._item_dict
 
         self._root_location = None
 
         self._view_mode = 'list'
+
+        self._paths = []
 
     def __add_item_comp_as_tree_(self, obj, scheme):
         path = obj.path
@@ -1945,6 +1953,18 @@ class _PrxEntryAsFiles(_AbsPrxTypeEntry):
         return True, prx_item, None
 
     def __set_item_show_deferred_(self, prx_item, scheme, use_as_tree=True):
+        def unlock_folder_fnc_():
+            bsc_core.StgPathPermissionMtd.change_mode(path, mode='777')
+            prx_item.set_status(
+                prx_item.ValidatorStatus.Normal
+            )
+
+        def lock_folder_fnc_():
+            bsc_core.StgPathPermissionMtd.change_mode(path, mode='555')
+            prx_item.set_status(
+                prx_item.ValidatorStatus.Locked
+            )
+
         obj = prx_item.get_gui_dcc_obj(namespace=self.NAMESPACE)
         path = obj.get_path()
         if bsc_core.StgFileOpt(path).get_is_exists() is True:
@@ -1979,8 +1999,8 @@ class _PrxEntryAsFiles(_AbsPrxTypeEntry):
             menu_raw.extend(
                 [
                     ('expanded',),
-                    ('Expand branch', None, prx_item.set_expand_branch),
-                    ('Collapse branch', None, prx_item.set_collapse_branch),
+                    ('expand branch', 'expand', prx_item.set_expand_branch),
+                    ('collapse branch', 'collapse', prx_item.set_collapse_branch),
                 ]
             )
         #
@@ -1993,9 +2013,23 @@ class _PrxEntryAsFiles(_AbsPrxTypeEntry):
                     'nodegraph/fileref': str(obj.get_path())
                 }
             )
+        elif scheme == 'folder':
+            menu_raw.extend(
+                [
+                    ('lock',),
+                    ('lock folder', 'lock', lock_folder_fnc_),
+                    ('unlock folder', 'lock', unlock_folder_fnc_),
+                ]
+            )
         #
         prx_item.set_gui_menu_raw(menu_raw)
         prx_item.set_menu_content(obj.get_gui_menu_content())
+        #
+        is_writeable = obj.get_is_writeable()
+        if is_writeable is False:
+            prx_item.set_status(
+                prx_item.ValidatorStatus.Locked
+            )
     #
     def __add_item_as_tree_(self, obj, scheme):
         if self._root_location is not None:
@@ -2063,16 +2097,19 @@ class _PrxEntryAsFiles(_AbsPrxTypeEntry):
     def restore(self):
         self._prx_entry_widget.set_clear()
 
+    def refresh(self):
+        self.set(self._paths)
+
     def set_view_mode(self, mode):
         self._view_mode = mode
 
     def set(self, raw=None, **kwargs):
         if isinstance(raw, (tuple, list)):
             self.restore()
-            paths = raw
-            if paths:
+            self._paths = raw
+            if self._paths:
                 obj_cur = None
-                for i_path in paths:
+                for i_path in self._paths:
                     if bsc_core.StgPathOpt(i_path).get_is_file():
                         i_obj = utl_dcc_objects.OsFile(i_path)
                         i_scheme = 'file'
@@ -2195,7 +2232,7 @@ class AbsPrxPortDef(object):
         if self.get_is_root():
             _ = [i for i in port_paths if not '.' in i]
         else:
-            _ = bsc_core.DccPathDagMtd.get_dag_children(
+            _ = bsc_core.DccPathDagMtd.get_dag_child_paths(
                 port_path, port_paths, pathsep='.'
             )
         return node._get_ports_(_)
@@ -2280,6 +2317,9 @@ class AbsPrxTypePort(AbsPrxPortDef):
     @property
     def entry_widget(self):
         return self._prx_port_entry
+
+    def set_label_visible(self, boolean):
+        self._prx_port_label.set_visible(boolean)
 
     def set_key(self, key):
         self._key = key
@@ -2445,6 +2485,9 @@ class AbsPrxTypePort(AbsPrxPortDef):
                     exclusive_fnc_, i_p
                 )
             )
+
+    def set_height(self, h):
+        self._prx_port_entry.set_height(h)
 
 
 class PrxConstantPort(AbsPrxTypePort):
@@ -2970,6 +3013,7 @@ class PrxPortAsFileList(AbsPrxTypePort):
         self._prx_port_entry.connect_refresh_action_to(fnc)
 
 
+# file tree
 class PrxPortAsFileTree(PrxPortAsFileList):
     def __init__(self, *args, **kwargs):
         super(PrxPortAsFileTree, self).__init__(*args, **kwargs)
@@ -3805,6 +3849,10 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         port.set_tool_tip(tool_tip_)
         port.set_join_to_next(join_to_next_)
         port.set_locked(lock_)
+        #
+        height = option.get('height')
+        if height:
+            port.set_height(height)
 
         self.set_port_add(port)
 

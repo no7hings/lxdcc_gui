@@ -1,7 +1,7 @@
 # coding=utf-8
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize
 
 import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
@@ -23,6 +23,9 @@ class QtConstantEntry(
     key_up_pressed = qt_signal()
     key_down_pressed = qt_signal()
     key_escape_pressed = qt_signal()
+    key_backspace_pressed = qt_signal()
+    #
+    key_backspace_extra_pressed = qt_signal()
     #
     focus_in = qt_signal()
     focus_out = qt_signal()
@@ -31,7 +34,7 @@ class QtConstantEntry(
         self.installEventFilter(self)
         self.setPalette(QtDccMtd.get_palette())
         self.setFont(Font.NAME)
-        self.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
         # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
         self._value_type = str
@@ -88,13 +91,13 @@ class QtConstantEntry(
             if event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 entry_frame = self._get_entry_frame_()
-                if isinstance(entry_frame, _utl_gui_qt_wgt_utility.QtEntryFrame):
+                if isinstance(entry_frame, QtEntryFrame):
                     entry_frame._set_focused_(True)
                 self.focus_in.emit()
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 entry_frame = self._get_entry_frame_()
-                if isinstance(entry_frame, _utl_gui_qt_wgt_utility.QtEntryFrame):
+                if isinstance(entry_frame, QtEntryFrame):
                     entry_frame._set_focused_(False)
                 #
                 self.focus_out.emit()
@@ -109,6 +112,10 @@ class QtConstantEntry(
                     self.key_down_pressed.emit()
                 elif event.key() == QtCore.Qt.Key_Escape:
                     self.key_escape_pressed.emit()
+                elif event.key() == QtCore.Qt.Key_Backspace:
+                    self.key_backspace_pressed.emit()
+                    if not self.text():
+                        self.key_backspace_extra_pressed.emit()
         return False
 
     def _set_drop_enable_(self, boolean):
@@ -151,7 +158,7 @@ class QtConstantEntry(
         #
         if menu_raw:
             self._qt_menu = _utl_gui_qt_wgt_utility.QtMenu(self)
-            self._qt_menu._set_menu_raw_(menu_raw)
+            self._qt_menu._set_menu_data_(menu_raw)
             self._qt_menu._set_show_()
 
     def _send_enter_changed_emit_(self):
@@ -364,7 +371,7 @@ class QtContentEntry(
         qt_palette = QtDccMtd.get_palette()
         self.setPalette(qt_palette)
         self.setAutoFillBackground(True)
-        self.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
         #
         self._print_signals = QtPrintSignals(self)
         self._print_signals.added.connect(self._set_content_add_)
@@ -409,12 +416,12 @@ class QtContentEntry(
             if event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 entry_frame = self._get_entry_frame_()
-                if isinstance(entry_frame, _utl_gui_qt_wgt_utility.QtEntryFrame):
+                if isinstance(entry_frame, QtEntryFrame):
                     entry_frame._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 entry_frame = self._get_entry_frame_()
-                if isinstance(entry_frame, _utl_gui_qt_wgt_utility.QtEntryFrame):
+                if isinstance(entry_frame, QtEntryFrame):
                     entry_frame._set_focused_(False)
         return False
 
@@ -439,7 +446,7 @@ class QtContentEntry(
         #
         if menu_raw:
             self._qt_menu = _utl_gui_qt_wgt_utility.QtMenu(self)
-            self._qt_menu._set_menu_raw_(menu_raw)
+            self._qt_menu._set_menu_data_(menu_raw)
             self._qt_menu._set_show_()
 
     def _get_value_(self):
@@ -556,7 +563,7 @@ class QtListEntry(
         #
         if menu_raw:
             self._qt_menu = _utl_gui_qt_wgt_utility.QtMenu(self)
-            self._qt_menu._set_menu_raw_(menu_raw)
+            self._qt_menu._set_menu_data_(menu_raw)
             self._qt_menu._set_show_()
 
     def _execute_open_in_system_(self):
@@ -588,12 +595,12 @@ class QtListEntry(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 entry_frame = self._get_entry_frame_()
-                if isinstance(entry_frame, _utl_gui_qt_wgt_utility.QtEntryFrame):
+                if isinstance(entry_frame, QtEntryFrame):
                     entry_frame._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 entry_frame = self._get_entry_frame_()
-                if isinstance(entry_frame, _utl_gui_qt_wgt_utility.QtEntryFrame):
+                if isinstance(entry_frame, QtEntryFrame):
                     entry_frame._set_focused_(False)
         if widget == self.verticalScrollBar():
             pass
@@ -787,3 +794,169 @@ class QtListEntry(
                 QtCore.Qt.WidgetShortcut
             )
             self.addAction(i_action)
+
+
+class QtEntryFrame(
+    QtWidgets.QWidget,
+    #
+    utl_gui_qt_abstract.AbsQtNameDef,
+    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtStatusDef,
+):
+    geometry_changed = qt_signal(int, int, int, int)
+    entry_focus_in = qt_signal()
+    entry_focus_out = qt_signal()
+    entry_focus_changed = qt_signal()
+    def _refresh_widget_draw_(self):
+        self.update()
+
+    def _refresh_widget_draw_geometry_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        # int left， int top， int right， int bottom
+        m_l, m_t, m_r, m_b = self._frame_draw_margins
+
+        c = self._entry_count
+
+        frm_x, frm_y = x+m_l+1, y+m_t+1
+        frm_w, frm_h = w-m_l-m_r-2, h-m_t-m_b-2
+        if c > 1:
+            for i in range(c):
+                i_widget = self._value_entries[i]
+                i_p = i_widget.pos()
+                i_r = i_widget.rect()
+                i_x, i_y = i_p.x(), i_p.y()
+                i_w, i_h = i_r.width(), i_r.height()
+                self._frame_draw_rects[i].setRect(
+                    i_x, frm_y, i_w, frm_h
+                )
+        else:
+            self._frame_draw_rects[0].setRect(
+                frm_x, frm_y, frm_w, frm_h
+            )
+        #
+        if self._tip_draw_enable is True:
+            self._tip_draw_rect.setRect(
+                x, y, w, h
+            )
+
+        if self._resize_handle is not None:
+            frm_w, frm_h = 24, 24
+            r_x, r_y = x+(w-frm_w), y+(h-frm_h)
+            self._resize_handle.setGeometry(
+                r_x, r_y, frm_w, frm_h
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(QtEntryFrame, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        #
+        self._action_is_hovered = False
+        self._is_focused = False
+        self._entry_count = 1
+        #
+        self._value_entry = None
+        self._value_entries = []
+        #
+        self._init_name_def_(self)
+        self._set_frame_def_init_()
+        self._set_status_def_init_()
+        #
+        self._frame_border_color = QtBorderColors.Light
+        self._hovered_frame_border_color = QtBorderColors.Hovered
+        self._selected_frame_border_color = QtBorderColors.Selected
+        self._frame_background_color = QtBackgroundColors.Dim
+
+        self._resize_handle = _utl_gui_qt_wgt_resize.QtVResizeHandle(self)
+        self._resize_handle.hide()
+
+        self._tip_draw_enable = False
+        self._tip_text = None
+        self._tip_draw_rect = QtCore.QRect()
+        # self._resize_handle._set_resize_target_(self)
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.Resize:
+                self._refresh_widget_draw_geometry_()
+                self._refresh_widget_draw_()
+                self.geometry_changed.emit(
+                    self.x(), self.y(), self.width(), self.height()
+                )
+        return False
+
+    def paintEvent(self, event):
+        painter = QtPainter(self)
+        #
+        # is_hovered = self._action_is_hovered
+        is_selected = self._is_focused
+        background_color = self._frame_background_color
+        bdr_color = [QtBorderColors.Basic, QtBorderColors.HighLight][is_selected]
+        bdr_w = [1, 2][is_selected]
+        for i_rect in self._frame_draw_rects:
+            painter._draw_frame_by_rect_(
+                i_rect,
+                border_color=bdr_color,
+                background_color=background_color,
+                # border_radius=1,
+                border_width=bdr_w,
+            )
+        #
+        if self._tip_draw_enable is True:
+            if self._tip_text is not None:
+                painter._draw_text_by_rect_(
+                    rect=self._tip_draw_rect,
+                    text=self._tip_text,
+                    font_color=QtFontColors.Disable,
+                    font=get_font(size=8, italic=True),
+                    text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+                )
+    # resize
+    def _get_resize_handle_(self):
+        return self._resize_handle
+
+    def _set_resize_enable_(self, boolean):
+        self._resize_handle.setVisible(boolean)
+
+    def _set_resize_minimum_(self, value):
+        self._resize_handle._set_resize_minimum_(value)
+
+    def _set_resize_target_(self, widget):
+        self._resize_handle._set_resize_target_(widget)
+
+    def _update_background_color_by_locked_(self, boolean):
+        self._frame_background_color = [
+            QtBackgroundColors.Basic, QtBackgroundColors.Dim
+        ][boolean]
+
+    def _set_focused_(self, boolean):
+        self._is_focused = boolean
+        self._refresh_widget_draw_()
+        self.entry_focus_changed.emit()
+
+    def _set_focus_in_(self):
+        self._set_focused_(True)
+        self.entry_focus_in.emit()
+
+    def set_focus_out_(self):
+        self._set_focused_(False)
+        self.entry_focus_out.emit()
+
+    def _set_entry_count_(self, size):
+        self._entry_count = size
+        self._frame_draw_rects = [QtCore.QRect() for _ in range(size)]
+
+    def _set_size_policy_height_fixed_mode_(self):
+        self._value_entry.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Minimum
+        )
+
+    def _set_tip_text_(self, text):
+        self._tip_text = text
+
+    def _set_tip_draw_enable_(self, boolean):
+        self._tip_draw_enable = boolean

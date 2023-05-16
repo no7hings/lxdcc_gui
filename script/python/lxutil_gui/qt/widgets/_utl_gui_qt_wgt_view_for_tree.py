@@ -1,7 +1,7 @@
 # coding=utf-8
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry
 
 import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
@@ -29,6 +29,8 @@ class QtTreeWidget(
     #
     item_expanded = qt_signal(str)
     item_extend_expanded = qt_signal(list)
+
+    QT_MENU_CLASS = _utl_gui_qt_wgt_utility.QtMenu
     def __init__(self, *args, **kwargs):
         super(QtTreeWidget, self).__init__(*args, **kwargs)
         self.setIndentation(20)
@@ -295,12 +297,12 @@ class QtTreeWidget(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_utility.QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_entry.QtEntryFrame):
                     parent._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_utility.QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_entry.QtEntryFrame):
                     parent._set_focused_(False)
             elif event.type() == QtCore.QEvent.Resize:
                 self._refresh_view_all_items_viewport_showable_()
@@ -653,7 +655,7 @@ class QtTreeWidget(
         _rcs_fnc(None, 0)
         return list_
 
-    def _set_scroll_to_item_top_(self, item):
+    def _scroll_view_to_item_top_(self, item):
         self.scrollToItem(item, self.PositionAtTop)
         self.setCurrentItem(item)
 
