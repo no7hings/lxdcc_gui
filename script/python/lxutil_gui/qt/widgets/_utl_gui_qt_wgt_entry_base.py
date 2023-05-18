@@ -1,4 +1,7 @@
 # coding=utf-8
+import functools
+
+import six
 from lxutil_gui.qt.utl_gui_qt_core import *
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize
@@ -6,7 +9,7 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resiz
 import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
 
-class QtConstantEntry(
+class QtEntryAsTextEdit(
     QtWidgets.QLineEdit,
     utl_gui_qt_abstract.AbsQtValueDef,
     #
@@ -20,6 +23,8 @@ class QtConstantEntry(
     user_entry_cleared = qt_signal()
     user_entry_finished = qt_signal()
     #
+    user_entry_text_accepted = qt_signal(str)
+    #
     key_up_pressed = qt_signal()
     key_down_pressed = qt_signal()
     key_escape_pressed = qt_signal()
@@ -30,7 +35,7 @@ class QtConstantEntry(
     focus_in = qt_signal()
     focus_out = qt_signal()
     def __init__(self, *args, **kwargs):
-        super(QtConstantEntry, self).__init__(*args, **kwargs)
+        super(QtEntryAsTextEdit, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
         self.setPalette(QtDccMtd.get_palette())
         self.setFont(Font.NAME)
@@ -45,6 +50,7 @@ class QtConstantEntry(
         self._minimum = 0
         #
         self.returnPressed.connect(self.user_entry_finished.emit)
+        self.returnPressed.connect(self.__execute_text_change_accepted_)
         # emit send by setText
         self.textChanged.connect(self._send_enter_changed_emit_)
         # user enter
@@ -59,6 +65,9 @@ class QtConstantEntry(
         self.setAcceptDrops(self._action_popup_is_enable)
 
         # self.setPlaceholderText()
+
+    def __execute_text_change_accepted_(self):
+        self.user_entry_text_accepted.emit(self.text())
 
     def _set_entry_tip_(self, text):
         self.setPlaceholderText(text)
@@ -118,10 +127,6 @@ class QtConstantEntry(
                         self.key_backspace_extra_pressed.emit()
         return False
 
-    def _set_drop_enable_(self, boolean):
-        super(QtConstantEntry, self)._set_drop_enable_(boolean)
-        self.setAcceptDrops(boolean)
-
     def dropEvent(self, event):
         if self._execute_action_drop_(event) is True:
             event.accept()
@@ -160,6 +165,10 @@ class QtConstantEntry(
             self._qt_menu = _utl_gui_qt_wgt_utility.QtMenu(self)
             self._qt_menu._set_menu_data_(menu_raw)
             self._qt_menu._set_show_()
+
+    def _set_drop_enable_(self, boolean):
+        super(QtEntryAsTextEdit, self)._set_drop_enable_(boolean)
+        self.setAcceptDrops(boolean)
 
     def _send_enter_changed_emit_(self):
         # noinspection PyUnresolvedReferences
@@ -205,7 +214,7 @@ class QtConstantEntry(
                 )
 
     def _set_validator_use_as_storage_(self, boolean=True):
-        super(QtConstantEntry, self)._set_validator_use_as_storage_(boolean)
+        super(QtEntryAsTextEdit, self)._set_validator_use_as_storage_(boolean)
         if boolean is True:
             i_action = QtWidgets.QAction(self)
             i_action.triggered.connect(
@@ -249,7 +258,7 @@ class QtConstantEntry(
         #     )
         # )
 
-    def _set_validator_use_as_frames_(self):
+    def _set_value_validator_use_as_frames_(self):
         self._set_value_type_(str)
         reg = QtCore.QRegExp(r'^[0-9-,:]+$')
         validator = QtGui.QRegExpValidator(reg, self)
@@ -264,7 +273,7 @@ class QtConstantEntry(
         #     )
         # )
 
-    def _set_validator_use_as_rgba_(self):
+    def _set_value_validator_use_as_rgba_(self):
         self._set_value_type_(str)
         reg = QtCore.QRegExp(r'^[0-9.,]+$')
         validator = QtGui.QRegExpValidator(reg, self)
@@ -290,9 +299,10 @@ class QtConstantEntry(
 
     def _get_value_(self):
         _ = self.text()
+        # do not encode output, use original data
         if self._value_type == str:
-            if isinstance(_, six.text_type):
-                _ = _.encode('utf-8')
+            # if isinstance(_, six.text_type):
+            #     _ = _.encode('utf-8')
             return _
         elif self._value_type == int:
             return int(_)
@@ -356,12 +366,12 @@ class QtConstantEntry(
         self.clear()
 
 
-class QtContentEntry(
+class QtEntryAsContentEdit(
     QtWidgets.QTextBrowser,
     utl_gui_qt_abstract.AbsQtEntryBaseDef,
 ):
     def __init__(self, *args, **kwargs):
-        super(QtContentEntry, self).__init__(*args, **kwargs)
+        super(QtEntryAsContentEdit, self).__init__(*args, **kwargs)
         self.setWordWrapMode(QtGui.QTextOption.WrapAnywhere)
         self.installEventFilter(self)
         # self.setAcceptRichText(False)
@@ -374,8 +384,9 @@ class QtContentEntry(
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         #
         self._print_signals = QtPrintSignals(self)
-        self._print_signals.added.connect(self._set_content_add_)
-        self._print_signals.overed.connect(self._set_content_)
+        #
+        self._print_signals.print_add_accepted.connect(self._add_value_)
+        self._print_signals.print_over_accepted.connect(self._set_value_)
         #
         self.setStyleSheet(
             utl_gui_core.QtStyleMtd.get('QTextBrowser')
@@ -389,26 +400,7 @@ class QtContentEntry(
         )
         self._init_entry_base_def_(self)
 
-    def _set_content_add_(self, text):
-        def add_fnc_(text_):
-            self.moveCursor(QtGui.QTextCursor.End)
-            self.insertPlainText(text_+'\n')
-        #
-        if isinstance(text, (tuple, list)):
-            [add_fnc_(i) for i in text]
-        else:
-            add_fnc_(text)
-        #
-        self.update()
-
-    def _set_content_(self, text):
-        self.setText(text)
-
-    def _set_content_add_use_thread_(self, text):
-        self._print_signals.added.emit(text)
-
-    def _set_print_over_use_thread_(self, text):
-        self._print_signals.overed.emit(text)
+        self._empty_icon_name = 'placeholder/text'
 
     def eventFilter(self, *args):
         widget, event = args
@@ -423,7 +415,19 @@ class QtContentEntry(
                 entry_frame = self._get_entry_frame_()
                 if isinstance(entry_frame, QtEntryFrame):
                     entry_frame._set_focused_(False)
+            elif event.type() == QtCore.QEvent.Wheel:
+                if event.modifiers() == QtCore.Qt.ControlModifier:
+                    self._execute_font_scale_(event)
         return False
+
+    def paintEvent(self, event):
+        if not self.toPlainText():
+            painter = QtPainter(self.viewport())
+            painter._set_empty_draw_by_rect_(
+                rect=self.rect(), icon_name=self._empty_icon_name
+            )
+
+        super(QtEntryAsContentEdit, self).paintEvent(event)
 
     def contextMenuEvent(self, event):
         menu_raw = [
@@ -449,13 +453,66 @@ class QtContentEntry(
             self._qt_menu._set_menu_data_(menu_raw)
             self._qt_menu._set_show_()
 
+    def _execute_font_scale_(self, event):
+        delta = event.angleDelta().y()
+        font = self.font()
+        size_pre = font.pointSize()
+        if delta > 0:
+            size_cur = size_pre + 1
+        else:
+            size_cur = size_pre - 1
+        #
+        size_cur = max(min(size_cur, 64), 6)
+        font.setPointSize(size_cur)
+        self.setFont(font)
+        self.update()
+
+    def _add_content_(self, text):
+        def add_fnc_(text_):
+            self.moveCursor(QtGui.QTextCursor.End)
+            self.insertPlainText(text_+'\n')
+        #
+        if isinstance(text, (tuple, list)):
+            [add_fnc_(i) for i in text]
+        else:
+            add_fnc_(text)
+        #
+        self.update()
+
+    def _set_content_(self, text):
+        self.setText(text)
+
+    def _add_value_with_thread_(self, text):
+        self._print_signals.print_add_accepted.emit(text)
+
+    def _set_value_with_thread_(self, text):
+        self._print_signals.print_over_accepted.emit(text)
+
     def _get_value_(self):
         return self.toPlainText()
 
+    def _add_value_(self, value):
+        def add_fnc_(value_):
+            if isinstance(value_, six.text_type):
+                value_ = value_.encode('utf-8')
+            #
+            self.moveCursor(QtGui.QTextCursor.End)
+            self.insertPlainText(value_+'\n')
+        #
+        if isinstance(value, (tuple, list)):
+            [add_fnc_(i) for i in value]
+        else:
+            add_fnc_(value)
+        #
+        self.update()
+
     def _set_value_(self, value):
         if value is not None:
+            if isinstance(value, six.text_type):
+                value = value.encode('utf-8')
+            #
             self.setText(
-                unicode(value).encode('utf-8')
+                value
             )
         else:
             self.setText('')
@@ -465,9 +522,9 @@ class QtContentEntry(
             self.setText(data.text())
 
 
-class QtListEntryForPopup(utl_gui_qt_abstract.AbsQtListWidget):
+class QtEntryAsListForPopup(utl_gui_qt_abstract.AbsQtListWidget):
     def __init__(self, *args, **kwargs):
-        super(QtListEntryForPopup, self).__init__(*args, **kwargs)
+        super(QtEntryAsListForPopup, self).__init__(*args, **kwargs)
         self.setDragDropMode(self.DragOnly)
         self.setDragEnabled(False)
         self.setSelectionMode(QtWidgets.QListWidget.SingleSelection)
@@ -489,7 +546,7 @@ class QtListEntryForPopup(utl_gui_qt_abstract.AbsQtListWidget):
         return 20+adjust
 
 
-class QtListEntry(
+class QtEntryAsList(
     utl_gui_qt_abstract.AbsQtListWidget,
     utl_gui_qt_abstract.AbsQtHelpDef,
     #
@@ -510,12 +567,17 @@ class QtListEntry(
     key_up_pressed = qt_signal()
     key_down_pressed = qt_signal()
     key_enter_pressed = qt_signal()
+    #
+    user_input_method_event_changed = qt_signal(object)
+    #
     def _get_value_(self):
         pass
 
     def __init__(self, *args, **kwargs):
-        super(QtListEntry, self).__init__(*args, **kwargs)
+        super(QtEntryAsList, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
+        self.viewport().installEventFilter(self)
+        #
         self.setAttribute(QtCore.Qt.WA_InputMethodEnabled)
         self.setSelectionMode(self.ExtendedSelection)
         #
@@ -535,7 +597,7 @@ class QtListEntry(
 
         self._item_icon_file_path = None
 
-        self._icon_name = None
+        self._empty_icon_name = 'placeholder/default'
 
     def contextMenuEvent(self, event):
         if self._entry_is_enable is True:
@@ -566,14 +628,6 @@ class QtListEntry(
             self._qt_menu._set_menu_data_(menu_raw)
             self._qt_menu._set_show_()
 
-    def _execute_open_in_system_(self):
-        item = self._get_item_current_()
-        if item is not None:
-            item_widget = self.itemWidget(item)
-            if item_widget is not None:
-                _ = item_widget._get_name_text_()
-                bsc_core.StgPathOpt(_).set_open_in_system()
-
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
@@ -589,9 +643,8 @@ class QtListEntry(
                     self._execute_action_delete_(event)
             elif event.type() == QtCore.QEvent.Wheel:
                 pass
-                # self._execute_action_wheel_(event)
             elif event.type() == QtCore.QEvent.Resize:
-                self._refresh_view_all_items_viewport_showable_()
+                pass
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 entry_frame = self._get_entry_frame_()
@@ -602,15 +655,21 @@ class QtListEntry(
                 entry_frame = self._get_entry_frame_()
                 if isinstance(entry_frame, QtEntryFrame):
                     entry_frame._set_focused_(False)
-        if widget == self.verticalScrollBar():
+        #
+        elif widget == self.verticalScrollBar():
             pass
+        #
+        elif widget == self.viewport():
+            if event.type() == QtCore.QEvent.Resize:
+                self._refresh_viewport_showable_auto_()
+                self._refresh_all_item_widgets_()
         return False
 
     def paintEvent(self, event):
         if not self.count():
             painter = QtPainter(self.viewport())
             painter._set_empty_draw_by_rect_(
-                rect=self.rect(), icon_name=self._icon_name
+                rect=self.rect(), icon_name=self._empty_icon_name
             )
 
     def dragEnterEvent(self, event):
@@ -628,6 +687,14 @@ class QtListEntry(
 
     def dropEvent(self, event):
         self._execute_action_drop_(event)
+
+    def _execute_open_in_system_(self):
+        item = self._get_item_current_()
+        if item is not None:
+            item_widget = self.itemWidget(item)
+            if item_widget is not None:
+                _ = item_widget._get_name_text_()
+                bsc_core.StgPathOpt(_).set_open_in_system()
 
     def _set_shortcut_register_(self):
         actions = [
@@ -651,6 +718,10 @@ class QtListEntry(
             )
             self.addAction(i_action)
 
+    def _set_empty_icon_name_(self, text):
+        self._empty_icon_name = text
+        self._refresh_widget_draw_()
+
     def _set_action_copy_(self):
         selected_item_widgets = self._get_selected_item_widgets_()
         if selected_item_widgets:
@@ -663,7 +734,7 @@ class QtListEntry(
         text = QtWidgets.QApplication.clipboard().text()
         if text:
             values = [i.strip() for i in text.split('\n')]
-            [self._set_value_append_(i) for i in values]
+            [self._append_value_(i) for i in values]
 
     def _set_action_cut_(self):
         selected_item_widgets = self._get_selected_item_widgets_()
@@ -672,7 +743,7 @@ class QtListEntry(
             QtWidgets.QApplication.clipboard().setText(
                 '\n'.join(values)
             )
-            [self._set_value_delete_(i) for i in values]
+            [self._delete_value_(i) for i in values]
 
     def _set_action_select_all_(self):
         self._set_all_items_selected_(True)
@@ -681,7 +752,7 @@ class QtListEntry(
         return [self.itemWidget(i) for i in self.selectedItems()]
 
     def _set_drop_enable_(self, boolean):
-        super(QtListEntry, self)._set_drop_enable_(boolean)
+        super(QtEntryAsList, self)._set_drop_enable_(boolean)
         self.setAcceptDrops(boolean)
         # self.setDragDropMode(self.DropOnly)
         # self.setDropIndicatorShown(True)
@@ -704,40 +775,40 @@ class QtListEntry(
                     values,
                     ['*.####.*']
                 )
-                [self._set_value_append_(i) for i in cs]
+                [self._append_value_(i) for i in cs]
     # noinspection PyUnusedLocal
     def _execute_action_delete_(self, event):
         selected_item_widgets = self._get_selected_item_widgets_()
         if selected_item_widgets:
             for i in selected_item_widgets:
                 i_value = i._get_name_text_()
-                self._set_value_delete_(i_value)
+                self._delete_value_(i_value)
 
-    def _set_value_delete_(self, value):
+    def _delete_value_(self, value):
         if value:
             if self._entry_is_enable is True:
                 index = self._values.index(value)
                 self._values.remove(value)
                 #
                 item = self.item(index)
-                self._set_item_widget_delete_(item)
+                self._delete_item_widget_(item)
                 self.takeItem(index)
         #
-        self._refresh_view_all_items_viewport_showable_()
+        self._refresh_viewport_showable_auto_()
 
-    def _set_value_append_(self, value):
-        if value:
-            if value not in self._values:
-                self._values.append(value)
-                self._set_item_add_(value)
-                self.entry_added.emit()
+    def _append_value_(self, value):
+        # use original value, do not encode
+        if value and value not in self._values:
+            self._values.append(value)
+            self._create_value_item_(value)
+            self.entry_added.emit()
 
-    def _set_value_extend_(self, values):
+    def _extend_values_(self, values):
         if values:
             for i_value in values:
-                self._set_value_append_(i_value)
+                self._append_value_(i_value)
 
-    def _set_values_clear_(self):
+    def _clear_all_values_(self):
         self._values = []
         self._set_clear_()
 
@@ -750,7 +821,7 @@ class QtListEntry(
         else:
             item_widget._set_icon_name_text_(value)
 
-    def _set_item_add_(self, value):
+    def _create_value_item_(self, value):
         def cache_fnc_():
             return [item_widget, value]
 
@@ -758,7 +829,7 @@ class QtListEntry(
             self._set_item_show_deferred_(data)
 
         def delete_fnc_():
-            self._set_value_delete_(value)
+            self._delete_value_(value)
 
         item_widget = _utl_gui_qt_wgt_utility._QtHItem()
         item_widget._set_delete_enable_(True)
@@ -768,20 +839,20 @@ class QtListEntry(
         self.addItem(item)
         item._set_item_show_connect_()
         self.setItemWidget(item, item_widget)
-
         item._set_item_show_fnc_(
             cache_fnc_, build_fnc_
         )
+        item_widget._refresh_widget_()
 
     def _set_values_(self, values):
         self._set_clear_()
-        [self._set_value_append_(i) for i in values]
+        [self._append_value_(i) for i in values]
 
     def _set_entry_item_icon_file_path_(self, file_path):
         self._item_icon_file_path = file_path
 
     def _set_validator_use_as_storage_(self, boolean):
-        super(QtListEntry, self)._set_validator_use_as_storage_(boolean)
+        super(QtEntryAsList, self)._set_validator_use_as_storage_(boolean)
         if boolean is True:
             i_action = QtWidgets.QAction(self)
             i_action.triggered.connect(
@@ -796,11 +867,66 @@ class QtListEntry(
             self.addAction(i_action)
 
 
+class QtEntryAsBubbles(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtWidgetDef
+):
+    bubble_text_change_accepted = qt_signal(str)
+    bubble_text_changed = qt_signal()
+    def __init__(self, *args, **kwargs):
+        super(QtEntryAsBubbles, self).__init__(*args, **kwargs)
+        self._bubble_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(self)
+        self._bubble_layout.setContentsMargins(*[0]*4)
+        self._bubble_layout.setSpacing(1)
+
+        self._bubble_constant_entry = None
+        self._bubble_texts = []
+
+    def _set_bubble_constant_entry_(self, widget):
+        self._bubble_constant_entry = widget
+
+    def _create_value_item_(self, text):
+        texts = self._get_all_bubble_texts_()
+        if text and text not in texts:
+            self._append_value_(text)
+            #
+            bubble = _utl_gui_qt_wgt_utility.QtTextBubble()
+            self._bubble_layout.addWidget(bubble)
+            bubble._set_bubble_text_(text)
+            bubble.delete_text_accepted.connect(self._delete_value_)
+
+            if self._bubble_constant_entry is not None:
+                self._bubble_constant_entry._set_clear_()
+
+    def _append_value_(self, text):
+        self._bubble_texts.append(text)
+        #
+        self.bubble_text_change_accepted.emit(text)
+        self.bubble_text_changed.emit()
+
+    def _delete_value_(self, text):
+        self._bubble_texts.remove(text)
+        #
+        self.bubble_text_change_accepted.emit(text)
+        self.bubble_text_changed.emit()
+
+    def _execute_bubble_backspace_(self):
+        # when bubble text widget delete, send emit do self._delete_value_(text)
+        self._bubble_layout._delete_latest_()
+
+    def _get_all_bubble_texts_(self):
+        return self._bubble_texts
+
+    def _clear_all_values_(self):
+        self._bubble_texts = []
+        self._bubble_layout._clear_all_widgets_()
+
+
 class QtEntryFrame(
     QtWidgets.QWidget,
     #
-    utl_gui_qt_abstract.AbsQtNameDef,
-    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtNameBaseDef,
+    utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtStatusDef,
 ):
     geometry_changed = qt_signal(int, int, int, int)
@@ -860,8 +986,8 @@ class QtEntryFrame(
         self._value_entry = None
         self._value_entries = []
         #
-        self._init_name_def_(self)
-        self._set_frame_def_init_()
+        self._init_name_base_def_(self)
+        self._init_frame_base_def_(self)
         self._set_status_def_init_()
         #
         self._frame_border_color = QtBorderColors.Light

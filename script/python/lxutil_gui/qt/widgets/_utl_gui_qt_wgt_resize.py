@@ -11,7 +11,8 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
 class QtHResizeHandle(
     QtWidgets.QWidget,
     #
-    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtNameBaseDef,
+    utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtResizeBaseDef,
     #
     utl_gui_qt_abstract.AbsQtActionBaseDef,
@@ -44,7 +45,8 @@ class QtHResizeHandle(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred
         )
         #
-        self._set_frame_def_init_()
+        self._init_frame_base_def_(self)
+        self._init_name_base_def_(self)
         self._init_resize_base_def_(self)
 
         self._init_action_base_def_(self)
@@ -57,7 +59,8 @@ class QtHResizeHandle(
         self._actioned_frame_border_color = QtBorderColors.Actioned
         self._actioned_frame_background_color = QtBackgroundColors.Actioned
 
-        self.setToolTip(
+        self._set_name_text_('resize handle')
+        self._set_tool_tip_text_(
             '"LMB-move" to resize'
         )
 

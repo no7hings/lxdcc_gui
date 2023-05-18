@@ -3,7 +3,7 @@ import fnmatch
 
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry, _utl_gui_qt_wgt_popup
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry_base, _utl_gui_qt_wgt_popup
 
 import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
@@ -11,9 +11,9 @@ import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 class QtGuideRect(
     utl_gui_qt_abstract.AbsQtIconDef,
     utl_gui_qt_abstract.AbsQtTypeDef,
-    utl_gui_qt_abstract.AbsQtNameDef,
+    utl_gui_qt_abstract.AbsQtNameBaseDef,
     utl_gui_qt_abstract.AbsQtPathDef,
-    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameBaseDef,
     #
     utl_gui_qt_abstract.AbsQtChooseBaseDef,
 ):
@@ -26,10 +26,10 @@ class QtGuideRect(
     def __init__(self):
         self._init_icon_def_(self)
         self._init_type_def_(self)
-        self._init_name_def_(self)
+        self._init_name_base_def_(self)
         self._init_path_def_(self)
-        self._set_frame_def_init_()
-        self._set_choose_def_init_()
+        self._init_frame_base_def_(self)
+        self._init_choose_base_def_()
         #
         self._set_icon_file_path_(
             self._choose_collapse_icon_file_path
@@ -45,7 +45,7 @@ class QtGuideRect(
 class QtGuideEntry(
     QtWidgets.QWidget,
     #
-    utl_gui_qt_abstract.AbsQtNameDef,
+    utl_gui_qt_abstract.AbsQtNameBaseDef,
     utl_gui_qt_abstract.AbsQtMenuDef,
     #
     utl_gui_qt_abstract.AbsQtActionBaseDef,
@@ -63,9 +63,10 @@ class QtGuideEntry(
         pass
 
     QT_GUIDE_RECT_CLS = QtGuideRect
-    QT_POPUP_CHOOSE_CLS = _utl_gui_qt_wgt_popup.QtPopupForGuideChoose
     #
-    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry.QtConstantEntry
+    QT_POPUP_GUIDE_CHOOSE_CLS = _utl_gui_qt_wgt_popup.QtPopupForGuideChoose
+    #
+    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
     #
     TYPE_FONT_SIZE = 10
     NAME_FONT_SIZE = 12
@@ -91,7 +92,7 @@ class QtGuideEntry(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
         )
         #
-        self._init_name_def_(self)
+        self._init_name_base_def_(self)
         self._init_entry_base_def_(self)
         self._init_focus_def_(self)
         #
@@ -219,7 +220,7 @@ class QtGuideEntry(
                         self._start_guide_choose_item_popup_at_(self._guide_choose_index_current)
                     # press
                     elif self._get_action_press_flag_is_click_() is True:
-                        self.guide_user_entry_changed.emit(self._get_guide_path_text_at_(self._guide_index_current))
+                        self.guide_text_accepted.emit(self._get_guide_path_text_at_(self._guide_index_current))
                         self.guide_press_clicked.emit()
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
@@ -236,12 +237,12 @@ class QtGuideEntry(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 entry_frame = self._get_entry_frame_()
-                if isinstance(entry_frame, _utl_gui_qt_wgt_entry.QtEntryFrame):
+                if isinstance(entry_frame, _utl_gui_qt_wgt_entry_base.QtEntryFrame):
                     entry_frame._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 entry_frame = self._get_entry_frame_()
-                if isinstance(entry_frame, _utl_gui_qt_wgt_entry.QtEntryFrame):
+                if isinstance(entry_frame, _utl_gui_qt_wgt_entry_base.QtEntryFrame):
                     entry_frame._set_focused_(False)
             #
             elif event.type() == QtCore.QEvent.KeyPress:
@@ -380,7 +381,7 @@ class QtGuideEntry(
             if cur_index != pre_index:
                 name_text_cur = name_texts[cur_index]
                 path_text_cur = self._set_guide_name_text_at_(name_text_cur, index)
-                self.guide_user_entry_changed.emit(path_text_cur)
+                self.guide_text_accepted.emit(path_text_cur)
 
     def _get_guide_path_text_(self):
         item = self._get_guide_item_at_(-1)
@@ -415,10 +416,10 @@ class QtGuideEntry(
 
 class QtGuideBar(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtValueEntryBaseDef,
-    utl_gui_qt_abstract.AbsQtCompletionAsPopupDef,
+    utl_gui_qt_abstract.AbsQtValueEntryExtraDef,
+    utl_gui_qt_abstract.AbsQtCompletionExtraDef,
 ):
-    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry.QtConstantEntry
+    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
     QT_POPUP_COMPLETION_CLASS = _utl_gui_qt_wgt_popup.QtPopupForCompletion
 
     QT_POPUP_PROXY_CLS = _utl_gui_qt_wgt_popup.QtPopupProxy
@@ -432,8 +433,8 @@ class QtGuideBar(
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
         )
-        self._init_value_entry_base_def_(self)
-        self._init_completion_as_popup_def_(self)
+        self._init_value_entry_extra_def_(self)
+        self._init_completion_extra_def_(self)
 
         self._guide_entry_mode = 0
 
@@ -442,7 +443,7 @@ class QtGuideBar(
         qt_layout_0.setSpacing(0)
         qt_layout_0.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
-        self._value_entry_frame = _utl_gui_qt_wgt_entry.QtEntryFrame()
+        self._value_entry_frame = _utl_gui_qt_wgt_entry_base.QtEntryFrame()
         qt_layout_0.addWidget(self._value_entry_frame)
         #
         self._value_entry_frame.setMinimumHeight(24)
@@ -472,12 +473,12 @@ class QtGuideBar(
         self._value_entry.setMaximumHeight(22)
         self._value_entry.setFont(get_font(size=10))
         #
-        self._build_popup_completion_(self._value_entry, self._value_entry_frame)
+        self._build_completion_extra_(self._value_entry, self._value_entry_frame)
 
         self._set_popup_completion_gain_fnc_(
             self._guide_value_popup_completion_gain_fnc_
         )
-        self.completion_finished.connect(self._guide_entry_cbk_)
+        self.user_completion_text_accepted.connect(self._guide_entry_cbk_)
 
     def _set_guide_entry_started_(self):
         self._guide_entry_mode = 1
@@ -504,24 +505,25 @@ class QtGuideBar(
     def _guide_value_popup_completion_gain_fnc_(self, *args, **kwargs):
         keyword = args[0]
         if keyword:
-            texts = self._guide_entry._get_guide_valid_path_texts_()
+            if isinstance(keyword, six.text_type):
+                keyword = keyword.encode('utf-8')
+            #
+            path_texts = self._guide_entry._get_guide_valid_path_texts_()
             _ = fnmatch.filter(
-                texts, '*{}*'.format(keyword)
+                path_texts, '*{}*'.format(keyword)
             )
             return bsc_core.RawTextsMtd.set_sort_by_initial(_)[:self.FILTER_MAXIMUM]
         return []
 
-    def _guide_entry_cbk_(self):
-        text = self._value_entry._get_value_()
-        if text:
-            texts = self._guide_entry._get_guide_valid_path_texts_()
-            if text in texts:
+    def _guide_entry_cbk_(self, text):
+        path_text_cur = text
+        if path_text_cur:
+            path_texts = self._guide_entry._get_guide_valid_path_texts_()
+            if path_text_cur in path_texts:
                 path_text_pre = self._guide_entry._get_guide_path_text_()
-                if text != path_text_pre:
-                    self._guide_entry._set_guide_path_text_(text)
-                    self._guide_entry.guide_user_entry_changed.emit(
-                        text
-                    )
+                if path_text_cur != path_text_pre:
+                    self._guide_entry._set_guide_path_text_(path_text_cur)
+                    self._guide_entry.guide_text_accepted.emit(path_text_cur)
                 self._guide_entry_finished_cbk_()
 
 
@@ -531,7 +533,7 @@ class QtTagEntry(object):
 
 class QtTagBar(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtValueEntryBaseDef,
+    utl_gui_qt_abstract.AbsQtValueEntryExtraDef,
 ):
     def __init__(self, *args, **kwargs):
         super(QtTagBar, self).__init__(*args, **kwargs)

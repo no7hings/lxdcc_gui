@@ -209,6 +209,10 @@ class AbsQtListWidget(
         self._get_view_v_scroll_bar_().valueChanged.connect(
             self._refresh_viewport_showable_auto_
         )
+        # noinspection PyUnresolvedReferences
+        # self._get_view_v_scroll_bar_().rangeChanged.connect(
+        #     self._refresh_all_item_widgets_
+        # )
         self._viewport_rect = QtCore.QRect()
         self._item_rects = []
         #
@@ -442,9 +446,10 @@ class AbsQtListWidget(
                 self._scroll_view_to_item_top_(item)
                 return
 
-    def _set_item_widget_delete_(self, item):
+    def _delete_item_widget_(self, item):
         item_widget = self.itemWidget(item)
         if item_widget:
+            item_widget.close()
             item_widget.deleteLater()
 
     def _set_item_delete_(self, item):
@@ -462,3 +467,8 @@ class AbsQtListWidget(
 
     def _get_item_current_(self):
         return self.currentItem()
+
+    def _refresh_all_item_widgets_(self):
+        for i in self._get_all_item_widgets_():
+            if i is not None:
+                i._refresh_widget_()

@@ -54,7 +54,7 @@ class QtWidget(
 
 class QtLine(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtActionBaseDef,
     utl_gui_qt_abstract.AbsQtActionForPressDef,
 ):
@@ -62,7 +62,7 @@ class QtLine(
         super(QtLine, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
-        self._set_frame_def_init_()
+        self._init_frame_base_def_(self)
 
         r, g, b = 119, 119, 119
         h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
@@ -477,7 +477,7 @@ class QtTextBubble(
     utl_gui_qt_abstract.AbsQtActionBaseDef,
     utl_gui_qt_abstract.AbsQtActionForPressDef,
 ):
-    bubble_deleted = qt_signal(str)
+    delete_text_accepted = qt_signal(str)
     def _refresh_widget_draw_(self):
         self.update()
 
@@ -515,7 +515,8 @@ class QtTextBubble(
         if widget == self:
             if hasattr(event, 'type'):
                 if event.type() == QtCore.QEvent.Close:
-                    self.bubble_deleted.emit(self._get_bubble_text_())
+                    self.delete_text_accepted.emit(self._get_bubble_text_())
+                #
                 elif event.type() == QtCore.QEvent.Resize:
                     self._refresh_widget_draw_geometry_()
                     self._refresh_widget_draw_()
@@ -715,14 +716,14 @@ class QtThreadDef(object):
 
 class QtTextLabel(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtNameDef,
+    utl_gui_qt_abstract.AbsQtNameBaseDef,
 ):
     pass
 
 
 class QtTextItem(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtNameDef,
+    utl_gui_qt_abstract.AbsQtNameBaseDef,
     #
     utl_gui_qt_abstract.AbsQtActionBaseDef,
     utl_gui_qt_abstract.AbsQtActionForHoverDef,
@@ -743,7 +744,7 @@ class QtTextItem(
             QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred
         )
         #
-        self._init_name_def_(self)
+        self._init_name_base_def_(self)
         #
         self._init_action_for_hover_def_(self)
         self._init_action_base_def_(self)
@@ -794,7 +795,7 @@ class QtTextItem(
 class QtIconPressItem(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtIconDef,
-    utl_gui_qt_abstract.AbsQtNameDef,
+    utl_gui_qt_abstract.AbsQtNameBaseDef,
     utl_gui_qt_abstract.AbsQtMenuDef,
     #
     utl_gui_qt_abstract.AbsQtStatusDef,
@@ -867,7 +868,7 @@ class QtIconPressItem(
         self.installEventFilter(self)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         #
-        self._init_name_def_(self)
+        self._init_name_base_def_(self)
         self._init_icon_def_(self)
         self._init_menu_def_()
         self._set_status_def_init_()
@@ -1415,11 +1416,11 @@ class QtListWidgetItem(
 
 class _QtHItem(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtIndexDef,
     utl_gui_qt_abstract.AbsQtTypeDef,
     utl_gui_qt_abstract.AbsQtIconDef,
-    utl_gui_qt_abstract.AbsQtNameDef,
+    utl_gui_qt_abstract.AbsQtNameBaseDef,
     utl_gui_qt_abstract.AbsQtNamesDef,
     utl_gui_qt_abstract.AbsQtPathDef,
     utl_gui_qt_abstract.AbsQtImageDef,
@@ -1443,14 +1444,14 @@ class _QtHItem(
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setMouseTracking(True)
         #
-        self._set_frame_def_init_()
-        self._set_index_def_init_()
+        self._init_frame_base_def_(self)
+        self._init_index_def_()
         self._init_type_def_(self)
         self._init_icon_def_(self)
-        self._init_name_def_(self)
-        self._set_names_def_init_()
+        self._init_name_base_def_(self)
+        self._init_names_def_()
         self._init_path_def_(self)
-        self._set_image_def_init_()
+        self._init_image_def_()
         #
         self._init_menu_def_()
         #
@@ -1469,17 +1470,121 @@ class _QtHItem(
         #
         self._frame_background_color = QtBackgroundColors.Light
 
+    def _refresh_widget_(self):
+        self._refresh_widget_draw_geometry_()
+        self._refresh_widget_draw_()
+
+    def _refresh_widget_draw_(self):
+        self.update()
+
+    def _refresh_widget_draw_geometry_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        #
+        spacing = 2
+        #
+        frm_w = frm_h = h
+        icn_frm_w, icn_frm_h = self._icon_frame_draw_size
+        icn_frm_m_w, icn_frm_m_h = (frm_w - icn_frm_w)/2, (frm_h - icn_frm_h)/2
+        icn_w, icn_h = int(icn_frm_w*self._icon_file_draw_percent), int(icn_frm_h*self._icon_file_draw_percent)
+        #
+        c_x, c_y = x, y
+        c_w, c_h = w, h
+        #
+        f_x, f_y = x, y
+        f_w, f_h = w, h
+        # frame
+        self._set_icon_frame_draw_rect_(
+            c_x+icn_frm_m_w, c_y+icn_frm_m_h, icn_frm_w, icn_frm_h
+        )
+        # check
+        if self._check_is_enable is True:
+            self._set_check_action_rect_(
+                c_x, c_y, icn_frm_w, c_h
+            )
+            self._set_check_icon_draw_rect_(
+                c_x+(icn_frm_w-icn_w)/2, c_y+(icn_frm_w-icn_h)/2, icn_w, icn_h
+            )
+            c_x += icn_frm_w+spacing
+            c_w -= icn_frm_w+spacing
+            # f_x += icn_frm_w+spacing
+            # f_w -= icn_frm_w+spacing
+        # icon
+        if self._icon_file_path is not None:
+            icn_w, icn_h = self._icon_file_draw_size
+            self._set_icon_file_draw_rect_(
+                c_x+(icn_frm_w-icn_w)/2, c_y+(c_h-icn_h)/2, icn_w, icn_h
+            )
+            c_x += icn_frm_w+spacing
+            c_w -= icn_frm_w+spacing
+        #
+        if self._icon_name_text is not None:
+            icn_p = self._icon_name_draw_percent
+            icn_w, icn_h = c_h*icn_p, c_h*icn_p
+            self._set_icon_name_draw_rect_(
+                c_x+(c_h-icn_w)/2, c_y+(c_h-icn_h)/2, icn_w, icn_h
+            )
+            c_x += c_h+spacing
+            c_w -= c_h+spacing
+        # image
+        if self._image_draw_is_enable is True:
+            img_p = self._image_draw_percent
+            img_w, img_h = c_h*img_p, c_h*img_p
+            self._set_image_rect_(
+                c_x+(c_h-img_w)/2, c_y+(c_h-img_h)/2, img_w, img_h
+            )
+            c_x += c_h+spacing
+            c_w -= c_h+spacing
+        # delete
+        if self._delete_is_enable is True:
+            icn_w, icn_h = self._delete_icon_file_draw_size
+            self._set_delete_rect_(
+                x+w-icn_frm_w, c_y+(c_h-icn_frm_h)/2, icn_frm_w, icn_frm_h
+            )
+            self._set_delete_draw_rect_(
+                x+(icn_frm_w-icn_w)/2+w-icn_frm_w, c_y+(c_h-icn_h)/2, icn_w, icn_h
+            )
+            c_w -= icn_frm_w+spacing
+            # f_w -= icn_frm_w+spacing
+        #
+        self._set_frame_draw_rect_(
+            f_x, f_y, f_w, f_h
+        )
+        #
+        self._set_name_draw_rect_(
+            c_x, c_y, c_w, c_h
+        )
+        # name text
+        if self._name_indices:
+            n_w, n_h = self._name_frame_size
+            for i in self._name_indices:
+                i_n_x, i_n_y = c_x, c_y+i*n_h
+                i_n_w, i_n_h = w, n_h
+                self._set_name_text_draw_rect_at_(
+                    i_n_x, i_n_y, i_n_w, i_n_h, i
+                )
+        #
+        self._set_index_draw_rect_(
+            c_x, c_y, c_w, c_h
+        )
+
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            if event.type() == QtCore.QEvent.Enter:
+            if event.type() == QtCore.QEvent.Close:
+                self.delete_text_accepted.emit(self._get_name_text_())
+            #
+            elif event.type() == QtCore.QEvent.Enter:
                 self._set_action_hovered_(True)
             elif event.type() == QtCore.QEvent.Leave:
                 self._set_action_hovered_(False)
                 self._check_is_hovered = False
+                self._press_is_hovered = False
                 self._delete_is_hovered = False
             elif event.type() == QtCore.QEvent.Resize:
-                self.update()
+                self._refresh_widget_()
+            elif event.type() == QtCore.QEvent.Show:
+                self._refresh_widget_()
             elif event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.RightButton:
                     self._set_menu_show_()
@@ -1494,6 +1599,8 @@ class _QtHItem(
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 if event.button() == QtCore.Qt.LeftButton:
                     if self._delete_is_hovered is True:
+                        # self.close()
+                        # self.deleteLater()
                         self.delete_press_clicked.emit()
                     elif self._check_is_hovered is True:
                         self.check_clicked.emit()
@@ -1506,21 +1613,25 @@ class _QtHItem(
 
     def paintEvent(self, event):
         painter = QtPainter(self)
-        #
+        # todo: refresh error
         self._refresh_widget_draw_geometry_()
-
+        #
         offset = self._get_action_offset_()
         #
-        background_color = painter._get_item_background_color_by_rect_(
-            self._frame_draw_rect,
-            is_hovered=self._action_is_hovered,
-            is_selected=self._is_selected
+        bkg_color = painter._get_frame_background_color_by_rect_(
+            rect=self._frame_draw_rect,
+            check_is_hovered=self._check_is_hovered,
+            is_checked=self._is_checked,
+            press_is_hovered=self._press_is_hovered,
+            is_pressed=self._is_pressed,
+            is_selected=self._is_selected,
+            delete_is_hovered=self._delete_is_hovered
         )
         painter._draw_frame_by_rect_(
             self._frame_draw_rect,
             border_color=QtBorderColors.Transparent,
-            background_color=background_color,
-            border_radius=2
+            background_color=bkg_color,
+            border_radius=1
         )
         # check
         if self._check_is_enable is True:
@@ -1534,13 +1645,13 @@ class _QtHItem(
         # icon
         if self._icon_name_text is not None:
             painter._draw_icon_with_name_text_by_rect_(
-                self._icon_name_draw_rect,
-                self._icon_name_text,
-                background_color=background_color,
+                rect=self._icon_name_draw_rect,
+                text=self._icon_name_text,
+                background_color=bkg_color,
                 offset=offset,
-                border_radius=2, border_width=2
+                border_radius=1, border_width=2
             )
-
+        #
         if self._icon_file_path is not None:
             painter._draw_icon_file_by_rect_(
                 rect=self._icon_file_draw_rect,
@@ -1548,13 +1659,13 @@ class _QtHItem(
             )
         # image
         if self._image_draw_is_enable is True:
-            painter._set_image_data_draw_by_rect_(
+            painter._draw_image_data_by_rect_(
                 rect=self._image_draw_rect,
                 image_data=self._image_data,
                 offset=offset,
                 text=self._name_text
             )
-        #
+        # name
         if self._name_texts:
             for i in self._name_indices:
                 painter._draw_text_by_rect_(
@@ -1566,6 +1677,7 @@ class _QtHItem(
                     is_hovered=self._action_is_hovered,
                     is_selected=self._is_selected,
                 )
+        #
         elif self._name_text is not None:
             painter._draw_text_by_rect_(
                 self._name_draw_rect,
@@ -1598,111 +1710,19 @@ class _QtHItem(
     def _execute_action_hover_(self, event):
         p = event.pos()
         self._check_is_hovered = False
+        self._press_is_hovered = False
         self._delete_is_hovered = False
+
         if self._check_action_is_enable is True:
             if self._check_action_rect.contains(p):
                 self._check_is_hovered = True
+        if self._frame_draw_rect.contains(p):
+            self._press_is_hovered = True
         if self._delete_is_enable is True:
             if self._delete_rect.contains(p):
                 self._delete_is_hovered = True
         #
         self._refresh_widget_draw_()
-
-    def _refresh_widget_draw_(self):
-        self.update()
-
-    def _refresh_widget_draw_geometry_(self):
-        x, y = 0, 0
-        w, h = self.width(), self.height()
-        #
-        spacing = 2
-        frm_w = frm_h = h
-        icn_frm_w, icn_frm_h = self._icon_frame_draw_size
-        icn_frm_m_w, icn_frm_m_h = (frm_w - icn_frm_w)/2, (frm_h - icn_frm_h)/2
-        icn_w, icn_h = int(icn_frm_w*self._icon_file_draw_percent), int(icn_frm_h*self._icon_file_draw_percent)
-        #
-        c_x, c_y = x, y
-        c_w, c_h = w, h
-        #
-        f_x, f_y = x, y
-        f_w, f_h = w, h
-        # frame
-        self._set_icon_frame_draw_rect_(
-            c_x+icn_frm_m_w, c_y+icn_frm_m_h, icn_frm_w, icn_frm_h
-        )
-        # check
-        if self._check_is_enable is True:
-            self._set_check_action_rect_(
-                c_x, c_y+(c_h-icn_frm_h)/2, icn_frm_w, icn_frm_h
-            )
-            self._set_check_icon_draw_rect_(
-                c_x+(icn_frm_w-icn_w)/2, c_y+(c_h-icn_h)/2, icn_w, icn_h
-            )
-            c_x += icn_frm_w+spacing
-            c_w -= icn_frm_w+spacing
-            f_x += icn_frm_w+spacing
-            f_w -= icn_frm_w+spacing
-        # icon
-        if self._icon_file_path is not None:
-            icn_w, icn_h = self._icon_file_draw_size
-            self._set_icon_file_draw_rect_(
-                c_x+(icn_frm_w-icn_w)/2, c_y+(c_h-icn_h)/2, icn_w, icn_h
-            )
-            c_x += icn_frm_w+spacing
-            c_w -= icn_frm_w+spacing
-        #
-        if self._icon_name_text is not None:
-            icn_p = self._icon_name_draw_percent
-            icn_w, icn_h = c_h*icn_p, c_h*icn_p
-            self._set_icon_name_draw_rect_(
-                c_x+(c_h-icn_w)/2, c_y+(c_h-icn_h)/2, icn_w, icn_h
-            )
-            c_x += c_h+spacing
-            c_w -= c_h+spacing
-        # image
-        if self._image_draw_is_enable is True:
-            img_p = self._image_draw_percent
-            img_w, img_h = c_h*img_p, c_h*img_p
-            self._set_image_rect_(
-                c_x+(c_h-img_w)/2, c_y+(c_h-img_h)/2, img_w, img_h
-            )
-            c_x += c_h+spacing
-            c_w -= c_h+spacing
-        #
-        if self._delete_is_enable is True:
-            icn_w, icn_h = self._delete_icon_file_draw_size
-            self._set_delete_rect_(
-                x+w-icn_frm_w, c_y+(c_h-icn_frm_h)/2, icn_frm_w, icn_frm_h
-            )
-            self._set_delete_draw_rect_(
-                x+(icn_frm_w-icn_w)/2+w-icn_frm_w, c_y+(c_h-icn_h)/2, icn_w, icn_h
-            )
-            c_w -= icn_frm_w+spacing
-            f_w -= icn_frm_w+spacing
-        #
-        self._set_frame_draw_rect_(
-            f_x, f_y, f_w, f_h
-        )
-        #
-        self._set_name_draw_rect_(
-            c_x, c_y, c_w, c_h
-        )
-        # name text
-        if self._name_indices:
-            n_w, n_h = self._name_frame_size
-            for i in self._name_indices:
-                i_n_x, i_n_y = c_x, c_y+i*n_h
-                i_n_w, i_n_h = w, n_h
-                self._set_name_text_draw_rect_at_(
-                    i_n_x, i_n_y, i_n_w, i_n_h, i
-                )
-        #
-        self._set_index_draw_rect_(
-            c_x, c_y, c_w, c_h
-        )
-
-    # def _get_name_texts_(self):
-    #     return [self._get_name_text_()]
 
     def _get_is_visible_(self):
         return self.isVisible()
@@ -1710,7 +1730,7 @@ class _QtHItem(
 
 class _QtScreenshotFrame(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtScreenshotDef,
     utl_gui_qt_abstract.AbsQtHelpDef,
     #
@@ -1742,7 +1762,7 @@ class _QtScreenshotFrame(
             | QtCore.Qt.WindowStaysOnTopHint
         )
 
-        self._set_frame_def_init_()
+        self._init_frame_base_def_(self)
         self._set_screenshot_def_init_(self)
         self._set_help_def_init_(self)
 

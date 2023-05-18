@@ -9,7 +9,7 @@ from lxbasic import bsc_core
 
 from lxutil_gui import utl_gui_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_view_for_list
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry_base, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_view_for_list
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
@@ -24,7 +24,7 @@ class PrxListView(
     #
     utl_gui_prx_abstract.AbsPrxViewVisibleConnectionDef,
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_entry.QtEntryFrame
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryFrame
     QT_VIEW_CLASS = _utl_gui_qt_wgt_view_for_list.QtListWidget
     #
     FILTER_MAXIMUM = 50
@@ -97,7 +97,7 @@ class PrxListView(
         self._qt_info_chart = _utl_gui_qt_wgt_chart.QtInfoChart()
         self._qt_info_chart.hide()
         self._qt_layout_0.addWidget(self._qt_info_chart)
-        self._qt_view.info_changed.connect(
+        self._qt_view.info_text_accepted.connect(
             self._qt_info_chart._set_info_text_
         )
         #
@@ -115,7 +115,6 @@ class PrxListView(
         self._qt_view._set_view_keyword_filter_bar_(self._prx_filter_bar._qt_widget)
         self._prx_filter_bar._qt_widget._set_popup_completion_gain_fnc_(self.__keyword_filter_completion_gain_fnc)
         self._prx_filter_bar._qt_widget.user_choose_changed.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_current_)
-        self._prx_filter_bar._qt_widget.completion_finished.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_current_)
         self._prx_filter_bar._qt_widget.occurrence_previous_press_clicked.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_previous_)
         self._prx_filter_bar._qt_widget.occurrence_next_press_clicked.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_next_)
     @property

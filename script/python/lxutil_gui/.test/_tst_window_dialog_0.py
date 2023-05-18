@@ -14,8 +14,8 @@ def yes_method():
     print w.get_options_as_kwargs()
     time.sleep(5)
     print 'BBB'
-    w.set_content_add('test')
-    w.set_content_add('completed')
+    w.add_content('test')
+    w.add_content('completed')
 
 
 if __name__ == '__main__':

@@ -288,7 +288,7 @@ class DccPublisherOpt(object):
         self._rsv_scene_properties = rsv_scene_properties
         self._kwargs = kwargs
 
-    def set_run(self):
+    def execute(self):
         k = self._kwargs
         media_files = self._kwargs['review']
         version_type = self._kwargs['version_type']
@@ -376,6 +376,8 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
     def restore_variants(self):
         self._scene_file_path = None
         self._rsv_scene_properties = None
+        self._rsv_task = None
+        self._notice_user_names = []
 
     def set_all_setup(self):
         self._check_key_map = {
@@ -468,7 +470,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
         self.set_button_add(
             self._publish_button
         )
-        self._publish_button.connect_press_clicked_to(self._set_publish_execute_)
+        self._publish_button.connect_press_clicked_to(self._execute_publish_)
         self._publish_button.set_option_click_enable(True)
 
         self._validation_checker = None
@@ -574,6 +576,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
             self._rsv_scene_properties = r.get_rsv_scene_properties_by_any_scene_file_path(self._scene_file_path)
             if self._rsv_scene_properties:
                 self._rsv_task = r.get_rsv_task(**self._rsv_scene_properties.value)
+                self._notice_user_names = self._get_default_notice_user_names_()
             else:
                 contents.append(
                     u'scene file "{}" is not available'.format(self._scene_file_path)
@@ -688,7 +691,6 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
         q_c_s.completed.connect(completed_fnc_)
         q_c_s.finished.connect(finished_fnc_)
 
-    @utl_gui_qt_core.set_prx_window_waiting
     def _set_katana_validation_in_execute_(self):
         self._set_dcc_validation_execute_(
             'rsv-task-methods/asset/katana/gen-surface-validation'
@@ -699,19 +701,29 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
             'rsv-task-methods/asset/katana/gen-surface-validation'
         )
 
-    @utl_gui_qt_core.set_prx_window_waiting
     def _set_maya_validation_in_dcc_(self):
         self._set_dcc_validation_execute_(
             'rsv-task-methods/asset/maya/gen-surface-validation'
         )
+
+    def _get_default_notice_user_names_(self):
+        import lxshotgun.objects as stg_objects
+        import lxshotgun.operators as stg_operators
+
+        c = stg_objects.StgConnector()
+        r_o = stg_operators.StgResourceOpt(c.get_stg_resource_query(**self._rsv_task.properties.get_value()))
+        resource_cc_stg_users = r_o.get_cc_stg_users()
+        t_o = stg_operators.StgTaskOpt(c.get_stg_task_query(**self._rsv_task.properties.get_value()))
+        task_cc_stg_users = t_o.get_cc_stg_users()
+        task_assign_stg_users = t_o.get_assign_stg_users()
+        return [c.to_query(i).get('name').decode('utf-8') for i in resource_cc_stg_users+task_cc_stg_users+task_assign_stg_users]
 
     def _set_maya_validation_execute_by_shell_(self):
         self._set_dcc_validation_execute_by_shell_(
             'rsv-task-methods/asset/maya/gen-surface-validation'
         )
 
-    @utl_gui_qt_core.set_prx_window_waiting
-    def _set_publish_execute_(self):
+    def _execute_publish_(self):
         def yes_fnc_():
             _kwargs = w.get_options_as_kwargs()
             #
@@ -721,7 +733,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
                 self._validation_info_file,
                 self._rsv_scene_properties,
                 **_kwargs
-            ).set_run()
+            ).execute()
             # import time
             # time.sleep(3)
 
@@ -730,19 +742,19 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
                 label=self._session.gui_name,
                 sub_label='Publish for {}'.format(self._rsv_task),
                 content=(
-                    u'1. choose a version type in "version type";\n'
-                    u'    a). default is "downstream"\n'
-                    u'2. entry description in "description";\n'
-                    u'3. choose one or more image or movie file or make a snapshot in "review";\n'
-                    u'    a). support formats: "jpg", "exr", "mov"\n'
-                    u'4. choose one or more user in "notice";\n'
-                    u'5. configure in "process";\n'
-                    u'6. press "Confirm" to continue'
+                    '1. choose a version type in "version type";\n'
+                    '    a). default is "downstream"\n'
+                    '2. entry description in "description";\n'
+                    '3. choose one or more image or movie file or make a snapshot in "review";\n'
+                    '    a). support formats: "jpg", "exr", "mov"\n'
+                    '4. choose one or more user in "notice";\n'
+                    '5. configure in "process";\n'
+                    '6. press "Apply" to continue'
                 ),
                 #
                 options_configure=self._session.configure.get('build.node.extra_publish'),
                 #
-                yes_label='Confirm',
+                yes_label='Apply',
                 #
                 yes_method=yes_fnc_,
                 #
@@ -762,11 +774,14 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
             w.set_completed_content(
                 'deadline job submit is completed, press "Close" to continue'
             )
-
             w.set_window_close_connect_to(
                 self.widget.show
             )
 
+            o = w.get_options_node()
+
             self.widget.hide()
 
             w.set_window_show()
+            # set when window show
+            o.set('notice', self._notice_user_names)

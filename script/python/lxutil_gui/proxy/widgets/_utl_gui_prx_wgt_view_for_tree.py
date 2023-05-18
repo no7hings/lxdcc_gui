@@ -7,7 +7,7 @@ from lxutil_gui import utl_gui_configure
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry, _utl_gui_qt_wgt_view_for_tree
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry_base, _utl_gui_qt_wgt_view_for_tree
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
@@ -25,7 +25,7 @@ class PrxTreeView(
     #
     utl_gui_prx_abstract.AbsPrxViewVisibleConnectionDef,
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_entry.QtEntryFrame
+    QT_WIDGET_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryFrame
     QT_VIEW_CLASS = _utl_gui_qt_wgt_view_for_tree.QtTreeWidget
     #
     FILTER_MAXIMUM = 50
@@ -76,7 +76,7 @@ class PrxTreeView(
         self._qt_view._set_view_keyword_filter_bar_(self._prx_filter_bar._qt_widget)
         self._prx_filter_bar._qt_widget.user_entry_changed.connect(self.__keyword_filter_cbk)
         self._prx_filter_bar._qt_widget.user_choose_changed.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_current_)
-        self._prx_filter_bar._qt_widget.completion_finished.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_current_)
+        #
         self._prx_filter_bar._qt_widget.occurrence_previous_press_clicked.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_previous_)
         self._prx_filter_bar._qt_widget.occurrence_next_press_clicked.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_next_)
 

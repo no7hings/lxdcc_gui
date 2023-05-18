@@ -288,10 +288,10 @@ class AbsPrxDialogWindow(
         self._customize_layout.addWidget(qt_widget)
 
     def set_content(self, text):
-        self.set_print_over_use_thread(text)
+        self.set_content_with_thread(text)
 
-    def set_content_add(self, text):
-        self.set_print_add_use_thread(text)
+    def add_content(self, text):
+        self.add_content_with_thread(text)
 
     def set_content_font_size(self, size):
         self._tip_text_browser.set_font_size(size)
@@ -316,11 +316,11 @@ class AbsPrxDialogWindow(
     def set_options_create_by_configure(self, configure):
         self._options_prx_node.create_ports_by_configure(configure)
 
-    def set_print_add_use_thread(self, text):
-        self._tip_text_browser.set_print_add_use_thread(text)
+    def add_content_with_thread(self, text):
+        self._tip_text_browser.add_content_with_thread(text)
 
-    def set_print_over_use_thread(self, text):
-        self._tip_text_browser.set_print_over_use_thread(text)
+    def set_content_with_thread(self, text):
+        self._tip_text_browser.set_content_with_thread(text)
 
     def set_failed(self):
         pass
@@ -491,7 +491,7 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
             utl_gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
         )
 
-    def set_content_add(self, text):
+    def add_content(self, text):
         self._tip_text_browser.set_add(text)
 
     def set_process_start(self):
@@ -526,7 +526,7 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
             )
 
     def _set_process_output_result_update_(self):
-        self.set_content_add(
+        self.add_content(
             str(
                 self._process.readAllStandardOutput().data().decode('utf-8')
             ).rstrip()
@@ -625,7 +625,7 @@ class PrxMonitorWindow(utl_gui_prx_abstract.AbsPrxWindow):
         return self._status_button
 
     def set_logging(self, *args):
-        self._tip_text_browser.set_print_add_use_thread(*args)
+        self._tip_text_browser.add_content_with_thread(*args)
 
     def set_status_at(self, *args):
         self._status_button.set_status_at(*args)

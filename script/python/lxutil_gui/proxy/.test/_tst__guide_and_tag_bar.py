@@ -31,6 +31,7 @@ class TestWindow(prx_widgets.PrxToolWindow):
 
         filter_bar.set_completion_gain_fnc(self._value_completion_gain_fnc_)
         filter_bar.set_tip('test...')
+        filter_bar.set_history_key('keyword-filter-test')
 
         guide_bar = prx_widgets.PrxGuideBar()
         self.set_widget_add(guide_bar)

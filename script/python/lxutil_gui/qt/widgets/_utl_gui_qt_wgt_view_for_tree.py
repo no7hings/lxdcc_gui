@@ -1,7 +1,7 @@
 # coding=utf-8
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry_base
 
 import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
@@ -27,9 +27,9 @@ class QtTreeWidget(
     f5_key_pressed = qt_signal()
     f_key_pressed = qt_signal()
     #
-    item_expanded = qt_signal(str)
+    item_expanded = qt_signal(object)
     item_extend_expanded = qt_signal(list)
-
+    #
     QT_MENU_CLASS = _utl_gui_qt_wgt_utility.QtMenu
     def __init__(self, *args, **kwargs):
         super(QtTreeWidget, self).__init__(*args, **kwargs)
@@ -297,12 +297,12 @@ class QtTreeWidget(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_entry.QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_entry_base.QtEntryFrame):
                     parent._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_entry.QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_entry_base.QtEntryFrame):
                     parent._set_focused_(False)
             elif event.type() == QtCore.QEvent.Resize:
                 self._refresh_view_all_items_viewport_showable_()

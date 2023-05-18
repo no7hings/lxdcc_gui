@@ -10,7 +10,7 @@ import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
 class _QtListItemWidget(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtTypeDef,
     utl_gui_qt_abstract.AbsQtIndexDef,
     utl_gui_qt_abstract.AbsQtImageDef,
@@ -52,13 +52,13 @@ class _QtListItemWidget(
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setMouseTracking(True)
         #
-        self._set_frame_def_init_()
+        self._init_frame_base_def_(self)
         self._init_type_def_(self)
-        self._set_index_def_init_()
+        self._init_index_def_()
         self._init_icon_def_(self)
         self._set_icons_def_init_()
-        self._set_image_def_init_()
-        self._set_names_def_init_()
+        self._init_image_def_()
+        self._init_names_def_()
         self._init_menu_def_()
         self._set_movie_def_init_()
         #
@@ -190,13 +190,13 @@ class _QtListItemWidget(
         base_rect = QtCore.QRect(bsc_x, bsc_y, bsc_w, bsc_h)
         shadow_rect = QtCore.QRect(bsc_x+2, bsc_y+2, bsc_w-2, bsc_h-2)
 
-        bkg_color = painter._get_item_background_color_by_rect__(
+        bkg_color = painter._get_frame_background_color_by_rect_(
             rect=base_rect,
-            is_check_hovered=self._check_is_hovered,
+            check_is_hovered=self._check_is_hovered,
             is_checked=self._is_checked,
-            is_press_hovered=self._press_is_hovered,
+            press_is_hovered=self._press_is_hovered,
             is_pressed=self._is_pressed,
-            is_selected=self._is_selected
+            is_selected=self._is_selected,
         )
         if self._get_status_is_enable_() is True:
             bdr_color_, bdr_hover_color = self._get_border_color_by_validator_status_(

@@ -1,6 +1,7 @@
 # coding:utf-8
 import os
 
+import six
 from lxbasic import bsc_core
 
 import fnmatch
@@ -15,7 +16,7 @@ c = bsc_core.StgFileOpt(y_f).set_read()
 class TestWindow(utl_prx_widgets.PrxToolWindow):
     def __init__(self, *args, **kwargs):
         super(TestWindow, self).__init__(*args, **kwargs)
-        self.set_definition_window_size([480, 960])
+        self.set_definition_window_size([720, 960])
         f = utl_prx_widgets.PrxFilterBar()
         f.set_history_key('filter.test')
         self.set_widget_add(f)
@@ -23,8 +24,11 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
         self._test_()
 
     def _value_completion_gain_fnc_(self, *args, **kwargs):
+        k = args[0]
+        if isinstance(k, six.text_type):
+            k = k.encode('utf-8')
         return fnmatch.filter(
-            ['test'], '*{}*'.format(args[0])
+            ['test'], '*{}*'.format(k)
         )
 
     def _test_(self):
@@ -36,7 +40,6 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
 
 
 if __name__ == '__main__':
-
     import sys
     #
     from PySide2 import QtWidgets

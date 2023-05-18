@@ -12,7 +12,7 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
 
 class _AbsQtSplitterHandle(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameBaseDef,
     #
     utl_gui_qt_abstract.AbsQtActionBaseDef,
     utl_gui_qt_abstract.AbsQtActionForHoverDef,
@@ -129,7 +129,7 @@ class _AbsQtSplitterHandle(
         self.installEventFilter(self)
         self._action_is_hovered = False
         #
-        self._set_frame_def_init_()
+        self._init_frame_base_def_(self)
         self._init_action_for_hover_def_(self)
         self._init_action_base_def_(self)
         self._init_action_for_press_def_(self)

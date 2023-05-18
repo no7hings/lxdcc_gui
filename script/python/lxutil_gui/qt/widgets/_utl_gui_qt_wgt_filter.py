@@ -3,7 +3,7 @@ import copy
 
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize, _utl_gui_qt_wgt_entry, _utl_gui_qt_wgt_popup
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize, _utl_gui_qt_wgt_entry_base, _utl_gui_qt_wgt_popup
 
 import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
@@ -11,23 +11,23 @@ import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 class QtFilterBar(
     QtWidgets.QWidget,
     #
-    utl_gui_qt_abstract.AbsQtValueEntryBaseDef,
+    utl_gui_qt_abstract.AbsQtValueEntryExtraDef,
     #
     utl_gui_qt_abstract.AbsQtActionBaseDef,
     utl_gui_qt_abstract.AbsQtActionForEntryDef,
     #
     utl_gui_qt_abstract.AbsQtChooseBaseDef,
-    utl_gui_qt_abstract.AbsQtHistoryAsPopupDef,
-    utl_gui_qt_abstract.AbsQtCompletionAsPopupDef,
+    utl_gui_qt_abstract.AbsQtHistoryAsPopupExtraDef,
+    utl_gui_qt_abstract.AbsQtCompletionExtraDef,
 ):
     occurrence_previous_press_clicked = qt_signal()
     occurrence_next_press_clicked = qt_signal()
     #
-    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry.QtConstantEntry
+    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
     #
-    QT_POPUP_HISTORY_CLS = _utl_gui_qt_wgt_popup.QtPopupForChoose
+    QT_POPUP_HISTORY_CLS = _utl_gui_qt_wgt_popup.QtPopupForHistory
     QT_POPUP_COMPLETION_CLASS = _utl_gui_qt_wgt_popup.QtPopupForCompletion
-    def _execute_popup_choose_(self):
+    def _start_choose_extra_fnc_(self):
         self._popup_history_widget._execute_popup_start_()
 
     def _refresh_widget_(self):
@@ -46,14 +46,14 @@ class QtFilterBar(
         qt_layout_0.setSpacing(2)
         qt_layout_0.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         #
-        self._init_value_entry_base_def_(self)
+        self._init_value_entry_extra_def_(self)
         #
         self._init_action_base_def_(self)
         self._init_set_action_for_entry_def_(self)
         #
-        self._set_choose_def_init_()
+        self._init_choose_base_def_()
         #
-        self._init_completion_as_popup_def_(self)
+        self._init_completion_extra_def_(self)
         #
         self._result_label = _utl_gui_qt_wgt_utility.QtTextItem()
         # todo: fix result show bug
@@ -72,13 +72,13 @@ class QtFilterBar(
         qt_layout_0.addWidget(self._resize_handle)
         self._resize_handle.setFixedWidth(8)
         #
-        self._value_entry_frame = _utl_gui_qt_wgt_entry.QtEntryFrame()
+        self._value_entry_frame = _utl_gui_qt_wgt_entry_base.QtEntryFrame()
         self._value_entry_frame.setFixedWidth(200)
         self._value_entry_frame.setFixedHeight(24)
         self._resize_handle._set_resize_target_(self._value_entry_frame)
         qt_layout_0.addWidget(self._value_entry_frame)
         #
-        self._build_entry_(str)
+        self._build_value_entry_(str)
         #
         self._match_case_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
         self._match_case_button.hide()
@@ -118,17 +118,15 @@ class QtFilterBar(
             self._send_next_occurrence_emit_
         )
         #
-        self._init_history_as_popup_def_(self)
-        #
-        self._bubble_texts = set()
+        self._init_history_as_popup_extra_def_(self)
         #
         self._filter_result_count = None
         self._filter_index_current = None
         #
         self.__refresh_filter_()
-        self.__refresh_filter_tip_draw_()
+        self._execute_refresh_filter_tip_()
 
-    def _build_entry_(self, value_type):
+    def _build_value_entry_(self, value_type):
         self._value_type = value_type
         self._value_entry_layout = QtHBoxLayout(self._value_entry_frame)
         self._value_entry_layout.setContentsMargins(2, 0, 2, 0)
@@ -143,12 +141,8 @@ class QtFilterBar(
             )
         )
         #
-        self._bubble_text_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
-        self._value_entry_layout.addWidget(self._bubble_text_widget)
-        #
-        self._bubble_text_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(self._bubble_text_widget)
-        self._bubble_text_layout.setContentsMargins(*[0]*4)
-        self._bubble_text_layout.setSpacing(1)
+        self._bubble_entry = _utl_gui_qt_wgt_entry_base.QtEntryAsBubbles()
+        self._value_entry_layout.addWidget(self._bubble_entry)
         #
         self._value_entry = self.QT_VALUE_ENTRY_CLASS()
         self._value_entry_layout.addWidget(self._value_entry)
@@ -178,61 +172,40 @@ class QtFilterBar(
         self._value_history_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('history'))
         self._value_history_button._set_sub_icon_file_path_(utl_gui_core.RscIconFile.get('down'))
         self._value_history_button.press_clicked.connect(
-            self._execute_popup_choose_
+            self._start_choose_extra_fnc_
         )
         self._value_history_button.hide()
         #
         self._build_popup_history_(self._value_entry, self._value_entry_frame)
-        self._build_popup_completion_(self._value_entry, self._value_entry_frame)
+        self._build_completion_extra_(self._value_entry, self._value_entry_frame)
         #
-        self._popup_completion_widget.completion_finished.connect(self._add_popup_history_value_)
-        # use original signal
-        self._value_entry.textEdited.connect(self.__refresh_filter_tip_draw_)
-        self._value_entry.returnPressed.connect(self.__create_bubble_cbk_)
-        self._value_entry.key_backspace_extra_pressed.connect(self.__delete_bubble_cbk_)
-    #
-    def __create_bubble_cbk_(self):
-        texts = self.__get_all_bubble_texts_()
-        text = self._value_entry._get_value_()
-        if text and text not in texts:
-            self._value_entry.clear()
-            bubble = _utl_gui_qt_wgt_utility.QtTextBubble()
-            bubble._set_bubble_text_(text)
-            self.__add_bubble_text_(text)
-            bubble.bubble_deleted.connect(self.__delete_bubble_text_cbk_)
-            self._bubble_text_layout.addWidget(bubble)
-
-    def __delete_bubble_cbk_(self):
-        self._bubble_text_layout._delete_latest_()
-
-    def __add_bubble_text_(self, text):
-        self._bubble_texts.add(text)
-        self.__refresh_filter_tip_draw_()
+        self.user_completion_text_accepted.connect(self._add_popup_history_value_)
+        self.user_completion_text_accepted.connect(self._set_value_)
         #
-        self.user_entry_changed.emit()
-
-    def __delete_bubble_text_cbk_(self, text):
-        self._bubble_texts.remove(text)
-        self.__refresh_filter_tip_draw_()
+        self._bubble_entry._set_bubble_constant_entry_(self._value_entry)
+        self._value_entry.textEdited.connect(self._execute_refresh_filter_tip_)
+        self._value_entry.user_entry_text_accepted.connect(self._bubble_entry._create_value_item_)
+        self._value_entry.key_backspace_extra_pressed.connect(self._bubble_entry._execute_bubble_backspace_)
         #
-        self.user_entry_changed.emit()
-    #
-    def __get_all_bubble_texts_(self):
-        return self._bubble_texts
+        self._bubble_entry.bubble_text_changed.connect(self._execute_refresh_filter_tip_)
+        self._bubble_entry.bubble_text_changed.connect(self.user_entry_changed)
+        #
+        self._entry_clear_button.press_clicked.connect(self._execute_refresh_filter_tip_)
+        self.user_history_text_accepted.connect(self._bubble_entry._create_value_item_)
 
-    def __refresh_filter_tip_draw_(self):
+    def _execute_refresh_filter_tip_(self):
         if self._value_entry_frame._tip_text:
-            if self._get_filter_keyword_texts_():
+            if self._get_all_filter_keyword_texts_():
                 self._value_entry_frame._tip_draw_enable = False
             else:
                 self._value_entry_frame._tip_draw_enable = True
 
             self._value_entry_frame._refresh_widget_draw_()
     #
-    def _get_filter_keyword_texts_(self):
-        _ = copy.copy(self.__get_all_bubble_texts_())
+    def _get_all_filter_keyword_texts_(self):
+        _ = copy.copy(self._bubble_entry._get_all_bubble_texts_())
         if self._value_entry._get_value_():
-            _.add(self._value_entry._get_value_())
+            _.append(self._value_entry._get_value_())
         return list(_)
 
     def __refresh_filter_(self):
@@ -267,7 +240,7 @@ class QtFilterBar(
     #
     def _set_filter_tip_(self, text):
         self._value_entry_frame._set_tip_text_(text)
-        self.__refresh_filter_tip_draw_()
+        self._execute_refresh_filter_tip_()
 
     def _get_is_match_case_(self):
         return self._is_match_case
@@ -371,7 +344,7 @@ class QtFilterBar(
                     True
                 )
             else:
-                self._set_choose_values_clear_()
+                self._clear_choose_values_()
                 self._value_history_button._set_action_enable_(
                     False
                 )

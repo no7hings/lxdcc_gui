@@ -14,8 +14,8 @@ class TestWindow(utl_prx_widgets.PrxDialogWindow0):
     def __init__(self, *args, **kwargs):
         super(TestWindow, self).__init__(*args, **kwargs)
         self.set_definition_window_size([640, 640])
-        self._test_shotgun_entities_()
         self._test_shotgun_entity_()
+        self._test_shotgun_entities_()
         # self._test_()
 
     def _value_completion_gain_fnc_(self, *args, **kwargs):
@@ -159,7 +159,7 @@ class TestWindow(utl_prx_widgets.PrxDialogWindow0):
             keyword_filter_fields=['sg_chinese_name', 'code'],
             tag_filter_fields=['sg_asset_type'],
         )
-
+        #
         p = n.set_port_add(
             utl_prx_widgets.PrxPortAsShotgunEntities(
                 'test_shotgun_tasks'

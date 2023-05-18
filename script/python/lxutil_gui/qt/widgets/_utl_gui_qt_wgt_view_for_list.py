@@ -1,7 +1,7 @@
 # coding=utf-8
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry_base
 
 import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
@@ -12,8 +12,10 @@ class QtListWidget(
     ctrl_f_key_pressed = qt_signal()
     f5_key_pressed = qt_signal()
     item_checked = qt_signal(object, int)
-    info_changed = qt_signal(str)
+    #
     focus_changed = qt_signal()
+    #
+    info_text_accepted = qt_signal(str)
     def __init__(self, *args, **kwargs):
         super(QtListWidget, self).__init__(*args, **kwargs)
         qt_palette = QtDccMtd.get_palette()
@@ -115,13 +117,13 @@ class QtListWidget(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_entry.QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_entry_base.QtEntryFrame):
                     parent._set_focused_(True)
                 self.focus_changed.emit()
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_entry.QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_entry_base.QtEntryFrame):
                     parent._set_focused_(False)
                 self.focus_changed.emit()
         if widget == self.verticalScrollBar():
@@ -144,7 +146,7 @@ class QtListWidget(
             info = ''
         #
         if info != self._info:
-            self.info_changed.emit(info)
+            self.info_text_accepted.emit(info)
             self._info = info
 
     def _set_grid_size_(self, w, h):

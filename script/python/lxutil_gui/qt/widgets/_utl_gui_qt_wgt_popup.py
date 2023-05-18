@@ -5,12 +5,12 @@ from lxutil_gui.qt.utl_gui_qt_core import *
 
 from lxutil_gui import utl_gui_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_entry
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_entry_base
 
 
 class QtPopupForRgbaChoose(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtPopupBaseDef,
 ):
     def _refresh_widget_draw_(self):
@@ -25,7 +25,7 @@ class QtPopupForRgbaChoose(
         self.setFocusProxy(self.parent())
         self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint)
         #
-        self._set_frame_def_init_()
+        self._init_frame_base_def_(self)
         self._init_popup_base_def_(self)
         #
         self._frame_border_color = QtBackgroundColors.Light
@@ -106,7 +106,7 @@ class QtPopupForRgbaChoose(
 
 class QtPopupForChoose(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtPopupBaseDef,
 ):
     def _refresh_widget_draw_(self):
@@ -150,7 +150,7 @@ class QtPopupForChoose(
         self._popup_toolbar_draw_tool_tip_rect.setRect(
             c_x, c_y, tbr_w-tbr_h, tbr_h
         )
-        self._keyword_filter_line_edit.setGeometry(
+        self._popup_text_entry.setGeometry(
             c_x, c_y, tbr_w-tbr_h, tbr_h
         )
         #
@@ -182,7 +182,7 @@ class QtPopupForChoose(
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         #
-        self._set_frame_def_init_()
+        self._init_frame_base_def_(self)
         self._init_popup_base_def_(self)
         #
         self._popup_item_width, self._popup_item_height = 20, 20
@@ -216,18 +216,18 @@ class QtPopupForChoose(
         self._popup_all_unchecked_button.press_clicked.connect(self._execute_popup_all_unchecked_)
         # keyword filter
         self._keyword_filter_is_enable = False
-        self._keyword_filter_line_edit = _utl_gui_qt_wgt_entry.QtConstantEntry(self)
-        self._keyword_filter_line_edit.hide()
-        self._keyword_filter_line_edit._set_entry_enable_(True)
-        self._keyword_filter_line_edit.setAlignment(
+        self._popup_text_entry = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit(self)
+        self._popup_text_entry.hide()
+        self._popup_text_entry._set_entry_enable_(True)
+        self._popup_text_entry.setAlignment(
             QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
         )
-        self._keyword_filter_line_edit.installEventFilter(self)
+        self._popup_text_entry.installEventFilter(self)
         # tag filter
         self._tag_filter_is_enable = False
         self._tag_filter_width_percent = 0.375
         self._tag_filter_draw_rect = QtCore.QRect()
-        self._tag_filter_list_widget = _utl_gui_qt_wgt_entry.QtListEntryForPopup(self)
+        self._tag_filter_list_widget = _utl_gui_qt_wgt_entry_base.QtEntryAsListForPopup(self)
         self._tag_filter_list_widget.hide()
         self._tag_filter_list_widget.setGridSize(
             QtCore.QSize(self._popup_item_width, self._popup_item_height)
@@ -235,7 +235,7 @@ class QtPopupForChoose(
         self._tag_filter_list_widget.setSpacing(2)
         self._tag_filter_list_widget.setUniformItemSizes(True)
         #
-        self._popup_view = _utl_gui_qt_wgt_entry.QtListEntryForPopup(self)
+        self._popup_view = _utl_gui_qt_wgt_entry_base.QtEntryAsListForPopup(self)
         #
         self._item_count_maximum = 10
         self._popup_view.setGridSize(
@@ -263,7 +263,8 @@ class QtPopupForChoose(
             self._frame_draw_rect,
             border_color=QtBorderColors.Popup,
             background_color=self._frame_background_color,
-            # border_radius=4
+            border_radius=1,
+            border_width=2
         )
         painter._draw_line_by_points_(
             point_0=self._popup_toolbar_draw_rect.bottomLeft(),
@@ -271,7 +272,7 @@ class QtPopupForChoose(
             border_color=self._frame_border_color,
         )
         if self._keyword_filter_is_enable is True:
-            if not self._keyword_filter_line_edit.text():
+            if not self._popup_text_entry.text():
                 painter._draw_text_by_rect_(
                     self._popup_toolbar_draw_tool_tip_rect,
                     'entry keyword to filter ...',
@@ -304,19 +305,19 @@ class QtPopupForChoose(
             elif event.type() == QtCore.QEvent.WindowDeactivate:
                 self._close_popup_()
             elif event.type() == QtCore.QEvent.InputMethod:
-                self._keyword_filter_line_edit.inputMethodEvent(event)
+                self._popup_text_entry.inputMethodEvent(event)
             elif event.type() == QtCore.QEvent.KeyPress:
                 if event.key() == QtCore.Qt.Key_Escape:
                     self._close_popup_()
                 else:
-                    self._keyword_filter_line_edit.keyPressEvent(event)
+                    self._popup_text_entry.keyPressEvent(event)
         return False
 
     def _set_popup_keyword_filter_enable_(self, boolean):
         self._keyword_filter_is_enable = boolean
         if boolean is True:
-            self._keyword_filter_line_edit.show()
-            self._keyword_filter_line_edit.entry_changed.connect(
+            self._popup_text_entry.show()
+            self._popup_text_entry.entry_changed.connect(
                 self._execute_popup_filter_
             )
 
@@ -328,7 +329,7 @@ class QtPopupForChoose(
                 self._execute_popup_filter_
             )
 
-    def _set_popup_multiply_enable_(self, boolean):
+    def _set_popup_choose_multiply_enable_(self, boolean):
         self._popup_multiply_is_enable = boolean
 
     def _get_popup_multiply_is_enable_(self):
@@ -361,7 +362,7 @@ class QtPopupForChoose(
             parent = self.parent()
             self._popup_view._set_clear_()
             self._tag_filter_list_widget._set_clear_()
-            self._keyword_filter_line_edit._set_clear_()
+            self._popup_text_entry._set_clear_()
             values = parent._get_choose_values_()
             if values:
                 if isinstance(values, (tuple, list)):
@@ -474,19 +475,20 @@ class QtPopupForChoose(
                             i_item_widget._set_item_tag_filter_keys_src_add_(i_tag)
 
     def _execute_popup_end_(self):
-        parent = self.parent()
         selected_item_widgets = self._popup_view._get_selected_item_widgets_()
         if selected_item_widgets:
-            parent._extend_choose_current_values_(
-                [i._get_name_text_() for i in selected_item_widgets]
-            )
+            texts = [i._get_name_text_() for i in selected_item_widgets]
+            self.user_popup_choose_texts_accepted.emit(texts)
+            self.user_popup_choose_text_accepted.emit(texts[0])
             #
-            if parent._get_choose_multiply_is_enable_() is True:
+            if self._get_popup_multiply_is_enable_() is True:
                 checked_item_widgets = self._popup_view._get_checked_item_widgets_()
-                parent._extend_choose_current_values_([i._get_name_text_() for i in checked_item_widgets])
+                if checked_item_widgets:
+                    texts = [i._get_name_text_() for i in checked_item_widgets]
+                    self.user_popup_choose_texts_accepted.emit(texts)
+                    self.user_popup_choose_text_accepted.emit(texts[0])
             #
-            parent.choose_changed.emit()
-            parent.user_choose_changed.emit()
+            self.user_popup_choose_finished.emit()
         #
         self._close_popup_()
 
@@ -494,7 +496,7 @@ class QtPopupForChoose(
         self._popup_entry = widget
         self._popup_entry.installEventFilter(self._widget)
         self._widget.setFocusProxy(self._popup_entry)
-        self._keyword_filter_line_edit.setFocusProxy(self._popup_entry)
+        self._popup_text_entry.setFocusProxy(self._popup_entry)
         self._tag_filter_list_widget.setFocusProxy(
             self._popup_entry
         )
@@ -522,7 +524,7 @@ class QtPopupForChoose(
             tags = [item_src._get_name_text_()]
             self._popup_view._set_view_tag_filter_data_src_(tags)
         # keyword filter
-        self._popup_view._set_view_keyword_filter_data_src_([self._keyword_filter_line_edit.text()])
+        self._popup_view._set_view_keyword_filter_data_src_([self._popup_text_entry.text()])
         #
         self._popup_view._refresh_view_items_visible_by_any_filter_()
         self._popup_view._refresh_view_all_items_viewport_showable_()
@@ -557,13 +559,18 @@ class QtPopupForChoose(
         )
 
 
+class QtPopupForHistory(
+    QtPopupForChoose
+):
+    def __init__(self, *args, **kwargs):
+        super(QtPopupForHistory, self).__init__(*args, **kwargs)
+
+
 class QtPopupForCompletion(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtPopupBaseDef,
 ):
-    completion_finished = qt_signal(str)
-
     def _refresh_widget_draw_geometry_(self):
         x, y = 0, 0
         w, h = self.width(), self.height()
@@ -611,7 +618,7 @@ class QtPopupForCompletion(
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         #
-        self._set_frame_def_init_()
+        self._init_frame_base_def_(self)
         self._init_popup_base_def_(self)
         #
         self._popup_close_button = _utl_gui_qt_wgt_utility.QtIconPressItem(self)
@@ -623,7 +630,7 @@ class QtPopupForCompletion(
             '"LMB-click" to close'
         )
         #
-        self._popup_view = _utl_gui_qt_wgt_entry.QtListEntryForPopup(self)
+        self._popup_view = _utl_gui_qt_wgt_entry_base.QtEntryAsListForPopup(self)
         #
         self._item_count_maximum = 10
         self._popup_item_width, self._popup_item_height = 20, 20
@@ -649,6 +656,7 @@ class QtPopupForCompletion(
             self._frame_draw_rect,
             border_color=QtBorderColors.Popup,
             background_color=self._frame_background_color,
+            border_radius=1,
             border_width=2
         )
         painter._draw_line_by_points_(
@@ -731,13 +739,11 @@ class QtPopupForCompletion(
             self._close_popup_()
 
     def _execute_popup_end_(self, *args, **kwargs):
-        parent = self.parent()
         selected_item_widget = self._popup_view._get_selected_item_widget_()
         if selected_item_widget:
-            name_text = selected_item_widget._get_name_text_()
-            parent._set_value_(name_text)
-            parent.completion_finished.emit()
-            self.completion_finished.emit(name_text)
+            text = selected_item_widget._get_name_text_()
+            #
+            self.user_popup_choose_text_accepted.emit(text)
 
         self._close_popup_()
 
@@ -747,7 +753,7 @@ class QtPopupForCompletion(
 
 class QtPopupForGuideChoose(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtPopupBaseDef,
 ):
     def __init__(self, *args, **kwargs):
@@ -758,16 +764,16 @@ class QtPopupForGuideChoose(
         #
         self.setPalette(QtDccMtd.get_palette())
         #
-        self._set_frame_def_init_()
+        self._init_frame_base_def_(self)
         self._init_popup_base_def_(self)
         #
-        self._keyword_filter_line_edit = _utl_gui_qt_wgt_entry.QtConstantEntry(self)
-        self._keyword_filter_line_edit.hide()
-        self._keyword_filter_line_edit._set_entry_enable_(True)
-        self._keyword_filter_line_edit.setAlignment(
+        self._popup_text_entry = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit(self)
+        self._popup_text_entry.hide()
+        self._popup_text_entry._set_entry_enable_(True)
+        self._popup_text_entry.setAlignment(
             QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
         )
-        self._keyword_filter_line_edit.entry_changed.connect(
+        self._popup_text_entry.entry_changed.connect(
             self._execute_popup_filter_
         )
         #
@@ -780,7 +786,7 @@ class QtPopupForGuideChoose(
             '"LMB-click" to close'
         )
         #
-        self._popup_view = _utl_gui_qt_wgt_entry.QtListEntryForPopup(self)
+        self._popup_view = _utl_gui_qt_wgt_entry_base.QtEntryAsListForPopup(self)
         #
         self._item_count_maximum = 10
         self._popup_item_width, self._popup_item_height = 20, 20
@@ -820,7 +826,7 @@ class QtPopupForGuideChoose(
             border_width=2
         )
         #
-        if not self._keyword_filter_line_edit.text():
+        if not self._popup_text_entry.text():
             painter._draw_text_by_rect_(
                 self._popup_toolbar_draw_tool_tip_rect,
                 'entry keyword to filter ...',
@@ -841,12 +847,12 @@ class QtPopupForGuideChoose(
                 if event.key() == QtCore.Qt.Key_Escape:
                     self._close_popup_()
                 else:
-                    self._keyword_filter_line_edit.keyPressEvent(event)
+                    self._popup_text_entry.keyPressEvent(event)
         return False
 
     def _execute_popup_filter_(self):
         # keyword filter
-        self._popup_view._set_view_keyword_filter_data_src_([self._keyword_filter_line_edit.text()])
+        self._popup_view._set_view_keyword_filter_data_src_([self._popup_text_entry.text()])
         #
         self._popup_view._refresh_view_items_visible_by_any_filter_()
         self._popup_view._refresh_view_all_items_viewport_showable_()
@@ -855,7 +861,7 @@ class QtPopupForGuideChoose(
         self._popup_entry = widget
         self._popup_entry.installEventFilter(self._widget)
         self._widget.setFocusProxy(self._popup_entry)
-        self._keyword_filter_line_edit.setFocusProxy(self._popup_entry)
+        self._popup_text_entry.setFocusProxy(self._popup_entry)
 
         self._popup_entry.key_up_pressed.connect(
             self._popup_view._set_scroll_to_pre_item_
@@ -892,8 +898,8 @@ class QtPopupForGuideChoose(
         self._popup_toolbar_draw_tool_tip_rect.setRect(
             c_x, c_y, tbr_w-tbr_h, tbr_h
         )
-        self._keyword_filter_line_edit.show()
-        self._keyword_filter_line_edit.setGeometry(
+        self._popup_text_entry.show()
+        self._popup_text_entry.setGeometry(
             c_x, c_y, tbr_w-tbr_h, tbr_h
         )
         # close button
@@ -974,7 +980,7 @@ class QtPopupForGuideChoose(
                 )
                 parent._refresh_guide_draw_geometry_()
                 #
-                parent.guide_user_entry_changed.emit(path_text_cur)
+                parent.guide_text_accepted.emit(path_text_cur)
             # clear latest
             parent._clear_guide_current_()
         #
@@ -1011,7 +1017,7 @@ class QtPopupForGuideChoose(
 
 class QtPopupProxy(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameDef
+    utl_gui_qt_abstract.AbsQtFrameBaseDef
 ):
     def _refresh_widget_draw_(self):
         pass

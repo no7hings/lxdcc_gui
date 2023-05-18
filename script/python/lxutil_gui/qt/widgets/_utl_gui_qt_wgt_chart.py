@@ -1216,7 +1216,7 @@ class QtHistogramChart(
 
 class QtSequenceChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtNameDef,
+    utl_gui_qt_abstract.AbsQtNameBaseDef,
     utl_gui_qt_abstract.AbsQtChartBaseDef,
     utl_gui_qt_abstract.AbsQtStatusDef,
     #
@@ -1289,7 +1289,7 @@ class QtSequenceChart(
         #
         self._set_build_()
         #
-        self._init_name_def_(self)
+        self._init_name_base_def_(self)
         self._init_chart_base_def_(self)
         self._set_status_def_init_()
         #

@@ -14,7 +14,7 @@ class QtTreeWidgetItem(
     #
     utl_gui_qt_abstract.AbsQtTypeDef,
     utl_gui_qt_abstract.AbsQtPathDef,
-    utl_gui_qt_abstract.AbsQtNameDef,
+    utl_gui_qt_abstract.AbsQtNameBaseDef,
     #
     utl_gui_qt_abstract.AbsQtIconDef,
     utl_gui_qt_abstract.AbsQtShowForItemDef,
@@ -49,7 +49,7 @@ class QtTreeWidgetItem(
         #
         self._init_type_def_(self)
         self._init_path_def_(self)
-        self._init_name_def_(self)
+        self._init_name_base_def_(self)
         self._init_icon_def_(self)
         self._init_menu_def_()
         #

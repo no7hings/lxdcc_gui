@@ -35,7 +35,7 @@ class AbsQtItemsDef(object):
 class QtTabView(
     QtWidgets.QWidget,
     AbsQtItemsDef,
-    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtWidgetDef,
 ):
     current_changed = qt_signal()
@@ -50,7 +50,7 @@ class QtTabView(
         self.setFocusPolicy(QtCore.Qt.NoFocus)
 
         self._set_items_def_init_(self)
-        self._set_frame_def_init_()
+        self._init_frame_base_def_(self)
         self._init_widget_def_(self)
 
         self._tab_w, self._tab_h = 48, 24

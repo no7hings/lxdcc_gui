@@ -8,7 +8,7 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item,
 
 class _QtWindow(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameBaseDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -23,7 +23,7 @@ class _QtWindow(
         self._main_layout.setContentsMargins(0, 0, 0, 0)
         self._main_layout.setSpacing(0)
         #
-        self._set_frame_def_init_()
+        self._init_frame_base_def_(self)
         #
         self._frame_background_color = 63, 63, 63, 255
         self._hovered_frame_background_color = 63, 63, 63, 255

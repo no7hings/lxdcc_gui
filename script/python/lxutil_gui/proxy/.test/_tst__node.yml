@@ -73,12 +73,11 @@ constant/script:
 array/shotgun_entities_choose:
     widget: shotgun_entities_choose
     # option for shotgun entities
-    shotgun_entity_kwargs: { entity_type: 'HumanUser', filters: [ [ 'sg_studio', 'is', 'CG' ], [ 'sg_status_list', 'is', 'act' ] ], fields: [ 'sg_nickname', 'email', 'name' ] }
-    key_pattern: '{sg_nickname};{email};{name}'
-    keyword_filter_fields: [ 'sg_nickname', 'email', 'name' ]
-    tag_filter_fields: [ 'department' ]
+    shotgun_entity_kwargs: {entity_type: 'HumanUser', filters:[['sg_studio', 'is', 'CG'], ['sg_status_list', 'is', 'act']], fields: ['name', 'email', 'sg_nickname']}
+    keyword_filter_fields: ['name', 'email', 'sg_nickname']
+    tag_filter_fields: ['department']
     #
-    value: ''
+    value: []
     tool_tip: '...'
     enable: True
 

@@ -23,7 +23,7 @@ from lxutil_gui import utl_gui_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_split, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_item_for_port
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
@@ -170,7 +170,7 @@ class AbsPrxTypeQtEntry(utl_gui_prx_abstract.AbsPrxWidget):
 
 class _PrxStgObjEntry(AbsPrxTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsPopupConstantChoose
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item_for_port.QtValueEntryAsTextEditByChoose
     def __init__(self, *args, **kwargs):
         super(_PrxStgObjEntry, self).__init__(*args, **kwargs)
         self._history_key = 'gui.storage'
@@ -179,7 +179,7 @@ class _PrxStgObjEntry(AbsPrxTypeQtEntry):
         self._ext_filter = 'All File (*.*)'
         #
         self._qt_entry_widget._set_value_entry_enable_(True)
-        self._qt_entry_widget._set_value_entry_popup_enable_(True)
+        self._qt_entry_widget._set_value_entry_drop_enable_(True)
         self._qt_entry_widget._set_value_entry_use_as_storage_(True)
         self._qt_entry_widget._set_value_validation_fnc_(self._value_validation_fnc_)
         self._qt_entry_widget._set_popup_completion_gain_fnc_(self._value_completion_gain_fnc_)
@@ -204,7 +204,7 @@ class _PrxStgObjEntry(AbsPrxTypeQtEntry):
         self._qt_entry_widget.user_choose_changed.connect(self.set_history_update)
         self._qt_entry_widget._set_value_entry_finished_connect_to_(self.set_history_update)
 
-        self._qt_entry_widget._set_value_entry_popup_enable_(True)
+        self._qt_entry_widget._set_value_entry_drop_enable_(True)
 
     def set_ext_filter(self, ext_filter):
         self._ext_filter = ext_filter
@@ -444,12 +444,12 @@ class PrxDirectorySaveEntry(_PrxStgObjEntry):
 
 class _PrxStgObjsEntry(AbsPrxTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsArray
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item_for_port.QtValueEntryAsList
     def __init__(self, *args, **kwargs):
         super(_PrxStgObjsEntry, self).__init__(*args, **kwargs)
         self._history_key = 'gui.storages'
         #
-        self._qt_entry_widget._set_value_entry_popup_enable_(True)
+        self._qt_entry_widget._set_value_entry_drop_enable_(True)
         self._qt_entry_widget._set_value_entry_enable_(True)
         self._qt_entry_widget._get_resize_handle_()._set_resize_target_(self.widget)
         self._qt_entry_widget._set_resize_enable_(True)
@@ -458,7 +458,7 @@ class _PrxStgObjsEntry(AbsPrxTypeQtEntry):
         self._qt_entry_widget._get_value_entry_gui_()._set_validator_use_as_storage_(True)
         self._qt_entry_widget._get_value_entry_gui_()._set_value_validation_fnc_(self._value_validation_fnc_)
         self._qt_entry_widget._get_value_entry_gui_().entry_added.connect(self.set_history_update)
-        self._qt_entry_widget._get_popup_choose_gui_()._set_popup_auto_resize_enable_(True)
+        self._qt_entry_widget._get_choose_extra_gui_()._set_popup_auto_resize_enable_(True)
         self._qt_entry_widget._set_choose_button_icon_file_path_(
             utl_gui_core.RscIconFile.get('history')
         )
@@ -487,7 +487,7 @@ class _PrxStgObjsEntry(AbsPrxTypeQtEntry):
         self._ext_filter = ext_filter
 
     def set_append(self, raw):
-        self._qt_entry_widget._set_value_append_(
+        self._qt_entry_widget._append_value_(
             raw
         )
 
@@ -533,7 +533,7 @@ class _PrxStgObjsEntry(AbsPrxTypeQtEntry):
     def set_history_show_latest(self):
         _ = utl_core.History.get_latest(self._history_key)
         if _:
-            self._qt_entry_widget._set_value_append_(_)
+            self._qt_entry_widget._append_value_(_)
 
     def set_history_visible(self, boolean):
         pass
@@ -602,7 +602,7 @@ class PrxEntryForDirectoriesOpen(_PrxStgObjsEntry):
 
     def set_locked(self, boolean):
         self._qt_entry_widget._set_value_entry_enable_(not boolean)
-        self._qt_entry_widget._set_value_entry_popup_enable_(not boolean)
+        self._qt_entry_widget._set_value_entry_drop_enable_(not boolean)
         self._qt_entry_widget._set_value_entry_choose_enable_(not boolean)
         self._open_button.widget._set_action_enable_(not boolean)
 
@@ -628,7 +628,7 @@ class PrxEntryForDirectoriesOpen(_PrxStgObjsEntry):
         return False
 
     def set(self, *args, **kwargs):
-        self._qt_entry_widget._set_values_clear_()
+        self._qt_entry_widget._clear_all_values_()
         self._qt_entry_widget._set_values_(args[0])
 
 
@@ -645,6 +645,7 @@ class PrxMediasOpenEntry(_PrxStgObjsEntry):
 
         self._create_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self._qt_entry_widget._set_value_entry_button_add_(self._create_button.widget)
+        self._qt_entry_widget._set_empty_icon_name_('placeholder/image')
         self._create_button.connect_press_clicked_to(self._set_create_)
         self._create_button.set_name('create file')
         self._create_button.set_icon_name('camera')
@@ -717,12 +718,12 @@ class PrxMediasOpenEntry(_PrxStgObjsEntry):
 
 class _PrxEntryForValueArray(AbsPrxTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsArray
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item_for_port.QtValueEntryAsList
     def __init__(self, *args, **kwargs):
         super(_PrxEntryForValueArray, self).__init__(*args, **kwargs)
         self._history_key = 'gui.values'
         #
-        self._qt_entry_widget._set_value_entry_popup_enable_(True)
+        self._qt_entry_widget._set_value_entry_drop_enable_(True)
         self._qt_entry_widget._set_value_entry_enable_(True)
         self._qt_entry_widget._get_resize_handle_()._set_resize_target_(self.widget)
         self._qt_entry_widget._set_resize_enable_(True)
@@ -757,16 +758,16 @@ class _PrxEntryForValueArray(AbsPrxTypeQtEntry):
         pass
 
     def set_append(self, value):
-        self._qt_entry_widget._set_value_append_(
+        self._qt_entry_widget._append_value_(
             value
         )
 
 
-class _PrxEntryForValueArrayAsChoose(AbsPrxTypeQtEntry):
+class _PrxEntryAsArrayWithChoose(AbsPrxTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsArrayChoose
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item_for_port.QtValueEntryAsListWithChoose
     def __init__(self, *args, **kwargs):
-        super(_PrxEntryForValueArrayAsChoose, self).__init__(*args, **kwargs)
+        super(_PrxEntryAsArrayWithChoose, self).__init__(*args, **kwargs)
         self._history_key = 'gui.values_choose'
         #
         self._qt_entry_widget._set_value_entry_enable_(True)
@@ -791,7 +792,7 @@ class _PrxEntryForValueArrayAsChoose(AbsPrxTypeQtEntry):
         pass
 
     def set_choose_values(self, *args, **kwargs):
-        self._qt_entry_widget._set_choose_values_clear_()
+        self._qt_entry_widget._clear_choose_values_()
         self._qt_entry_widget._set_choose_values_(args[0])
 
     def set_append(self, value):
@@ -881,25 +882,25 @@ class _AbsShotgunDef(object):
             return names, image_url_dict, keyword_filter_dict, tag_filter_dict
 
 
-class _PrxEntryAsShotgunEntity(
+class _PrxEntryAsShotgunEntityByChoose(
     AbsPrxTypeQtEntry,
     _AbsShotgunDef
 ):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsPopupConstantChoose
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item_for_port.QtValueEntryAsTextEditByChoose
     def __init__(self, *args, **kwargs):
-        super(_PrxEntryAsShotgunEntity, self).__init__(*args, **kwargs)
+        super(_PrxEntryAsShotgunEntityByChoose, self).__init__(*args, **kwargs)
         self._shotgun_entity_kwargs = {}
         # popup
-        self._qt_entry_widget._set_value_entry_popup_enable_(True)
+        self._qt_entry_widget._set_value_entry_drop_enable_(True)
         # entry
         self._qt_entry_widget._set_value_entry_enable_(True)
         # choose
-        self._qt_entry_widget._set_choose_popup_auto_resize_enable_(False)
+        self._qt_entry_widget._set_choose_extra_auto_resize_enable_(False)
         self._qt_entry_widget._set_choose_index_showable_(True)
-        self._qt_entry_widget._set_choose_tag_filter_enable_(True)
-        self._qt_entry_widget._set_choose_keyword_filter_enable_(True)
-        self._qt_entry_widget._set_choose_item_size_(40, 40)
+        self._qt_entry_widget._set_choose_extra_tag_filter_enable_(True)
+        self._qt_entry_widget._set_choose_extra_keyword_filter_enable_(True)
+        self._qt_entry_widget._set_choose_extra_item_size_(40, 40)
         self._qt_entry_widget._set_choose_button_icon_file_path_(
             utl_gui_core.RscIconFile.get('entity')
         )
@@ -927,17 +928,17 @@ class _PrxEntryAsShotgunEntity(
                 self._qt_entry_widget._set_value_(names[0])
 
 
-class _PrxEntryAsShotgunEntities(
+class _PrxEntryAsShotgunEntitiesWithChoose(
     AbsPrxTypeQtEntry,
     _AbsShotgunDef
 ):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsArray
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item_for_port.QtValueEntryAsList
     def __init__(self, *args, **kwargs):
-        super(_PrxEntryAsShotgunEntities, self).__init__(*args, **kwargs)
+        super(_PrxEntryAsShotgunEntitiesWithChoose, self).__init__(*args, **kwargs)
         self._shotgun_entity_kwargs = {}
         # popup
-        self._qt_entry_widget._set_value_entry_popup_enable_(True)
+        self._qt_entry_widget._set_value_entry_drop_enable_(True)
         self._qt_entry_widget._set_value_entry_enable_(True)
         # resize
         self._qt_entry_widget._get_resize_handle_()._set_resize_target_(self.widget)
@@ -945,26 +946,29 @@ class _PrxEntryAsShotgunEntities(
         self._qt_entry_widget._get_resize_handle_()._set_resize_minimum_(42)
         self._qt_entry_widget._set_size_policy_height_fixed_mode_()
         #
-        self._qt_entry_widget._set_choose_tag_filter_enable_(True)
-        self._qt_entry_widget._set_choose_keyword_filter_enable_(True)
-        self._qt_entry_widget._set_choose_item_size_(40, 40)
+        self._qt_entry_widget._set_choose_extra_auto_resize_enable_(False)
+        self._qt_entry_widget._set_choose_extra_tag_filter_enable_(True)
+        self._qt_entry_widget._set_choose_extra_keyword_filter_enable_(True)
+        self._qt_entry_widget._set_choose_extra_item_size_(40, 40)
         self._qt_entry_widget._set_choose_button_icon_file_path_(
-            utl_gui_core.RscIconFile.get('entity')
+            utl_gui_core.RscIconFile.get('tag')
         )
-
+        #
+        self._qt_entry_widget._set_empty_icon_name_('placeholder/shotgun')
+        #
         self.widget.setMaximumHeight(92)
         self.widget.setMinimumHeight(92)
-
+        #
         self._data = []
 
     def get(self):
         return self._qt_entry_widget._get_values_()
 
-    def set(self, raw=None, **kwargs):
-        pass
+    def set(self, *args, **kwargs):
+        self._qt_entry_widget._set_values_(args[0])
 
     def set_append(self, value):
-        self._qt_entry_widget._set_value_append_(
+        self._qt_entry_widget._append_value_(
             value
         )
 
@@ -983,7 +987,7 @@ class _PrxEntryAsShotgunEntities(
 
 class _PrxEntryAsRsvProject(AbsPrxTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsPopupConstantChoose
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item_for_port.QtValueEntryAsTextEditByChoose
     #
     HISTORY_KEY = 'gui.projects'
     def __init__(self, *args, **kwargs):
@@ -1050,7 +1054,7 @@ class _PrxEntryAsRsvProject(AbsPrxTypeQtEntry):
 
 class PrxEntryForSchemeAsChoose(AbsPrxTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsPopupConstantChoose
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item_for_port.QtValueEntryAsTextEditByChoose
     #
     HISTORY_KEY = 'gui.schemes'
     def __init__(self, *args, **kwargs):
@@ -1129,7 +1133,7 @@ class PrxEntryForSchemeAsChoose(AbsPrxTypeQtEntry):
 
 class _PrxEntryAsConstant(AbsPrxTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsConstant
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item_for_port.QtValueEntryAsTextEdit
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsConstant, self).__init__(*args, **kwargs)
         # self._qt_entry_widget.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft | utl_gui_qt_core.QtCore.Qt.AlignVCenter)
@@ -1140,10 +1144,10 @@ class _PrxEntryAsConstant(AbsPrxTypeQtEntry):
         self._qt_entry_widget._set_value_type_(value_type)
 
     def set_use_as_frames(self):
-        self._qt_entry_widget._set_validator_use_as_frames_()
+        self._qt_entry_widget._set_value_validator_use_as_frames_()
 
     def set_use_as_rgba(self):
-        self._qt_entry_widget._set_validator_use_as_rgba_()
+        self._qt_entry_widget._set_value_validator_use_as_rgba_()
 
     def get(self):
         return self._qt_entry_widget._get_value_()
@@ -1187,7 +1191,7 @@ class _PrxEntryAsConstant(AbsPrxTypeQtEntry):
 
 class _PrxEntryAsEnumerate(AbsPrxTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsPopupConstantChoose
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item_for_port.QtValueEntryAsTextEditByChoose
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsEnumerate, self).__init__(*args, **kwargs)
         #
@@ -1242,7 +1246,7 @@ class _PrxEntryAsEnumerate(AbsPrxTypeQtEntry):
 
 class _PrxEntryAsCapsule(AbsPrxTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsCapsule
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item_for_port.QtValueEntryAsCapsule
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsCapsule, self).__init__(*args, **kwargs)
 
@@ -1300,7 +1304,7 @@ class _PrxEntryAsFloat(_PrxEntryAsConstant):
 
 class _PrxEntryAsTuple(AbsPrxTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsTuple
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item_for_port.QtValueEntryAsTextEdits
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsTuple, self).__init__(*args, **kwargs)
 
@@ -1331,20 +1335,19 @@ class _PrxEntryAsTuple(AbsPrxTypeQtEntry):
 class _PrxEntryAsIntegerTuple(_PrxEntryAsTuple):
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsIntegerTuple, self).__init__(*args, **kwargs)
-        self._qt_entry_widget._build_entry_(2, int)
+        self._qt_entry_widget._build_value_entry_(2, int)
 
 
 class _PrxEntryAsFloatTuple(_PrxEntryAsTuple):
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsFloatTuple, self).__init__(*args, **kwargs)
-        self._qt_entry_widget._build_entry_(2, float)
+        self._qt_entry_widget._build_value_entry_(2, float)
 
 
 class _PrxEntryAsRgba(_PrxEntryAsConstant):
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsPopupRgbaChoose
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item_for_port.QtValueEntryAsTupleByChoose
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsRgba, self).__init__(*args, **kwargs)
-        # self._qt_entry_widget._build_entry_(3, float)
 
 
 class _PrxEntryAsBoolean(AbsPrxTypeQtEntry):
@@ -1374,7 +1377,7 @@ class _PrxEntryAsBoolean(AbsPrxTypeQtEntry):
 
 class _PrxEntryAsScript(AbsPrxTypeQtEntry):
     QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item.QtValueEntryAsScript
+    QT_ENTRY_CLASS = _utl_gui_qt_wgt_item_for_port.QtValueEntryAsContentEdit
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsScript, self).__init__(*args, **kwargs)
         self.widget.setMaximumHeight(92)
@@ -1431,7 +1434,7 @@ class _PrxEntryAsButton(AbsPrxTypeQtEntry):
         self._qt_entry_widget._set_menu_data_(raw)
 
     def set_option_enable(self, boolean):
-        self._qt_entry_widget._set_item_option_click_enable_(boolean)
+        self._qt_entry_widget._set_option_click_enable_(boolean)
 
 
 class PrxSubProcessEntry(AbsPrxTypeQtEntry):
@@ -2905,7 +2908,7 @@ class PrxPortForValueArrayAsChoose(AbsPrxTypePort):
     ENABLE_CLASS = _PrxPortStatus
     LABEL_CLASS = _PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLASS = _PrxEntryForValueArrayAsChoose
+    ENTRY_CLASS = _PrxEntryAsArrayWithChoose
     def __init__(self, *args, **kwargs):
         super(PrxPortForValueArrayAsChoose, self).__init__(*args, **kwargs)
 
@@ -2921,7 +2924,7 @@ class PrxPortAsShotgunEntity(AbsPrxTypePort):
     ENABLE_CLASS = _PrxPortStatus
     LABEL_CLASS = _PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLASS = _PrxEntryAsShotgunEntity
+    ENTRY_CLASS = _PrxEntryAsShotgunEntityByChoose
     def __init__(self, *args, **kwargs):
         super(PrxPortAsShotgunEntity, self).__init__(*args, **kwargs)
 
@@ -2940,7 +2943,7 @@ class PrxPortAsShotgunEntities(AbsPrxTypePort):
     ENABLE_CLASS = _PrxPortStatus
     LABEL_CLASS = _PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLASS = _PrxEntryAsShotgunEntities
+    ENTRY_CLASS = _PrxEntryAsShotgunEntitiesWithChoose
     def __init__(self, *args, **kwargs):
         super(PrxPortAsShotgunEntities, self).__init__(*args, **kwargs)
 
@@ -3049,7 +3052,7 @@ class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtHBoxLayout(self.widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         #
-        qt_splitter_0 = _utl_gui_qt_wgt_utility.QtHSplitter_()
+        qt_splitter_0 = _utl_gui_qt_wgt_split.QtHSplitter_()
         qt_layout_0.addWidget(qt_splitter_0)
         #
         self._qt_label_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
@@ -3744,6 +3747,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
                     keyword_filter_fields=option.get('keyword_filter_fields'),
                     tag_filter_fields=option.get('tag_filter_fields')
                 )
+                port.set(value_)
         #
         elif widget_ in {'button'}:
             port = PrxPortAsButton(

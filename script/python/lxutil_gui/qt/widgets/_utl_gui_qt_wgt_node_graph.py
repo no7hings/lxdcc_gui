@@ -10,7 +10,7 @@ from lxutil_gui.qt.utl_gui_qt_core import *
 
 import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry, _utl_gui_qt_wgt_item_for_tree, _utl_gui_qt_wgt_view_for_tree
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry_base, _utl_gui_qt_wgt_item_for_tree, _utl_gui_qt_wgt_view_for_tree
 
 
 class _NGLayoutFlag(enum.IntEnum):
@@ -862,9 +862,9 @@ class AbsQtNGDrawNodeDef(object):
 class _QtNGNode(
     QtWidgets.QWidget,
     #
-    utl_gui_qt_abstract.AbsQtFrameDef,
+    utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtTypeDef,
-    utl_gui_qt_abstract.AbsQtNameDef,
+    utl_gui_qt_abstract.AbsQtNameBaseDef,
     utl_gui_qt_abstract.AbsQtIconDef,
     utl_gui_qt_abstract.AbsQtImageDef,
     utl_gui_qt_abstract.AbsQtMenuDef,
@@ -890,11 +890,11 @@ class _QtNGNode(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
         )
 
-        self._set_frame_def_init_()
+        self._init_frame_base_def_(self)
         self._init_type_def_(self)
-        self._init_name_def_(self)
+        self._init_name_base_def_(self)
         self._init_icon_def_(self)
-        self._set_image_def_init_()
+        self._init_image_def_()
         self._init_menu_def_()
         #
         self._init_action_base_def_(self)
@@ -1371,12 +1371,12 @@ class _QtNGGraph(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_entry.QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_entry_base.QtEntryFrame):
                     parent._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_entry.QtEntryFrame):
+                if isinstance(parent, _utl_gui_qt_wgt_entry_base.QtEntryFrame):
                     parent._set_focused_(False)
         return False
 

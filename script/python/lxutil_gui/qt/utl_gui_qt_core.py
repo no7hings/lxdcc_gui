@@ -483,9 +483,9 @@ class QtBackgroundColors(object):
     Selected = QtGui.QColor(
         *utl_gui_core.QtStyleMtd.get_background('color-selected')
     )
-    Checked = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-checked')
-    )
+    Checked = QtGui.QColor(127, 63, 127, 255)
+    CheckHovered = QtGui.QColor(191, 127, 191, 255)
+    DeleteHovered = QtGui.QColor(255, 63, 127, 255)
     Pressed = QtGui.QColor(
         *utl_gui_core.QtStyleMtd.get_background('color-pressed')
     )
@@ -1356,6 +1356,9 @@ class QtTimer(QtCore.QTimer):
 class QtPrintSignals(QtCore.QObject):
     added = qt_signal(str)
     overed = qt_signal(str)
+    #
+    print_add_accepted = qt_signal(str)
+    print_over_accepted = qt_signal(str)
 
 
 class QtMethodSignals(QtCore.QObject):
@@ -2885,7 +2888,7 @@ class QtPainter(QtGui.QPainter):
             x + (w - frm_w) / 2, y + (h - frm_h) / 2, frm_w, frm_h
         )
         self._draw_icon_file_by_rect_(
-            rect=rect, file_path=utl_gui_core.RscIconFile.get('empty')
+            rect=rect, file_path=utl_gui_core.RscIconFile.get(icon_name)
         )
 
     def _draw_icon_file_by_rect_(self, rect, file_path, offset=0, frame_rect=None, is_hovered=False):
@@ -2973,7 +2976,7 @@ class QtPainter(QtGui.QPainter):
         #
         self.device()
 
-    def _set_image_data_draw_by_rect_(self, rect, image_data, offset=0, text=None):
+    def _draw_image_data_by_rect_(self, rect, image_data, offset=0, text=None):
         if offset != 0:
             rect_offset = QtCore.QRect(
                 rect.x() + offset, rect.y() + offset,
@@ -3018,15 +3021,16 @@ class QtPainter(QtGui.QPainter):
                 #
                 self.device()
             else:
-                self._set_image_draw_by_text_(
+                self._draw_image_by_rect_use_text_(
                     rect_offset, text
                 )
         else:
-            self._set_image_draw_by_text_(
+            self._draw_image_by_rect_use_text_(
                 rect_offset, text
             )
 
-    def _set_image_draw_by_text_(self, rect, text=None):
+    def _draw_image_by_rect_use_text_(self, rect, text=None):
+
         if text is not None:
             draw_text = text[0]
         else:
@@ -3253,12 +3257,12 @@ class QtPainter(QtGui.QPainter):
         self._set_border_color_(border_color_)
         self._set_border_width_(border_width)
         #
-        b_ = border_width / 2
+        b_ = border_width/2
         if border_radius > 0:
             border_radius_ = b_+border_radius
             self.drawRoundedRect(
                 frame_rect,
-                border_radius_, border_radius_,
+                border_radius, border_radius,
                 QtCore.Qt.AbsoluteSize
             )
             if is_hovered is True:
@@ -3267,7 +3271,7 @@ class QtPainter(QtGui.QPainter):
                 )
                 self.drawRoundedRect(
                     frame_rect,
-                    border_radius_, border_radius_,
+                    border_radius, border_radius,
                     QtCore.Qt.AbsoluteSize
                 )
         elif border_radius == -1:
@@ -3301,7 +3305,7 @@ class QtPainter(QtGui.QPainter):
         t_f_s = max(t_f_s, 1)
         #
         txt_rect = QtCore.QRect(
-            x-1, y,
+            x, y,
             w, h
         )
         self._set_font_(
@@ -3716,28 +3720,31 @@ class QtPainter(QtGui.QPainter):
             color.setColorAt(1, color_1)
             return color
     @classmethod
-    def _get_item_background_color_by_rect__(cls, rect, is_check_hovered=False, is_checked=False, is_press_hovered=False, is_pressed=False, is_selected=False):
-        conditions = [is_check_hovered, is_checked, is_press_hovered, is_pressed, is_selected]
+    def _get_frame_background_color_by_rect_(cls, rect, check_is_hovered=False, is_checked=False, press_is_hovered=False, is_pressed=False, is_selected=False, delete_is_hovered=False):
+        conditions = [check_is_hovered, is_checked, press_is_hovered, is_pressed, is_selected]
         if True not in conditions:
             return QtBackgroundColors.Transparent
         #
         start_pos, end_pos = rect.topLeft(), rect.bottomRight()
         color = QtGui.QLinearGradient(start_pos, end_pos)
         #
-        check_conditions = [is_check_hovered, is_checked]
+        check_index = 0
+        select_index = .5
+        press_index = 1
+        check_conditions = [check_is_hovered, is_checked]
         check_args = []
         if check_conditions == [True, True]:
             check_args = [
-                (0, QtBackgroundColors.Hovered),
+                (check_index, QtBackgroundColors.CheckHovered),
                 (.25, QtBackgroundColors.Checked)
             ]
         elif check_conditions == [True, False]:
             check_args = [
-                (0, QtBackgroundColors.Hovered)
+                (check_index, QtBackgroundColors.CheckHovered)
             ]
         elif check_conditions == [False, True]:
             check_args = [
-                (0, QtBackgroundColors.Checked)
+                (check_index, QtBackgroundColors.Checked)
             ]
         #
         if True in check_args:
@@ -3745,28 +3752,37 @@ class QtPainter(QtGui.QPainter):
         #
         if is_selected is True:
             select_args = [
-                (.5, QtBackgroundColors.Selected)
+                (select_index, QtBackgroundColors.Selected)
             ]
         else:
             select_args = []
         #
-        press_conditions = [is_press_hovered, is_pressed]
+        if delete_is_hovered is True:
+            press_index = .75
+        #
+        press_conditions = [press_is_hovered, is_pressed]
         press_args = []
         if press_conditions == [True, True]:
             press_args = [
-                (1, QtBackgroundColors.Hovered),
-                (.5, QtBackgroundColors.Pressed)
+                (select_index, QtBackgroundColors.Pressed),
+                (press_index, QtBackgroundColors.Hovered),
             ]
         elif press_conditions == [True, False]:
             press_args = [
-                (1, QtBackgroundColors.Hovered),
+                (press_index, QtBackgroundColors.Hovered),
             ]
         elif press_conditions == [False, True]:
             press_args = [
-                (1, QtBackgroundColors.Pressed),
+                (press_index, QtBackgroundColors.Pressed),
             ]
         #
-        for i_args in check_args+select_args+press_args:
+        delete_args = []
+        if delete_is_hovered is True:
+            delete_args = [
+                (1, QtBackgroundColors.DeleteHovered)
+            ]
+        #
+        for i_args in check_args+select_args+press_args+delete_args:
             i_index, i_color = i_args
             color.setColorAt(i_index, i_color)
         return color
@@ -4295,8 +4311,8 @@ class QtNGPainter(QtPainter):
 
 
 def set_gui_proxy_set_print(gui_proxy, text):
-    if hasattr(gui_proxy, 'set_print_add_use_thread'):
-        gui_proxy.set_print_add_use_thread(text)
+    if hasattr(gui_proxy, 'add_content_with_thread'):
+        gui_proxy.add_content_with_thread(text)
 
 
 # log

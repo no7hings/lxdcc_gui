@@ -9,7 +9,7 @@ from lxutil import utl_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize, _utl_gui_qt_wgt_filter, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_window
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize, _utl_gui_qt_wgt_filter, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_item_for_port, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_window
 
 from lxutil_gui.proxy import utl_gui_prx_configure, utl_gui_prx_core, utl_gui_prx_abstract
 
@@ -696,7 +696,7 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
 
     def _set_build_(self):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
-        widget = _utl_gui_qt_wgt_item.QtValueEntryAsScript()
+        widget = _utl_gui_qt_wgt_item_for_port.QtValueEntryAsContentEdit()
         qt_layout_0.addWidget(widget)
         self._qt_text_browser_0 = widget._value_entry
 
@@ -731,13 +731,13 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
         )
 
     def set_print_add(self, text):
-        self._qt_text_browser_0._set_content_add_(text)
+        self._qt_text_browser_0._add_value_(text)
 
-    def set_print_add_use_thread(self, text):
-        self._qt_text_browser_0._set_content_add_use_thread_(text)
+    def add_content_with_thread(self, text):
+        self._qt_text_browser_0._add_value_with_thread_(text)
 
-    def set_print_over_use_thread(self, text):
-        self._qt_text_browser_0._set_print_over_use_thread_(text)
+    def set_content_with_thread(self, text):
+        self._qt_text_browser_0._set_value_with_thread_(text)
 
     def set_content(self, text, as_html=False):
         if as_html is True:
@@ -846,11 +846,10 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         return self.widget._get_is_checked_()
 
     def set_checked(self, boolean):
-        self.widget._set_checked_(boolean)
+        self._qt_widget._set_checked_(boolean)
 
     def set_option_click_enable(self, boolean):
-        self.widget._set_item_option_click_enable_(boolean)
-        self.widget.update()
+        self._qt_widget._set_option_click_enable_(boolean)
 
     def set_icon_name(self, icon_name):
         self._qt_widget._set_icon_file_path_(
@@ -988,7 +987,7 @@ class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):
         return self.get_enter_widget()._get_value_()
 
     def get_keywords(self):
-        return self._qt_widget._get_filter_keyword_texts_()
+        return self._qt_widget._get_all_filter_keyword_texts_()
 
     def get_is_match_case(self):
         return self.widget._get_is_match_case_()
@@ -1398,9 +1397,9 @@ class PrxToolWindow(
         text_browser = self.get_log_text_browser()
         text_browser.set_print_add(text)
 
-    def set_print_add_use_thread(self, text):
+    def add_content_with_thread(self, text):
         text_browser = self.get_log_text_browser()
-        text_browser.set_print_add_use_thread(text)
+        text_browser.add_content_with_thread(text)
 
     def gui_waiting(self):
         return self._qt_widget._gui_waiting_()

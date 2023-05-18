@@ -942,7 +942,7 @@ class PrxGuideBar(
         self._qt_widget._guide_entry._set_guide_dict_(dict_)
 
     def connect_user_entry_changed_to(self, fnc):
-        self._qt_widget._guide_entry.guide_user_entry_changed.connect(fnc)
+        self._qt_widget._guide_entry.guide_text_accepted.connect(fnc)
 
     def set_clear(self):
         pass
