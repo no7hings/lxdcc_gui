@@ -31,16 +31,16 @@ class AbsPrxStateDef(object):
 
 
 class AbsPrx(object):
-    QT_WIDGET_CLASS = None
-    MODEL_CLASS = None
+    QT_WIDGET_CLS = None
+    MODEL_CLS = None
     DCC_OBJ_KEY = 'dcc_obj'
     #
     PRX_CATEGORY = 'dialog_window'
     def __init__(self, *args, **kwargs):
-        self._qt_widget = self.QT_WIDGET_CLASS(*args, **kwargs)
+        self._qt_widget = self.QT_WIDGET_CLS(*args, **kwargs)
         self._qt_widget.gui_proxy = self
-        if self.MODEL_CLASS is not None:
-            self._model = self.MODEL_CLASS()
+        if self.MODEL_CLS is not None:
+            self._model = self.MODEL_CLS()
         else:
             self._model = None
         #
@@ -95,14 +95,18 @@ class AbsPrx(object):
     def __str__(self):
         return '{}(widget="{}")'.format(
             self.__class__.__name__,
-            self.QT_WIDGET_CLASS.__name__
+            self.QT_WIDGET_CLS.__name__
         )
 
 
 class AbsPrxWidget(AbsPrx):
+    ProcessStatus = bsc_configure.Status
     ValidatorStatus = bsc_configure.ValidatorStatus
     def __init__(self, *args, **kwargs):
         super(AbsPrxWidget, self).__init__(*args, **kwargs)
+        #
+        self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
+        #
         self._set_build_()
 
     def _set_build_(self):
@@ -159,7 +163,7 @@ class _Loading(object):
 
 
 class AbsPrxWaitingDef(object):
-    QT_WAITING_CHART_CLASS = None
+    QT_WAITING_CHART_CLS = None
     @property
     def widget(self):
         raise NotImplementedError()
@@ -168,7 +172,7 @@ class AbsPrxWaitingDef(object):
         return _Loading(self)
 
     def _set_waiting_def_init_(self):
-        self._qt_waiting_char = self.QT_WAITING_CHART_CLASS(self.widget)
+        self._qt_waiting_char = self.QT_WAITING_CHART_CLS(self.widget)
         self._qt_waiting_char.hide()
         #
         self._auto_stop_timer = utl_gui_qt_core.QtCore.QTimer(self.widget)
@@ -344,14 +348,14 @@ class AbsPrxWindow(AbsPrx):
 
 
 class AbsWidgetContentDef(object):
-    CONTENT_WIDGET_CLASS = None
+    CONTENT_WIDGET_CLS = None
     def _set_widget_content_def_init_(self, layout):
         self._widget_content_qt_layout_0 = layout
         self._widget_content_widget_dict = {}
         self._widget_content_widget_current = None
 
-    def _set_cnt_wdt_create_(self, key):
-        qt_widget_0 = self.CONTENT_WIDGET_CLASS()
+    def create_content_widget(self, key):
+        qt_widget_0 = self.CONTENT_WIDGET_CLS()
         qt_widget_0.hide()
         self._widget_content_qt_layout_0.addWidget(qt_widget_0)
         self._widget_content_widget_dict[key] = qt_widget_0
@@ -399,6 +403,8 @@ class GuiProgress(object):
         self._is_raise = False
         #
         self._depth = 0
+
+        self._qt_progress.show()
     @property
     def label(self):
         return self._label
@@ -463,6 +469,7 @@ class GuiProgress(object):
             self._map_value = 0
             self._map_maximum = 0
             self._is_stop = True
+            self._qt_progress.hide()
 
     def get_is_stop(self):
         return self._is_stop
@@ -487,7 +494,7 @@ class GuiProgress(object):
             return round(float(1)/float(self.maximum), 4)
         return 0
 
-    def set_child_add(self, progress_fnc):
+    def add_child(self, progress_fnc):
         self._children.append(progress_fnc)
         progress_fnc._parent = self
         #
@@ -608,16 +615,16 @@ class GuiProgress(object):
 
 
 class AbsPrxProgressingDef(object):
-    QT_PROGRESSING_CHART_CLASS = None
-    PROGRESS_FNC_CLASS = GuiProgress
-    PROGRESS_WIDGET_CLASS = None
+    QT_PROGRESSING_CHART_CLS = None
+    PROGRESS_FNC_CLS = GuiProgress
+    PROGRESS_WIDGET_CLS = None
     @property
     def widget(self):
         raise NotImplementedError()
 
     def _set_progressing_def_init_(self):
-        self._qt_progressing_char = self.QT_PROGRESSING_CHART_CLASS(self.widget)
-        # self._qt_progressing_char.hide()
+        self._qt_progressing_char = self.QT_PROGRESSING_CHART_CLS(self.widget)
+        self._qt_progressing_char.hide()
 
         self.widget._set_size_changed_connect_to_(self._refresh_progressing_draw_)
 
@@ -632,7 +639,7 @@ class AbsPrxProgressingDef(object):
         self._qt_progressing_char._refresh_widget_draw_()
 
     def set_progress_create(self, maximum, label=None):
-        g_p = self.PROGRESS_FNC_CLASS(
+        g_p = self.PROGRESS_FNC_CLS(
             proxy=self,
             qt_progress=self._qt_progressing_char,
             maximum=maximum,
@@ -644,7 +651,7 @@ class AbsPrxProgressingDef(object):
             if self._current_progress.get_is_stop() is True:
                 self._current_progress = g_p
             else:
-                self._current_progress.set_child_add(g_p)
+                self._current_progress.add_child(g_p)
         return g_p
     @contextmanager
     def gui_progressing(self, maximum, label=None):

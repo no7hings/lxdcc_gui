@@ -9,8 +9,8 @@ from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility
 class PrxNGGraph(
     utl_gui_prx_abstract.AbsPrxWidget
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryFrame
-    QT_VIEW_CLASS = _utl_gui_qt_wgt_node_graph._QtNGGraph
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_entry_base.QtEntryFrame
+    QT_VIEW_CLS = _utl_gui_qt_wgt_node_graph._QtNGGraph
     def __init__(self, *args, **kwargs):
         super(PrxNGGraph, self).__init__(*args, **kwargs)
         self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
@@ -21,9 +21,9 @@ class PrxNGGraph(
         self._prx_top_tool_bar.set_border_radius(1)
         #
         self._prx_filer_bar_0 = _utl_gui_prx_wdt_utility.PrxFilterBar()
-        self._prx_top_tool_bar.set_widget_add(self._prx_filer_bar_0)
+        self._prx_top_tool_bar.add_widget(self._prx_filer_bar_0)
         # add custom menu
-        self._qt_view = self.QT_VIEW_CLASS()
+        self._qt_view = self.QT_VIEW_CLS()
         self._qt_layout_0.addWidget(self._qt_view)
         #
         self._prx_filter_bar = self._prx_filer_bar_0
@@ -47,8 +47,8 @@ class PrxNGGraph(
 class PrxNGTree(
     utl_gui_prx_abstract.AbsPrxWidget
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryFrame
-    QT_VIEW_CLASS = _utl_gui_qt_wgt_node_graph._QtNGTree
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_entry_base.QtEntryFrame
+    QT_VIEW_CLS = _utl_gui_qt_wgt_node_graph._QtNGTree
     def __init__(self, *args, **kwargs):
         super(PrxNGTree, self).__init__(*args, **kwargs)
         self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
@@ -59,9 +59,9 @@ class PrxNGTree(
         self._prx_top_tool_bar.set_border_radius(1)
         #
         self._prx_filer_bar_0 = _utl_gui_prx_wdt_utility.PrxFilterBar()
-        self._prx_top_tool_bar.set_widget_add(self._prx_filer_bar_0)
+        self._prx_top_tool_bar.add_widget(self._prx_filer_bar_0)
         # add custom menu
-        self._qt_view = self.QT_VIEW_CLASS()
+        self._qt_view = self.QT_VIEW_CLS()
         self._qt_layout_0.addWidget(self._qt_view)
         #
         self._prx_filter_bar = self._prx_filer_bar_0
@@ -80,8 +80,8 @@ class PrxNGTree(
 class PrxNGImageGraph(
     utl_gui_prx_abstract.AbsPrxWidget
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryFrame
-    QT_VIEW_CLASS = _utl_gui_qt_wgt_node_graph._QtNGImageGraph
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_entry_base.QtEntryFrame
+    QT_VIEW_CLS = _utl_gui_qt_wgt_node_graph._QtNGImageGraph
     def __init__(self, *args, **kwargs):
         super(PrxNGImageGraph, self).__init__(*args, **kwargs)
         self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
@@ -92,9 +92,9 @@ class PrxNGImageGraph(
         self._prx_top_tool_bar.set_border_radius(1)
         #
         self._prx_filer_bar_0 = _utl_gui_prx_wdt_utility.PrxFilterBar()
-        self._prx_top_tool_bar.set_widget_add(self._prx_filer_bar_0)
+        self._prx_top_tool_bar.add_widget(self._prx_filer_bar_0)
         # add custom menu
-        self._qt_view = self.QT_VIEW_CLASS()
+        self._qt_view = self.QT_VIEW_CLS()
         self._qt_layout_0.addWidget(self._qt_view)
         #
         self._prx_filter_bar = self._prx_filer_bar_0
@@ -108,7 +108,7 @@ class PrxNGImageGraph(
     def set_node_add(self, *args, **kwargs):
         self._qt_view._set_ng_graph_sbj_node_create_(*args, **kwargs)
 
-    def set_restore(self):
+    def restore_all(self):
         self._qt_view._set_restore_()
 
     def set_clear(self):

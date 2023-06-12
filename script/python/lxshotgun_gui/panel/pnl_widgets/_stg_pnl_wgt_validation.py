@@ -5,8 +5,8 @@ from lxshotgun_fnc import stg_fnc_core
 
 
 class SceneCheckerToolPanel(utl_gui_pnl_abs_checker.AbsSceneCheckerToolPanel):
-    METHOD_CREATOR_CLASS = stg_fnc_core.CheckerCreator
-    STEP_LOADER_CLASS = stg_fnc_core.StpLoader
+    METHOD_CREATOR_CLS = stg_fnc_core.CheckerCreator
+    STEP_LOADER_CLS = stg_fnc_core.StpLoader
     def __init__(self, work_source_file_path, *args, **kwargs):
         import lxresolver.commands as rsv_commands
         #

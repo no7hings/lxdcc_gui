@@ -40,6 +40,8 @@ class Direction(enum.IntEnum):
 
 
 class ActionFlag(enum.IntEnum):
+    AnyClick = 0x00
+    #
     PressClick = 0x01
     PressDbClick = 0x02
     PressMove = 0x03
@@ -58,10 +60,16 @@ class ActionFlag(enum.IntEnum):
     #
     SplitHHover = 0x41
     SplitVHover = 0x42
-    SplitHPess = 0x43
-    SplitVPess = 0x44
+    SplitHPress = 0x43
+    SplitVPress = 0x44
     SplitHMove = 0x45
     SplitVMove = 0x46
+    SwapH = 0x47
+    SwapV = 0x48
+    ResizeLeft = 0x49
+    ResizeRight = 0x4A
+    ResizeUp = 0x4B
+    ResizeDown = 0x4C
     #
     ZoomWheel = 0x51
     #

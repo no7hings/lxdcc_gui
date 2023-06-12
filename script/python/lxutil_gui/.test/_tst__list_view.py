@@ -95,7 +95,7 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
         wdt.set_item_icon_frame_size(20, 20)
         wdt.set_item_icon_size(20, 20)
         wdt.set_clear()
-        self.set_widget_add(wdt)
+        self.add_widget(wdt)
         for i in range(10):
             add_fnc_(i)
 

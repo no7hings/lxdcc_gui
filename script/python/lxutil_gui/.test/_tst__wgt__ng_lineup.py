@@ -11,7 +11,7 @@ class W(prx_widgets.PrxToolWindow):
         super(W, self).__init__(*args, **kwargs)
         #
         c = prx_widgets.PrxNGImageGraph()
-        self.set_widget_add(c)
+        self.add_widget(c)
         u = unr_objects.ObjUniverse()
 
         o_t = u.get_or_create_obj_type('lynxi', 'shader')

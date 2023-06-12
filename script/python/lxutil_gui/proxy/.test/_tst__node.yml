@@ -85,6 +85,7 @@ array/files:
     widget: files
     value: ''
     tool_tip: '...'
+    ext_includes: ['.exr', '.jpg']
     enable: True
 
 array/directories:

@@ -14,7 +14,7 @@ class PnlSceneClearner(prx_widgets.PrxSessionToolWindow):
 
     def set_all_setup(self):
         self._options_prx_node = prx_widgets.PrxNode_('options')
-        self.set_widget_add(self._options_prx_node)
+        self.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_configure(
             self._session.configure.get('build.node.options'),
         )
@@ -35,7 +35,7 @@ class PnlGeometryExporter(prx_widgets.PrxSessionToolWindow):
 
     def set_all_setup(self):
         self._options_prx_node = prx_widgets.PrxNode_('options')
-        self.set_widget_add(self._options_prx_node)
+        self.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_configure(
             self._session.configure.get('build.node.options'),
         )
@@ -168,17 +168,17 @@ class PnlGeometryBuilder(prx_widgets.PrxSessionToolWindow):
 
     def set_all_setup(self):
         self._options_prx_node = prx_widgets.PrxNode_('options')
-        self.set_widget_add(self._options_prx_node)
+        self.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_configure(
             self._session.configure.get('build.node.options'),
         )
         # tip
         self._tip_group = prx_widgets.PrxExpandedGroup()
-        self.set_widget_add(self._tip_group)
+        self.add_widget(self._tip_group)
         self._tip_group.set_expanded(True)
         self._tip_group.set_name('tips')
         self._tip_text_browser = prx_widgets.PrxTextBrowser()
-        self._tip_group.set_widget_add(self._tip_text_browser)
+        self._tip_group.add_widget(self._tip_text_browser)
 
         self.post_setup_fnc()
 
@@ -296,17 +296,17 @@ class PnlLookBuilder(prx_widgets.PrxSessionToolWindow):
 
     def set_all_setup(self):
         self._options_prx_node = prx_widgets.PrxNode_('options')
-        self.set_widget_add(self._options_prx_node)
+        self.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_configure(
             self._session.configure.get('build.node.options'),
         )
         # tip
         self._tip_group = prx_widgets.PrxExpandedGroup()
-        self.set_widget_add(self._tip_group)
+        self.add_widget(self._tip_group)
         self._tip_group.set_expanded(True)
         self._tip_group.set_name('tips')
         self._tip_text_browser = prx_widgets.PrxTextBrowser()
-        self._tip_group.set_widget_add(self._tip_text_browser)
+        self._tip_group.add_widget(self._tip_text_browser)
 
         self.post_setup_fnc()
 

@@ -168,7 +168,7 @@ class PrxTreeItem(
     utl_gui_prx_abstract.AbsPrxItemFilterTgtDef,
     utl_gui_prx_abstract.AbsPrxItemVisibleConnectionDef
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item_for_tree.QtTreeWidgetItem
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_item_for_tree.QtTreeWidgetItem
     def __init__(self, *args, **kwargs):
         super(PrxTreeItem, self).__init__(*args, **kwargs)
         self._set_prx_tree_def_init_()
@@ -231,7 +231,7 @@ class PrxTreeItem(
     def get_ancestors(self):
         return [i.gui_proxy for i in self.item._get_ancestors_()]
 
-    def set_child_add(self, *args, **kwargs):
+    def add_child(self, *args, **kwargs):
         return self._set_item_add_(
             self.widget.addChild,
             *args, **kwargs
@@ -549,7 +549,7 @@ class PrxTreeItem(
 
     def set_loading_start(self):
         # view = self.get_view()
-        # item_prx = self.set_child_add(
+        # item_prx = self.add_child(
         #     'loading',
         #     icon=utl_core.Icon.get('refresh')
         # )
@@ -719,7 +719,7 @@ class PrxListItem(
     utl_gui_prx_abstract.AbsPrxItemFilterTgtDef,
     utl_gui_prx_abstract.AbsPrxItemVisibleConnectionDef
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_item_for_list._QtListItemWidget
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_item_for_list._QtListItemWidget
     def __init__(self, *args, **kwargs):
         super(PrxListItem, self).__init__(*args, **kwargs)
         self._visible_tgt_key = None
@@ -925,7 +925,7 @@ class PrxMediaItem(object):
 class PrxGuideBar(
     utl_gui_prx_abstract.AbsPrxWidget,
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_guide.QtGuideBar
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_guide.QtGuideBar
     def __init__(self, *args, **kwargs):
         super(PrxGuideBar, self).__init__(*args, **kwargs)
 
@@ -941,8 +941,11 @@ class PrxGuideBar(
     def set_dict(self, dict_):
         self._qt_widget._guide_entry._set_guide_dict_(dict_)
 
-    def connect_user_entry_changed_to(self, fnc):
-        self._qt_widget._guide_entry.guide_text_accepted.connect(fnc)
+    def connect_user_text_choose_accepted_to(self, fnc):
+        self._qt_widget._guide_entry.guide_text_choose_accepted.connect(fnc)
+
+    def connect_user_text_press_accepted_to(self, fnc):
+        self._qt_widget._guide_entry.guide_text_press_accepted.connect(fnc)
 
     def set_clear(self):
         pass
@@ -951,6 +954,6 @@ class PrxGuideBar(
 class PrxTagBar(
     utl_gui_prx_abstract.AbsPrxWidget,
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_guide.QtGuideBar
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_guide.QtGuideBar
     def __init__(self, *args, **kwargs):
         super(PrxTagBar, self).__init__(*args, **kwargs)

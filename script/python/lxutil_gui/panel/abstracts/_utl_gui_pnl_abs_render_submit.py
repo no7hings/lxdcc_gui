@@ -17,18 +17,18 @@ class AbsPnlRenderSubmitter(prx_widgets.PrxSessionWindow):
         self._item_icon_size = self._session.gui_configure.get('item_icon_size')
 
         sa_0 = prx_widgets.PrxVScrollArea()
-        self.set_widget_add(sa_0)
+        self.add_widget(sa_0)
 
         ep_0 = prx_widgets.PrxExpandedGroup()
-        sa_0.set_widget_add(ep_0)
+        sa_0.add_widget(ep_0)
         ep_0.set_expanded(True)
         ep_0.set_name('render nodes')
 
         h_s_0 = prx_widgets.PrxHSplitter()
-        ep_0.set_widget_add(h_s_0)
+        ep_0.add_widget(h_s_0)
 
         self._filter_tree_view = prx_widgets.PrxTreeView()
-        h_s_0.set_widget_add(self._filter_tree_view)
+        h_s_0.add_widget(self._filter_tree_view)
         self._filter_tree_view.set_header_view_create(
             [('name', 3)],
             self.get_definition_window_size()[0]*(1.0/3.0) - 32
@@ -36,7 +36,7 @@ class AbsPnlRenderSubmitter(prx_widgets.PrxSessionWindow):
         #
         self._result_list_view = prx_widgets.PrxListView()
         self._result_list_view.set_view_list_mode()
-        h_s_0.set_widget_add(self._result_list_view)
+        h_s_0.add_widget(self._result_list_view)
         h_s_0.set_stretches([1, 3])
         h_s_0.set_widget_hide_at(0)
         self._result_list_view.set_item_frame_size_basic(*self._item_frame_size)
@@ -59,7 +59,7 @@ class AbsPnlRenderSubmitter(prx_widgets.PrxSessionWindow):
         )
 
         self._options_prx_node = prx_widgets.PrxNode_('options')
-        sa_0.set_widget_add(self._options_prx_node)
+        sa_0.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_configure(
             self._session.configure.get('build.node.options'),
         )

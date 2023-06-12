@@ -6,7 +6,10 @@ from lxutil_gui.qt.abstracts import _gui_qt_abs_basic
 
 class AbsQtTreeWidget(
     QtWidgets.QTreeWidget,
-    _gui_qt_abs_basic.AbsQtMenuDef,
+    #
+    _gui_qt_abs_basic.AbsQtEmptyBaseDef,
+    #
+    _gui_qt_abs_basic.AbsQtMenuBaseDef,
     #
     _gui_qt_abs_basic.AbsQtViewFilterExtraDef,
     #
@@ -18,15 +21,14 @@ class AbsQtTreeWidget(
     _gui_qt_abs_basic.AbsQtShowForViewDef,
     #
     _gui_qt_abs_basic.AbsQtWaitingDef,
-    #
-    # AbsQtActionDragDef,
 ):
     def __init__(self, *args, **kwargs):
         super(AbsQtTreeWidget, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         #
-        self._init_menu_def_()
+        self._init_empty_base_def_(self)
+        self._init_menu_base_def_(self)
         #
         self._init_view_filter_extra_def_(self)
         #
@@ -159,14 +161,14 @@ class AbsQtTreeWidget(
         #
         if menu_content:
             if menu is None:
-                menu = self.QT_MENU_CLASS(self)
+                menu = self.QT_MENU_CLS(self)
             #
             menu._set_menu_content_(menu_content)
             menu._popup_start_()
         #
         if menu_raw:
             if menu is None:
-                menu = self.QT_MENU_CLASS(self)
+                menu = self.QT_MENU_CLS(self)
             #
             menu._set_menu_data_(menu_raw)
             menu._popup_start_()
@@ -174,6 +176,8 @@ class AbsQtTreeWidget(
 
 class AbsQtListWidget(
     QtWidgets.QListWidget,
+    #
+    _gui_qt_abs_basic.AbsQtEmptyBaseDef,
     #
     _gui_qt_abs_basic.AbsQtViewSelectActionDef,
     _gui_qt_abs_basic.AbsQtViewScrollActionDef,
@@ -190,11 +194,17 @@ class AbsQtListWidget(
 
     item_show_changed = qt_signal()
 
+    def _refresh_widget_draw_(self):
+        self.update()
+        self.viewport().update()
+
     def __init__(self, *args, **kwargs):
         super(AbsQtListWidget, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        self.setResizeMode(self.Adjust)
         #
+        self._init_empty_base_def_(self)
         self._set_view_select_action_def_init_()
         self._set_view_scroll_action_def_init_()
         #
@@ -235,6 +245,8 @@ class AbsQtListWidget(
 
         self._sort_mode = self.SortMode.Number
         self._sort_order = self.SortOrder.Ascend
+
+        self._grid_size = 128, 128
 
     def _set_sort_enable_(self, boolean):
         self.setSortingEnabled(boolean)
@@ -336,14 +348,31 @@ class AbsQtListWidget(
         if selected_items:
             item = selected_items[-1]
             self._scroll_view_to_item_top_(item)
+    # item mode
+    def _set_grid_mode_(self):
+        self.setViewMode(self.IconMode)
+        self._update_by_item_mode_change_()
+
+    def _set_list_mode_(self):
+        self.setViewMode(self.ListMode)
+        self._update_by_item_mode_change_()
+    #
+    def _set_grid_size_(self, w, h):
+        self._grid_size = w, h
+        self._update_by_grid_size_change_()
+        self._update_by_item_mode_change_()
 
     def _get_grid_size_(self):
-        s = self.gridSize()
-        return s.width(), s.width()
+        return self._grid_size
 
-    def _refresh_widget_draw_(self):
-        self.update()
-        self.viewport().update()
+    def _update_by_grid_size_change_(self):
+        w, h = self._get_grid_size_()
+        self.setGridSize(QtCore.QSize(w, h))
+        [i.setSizeHint(QtCore.QSize(w, h)) for i in self._get_all_items_()]
+
+    def _update_by_item_mode_change_(self):
+        w, h = self._get_grid_size_()
+        self.verticalScrollBar().setSingleStep(h)
     #
     def _get_viewport_size_(self):
         return self.viewport().width(), self.viewport().height()

@@ -10,7 +10,7 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
 
 class QtColorChooseChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtWidgetDef,
+    utl_gui_qt_abstract.AbsQtWidgetBaseDef,
     utl_gui_qt_abstract.AbsQtActionBaseDef,
     utl_gui_qt_abstract.AbsQtChartBaseDef,
 ):
@@ -120,7 +120,7 @@ class QtColorChooseChart(
             QtWidgets.QSizePolicy.Expanding
         )
         #
-        self._init_widget_def_(self)
+        self._init_widget_base_def_(self)
         self._init_action_base_def_(self)
         self._init_chart_base_def_(self)
         self._set_build_()
@@ -261,7 +261,7 @@ class QtColorChooseChart(
                     # Circle
                     self._circle_angle_temp = self._color_h_offset
                     self._circle_flag = True
-                self._clear_action_flag_()
+                self._clear_all_action_flags_()
             elif event.type() == QtCore.QEvent.Wheel:
                 self._set_action_flag_(
                     self.ActionFlag.ZoomWheel
@@ -1218,11 +1218,11 @@ class QtSequenceChart(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtNameBaseDef,
     utl_gui_qt_abstract.AbsQtChartBaseDef,
-    utl_gui_qt_abstract.AbsQtStatusDef,
+    utl_gui_qt_abstract.AbsQtStatusBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtMenuDef,
+    utl_gui_qt_abstract.AbsQtMenuBaseDef,
 ):
-    QT_MENU_CLASS = _utl_gui_qt_wgt_utility.QtMenu
+    QT_MENU_CLS = _utl_gui_qt_wgt_utility.QtMenu
     def _refresh_chart_data_(self):
         data = self._chart_data
         if data is not None:
@@ -1235,13 +1235,13 @@ class QtSequenceChart(
             index_array_1 = bsc_core.RawListMtd.get_intersection(
                 index_array_0, index_array
             )
-            self._chart_index_merge_array = bsc_core.RawIntArrayMtd.set_merge_to(
+            self._chart_index_merge_array = bsc_core.RawIntArrayMtd.merge_to(
                 index_array_1
             )
             self._chart_index_lost_array = bsc_core.RawListMtd.get_addition(
                 index_array_0, index_array_1
             )
-            self._chart_index_lost_merge_array = bsc_core.RawIntArrayMtd.set_merge_to(
+            self._chart_index_lost_merge_array = bsc_core.RawIntArrayMtd.merge_to(
                 self._chart_index_lost_array
             )
             self._chart_index_check_range = index_range
@@ -1291,9 +1291,9 @@ class QtSequenceChart(
         #
         self._init_name_base_def_(self)
         self._init_chart_base_def_(self)
-        self._set_status_def_init_()
+        self._init_status_base_def_(self)
         #
-        self._init_menu_def_()
+        self._init_menu_base_def_(self)
 
     def eventFilter(self, *args):
         widget, event = args
@@ -1312,7 +1312,7 @@ class QtSequenceChart(
                     pass
                 #
                 elif event.button() == QtCore.Qt.RightButton:
-                    self._set_menu_show_()
+                    self._popup_menu_()
                 elif event.button() == QtCore.Qt.MidButton:
                     pass
                 else:

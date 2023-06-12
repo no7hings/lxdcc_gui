@@ -27,14 +27,14 @@ class TestWindow(prx_widgets.PrxToolWindow):
 
     def _test_(self):
         filter_bar = prx_widgets.PrxFilterBar()
-        self.set_widget_add(filter_bar)
+        self.add_widget(filter_bar)
 
         filter_bar.set_completion_gain_fnc(self._value_completion_gain_fnc_)
         filter_bar.set_tip('test...')
         filter_bar.set_history_key('keyword-filter-test')
 
         guide_bar = prx_widgets.PrxGuideBar()
-        self.set_widget_add(guide_bar)
+        self.add_widget(guide_bar)
         # guide_bar.set_types(
         #     ['category_group', 'category', 'type']
         # )
@@ -53,7 +53,7 @@ class TestWindow(prx_widgets.PrxToolWindow):
         )
 
         tag_bar = prx_widgets.PrxTagBar()
-        self.set_widget_add(tag_bar)
+        self.add_widget(tag_bar)
 
 
 if __name__ == '__main__':

@@ -1,4 +1,6 @@
 # coding:utf-8
+import time
+
 import six
 
 import functools
@@ -32,13 +34,13 @@ _pyqt5 = bsc_objects.PyModule('PyQt5')
 if _pyqt5.get_is_exists() is True:
     LOAD_INDEX = 0
     # noinspection PyUnresolvedReferences
-    from PyQt5 import QtGui, QtCore, QtWidgets, QtSvg
+    from PyQt5 import QtGui, QtCore, QtWidgets, QtSvg, QtOpenGL
 else:
     LOAD_INDEX = 1
     _pyside2 = bsc_objects.PyModule('PySide2')
     if _pyside2.get_is_exists() is True:
         # noinspection PyUnresolvedReferences
-        from PySide2 import QtGui, QtCore, QtWidgets, QtSvg
+        from PySide2 import QtGui, QtCore, QtWidgets, QtSvg, QtOpenGL
     else:
         raise ImportError()
 
@@ -444,6 +446,7 @@ class QtBorderColors(object):
     )
 
     Popup = QtGui.QColor(63, 255, 127, 255)
+    SplitMoving = QtGui.QColor(127, 127, 127, 255)
 
 
 class QtBackgroundColors(object):
@@ -483,12 +486,15 @@ class QtBackgroundColors(object):
     Selected = QtGui.QColor(
         *utl_gui_core.QtStyleMtd.get_background('color-selected')
     )
+    #
     Checked = QtGui.QColor(127, 63, 127, 255)
     CheckHovered = QtGui.QColor(191, 127, 191, 255)
+    #
     DeleteHovered = QtGui.QColor(255, 63, 127, 255)
-    Pressed = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-pressed')
-    )
+    #
+    Pressed = QtGui.QColor(95, 255, 159, 255)
+    PressedHovered = QtGui.QColor(255, 159, 95, 255)
+    #
     Actioned = QtGui.QColor(
         *utl_gui_core.QtStyleMtd.get_background('color-actioned')
     )
@@ -639,7 +645,7 @@ class QtUtilMtd(object):
     @classmethod
     def get_qt_icon(cls, icon_name):
         if QtWidgets.QApplication.instance() is not None:
-            return QtIconMtd.get_by_icon_name(icon_name)
+            return QtIconMtd.create_by_icon_name(icon_name)
     @classmethod
     def _get_qt_icon_(cls, file_path):
         qt_icon = QtGui.QIcon()
@@ -760,7 +766,7 @@ class QtUtilMtd(object):
 
 class QtIconMtd(object):
     @classmethod
-    def get_by_icon_name(cls, icon_name):
+    def create_by_icon_name(cls, icon_name):
         icon = QtGui.QIcon()
         file_path = utl_gui_core.RscIconFile.get(icon_name)
         if file_path:
@@ -1663,6 +1669,11 @@ class QtHBoxLayout(QtWidgets.QHBoxLayout):
             QtCore.Qt.AlignTop
         )
 
+    def _set_align_left_(self):
+        self.setAlignment(
+            QtCore.Qt.AlignLeft
+        )
+
     def _get_all_widgets_(self):
         list_ = []
         layout = self
@@ -2344,7 +2355,7 @@ class QtMenuOpt(object):
         widget_action.setFont(Font.NAME)
         widget_action.setText(name)
         widget_action.setIcon(
-            QtIconMtd.get_by_icon_name('file/folder')
+            QtIconMtd.create_by_icon_name('file/folder')
         )
         sub_menu = menu.__class__(menu)
         sub_menu.setTearOffEnabled(True)
@@ -2376,7 +2387,7 @@ class QtMenuOpt(object):
         menu.addAction(widget_action)
         if icon_name:
             widget_action.setIcon(
-                QtIconMtd.get_by_icon_name(icon_name)
+                QtIconMtd.create_by_icon_name(icon_name)
             )
         else:
             widget_action.setIcon(
@@ -2506,6 +2517,7 @@ class QtPainter(QtGui.QPainter):
 
             i_state = states[i]
             if i_state is True:
+                i_border_width = 2
                 if use_exclusive is True:
                     i_background_color, i_font_color = QtBackgroundColors.Selected, QtFontColors.Black
                 else:
@@ -2513,13 +2525,15 @@ class QtPainter(QtGui.QPainter):
                 self._set_background_color_(i_background_color)
                 self._set_border_color_(QtBorderColors.Button)
             else:
+                i_border_width = 1
                 i_font_color = QtFontColors.Dark
                 self._set_background_color_(QtBackgroundColors.Dim)
                 self._set_border_color_(QtBorderColors.Dim)
             #
             if i == hovered_index:
                 self._set_border_color_(QtBorderColors.Hovered)
-            self._set_border_width_(2)
+            #
+            self._set_border_width_(i_border_width)
             # left
             if i == 0:
                 if c == 1:
@@ -2878,7 +2892,7 @@ class QtPainter(QtGui.QPainter):
         #
         self.device()
 
-    def _set_empty_draw_by_rect_(self, rect, icon_name=None):
+    def _draw_empty_image_by_rect_(self, rect, icon_name=None):
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
         r = min(w, h)
@@ -2891,7 +2905,38 @@ class QtPainter(QtGui.QPainter):
             rect=rect, file_path=utl_gui_core.RscIconFile.get(icon_name)
         )
 
-    def _draw_icon_file_by_rect_(self, rect, file_path, offset=0, frame_rect=None, is_hovered=False):
+    def _draw_empty_text_by_rect_(self, rect, text, sub_text=None):
+        x, y = rect.x(), rect.y()
+        w, h = rect.width(), rect.height()
+        r = min(w, h)
+        r = max(min(r*.5, 128), 32)
+        font = get_font(size=r*.5, weight=75, italic=True)
+        self._set_font_(font)
+        self._set_border_color_((31, 31, 31, 255))
+        f_h = self.fontMetrics().height()
+        f_w = self.fontMetrics().width(text)+f_h
+        #
+        f_x, f_y = x+(w-f_w)/2, y+(h-f_h)/2
+        text_rect = QtCore.QRect(
+            f_x, f_y, f_w, f_h
+        )
+        self.drawText(
+            text_rect,
+            QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+            text
+        )
+        if sub_text:
+            self._set_font_(get_font(size=10, weight=75, italic=True))
+            sub_text_rect = QtCore.QRect(
+                x, y+(h-f_h)/2+f_h, w, 20
+            )
+            self.drawText(
+                sub_text_rect,
+                QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+                sub_text
+            )
+
+    def _draw_icon_file_by_rect_(self, rect, file_path, offset=0, frame_rect=None, is_hovered=False, hover_color=None):
         if file_path:
             if frame_rect is not None:
                 background_color = self._get_item_background_color_1_by_rect_(
@@ -2911,14 +2956,16 @@ class QtPainter(QtGui.QPainter):
                     rect=rect,
                     file_path=file_path,
                     offset=offset,
-                    is_hovered=is_hovered
+                    is_hovered=is_hovered,
+                    hover_color=hover_color,
                 )
             else:
                 self._draw_image_by_rect_(
                     rect=rect,
                     file_path=file_path,
                     offset=offset,
-                    is_hovered=is_hovered
+                    is_hovered=is_hovered,
+                    hover_color=hover_color,
                 )
 
     def _set_any_image_draw_by_rect_(self, rect, file_path, offset=0):
@@ -2931,47 +2978,110 @@ class QtPainter(QtGui.QPainter):
                 elif file_path.endswith('.mov'):
                     self._set_mov_image_draw_by_rect_(rect, file_path, offset)
                 else:
-                    self._draw_image_by_rect_(rect, file_path, offset)
+                    self._draw_image_by_rect_(
+                        rect, file_path, offset,
+                        cache_resize=True
+                    )
 
-    def _draw_image_by_rect_(self, rect, file_path, offset=0, is_hovered=False):
+    def _draw_svg_by_rect_(self, rect, file_path, offset=0, is_hovered=False, hover_color=None):
+        rect_ = QtCore.QRect(
+            rect.x()+offset, rect.y()+offset,
+            rect.width()-offset, rect.height()-offset
+        )
+        rectF = QtCore.QRectF(
+            rect.x()+offset, rect.y()+offset,
+            rect.width()-offset, rect.height()-offset
+        )
+        svg_render = QtSvg.QSvgRenderer(file_path)
+        svg_render.render(self, rectF)
+        if is_hovered is True:
+            m_w, m_h = rect_.width()*2, rect_.height()*2
+            mask_image = QtGui.QImage(
+                m_w, m_h, QtGui.QImage.Format_ARGB32
+            )
+            mask_image.fill(QtCore.Qt.black)
+            painter = QtGui.QPainter(mask_image)
+            svg_render.render(painter, QtCore.QRectF(0, 0, m_w, m_h))
+            painter.end()
+            #
+            hover_pixmap = QtGui.QPixmap(mask_image)
+            mask_pixmap = QtGui.QPixmap(mask_image)
+            mask = mask_pixmap.createMaskFromColor(QtCore.Qt.black)
+            mask.scaled(
+                rect_.size(),
+                QtCore.Qt.IgnoreAspectRatio,
+                QtCore.Qt.SmoothTransformation
+            )
+            c = hover_color or QtGui.QColor(255, 127, 63, 127)
+            hover_pixmap.fill(QtGui.QColor(c.red(), c.green(), c.blue(), 127))
+            hover_pixmap.setMask(mask)
+            rect__ = QtCore.QRect(
+                rect_.x(), rect_.y(),
+                rect_.width(), rect_.height()
+            )
+            self.drawPixmap(
+                rect__,
+                hover_pixmap
+            )
+        #
+        self.device()
+
+    def _draw_image_by_rect_(self, rect, file_path, offset=0, is_hovered=False, hover_color=None, cache_resize=False):
         rect_ = QtCore.QRect(
             rect.x()+offset, rect.y()+offset,
             rect.width()-offset, rect.height()-offset
         )
         #
         rect_size = rect_.size()
+        w, h = rect_size.width(), rect_size.height()
         image = QtGui.QImage(file_path)
-        new_image = image.scaled(
+        scaled_image = image.scaled(
             rect_size,
             QtCore.Qt.IgnoreAspectRatio,
             QtCore.Qt.SmoothTransformation
         )
-        new_pixmap = QtGui.QPixmap(new_image)
+        if cache_resize is True:
+            if file_path.endswith('.png'):
+                tmp_path = bsc_core.StgTmpThumbnailMtd.get_qt_file_path_(file_path, width=max(w, h), ext='.png')
+                if bsc_core.StgPathMtd.get_is_exists(tmp_path) is False:
+                    bsc_core.StgFileOpt(tmp_path).create_directory()
+                    scaled_image.save(tmp_path)
+                #
+                scaled_image = QtGui.QImage(tmp_path)
+        #
+        new_pixmap = QtGui.QPixmap(scaled_image)
         self.drawPixmap(
             rect_,
             new_pixmap
         )
         if is_hovered:
+            m_w, m_h = rect_.width()*2, rect_.height()*2
             image = QtGui.QImage(
-                rect_.width(), rect_.height(), QtGui.QImage.Format_ARGB32
+                m_w, m_h, QtGui.QImage.Format_ARGB32
             )
             image.fill(QtCore.Qt.black)
             painter = QtGui.QPainter(image)
-            painter.drawPixmap(QtCore.QRect(0, 0, rect_.width(), rect_.height()), new_pixmap)
+            painter.drawPixmap(QtCore.QRect(0, 0, m_w, m_h), new_pixmap)
             painter.end()
             #
+            hover_pixmap = QtGui.QPixmap(image)
             mask_pixmap = QtGui.QPixmap(image)
-            mask_bitmap = QtGui.QPixmap(image)
-            mask = mask_bitmap.createMaskFromColor(QtCore.Qt.black)
-            mask_pixmap.fill(QtGui.QColor(255, 127, 63, 127))
-            mask_pixmap.setMask(mask)
+            mask = mask_pixmap.createMaskFromColor(QtCore.Qt.black)
+            mask.scaled(
+                rect_.size(),
+                QtCore.Qt.IgnoreAspectRatio,
+                QtCore.Qt.SmoothTransformation
+            )
+            c = hover_color or QtGui.QColor(255, 127, 63, 127)
+            hover_pixmap.fill(QtGui.QColor(c.red(), c.green(), c.blue(), 127))
+            hover_pixmap.setMask(mask)
             rect__ = QtCore.QRect(
                 rect.x(), rect.y(),
                 rect.width(), rect.height()
             )
             self.drawPixmap(
                 rect__,
-                mask_pixmap
+                hover_pixmap
             )
         #
         self.device()
@@ -3088,42 +3198,6 @@ class QtPainter(QtGui.QPainter):
             'loading .{}'.format('.'*(loading_index % 3))
         )
 
-    def _draw_svg_by_rect_(self, rect, file_path, offset=0, is_hovered=False):
-        rect_ = QtCore.QRect(
-            rect.x()+offset, rect.y()+offset,
-            rect.width()-offset, rect.height()-offset
-        )
-        rectF = QtCore.QRectF(
-            rect.x()+offset, rect.y()+offset,
-            rect.width()-offset, rect.height()-offset
-        )
-        svg_render = QtSvg.QSvgRenderer(file_path)
-        svg_render.render(self, rectF)
-        if is_hovered is True:
-            mask_image = QtGui.QImage(
-                rect_.width(), rect_.height(), QtGui.QImage.Format_ARGB32
-            )
-            mask_image.fill(QtCore.Qt.black)
-            painter = QtGui.QPainter(mask_image)
-            svg_render.render(painter, QtCore.QRectF(0, 0, rect_.width(), rect_.height()))
-            painter.end()
-            #
-            mask_pixmap = QtGui.QPixmap(mask_image)
-            mask_bitmap = QtGui.QPixmap(mask_image)
-            mask = mask_bitmap.createMaskFromColor(QtCore.Qt.black)
-            mask_pixmap.fill(QtGui.QColor(255, 127, 63, 127))
-            mask_pixmap.setMask(mask)
-            rect__ = QtCore.QRect(
-                rect_.x(), rect_.y(),
-                rect_.width(), rect_.height()
-            )
-            self.drawPixmap(
-                rect__,
-                mask_pixmap
-            )
-        #
-        self.device()
-
     def _set_exr_image_draw_by_rect_(self, rect, file_path, offset=0):
         rect_ = QtCore.QRect(
             rect.x()+offset, rect.y()+offset,
@@ -3223,7 +3297,7 @@ class QtPainter(QtGui.QPainter):
 
         self.drawRect(rect_)
 
-    def _draw_icon_with_name_text_by_rect_(self, rect, text, border_color=None, background_color=None, font_color=None, offset=0, border_radius=0, border_width=1, is_hovered=False, is_enable=True):
+    def _draw_icon_use_text_by_rect_(self, rect, text, border_color=None, background_color=None, font_color=None, offset=0, border_radius=0, border_width=1, is_hovered=False, is_enable=True):
         if offset != 0:
             rect_offset = QtCore.QRect(
                 rect.x()+offset, rect.y()+offset,
@@ -3259,7 +3333,7 @@ class QtPainter(QtGui.QPainter):
         #
         b_ = border_width/2
         if border_radius > 0:
-            border_radius_ = b_+border_radius
+            self._set_antialiasing_(True)
             self.drawRoundedRect(
                 frame_rect,
                 border_radius, border_radius,
@@ -3275,6 +3349,7 @@ class QtPainter(QtGui.QPainter):
                     QtCore.Qt.AbsoluteSize
                 )
         elif border_radius == -1:
+            self._set_antialiasing_(True)
             border_radius = frame_rect.height()/2
             border_radius_ = b_+border_radius
             self.drawRoundedRect(
@@ -3292,6 +3367,7 @@ class QtPainter(QtGui.QPainter):
                     QtCore.Qt.AbsoluteSize
                 )
         else:
+            self._set_antialiasing_(False)
             self.drawRect(frame_rect)
             if is_hovered is True:
                 self._set_background_color_(
@@ -3309,7 +3385,7 @@ class QtPainter(QtGui.QPainter):
             w, h
         )
         self._set_font_(
-            get_font(size=t_f_s, italic=True)
+            get_font(size=t_f_s)
         )
         self._set_font_color_(text_color_)
         self.drawText(
@@ -3399,6 +3475,7 @@ class QtPainter(QtGui.QPainter):
         self.drawLine(line)
 
     def _draw_line_by_points_(self, point_0, point_1, border_color, border_width=1):
+        self._set_antialiasing_(False)
         self._set_border_color_(border_color)
         self._set_border_width_(border_width)
         self._set_background_color_(QtBackgroundColors.Transparent)
@@ -3433,33 +3510,117 @@ class QtPainter(QtGui.QPainter):
         else:
             self.drawRect(rect_)
 
-    def _set_elements_status_draw_by_rect_(self, rect, colors, offset=0, border_radius=0):
+    def _draw_process_statuses_by_rect_(self, rect, colors, offset=0, border_radius=0):
         if colors:
             if offset != 0:
-                rect_ = QtCore.QRect(
+                rect_offset = QtCore.QRect(
                     rect.x() + offset, rect.y() + offset,
                     rect.width() - offset, rect.height() - offset
                 )
             else:
-                rect_ = rect
+                rect_offset = rect
             #
-            gradient_color = QtGui.QLinearGradient(rect_.topLeft(), rect_.topRight())
+            self._set_background_color_(31, 31, 31, 255)
+            self.drawRect(rect_offset)
+            #
+            gradient_color = QtGui.QLinearGradient(rect_offset.topLeft(), rect_offset.topRight())
             c = len(colors)
-            for seq, color in enumerate(colors):
+            p = 1/float(c)
+            for seq, i_color in enumerate(colors):
                 _ = float(seq) / float(c)
-                index = max(min(_, 1), 0)
-                gradient_color.setColorAt(index, self._get_qt_color_(color))
+                i_index = max(min(_, 1), 0)
+                i_qt_color = self._get_qt_color_(i_color)
+                gradient_color.setColorAt(i_index, i_qt_color)
+                gradient_color.setColorAt(i_index+p*.9, i_qt_color)
             #
             self._set_background_color_(gradient_color)
             #
             if border_radius > 0:
                 self.drawRoundedRect(
-                    rect_,
+                    rect_offset,
                     border_radius, border_radius,
                     QtCore.Qt.AbsoluteSize
                 )
             else:
-                self.drawRect(rect_)
+                self.drawRect(rect_offset)
+    @classmethod
+    def _get_alternating_color_(cls, rect, colors, width, time_offset=0, running=False):
+        if running is True:
+            x_o = (time_offset % (width*2))
+        else:
+            x_o = 0
+        x, y = rect.x(), rect.y()
+        gradient_color = QtGui.QLinearGradient(
+            QtCore.QPoint(x+x_o, y), QtCore.QPoint(x+width+x_o, y+width)
+        )
+        gradient_color.setSpread(gradient_color.RepeatSpread)
+        c = len(colors)
+        p = 1/float(c)
+        for seq, i_color in enumerate(colors):
+            _ = float(seq)/float(c)
+            i_index = max(min(_, 1), 0)
+            i_qt_color = cls._get_qt_color_(i_color)
+            gradient_color.setColorAt(i_index, i_qt_color)
+            gradient_color.setColorAt(i_index+p*.9, i_qt_color)
+        return gradient_color
+
+    def _draw_alternating_frame_by_rect_(self, rect, colors, border_radius=0):
+        rect_offset = rect
+        background_color = self._get_alternating_color_(
+            rect, colors, 20
+        )
+        self._set_background_color_(background_color)
+        if border_radius > 0:
+            self._set_antialiasing_()
+            self.drawRoundedRect(
+                rect_offset,
+                border_radius, border_radius,
+                QtCore.Qt.AbsoluteSize
+            )
+        elif border_radius == -1:
+            border_radius = rect_offset.height()/2
+            self._set_antialiasing_()
+            self.drawRoundedRect(
+                rect_offset,
+                border_radius, border_radius,
+                QtCore.Qt.AbsoluteSize
+            )
+        else:
+            self._set_antialiasing_(False)
+            self.drawRect(rect_offset)
+
+    def _draw_alternating_colors_by_rect_(self, rect, colors, offset=0, border_radius=0, border_width=1, running=False):
+        if offset != 0:
+            rect_offset = QtCore.QRect(
+                rect.x()+offset, rect.y()+offset,
+                rect.width()-offset, rect.height()-offset
+            )
+        else:
+            rect_offset = rect
+        #
+        background_color = self._get_alternating_color_(
+            rect_offset, colors, 20, int(time.time()*10), running
+        )
+        #
+        self._set_background_color_(background_color)
+        if border_radius > 0:
+            self._set_antialiasing_()
+            self.drawRoundedRect(
+                rect_offset,
+                border_radius, border_radius,
+                QtCore.Qt.AbsoluteSize
+            )
+        elif border_radius == -1:
+            border_radius = rect_offset.height()/2
+            self._set_antialiasing_()
+            self.drawRoundedRect(
+                rect_offset,
+                border_radius, border_radius,
+                QtCore.Qt.AbsoluteSize
+            )
+        else:
+            self._set_antialiasing_(False)
+            self.drawRect(rect_offset)
 
     def _draw_text_by_rect_(self, rect, text, font_color=None, font=None, offset=0, text_option=None, word_warp=False, is_hovered=False, is_selected=False):
         if font_color is not None:
@@ -3502,7 +3663,7 @@ class QtPainter(QtGui.QPainter):
             text_ = self.fontMetrics().elidedText(
                 text,
                 QtCore.Qt.ElideLeft,
-                rect.width(),
+                rect_offset.width(),
                 QtCore.Qt.TextShowMnemonic
             )
         #
@@ -3765,11 +3926,11 @@ class QtPainter(QtGui.QPainter):
         if press_conditions == [True, True]:
             press_args = [
                 (select_index, QtBackgroundColors.Pressed),
-                (press_index, QtBackgroundColors.Hovered),
+                (press_index, QtBackgroundColors.PressedHovered),
             ]
         elif press_conditions == [True, False]:
             press_args = [
-                (press_index, QtBackgroundColors.Hovered),
+                (press_index, QtBackgroundColors.PressedHovered),
             ]
         elif press_conditions == [False, True]:
             press_args = [
@@ -4581,7 +4742,7 @@ class QtSystemTrayIcon(QtWidgets.QSystemTrayIcon):
         widget_action = QtWidgetAction(menu)
         widget_action.setFont(Font.NAME)
         widget_action.setText('quit')
-        widget_action.setIcon(QtIconMtd.get_by_icon_name('window/close'))
+        widget_action.setIcon(QtIconMtd.create_by_icon_name('window/close'))
         menu.addAction(widget_action)
         widget_action.triggered.connect(
             self._window.close

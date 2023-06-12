@@ -9,10 +9,10 @@ import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
 
 class QtGuideRect(
-    utl_gui_qt_abstract.AbsQtIconDef,
+    utl_gui_qt_abstract.AbsQtIconBaseDef,
     utl_gui_qt_abstract.AbsQtTypeDef,
     utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtPathDef,
+    utl_gui_qt_abstract.AbsQtPathBaseDef,
     utl_gui_qt_abstract.AbsQtFrameBaseDef,
     #
     utl_gui_qt_abstract.AbsQtChooseBaseDef,
@@ -24,10 +24,10 @@ class QtGuideRect(
         pass
 
     def __init__(self):
-        self._init_icon_def_(self)
+        self._init_icon_base_def_(self)
         self._init_type_def_(self)
         self._init_name_base_def_(self)
-        self._init_path_def_(self)
+        self._init_path_base_def_(self)
         self._init_frame_base_def_(self)
         self._init_choose_base_def_()
         #
@@ -46,13 +46,13 @@ class QtGuideEntry(
     QtWidgets.QWidget,
     #
     utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtMenuDef,
+    utl_gui_qt_abstract.AbsQtMenuBaseDef,
     #
     utl_gui_qt_abstract.AbsQtActionBaseDef,
     utl_gui_qt_abstract.AbsQtActionForHoverDef,
     utl_gui_qt_abstract.AbsQtActionForPressDef,
     #
-    utl_gui_qt_abstract.AbsQtDeleteExtraDef,
+    utl_gui_qt_abstract.AbsQtDeleteBaseDef,
     #
     utl_gui_qt_abstract.AbsQtFocusDef,
     utl_gui_qt_abstract.AbsQtEntryBaseDef,
@@ -66,7 +66,7 @@ class QtGuideEntry(
     #
     QT_POPUP_GUIDE_CHOOSE_CLS = _utl_gui_qt_wgt_popup.QtPopupForGuideChoose
     #
-    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
+    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
     #
     TYPE_FONT_SIZE = 10
     NAME_FONT_SIZE = 12
@@ -98,12 +98,12 @@ class QtGuideEntry(
         #
         self._choose_item_icon_file_path = utl_core.Icon.get('choose_close')
         #
-        self._init_menu_def_()
+        self._init_menu_base_def_(self)
         #
         self._init_action_for_hover_def_(self)
         self._init_action_base_def_(self)
         self._init_action_for_press_def_(self)
-        self._init_delete_extra_def_(self)
+        self._init_delete_base_def_(self)
         # self._set_delete_enable_(True)
         #
         self._init_guide_entry_def_(self)
@@ -164,7 +164,7 @@ class QtGuideEntry(
         #
         dlt_w, dlt_h = self._delete_icon_file_draw_size
         #
-        self._delete_rect.setRect(
+        self._delete_action_rect.setRect(
             w-frm_w, c_y, frm_w, frm_h
         )
         self._delete_icon_draw_rect.setRect(
@@ -205,7 +205,7 @@ class QtGuideEntry(
                     else:
                         self.entry_started.emit()
                 if event.button() == QtCore.Qt.RightButton:
-                    self._set_menu_show_()
+                    self._popup_menu_()
                 self._refresh_widget_draw_()
             elif event.type() == QtCore.QEvent.MouseButtonDblClick:
                 if event.button() == QtCore.Qt.LeftButton:
@@ -220,12 +220,14 @@ class QtGuideEntry(
                         self._start_guide_choose_item_popup_at_(self._guide_choose_index_current)
                     # press
                     elif self._get_action_press_flag_is_click_() is True:
-                        self.guide_text_accepted.emit(self._get_guide_path_text_at_(self._guide_index_current))
+                        # press
+                        self.guide_text_press_accepted.emit(self._get_guide_path_text_at_(self._guide_index_current))
+                        #
                         self.guide_press_clicked.emit()
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
                 #
-                self._clear_action_flag_()
+                self._clear_all_action_flags_()
                 #
                 self._action_is_hovered = False
                 self._refresh_widget_draw_()
@@ -293,7 +295,7 @@ class QtGuideEntry(
                 )
             #
             painter._draw_icon_file_by_rect_(
-                i_item._icon_file_draw_rect,
+                i_item._icon_draw_rect,
                 file_path=i_item._get_icon_file_path_(),
                 offset=i_icon_offset
             )
@@ -333,7 +335,7 @@ class QtGuideEntry(
         self._delete_is_hovered = False
         self._clear_guide_choose_current_()
         self._clear_guide_current_()
-        if self._delete_rect.contains(p):
+        if self._delete_action_rect.contains(p):
             self._delete_is_hovered = True
         else:
             # choose or press
@@ -365,10 +367,10 @@ class QtGuideEntry(
         self._refresh_widget_draw_()
 
     def _execute_action_guide_choose_wheel_(self, event):
-        index = self._guide_index_current
+        index = self._guide_index_current-1
         delta = event.angleDelta().y()
-        name_texts = self._get_guide_choose_name_texts_at_(index)
-        name_text_pre = self._get_guide_name_text_at_(index)
+        name_texts = self._get_guide_child_name_texts_at_(index)
+        name_text_pre = self._get_guide_name_text_at_(index+1)
         maximum = len(name_texts)-1
         if name_text_pre in name_texts:
             pre_index = name_texts.index(name_text_pre)
@@ -381,7 +383,8 @@ class QtGuideEntry(
             if cur_index != pre_index:
                 name_text_cur = name_texts[cur_index]
                 path_text_cur = self._set_guide_name_text_at_(name_text_cur, index)
-                self.guide_text_accepted.emit(path_text_cur)
+                # press
+                self.guide_text_press_accepted.emit(path_text_cur)
 
     def _get_guide_path_text_(self):
         item = self._get_guide_item_at_(-1)
@@ -389,7 +392,7 @@ class QtGuideEntry(
             return item._path_text
 
     def _set_guide_path_text_(self, path):
-        self._restore_guide_()
+        self._clear_all_guide_items_()
         #
         path_opt = bsc_core.DccPathDagOpt(path)
         components = path_opt.get_components()
@@ -419,8 +422,8 @@ class QtGuideBar(
     utl_gui_qt_abstract.AbsQtValueEntryExtraDef,
     utl_gui_qt_abstract.AbsQtCompletionExtraDef,
 ):
-    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
-    QT_POPUP_COMPLETION_CLASS = _utl_gui_qt_wgt_popup.QtPopupForCompletion
+    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
+    QT_POPUP_COMPLETION_CLS = _utl_gui_qt_wgt_popup.QtPopupForCompletion
 
     QT_POPUP_PROXY_CLS = _utl_gui_qt_wgt_popup.QtPopupProxy
 
@@ -463,7 +466,7 @@ class QtGuideBar(
         self._guide_entry.entry_started.connect(
             self._guide_entry_started_cbk_
         )
-        self._value_entry = self.QT_VALUE_ENTRY_CLASS()
+        self._value_entry = self.QT_VALUE_ENTRY_CLS()
         self._value_entry.hide()
         self._value_entry_layout.addWidget(self._value_entry)
         # self._value_entry.setFocusPolicy(QtCore.Qt.StrongFocus)
@@ -475,8 +478,8 @@ class QtGuideBar(
         #
         self._build_completion_extra_(self._value_entry, self._value_entry_frame)
 
-        self._set_popup_completion_gain_fnc_(
-            self._guide_value_popup_completion_gain_fnc_
+        self._set_completion_extra_gain_fnc_(
+            self._guide_value_completion_extra_gain_fnc_
         )
         self.user_completion_text_accepted.connect(self._guide_entry_cbk_)
 
@@ -502,7 +505,7 @@ class QtGuideBar(
         self._set_guide_entry_finish_()
         self._guide_entry._set_focused_(True)
     # noinspection PyUnusedLocal
-    def _guide_value_popup_completion_gain_fnc_(self, *args, **kwargs):
+    def _guide_value_completion_extra_gain_fnc_(self, *args, **kwargs):
         keyword = args[0]
         if keyword:
             if isinstance(keyword, six.text_type):
@@ -523,6 +526,9 @@ class QtGuideBar(
                 path_text_pre = self._guide_entry._get_guide_path_text_()
                 if path_text_cur != path_text_pre:
                     self._guide_entry._set_guide_path_text_(path_text_cur)
+                    # press
+                    self._guide_entry.guide_text_press_accepted.emit(path_text_cur)
+                    # any
                     self._guide_entry.guide_text_accepted.emit(path_text_cur)
                 self._guide_entry_finished_cbk_()
 

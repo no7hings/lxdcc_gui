@@ -45,7 +45,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
 
     def set_all_setup(self):
         self._tab_view = prx_widgets.PrxTabView()
-        self.set_widget_add(self._tab_view)
+        self.add_widget(self._tab_view)
 
         s_0 = prx_widgets.PrxVScrollArea()
         self._tab_view.set_item_add(
@@ -55,7 +55,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
         )
 
         self._options_prx_node = prx_widgets.PrxNode_('options')
-        s_0.set_widget_add(self._options_prx_node)
+        s_0.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_configure(
             self._session.configure.get('build.node.options'),
         )
@@ -455,7 +455,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
 
             self.set_window_close_connect_to(quit_fnc_)
         else:
-            button.set_restore()
+            button.restore_all()
 
             contents = [
                 'non-texture(s) for create'
@@ -568,7 +568,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
 
     def set_all_setup(self):
         self._tab_view = prx_widgets.PrxTabView()
-        self.set_widget_add(self._tab_view)
+        self.add_widget(self._tab_view)
 
         s_a_0 = prx_widgets.PrxVScrollArea()
         self._tab_view.set_item_add(
@@ -578,9 +578,9 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         )
 
         e_p_0 = prx_widgets.PrxExpandedGroup()
-        s_a_0.set_widget_add(e_p_0)
+        s_a_0.add_widget(e_p_0)
         h_s_0 = prx_widgets.PrxHSplitter()
-        e_p_0.set_widget_add(h_s_0)
+        e_p_0.add_widget(h_s_0)
         e_p_0.set_name('textures')
         e_p_0.set_expanded(True)
         #
@@ -590,10 +590,10 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             [('name', 3)],
             self.get_definition_window_size()[0]*(2.0/6.0)-32
         )
-        h_s_0.set_widget_add(self._filter_tree_view)
+        h_s_0.add_widget(self._filter_tree_view)
         #
         self._tree_view = prx_widgets.PrxTreeView()
-        h_s_0.set_widget_add(self._tree_view)
+        h_s_0.add_widget(self._tree_view)
         self._tree_view.set_header_view_create(
             [('name', 4), ('color-space', 2), ('description', 2)],
             self.get_definition_window_size()[0]*(3.0/4.0)-32
@@ -630,7 +630,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         self.connect_refresh_action_to(self._set_gui_refresh_)
         #
         self._options_prx_node = prx_widgets.PrxNode_('options')
-        s_a_0.set_widget_add(self._options_prx_node)
+        s_a_0.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_configure(
             self._session.configure.get('build.node.options'),
         )
@@ -691,8 +691,8 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                 i_fnc(*i_args)
 
     def _set_gui_textures_refresh_(self):
-        self._texture_add_opt.set_restore()
-        self._tree_view_filter_opt.set_restore()
+        self._texture_add_opt.restore_all()
+        self._tree_view_filter_opt.restore_all()
 
         if self._dcc_objs:
             with utl_core.GuiProgressesRunner.create(maximum=len(self._dcc_objs), label='gui texture showing') as g_p:
@@ -926,7 +926,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
 
             self.set_window_close_connect_to(quit_fnc_)
         else:
-            button.set_restore()
+            button.restore_all()
 
             contents = [
                 'non-texture(s) to create, you can click refresh and try again'

@@ -30,7 +30,7 @@ class QtTreeWidget(
     item_expanded = qt_signal(object)
     item_extend_expanded = qt_signal(list)
     #
-    QT_MENU_CLASS = _utl_gui_qt_wgt_utility.QtMenu
+    QT_MENU_CLS = _utl_gui_qt_wgt_utility.QtMenu
     def __init__(self, *args, **kwargs):
         super(QtTreeWidget, self).__init__(*args, **kwargs)
         self.setIndentation(20)
@@ -317,8 +317,8 @@ class QtTreeWidget(
     def paintEvent(self, event):
         if not self.topLevelItemCount():
             painter = QtPainter(self.viewport())
-            painter._set_empty_draw_by_rect_(
-                self.rect()
+            painter._draw_empty_image_by_rect_(
+                self.rect(), self._empty_icon_name
             )
         #
         super(QtTreeWidget, self).paintEvent(event)

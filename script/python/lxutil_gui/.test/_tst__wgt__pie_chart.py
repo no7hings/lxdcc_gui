@@ -8,7 +8,7 @@ class W(prx_widgets.PrxToolWindow):
     def __init__(self, *args, **kwargs):
         super(W, self).__init__(*args, **kwargs)
         s_c = prx_widgets.PrxPieChart()
-        self.set_widget_add(
+        self.add_widget(
             s_c
         )
         s_c.set_chart_data(

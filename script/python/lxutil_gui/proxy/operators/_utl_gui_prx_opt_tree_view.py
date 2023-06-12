@@ -108,8 +108,8 @@ class GuiTagFilterOpt(object):
             dcc_namespace=self._dcc_namespace
         )
 
-    def set_restore(self):
-        self._prx_tree_view_src.set_restore()
+    def restore_all(self):
+        self._prx_tree_view_src.restore_all()
         #
         self._filter_content = bsc_objects.Content(
             value=collections.OrderedDict()
@@ -149,7 +149,7 @@ class GuiTagFilterOpt(object):
         parent_path = bsc_core.DccPathDagOpt(path).get_parent_path()
         if parent_path in self._obj_add_dict:
             prx_item_parent = self._obj_add_dict[parent_path]
-            prx_item = prx_item_parent.set_child_add(
+            prx_item = prx_item_parent.add_child(
                 **_kwargs
             )
         else:
@@ -315,7 +315,7 @@ class PrxDccObjTreeViewAddOpt(object):
         self._dcc_namespace = dcc_namespace
         self._obj_add_dict = self._prx_tree_view._item_dict
 
-    def set_restore(self):
+    def restore_all(self):
         self._prx_tree_view.set_clear()
 
     def _set_dag_dcc_obj_gui_add_(self, obj):
@@ -332,7 +332,7 @@ class PrxDccObjTreeViewAddOpt(object):
             parent = obj.get_parent()
             if parent is not None:
                 prx_item_parent = self._obj_add_dict[parent.path]
-                prx_item = prx_item_parent.set_child_add(
+                prx_item = prx_item_parent.add_child(
                     **kwargs
                 )
             else:
@@ -370,7 +370,7 @@ class PrxDccObjTreeViewAddOpt(object):
                 menu=obj.get_gui_menu_raw()
             )
         if prx_item_parent is not None:
-            prx_item = prx_item_parent.set_child_add(
+            prx_item = prx_item_parent.add_child(
                 **kwargs
             )
         else:
@@ -462,7 +462,7 @@ class PrxStgObjTreeViewAddOpt(object):
 
         self._dcc_namespace = 'storage'
 
-    def set_restore(self):
+    def restore_all(self):
         self._prx_tree_view.set_clear()
 
     def _set_dag_dcc_obj_gui_add_(self, obj):
@@ -475,7 +475,7 @@ class PrxStgObjTreeViewAddOpt(object):
             parent = obj.get_parent()
             if parent is not None:
                 prx_item_parent = self._obj_add_dict[parent.path]
-                prx_item = prx_item_parent.set_child_add(
+                prx_item = prx_item_parent.add_child(
                     **kwargs
                 )
             else:
@@ -537,7 +537,7 @@ class PrxStgObjTreeViewAddOpt(object):
             )
             #
             if prx_item_parent is not None:
-                prx_item = prx_item_parent.set_child_add(
+                prx_item = prx_item_parent.add_child(
                     **create_kwargs
                 )
             else:
@@ -805,7 +805,7 @@ class PrxDccObjTreeViewAddOpt1(object):
         self._dcc_namespace = dcc_namespace
         self._obj_add_dict = self._prx_tree_view._item_dict
 
-    def set_restore(self):
+    def restore_all(self):
         self._prx_tree_view.set_clear()
 
     def _set_dag_dcc_obj_gui_add_(self, obj):
@@ -823,7 +823,7 @@ class PrxDccObjTreeViewAddOpt1(object):
             parent = obj.get_parent()
             if parent is not None:
                 prx_item_parent = self._obj_add_dict[parent.path]
-                prx_item = prx_item_parent.set_child_add(
+                prx_item = prx_item_parent.add_child(
                     **kwargs
                 )
             else:
@@ -874,7 +874,7 @@ class PrxDccObjTreeViewAddOpt1(object):
                 menu=obj.get_gui_menu_raw()
             )
         if prx_item_parent is not None:
-            prx_item = prx_item_parent.set_child_add(
+            prx_item = prx_item_parent.add_child(
                 **kwargs
             )
         else:
@@ -1006,7 +1006,7 @@ class PrxObjTreeViewAddOpt(object):
     def _set_item_add_(self, path_dag_opt, parent_path_dag_opt=None):
         if parent_path_dag_opt is not None:
             parent_item = self._obj_add_dict[parent_path_dag_opt.path]
-            tree_item = parent_item.set_child_add(
+            tree_item = parent_item.add_child(
                 name=path_dag_opt.name,
                 item_class=self._prx_tree_item_cls,
             )

@@ -74,11 +74,11 @@ class AbsRezGraph(prx_widgets.PrxToolWindow):
 
     def _set_tool_panel_setup_(self):
         h_s = prx_widgets.PrxHSplitter()
-        self.set_widget_add(h_s)
+        self.add_widget(h_s)
         self._node_tree = prx_widgets.PrxNGTree()
-        h_s.set_widget_add(self._node_tree)
+        h_s.add_widget(self._node_tree)
         self._node_graph = prx_widgets.PrxNGGraph()
-        h_s.set_widget_add(self._node_graph)
+        h_s.add_widget(self._node_graph)
 
         h_s.set_stretches([1, 3])
 
@@ -291,16 +291,16 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
 
     def _set_tool_panel_setup_(self):
         h_s = prx_widgets.PrxHSplitter()
-        self.set_widget_add(h_s)
+        self.add_widget(h_s)
         v_s = prx_widgets.PrxVSplitter()
-        h_s.set_widget_add(v_s)
+        h_s.add_widget(v_s)
         self._rsv_obj_tree_view_0 = prx_widgets.PrxTreeView()
-        v_s.set_widget_add(self._rsv_obj_tree_view_0)
+        v_s.add_widget(self._rsv_obj_tree_view_0)
 
         s = prx_widgets.PrxVScrollArea()
-        v_s.set_widget_add(s)
+        v_s.add_widget(s)
         self._options_prx_node = prx_widgets.PrxNode_('options')
-        s.set_widget_add(self._options_prx_node)
+        s.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_configure(
             self._hook_build_configure.get('node.options')
         )
@@ -317,12 +317,13 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
         )
         # self._rsv_obj_tree_view_0.set_selection_use_single()
         self._prx_dcc_obj_tree_view_add_opt = utl_prx_operators.GuiRsvObjOpt(
+            self._resolver,
             prx_tree_view=self._rsv_obj_tree_view_0,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem,
         )
         #
         self._node_graph = prx_widgets.PrxNGImageGraph()
-        h_s.set_widget_add(self._node_graph)
+        h_s.add_widget(self._node_graph)
 
         h_s.set_stretches([1, 3])
 
@@ -346,8 +347,8 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
 
         self._rsv_filter_opt = bsc_core.ArgDictStringOpt(self._rsv_filter)
 
-        self._rsv_project.set_gui_attribute_restore()
-        self._prx_dcc_obj_tree_view_add_opt.set_restore()
+        self._rsv_project.restore_all_gui_variants()
+        self._prx_dcc_obj_tree_view_add_opt.restore_all()
 
         self._image_dict = {}
 
@@ -633,7 +634,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
             )
             self._options_prx_node.get_port(
                 'output.file'
-            ).set_history_update()
+            ).update_history()
             utl_core.DialogWindow.set_create(
                 'Save Graph',
                 content='"{}" save is completed'.format(file_path),

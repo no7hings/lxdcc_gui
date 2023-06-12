@@ -39,13 +39,13 @@ class AppKit(prx_widgets.PrxToolWindow):
                     else:
                         #
                         i_group = prx_widgets.PrxExpandedGroup()
-                        self.set_widget_add(i_group)
+                        self.add_widget(i_group)
                         i_group.set_name(i_group_name)
                         i_group.set_icon_by_name(i_group_name)
                         i_group.set_expanded(True)
                         #
                         i_list_view = prx_widgets.PrxListView()
-                        i_group.set_widget_add(i_list_view)
+                        i_group.add_widget(i_list_view)
                         #
                         i_list_view.set_item_frame_size_basic(48, 120)
                         #

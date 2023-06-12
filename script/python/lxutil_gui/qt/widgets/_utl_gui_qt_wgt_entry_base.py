@@ -30,6 +30,8 @@ class QtEntryAsTextEdit(
     key_escape_pressed = qt_signal()
     key_backspace_pressed = qt_signal()
     #
+    user_key_tab_pressed = qt_signal()
+    #
     key_backspace_extra_pressed = qt_signal()
     #
     focus_in = qt_signal()
@@ -62,9 +64,11 @@ class QtEntryAsTextEdit(
         self._set_value_def_init_(self)
         self._init_entry_base_def_(self)
         self._init_action_drop_def_(self)
-        self.setAcceptDrops(self._action_popup_is_enable)
+        self.setAcceptDrops(self._action_drop_is_enable)
 
         # self.setPlaceholderText()
+
+        # self.setFocusPolicy(QtCore.Qt.StrongFocus)
 
     def __execute_text_change_accepted_(self):
         self.user_entry_text_accepted.emit(self.text())
@@ -125,6 +129,8 @@ class QtEntryAsTextEdit(
                     self.key_backspace_pressed.emit()
                     if not self.text():
                         self.key_backspace_extra_pressed.emit()
+                elif event.key() == QtCore.Qt.Key_Tab:
+                    self.user_key_tab_pressed.emit()
         return False
 
     def dropEvent(self, event):
@@ -213,8 +219,8 @@ class QtEntryAsTextEdit(
                     _exist_comp
                 )
 
-    def _set_validator_use_as_storage_(self, boolean=True):
-        super(QtEntryAsTextEdit, self)._set_validator_use_as_storage_(boolean)
+    def _set_use_as_storage_(self, boolean=True):
+        super(QtEntryAsTextEdit, self)._set_use_as_storage_(boolean)
         if boolean is True:
             i_action = QtWidgets.QAction(self)
             i_action.triggered.connect(
@@ -400,7 +406,8 @@ class QtEntryAsContentEdit(
         )
         self._init_entry_base_def_(self)
 
-        self._empty_icon_name = 'placeholder/text'
+        self._empty_icon_name = None
+        self._empty_text = None
 
     def eventFilter(self, *args):
         widget, event = args
@@ -423,9 +430,16 @@ class QtEntryAsContentEdit(
     def paintEvent(self, event):
         if not self.toPlainText():
             painter = QtPainter(self.viewport())
-            painter._set_empty_draw_by_rect_(
-                rect=self.rect(), icon_name=self._empty_icon_name
-            )
+            if self._empty_text:
+                painter._draw_empty_text_by_rect_(
+                    rect=self.rect(),
+                    text=self._empty_text,
+                )
+            else:
+                painter._draw_empty_image_by_rect_(
+                    rect=self.rect(),
+                    icon_name=self._empty_icon_name,
+                )
 
         super(QtEntryAsContentEdit, self).paintEvent(event)
 
@@ -517,6 +531,9 @@ class QtEntryAsContentEdit(
         else:
             self.setText('')
 
+    def _set_empty_text_(self, text):
+        self._empty_text = text
+
     def insertFromMimeData(self, data):
         if data.text():
             self.setText(data.text())
@@ -559,6 +576,7 @@ class QtEntryAsList(
 ):
     entry_changed = qt_signal()
     entry_added = qt_signal()
+    entry_deleted = qt_signal()
     #
     user_entry_changed = qt_signal()
     user_entry_cleared = qt_signal()
@@ -582,6 +600,7 @@ class QtEntryAsList(
         self.setSelectionMode(self.ExtendedSelection)
         #
         self._item_width, self._item_height = 20, 20
+        self._grid_size = 20, 20
 
         self._set_help_def_init_(self)
         #
@@ -591,30 +610,31 @@ class QtEntryAsList(
         self._init_entry_base_def_(self)
         self._init_action_drop_def_(self)
 
-        self.setAcceptDrops(self._action_popup_is_enable)
+        self.setAcceptDrops(self._action_drop_is_enable)
 
         self._set_shortcut_register_()
 
         self._item_icon_file_path = None
 
         self._empty_icon_name = 'placeholder/default'
+        self._empty_text = None
 
     def contextMenuEvent(self, event):
         if self._entry_is_enable is True:
             menu_raw = [
                 ('basic',),
-                ('copy', None, (True, self._set_action_copy_, False), QtGui.QKeySequence.Copy),
-                ('paste', None, (True, self._set_action_paste_, False), QtGui.QKeySequence.Paste),
-                ('cut', None, (True, self._set_action_cut_, False), QtGui.QKeySequence.Cut),
+                ('copy', None, (True, self._do_action_copy_, False), QtGui.QKeySequence.Copy),
+                ('paste', None, (True, self._do_action_paste_, False), QtGui.QKeySequence.Paste),
+                ('cut', None, (True, self._do_action_cut_, False), QtGui.QKeySequence.Cut),
                 ('extend',),
-                ('select all', None, (True, self._set_action_select_all_, False), QtGui.QKeySequence.SelectAll),
+                ('select all', None, (True, self._do_action_select_all_, False), QtGui.QKeySequence.SelectAll),
             ]
         else:
             menu_raw = [
                 ('basic',),
-                ('copy', None, (True, self._set_action_copy_, False), QtGui.QKeySequence.Copy),
+                ('copy', None, (True, self._do_action_copy_, False), QtGui.QKeySequence.Copy),
                 ('extend',),
-                ('select all', None, (True, self._set_action_select_all_, False), QtGui.QKeySequence.SelectAll)
+                ('select all', None, (True, self._do_action_select_all_, False), QtGui.QKeySequence.SelectAll)
             ]
         #
         items = self._get_selected_items_()
@@ -668,9 +688,17 @@ class QtEntryAsList(
     def paintEvent(self, event):
         if not self.count():
             painter = QtPainter(self.viewport())
-            painter._set_empty_draw_by_rect_(
-                rect=self.rect(), icon_name=self._empty_icon_name
-            )
+            if self._empty_text:
+                painter._draw_empty_text_by_rect_(
+                    rect=self.rect(),
+                    text=self._empty_text,
+                    sub_text=self._empty_sub_text
+                )
+            else:
+                painter._draw_empty_image_by_rect_(
+                    rect=self.rect(),
+                    icon_name=self._empty_icon_name,
+                )
 
     def dragEnterEvent(self, event):
         if event.mimeData().hasUrls:
@@ -679,11 +707,15 @@ class QtEntryAsList(
             event.ignore()
 
     def dragMoveEvent(self, event):
-        if event.mimeData().hasUrls:
-            # event.setDropAction(QtCore.Qt.CopyAction)
-            event.accept()
-        else:
+        if self._entry_use_as_storage is True:
+            if event.mimeData().hasUrls:
+                # event.setDropAction(QtCore.Qt.CopyAction)
+                event.accept()
+                return
             event.ignore()
+            return
+        event.ignore()
+        return
 
     def dropEvent(self, event):
         self._execute_action_drop_(event)
@@ -693,15 +725,15 @@ class QtEntryAsList(
         if item is not None:
             item_widget = self.itemWidget(item)
             if item_widget is not None:
-                _ = item_widget._get_name_text_()
-                bsc_core.StgPathOpt(_).set_open_in_system()
+                value = item_widget._get_value_()
+                bsc_core.StgPathOpt(value).set_open_in_system()
 
     def _set_shortcut_register_(self):
         actions = [
-            (self._set_action_copy_, 'Ctrl+C'),
-            (self._set_action_paste_, 'Ctrl+V'),
-            (self._set_action_cut_, 'Ctrl+X'),
-            (self._set_action_select_all_, 'Ctrl+A')
+            (self._do_action_copy_, 'Ctrl+C'),
+            (self._do_action_paste_, 'Ctrl+V'),
+            (self._do_action_cut_, 'Ctrl+X'),
+            (self._do_action_select_all_, 'Ctrl+A')
         ]
         for i_fnc, i_shortcut in actions:
             i_action = QtWidgets.QAction(self)
@@ -718,34 +750,32 @@ class QtEntryAsList(
             )
             self.addAction(i_action)
 
-    def _set_empty_icon_name_(self, text):
-        self._empty_icon_name = text
-        self._refresh_widget_draw_()
-
-    def _set_action_copy_(self):
+    def _do_action_copy_(self):
         selected_item_widgets = self._get_selected_item_widgets_()
         if selected_item_widgets:
-            values = [i._get_name_text_() for i in selected_item_widgets]
+            values = [i._get_value_() for i in selected_item_widgets]
             QtWidgets.QApplication.clipboard().setText(
                 '\n'.join(values)
             )
 
-    def _set_action_paste_(self):
-        text = QtWidgets.QApplication.clipboard().text()
-        if text:
-            values = [i.strip() for i in text.split('\n')]
-            [self._append_value_(i) for i in values]
-
-    def _set_action_cut_(self):
+    def _do_action_cut_(self):
         selected_item_widgets = self._get_selected_item_widgets_()
         if selected_item_widgets:
-            values = [i._get_name_text_() for i in selected_item_widgets]
+            values = [i._get_value_() for i in selected_item_widgets]
             QtWidgets.QApplication.clipboard().setText(
                 '\n'.join(values)
             )
             [self._delete_value_(i) for i in values]
 
-    def _set_action_select_all_(self):
+    def _do_action_paste_(self):
+        text = QtWidgets.QApplication.clipboard().text()
+        if text:
+            values = [i.strip() for i in text.split('\n')]
+            for i_value in values:
+                if self._get_value_is_valid_(i_value):
+                    self._append_value_(i_value)
+
+    def _do_action_select_all_(self):
         self._set_all_items_selected_(True)
 
     def _get_selected_item_widgets_(self):
@@ -759,42 +789,56 @@ class QtEntryAsList(
 
     def _execute_action_drop_(self, event):
         data = event.mimeData()
-        # for i in data.formats():
-        #     print i, data.data(i).data()
-        if data.hasUrls():
-            urls = event.mimeData().urls()
-            if urls:
-                values = []
-                #
-                for i_url in urls:
-                    i_value = i_url.toLocalFile()
-                    if self._get_value_is_valid_(i_value):
-                        values.append(i_value)
-                #
-                cs = bsc_core.StgFileMultiplyMtd.set_merge_to(
-                    values,
-                    ['*.####.*']
-                )
-                [self._append_value_(i) for i in cs]
+        if self._entry_use_as_storage is True:
+            if data.hasUrls():
+                urls = event.mimeData().urls()
+                if urls:
+                    values = []
+                    #
+                    for i_url in urls:
+                        i_value = i_url.toLocalFile()
+                        if self._get_value_is_valid_(i_value):
+                            values.append(i_value)
+                    #
+                    if self._entry_use_as_file_multiply is True:
+                        values = bsc_core.StgFileMultiplyMtd.merge_to(
+                            values,
+                            ['*.<udim>.####.*', '*.####.*']
+                        )
+                    #
+                    [self._append_value_(i) for i in values]
+                    event.accept()
+        else:
+            event.ignore()
     # noinspection PyUnusedLocal
     def _execute_action_delete_(self, event):
-        selected_item_widgets = self._get_selected_item_widgets_()
-        if selected_item_widgets:
-            for i in selected_item_widgets:
-                i_value = i._get_name_text_()
-                self._delete_value_(i_value)
+        item_widgets_selected = self._get_selected_item_widgets_()
+        if item_widgets_selected:
+            for i in item_widgets_selected:
+                i_value = i._get_value_()
+                self._delete_value_(i_value, False)
+            #
+            self._refresh_viewport_showable_auto_()
 
-    def _delete_value_(self, value):
+    def _delete_values_(self, values):
+        [self._delete_value_(i, False) for i in values]
+        self._refresh_viewport_showable_auto_()
+
+    def _delete_value_(self, value, auto_refresh_showable=True):
         if value:
             if self._entry_is_enable is True:
                 index = self._values.index(value)
                 self._values.remove(value)
                 #
                 item = self.item(index)
+                # delete item widget
                 self._delete_item_widget_(item)
+                # delete item
                 self.takeItem(index)
+                self.entry_deleted.emit()
         #
-        self._refresh_viewport_showable_auto_()
+        if auto_refresh_showable is True:
+            self._refresh_viewport_showable_auto_()
 
     def _append_value_(self, value):
         # use original value, do not encode
@@ -802,6 +846,11 @@ class QtEntryAsList(
             self._values.append(value)
             self._create_value_item_(value)
             self.entry_added.emit()
+
+    def _insert_value_(self, value, index):
+        # use original value, do not encode
+        if value and value not in self._values:
+            pass
 
     def _extend_values_(self, values):
         if values:
@@ -812,7 +861,7 @@ class QtEntryAsList(
         self._values = []
         self._set_clear_()
 
-    def _set_item_show_deferred_(self, data):
+    def _item_show_deferred_fnc_(self, data):
         item_widget, value = data
         item_widget._set_name_text_(value)
         item_widget._set_tool_tip_(value)
@@ -826,16 +875,18 @@ class QtEntryAsList(
             return [item_widget, value]
 
         def build_fnc_(data):
-            self._set_item_show_deferred_(data)
+            self._item_show_deferred_fnc_(data)
 
         def delete_fnc_():
             self._delete_value_(value)
 
         item_widget = _utl_gui_qt_wgt_utility._QtHItem()
+        item_widget._set_value_(value)
         item_widget._set_delete_enable_(True)
         item_widget.delete_press_clicked.connect(delete_fnc_)
         item = _utl_gui_qt_wgt_utility.QtListWidgetItem()
-        item.setSizeHint(QtCore.QSize(self._item_width, self._item_height))
+        w, h = self._grid_size
+        item.setSizeHint(QtCore.QSize(w, h))
         self.addItem(item)
         item._set_item_show_connect_()
         self.setItemWidget(item, item_widget)
@@ -844,15 +895,19 @@ class QtEntryAsList(
         )
         item_widget._refresh_widget_()
 
+    def _set_clear_(self):
+        super(QtEntryAsList, self)._set_clear_()
+        self._values = []
+
     def _set_values_(self, values):
         self._set_clear_()
         [self._append_value_(i) for i in values]
 
-    def _set_entry_item_icon_file_path_(self, file_path):
+    def _set_item_icon_file_path_(self, file_path):
         self._item_icon_file_path = file_path
 
-    def _set_validator_use_as_storage_(self, boolean):
-        super(QtEntryAsList, self)._set_validator_use_as_storage_(boolean)
+    def _set_use_as_storage_(self, boolean):
+        super(QtEntryAsList, self)._set_use_as_storage_(boolean)
         if boolean is True:
             i_action = QtWidgets.QAction(self)
             i_action.triggered.connect(
@@ -869,7 +924,7 @@ class QtEntryAsList(
 
 class QtEntryAsBubbles(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtWidgetDef
+    utl_gui_qt_abstract.AbsQtWidgetBaseDef
 ):
     bubble_text_change_accepted = qt_signal(str)
     bubble_text_changed = qt_signal()
@@ -927,7 +982,9 @@ class QtEntryFrame(
     #
     utl_gui_qt_abstract.AbsQtNameBaseDef,
     utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtStatusDef,
+    utl_gui_qt_abstract.AbsQtStatusBaseDef,
+    #
+    utl_gui_qt_abstract.AbsQtThreadBaseDef,
 ):
     geometry_changed = qt_signal(int, int, int, int)
     entry_focus_in = qt_signal()
@@ -946,6 +1003,10 @@ class QtEntryFrame(
 
         frm_x, frm_y = x+m_l+1, y+m_t+1
         frm_w, frm_h = w-m_l-m_r-2, h-m_t-m_b-2
+
+        self._frame_draw_rect.setRect(
+            frm_x, frm_y, frm_w, frm_h
+        )
         if c > 1:
             for i in range(c):
                 i_widget = self._value_entries[i]
@@ -988,7 +1049,8 @@ class QtEntryFrame(
         #
         self._init_name_base_def_(self)
         self._init_frame_base_def_(self)
-        self._set_status_def_init_()
+        self._init_status_base_def_(self)
+        self._init_thread_base_def_(self)
         #
         self._frame_border_color = QtBorderColors.Light
         self._hovered_frame_border_color = QtBorderColors.Hovered
@@ -1040,6 +1102,14 @@ class QtEntryFrame(
                     font=get_font(size=8, italic=True),
                     text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
                 )
+        #
+        if self._thread_draw_is_enable is True:
+            painter._draw_alternating_colors_by_rect_(
+                rect=self._frame_draw_rect,
+                colors=((23, 23, 23, 127), (0, 0, 0, 0)),
+                # border_radius=4,
+                running=True
+            )
     # resize
     def _get_resize_handle_(self):
         return self._resize_handle

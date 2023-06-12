@@ -28,7 +28,7 @@ class AbsPnlAssetDccGeometryComparer(
     #
     PANEL_KEY = 'asset_comparer'
     #
-    DCC_NODE_CLASS = None
+    DCC_NODE_CLS = None
     #
     FNC_GEOMETRY_COMPARER = None
     #
@@ -78,18 +78,18 @@ class AbsPnlAssetDccGeometryComparer(
         expand_box_0 = prx_widgets.PrxExpandedGroup()
         expand_box_0.set_name('Viewer(s)')
         expand_box_0.set_expanded(True)
-        self.set_widget_add(expand_box_0)
+        self.add_widget(expand_box_0)
         h_splitter_0 = prx_widgets.PrxHSplitter()
         v_splitter_0 = prx_widgets.PrxVSplitter()
-        h_splitter_0.set_widget_add(v_splitter_0)
-        expand_box_0.set_widget_add(h_splitter_0)
+        h_splitter_0.add_widget(v_splitter_0)
+        expand_box_0.add_widget(h_splitter_0)
         self._filter_tree_viewer_0 = prx_widgets.PrxTreeView()
-        v_splitter_0.set_widget_add(self._filter_tree_viewer_0)
+        v_splitter_0.add_widget(self._filter_tree_viewer_0)
         self._sector_chart = prx_widgets.PrxSectorChart()
-        v_splitter_0.set_widget_add(self._sector_chart)
+        v_splitter_0.add_widget(self._sector_chart)
         #
         self._obj_tree_viewer_0 = prx_widgets.PrxTreeView()
-        h_splitter_0.set_widget_add(self._obj_tree_viewer_0)
+        h_splitter_0.add_widget(self._obj_tree_viewer_0)
         h_splitter_0.set_stretches([1, 2])
         #
         self._set_tree_viewer_build_()
@@ -110,7 +110,7 @@ class AbsPnlAssetDccGeometryComparer(
             prx_tree_item_cls=prx_widgets.PrxDccObjTreeItem,
             dcc_namespace=self.DCC_NAMESPACE,
             dcc_pathsep=self.DCC_PATHSEP,
-            dcc_node_class=self.DCC_NODE_CLASS,
+            dcc_node_class=self.DCC_NODE_CLS,
             dcc_geometry_location=self.DCC_GEOMETRY_LOCATION,
         )
         #
@@ -135,7 +135,7 @@ class AbsPnlAssetDccGeometryComparer(
         self._options_prx_node = prx_widgets.PrxNode_(
             'options'
         )
-        self.set_widget_add(self._options_prx_node)
+        self.add_widget(self._options_prx_node)
         self._options_prx_node.set_expanded(False)
         #
         self._options_prx_node.create_ports_by_configure(
@@ -161,8 +161,8 @@ class AbsPnlAssetDccGeometryComparer(
         return self._fnc_dcc_geometry_comparer.get_results()
 
     def _set_dcc_obj_guis_build_(self):
-        self._prx_usd_mesh_tree_view_add_opt.set_restore()
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
+        self._prx_usd_mesh_tree_view_add_opt.restore_all()
+        self._prx_dcc_obj_tree_view_tag_filter_opt.restore_all()
         #
         comparer_results = self._set_comparer_result_update_()
         #
@@ -332,10 +332,10 @@ class AbsDccComparerOpt(object):
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
         )
 
-    def set_restore(self):
-        self._filter_tree_view.set_restore()
-        self._result_tree_view.set_restore()
-        self._filter_opt.set_restore()
+    def restore_all(self):
+        self._filter_tree_view.restore_all()
+        self._result_tree_view.restore_all()
+        self._filter_opt.restore_all()
 
     def get_node(self, path_src, path_tgt, status, description):
         if path_src in self._obj_add_dict:
@@ -349,7 +349,7 @@ class AbsDccComparerOpt(object):
         transform_path_opt_src = dcc_path_dag_opt_src.get_parent()
         transform_prx_item_src = self.get_transform(transform_path_opt_src)
         #
-        prx_item_src = transform_prx_item_src.set_child_add(
+        prx_item_src = transform_prx_item_src.add_child(
             name=[dcc_obj_src.name, description, dcc_path_dag_opt_tgt.name],
             icon=utl_gui_core.RscIconFile.get('obj/mesh'),
             tool_tip=[path_src, description, path_tgt],
@@ -388,7 +388,7 @@ class AbsDccComparerOpt(object):
 
         parent_prx_item = self.get_root(path_dag_opt.get_root())
 
-        prx_item = parent_prx_item.set_child_add(
+        prx_item = parent_prx_item.add_child(
             name=path_dag_opt.name,
             icon=utl_gui_core.RscIconFile.get('obj/transform'),
             tool_tip=path,
@@ -406,7 +406,7 @@ class AbsDccComparerOpt(object):
 
         parent_prx_item = self.get_group(path_dag_opt.get_parent())
 
-        prx_item = parent_prx_item.set_child_add(
+        prx_item = parent_prx_item.add_child(
             name=name,
             icon=utl_gui_core.RscIconFile.get('obj/transform'),
             tool_tip=path,
@@ -440,28 +440,28 @@ class AbsPnlAssetGeometryComparer(prx_widgets.PrxSessionWindow):
 
     def set_all_setup(self):
         s = prx_widgets.PrxVScrollArea()
-        self.set_widget_add(s)
+        self.add_widget(s)
 
         e_g = prx_widgets.PrxExpandedGroup()
-        s.set_widget_add(e_g)
+        s.add_widget(e_g)
         e_g.set_name('viewers')
         e_g.set_expanded(True)
 
         h_s = prx_widgets.PrxHSplitter()
-        e_g.set_widget_add(h_s)
+        e_g.add_widget(h_s)
         v_s = prx_widgets.PrxVSplitter()
-        h_s.set_widget_add(v_s)
+        h_s.add_widget(v_s)
         self._filter_tree_view = prx_widgets.PrxTreeView()
-        v_s.set_widget_add(self._filter_tree_view)
+        v_s.add_widget(self._filter_tree_view)
         self._filter_tree_view.set_header_view_create(
             [('name', 2), ('count', 1)],
             self.get_definition_window_size()[0]*(1.0/3.0) - 48
         )
         #
         self._sector_chart = prx_widgets.PrxSectorChart()
-        v_s.set_widget_add(self._sector_chart)
+        v_s.add_widget(self._sector_chart)
         self._result_tree_view = prx_widgets.PrxTreeView()
-        h_s.set_widget_add(self._result_tree_view)
+        h_s.add_widget(self._result_tree_view)
         self._result_tree_view.set_header_view_create(
             [('name', 2), ('description', 1), ('target', 1)],
             self.get_definition_window_size()[0]*(2.0/3.0) - 48
@@ -472,7 +472,7 @@ class AbsPnlAssetGeometryComparer(prx_widgets.PrxSessionWindow):
         )
         #
         self._options_prx_node = prx_widgets.PrxNode_('options')
-        s.set_widget_add(self._options_prx_node)
+        s.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_configure(
             self._session.configure.get('build.node.options'),
         )
@@ -560,7 +560,7 @@ class AbsPnlAssetGeometryComparer(prx_widgets.PrxSessionWindow):
         sector_chart_data_dict = {}
         count = len(self._comparer_results)
 
-        self._comparer_opt.set_restore()
+        self._comparer_opt.restore_all()
 
         with utl_core.GuiProgressesRunner.create(maximum=count, label='gui-add for geometry-comparer result') as g_p:
             for i_path_src, i_path_tgt, i_description in self._comparer_results:

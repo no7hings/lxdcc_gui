@@ -12,14 +12,14 @@ class QtValueEntryAsTextEdit(
     utl_gui_qt_abstract.AbsQtValueEntryExtraDef,
     utl_gui_qt_abstract.AbsQtValueDefaultDef,
 ):
-    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
+    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
     #
     entry_changed = qt_signal()
     def __init__(self, *args, **kwargs):
         super(QtValueEntryAsTextEdit, self).__init__(*args, **kwargs)
         #
         self._init_value_entry_extra_def_(self)
-        self._set_value_default_def_init_()
+        self._init_value_default_def_()
         #
         self._value_entry_layout = QtHBoxLayout(self)
         self._value_entry_layout.setContentsMargins(2, 0, 2, 0)
@@ -30,7 +30,7 @@ class QtValueEntryAsTextEdit(
     def _build_value_entry_(self, value_type):
         self._value_type = value_type
         #
-        self._value_entry = self.QT_VALUE_ENTRY_CLASS()
+        self._value_entry = self.QT_VALUE_ENTRY_CLS()
         self._value_entry_layout.addWidget(self._value_entry)
         self._value_entry._set_value_type_(self._value_type)
 
@@ -54,14 +54,14 @@ class QtValueEntryAsContentEdit(
     utl_gui_qt_abstract.AbsQtValueEntryExtraDef,
     utl_gui_qt_abstract.AbsQtValueDefaultDef,
 ):
-    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryAsContentEdit
+    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsContentEdit
     #
     entry_changed = qt_signal()
     def __init__(self, *args, **kwargs):
         super(QtValueEntryAsContentEdit, self).__init__(*args, **kwargs)
         #
         self._init_value_entry_extra_def_(self)
-        self._set_value_default_def_init_()
+        self._init_value_default_def_()
         #
         self._build_value_entry_(self._value_type)
 
@@ -74,7 +74,7 @@ class QtValueEntryAsContentEdit(
         self._value_entry_layout.setContentsMargins(2, 0, 2, 0)
         self._value_entry_layout.setSpacing(2)
         #
-        self._value_entry = self.QT_VALUE_ENTRY_CLASS()
+        self._value_entry = self.QT_VALUE_ENTRY_CLS()
         self._value_entry._set_entry_frame_(self)
         # self._value_entry.setReadOnly(False)
         self._value_entry_layout.addWidget(self._value_entry)
@@ -96,6 +96,9 @@ class QtValueEntryAsContentEdit(
         ][boolean]
         self._refresh_widget_draw_()
 
+    def _set_empty_text_(self, text):
+        self._value_entry._set_empty_text_(text)
+
 
 class QtValueEntryAsTupleByChoose(
     _utl_gui_qt_wgt_entry_base.QtEntryFrame,
@@ -109,7 +112,7 @@ class QtValueEntryAsTupleByChoose(
     utl_gui_qt_abstract.AbsQtValueEntryExtraDef,
     utl_gui_qt_abstract.AbsQtValueDefaultDef,
 ):
-    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
+    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
     #
     QT_POPUP_CHOOSE_CLS = _utl_gui_qt_wgt_popup.QtPopupForRgbaChoose
     def _refresh_widget_draw_(self):
@@ -131,7 +134,7 @@ class QtValueEntryAsTupleByChoose(
         self._init_action_for_press_def_(self)
         #
         self._init_value_entry_extra_def_(self)
-        self._set_value_default_def_init_()
+        self._init_value_default_def_()
         #
         self._value_entry_layout = QtHBoxLayout(self)
         self._value_entry_layout.setContentsMargins(20, 0, 0, 0)
@@ -142,7 +145,7 @@ class QtValueEntryAsTupleByChoose(
     def _build_value_entry_(self, value_type):
         self._value_type = value_type
         #
-        self._value_entry = self.QT_VALUE_ENTRY_CLASS()
+        self._value_entry = self.QT_VALUE_ENTRY_CLS()
         self._value_entry_layout.addWidget(self._value_entry)
         self._value_entry._set_value_type_(self._value_type)
 
@@ -161,7 +164,7 @@ class QtValueEntryAsTupleByChoose(
         #
         widget, event = args
         if widget == self:
-            self._set_action_hover_filter_execute_(event)
+            self._execute_action_hover_by_filter_(event)
             if event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
                     self._set_action_flag_(self.ActionFlag.PressClick)
@@ -181,7 +184,7 @@ class QtValueEntryAsTupleByChoose(
                         self.press_clicked.emit()
                         self._set_color_choose_drop_()
                 #
-                self._clear_action_flag_()
+                self._clear_all_action_flags_()
                 #
                 self._action_is_hovered = False
                 self.update()
@@ -222,50 +225,46 @@ class QtValueEntryAsTextEditByChoose(
     _utl_gui_qt_wgt_entry_base.QtEntryFrame,
     #
     utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForEntryDef,
     #
-    utl_gui_qt_abstract.AbsQtValueEntryAsPopupChoose,
+    utl_gui_qt_abstract.AbsQtValueEntryAsPopupChooseExtraDef,
     utl_gui_qt_abstract.AbsQtValueDefaultDef,
     #
     utl_gui_qt_abstract.AbsQtChooseBaseDef,
     utl_gui_qt_abstract.AbsQtChooseExtraDef,
     utl_gui_qt_abstract.AbsQtCompletionExtraDef,
 ):
-    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
+    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
     #
     QT_POPUP_CHOOSE_CLS = _utl_gui_qt_wgt_popup.QtPopupForChoose
-    QT_POPUP_COMPLETION_CLASS = _utl_gui_qt_wgt_popup.QtPopupForCompletion
+    QT_POPUP_COMPLETION_CLS = _utl_gui_qt_wgt_popup.QtPopupForCompletion
     def _refresh_widget_(self):
         self._refresh_choose_index_()
         self._refresh_widget_draw_()
 
     def _refresh_choose_index_(self):
+        self._value_index_label.hide()
         if self._choose_index_showable is True:
-            values = self._get_choose_values_()
-            if values:
-                if self._value_entry_is_enable is True:
-                    value = self._get_value_()
-                    if value in values:
-                        self._value_index_label.show()
-                        maximum = len(values)
-                        value = values.index(value) + 1
-                        text = '{}/{}'.format(value, maximum)
-                        self._value_index_label._set_name_text_(text)
-                        width = self._value_index_label._get_name_text_draw_width_(text)
-                        self._value_index_label.setMinimumWidth(width + 4)
-                    else:
-                        self._value_index_label.hide()
-            else:
-                self._value_entry._set_value_clear_()
-                self._value_index_label.hide()
+            if self._value_entry_is_enable is True:
+                values = self._get_choose_values_()
+                if values:
+                    self._value_index_label.show()
+                    maximum = len(values)
+                    text = str(maximum)
+                    value_cur = self._get_value_()
+                    if value_cur in values:
+                        index_cur = values.index(value_cur) + 1
+                        text = '{}/{}'.format(index_cur, maximum)
+                    #
+                    self._value_index_label._set_name_text_(text)
+                    width = self._value_index_label._get_name_text_draw_width_(text)
+                    self._value_index_label.setMinimumWidth(width + 4)
 
     def __init__(self, *args, **kwargs):
         super(QtValueEntryAsTextEditByChoose, self).__init__(*args, **kwargs)
         self._init_action_base_def_(self)
-        self._init_set_action_for_entry_def_(self)
         #
-        self._set_value_entry_enumerate_init_(self)
-        self._set_value_default_def_init_()
+        self._init_value_entry_as_popup_choose_extra_def_(self)
+        self._init_value_default_def_()
         #
         self._init_choose_base_def_()
         self._init_choose_extra_def_(self)
@@ -315,12 +314,16 @@ class QtValueEntryAsTextEditByChoose(
         self._value_entry_layout = QtHBoxLayout(entry_widget)
         self._value_entry_layout.setContentsMargins(2, 0, 2, 0)
         self._value_entry_layout.setSpacing(2)
-        #
-        self._value_entry = self.QT_VALUE_ENTRY_CLASS()
+        # entry
+        self._value_entry = self.QT_VALUE_ENTRY_CLS()
         self._value_entry_layout.addWidget(self._value_entry)
         self._value_entry._set_entry_frame_(self)
         self._value_entry._set_value_type_(self._value_type)
         self._value_entry._set_entry_enable_(False)
+        #   connect tab key
+        self._value_entry.user_key_tab_pressed.connect(
+            self.user_key_tab_pressed.emit
+        )
         #
         self._value_index_label = _utl_gui_qt_wgt_utility.QtTextItem()
         self._value_index_label.hide()
@@ -356,6 +359,10 @@ class QtValueEntryAsTextEditByChoose(
         # completion
         self._build_completion_extra_(self._value_entry, self)
         self.user_completion_text_accepted.connect(self._set_value_)
+        #
+        self._set_completion_extra_gain_fnc_(
+            self._choose_value_completion_gain_fnc_
+        )
 
     def _set_value_entry_enable_(self, boolean):
         super(QtValueEntryAsTextEditByChoose, self)._set_value_entry_enable_(boolean)
@@ -374,7 +381,7 @@ class QtValueEntryAsTextEditByChoose(
         self._value_entry._set_value_validation_fnc_(fnc)
 
     def _set_value_entry_use_as_storage_(self, boolean):
-        self._value_entry._set_validator_use_as_storage_(boolean)
+        self._value_entry._set_use_as_storage_(boolean)
 
     def _set_value_entry_finished_connect_to_(self, fnc):
         self._value_entry.user_entry_finished.connect(fnc)
@@ -382,11 +389,15 @@ class QtValueEntryAsTextEditByChoose(
     def _set_value_entry_changed_connect_to_(self, fnc):
         self._value_entry.entry_changed.connect(fnc)
 
-    def _set_choose_button_icon_file_path_(self, file_path):
+    def _set_value_choose_button_icon_file_path_(self, file_path):
         self._value_choose_button._set_icon_file_path_(file_path)
 
-    def _set_choose_button_sub_icon_file_path_(self, file_path):
-        self._value_choose_button._set_sub_icon_file_path_(file_path)
+    def _set_value_choose_button_name_text_(self, text):
+        self._value_choose_button._set_name_text_(text)
+
+    def _set_choose_button_state_icon_file_path_(self, file_path):
+        self._value_choose_button._set_icon_state_draw_enable_(True)
+        self._value_choose_button._set_state_icon_file_path_(file_path)
 
     def _get_value_choose_button_(self):
         return self._value_choose_button
@@ -404,7 +415,7 @@ class QtValueEntryAsTextEditByChoose(
         if icon_name is not None:
             button._set_icon_file_path_(utl_gui_core.RscIconFile.get(icon_name))
         if sub_icon_name is not None:
-            button._set_sub_icon_file_path_(utl_gui_core.RscIconFile.get(sub_icon_name))
+            button._set_icon_sub_file_path_(utl_gui_core.RscIconFile.get(sub_icon_name))
         if tool_tip:
             button._set_tool_tip_(tool_tip)
         button._set_icon_frame_draw_size_(18, 18)
@@ -440,7 +451,16 @@ class QtValueEntryAsTextEditByChoose(
         pass
 
     def _set_value_clear_(self):
+        self._restore_all_()
+        self.user_value_entry_cleared.emit()
+
+    def _restore_all_(self):
+        self._value_index_label.hide()
+        #
         self._choose_values = []
+        self._choose_image_url_dict = {}
+        self._choose_keyword_filter_dict = {}
+        self._choose_tag_filter_dict = {}
         self._value_entry._set_value_clear_()
 
 
@@ -458,6 +478,7 @@ class QtValueEntryAsCapsule(
     utl_gui_qt_abstract.AbsQtValueDefaultDef,
 ):
     value_changed = qt_signal()
+    user_value_changed = qt_signal()
     def __init__(self, *args, **kwargs):
         super(QtValueEntryAsCapsule, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -473,7 +494,7 @@ class QtValueEntryAsCapsule(
         self._init_action_for_press_def_(self)
 
         self._set_value_def_init_(self)
-        self._set_value_default_def_init_()
+        self._init_value_default_def_()
 
         self._capsule_per_width = 0
 
@@ -651,7 +672,7 @@ class QtValueEntryAsCapsule(
                 self._execute_capsule_action_hover_move_(event)
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 self._execute_capsule_action_press_end_(event)
-                self._clear_action_flag_()
+                self._clear_all_action_flags_()
         return False
 
     def paintEvent(self, event):
@@ -675,7 +696,7 @@ class QtValueEntryAsTextEdits(
     """
     use for multiply texts (str, int, float) entry, etc. float3, integer3
     """
-    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
+    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
     #
     entry_changed = qt_signal()
     def __init__(self, *args, **kwargs):
@@ -718,7 +739,7 @@ class QtValueEntryAsList(
     utl_gui_qt_abstract.AbsQtChooseBaseDef,
     utl_gui_qt_abstract.AbsQtChooseExtraDef,
 ):
-    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryAsList
+    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsList
     #
     QT_POPUP_CHOOSE_CLS = _utl_gui_qt_wgt_popup.QtPopupForChoose
     #
@@ -749,7 +770,7 @@ class QtValueEntryAsList(
         self._value_entry_layout.setContentsMargins(2, 2, 2, 2)
         self._value_entry_layout.setSpacing(0)
         #
-        self._value_entry = self.QT_VALUE_ENTRY_CLASS()
+        self._value_entry = self.QT_VALUE_ENTRY_CLS()
         self._value_entry_layout.addWidget(self._value_entry)
         self._value_entry._set_entry_frame_(self)
         #
@@ -766,7 +787,7 @@ class QtValueEntryAsList(
         self._value_choose_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
         self._entry_button_layout.addWidget(self._value_choose_button)
         self._value_choose_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('file/file'))
-        self._value_choose_button._set_sub_icon_file_path_(utl_gui_core.RscIconFile.get('down'))
+        self._value_choose_button._set_state_icon_file_path_(utl_gui_core.RscIconFile.get('state/popup'))
         self._value_choose_button._set_icon_frame_draw_size_(18, 18)
         self._value_choose_button._set_name_text_('choose value')
         self._value_choose_button._set_tool_tip_('"LMB-click" to popup choose view')
@@ -813,11 +834,14 @@ class QtValueEntryAsList(
     def _get_values_(self):
         return self._value_entry._get_values_()
 
+    def _set_clear_(self):
+        self._clear_all_values_()
+
     def _clear_all_values_(self):
         self._value_entry._clear_all_values_()
 
     def _set_entry_item_icon_file_path_(self, file_path):
-        self._value_entry._set_entry_item_icon_file_path_(file_path)
+        self._value_entry._set_item_icon_file_path_(file_path)
 
     def _set_value_entry_button_add_(self, widget):
         self._entry_button_layout.addWidget(widget)
@@ -829,15 +853,22 @@ class QtValueEntryAsList(
         if icon_name is not None:
             button._set_icon_file_path_(utl_gui_core.RscIconFile.get(icon_name))
         if sub_icon_name is not None:
-            button._set_sub_icon_file_path_(utl_gui_core.RscIconFile.get(sub_icon_name))
+            button._set_icon_sub_file_path_(utl_gui_core.RscIconFile.get(sub_icon_name))
         button._set_icon_frame_draw_size_(18, 18)
         return button
 
     def _set_value_entry_use_as_storage_(self, boolean):
-        self._value_entry._set_validator_use_as_storage_(boolean)
+        self._value_entry._set_use_as_storage_(boolean)
 
-    def _set_choose_button_icon_file_path_(self, file_path):
+    def _set_value_choose_button_icon_file_path_(self, file_path):
         self._value_choose_button._set_icon_file_path_(file_path)
+
+    def _set_value_choose_button_name_text_(self, text):
+        self._value_choose_button._set_name_text_(text)
+
+    def _set_choose_button_state_icon_file_path_(self, file_path):
+        self._value_choose_button._set_icon_state_draw_enable_(True)
+        self._value_choose_button._set_state_icon_file_path_(file_path)
     # choose
     def _extend_choose_current_values_(self, values):
         self._extend_values_(values)
@@ -847,6 +878,9 @@ class QtValueEntryAsList(
 
     def _set_empty_icon_name_(self, text):
         self._value_entry._set_empty_icon_name_(text)
+
+    def _set_empty_text_(self, text):
+        self._value_entry._set_empty_text_(text)
 
 
 class QtValueEntryAsListWithChoose(
@@ -858,7 +892,7 @@ class QtValueEntryAsListWithChoose(
     utl_gui_qt_abstract.AbsQtChooseBaseDef,
     utl_gui_qt_abstract.AbsQtChooseExtraDef,
 ):
-    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryAsList
+    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsList
     QT_POPUP_CHOOSE_CLS = _utl_gui_qt_wgt_popup.QtPopupForChoose
     #
     add_press_clicked = qt_signal()
@@ -888,7 +922,7 @@ class QtValueEntryAsListWithChoose(
         self._value_entry_layout.setContentsMargins(2, 2, 2, 2)
         self._value_entry_layout.setSpacing(0)
         #
-        self._value_entry = self.QT_VALUE_ENTRY_CLASS()
+        self._value_entry = self.QT_VALUE_ENTRY_CLS()
         self._value_entry_layout.addWidget(self._value_entry)
         self._value_entry._set_entry_frame_(self)
         #
@@ -905,7 +939,7 @@ class QtValueEntryAsListWithChoose(
         self._value_choose_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
         self._entry_button_layout.addWidget(self._value_choose_button)
         self._value_choose_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('file/file'))
-        self._value_choose_button._set_sub_icon_file_path_(utl_gui_core.RscIconFile.get('down'))
+        self._value_choose_button._set_state_icon_file_path_(utl_gui_core.RscIconFile.get('state/popup'))
         self._value_choose_button._set_icon_frame_draw_size_(18, 18)
         self._value_choose_button._set_name_text_('choose value')
         self._value_choose_button._set_tool_tip_('"LMB-click" to popup choose view')
@@ -956,7 +990,7 @@ class QtValueEntryAsListWithChoose(
         self._value_entry._clear_all_values_()
 
     def _set_entry_item_icon_file_path_(self, file_path):
-        self._value_entry._set_entry_item_icon_file_path_(file_path)
+        self._value_entry._set_item_icon_file_path_(file_path)
 
     def _set_value_entry_button_add_(self, widget):
         self._entry_button_layout.addWidget(widget)
@@ -968,15 +1002,22 @@ class QtValueEntryAsListWithChoose(
         if icon_name is not None:
             button._set_icon_file_path_(utl_gui_core.RscIconFile.get(icon_name))
         if sub_icon_name is not None:
-            button._set_sub_icon_file_path_(utl_gui_core.RscIconFile.get(sub_icon_name))
+            button._set_icon_sub_file_path_(utl_gui_core.RscIconFile.get(sub_icon_name))
         button._set_icon_frame_draw_size_(18, 18)
         return button
 
     def _set_value_entry_use_as_storage_(self, boolean):
-        self._value_entry._set_validator_use_as_storage_(boolean)
+        self._value_entry._set_use_as_storage_(boolean)
 
-    def _set_choose_button_icon_file_path_(self, file_path):
+    def _set_value_choose_button_icon_file_path_(self, file_path):
         self._value_choose_button._set_icon_file_path_(file_path)
+
+    def _set_value_choose_button_name_text_(self, text):
+        self._value_choose_button._set_name_text_(text)
+
+    def _set_choose_button_state_icon_file_path_(self, file_path):
+        self._value_choose_button._set_icon_state_draw_enable_(True)
+        self._value_choose_button._set_state_icon_file_path_(file_path)
     # choose
     def _extend_choose_current_values_(self, values):
         self._extend_values_(values)

@@ -9,7 +9,7 @@ from lxutil import utl_core
 
 
 class AbsObjGuiDef(object):
-    UTL_OBJ_CLASS = None
+    UTL_OBJ_CLS = None
     @classmethod
     def _set_prd_obj_gui_add_(cls, obj, tree_view_gui):
         item_dict = tree_view_gui._item_dict
@@ -42,14 +42,14 @@ class AbsObjGuiDef(object):
         else:
             if parent_obj_path in item_dict:
                 parent_gui = item_dict[parent_obj_path]
-                obj_gui = parent_gui.set_child_add(
+                obj_gui = parent_gui.add_child(
                     **_kwargs
                 )
                 item_dict[obj_path] = obj_gui
                 return obj_gui
     @classmethod
     def gui_add(cls, dcc_obj, parent_obj_gui):
-        dcc_obj_gui = parent_obj_gui.set_child_add(
+        dcc_obj_gui = parent_obj_gui.add_child(
             dcc_obj.name, dcc_obj.type,
             item_class=prx_widgets.PrxDccObjTreeItem,
             icon=dcc_obj.icon,
@@ -64,7 +64,7 @@ class AbsObjGuiDef(object):
     def _set_utl_obj_gui_add_(cls, obj_path, tree_view_gui, icon_name=None):
         item_dict = tree_view_gui._item_dict
         #
-        utl_obj = cls.UTL_OBJ_CLASS(obj_path)
+        utl_obj = cls.UTL_OBJ_CLS(obj_path)
         if utl_obj.path in item_dict:
             return item_dict[utl_obj.path]
         #
@@ -82,7 +82,7 @@ class AbsObjGuiDef(object):
         parent_path = utl_obj.get_parent_path()
         if parent_path in item_dict:
             parent_gui = item_dict[parent_path]
-            obj_gui = parent_gui.set_child_add(
+            obj_gui = parent_gui.add_child(
                 **_kwargs
             )
             item_dict[utl_obj.path] = obj_gui
@@ -131,10 +131,10 @@ class AbsSceneComposeToolPanel(
     prx_widgets.PrxToolWindow,
 ):
     DCC_SELECTION_CLS = None
-    DCC_NODE_CLASS = None
+    DCC_NODE_CLS = None
     #
-    OBJ_OP_CLASS = None
-    OP_REFERENCE_OBJ_CLASS = None
+    OBJ_OP_CLS = None
+    OP_REFERENCE_OBJ_CLS = None
     #
     GUI_DSC_INDEX = 5
     def __init__(self, scene, *args, **kwargs):
@@ -155,9 +155,9 @@ class AbsSceneComposeToolPanel(
         expand_box_0 = prx_widgets.PrxExpandedGroup()
         expand_box_0.set_name('Viewer(s)')
         expand_box_0.set_expanded(True)
-        self.set_widget_add(expand_box_0)
+        self.add_widget(expand_box_0)
         self._tree_viewer = prx_widgets.PrxTreeView()
-        expand_box_0.set_widget_add(self._tree_viewer)
+        expand_box_0.add_widget(self._tree_viewer)
         self._tree_viewer.set_header_view_create(
             [('Name(s)', 4), ('Type(s)', 2), ('Instance(s)', 2), ('Version(s)', 2), ('Data(s)', 2), ('Description(s)', 4)],
             self.get_definition_window_size()[0] - 16
@@ -169,7 +169,7 @@ class AbsSceneComposeToolPanel(
                     'Main', None,
                     [
                         ('Log', None, self.set_log_unit_show),
-                        ('Help', None, self.set_help_unit_show)
+                        ('Help', None, self.show_help)
                     ]
                 ],
                 (),
@@ -208,9 +208,9 @@ class AbsSceneComposeToolPanel(
 
     def _set_dcc_groups_add_(self, obj_opt, prod_obj_gui):
         dcc_group_paths = obj_opt.get_dcc_group_paths()
-        dcc_objs = [self.DCC_NODE_CLASS(i) for i in dcc_group_paths]
+        dcc_objs = [self.DCC_NODE_CLS(i) for i in dcc_group_paths]
         for dcc_obj in dcc_objs:
-            obj_gui = prod_obj_gui.set_child_add(
+            obj_gui = prod_obj_gui.add_child(
                 name=(dcc_obj.name, dcc_obj.type),
                 item_class=prx_widgets.PrxDccObjTreeItem,
                 icon=dcc_obj.icon,
@@ -224,7 +224,7 @@ class AbsSceneComposeToolPanel(
     def _set_dcc_path_check_(self, obj_opt, obj_gui):
         dcc_name = obj_opt.dcc_name
         if dcc_name:
-            dcc_obj = self.DCC_NODE_CLASS(dcc_name)
+            dcc_obj = self.DCC_NODE_CLS(dcc_name)
             if dcc_obj.get_is_exists() is True:
                 obj_gui.set_gui_attribute('dcc_obj', dcc_obj)
                 obj_gui.set_icon_by_file(dcc_obj.icon)
@@ -261,7 +261,7 @@ class AbsSceneComposeToolPanel(
                 _parent_path = _parent.path
                 if _parent_path in self._gui_dict:
                     parent_gui = self._gui_dict[_parent_path]
-                    _obj_gui = parent_gui.set_child_add(
+                    _obj_gui = parent_gui.add_child(
                         **_kwargs
                     )
                     self._gui_dict[obj_op_.path] = _obj_gui
@@ -277,10 +277,10 @@ class AbsSceneComposeToolPanel(
             for obj_path in obj_paths:
                 obj = self._scene.universe.get_obj(obj_path)
                 if obj is not None:
-                    obj_opt = self.OBJ_OP_CLASS(obj)
+                    obj_opt = self.OBJ_OP_CLS(obj)
                     reference_key = obj_opt.reference_key
                     if reference_key:
-                        obj_opt = self.OP_REFERENCE_OBJ_CLASS(obj)
+                        obj_opt = self.OP_REFERENCE_OBJ_CLS(obj)
                     #
                     obj_gui = _set_gui_add(obj, obj_opt)
                     if obj_gui is not None:
@@ -291,22 +291,22 @@ class AbsSceneComposeToolPanel(
     def set_repair_run(self):
         objs = self._scene.get_objs()
         for obj in objs:
-            obj_opt = self.OBJ_OP_CLASS(obj)
+            obj_opt = self.OBJ_OP_CLS(obj)
             if not obj_opt.reference_key:
                 dcc_path = obj_opt.dcc_path
-                dcc_obj = self.DCC_NODE_CLASS(dcc_path)
+                dcc_obj = self.DCC_NODE_CLS(dcc_path)
                 dcc_obj.set_ancestors_create()
 
         for obj in objs:
-            obj_opt = self.OBJ_OP_CLASS(obj)
+            obj_opt = self.OBJ_OP_CLS(obj)
             if obj_opt.reference_key == 'reference':
                 dcc_name = obj_opt.dcc_name
-                exists_dcc_obj = self.DCC_NODE_CLASS(dcc_name)
+                exists_dcc_obj = self.DCC_NODE_CLS(dcc_name)
                 if exists_dcc_obj.get_is_exists() is True:
                     exists_path = exists_dcc_obj.path
                     dcc_path = obj_opt.dcc_path
                     if not exists_path == dcc_path:
-                        parent_path = self.DCC_NODE_CLASS(dcc_path).get_parent_path()
+                        parent_path = self.DCC_NODE_CLS(dcc_path).get_parent_path()
                         exists_dcc_obj.set_parent_path(parent_path)
 
         self.set_refresh()
@@ -322,7 +322,7 @@ class AbsDccObjGuiDef(object):
             tool_tip=obj.path
         )
         if obj_gui_parent is not None:
-            obj_gui = obj_gui_parent.set_child_add(
+            obj_gui = obj_gui_parent.add_child(
                 **kwargs
             )
         elif tree_viewer is not None:

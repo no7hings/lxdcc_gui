@@ -66,7 +66,7 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
     def gui_add_all_render_nodes(self):
         self._render_layer_pattern_dict = {}
         #
-        self._result_list_view.set_restore()
+        self._result_list_view.restore_all()
         #
         ns = self.get_all_render_layers()
         c = len(ns)

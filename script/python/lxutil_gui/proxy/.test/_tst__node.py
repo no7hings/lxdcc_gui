@@ -19,7 +19,7 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
         self.set_definition_window_size([720, 960])
         f = utl_prx_widgets.PrxFilterBar()
         f.set_history_key('filter.test')
-        self.set_widget_add(f)
+        self.add_widget(f)
         f.set_completion_gain_fnc(self._value_completion_gain_fnc_)
         self._test_()
 
@@ -33,7 +33,7 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
 
     def _test_(self):
         n = utl_prx_widgets.PrxNode_('root')
-        self.set_widget_add(n)
+        self.add_widget(n)
         n.create_ports_by_configure(
             c
         )

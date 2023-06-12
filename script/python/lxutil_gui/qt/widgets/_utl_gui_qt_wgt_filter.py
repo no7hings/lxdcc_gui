@@ -17,18 +17,18 @@ class QtFilterBar(
     utl_gui_qt_abstract.AbsQtActionForEntryDef,
     #
     utl_gui_qt_abstract.AbsQtChooseBaseDef,
-    utl_gui_qt_abstract.AbsQtHistoryAsPopupExtraDef,
+    utl_gui_qt_abstract.AbsQtHistoryExtraDef,
     utl_gui_qt_abstract.AbsQtCompletionExtraDef,
 ):
     occurrence_previous_press_clicked = qt_signal()
     occurrence_next_press_clicked = qt_signal()
     #
-    QT_VALUE_ENTRY_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
+    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
     #
     QT_POPUP_HISTORY_CLS = _utl_gui_qt_wgt_popup.QtPopupForHistory
-    QT_POPUP_COMPLETION_CLASS = _utl_gui_qt_wgt_popup.QtPopupForCompletion
+    QT_POPUP_COMPLETION_CLS = _utl_gui_qt_wgt_popup.QtPopupForCompletion
     def _start_choose_extra_fnc_(self):
-        self._popup_history_widget._execute_popup_start_()
+        self._history_extra_widget._execute_popup_start_()
 
     def _refresh_widget_(self):
         self.update()
@@ -118,7 +118,7 @@ class QtFilterBar(
             self._send_next_occurrence_emit_
         )
         #
-        self._init_history_as_popup_extra_def_(self)
+        self._init_history_as_extra_def_(self)
         #
         self._filter_result_count = None
         self._filter_index_current = None
@@ -144,7 +144,7 @@ class QtFilterBar(
         self._bubble_entry = _utl_gui_qt_wgt_entry_base.QtEntryAsBubbles()
         self._value_entry_layout.addWidget(self._bubble_entry)
         #
-        self._value_entry = self.QT_VALUE_ENTRY_CLASS()
+        self._value_entry = self.QT_VALUE_ENTRY_CLS()
         self._value_entry_layout.addWidget(self._value_entry)
         #
         self._value_entry.entry_changed.connect(
@@ -162,7 +162,7 @@ class QtFilterBar(
                 'entry_clear'
             )
         )
-        self._entry_clear_button._icon_file_draw_percent = .6
+        self._entry_clear_button._icon_draw_percent = .6
         self._entry_clear_button.clicked.connect(self._execute_user_entry_clear_)
         #
         self._value_history_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
@@ -170,16 +170,16 @@ class QtFilterBar(
         self._value_history_button._set_icon_frame_draw_size_(18, 18)
         #
         self._value_history_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('history'))
-        self._value_history_button._set_sub_icon_file_path_(utl_gui_core.RscIconFile.get('down'))
+        self._value_history_button._set_icon_sub_file_path_(utl_gui_core.RscIconFile.get('down'))
         self._value_history_button.press_clicked.connect(
             self._start_choose_extra_fnc_
         )
         self._value_history_button.hide()
         #
-        self._build_popup_history_(self._value_entry, self._value_entry_frame)
+        self._build_history_extra_(self._value_entry, self._value_entry_frame)
         self._build_completion_extra_(self._value_entry, self._value_entry_frame)
         #
-        self.user_completion_text_accepted.connect(self._add_popup_history_value_)
+        self.user_completion_text_accepted.connect(self._add_history_extra_value_)
         self.user_completion_text_accepted.connect(self._set_value_)
         #
         self._bubble_entry._set_bubble_constant_entry_(self._value_entry)
@@ -299,44 +299,44 @@ class QtFilterBar(
     def _set_entry_focus_(self, boolean):
         self._value_entry._set_focused_(boolean)
 
-    def _set_popup_history_key_(self, key):
-        super(QtFilterBar, self)._set_popup_history_key_(key)
+    def _set_history_extra_key_(self, key):
+        super(QtFilterBar, self)._set_history_extra_key_(key)
         #
         self._value_history_button.show()
 
-    def _add_popup_history_value_(self, value):
-        if self._popup_history_key is not None:
+    def _add_history_extra_value_(self, value):
+        if self._history_extra_key is not None:
             if value:
-                if self._get_popup_history_value_is_valid_(value) is True:
-                    utl_core.History.set_append(
-                        self._popup_history_key,
+                if self._get_history_extra_value_is_valid_(value) is True:
+                    utl_core.History.append(
+                        self._history_extra_key,
                         value
                     )
             #
-            self._refresh_popup_history_()
+            self._refresh_history_extra_()
 
-    def _setup_popup_history_(self):
-        if self._popup_history_key is not None:
+    def _setup_history_extra_(self):
+        if self._history_extra_key is not None:
             value = self._get_value_()
             if value:
-                if self._get_popup_history_value_is_valid_(value) is True:
-                    utl_core.History.set_append(
-                        self._popup_history_key,
+                if self._get_history_extra_value_is_valid_(value) is True:
+                    utl_core.History.append(
+                        self._history_extra_key,
                         value
                     )
             #
-            self._refresh_popup_history_()
+            self._refresh_history_extra_()
 
-    def _refresh_popup_history_(self):
-        if self._popup_history_key is not None:
+    def _refresh_history_extra_(self):
+        if self._history_extra_key is not None:
             values = utl_core.History.get(
-                self._popup_history_key
+                self._history_extra_key
             )
             if values:
                 # latest show on top
                 values.reverse()
                 # value validation
-                values = [i for i in values if self._get_popup_history_value_is_valid_(i) is True]
+                values = [i for i in values if self._get_history_extra_value_is_valid_(i) is True]
                 #
                 self._set_choose_values_(values)
                 #

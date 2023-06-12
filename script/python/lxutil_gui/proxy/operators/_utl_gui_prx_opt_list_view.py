@@ -9,7 +9,7 @@ class PrxRsvTaskListViewAddOpt(object):
 
         self._prx_list_view.set_view_list_mode()
 
-    def set_restore(self):
+    def restore_all(self):
         self._prx_list_view.set_clear()
 
     def set_add(self, rsv_task):

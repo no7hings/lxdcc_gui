@@ -109,6 +109,8 @@ class QtPopupForChoose(
     utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtPopupBaseDef,
 ):
+    HEIGHT_MAX = 480
+    TAG_ALL = 'All'
     def _refresh_widget_draw_(self):
         self.update()
 
@@ -190,6 +192,7 @@ class QtPopupForChoose(
         #
         self._popup_close_button = _utl_gui_qt_wgt_utility.QtIconPressItem(self)
         self._popup_close_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('close'))
+        self._popup_close_button._set_icon_hover_color_(QtBackgroundColors.DeleteHovered)
         self._popup_close_button._set_icon_frame_draw_size_(18, 18)
         self._popup_close_button.press_clicked.connect(self._close_popup_)
         self._popup_close_button.setToolTip(
@@ -435,7 +438,8 @@ class QtPopupForChoose(
                     #
                     press_pos = self._get_popup_pos_(self._popup_entry_frame)
                     width, height = self._get_popup_size_(self._popup_entry_frame)
-                    height_max = self._popup_view._get_maximum_height_(self._item_count_maximum)
+                    item_count = int(self.HEIGHT_MAX/self._popup_item_height)
+                    height_max = self._popup_view._get_maximum_height_(item_count)
                     height_max += self._popup_toolbar_h
                     #
                     self._show_popup_(
@@ -457,6 +461,9 @@ class QtPopupForChoose(
                     if self._tag_filter_is_enable is True:
                         tags = list(set([i for k, v in tag_filter_dict.items() for i in v]))
                         tags = bsc_core.RawTextsMtd.set_sort_by_initial(tags)
+                        if self.TAG_ALL in tags:
+                            tags.remove(self.TAG_ALL)
+                            tags.insert(0, self.TAG_ALL)
                         for i_tag in tags:
                             i_item_widget = _utl_gui_qt_wgt_utility._QtHItem()
                             i_item = _utl_gui_qt_wgt_utility.QtListWidgetItem()
@@ -622,9 +629,8 @@ class QtPopupForCompletion(
         self._init_popup_base_def_(self)
         #
         self._popup_close_button = _utl_gui_qt_wgt_utility.QtIconPressItem(self)
-        self._popup_close_button._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get('close')
-        )
+        self._popup_close_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('close'))
+        self._popup_close_button._set_icon_hover_color_(QtBackgroundColors.DeleteHovered)
         self._popup_close_button.press_clicked.connect(self._close_popup_)
         self._popup_close_button.setToolTip(
             '"LMB-click" to close'
@@ -701,8 +707,9 @@ class QtPopupForCompletion(
     def _execute_popup_start_(self, *args, **kwargs):
         parent = self.parent()
         self._popup_view._set_clear_()
-        name_texts = parent._get_popup_completion_data_()
+        name_texts = parent._get_completion_extra_data_()
         if name_texts:
+            has_match = False
             current_name_text = self._popup_entry._get_value_()
             for index, i_name_text in enumerate(name_texts):
                 i_item_widget = _utl_gui_qt_wgt_utility._QtHItem()
@@ -718,7 +725,11 @@ class QtPopupForCompletion(
                 i_item_widget._set_index_(index)
                 #
                 if current_name_text == i_name_text:
+                    has_match = True
                     i_item.setSelected(True)
+            #
+            if has_match is False:
+                self._popup_view._get_all_items_()[0].setSelected(True)
 
             press_pos = self._get_popup_pos_0_(self._popup_entry_frame)
             width, height = self._get_popup_size_(self._popup_entry_frame)
@@ -744,7 +755,9 @@ class QtPopupForCompletion(
             text = selected_item_widget._get_name_text_()
             #
             self.user_popup_choose_text_accepted.emit(text)
-
+        #
+        self.user_popup_choose_finished.emit()
+        #
         self._close_popup_()
 
     def _close_popup_(self):
@@ -778,9 +791,8 @@ class QtPopupForGuideChoose(
         )
         #
         self._popup_close_button = _utl_gui_qt_wgt_utility.QtIconPressItem(self)
-        self._popup_close_button._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get('close')
-        )
+        self._popup_close_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('close'))
+        self._popup_close_button._set_icon_hover_color_(QtBackgroundColors.DeleteHovered)
         self._popup_close_button.press_clicked.connect(self._close_popup_)
         self._popup_close_button.setToolTip(
             '"LMB-click" to close'
@@ -824,6 +836,11 @@ class QtPopupForGuideChoose(
             border_color=QtBorderColors.Popup,
             background_color=self._frame_background_color,
             border_width=2
+        )
+        painter._draw_line_by_points_(
+            point_0=self._popup_toolbar_draw_rect.bottomLeft(),
+            point_1=self._popup_toolbar_draw_rect.bottomRight(),
+            border_color=self._frame_border_color,
         )
         #
         if not self._popup_text_entry.text():
@@ -917,7 +934,7 @@ class QtPopupForGuideChoose(
 
     def _execute_popup_start_(self, index):
         parent = self.parent()
-        name_texts = list(parent._get_guide_choose_name_texts_at_(index))
+        name_texts = parent._get_guide_child_name_texts_at_(index)
         if name_texts:
             desktop_rect = get_qt_desktop_rect()
             #
@@ -979,8 +996,8 @@ class QtPopupForGuideChoose(
                     self._choose_index
                 )
                 parent._refresh_guide_draw_geometry_()
-                #
-                parent.guide_text_accepted.emit(path_text_cur)
+                # choose
+                parent.guide_text_choose_accepted.emit(path_text_cur)
             # clear latest
             parent._clear_guide_current_()
         #

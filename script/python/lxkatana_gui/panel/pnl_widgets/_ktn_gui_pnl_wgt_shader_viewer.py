@@ -14,8 +14,8 @@ import lxkatana
 lxkatana.set_reload()
 import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-tools/katana/shader-viewer")
     """
-    DCC_SCENE_CLASS = ktn_dcc_objects.Scene
-    DCC_FNC_LOOK_IMPORTER_CLASS = ktn_fnc_importers.LookAssImporter
+    DCC_SCENE_CLS = ktn_dcc_objects.Scene
+    DCC_FNC_LOOK_IMPORTER_CLS = ktn_fnc_importers.LookAssImporter
     #
     DCC_MATERIALS_CLS = ktn_dcc_objects.Materials
     DCC_SHADER_CLS = ktn_dcc_objects.AndShader

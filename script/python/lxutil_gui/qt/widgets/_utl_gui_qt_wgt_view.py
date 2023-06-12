@@ -36,7 +36,7 @@ class QtTabView(
     QtWidgets.QWidget,
     AbsQtItemsDef,
     utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtWidgetDef,
+    utl_gui_qt_abstract.AbsQtWidgetBaseDef,
 ):
     current_changed = qt_signal()
     def __init__(self, *args, **kwargs):
@@ -51,7 +51,7 @@ class QtTabView(
 
         self._set_items_def_init_(self)
         self._init_frame_base_def_(self)
-        self._init_widget_def_(self)
+        self._init_widget_base_def_(self)
 
         self._tab_w, self._tab_h = 48, 24
 
@@ -150,7 +150,7 @@ class QtTabView(
     def _set_item_current_changed_connect_to_(self, fnc):
         self.current_changed.connect(fnc)
 
-    def _execute_action_hover_(self, event):
+    def _execute_action_hover_move_(self, event):
         point = event.pos()
         self._item_index_hovered = None
 
@@ -192,7 +192,7 @@ class QtTabView(
                 elif event.buttons() == QtCore.Qt.MidButton:
                     pass
                 elif event.button() == QtCore.Qt.NoButton:
-                    self._execute_action_hover_(event)
+                    self._execute_action_hover_move_(event)
                 else:
                     event.ignore()
             elif event.type() == QtCore.QEvent.MouseButtonRelease:

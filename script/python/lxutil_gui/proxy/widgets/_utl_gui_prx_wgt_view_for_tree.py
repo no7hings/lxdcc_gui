@@ -25,8 +25,8 @@ class PrxTreeView(
     #
     utl_gui_prx_abstract.AbsPrxViewVisibleConnectionDef,
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryFrame
-    QT_VIEW_CLASS = _utl_gui_qt_wgt_view_for_tree.QtTreeWidget
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_entry_base.QtEntryFrame
+    QT_VIEW_CLS = _utl_gui_qt_wgt_view_for_tree.QtTreeWidget
     #
     FILTER_MAXIMUM = 50
     def __init__(self, *args, **kwargs):
@@ -39,12 +39,12 @@ class PrxTreeView(
         self._qt_layout_0.addWidget(self._prx_top_tool_bar.widget)
         self._prx_top_tool_bar.set_border_radius(1)
         self._prx_filer_bar_0 = _utl_gui_prx_wdt_utility.PrxFilterBar()
-        self._prx_top_tool_bar.set_widget_add(self._prx_filer_bar_0)
+        self._prx_top_tool_bar.add_widget(self._prx_filer_bar_0)
         #
         self._loading_index = 0
         self._loading_show_index = 0
         # add custom menu
-        self._qt_view = self.QT_VIEW_CLASS()
+        self._qt_view = self.QT_VIEW_CLS()
         self._qt_view.setMinimumHeight(42)
         self._qt_view.setMaximumHeight(166667)
         self._qt_view.gui_proxy = self
@@ -201,7 +201,7 @@ class PrxTreeView(
         self._filter_completion_cache = None
         self._loading_item_prxes = []
 
-    def set_restore(self):
+    def restore_all(self):
         self.set_clear()
 
     def connect_item_select_changed_to(self, fnc):

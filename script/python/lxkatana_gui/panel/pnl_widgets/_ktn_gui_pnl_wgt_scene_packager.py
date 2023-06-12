@@ -12,7 +12,7 @@ class ScenePackagerPanel(utl_gui_pnl_abs_packager.AbsScenePackagerPanel):
     TOOL_PANEL_KEY = 'scene_packager'
     DCC_SELECTION_CLS = ktn_dcc_objects.Selection
     #
-    UTL_OBJ_CLASS = utl_dcc_objects.Obj
+    UTL_OBJ_CLS = utl_dcc_objects.Obj
     def __init__(self, *args, **kwargs):
         super(ScenePackagerPanel, self).__init__(*args, **kwargs)
 

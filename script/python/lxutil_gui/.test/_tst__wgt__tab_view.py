@@ -12,7 +12,7 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
 
     def _test_(self):
         n = utl_prx_widgets.PrxTabView()
-        self.set_widget_add(n)
+        self.add_widget(n)
         v_0 = utl_prx_widgets.PrxTreeView()
         n.set_item_add(
             v_0.widget, name='test - 0', icon_name_text='test - 0'

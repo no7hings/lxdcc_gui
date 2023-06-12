@@ -11,29 +11,29 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
 
     def _test_(self):
         tool_bar = utl_prx_widgets.PrxHToolBar()
-        self.set_widget_add(tool_bar)
+        self.add_widget(tool_bar)
         tool_bar.set_expanded(True)
         tool_group_0 = utl_prx_widgets.PrxHToolBox()
-        tool_bar.set_widget_add(tool_group_0)
+        tool_bar.add_widget(tool_group_0)
+        tool_bar.set_alignment_left()
 
         tool = utl_prx_widgets.PrxIconPressItem()
-        tool_group_0.set_widget_add(tool)
+        tool_group_0.add_widget(tool)
         tool.set_icon_name('application/python')
 
-        tool_bar.set_expanded(True)
         tool_group_1 = utl_prx_widgets.PrxHToolBox()
-        tool_bar.set_widget_add(tool_group_1)
+        tool_bar.add_widget(tool_group_1)
         tool_group_1.set_size_mode(1)
 
         tool = utl_prx_widgets.PrxFilterBar()
-        tool_group_1.set_widget_add(tool)
+        tool_group_1.add_widget(tool)
         # r = rsv_commands.get_resolver()
         # n = utl_prx_widgets.PrxNode_('root')
-        # self.set_widget_add(n)
+        # self.add_widget(n)
         # assets = r.get_rsv_resources(
         #     project='cgm', branch='asset'
         # )
-        # p = n.set_port_add(
+        # p = n.add_port(
         #     utl_prx_widgets.PrxRsvObjChoosePort(
         #         'test'
         #     )

@@ -300,8 +300,8 @@ class AbsQtNGDrawGraphDef(object):
 
 
 class AbsQtNGGraphSbjDef(object):
-    NG_NODE_CLASS = None
-    NG_CONNECTION_CLASS = None
+    NG_NODE_CLS = None
+    NG_CONNECTION_CLS = None
     def _set_ng_graph_sbj_def_init_(self, widget):
         self._widget = widget
 
@@ -520,7 +520,7 @@ class _QtNGConnection(
     utl_gui_qt_abstract.AbsQtActionForHoverDef,
     utl_gui_qt_abstract.AbsQtActionForPressDef,
     #
-    utl_gui_qt_abstract.AbsQtActionSelectDef,
+    utl_gui_qt_abstract.AbsQtPressSelectExtraDef,
 ):
     def _refresh_widget_(self):
         self._set_wgt_update_shape_()
@@ -618,7 +618,7 @@ class _QtNGConnection(
         self._init_action_base_def_(self)
         self._init_action_for_hover_def_(self)
         self._init_action_for_press_def_(self)
-        self._set_action_select_def_init_()
+        self._init_press_select_extra_def_(self)
 
         self._set_ng_connection_def_init_(self)
 
@@ -644,7 +644,7 @@ class _QtNGConnection(
                 elif event.buttons() == QtCore.Qt.MidButton:
                     pass
                 elif event.buttons() == QtCore.Qt.NoButton:
-                    self._execute_action_hover_(event)
+                    self._execute_action_hover_move_(event)
                 else:
                     event.ignore()
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
@@ -680,7 +680,7 @@ class _QtNGConnection(
             self._ng_draw_connection_coord_arrow
         )
 
-    def _execute_action_hover_(self, event):
+    def _execute_action_hover_move_(self, event):
         point = event.pos()
 
 
@@ -865,9 +865,9 @@ class _QtNGNode(
     utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtTypeDef,
     utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtIconDef,
-    utl_gui_qt_abstract.AbsQtImageDef,
-    utl_gui_qt_abstract.AbsQtMenuDef,
+    utl_gui_qt_abstract.AbsQtIconBaseDef,
+    utl_gui_qt_abstract.AbsQtImageBaseDef,
+    utl_gui_qt_abstract.AbsQtMenuBaseDef,
     #
     AbsQtBypassDef,
     #
@@ -875,7 +875,7 @@ class _QtNGNode(
     utl_gui_qt_abstract.AbsQtActionForHoverDef,
     utl_gui_qt_abstract.AbsQtActionForPressDef,
     #
-    utl_gui_qt_abstract.AbsQtActionSelectDef,
+    utl_gui_qt_abstract.AbsQtPressSelectExtraDef,
     #
     AbsQtNGNodeDef,
     AbsQtNGDrawNodeDef,
@@ -893,14 +893,14 @@ class _QtNGNode(
         self._init_frame_base_def_(self)
         self._init_type_def_(self)
         self._init_name_base_def_(self)
-        self._init_icon_def_(self)
-        self._init_image_def_()
-        self._init_menu_def_()
+        self._init_icon_base_def_(self)
+        self._init_image_base_def_()
+        self._init_menu_base_def_(self)
         #
         self._init_action_base_def_(self)
         self._init_action_for_hover_def_(self)
         self._init_action_for_press_def_(self)
-        self._set_action_select_def_init_()
+        self._init_press_select_extra_def_(self)
 
         self._set_ng_node_def_init_(self)
         self._set_ng_draw_node_def_init_(self)
@@ -1012,7 +1012,7 @@ class _QtNGNode(
         self._ng_sbj_graph._set_ng_action_graph_node_press_end_(self)
         self._refresh_widget_draw_()
 
-    def _execute_action_hover_(self, event):
+    def _execute_action_hover_move_(self, event):
         point = event.pos()
         if self._ng_node_rect_select.contains(point):
             self._set_action_hovered_(True)
@@ -1029,7 +1029,7 @@ class _QtNGNode(
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
-            self._set_action_hover_filter_execute_(event)
+            self._execute_action_hover_by_filter_(event)
             #
             if event.type() == QtCore.QEvent.Resize:
                 pass
@@ -1064,7 +1064,7 @@ class _QtNGNode(
                 elif event.buttons() == QtCore.Qt.MidButton:
                     pass
                 elif event.button() == QtCore.Qt.NoButton:
-                    self._execute_action_hover_(event)
+                    self._execute_action_hover_move_(event)
                 else:
                     event.ignore()
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
@@ -1082,7 +1082,7 @@ class _QtNGNode(
                 else:
                     event.ignore()
                 #
-                self._clear_action_flag_()
+                self._clear_all_action_flags_()
         return False
 
     def paintEvent(self, event):
@@ -1138,7 +1138,7 @@ class _QtNGNode(
             )
 
         if self._icon_name_text is not None:
-            painter._draw_icon_with_name_text_by_rect_(
+            painter._draw_icon_use_text_by_rect_(
                 self._icon_name_draw_rect,
                 text=self._icon_name_text,
                 offset=offset,
@@ -1186,8 +1186,8 @@ class _QtNGGraph(
     #
     AbsQtNGUniverseDef
 ):
-    NG_NODE_CLASS = _QtNGNode
-    NG_CONNECTION_CLASS = _QtNGConnection
+    NG_NODE_CLS = _QtNGNode
+    NG_CONNECTION_CLS = _QtNGConnection
     #
     NGLayoutFlag = _NGLayoutFlag
     NGSelectionFlag = _NGSelectionFlag
@@ -1363,7 +1363,7 @@ class _QtNGGraph(
                 else:
                     event.ignore()
                 #
-                self._clear_action_flag_()
+                self._clear_all_action_flags_()
             #
             elif event.type() == QtCore.QEvent.Wheel:
                 self._set_ng_action_graph_scale_execute_(event)
@@ -1759,13 +1759,13 @@ class _QtNGGraph(
                 )
     # sbj
     def _set_ng_graph_sbj_node_create_(self, *args, **kwargs):
-        ng_node = self.NG_NODE_CLASS(self)
+        ng_node = self.NG_NODE_CLS(self)
         self._ng_graph_nodes.append(ng_node)
         ng_node._set_ng_sbj_graph_(self)
         return ng_node
 
     def _set_ng_graph_sbj_connection_create_(self, *args, **kwargs):
-        ng_connection = self.NG_CONNECTION_CLASS(self._ng_graph_node_connection_layer)
+        ng_connection = self.NG_CONNECTION_CLS(self._ng_graph_node_connection_layer)
         self._ng_graph_connections.append(ng_connection)
         ng_connection._set_ng_sbj_graph_(self)
         return ng_connection
@@ -1939,7 +1939,7 @@ class _QtNGTree(
     _utl_gui_qt_wgt_view_for_tree.QtTreeWidget,
     AbsQtNGUniverseDef
 ):
-    QT_MENU_CLASS = _utl_gui_qt_wgt_utility.QtMenu
+    QT_MENU_CLS = _utl_gui_qt_wgt_utility.QtMenu
     def _set_ng_universe_(self, universe):
         self._ng_node_universe = universe
         obj = self._ng_node_universe.get_objs()
@@ -2072,7 +2072,7 @@ class _QtNGImage(_QtNGNode):
 
 
 class _QtNGImageGraph(_QtNGGraph):
-    NG_NODE_CLASS = _QtNGImage
+    NG_NODE_CLS = _QtNGImage
     def __init__(self, *args, **kwargs):
         super(_QtNGImageGraph, self).__init__(*args, **kwargs)
 

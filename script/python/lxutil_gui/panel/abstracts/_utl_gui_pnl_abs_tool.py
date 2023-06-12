@@ -38,13 +38,13 @@ class AbsPnlShaderViewer(
         expand_box_0 = prx_widgets.PrxExpandedGroup()
         expand_box_0.set_name('viewers')
         expand_box_0.set_expanded(True)
-        self.set_widget_add(expand_box_0)
+        self.add_widget(expand_box_0)
         h_splitter_0 = prx_widgets.PrxHSplitter()
-        expand_box_0.set_widget_add(h_splitter_0)
+        expand_box_0.add_widget(h_splitter_0)
         self._filter_tree_viewer_0 = prx_widgets.PrxTreeView()
-        h_splitter_0.set_widget_add(self._filter_tree_viewer_0)
+        h_splitter_0.add_widget(self._filter_tree_viewer_0)
         self._obj_tree_viewer_0 = prx_widgets.PrxTreeView()
-        h_splitter_0.set_widget_add(self._obj_tree_viewer_0)
+        h_splitter_0.add_widget(self._obj_tree_viewer_0)
         h_splitter_0.set_stretches([1, 2])
         #
         self._set_obj_tree_viewer_build_()
@@ -93,8 +93,8 @@ class AbsPnlShaderViewer(
         self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
 
     def _set_dcc_obj_viewer_refresh_(self):
-        self._prx_dcc_obj_tree_view_add_opt.set_restore()
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
+        self._prx_dcc_obj_tree_view_add_opt.restore_all()
+        self._prx_dcc_obj_tree_view_tag_filter_opt.restore_all()
         #
         materials = self.DCC_MATERIALS_CLS().get_objs()
         if materials:
@@ -129,11 +129,11 @@ class AbsPnlShaderViewer(
 class AbsPnlMaterialViewer(
     prx_widgets.PrxSessionWindow
 ):
-    DCC_NODE_CLASS = None
-    DCC_SHAPE_OBJ_CLASS = None
+    DCC_NODE_CLS = None
+    DCC_SHAPE_OBJ_CLS = None
     #
-    DCC_SCENE_CLASS = None
-    DCC_SCENE_OPT_CLASS = None
+    DCC_SCENE_CLS = None
+    DCC_SCENE_OPT_CLS = None
     DCC_NAMESPACE = None
     #
     DCC_SELECTION_CLS = None
@@ -170,13 +170,13 @@ class AbsPnlMaterialViewer(
         expand_box_0 = prx_widgets.PrxExpandedGroup()
         expand_box_0.set_name('viewers')
         expand_box_0.set_expanded(True)
-        self.set_widget_add(expand_box_0)
+        self.add_widget(expand_box_0)
         h_splitter_0 = prx_widgets.PrxHSplitter()
-        expand_box_0.set_widget_add(h_splitter_0)
+        expand_box_0.add_widget(h_splitter_0)
         self._filter_tree_viewer_0 = prx_widgets.PrxTreeView()
-        h_splitter_0.set_widget_add(self._filter_tree_viewer_0)
+        h_splitter_0.add_widget(self._filter_tree_viewer_0)
         self._obj_tree_viewer_0 = prx_widgets.PrxTreeView()
-        h_splitter_0.set_widget_add(self._obj_tree_viewer_0)
+        h_splitter_0.add_widget(self._obj_tree_viewer_0)
         h_splitter_0.set_stretches([1, 2])
         #
         self._set_tree_viewer_build_()
@@ -227,7 +227,7 @@ class AbsPnlMaterialViewer(
 
     def _set_configure_groups_build_(self):
         self._options_prx_node = prx_widgets.PrxNode_('options')
-        self.set_widget_add(self._options_prx_node)
+        self.add_widget(self._options_prx_node)
         #
         self._options_prx_node.create_ports_by_configure(
             self._session.configure.get('build.node.options'),

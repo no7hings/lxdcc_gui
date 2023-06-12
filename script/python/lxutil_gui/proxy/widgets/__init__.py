@@ -11,6 +11,8 @@ from ._utl_gui_prx_wgt_view_for_tree import *
 
 from ._utl_gui_prx_wgt_view_for_list import *
 
+from ._utl_gui_prx_wgt_for_usd import *
+
 from ._utl_gui_prx_wgt_window import *
 
 from ._utl_gui_prx_wgt_chart import *

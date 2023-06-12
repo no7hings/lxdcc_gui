@@ -21,13 +21,13 @@ class AbsPrxDialogWindow(
 ):
     PRX_CATEGORY = 'dialog_window'
     #
-    QT_WIDGET_CLASS = None
+    QT_WIDGET_CLS = None
     BUTTON_WIDTH = 120
     #
-    PROGRESS_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtProgressBar
+    PROGRESS_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtProgressBar
     #
-    QT_WAITING_CHART_CLASS = _utl_gui_qt_wgt_chart.QtWaitingChart
-    QT_PROGRESSING_CHART_CLASS = _utl_gui_qt_wgt_chart.QtProgressingChart
+    QT_WAITING_CHART_CLS = _utl_gui_qt_wgt_chart.QtWaitingChart
+    QT_PROGRESSING_CHART_CLS = _utl_gui_qt_wgt_chart.QtProgressingChart
     #
     ValidatorStatus = bsc_configure.ValidatorStatus
     def __init__(self, *args, **kwargs):
@@ -87,7 +87,7 @@ class AbsPrxDialogWindow(
         self._top_toolbar.set_expanded(True)
         #
         self._modal_button = _utl_gui_prx_wdt_utility.PrxEnableItem()
-        self._top_toolbar.set_widget_add(self._modal_button)
+        self._top_toolbar.add_widget(self._modal_button)
         self._modal_button.set_icon_name('window-modal')
         self._modal_button.set_checked(True)
         self._modal_button.connect_check_clicked_to(
@@ -101,7 +101,7 @@ class AbsPrxDialogWindow(
         self._central_layout.addWidget(s.widget)
         #
         self._customize_widget = _utl_gui_qt_wgt_utility.QtWidget()
-        s.set_widget_add(self._customize_widget)
+        s.add_widget(self._customize_widget)
         self._customize_widget.setSizePolicy(
             utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
             utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding
@@ -119,13 +119,13 @@ class AbsPrxDialogWindow(
         self._tip_group.set_visible(False)
         self._tip_group.set_name('tips')
         self._tip_text_browser = _utl_gui_prx_wdt_utility.PrxTextBrowser()
-        self._tip_group.set_widget_add(self._tip_text_browser)
+        self._tip_group.add_widget(self._tip_text_browser)
         #
         self._bottom_toolbar = _utl_gui_prx_wdt_utility.PrxHToolBar()
         self._central_layout.addWidget(self._bottom_toolbar.widget)
         self._bottom_toolbar.set_expanded(True)
         qt_widget_2 = _utl_gui_qt_wgt_utility.QtWidget()
-        self._bottom_toolbar.set_widget_add(qt_widget_2)
+        self._bottom_toolbar.add_widget(qt_widget_2)
         self._entry_button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_2)
         #
         qt_spacer_0 = _utl_gui_qt_wgt_utility._QtSpacer()
@@ -330,7 +330,7 @@ class AbsPrxDialogWindow(
 
 
 class PrxDialogWindow0(AbsPrxDialogWindow):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtMainWindow
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtMainWindow
     def __init__(self, *args, **kwargs):
         super(PrxDialogWindow0, self).__init__(*args, **kwargs)
         self._tip_group.set_visible(True)
@@ -369,7 +369,7 @@ class PrxDialogWindow0(AbsPrxDialogWindow):
 
 
 class PrxDialogWindow1(AbsPrxDialogWindow):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtDialog
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtDialog
     def __init__(self, *args, **kwargs):
         super(PrxDialogWindow1, self).__init__(*args, **kwargs)
         self._tip_group.set_visible(True)
@@ -448,7 +448,7 @@ class PrxTipWindow(PrxDialogWindow0):
 
 
 class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtMainWindow
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtMainWindow
     def __init__(self, *args, **kwargs):
         super(PrxProcessWindow, self).__init__(*args, **kwargs)
 
@@ -584,7 +584,7 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
 
 
 class PrxMonitorWindow(utl_gui_prx_abstract.AbsPrxWindow):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_utility.QtMainWindow
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtMainWindow
     ValidatorStatus = bsc_configure.ValidatorStatus
     def __init__(self, *args, **kwargs):
         super(PrxMonitorWindow, self).__init__(*args, **kwargs)

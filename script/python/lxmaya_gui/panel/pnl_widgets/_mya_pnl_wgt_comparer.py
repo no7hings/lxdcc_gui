@@ -11,7 +11,7 @@ import lxmaya.fnc.comparers as mya_fnc_comparers
 
 
 class PnlAssetDccGeometryComparer(utl_gui_pnl_abstracts.AbsPnlAssetDccGeometryComparer):
-    DCC_NODE_CLASS = mya_dcc_objects.Node
+    DCC_NODE_CLS = mya_dcc_objects.Node
     #
     FNC_GEOMETRY_COMPARER = mya_fnc_comparers.FncGeometryComparer
     #

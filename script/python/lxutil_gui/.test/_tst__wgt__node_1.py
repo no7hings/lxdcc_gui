@@ -26,7 +26,7 @@ class TestWindow(utl_prx_widgets.PrxDialogWindow0):
     def _test_capsule_(self):
         n = self.get_options_node()
         n.set_visible(True)
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxPortAsCapsuleString(
                 'test_capsule_string'
             )
@@ -36,7 +36,7 @@ class TestWindow(utl_prx_widgets.PrxDialogWindow0):
         )
         p.set('model')
 
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxPortAsButton(
                 'test_capsule_string_button'
             )
@@ -46,7 +46,7 @@ class TestWindow(utl_prx_widgets.PrxDialogWindow0):
             lambda: self._test_print_('test_capsule_string')
         )
 
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxPortAsCapsuleStrings(
                 'test_capsule_strings'
             )
@@ -58,7 +58,7 @@ class TestWindow(utl_prx_widgets.PrxDialogWindow0):
             ['model', 'groom']
         )
 
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxPortAsButton(
                 'test_capsule_strings_button'
             )
@@ -74,7 +74,7 @@ class TestWindow(utl_prx_widgets.PrxDialogWindow0):
     def _test_components_(self):
         n = self.get_options_node()
         n.set_visible(True)
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxNodeTreeViewPort(
                 'test_components'
             )
@@ -101,10 +101,10 @@ class TestWindow(utl_prx_widgets.PrxDialogWindow0):
     def _test_shotgun_entity_(self):
         n = self.get_options_node()
         n.set_visible(True)
-        # self.set_widget_add(n)
+        # self.add_widget(n)
         import lxshotgun.objects as stg_objects
 
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxPortAsShotgunEntity(
                 'test_shotgun_user'
             )
@@ -122,12 +122,12 @@ class TestWindow(utl_prx_widgets.PrxDialogWindow0):
     def _test_shotgun_entities_(self):
         n = self.get_options_node()
         n.set_visible(True)
-        # self.set_widget_add(n)
+        # self.add_widget(n)
         import lxshotgun.objects as stg_objects
 
         c = stg_objects.StgConnector()
 
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxPortAsShotgunEntities(
                 'test_shotgun_users'
             )
@@ -142,7 +142,7 @@ class TestWindow(utl_prx_widgets.PrxDialogWindow0):
             tag_filter_fields=['department']
         )
 
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxPortAsShotgunEntities(
                 'test_shotgun_assets'
             )
@@ -160,7 +160,7 @@ class TestWindow(utl_prx_widgets.PrxDialogWindow0):
             tag_filter_fields=['sg_asset_type'],
         )
         #
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxPortAsShotgunEntities(
                 'test_shotgun_tasks'
             )
@@ -182,7 +182,7 @@ class TestWindow(utl_prx_widgets.PrxDialogWindow0):
     def _test_file_list_and_tree_(self):
         n = self.get_options_node()
         n.set_visible(True)
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxPortAsFileList(
                 'test_file_list'
             )
@@ -191,7 +191,7 @@ class TestWindow(utl_prx_widgets.PrxDialogWindow0):
             [u'/production/shows/nsa_dev/assets/oth/surface_workspace/user/team.srf/katana/scenes/surfacing/surface_workspace.srf.surfacing.v000_001.katana']
         )
 
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxPortAsFileTree(
                 'test_file_tree'
             )
@@ -209,31 +209,31 @@ class TestWindow(utl_prx_widgets.PrxDialogWindow0):
     def _test_(self):
         n = self.get_options_node()
 
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxMediasOpenPort(
                 'test_medias_open'
             )
         )
 
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxDirectoriesOpenPort(
                 'test_directories_open'
             )
         )
 
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxDirectoryOpenPort(
                 'test_directory_open'
             )
         )
 
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxPortAsScript(
                 'test_script'
             )
         )
 
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxPortAsEnumerate(
                 'text_enumerate'
             )

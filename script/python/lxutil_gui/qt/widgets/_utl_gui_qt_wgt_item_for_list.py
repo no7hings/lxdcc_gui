@@ -13,24 +13,24 @@ class _QtListItemWidget(
     utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtTypeDef,
     utl_gui_qt_abstract.AbsQtIndexDef,
-    utl_gui_qt_abstract.AbsQtImageDef,
+    utl_gui_qt_abstract.AbsQtImageBaseDef,
     utl_gui_qt_abstract.AbsQtMovieDef,
     #
-    utl_gui_qt_abstract.AbsQtMenuDef,
+    utl_gui_qt_abstract.AbsQtMenuBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtIconDef,
+    utl_gui_qt_abstract.AbsQtIconBaseDef,
     utl_gui_qt_abstract.AbsQtIconsDef,
-    utl_gui_qt_abstract.AbsQtNamesDef,
+    utl_gui_qt_abstract.AbsQtNamesBaseDef,
     #
     utl_gui_qt_abstract.AbsQtActionBaseDef,
     utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForCheckDef,
+    utl_gui_qt_abstract.AbsQtCheckBaseDef,
     utl_gui_qt_abstract.AbsQtActionForPressDef,
-    utl_gui_qt_abstract.AbsQtActionSelectDef,
+    utl_gui_qt_abstract.AbsQtPressSelectExtraDef,
     utl_gui_qt_abstract.AbsQtActionDragDef,
     #
     utl_gui_qt_abstract.AbsQtStateDef,
-    utl_gui_qt_abstract.AbsQtStatusDef,
+    utl_gui_qt_abstract.AbsQtStatusBaseDef,
     #
     utl_gui_qt_abstract.AbsQtItemMovieActionDef,
 ):
@@ -40,11 +40,131 @@ class _QtListItemWidget(
     drag_pressed = qt_signal(tuple)
     drag_released = qt_signal(tuple)
     #
-    QT_MENU_CLASS = _utl_gui_qt_wgt_utility.QtMenu
+    QT_MENU_CLS = _utl_gui_qt_wgt_utility.QtMenu
     #
     def _refresh_widget_draw_(self):
         # noinspection PyUnresolvedReferences
         self.update()
+
+    def _refresh_widget_icon_draw_geometries_(self):
+        if self._get_has_icons_() is True or self._check_is_enable is True:
+            rect = self._icon_frame_draw_rect
+            x, y = rect.x(), rect.y()
+            w, h = rect.width(), rect.height()
+            #
+            side = 2
+            spacing = 0
+            #
+            icn_frm_w, icn_frm_h = self._icon_frame_draw_size
+            icn_w, icn_h = self._icon_draw_size
+            if self._check_is_enable is True:
+                check_icn_frm_w, check_icn_frm_h = icn_frm_w*self._check_icon_frame_draw_percent, icn_frm_h*self._check_icon_frame_draw_percent
+                check_icn_w, check_icn_h = icn_frm_w*self._check_icon_draw_percent, icn_frm_h*self._check_icon_draw_percent
+                #
+                self._set_check_action_rect_(
+                    x, y, icn_frm_w, icn_frm_h
+                )
+                self._set_check_icon_frame_draw_rect_(
+                    x+(icn_frm_w-check_icn_frm_w)/2, y+(icn_frm_h-check_icn_frm_h)/2, check_icn_frm_w, check_icn_frm_h
+                )
+                self._set_check_icon_draw_rect_(
+                    x+(icn_frm_w-check_icn_w)/2, y+(icn_frm_h-check_icn_h)/2, check_icn_w, check_icn_h
+                )
+            icn_indices = self._get_icon_indices_()
+            if icn_indices:
+                c_0 = int(float(h) / icn_frm_h)
+                if self._check_is_enable is True:
+                    icn_indices_ = icn_indices+[len(icn_indices)]
+                    for i_icn_index in icn_indices_:
+                        i_column = int(float(i_icn_index)/c_0)
+                        if i_column > 0:
+                            i_icn_index_draw = i_icn_index % c_0
+                        else:
+                            i_icn_index_draw = i_icn_index
+                        #
+                        if i_icn_index > 0:
+                            self._set_icon_rect_at_(
+                                x+(icn_frm_w-icn_w)/2+icn_frm_w*i_column, y+(icn_frm_h-icn_h)/2+i_icn_index_draw*(icn_frm_h+spacing), icn_w, icn_h,
+                                i_icn_index-1
+                            )
+                else:
+                    for i_icn_index in icn_indices:
+                        i_column = int(float(i_icn_index)/c_0)
+                        if i_column > 0:
+                            i_icn_index_draw = i_icn_index % c_0
+                        else:
+                            i_icn_index_draw = i_icn_index
+                        #
+                        self._set_icon_rect_at_(
+                            x+(icn_frm_w-icn_w)/2+icn_frm_w*i_column, y+(icn_frm_h-icn_h)/2+i_icn_index_draw*(icn_frm_h+spacing), icn_w, icn_h,
+                            i_icn_index
+                        )
+
+    def _refresh_widget_image_draw_geometries_(self):
+        if self._get_has_image_() is True:
+            image_file_path = self._get_image_file_path_()
+            rect = self._image_frame_rect
+            x, y = rect.x(), rect.y()
+            w, h = rect.width(), rect.height()
+            frm_r = min(w, h)
+            i_w_0, i_h_0 = self._get_image_size_()
+            if (i_w_0, i_h_0) != (0, 0):
+                i_x, i_y, icn_w, icn_h = bsc_core.RawSizeMtd.set_fit_to(
+                    (i_w_0, i_h_0), (w, h)
+                )
+                if self._get_play_draw_is_enable_() is True:
+                    m_f_w, m_f_h = frm_r/4, frm_r/4
+                    self._set_movie_rect_(
+                        x+i_x+(icn_w-m_f_w)/2, y+i_y+(icn_h-m_f_h)/2,
+                        m_f_w, m_f_h
+                    )
+                #
+                if image_file_path is not None:
+                    self._set_image_rect_(
+                        x+i_x+2, y+i_y+2, icn_w-4, icn_h-4
+                    )
+                else:
+                    image_name_text = self._image_name_text
+                    if image_name_text is not None:
+                        self._set_image_rect_(
+                            x+i_x, y+i_y, icn_w, icn_h
+                        )
+
+    def _refresh_widget_name_draw_geometries_(self):
+        if self._get_has_names_():
+            name_indices = self._get_name_indices_()
+            #
+            rect = self._name_frame_draw_rect
+            x, y = rect.x(), rect.y()
+            w, h = rect.width(), rect.height()
+            #
+            side = 2
+            spacing = 0
+            #
+            nme_frm_w, nme_frm_h = self._name_frame_size
+            nme_w, nme_h = self._name_size
+            #
+            self._set_index_draw_rect_(
+                x+2, y+h-nme_h, w-4, nme_h
+            )
+            for i_name_index in name_indices:
+                i_x, i_y = x+(nme_frm_w-nme_w)/2+side, y+(nme_frm_h-nme_h)/2+i_name_index*(nme_frm_h+spacing)
+                if i_y+nme_h < y+h:
+                    self._set_name_text_draw_rect_at_(
+                        i_x, i_y, w-(i_x-x)-side, nme_h,
+                        i_name_index
+                    )
+                else:
+                    self._set_name_text_draw_rect_at_(
+                        0, 0, 0, 0,
+                        i_name_index
+                    )
+            #
+            if self._icon_is_enable is True:
+                if self._icon_name_text:
+                    self._icon_name_draw_rect.setRect(
+                        x+(w-h), y, h, h
+                    )
 
     def __init__(self, *args, **kwargs):
         super(_QtListItemWidget, self).__init__(*args, **kwargs)
@@ -55,27 +175,27 @@ class _QtListItemWidget(
         self._init_frame_base_def_(self)
         self._init_type_def_(self)
         self._init_index_def_()
-        self._init_icon_def_(self)
-        self._set_icons_def_init_()
-        self._init_image_def_()
+        self._init_icon_base_def_(self)
+        self._init_icons_def_(self)
+        self._init_image_base_def_()
         self._init_names_def_()
-        self._init_menu_def_()
+        self._init_menu_base_def_(self)
         self._set_movie_def_init_()
         #
         self._init_action_for_hover_def_(self)
         self._init_action_base_def_(self)
-        self._init_action_for_check_def_(self)
+        self._init_check_base_def_(self)
         self._check_icon_file_path_0 = utl_gui_core.RscIconFile.get('filter_unchecked')
         self._check_icon_file_path_1 = utl_gui_core.RscIconFile.get('filter_checked')
         self._check_icon_file_path_current = self._check_icon_file_path_0
         self._init_action_for_press_def_(self)
-        self._set_action_select_def_init_()
+        self._init_press_select_extra_def_(self)
         self._init_action_drag_def_(self)
         #
         self._set_item_movie_action_def_init_()
         #
         self._set_state_def_init_()
-        self._set_status_def_init_()
+        self._init_status_base_def_(self)
         #
         self._file_type_icon = None
         #
@@ -102,6 +222,9 @@ class _QtListItemWidget(
 
         self._drag = None
 
+    def dragMoveEvent(self, event):
+        print event
+
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
@@ -121,13 +244,13 @@ class _QtListItemWidget(
                         self._drag._execute_start_(self._drag_point_offset)
                         self._drag.released.connect(self._execute_drag_released_)
                 else:
-                    self._execute_action_hover_(event)
+                    self._execute_action_hover_move_(event)
             #
             elif event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.RightButton:
-                    self._set_menu_show_()
+                    self._popup_menu_()
                 elif event.button() == QtCore.Qt.LeftButton:
-                    if self._get_check_action_is_valid_(event) is True:
+                    if self._get_action_check_is_valid_(event) is True:
                         self._set_action_check_execute_(event)
                         self.check_clicked.emit()
                         self.check_toggled.emit(self._is_checked)
@@ -141,7 +264,7 @@ class _QtListItemWidget(
             #
             elif event.type() == QtCore.QEvent.MouseButtonDblClick:
                 if event.button() == QtCore.Qt.LeftButton:
-                    if self._get_check_action_is_valid_(event) is True:
+                    if self._get_action_check_is_valid_(event) is True:
                         self._set_action_check_execute_(event)
                         self.check_clicked.emit()
                         self.check_toggled.emit(self._is_checked)
@@ -159,21 +282,18 @@ class _QtListItemWidget(
                     self._set_action_press_db_click_emit_send_()
                 #
                 self._set_pressed_(False)
-                self._clear_action_flag_()
+                self._clear_all_action_flags_()
             #
             elif event.type() == QtCore.QEvent.ChildAdded:
                 self._execute_drag_pressed_((self._drag_mime_data, ))
                 #
                 self._set_pressed_(False)
-                self._clear_action_flag_()
+                self._clear_all_action_flags_()
             elif event.type() == QtCore.QEvent.ChildRemoved:
                 pass
         else:
             print event.type()
         return False
-
-    def dragMoveEvent(self, event):
-        print event
 
     def paintEvent(self, event):
         painter = QtPainter(self)
@@ -351,7 +471,7 @@ class _QtListItemWidget(
                     image_name_text = self._image_name_text
                     # draw by text
                     if image_name_text:
-                        painter._draw_icon_with_name_text_by_rect_(
+                        painter._draw_icon_use_text_by_rect_(
                             self._get_image_rect_(),
                             image_name_text,
                             border_radius=4,
@@ -380,7 +500,7 @@ class _QtListItemWidget(
                     item._item_show_image_loading_index
                 )
 
-    def _execute_action_hover_(self, event):
+    def _execute_action_hover_move_(self, event):
         p = event.pos()
         self._check_is_hovered = False
         self._press_is_hovered = False
@@ -394,7 +514,7 @@ class _QtListItemWidget(
         #
         self._refresh_widget_draw_()
 
-    def _get_check_action_is_valid_(self, event):
+    def _get_action_check_is_valid_(self, event):
         if self._check_action_is_enable is True:
             p = event.pos()
             return self._check_action_rect.contains(p)
@@ -572,126 +692,6 @@ class _QtListItemWidget(
                 name_x_, name_y_,
                 name_bsc_w, name_bsc_h
             )
-
-    def _refresh_widget_icon_draw_geometries_(self):
-        if self._get_has_icons_() is True or self._check_is_enable is True:
-            rect = self._icon_frame_draw_rect
-            x, y = rect.x(), rect.y()
-            w, h = rect.width(), rect.height()
-            #
-            side = 2
-            spacing = 0
-            #
-            icn_frm_w, icn_frm_h = self._icon_frame_draw_size
-            icn_w, icn_h = self._icon_size
-            if self._check_is_enable is True:
-                check_icn_frm_w, check_icn_frm_h = icn_frm_w*self._check_icon_frame_draw_percent, icn_frm_h*self._check_icon_frame_draw_percent
-                check_icn_w, check_icn_h = icn_frm_w*self._check_icon_draw_percent, icn_frm_h*self._check_icon_draw_percent
-                #
-                self._set_check_action_rect_(
-                    x, y, icn_frm_w, icn_frm_h
-                )
-                self._set_check_icon_frame_draw_rect_(
-                    x+(icn_frm_w-check_icn_frm_w)/2, y+(icn_frm_h-check_icn_frm_h)/2, check_icn_frm_w, check_icn_frm_h
-                )
-                self._set_check_icon_draw_rect_(
-                    x+(icn_frm_w-check_icn_w)/2, y+(icn_frm_h-check_icn_h)/2, check_icn_w, check_icn_h
-                )
-            icn_indices = self._get_icon_indices_()
-            if icn_indices:
-                c_0 = int(float(h) / icn_frm_h)
-                if self._check_is_enable is True:
-                    icn_indices_ = icn_indices+[len(icn_indices)]
-                    for i_icn_index in icn_indices_:
-                        i_column = int(float(i_icn_index)/c_0)
-                        if i_column > 0:
-                            i_icn_index_draw = i_icn_index % c_0
-                        else:
-                            i_icn_index_draw = i_icn_index
-                        #
-                        if i_icn_index > 0:
-                            self._set_icon_rect_at_(
-                                x+(icn_frm_w-icn_w)/2+icn_frm_w*i_column, y+(icn_frm_h-icn_h)/2+i_icn_index_draw*(icn_frm_h+spacing), icn_w, icn_h,
-                                i_icn_index-1
-                            )
-                else:
-                    for i_icn_index in icn_indices:
-                        i_column = int(float(i_icn_index)/c_0)
-                        if i_column > 0:
-                            i_icn_index_draw = i_icn_index % c_0
-                        else:
-                            i_icn_index_draw = i_icn_index
-                        #
-                        self._set_icon_rect_at_(
-                            x+(icn_frm_w-icn_w)/2+icn_frm_w*i_column, y+(icn_frm_h-icn_h)/2+i_icn_index_draw*(icn_frm_h+spacing), icn_w, icn_h,
-                            i_icn_index
-                        )
-
-    def _refresh_widget_image_draw_geometries_(self):
-        if self._get_has_image_() is True:
-            image_file_path = self._get_image_file_path_()
-            rect = self._image_frame_rect
-            x, y = rect.x(), rect.y()
-            w, h = rect.width(), rect.height()
-            frm_r = min(w, h)
-            i_w_0, i_h_0 = self._get_image_size_()
-            if (i_w_0, i_h_0) != (0, 0):
-                i_x, i_y, icn_w, icn_h = bsc_core.RawSizeMtd.set_fit_to(
-                    (i_w_0, i_h_0), (w, h)
-                )
-                if self._get_play_draw_is_enable_() is True:
-                    m_f_w, m_f_h = frm_r/4, frm_r/4
-                    self._set_movie_rect_(
-                        x+i_x+(icn_w-m_f_w)/2, y+i_y+(icn_h-m_f_h)/2,
-                        m_f_w, m_f_h
-                    )
-                #
-                if image_file_path is not None:
-                    self._set_image_rect_(
-                        x+i_x+2, y+i_y+2, icn_w-4, icn_h-4
-                    )
-                else:
-                    image_name_text = self._image_name_text
-                    if image_name_text is not None:
-                        self._set_image_rect_(
-                            x+i_x, y+i_y, icn_w, icn_h
-                        )
-
-    def _refresh_widget_name_draw_geometries_(self):
-        if self._get_has_names_():
-            name_indices = self._get_name_indices_()
-            #
-            rect = self._name_frame_draw_rect
-            x, y = rect.x(), rect.y()
-            w, h = rect.width(), rect.height()
-            #
-            side = 2
-            spacing = 0
-            #
-            nme_frm_w, nme_frm_h = self._name_frame_size
-            nme_w, nme_h = self._name_size
-            #
-            self._set_index_draw_rect_(
-                x+2, y+h-nme_h, w-4, nme_h
-            )
-            for i_name_index in name_indices:
-                i_x, i_y = x+(nme_frm_w-nme_w)/2+side, y+(nme_frm_h-nme_h)/2+i_name_index*(nme_frm_h+spacing)
-                if i_y+nme_h < y+h:
-                    self._set_name_text_draw_rect_at_(
-                        i_x, i_y, w-(i_x-x)-side, nme_h,
-                        i_name_index
-                    )
-                else:
-                    self._set_name_text_draw_rect_at_(
-                        0, 0, 0, 0,
-                        i_name_index
-                    )
-            #
-            if self._icon_is_enable is True:
-                if self._icon_name_text:
-                    self._icon_name_draw_rect.setRect(
-                        x+(w-h), y, h, h
-                    )
 
     def _set_sort_number_key_(self, value):
         self._sort_number_key = value

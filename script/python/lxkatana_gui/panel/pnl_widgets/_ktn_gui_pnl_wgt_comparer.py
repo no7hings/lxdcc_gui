@@ -9,7 +9,7 @@ from lxkatana import ktn_core
 
 
 class PnlAssetDccGeometryComparer(utl_gui_pnl_abstracts.AbsPnlAssetDccGeometryComparer):
-    DCC_NODE_CLASS = ktn_dcc_objects.Node
+    DCC_NODE_CLS = ktn_dcc_objects.Node
     #
     FNC_GEOMETRY_COMPARER = ktn_fnc_comparers.FncGeometryComparer
     #

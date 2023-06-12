@@ -133,8 +133,8 @@ class QtListWidget(
     def paintEvent(self, event):
         if not self.count():
             painter = QtPainter(self.viewport())
-            painter._set_empty_draw_by_rect_(
-                self.rect()
+            painter._draw_empty_image_by_rect_(
+                self.rect(), self._empty_icon_name
             )
         # super(QtListWidget, self).paintEvent(event)
 
@@ -148,31 +148,6 @@ class QtListWidget(
         if info != self._info:
             self.info_text_accepted.emit(info)
             self._info = info
-
-    def _set_grid_size_(self, w, h):
-        self._grid_size = w, h
-        self._set_grid_size_update_()
-
-    def _set_grid_size_update_(self):
-        w, h = self._get_grid_size_()
-        self.setGridSize(QtCore.QSize(w, h))
-        [i.setSizeHint(QtCore.QSize(w, h)) for i in self._get_all_items_()]
-        self.verticalScrollBar().setSingleStep(h)
-
-    def _set_grid_size_change_update_(self):
-        w, h = self._get_grid_size_()
-        self.verticalScrollBar().setSingleStep(h)
-
-    def _set_grid_size_update_by_view_mode_(self):
-        item = self.item(0)
-        if item is not None:
-            item_widget = self.itemWidget(item)
-            if item_widget:
-                if item_widget._get_has_image_():
-                    print item_widget._get_image_frame_rect_()
-
-    def _get_grid_size_(self):
-        return self._grid_size
 
     def _get_item_frame_size_(self):
         if self._get_is_grid_mode_():
@@ -224,16 +199,6 @@ class QtListWidget(
 
     def _set_item_image_frame_draw_enable_(self, boolean):
         self._item_image_frame_draw_enable = boolean
-    #
-    def _set_grid_mode_(self):
-        self.setViewMode(self.IconMode)
-        # self._set_grid_size_update_by_view_mode_()
-        self._set_grid_size_change_update_()
-
-    def _set_list_mode_(self):
-        self.setViewMode(self.ListMode)
-        # self._set_grid_size_update_by_view_mode_()
-        self._set_grid_size_change_update_()
 
     def _get_item_count_(self):
         return self.count()

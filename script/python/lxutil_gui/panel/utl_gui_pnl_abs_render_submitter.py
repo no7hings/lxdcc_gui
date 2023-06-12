@@ -25,7 +25,7 @@ import lxsession.commands as ssn_commands
 
 import lxshotgun.objects as stg_objects
 
-import lxshotgun.rsv.objects as stg_rsv_objects
+import lxshotgun.rsv.scripts as stg_rsv_scripts
 
 
 class AbsRenderSubmitterDef(object):
@@ -109,12 +109,12 @@ class AbsRenderSubmitterPanel(
 
     def _set_viewer_groups_build_(self):
         h_splitter_0 = prx_widgets.PrxHSplitter()
-        self.set_widget_add(h_splitter_0)
+        self.add_widget(h_splitter_0)
         #
         v_splitter_0 = prx_widgets.PrxVSplitter()
-        h_splitter_0.set_widget_add(v_splitter_0)
+        h_splitter_0.add_widget(v_splitter_0)
         qt_scroll_area_0 = qt_widgets.QtVScrollArea()
-        v_splitter_0.set_widget_add(qt_scroll_area_0)
+        v_splitter_0.add_widget(qt_scroll_area_0)
         qt_layout_0 = qt_scroll_area_0._layout
         #
         self._schemes_prx_node = prx_widgets.PrxNode_('schemes')
@@ -124,24 +124,24 @@ class AbsRenderSubmitterPanel(
         qt_layout_0.addWidget(self._options_prx_node.widget)
         #
         prx_expanded_group_0 = prx_widgets.PrxExpandedGroup()
-        v_splitter_0.set_widget_add(prx_expanded_group_0)
+        v_splitter_0.add_widget(prx_expanded_group_0)
         prx_expanded_group_0.set_name('combinations')
         prx_expanded_group_0.set_expanded(True)
         #
         self._filter_tree_viewer_0 = prx_widgets.PrxTreeView()
-        prx_expanded_group_0.set_widget_add(self._filter_tree_viewer_0)
+        prx_expanded_group_0.add_widget(self._filter_tree_viewer_0)
         v_splitter_0.set_stretches([2, 1])
         #
         prx_expanded_group_1 = prx_widgets.PrxExpandedGroup()
-        h_splitter_0.set_widget_add(prx_expanded_group_1)
+        h_splitter_0.add_widget(prx_expanded_group_1)
         prx_expanded_group_1.set_expanded(True)
         prx_expanded_group_1.set_name('renderers')
         self._rsv_renderer_list_view = prx_widgets.PrxListView()
-        prx_expanded_group_1.set_widget_add(self._rsv_renderer_list_view)
+        prx_expanded_group_1.add_widget(self._rsv_renderer_list_view)
 
         qt_scroll_area_1 = qt_widgets.QtVScrollArea()
         qt_layout_1 = qt_scroll_area_1._layout
-        h_splitter_0.set_widget_add(qt_scroll_area_1)
+        h_splitter_0.add_widget(qt_scroll_area_1)
         #
         self._usd_prx_node = prx_widgets.PrxNode_('usd')
         qt_layout_1.addWidget(self._usd_prx_node.widget)
@@ -672,7 +672,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
     # renderers
     def set_renderers_refresh(self):
         self._rsv_renderer_list_view.set_clear()
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
+        self._prx_dcc_obj_tree_view_tag_filter_opt.restore_all()
         #
         self._set_renderers_add_rsv_units_()
     # combinations
@@ -786,7 +786,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             )
 
     def set_variables_refresh(self):
-        light_rig_rsv_assets = stg_rsv_objects.RsvStgProjectOpt(
+        light_rig_rsv_assets = stg_rsv_scripts.RsvStgProjectOpt(
             self._rsv_project
         ).get_standard_light_rig_rsv_assets()
         if light_rig_rsv_assets:
@@ -1394,7 +1394,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             )
         #
         self._rsv_renderer_list_view.set_clear()
-        self._prx_dcc_obj_tree_view_tag_filter_opt.set_restore()
+        self._prx_dcc_obj_tree_view_tag_filter_opt.restore_all()
         #
         self._variable_variants_dic = self._hook_build_configure.get('variables.character')
         self._variable_keys = self._hook_build_configure.get_branch_keys(

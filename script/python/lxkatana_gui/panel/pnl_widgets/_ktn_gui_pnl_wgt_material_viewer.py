@@ -15,8 +15,8 @@ from lxkatana import ktn_core
 
 
 class PnlMaterialViewer(utl_gui_pnl_abstracts.AbsPnlMaterialViewer):
-    DCC_SCENE_CLASS = ktn_dcc_objects.Scene
-    DCC_FNC_LOOK_IMPORTER_CLASS = ktn_fnc_importers.LookAssImporter
+    DCC_SCENE_CLS = ktn_dcc_objects.Scene
+    DCC_FNC_LOOK_IMPORTER_CLS = ktn_fnc_importers.LookAssImporter
     DCC_SELECTION_CLS = ktn_dcc_objects.Selection
     DCC_STAGE_SELECTION_CLS = ktn_core.KtnSGSelectionOpt
     #
@@ -46,7 +46,7 @@ class PnlMaterialViewer(utl_gui_pnl_abstracts.AbsPnlMaterialViewer):
             )
 
     def _set_dcc_objs_update_from_scene_(self):
-        self._scene_obj_scene = self.DCC_SCENE_CLASS()
+        self._scene_obj_scene = self.DCC_SCENE_CLS()
 
         self._scene_geometry_objs = []
 
@@ -168,7 +168,7 @@ class PnlMaterialViewer(utl_gui_pnl_abstracts.AbsPnlMaterialViewer):
             _material_color = bsc_core.RawTextOpt(_sub_material_key).to_rgb()
             _geometry_obj_gui.set_icon_by_color(_material_color, self.DESCRIPTION_INDEX)
         #
-        self._prx_dcc_obj_tree_view_add_opt.set_restore()
+        self._prx_dcc_obj_tree_view_add_opt.restore_all()
         #
         methods = [
             self._set_dcc_objs_update_from_scene_,

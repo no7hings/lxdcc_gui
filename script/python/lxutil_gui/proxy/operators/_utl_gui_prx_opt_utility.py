@@ -1,10 +1,14 @@
 # coding:utf-8
 import functools
 
+from lxutil_gui import utl_gui_core
+
 
 class GuiRsvObjOpt(object):
     DCC_NAMESPACE = 'resolver'
-    def __init__(self, prx_tree_view, prx_tree_item_cls):
+    ROOT_NAME = 'All'
+    def __init__(self, resolver, prx_tree_view, prx_tree_item_cls):
+        self._resolver = resolver
         self._tree_view = prx_tree_view
         self._tree_item_cls = prx_tree_item_cls
         #
@@ -12,7 +16,7 @@ class GuiRsvObjOpt(object):
         self._keys = set()
 
     def gui_get_is_exists(self, path):
-        return path in self._item_dict
+        return self._item_dict.get(path) is not None
 
     def gui_get(self, path):
         return self._item_dict[path]
@@ -21,9 +25,23 @@ class GuiRsvObjOpt(object):
         self._item_dict[path] = prx_item
         prx_item.set_gui_attribute('path', path)
 
-    def set_restore(self):
+    def restore_all(self):
         self._tree_view.set_clear()
         self._keys.clear()
+
+    def gui_add_root(self):
+        path = '/'
+        if self.gui_get_is_exists(path) is False:
+            prx_item = self._tree_view.set_item_add(
+                self.ROOT_NAME,
+                icon=utl_gui_core.RscIconFile.get('database/all'),
+            )
+            self.gui_register(path, prx_item)
+            prx_item.set_gui_dcc_obj(self._resolver, namespace=self.DCC_NAMESPACE)
+            prx_item.set_expanded(True)
+            prx_item.set_checked(False)
+            return True, prx_item
+        return False, self.gui_get(path)
 
     def gui_add(self, obj, use_show_thread=False):
         name = obj.name
@@ -41,7 +59,7 @@ class GuiRsvObjOpt(object):
             parent = obj.get_parent()
             if parent is not None:
                 prx_item_parent = self.gui_get(parent.path)
-                prx_item = prx_item_parent.set_child_add(
+                prx_item = prx_item_parent.add_child(
                     **create_kwargs
                 )
             else:
@@ -65,9 +83,9 @@ class GuiRsvObjOpt(object):
                     )
                 )
                 return True, prx_item
-            else:
-                self.gui_show_deferred_fnc(prx_item)
-                return True, prx_item
+            #
+            self.gui_show_deferred_fnc(prx_item)
+            return True, prx_item
 
     def gui_show_deferred_fnc(self, prx_item):
         def expand_by_condition_fnc_(*args):
@@ -116,12 +134,11 @@ class GuiRsvObjOpt(object):
         if ancestors:
             ancestors.reverse()
             for i in ancestors:
-                i_path = i.path
+                i_path = i.get_path()
                 if self.gui_get_is_exists(i_path) is False:
                     self.gui_add(i, use_show_thread=True)
         #
-        is_create, prx_item = self.gui_add(obj, use_show_thread=True)
-        return is_create, prx_item
+        return self.gui_add(obj, use_show_thread=True)
 
     def gui_add_as_list(self, obj):
         pass

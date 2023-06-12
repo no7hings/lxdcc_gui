@@ -26,7 +26,7 @@ class W(prx_widgets.PrxToolWindow):
 
     def test(self):
         self._g = prx_widgets.PrxNGGraph()
-        self.set_widget_add(self._g)
+        self.add_widget(self._g)
         u = unr_objects.ObjUniverse()
 
         r_s_t = u.get_or_create_obj_type('rez', 'system')

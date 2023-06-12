@@ -8,8 +8,8 @@ import lxmaya.dcc.dcc_objects as mya_dcc_objects
 
 class SceneMethodRunnerPanel(utl_gui_pnl_abs_method_runner.AbsSceneMethodRunnerPanel):
     DCC_PATHSEP = '/'
-    DCC_NODE_CLASS = mya_dcc_objects.Node
-    OBJ_COMP_CLASS = mya_dcc_objects.MeshComponent
+    DCC_NODE_CLS = mya_dcc_objects.Node
+    OBJ_COMP_CLS = mya_dcc_objects.MeshComponent
     #
     DCC_SELECTION_CLS = mya_dcc_objects.Selection
     def __init__(self, *args, **kwargs):

@@ -5,9 +5,11 @@ from lxbasic import bsc_configure, bsc_core
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
-from lxutil import utl_core
+from lxutil import utl_core, utl_process
 
 import lxutil.extra.methods as utl_etr_methods
+
+import lxutil.scripts as utl_scripts
 
 from lxutil_gui.qt import utl_gui_qt_core
 
@@ -57,7 +59,7 @@ class AbsValidatorOpt(object):
         check_results = results['check_results']
         scene_prx_item = self._get_scene_(file_path)
         scene_prx_item.clear_children()
-        self._filter_opt.set_restore()
+        self._filter_opt.restore_all()
         scene_prx_item._child_dict = {}
         if not check_results:
             scene_prx_item.set_status(
@@ -198,7 +200,7 @@ class AbsValidatorOpt(object):
             prx_item = scene_prx_item._child_dict[group_name]
             return prx_item
 
-        prx_item = scene_prx_item.set_child_add(
+        prx_item = scene_prx_item.add_child(
             name=group_name,
             icon=utl_gui_core.RscIconFile.get('application/python'),
         )
@@ -224,7 +226,7 @@ class AbsValidatorOpt(object):
                 dcc_path = dcc_path_dag_opt.translate_to(self.DCC_PATHSEP).to_string()
         #
         dcc_obj = self.DCC_NODE_CLS(dcc_path)
-        prx_item = group_prx_item.set_child_add(
+        prx_item = group_prx_item.add_child(
             name=[dcc_obj.name, description],
             icon=dcc_obj.icon,
             tool_tip=dcc_obj.path,
@@ -243,7 +245,7 @@ class AbsValidatorOpt(object):
             dcc_path = dcc_path_dag_opt.translate_to(self.DCC_PATHSEP).to_string()
         #
         dcc_obj = self.DCC_COMPONENT_CLS(dcc_path)
-        prx_item = node_prx_item.set_child_add(
+        prx_item = node_prx_item.add_child(
             name=[dcc_obj.name, description],
             icon=dcc_obj.icon,
             tool_tip=dcc_obj.path,
@@ -257,7 +259,7 @@ class AbsValidatorOpt(object):
 
     def _get_file_(self, scene_prx_item, node_prx_item, file_path, description, status):
         stg_file = utl_dcc_objects.OsFile(file_path)
-        prx_item = node_prx_item.set_child_add(
+        prx_item = node_prx_item.add_child(
             name=[stg_file.get_path_prettify_(maximum=32), description],
             icon=stg_file.icon,
             menu=stg_file.get_gui_menu_raw(),
@@ -269,7 +271,7 @@ class AbsValidatorOpt(object):
 
     def _get_directory_(self, scene_prx_item, node_prx_item, directory_path, description, status):
         stg_directory = utl_dcc_objects.OsDirectory_(directory_path)
-        prx_item = node_prx_item.set_child_add(
+        prx_item = node_prx_item.add_child(
             name=[stg_directory.get_path_prettify_(maximum=32), description],
             icon=stg_directory.icon,
             menu=stg_directory.get_gui_menu_raw(),
@@ -280,7 +282,7 @@ class AbsValidatorOpt(object):
         return prx_item
 
 
-class DccPublisherOpt(object):
+class DccPublishOpt(object):
     def __init__(self, session, scene_file_path, validation_info_file, rsv_scene_properties, **kwargs):
         self._session = session
         self._scene_file_path = scene_file_path
@@ -289,30 +291,14 @@ class DccPublisherOpt(object):
         self._kwargs = kwargs
 
     def execute(self):
-        k = self._kwargs
         media_files = self._kwargs['review']
         version_type = self._kwargs['version_type']
         scene_file_path = self._scene_file_path
 
-        scene_file_opt = bsc_core.StgFileOpt(scene_file_path)
         movie_file_path = None
         if media_files:
-            user_directory_path = bsc_core.StgTmpBaseMtd.get_user_directory('vedio-converter')
-
-            movie_file_path = '{}/{}.mov'.format(
-                user_directory_path,
-                scene_file_opt.name_base,
-                bsc_core.TimestampOpt(
-                    bsc_core.StgFileOpt(scene_file_path).get_modify_timestamp()
-                ).get_as_tag_36()
-            )
-
-            movie_file_opt = bsc_core.StgFileOpt(movie_file_path)
-            movie_file_opt.create_directory()
-
-            utl_etr_methods.EtrRv.convert_to_mov(
-                input=media_files,
-                output=movie_file_path
+            movie_file_path = utl_scripts.ScpVideo.comp_movie(
+                media_files
             )
 
         user = bsc_core.SystemMtd.get_user_name()
@@ -368,10 +354,10 @@ class DccPublisherOpt(object):
         )
 
 
-class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
+class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
     DCC_VALIDATOR_OPT_CLS = None
     def __init__(self, session, *args, **kwargs):
-        super(AbsPnlAssetPublisher, self).__init__(session, *args, **kwargs)
+        super(AbsPnlAssetPublish, self).__init__(session, *args, **kwargs)
 
     def restore_variants(self):
         self._scene_file_path = None
@@ -395,7 +381,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
         }
 
         self._tab_view = prx_widgets.PrxTabView()
-        self.set_widget_add(self._tab_view)
+        self.add_widget(self._tab_view)
 
         sa_0 = prx_widgets.PrxVScrollArea()
         self._tab_view.set_item_add(
@@ -412,25 +398,25 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
         )
 
         ep_0 = prx_widgets.PrxExpandedGroup()
-        sa_0.set_widget_add(ep_0)
+        sa_0.add_widget(ep_0)
         ep_0.set_expanded(True)
         ep_0.set_name('check results')
 
         # v_t = prx_widgets.PrxVToolBar()
-        # ep_0.set_widget_add(v_t)
+        # ep_0.add_widget(v_t)
 
         h_s_0 = prx_widgets.PrxHSplitter()
-        ep_0.set_widget_add(h_s_0)
+        ep_0.add_widget(h_s_0)
 
         self._filter_tree_view = prx_widgets.PrxTreeView()
-        h_s_0.set_widget_add(self._filter_tree_view)
+        h_s_0.add_widget(self._filter_tree_view)
         self._filter_tree_view.set_header_view_create(
             [('name', 3)],
             self.get_definition_window_size()[0]*(1.0/3.0) - 32
         )
         #
         self._result_tree_view = prx_widgets.PrxTreeView()
-        h_s_0.set_widget_add(self._result_tree_view)
+        h_s_0.add_widget(self._result_tree_view)
         self._result_tree_view.set_header_view_create(
             [('name', 4), ('description', 2)],
             self.get_definition_window_size()[0]*(2.0/3.0) - 32
@@ -443,7 +429,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
         )
 
         self._cfg_options_prx_node = prx_widgets.PrxNode_('options')
-        sa_1.set_widget_add(self._cfg_options_prx_node)
+        sa_1.add_widget(self._cfg_options_prx_node)
         self._cfg_options_prx_node.create_ports_by_configure(
             self._session.configure.get('build.node.publish_options'),
         )
@@ -484,7 +470,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
         self._cfg_options_prx_node.get_port(
             'publish.ignore_validation_error'
         ).connect_value_changed_to(
-            self._set_publish_enable_refresh_
+            self.refresh_publish_enable_fnc
         )
 
         self.set_help_content(
@@ -537,7 +523,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
             return list_
         return ['validation check run: off']
 
-    def _set_publish_enable_refresh_(self):
+    def refresh_publish_enable_fnc(self):
         self._validation_info_file = self._get_validation_info_file_path_()
         if self._validation_info_file is not None:
             info = '\n'.join(self._get_validation_info_texts_())
@@ -576,7 +562,9 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
             self._rsv_scene_properties = r.get_rsv_scene_properties_by_any_scene_file_path(self._scene_file_path)
             if self._rsv_scene_properties:
                 self._rsv_task = r.get_rsv_task(**self._rsv_scene_properties.value)
-                self._notice_user_names = self._get_default_notice_user_names_()
+                self._notice_user_names = self.get_default_notice_user_names_fnc(
+                    **self._rsv_task.properties.get_value()
+                )
             else:
                 contents.append(
                     u'scene file "{}" is not available'.format(self._scene_file_path)
@@ -647,7 +635,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
             self._rsv_scene_properties,
             self._validation_checker.get_data()
         )
-        self._set_publish_enable_refresh_()
+        self.refresh_publish_enable_fnc()
 
     def _set_dcc_validation_execute_(self, option_hook_key):
         s = ssn_commands.set_option_hook_execute(
@@ -705,15 +693,16 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
         self._set_dcc_validation_execute_(
             'rsv-task-methods/asset/maya/gen-surface-validation'
         )
-
-    def _get_default_notice_user_names_(self):
+    @classmethod
+    def get_default_notice_user_names_fnc(cls, **kwargs):
         import lxshotgun.objects as stg_objects
+        
         import lxshotgun.operators as stg_operators
 
         c = stg_objects.StgConnector()
-        r_o = stg_operators.StgResourceOpt(c.get_stg_resource_query(**self._rsv_task.properties.get_value()))
+        r_o = stg_operators.StgResourceOpt(c.get_stg_resource_query(**kwargs))
         resource_cc_stg_users = r_o.get_cc_stg_users()
-        t_o = stg_operators.StgTaskOpt(c.get_stg_task_query(**self._rsv_task.properties.get_value()))
+        t_o = stg_operators.StgTaskOpt(c.get_stg_task_query(**kwargs))
         task_cc_stg_users = t_o.get_cc_stg_users()
         task_assign_stg_users = t_o.get_assign_stg_users()
         return [c.to_query(i).get('name').decode('utf-8') for i in resource_cc_stg_users+task_cc_stg_users+task_assign_stg_users]
@@ -727,7 +716,7 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
         def yes_fnc_():
             _kwargs = w.get_options_as_kwargs()
             #
-            DccPublisherOpt(
+            DccPublishOpt(
                 self._session,
                 self._scene_file_path,
                 self._validation_info_file,
@@ -785,3 +774,581 @@ class AbsPnlAssetPublisher(prx_widgets.PrxSessionWindow):
             w.set_window_show()
             # set when window show
             o.set('notice', self._notice_user_names)
+
+
+class GenPublishOpt(object):
+    VERSION_NAME_PATTERN = '{project}.{resource}.{task}.{version}'
+    def __init__(self, window, session, rsv_task, version_properties, options):
+        self._window = window
+        self._session = session
+        self._rsv_task = rsv_task
+        self._version_properties = version_properties
+        self._options = options
+
+        self._version_name = self.VERSION_NAME_PATTERN.format(
+            **self._version_properties.get_value()
+        )
+        self._review_file = None
+
+    def create_version_directory_fnc(self):
+        directory_path = self._options.get('version_directory')
+        if bsc_core.StgDirectoryOpt(directory_path).get_is_exists() is False:
+            bsc_core.StgPathPermissionMtd.create_directory(
+                directory_path
+            )
+
+    def lock_version_directory_fnc(self):
+        directory_path = self._options.get('version_directory')
+        if bsc_core.StgDirectoryOpt(directory_path).get_is_exists() is True:
+            bsc_core.StgPathPermissionMtd.lock_all_directories(
+                directory_path
+            )
+
+    def pre_fnc(self):
+        self.create_version_directory_fnc()
+
+    def export_review_fnc(self):
+        file_paths = self._options['review']
+
+        movie_file_path = None
+        if file_paths:
+            movie_file_path = utl_scripts.ScpVideo.comp_movie(
+                file_paths
+            )
+        #
+        if movie_file_path:
+            version = self._version_properties.get('version')
+            review_file_rsv_unit = self._rsv_task.get_rsv_unit(
+                keyword='{branch}-review-file'
+            )
+            review_file_path = review_file_rsv_unit.get_result(
+                version=version
+            )
+            #
+            bsc_core.StgPathPermissionMtd.copy_to_file(
+                movie_file_path, review_file_path
+            )
+            self._review_file = movie_file_path
+
+    def export_scene_fnc(self):
+        def collection_and_repath_texture_fnc_(file_path_src_, scene_directory_path_, texture_directory_path_, look_yml_directory_path_):
+            _cmd = utl_process.MayaProcess.get_command(
+                'method=collection-and-repath-texture&file={}&scene_directory={}&texture_directory={}&look_yml_directory={}'.format(
+                    file_path_src_,
+                    scene_directory_path_,
+                    texture_directory_path_,
+                    look_yml_directory_path_
+                )
+            )
+            bsc_core.SubProcessMtd.execute_with_result_in_linux(
+                _cmd, clear_environ='auto'
+            )
+        #
+        count_dict = {}
+        file_paths = self._options.get('extra.scene')
+        if file_paths:
+            version = self._version_properties.get('version')
+            texture_directory_rsv_unit = self._rsv_task.get_rsv_unit(
+                keyword='{branch}-texture-dir'
+            )
+            texture_directory_path = texture_directory_rsv_unit.get_result(
+                version=version
+            )
+            look_yml_directory_rsv_unit = self._rsv_task.get_rsv_unit(
+                keyword='{branch}-look-yml-dir'
+            )
+            look_yml_directory_path = look_yml_directory_rsv_unit.get_result(
+                version=version
+            )
+            with self._window.gui_progressing(maximum=len(file_paths), label='export scene') as g_p:
+                for i_index, i_file_path in enumerate(file_paths):
+                    g_p.set_update()
+                    i_file_opt = bsc_core.StgFileOpt(i_file_path)
+                    if i_file_opt.get_is_file():
+                        i_ext = i_file_opt.get_ext()
+                        if i_ext in count_dict:
+                            i_c = len(count_dict[i_ext])
+                        else:
+                            i_c = 0
+
+                        if i_ext == '.ma':
+                            i_scene_src_file_rsv_unit = self._rsv_task.get_rsv_unit(
+                                keyword='{branch}-maya-scene-src-file'
+                            )
+                            i_scene_directory_rsv_unit = self._rsv_task.get_rsv_unit(
+                                keyword='{branch}-maya-scene-dir'
+                            )
+                        elif i_ext == '.katana':
+                            i_scene_src_file_rsv_unit = self._rsv_task.get_rsv_unit(
+                                keyword='{branch}-katana-scene-src-file'
+                            )
+                            i_scene_directory_rsv_unit = self._rsv_task.get_rsv_unit(
+                                keyword='{branch}-katana-scene-dir'
+                            )
+                        else:
+                            raise RuntimeError()
+                        #
+                        i_scene_src_file_path_tgt = i_scene_src_file_rsv_unit.get_result(
+                            version=version
+                        )
+                        i_scene_directory_path = i_scene_directory_rsv_unit.get_result(
+                            version=version
+                        )
+                        if i_c > 0:
+                            i_scene_src_file_path_opt_tgt = bsc_core.StgFileOpt(
+                                i_scene_src_file_path_tgt
+                            )
+                            i_scene_src_file_path_tgt = '{}.{}{}'.format(
+                                i_scene_src_file_path_opt_tgt.get_path_base(),
+                                i_c,
+                                i_scene_src_file_path_opt_tgt.get_ext()
+                            )
+                        #
+                        count_dict.setdefault(
+                            i_ext, []
+                        ).append(i_file_path)
+                        if i_file_opt.get_is_readable() is False:
+                            bsc_core.StgPathPermissionMtd.unlock(i_file_path)
+                        #
+                        i_file_opt.set_copy_to_file(
+                            i_scene_src_file_path_tgt
+                        )
+                        #
+                        if i_ext == '.ma':
+                            collection_and_repath_texture_fnc_(
+                                i_scene_src_file_path_tgt,
+                                i_scene_directory_path,
+                                texture_directory_path,
+                                look_yml_directory_path,
+                            )
+
+    def export_image_fnc(self):
+        file_paths = self._options.get('extra.image')
+        if file_paths:
+            version = self._version_properties.get('version')
+            image_directory_rsv_unit = self._rsv_task.get_rsv_unit(
+                keyword='{branch}-image-dir'
+            )
+            image_directory_path = image_directory_rsv_unit.get_result(
+                version=version
+            )
+            with self._window.gui_progressing(maximum=len(file_paths), label='export image') as g_p:
+                for i_index, i_file_path in enumerate(file_paths):
+                    g_p.set_update()
+                    i_file_tile_paths = bsc_core.StgFileMultiplyMtd.get_exists_tiles(
+                        i_file_path
+                    )
+                    for j_file_path in i_file_tile_paths:
+                        j_file_opt = bsc_core.StgFileOpt(j_file_path)
+                        j_file_path_tgt = '{}/{}'.format(
+                            image_directory_path, j_file_opt.get_name()
+                        )
+                        if j_file_opt.get_is_readable() is False:
+                            bsc_core.StgPathPermissionMtd.unlock(j_file_path)
+                        #
+                        j_file_opt.set_copy_to_file(
+                            j_file_path_tgt
+                        )
+
+    def export_shotgun_fnc(self):
+        import lxshotgun.rsv.scripts as stg_rsv_scripts
+        
+        version = self._version_properties.get('version')
+        user = self._version_properties.get('user')
+        review_file_rsv_unit = self._rsv_task.get_rsv_unit(
+            keyword='{branch}-review-file'
+        )
+        review_file_path = review_file_rsv_unit.get_exists_result(
+            version=version
+        )
+        
+        stg_rsv_scripts.RsvStgTaskOpt(self._rsv_task).execute_stg_version_create(
+            version=version,
+            user=user,
+            movie_file=review_file_path,
+            description=self._options.get('description'),
+            notice=self._options.get('notice'),
+            #
+            version_type=self._options.get('version_type'),
+            # version_status=None,
+            #
+            create_shotgun_playlists=True
+        )
+
+    def post_fnc(self):
+        self.lock_version_directory_fnc()
+    @utl_core.Modifier.exception_catch
+    def execute(self):
+        fncs = [
+            self.pre_fnc,
+            self.export_review_fnc,
+            self.export_scene_fnc,
+            self.export_image_fnc,
+            # export shotgun latest
+            self.export_shotgun_fnc,
+            self.post_fnc
+        ]
+        with self._window.gui_progressing(maximum=len(fncs), label='general publish process') as g_p:
+            for i_fnc in fncs:
+                g_p.set_update()
+                i_fnc()
+        #
+        self._window.show_message(
+            'publish process is complected'
+        )
+
+
+class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
+    def __init__(self, session, *args, **kwargs):
+        super(AbsPnlGeneralPublish, self).__init__(session, *args, **kwargs)
+
+    def restore_variants(self):
+        self._task_data = {}
+        #
+        self._stg_user = None
+        self._stg_task = None
+        #
+        self._rsv_task = None
+        self._version_properties = None
+
+    def set_all_setup(self):
+        sa_1 = prx_widgets.PrxVScrollArea()
+        self.add_widget(sa_1)
+        #
+        self._options_prx_node = prx_widgets.PrxNode_('options')
+        sa_1.add_widget(self._options_prx_node)
+        self._options_prx_node.create_ports_by_configure(
+            self._session.configure.get('build.node.options')
+        )
+
+        self._options_prx_node.get_port('resource_type').connect_value_changed_to(
+            self.refresh_resource_fnc
+        )
+        #
+        self._options_prx_node.get_port('shotgun.project').connect_value_changed_to(
+            self.refresh_resource_fnc
+        )
+        #
+        self._options_prx_node.get_port('shotgun.resource').connect_value_changed_to(
+            self.refresh_task_fnc
+        )
+        #
+        self._options_prx_node.get_port('shotgun.task').connect_value_changed_to(
+            self.refresh_next_enable_fnc
+        )
+        #
+        self._next_button = prx_widgets.PrxPressItem()
+        self._next_button.set_name('next')
+        self.set_button_add(
+            self._next_button
+        )
+        self._next_button.connect_press_clicked_to(self.execute_show_next)
+        self._next_button.set_option_click_enable(True)
+
+        self._next_button.set_enable(
+            False
+        )
+        #
+        self.set_option_unit_name('publish')
+        layout = self.get_option_unit_layout()
+        sa_2 = prx_widgets.PrxVScrollArea()
+        layout.addWidget(sa_2.widget)
+        self._publish_options_prx_node = prx_widgets.PrxNode_('options')
+        sa_2.add_widget(self._publish_options_prx_node)
+        self._publish_options_prx_node.create_ports_by_configure(
+            self._session.configure.get('build.node.publish_options')
+        )
+
+        self._publish_options_prx_node.get_port('version_scheme').connect_value_changed_to(
+            self.refresh_publish_version_directory
+        )
+
+        tool_bar = prx_widgets.PrxHToolBar()
+        layout.addWidget(tool_bar.widget)
+        tool_bar.set_expanded(True)
+
+        self._publish_button = prx_widgets.PrxPressItem()
+        tool_bar.add_widget(self._publish_button)
+        self._publish_button.set_name('publish')
+        self._publish_button.connect_press_clicked_to(
+            self.execute_publish
+        )
+
+        self.refresh_all_fnc()
+
+    def get_stg_project(self):
+        return self._options_prx_node.get_port('shotgun.project').get_stg_entity()
+
+    def get_stg_resource(self):
+        return self._options_prx_node.get_port('shotgun.resource').get_stg_entity()
+
+    def get_stg_task(self):
+        return self._options_prx_node.get_port('shotgun.task').get_stg_entity()
+
+    def load_from_task_id(self, task_id):
+        self._task_data = self._stg_connector.get_data_from_task_id(task_id)
+        if self._task_data:
+            resource_type = self._task_data['branch']
+            self._options_prx_node.set(
+                'resource_type', resource_type
+            )
+            #
+            self.refresh_project_fnc(self._task_data)
+            self.refresh_resource_fnc(self._task_data)
+            self.refresh_task_fnc(self._task_data)
+            self.refresh_next_enable_fnc(self._task_data)
+            self.execute_show_next()
+
+    def refresh_all_fnc(self):
+        import lxshotgun.objects as stg_objects
+        #
+        self._stg_connector = stg_objects.StgConnector()
+        self._user_name = bsc_core.SystemMtd.get_user_name()
+        self._stg_user = self._stg_connector.get_stg_user(user=self._user_name)
+        if not self._stg_user:
+            utl_core.DialogWindow.set_create(
+                self._session.gui_name,
+                content='user "{}" is not available'.format(self._user_name),
+                status=utl_core.DialogWindow.ValidatorStatus.Error,
+                #
+                yes_label='Close',
+                #
+                no_visible=False, cancel_visible=False
+            )
+            self.set_window_close_later()
+            return
+
+        task_id = bsc_core.EnvironMtd.get(
+            'PAPER_TASK_ID'
+        )
+        if task_id:
+            self.load_from_task_id(task_id)
+        else:
+            self.refresh_project_fnc()
+
+    def refresh_project_fnc(self, data=None):
+        p = self._options_prx_node.get_port('shotgun.project')
+        p.set_clear()
+        if data is not None:
+            project = data['project']
+            p.set(str(project).upper())
+        #
+        p.set_shotgun_entity_kwargs(
+            dict(
+                entity_type='Project',
+                filters=[
+                    ['users', 'in', [self._stg_user]],
+                    ['sg_status', 'in', ['Active', 'Accomplish']]
+                ],
+                fields=['name', 'sg_description']
+            ),
+            name_field='name',
+            keyword_filter_fields=['name', 'sg_description'],
+            tag_filter_fields=['sg_status']
+        )
+
+    def refresh_resource_fnc(self, data=None):
+        p = self._options_prx_node.get_port('shotgun.resource')
+        p.set_clear()
+        self._options_prx_node.get_port('shotgun.task').set_clear()
+        #
+        resource_type = self._options_prx_node.get('resource_type')
+        if resource_type not in ['asset', 'sequence', 'shot']:
+            return
+        p.set_name(resource_type)
+        #
+        if data is not None:
+            stg_project = self._stg_connector.get_stg_project(
+                **data
+            )
+            resource = data['resource']
+            p.set(resource)
+        else:
+            stg_project = self.get_stg_project()
+        #
+        if not stg_project:
+            return
+        stg_entity_type = self._stg_connector._get_stg_resource_type_(resource_type)
+        if resource_type == 'asset':
+            tag_filter_fields = ['sg_asset_type']
+            keyword_filter_fields = ['code', 'sg_chinese_name']
+        elif resource_type == 'sequence':
+            tag_filter_fields = ['tags']
+            keyword_filter_fields = ['code', 'description']
+        elif resource_type == 'shot':
+            tag_filter_fields = ['sg_sequence']
+            keyword_filter_fields = ['code', 'description']
+        else:
+            raise RuntimeError()
+
+        p.set_shotgun_entity_kwargs(
+            dict(
+                entity_type=stg_entity_type,
+                filters=[
+                    ['project', 'is', stg_project],
+                ],
+                fields=keyword_filter_fields
+            ),
+            name_field='code',
+            keyword_filter_fields=keyword_filter_fields,
+            tag_filter_fields=tag_filter_fields,
+        )
+
+    def refresh_task_fnc(self, data=None):
+        p = self._options_prx_node.get_port('shotgun.task')
+        p.set_clear()
+        if data is not None:
+            stg_resource = self._stg_connector.get_stg_resource(
+                **data
+            )
+            task = data['task']
+            p.set(task)
+        else:
+            stg_resource = self.get_stg_resource()
+        #
+        if not stg_resource:
+            return
+        #
+        p.set_shotgun_entity_kwargs(
+            {
+                'entity_type': 'Task',
+                'filters': [
+                    ['entity', 'is', stg_resource]
+                ],
+                'fields': ['content', 'sg_status_list'],
+            },
+            name_field='content',
+            keyword_filter_fields=['content', 'sg_status_list'],
+            tag_filter_fields=['step'],
+        )
+
+    def refresh_stg_task_fnc(self):
+        pass
+
+    def refresh_next_enable_fnc(self, data=None):
+        if data is not None:
+            self._stg_task = self._stg_connector.get_stg_task(
+                **data
+            )
+        else:
+            self._stg_task = self.get_stg_task()
+        #
+        if self._stg_task is not None:
+            self._next_button.set_enable(True)
+        else:
+            self._next_button.set_enable(False)
+
+    def refresh_publish_notice(self):
+        def post_fnc_():
+            pass
+
+        def cache_fnc_():
+            import lxshotgun.operators as stg_operators
+
+            r_o = stg_operators.StgResourceOpt(self._stg_connector.get_stg_resource_query(**stg_resource))
+            resource_cc_stg_users = r_o.get_cc_stg_users()
+
+            t_o = stg_operators.StgTaskOpt(self._stg_connector.get_stg_task_query(**stg_task))
+            task_cc_stg_users = t_o.get_cc_stg_users()
+            task_assign_stg_users = t_o.get_assign_stg_users()
+            return [self._stg_connector.to_query(i).get('name').decode('utf-8') for i in resource_cc_stg_users+task_cc_stg_users+task_assign_stg_users]
+
+        def built_fnc_(user_names):
+            self._publish_options_prx_node.set(
+                'notice', user_names
+            )
+
+        p = self._publish_options_prx_node.get_port('notice')
+        p.set_clear()
+        p.set_shotgun_entity_kwargs(
+            dict(
+                entity_type='HumanUser',
+                filters=[
+                    ['sg_studio', 'is', 'CG'],
+                    ['sg_status_list', 'is', 'act']
+                ],
+                fields=['name', 'email', 'sg_nickname']
+            ),
+            name_field='name',
+            keyword_filter_fields=['name', 'email', 'sg_nickname'],
+            tag_filter_fields=['department']
+        )
+
+        stg_task = self._stg_task
+        stg_resource = self._stg_connector.get_stg_resource(**self._task_data)
+
+        p.run_as_thread(
+            cache_fnc_, built_fnc_, post_fnc_
+        )
+
+    def refresh_publish_version_directory(self):
+        if self._task_data:
+            version_scheme = self._publish_options_prx_node.get('version_scheme')
+            #
+            resolver = rsv_commands.get_resolver()
+            self._rsv_task = resolver.get_rsv_task(
+                **self._task_data
+            )
+            version_directory_rsv_unit = self._rsv_task.get_rsv_unit(
+                keyword='{branch}-release-version-dir'
+            )
+            version_directory_path = version_directory_rsv_unit.get_result(
+                version=version_scheme
+            )
+            self._publish_options_prx_node.set(
+                'version_directory', version_directory_path
+            )
+            self._version_properties = version_directory_rsv_unit.get_properties_by_result(
+                version_directory_path
+            )
+            self._version_properties.set_update(self._task_data)
+            self._version_properties.set('user', self._user_name)
+
+    def refresh_publish_options(self):
+        self._publish_options_prx_node.set('version_type', 'daily')
+        self._publish_options_prx_node.set('version_scheme', 'new')
+        self._publish_options_prx_node.set('description', '')
+        self._publish_options_prx_node.get_port('review').set_clear()
+        self._publish_options_prx_node.get_port('extra.scene').set_clear()
+        self._publish_options_prx_node.get_port('extra.image').set_clear()
+
+    def refresh_publish_scene(self):
+        if bsc_core.ApplicationMtd.get_is_dcc():
+            if bsc_core.ApplicationMtd.get_is_maya():
+                import lxmaya.dcc.dcc_objects as mya_dcc_objects
+                self._publish_options_prx_node.set(
+                    'extra.scene', [mya_dcc_objects.Scene.get_current_file_path()]
+
+                )
+            elif bsc_core.ApplicationMtd.get_is_katana():
+                import lxkatana.dcc.dcc_objects as ktn_dcc_objects
+                self._publish_options_prx_node.set(
+                    'extra.scene', [ktn_dcc_objects.Scene.get_current_file_path()]
+
+                )
+
+    def execute_show_next(self):
+        if self._next_button.get_is_enable() is True:
+            self._task_data = self._stg_connector.get_data_from_task_id(
+                str(self._stg_task['id'])
+            )
+            self.set_option_unit_show()
+            self.set_option_unit_name(
+                'publish for [{project}.{resource}.{task}]'.format(
+                    **self._task_data
+                )
+            )
+            self.refresh_publish_options()
+            self.refresh_publish_version_directory()
+            self.refresh_publish_notice()
+            self.refresh_publish_scene()
+    
+    def execute_publish(self):
+        p = GenPublishOpt(
+            self,
+            self._session,
+            self._rsv_task,
+            self._version_properties,
+            self._publish_options_prx_node.get_as_kwargs()
+        )
+        p.execute()

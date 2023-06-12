@@ -32,7 +32,7 @@ class AbsTaskMethodObjGuiDef(object):
             tool_tip=obj.properties.get_str_as_yaml_style()
         )
         if obj_gui_parent is not None:
-            obj_gui = obj_gui_parent.set_child_add(
+            obj_gui = obj_gui_parent.add_child(
                 **kwargs
             )
         elif tree_viewer is not None:
@@ -70,7 +70,7 @@ class AbsTaskMethodObjGuiDef(object):
             # tool_tip=obj.properties.get_str_as_yaml_style()
         )
         if obj_gui_parent is not None:
-            obj_gui = obj_gui_parent.set_child_add(
+            obj_gui = obj_gui_parent.add_child(
                 **kwargs
             )
         elif tree_viewer is not None:
@@ -95,7 +95,7 @@ class AbsTaskMethodObjGuiDef(object):
             tool_tip=dcc_obj.path
         )
         if obj_gui_parent is not None:
-            obj_gui = obj_gui_parent.set_child_add(
+            obj_gui = obj_gui_parent.add_child(
                 **kwargs
             )
         elif tree_viewer is not None:
@@ -119,7 +119,7 @@ class AbsTaskMethodObjGuiDef(object):
             menu=file_obj.get_gui_menu_raw()
         )
         if obj_gui_parent is not None:
-            obj_gui = obj_gui_parent.set_child_add(
+            obj_gui = obj_gui_parent.add_child(
                 **kwargs
             )
         elif tree_viewer is not None:
@@ -142,7 +142,7 @@ class AbsTaskMethodObjGuiDef(object):
             tool_tip=dcc_comp_obj.path
         )
         if obj_gui_parent is not None:
-            obj_gui = obj_gui_parent.set_child_add(
+            obj_gui = obj_gui_parent.add_child(
                 **kwargs
             )
         elif tree_viewer is not None:
@@ -164,8 +164,8 @@ class AbsSceneMethodRunnerPanel(
     AbsTaskMethodObjGuiDef
 ):
     PANEL_KEY = 'scene_method_runner'
-    DCC_NODE_CLASS = None
-    OBJ_COMP_CLASS = None
+    DCC_NODE_CLS = None
+    OBJ_COMP_CLS = None
     #
     DCC_SELECTION_CLS = None
     #
@@ -222,9 +222,9 @@ class AbsSceneMethodRunnerPanel(
         expand_box_0 = prx_widgets.PrxExpandedGroup()
         expand_box_0.set_name('Viewer(s)')
         expand_box_0.set_expanded(True)
-        self.set_widget_add(expand_box_0)
+        self.add_widget(expand_box_0)
         self._tree_viewer = prx_widgets.PrxTreeView()
-        expand_box_0.set_widget_add(self._tree_viewer)
+        expand_box_0.add_widget(self._tree_viewer)
         self._tree_viewer.set_header_view_create(
             [('Name(s)', 2), ('Type(s)', 2), ('Description(s)', 2)],
             self.get_definition_window_size()[0] - 16
@@ -236,23 +236,23 @@ class AbsSceneMethodRunnerPanel(
         expand_box_0.set_name('Configure(s)')
         expand_box_0.set_expanded(True)
         expand_box_0.set_size_mode(1)
-        self.set_widget_add(expand_box_0)
+        self.add_widget(expand_box_0)
         qt_widget_0 = qt_widgets.QtWidget()
-        expand_box_0.set_widget_add(qt_widget_0)
+        expand_box_0.add_widget(qt_widget_0)
         qt_layout_0 = qt_widgets.QtVBoxLayout(qt_widget_0)
         self._configure_gui = prx_widgets.PrxNode()
         qt_layout_0.addWidget(self._configure_gui.widget)
         #
-        _port = self._configure_gui.set_port_add(
+        _port = self._configure_gui.add_port(
             prx_widgets.PrxPortForString('work_scene_src_file_path', 'Work-Scene-src-file')
         )
         _port.set_use_as_storage()
-        _port = self._configure_gui.set_port_add(
+        _port = self._configure_gui.add_port(
             prx_widgets.PrxPortAsEnumerate('scene_src_file_path', 'Scene-src-file')
         )
         _port.set_use_as_storage()
         #
-        _port = self._configure_gui.set_port_add(
+        _port = self._configure_gui.add_port(
             prx_widgets.PrxPortAsEnumerate('scheme', 'Scheme')
         )
         _port.set(
@@ -262,12 +262,12 @@ class AbsSceneMethodRunnerPanel(
             ]
         )
         #
-        _port = self._configure_gui.set_port_add(
+        _port = self._configure_gui.add_port(
             prx_widgets.PrxPortAsEnumerate('version', 'Version')
         )
         _port.set(['latest', 'new'])
         #
-        _port = self._configure_gui.set_port_add(
+        _port = self._configure_gui.add_port(
             prx_widgets.PrxPortAsButton('refresh', 'Refresh')
         )
         _port.set(self.refresh_all_fnc)
@@ -292,7 +292,7 @@ class AbsSceneMethodRunnerPanel(
         for obj_path, v in method.check_results.value.items():
             check_tags = method.get_obj_check_tags(obj_path)
             #
-            dcc_obj = self.DCC_NODE_CLASS(obj_path)
+            dcc_obj = self.DCC_NODE_CLS(obj_path)
             dcc_obj_gui = self.gui_add(
                 dcc_obj, obj_gui_parent=method_obj_gui
             )
@@ -326,7 +326,7 @@ class AbsSceneMethodRunnerPanel(
         for comp_name in comp_names:
             if comp_name is not None:
                 dcc_obj = dcc_obj_gui.get_gui_dcc_obj(namespace='dcc')
-                dcc_comp_obj = self.OBJ_COMP_CLASS(dcc_obj, comp_name)
+                dcc_comp_obj = self.OBJ_COMP_CLS(dcc_obj, comp_name)
                 dcc_comp_obj_gui = self._set_comp_obj_gui_add_(dcc_comp_obj, obj_gui_parent=dcc_obj_gui)
                 dcc_comp_obj_gui.check_state.set(check_tag)
                 dcc_comp_obj_gui.set_name(
@@ -429,7 +429,7 @@ class AbsSceneMethodRunnerPanel(
                     version=new_version
                 )
                 if new_scene_src_file_path:
-                    _port.set_append(new_scene_src_file_path)
+                    _port.append(new_scene_src_file_path)
                     _port.set_current(new_scene_src_file_path)
                     self._rsv_scene_properties = self._resolver.get_task_properties_by_any_scene_file_path(new_scene_src_file_path)
                     if self._rsv_scene_properties is not None:

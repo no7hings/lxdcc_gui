@@ -9,8 +9,9 @@ import functools
 
 from lxbasic import bsc_core
 
+import lxbasic.objects as bsc_objects
+
 from lxutil import utl_core
-from lxdatabase import dtb_configure
 
 import lxdatabase.objects as dtb_objects
 
@@ -23,6 +24,8 @@ import lxutil_gui.qt.widgets as qt_widgets
 import lxutil_gui.proxy.widgets as prx_widgets
 
 import lxsession.commands as ssn_commands
+
+from lxusd import usd_core
 
 
 class _GuiBaseOpt(object):
@@ -52,6 +55,7 @@ class _GuiBaseOpt(object):
                     window_unique_id=self._window.get_window_unique_id(),
                     database=self._dtb_opt.get_database(),
                     database_configure=self._dtb_opt.get_database_configure(),
+                    database_configure_extend=self._dtb_opt.get_database_configure_extend(),
                     #
                     entity_type=dtb_entity.entity_type,
                     entity=dtb_entity.path,
@@ -82,6 +86,7 @@ class _GuiBaseOpt(object):
                     window_unique_id=self._window.get_window_unique_id(),
                     database=self._dtb_opt.get_database(),
                     database_configure=self._dtb_opt.get_database_configure(),
+                    database_configure_extend=self._dtb_opt.get_database_configure_extend(),
                     #
                     entity_type=dtb_entity.entity_type,
                     entity=dtb_entity.path,
@@ -118,7 +123,7 @@ class _GuiTypeOpt(_GuiBaseOpt):
         self._keys.clear()
 
     def gui_get_is_exists(self, path):
-        return path in self._item_dict
+        return self._item_dict.get(path) is not None
 
     def gui_get(self, path):
         return self._item_dict[path]
@@ -137,8 +142,8 @@ class _GuiTypeOpt(_GuiBaseOpt):
             self.gui_register(path, prx_item)
             prx_item.set_expanded(True)
             prx_item.set_checked(False)
-            return prx_item
-        return self.gui_get(path)
+            return True, prx_item
+        return False, self.gui_get(path)
 
     def gui_add_all_category_groups(self):
         dtb_category_groups = self._dtb_opt.get_entities(
@@ -153,7 +158,7 @@ class _GuiTypeOpt(_GuiBaseOpt):
         path = dtb_entity.path
         if self.gui_get_is_exists(path) is False:
             parent_gui = self.gui_get(dtb_entity.group)
-            prx_item = parent_gui.set_child_add(
+            prx_item = parent_gui.add_child(
                 dtb_entity.gui_name,
                 icon=utl_gui_core.RscIconFile.get(dtb_entity.gui_icon_name),
             )
@@ -209,7 +214,7 @@ class _GuiTypeOpt(_GuiBaseOpt):
         path = dtb_entity.path
         if self.gui_get_is_exists(path) is False:
             parent_gui = self.gui_get(dtb_entity.group)
-            prx_item = parent_gui.set_child_add(
+            prx_item = parent_gui.add_child(
                 dtb_entity.gui_name,
                 icon=utl_gui_core.RscIconFile.get(dtb_entity.gui_icon_name),
             )
@@ -288,7 +293,7 @@ class _GuiTypeOpt(_GuiBaseOpt):
             #
             # name = dtb_entity.name
             gui_name = dtb_entity.gui_name
-            prx_item = parent_gui.set_child_add(
+            prx_item = parent_gui.add_child(
                 gui_name,
                 icon=utl_gui_core.RscIconFile.get(dtb_entity.gui_icon_name),
             )
@@ -352,8 +357,11 @@ class _GuiTagOpt(_GuiBaseOpt):
         self._tag_kinds = [
             self._dtb_opt.Kinds.ResourcePrimarySemanticTag,
             self._dtb_opt.Kinds.ResourcePropertyTag,
-            self._dtb_opt.Kinds.ResourceFileTag
+            self._dtb_opt.Kinds.ResourceFileTag,
+            self._dtb_opt.Kinds.ResourceFormatTag
         ]
+        #
+        self.__thread_stack_index = 0
 
     def restore(self):
         self._tree_view.set_clear()
@@ -394,11 +402,12 @@ class _GuiTagOpt(_GuiBaseOpt):
             prx_item.set_expanded(True)
             prx_item.set_checked(False)
             prx_item.set_emit_send_enable(True)
-            return prx_item
-        else:
-            return self.gui_get_group(path)
+            return True, prx_item
+        return False, self.gui_get_group(path)
 
     def gui_add_all_groups(self):
+        self.gui_add_root()
+        #
         dtb_tags = self._dtb_opt.get_entities(
             entity_type=self._dtb_opt.EntityTypes.TagGroup,
             filters=[
@@ -407,11 +416,40 @@ class _GuiTagOpt(_GuiBaseOpt):
         )
         [self.gui_add_group(i) for i in dtb_tags]
 
+    def gui_add_all_groups_use_thread(self):
+        def cache_fnc_():
+            return self.__thread_stack_index, self._dtb_opt.get_entities(
+                entity_type=self._dtb_opt.EntityTypes.TagGroup,
+                filters=[
+                    ('kind', 'in', self._tag_group_kinds)
+                ]
+            )
+
+        def build_fnc_(*args):
+            _thread_stack_index, _dtb_tags = args[0]
+            for _i_dtb_tag in _dtb_tags:
+                if _thread_stack_index == self.__thread_stack_index:
+                    self.gui_add_group(_i_dtb_tag)
+
+        def post_fnc_():
+            pass
+
+        self.gui_add_root()
+
+        self.__thread_stack_index += 1
+
+        t = utl_gui_qt_core.QtBuildThread(self._window.widget)
+        t.set_cache_fnc(cache_fnc_)
+        t.built.connect(build_fnc_)
+        t.run_finished.connect(post_fnc_)
+        #
+        t.start()
+
     def gui_add_group(self, dtb_entity):
         path = dtb_entity.path
         if self.gui_get_group_is_exists(path) is False:
             parent_gui = self.gui_get_group(dtb_entity.group)
-            prx_item = parent_gui.set_child_add(
+            prx_item = parent_gui.add_child(
                 dtb_entity.gui_name,
                 icon=utl_gui_core.RscIconFile.get(dtb_entity.gui_icon_name),
             )
@@ -444,7 +482,7 @@ class _GuiTagOpt(_GuiBaseOpt):
             parent_gui.set_status(parent_gui.ValidatorStatus.Normal)
             parent_gui.set_enable(True)
             #
-            prx_item = parent_gui.set_child_add(
+            prx_item = parent_gui.add_child(
                 dtb_entity.gui_name,
                 icon=utl_gui_core.RscIconFile.get(dtb_entity.gui_icon_name),
             )
@@ -471,7 +509,7 @@ class _GuiTagOpt(_GuiBaseOpt):
             parent_gui.set_enable(True)
             #
             gui_name = bsc_core.RawStringUnderlineOpt(path_opt.name).to_prettify()
-            prx_item = parent_gui.set_child_add(
+            prx_item = parent_gui.add_child(
                 gui_name,
                 icon=utl_gui_core.RscIconFile.get('database/tag'),
             )
@@ -527,7 +565,7 @@ class _GuiResourceOpt(_GuiBaseOpt):
         self._keys.clear()
 
     def gui_get_is_exists(self, path):
-        return path in self._item_dict
+        return self._item_dict.get(path) is not None
 
     def gui_get(self, path):
         return self._item_dict[path]
@@ -572,6 +610,7 @@ class _GuiResourceOpt(_GuiBaseOpt):
             )
             keys = {bsc_core.DccPathDagOpt(j).get_name() for i_k, i_v in semantic_tag_filter_data.items() for j in i_v}
             keys.add(str(dtb_resource.gui_name).lower())
+            keys.add(str(dtb_resource.name).lower())
             prx_item.set_keyword_filter_keys_tgt(keys)
 
             return prx_item
@@ -591,13 +630,19 @@ class _GuiResourceOpt(_GuiBaseOpt):
         # r, g, b = bsc_core.RawTextOpt(type_).to_rgb_()
         # prx_item.set_name_frame_background_color((r, g, b, 127))
         name_dict = collections.OrderedDict()
+        pixmaps = []
         name_dict['resource'] = dtb_resource.gui_name
         for i_k, i_v in semantic_tag_filter_data.items():
-            name_dict[bsc_core.DccPathDagOpt(i_k).name] = ', '.join([bsc_core.DccPathDagOpt(j).name for j in i_v])
+            if '/geometry/fbx' in i_v:
+                i_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_file_ext('.fbx')
+                pixmaps.append(i_pixmap)
+            name_dict[bsc_core.DccPathDagOpt(i_k).get_name()] = ', '.join([bsc_core.DccPathDagOpt(j).get_name() for j in i_v])
 
         prx_item.set_image(
             utl_gui_core.RscIconFile.get('image_loading_failed_error')
         )
+
+        prx_item.set_icons_by_pixmap(pixmaps)
 
         dtb_version_port = self._dtb_opt.get_entity(
             entity_type=self._dtb_opt.EntityTypes.Attribute,
@@ -613,67 +658,68 @@ class _GuiResourceOpt(_GuiBaseOpt):
                 ('path', 'is', dtb_version_port.value),
             ],
         )
-        # drag action
-        prx_item.set_drag_enable(True)
-        if self._session.get_application() == 'katana':
-            prx_item.set_drag_data(
-                {
-                    'nodegraph/noderefs': 'rootNode',
-                    # 'nodegraph/fileref': '/l/resource/td/asset/scene/empty.katana',
-                    'pre-import/hook-option': self.get_callback_hook_option_fnc(
-                        option_hook_key='dtb-callbacks/katana/resource-pre-import-by-drag',
-                        dtb_entity=dtb_resource
-                    ),
-                    'import/hook-option': self.get_callback_hook_option_fnc(
-                        option_hook_key='dtb-callbacks/katana/resource-import-by-drag',
-                        dtb_entity=dtb_resource
-                    )
-                }
+        if dtb_version is not None:
+            # drag action
+            prx_item.set_drag_enable(True)
+            if self._session.get_application() == 'katana':
+                prx_item.set_drag_data(
+                    {
+                        'nodegraph/noderefs': 'rootNode',
+                        # 'nodegraph/fileref': '/l/resource/td/asset/scene/empty.katana',
+                        'pre-import/hook-option': self.get_callback_hook_option_fnc(
+                            option_hook_key='dtb-callbacks/katana/resource-pre-import-by-drag',
+                            dtb_entity=dtb_resource
+                        ),
+                        'import/hook-option': self.get_callback_hook_option_fnc(
+                            option_hook_key='dtb-callbacks/katana/resource-import-by-drag',
+                            dtb_entity=dtb_resource
+                        )
+                    }
+                )
+                prx_item.connect_drag_pressed_to(
+                    self.drag_pressed_fnc
+                )
+                prx_item.connect_drag_released_to(
+                    self.drag_release_fnc
+                )
+            # menu
+            dtb_resource_menu_content = self.get_dtb_entity_menu_content(dtb_resource)
+            dtb_version_menu_content = self.get_dtb_entity_menu_content(dtb_version)
+            dtb_resource_menu_content.set_update(dtb_version_menu_content.get_value())
+            prx_item.set_menu_content(dtb_resource_menu_content)
+            prx_item.set_index_draw_enable(True)
+            prx_item.set_icon_by_name(dtb_type.name)
+            prx_item.set_name_dict(
+                name_dict
             )
-            prx_item.connect_drag_pressed_to(
-                self.drag_pressed_fnc
+            prx_item.set_tool_tip(
+                dtb_resource.to_string()
             )
-            prx_item.connect_drag_released_to(
-                self.drag_release_fnc
-            )
-        # menu
-        dtb_resource_menu_content = self.get_dtb_entity_menu_content(dtb_resource)
-        dtb_version_menu_content = self.get_dtb_entity_menu_content(dtb_version)
-        dtb_resource_menu_content.set_update(dtb_version_menu_content.get_value())
-        prx_item.set_menu_content(dtb_resource_menu_content)
-        prx_item.set_index_draw_enable(True)
-        prx_item.set_icon_by_name(dtb_type.name)
-        prx_item.set_name_dict(
-            name_dict
-        )
-        prx_item.set_tool_tip(
-            dtb_resource.to_string()
-        )
 
-        preview_image_dtb_port = self._dtb_opt.get_entity(
-            entity_type=self._dtb_opt.EntityTypes.Attribute,
-            filters=[
-                ('node', 'is', dtb_version_port.value),
-                ('port', 'is', 'image_preview_file'),
-            ],
-            new_connection=False
-        )
-        if preview_image_dtb_port:
-            image = preview_image_dtb_port.value
-            if bsc_core.StgFileOpt(image).get_is_exists() is True:
-                prx_item.set_image(
-                    image
-                )
-                image_file_path, image_sub_process_cmds = bsc_core.ImgFileOpt(image).get_thumbnail_create_args(
-                    width=256, ext='.png'
-                )
-                prx_item.set_image(image_file_path)
-                if image_sub_process_cmds is not None:
-                    prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
-        else:
-            prx_item.set_image(
-                utl_gui_core.RscIconFile.get('image_loading_failed_error')
+            preview_image_dtb_port = self._dtb_opt.get_entity(
+                entity_type=self._dtb_opt.EntityTypes.Attribute,
+                filters=[
+                    ('node', 'is', dtb_version_port.value),
+                    ('port', 'is', 'image_preview_file'),
+                ],
+                new_connection=False
             )
+            if preview_image_dtb_port:
+                image_path = preview_image_dtb_port.value
+                if bsc_core.StgFileOpt(image_path).get_is_exists() is True:
+                    prx_item.set_image(
+                        image_path
+                    )
+                    image_file_path, image_sub_process_cmds = bsc_core.ImgFileOpt(image_path).get_thumbnail_create_args(
+                        width=256, ext='.png'
+                    )
+                    prx_item.set_image(image_file_path)
+                    if image_sub_process_cmds is not None:
+                        prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
+            else:
+                prx_item.set_image(
+                    utl_gui_core.RscIconFile.get('image_loading_failed_error')
+                )
 
     def get_callback_hook_option_fnc(self, option_hook_key, dtb_entity):
         return bsc_core.ArgDictStringOpt(
@@ -683,6 +729,7 @@ class _GuiResourceOpt(_GuiBaseOpt):
                 window_unique_id=self._window.get_window_unique_id(),
                 database=self._dtb_opt.get_database(),
                 database_configure=self._dtb_opt.get_database_configure(),
+                database_configure_extend=self._dtb_opt.get_database_configure_extend(),
                 #
                 entity_type=dtb_entity.entity_type,
                 entity=dtb_entity.path,
@@ -711,6 +758,11 @@ class _GuiResourceOpt(_GuiBaseOpt):
                     hook_option
                 )
 
+    def get_current_dtb_entity(self):
+        resource_selected_prx_items = self._list_view.get_selected_items()
+        if resource_selected_prx_items:
+            return resource_selected_prx_items[-1].get_gui_dcc_obj(self.DCC_NAMESPACE)
+
 
 class _GuiDirectoryOpt(_GuiBaseOpt):
     ROOT_NAME = 'All'
@@ -721,32 +773,72 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
         self._tree_view = tree_view
         self._item_dict = self._tree_view._item_dict
 
+        self.__thread_stack_index = 1
+
     def restore(self):
         self._tree_view.set_clear()
 
     def gui_get_is_exists(self, path):
-        return path in self._item_dict
+        return self._item_dict.get(path) is not None
 
     def gui_get(self, path):
         return self._item_dict[path]
 
+    def gui_add_all_use_thread(self, dtb_version):
+        def cache_fnc_():
+            return self.__thread_stack_index, self._dtb_opt.get_entities(
+                entity_type=self._dtb_opt.EntityTypes.Storage,
+                filters=[
+                    ('kind', 'is', self._dtb_opt.Kinds.Directory),
+                    ('group', 'is', dtb_version.path),
+                ]
+            )
+
+        def build_fnc_(*args):
+            _thread_stack_index, _dtb_directories = args[0]
+            _version_stg_location = self._dtb_opt.get_property(version_dtb_path, 'location')
+            for _i_dtb_storage in _dtb_directories:
+                _i_storage_dtb_path = _i_dtb_storage.path
+                _i_storage_stg_location = self._dtb_opt.get_property(_i_storage_dtb_path, 'location')
+                _i_sub_path = _i_storage_stg_location[len(_version_stg_location):]
+                if _thread_stack_index == self.__thread_stack_index:
+                    self.gui_add_one(_i_sub_path, _i_dtb_storage)
+
+        def post_fnc_():
+            pass
+
+        version_dtb_path = dtb_version.path
+        version_path_opt = bsc_core.DccPathDagOpt(version_dtb_path)
+        self.gui_add_root(version_path_opt.name)
+
+        self.__thread_stack_index += 1
+
+        t = utl_gui_qt_core.QtBuildThread(self._window.widget)
+        t.set_cache_fnc(cache_fnc_)
+        t.built.connect(build_fnc_)
+        t.run_finished.connect(post_fnc_)
+        #
+        t.start()
+
     def gui_add_all(self, dtb_version):
-        version_path = dtb_version.path
-        version_path_opt = bsc_core.DccPathDagOpt(version_path)
+        version_dtb_path = dtb_version.path
+        version_path_opt = bsc_core.DccPathDagOpt(version_dtb_path)
         #
         self.gui_add_root(version_path_opt.name)
         dtb_directories = self._dtb_opt.get_entities(
             entity_type=self._dtb_opt.EntityTypes.Storage,
             filters=[
                 ('kind', 'is', self._dtb_opt.Kinds.Directory),
-                ('group', 'startswith', dtb_version.path),
+                ('group', 'is', dtb_version.path),
             ]
         )
-        for i_dtb_directory in dtb_directories:
-            i_path = i_dtb_directory.path
-            i_sub_path = i_path[len(version_path):]
+        version_stg_location = self._dtb_opt.get_property(version_dtb_path, 'location')
+        for i_dtb_storage in dtb_directories:
+            i_storage_dtb_path = i_dtb_storage.path
+            i_storage_stg_location = self._dtb_opt.get_property(i_storage_dtb_path, 'location')
+            i_sub_path = i_storage_stg_location[len(version_stg_location):]
             #
-            self.gui_add_one(i_sub_path, i_dtb_directory)
+            self.gui_add_one(i_sub_path, i_dtb_storage)
 
     def gui_add_one(self, sub_path, dtb_directory):
         path_opt = bsc_core.DccPathDagOpt(sub_path)
@@ -755,7 +847,7 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
             ancestors.reverse()
             #
             for i_ancestor in ancestors:
-                i_ancestor_path = i_ancestor.path
+                i_ancestor_path = i_ancestor.get_path()
                 self.gui_add_group(i_ancestor_path)
         #
         self.gui_add(sub_path, dtb_directory)
@@ -770,9 +862,8 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
             self._item_dict[path] = prx_item
             prx_item.set_expanded(True)
             # prx_item.set_checked(False)
-            return prx_item
-        else:
-            return self.gui_get(path)
+            return True, prx_item
+        return False, self.gui_get(path)
 
     def gui_add_group(self, sub_path):
         if self.gui_get_is_exists(sub_path) is False:
@@ -780,14 +871,14 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
             #
             parent_gui = self.gui_get(path_opt.get_parent_path())
             #
-            prx_item = parent_gui.set_child_add(
+            prx_item = parent_gui.add_child(
                 path_opt.name,
                 icon=utl_gui_core.RscIconFile.get('database/group'),
             )
             self._item_dict[sub_path] = prx_item
             prx_item.set_tool_tip(sub_path)
             prx_item.set_expanded(True)
-            # prx_item.set_checked(False)
+            prx_item.set_checked(False)
             return prx_item
         return self.gui_get(sub_path)
 
@@ -797,11 +888,14 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
             #
             parent_gui = self.gui_get(path_opt.get_parent_path())
             #
-            prx_item = parent_gui.set_child_add(
+            prx_item = parent_gui.add_child(
                 path_opt.name,
-                icon=utl_gui_core.RscIconFile.get('database/objects'),
+                icon=utl_gui_core.RscIconFile.get('database/group'),
             )
             self._item_dict[sub_path] = prx_item
+            prx_item.set_gui_dcc_obj(
+                dtb_directory, namespace=self.DCC_NAMESPACE
+            )
             prx_item.set_tool_tip(sub_path)
             #
             dtb_entity_menu_content = self.get_dtb_entity_menu_content(dtb_directory)
@@ -819,9 +913,17 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
                 prx_item.set_status(prx_item.ValidatorStatus.Disable)
             #
             prx_item.set_expanded(True)
-            # prx_item.set_checked(False)
+            prx_item.set_checked(False)
             return prx_item
         return self.gui_get(sub_path)
+
+    def gui_show_deferred_fnc(self, dtb_directory, prx_item):
+        pass
+
+    def get_current_dtb_entity(self):
+        resource_selected_prx_items = self._tree_view.get_selected_items()
+        if resource_selected_prx_items:
+            return resource_selected_prx_items[-1].get_gui_dcc_obj(self.DCC_NAMESPACE)
 
 
 class _GuiFileOpt(_GuiBaseOpt):
@@ -838,7 +940,7 @@ class _GuiFileOpt(_GuiBaseOpt):
         self._keys.clear()
 
     def gui_get_is_exists(self, path):
-        return path in self._item_dict
+        return self._item_dict.get(path) is not None
 
     def gui_get(self, path):
         return self._item_dict[path]
@@ -875,20 +977,88 @@ class _GuiGuideOpt(_GuiBaseOpt):
                 path = tree_item_prx.get_gui_attribute('path')
         #
         if path is not None:
+            for i in self._window._dtb_superclass_paths:
+                if i not in self._tree_view._item_dict:
+                    self._tree_view._item_dict[i] = None
+            #
             self._guide_bar.set_path(path)
+
+
+class _GuiUsdStageViewOpt(_GuiBaseOpt):
+    def __init__(self, window, session, database_opt, usd_stage_view):
+        super(_GuiUsdStageViewOpt, self).__init__(window, session, database_opt)
+        self._usd_stage_view = usd_stage_view
+        self.__thread_stack_index = 1
+
+    def get_texture_dict(self, dtb_version):
+        dict_ = {}
+        for i_key in ['albedo', 'ao', 'roughness', 'normal', 'displacement', 'opacity']:
+            i_dtb_path = '{}/texture_{}_file'.format(dtb_version.path, i_key)
+            i_file_path = self._dtb_opt.get_property(
+                i_dtb_path, 'location'
+            )
+            if i_file_path is not None:
+                i_file_opt = bsc_core.StgFileOpt(i_file_path)
+                if i_file_opt.get_ext() == '.exr':
+                    i_file_opt = i_file_opt.set_ext_repath_to('.jpg')
+                #
+                if i_file_opt.get_is_file() is True:
+                    dict_[i_key] = i_file_opt.get_path()
+        return dict_
+
+    def get_usd_file(self, dtb_resource, dtb_version):
+        version_stg_path = self._dtb_opt.get_property(
+            dtb_version.path, 'location'
+        )
+        usd_file_path = '{}/geometry/usd/{}.usd'.format(version_stg_path, dtb_resource.name)
+        if bsc_core.StgPathMtd.get_is_exists(usd_file_path):
+            return usd_file_path
+        return bsc_core.RscFileMtd.get('asset/library/preview_sphere.usda')
+
+    def refresh_textures_use_thread(self, dtb_resource, dtb_version):
+        def cache_fnc_():
+            self._usd_stage_view.refresh_usd_stage_for_asset_preview(
+                self.get_usd_file(dtb_resource, dtb_version),
+                self.get_texture_dict(dtb_version)
+            )
+            return self.__thread_stack_index, None
+
+        def build_fnc_(*args):
+            _thread_stack_index, _ = args[0]
+            if _thread_stack_index == self.__thread_stack_index:
+                self._usd_stage_view.refresh_usd_view_draw()
+
+        def post_fnc_():
+            pass
+
+        self.__thread_stack_index += 1
+
+        t = utl_gui_qt_core.QtBuildThread(self._window.widget)
+        t.set_cache_fnc(cache_fnc_)
+        t.built.connect(build_fnc_)
+        t.run_finished.connect(post_fnc_)
+        #
+        t.start()
+
+    def refresh_textures(self, dtb_resource, dtb_version):
+        self._usd_stage_view.refresh_usd_stage_for_texture_preview(
+            self.get_texture_dict(dtb_version)
+        )
+        self._usd_stage_view.refresh_usd_view_draw()
 
 
 class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
     DCC_NAMESPACE = 'database'
     THREAD_STEP = 8
     FILTER_MAXIMUM = 50
+    HISTORY_KEY = 'gui.resource-library'
     def set_all_setup(self):
         self._item_frame_size = self._session.gui_configure.get('item_frame_size')
         self._item_icon_frame_size = self._session.gui_configure.get('item_icon_frame_size')
         self._item_icon_size = self._session.gui_configure.get('item_icon_size')
 
         v_qt_widget = qt_widgets.QtWidget()
-        self.set_widget_add(v_qt_widget)
+        self.add_widget(v_qt_widget)
         v_qt_layout = qt_widgets.QtVBoxLayout(v_qt_widget)
         v_qt_layout.setContentsMargins(0, 0, 0, 0)
         # top
@@ -898,21 +1068,21 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._top_tool_bar.set_alignment_left()
         #   guide
         self._guide_tool_box = prx_widgets.PrxHToolBox()
-        self._top_tool_bar.set_widget_add(self._guide_tool_box)
+        self._top_tool_bar.add_widget(self._guide_tool_box)
         self._guide_tool_box.set_expanded(True)
         self._guide_tool_box.set_size_mode(1)
         #
         self._type_guide_bar = prx_widgets.PrxGuideBar()
-        self._guide_tool_box.set_widget_add(self._type_guide_bar)
+        self._guide_tool_box.add_widget(self._type_guide_bar)
         self._type_guide_bar.set_name('guide for type')
         #   tag
         self._tag_tool_box = prx_widgets.PrxHToolBox()
-        self._top_tool_bar.set_widget_add(self._tag_tool_box)
+        self._top_tool_bar.add_widget(self._tag_tool_box)
         # self._tag_tool_box.set_expanded(True)
         self._tag_tool_box.set_size_mode(1)
         #
         self._tag_bar = prx_widgets.PrxTagBar()
-        self._tag_tool_box.set_widget_add(self._tag_bar)
+        self._tag_tool_box.add_widget(self._tag_bar)
         #
         h_qt_widget = qt_widgets.QtWidget()
         v_qt_layout.addWidget(h_qt_widget)
@@ -921,17 +1091,15 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         #
         main_scroll_area = prx_widgets.PrxHScrollArea()
         h_qt_layout.addWidget(main_scroll_area._qt_widget)
-        # left
-        self._left_contract_group = prx_widgets.PrxLeftExpandedGroup()
-        main_scroll_area.set_widget_add(self._left_contract_group._qt_widget)
-        self._left_contract_group.set_width(320)
-        self._left_contract_group.set_expanded(True)
         #
-        v_s_0 = prx_widgets.PrxVSplitter()
-        self._left_contract_group.set_widget_add(v_s_0)
+        self._main_h_s = prx_widgets.PrxHSplitter()
+        main_scroll_area.add_widget(self._main_h_s)
+        #
+        filter_v_s = prx_widgets.PrxVSplitter()
+        self._main_h_s.add_widget(filter_v_s)
         #
         self._type_prx_view = prx_widgets.PrxTreeView()
-        v_s_0.set_widget_add(self._type_prx_view)
+        filter_v_s.add_widget(self._type_prx_view)
         self._type_prx_view.set_filter_entry_tip('fiter by type ...')
         self._type_prx_view.get_top_tool_bar().set_expanded(True)
         self._type_prx_view.set_selection_use_single()
@@ -944,7 +1112,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         )
         #
         self._tag_prx_view = prx_widgets.PrxTreeView()
-        v_s_0.set_widget_add(self._tag_prx_view)
+        filter_v_s.add_widget(self._tag_prx_view)
         self._tag_prx_view.set_filter_entry_tip('filter by tag ...')
         self._tag_prx_view.set_selection_disable()
         self._tag_prx_view.set_header_view_create(
@@ -955,8 +1123,10 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             self.__execute_gui_refresh_for_resources_by_property_check_
         )
         #
+        filter_v_s.set_stretches([2, 1])
+        #
         self._resource_prx_view = prx_widgets.PrxListView()
-        main_scroll_area.set_widget_add(self._resource_prx_view._qt_widget)
+        self._main_h_s.add_widget(self._resource_prx_view._qt_widget)
         # self._resource_prx_view.set_draw_enable(True)
         self._resource_prx_view.get_check_tool_box().set_visible(True)
         self._resource_prx_view.get_scale_switch_tool_box().set_visible(True)
@@ -972,30 +1142,30 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._resource_prx_view.set_item_names_draw_range([None, 1])
         self._resource_prx_view.set_item_image_frame_draw_enable(True)
         self._resource_prx_view.connect_item_select_changed_to(
-            self.__execute_gui_refresh_for_textures_
+            self.__execute_gui_refresh_for_storage_directories_
         )
         self._resource_prx_view.connect_refresh_action_to(
             self.__execute_gui_refresh_for_resources_by_type_selection_
         )
-        # texture
-        self._right_contract_group = prx_widgets.PrxRightExpandedGroup()
-        main_scroll_area.set_widget_add(self._right_contract_group._qt_widget)
         #
-        file_v_s = prx_widgets.PrxVSplitter()
-        self._right_contract_group.set_widget_add(file_v_s)
-        self._right_contract_group.set_width(320)
-        self._right_contract_group.connect_expand_changed_to(
-            self.__execute_gui_refresh_for_textures_
-        )
+        storage_v_s = prx_widgets.PrxVSplitter()
+        self._main_h_s.add_widget(storage_v_s)
+        #
+        self._usd_stage_prx_view = prx_widgets.PrxUsdStageView()
+        storage_v_s.add_widget(self._usd_stage_prx_view)
         #
         self._directory_prx_view = prx_widgets.PrxTreeView()
-        file_v_s.set_widget_add(self._directory_prx_view)
+        storage_v_s.add_widget(self._directory_prx_view)
         self._directory_prx_view.set_header_view_create(
             [('directory', 1)]
         )
         #
+        self._directory_prx_view.connect_item_select_changed_to(
+            self.__execute_gui_refresh_for_storage_files_
+        )
+        #
         self._file_prx_view = prx_widgets.PrxListView()
-        file_v_s.set_widget_add(self._file_prx_view)
+        storage_v_s.add_widget(self._file_prx_view)
         self._file_prx_view.set_item_frame_size_basic(*self._item_frame_size)
         self._file_prx_view.set_item_icon_frame_size(*self._item_icon_frame_size)
         self._file_prx_view.set_item_icon_size(*self._item_icon_size)
@@ -1004,25 +1174,22 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._file_prx_view.set_item_names_draw_range([None, 1])
         self._file_prx_view.set_item_image_frame_draw_enable(True)
         #
-        v_s_0.set_stretches([2, 1])
+        storage_v_s.set_stretches([1, 1, 1])
+        self._main_h_s.set_stretches([1, 2, 1])
         #
-        file_v_s.set_stretches([1, 2])
-        #
-        self._dtb_cfg_file_path = bsc_core.CfgFileMtd.get_yaml('database/library/basic')
-        self._dtb_opt = dtb_objects.DtbResourceLibraryOpt(self._dtb_cfg_file_path)
-        #
-        self._gui_guide_opt = _GuiGuideOpt(
-            self, self._session, self._dtb_opt, self._type_guide_bar,
-            self._type_prx_view, self._resource_prx_view
-        )
-        #
-        self._type_prx_view.connect_item_select_changed_to(
-            self._gui_guide_opt.gui_refresh
-        )
-        self._resource_prx_view.connect_item_select_changed_to(
-            self._gui_guide_opt.gui_refresh
-        )
-        self._type_guide_bar.connect_user_entry_changed_to(self.gui_tree_select_cbk)
+        self._type_guide_bar.connect_user_text_choose_accepted_to(self.gui_guide_choose_cbk)
+        self._type_guide_bar.connect_user_text_press_accepted_to(self.gui_guide_press_cbk)
+
+        self._dtb_cfg_file_path = bsc_core.CfgFileMtd.get_yaml('database/library/resource-basic')
+        self._dtb_cfg = bsc_objects.Configure(value=self._dtb_cfg_file_path)
+
+        self._dtb_superclass_paths = self._dtb_cfg.get('category_groups')
+
+        self._dtb_superclass_name_history = utl_core.History.get_latest(self.HISTORY_KEY)
+        if self._dtb_superclass_name_history is not None:
+            self._dtb_superclass_path_cur = self._dtb_superclass_name_history
+        else:
+            self._dtb_superclass_path_cur = self._dtb_superclass_paths[0]
 
         self.refresh_all()
 
@@ -1053,6 +1220,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                     window_unique_id=self.get_window_unique_id(),
                     database=self._dtb_opt.get_database(),
                     database_configure=self._dtb_opt.get_database_configure(),
+                    database_configure_extend=self._dtb_opt.get_database_configure_extend(),
                 )
                 i_kwargs.update(**{k: v for k, v in i_value.items() if v})
                 options.append(
@@ -1075,9 +1243,33 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         super(AbsPnlAbsResourceLibrary, self).__init__(session, *args, **kwargs)
 
     def refresh_all(self):
-        self._dtb_cfg_file_path = bsc_core.CfgFileMtd.get_yaml('database/library/basic')
-        self._dtb_opt = dtb_objects.DtbResourceLibraryOpt(self._dtb_cfg_file_path)
+        if self._dtb_superclass_path_cur in self._dtb_superclass_paths:
+            utl_core.History.append(
+                self.HISTORY_KEY, self._dtb_superclass_path_cur
+            )
 
+        self._dtb_cfg_file_path_extend = bsc_core.CfgFileMtd.get_yaml(
+            'database/library/resource-{}'.format(
+                bsc_core.DccPathDagOpt(self._dtb_superclass_path_cur).get_name()
+            )
+        )
+        #
+        self._dtb_opt = dtb_objects.DtbResourceLibraryOpt(
+            self._dtb_cfg_file_path, self._dtb_cfg_file_path_extend
+        )
+        #
+        self._gui_guide_opt = _GuiGuideOpt(
+            self, self._session, self._dtb_opt, self._type_guide_bar,
+            self._type_prx_view, self._resource_prx_view
+        )
+        #
+        self._type_prx_view.connect_item_select_changed_to(
+            self._gui_guide_opt.gui_refresh
+        )
+        self._resource_prx_view.connect_item_select_changed_to(
+            self._gui_guide_opt.gui_refresh
+        )
+        #
         self._gui_type_opt = _GuiTypeOpt(
             self, self._session, self._dtb_opt, self._type_prx_view
         )
@@ -1095,12 +1287,28 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             self, self._session, self._dtb_opt, self._file_prx_view
         )
 
+        self._gui_usd_stage_view_opt = _GuiUsdStageViewOpt(
+            self, self._session, self._dtb_opt, self._usd_stage_prx_view
+        )
+
         self.gui_refresh_fnc()
 
     def get_gui_resource_opt(self):
         return self._gui_resource_opt
 
-    def gui_tree_select_cbk(self, text):
+    def gui_guide_choose_cbk(self, text):
+        if text is not None:
+            self._type_prx_view.select_item_by_key(
+                text,
+                exclusive=True
+            )
+            #
+            if text in self._dtb_superclass_paths:
+                self._dtb_superclass_path_cur = text
+                #
+                self.refresh_all()
+
+    def gui_guide_press_cbk(self, text):
         if text is not None:
             self._type_prx_view.select_item_by_key(
                 text,
@@ -1128,12 +1336,17 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._gui_resource_opt.restore()
         self._type_guide_bar.set_clear()
         # type
-        self._gui_type_opt.gui_add_root()
-        self._gui_type_opt.gui_add_all_category_groups()
-        self.__gui_add_for_all_types_()
-        # properties
-        self._gui_tag_opt.gui_add_root()
-        self._gui_tag_opt.gui_add_all_groups()
+        is_create, prx_item = self._gui_type_opt.gui_add_root()
+        if is_create is True:
+            prx_item.set_expanded(True, ancestors=True)
+            prx_item.set_selected(True)
+            self._gui_type_opt.gui_add_all_category_groups()
+            self.__gui_add_for_all_types_()
+            # properties
+            if self._qt_thread_enable is True:
+                self._gui_tag_opt.gui_add_all_groups_use_thread()
+            else:
+                self._gui_tag_opt.gui_add_all_groups()
     # build for types
     def __gui_add_for_all_types_(self):
         def post_fnc_():
@@ -1390,29 +1603,50 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                 #
                 self._resource_prx_view.refresh_viewport_showable_auto()
     # build for textures
-    def __execute_gui_refresh_for_textures_(self):
+
+    def __execute_gui_refresh_for_storage_directories_(self):
         self._gui_directory_opt.restore()
         self._gui_file_opt.restore()
         #
-        if self._right_contract_group.get_is_expanded():
-            resource_selected_prx_items = self._resource_prx_view.get_selected_items()
-            if resource_selected_prx_items:
-                dtb_entity = resource_selected_prx_items[-1].get_gui_dcc_obj(self.DCC_NAMESPACE)
-                if dtb_entity is not None:
-                    self.__gui_add_directories_(dtb_entity)
+        if self._main_h_s.get_is_contracted_at(2) is False:
+            dtb_entity = self._gui_resource_opt.get_current_dtb_entity()
+            if dtb_entity is not None:
+                self.__gui_refresh_usd_stage_(dtb_entity)
+                self.__gui_add_directories_(dtb_entity)
 
-    def __gui_add_directories_(self, dtb_resource):
-        dtb_resource_version_port = self._dtb_opt.get_entity(
-            entity_type=self._dtb_opt.EntityTypes.Attribute,
-            filters=[
-                ('node', 'is', dtb_resource.path),
-                ('port', 'is', 'version'),
-            ]
-        )
+    def __gui_refresh_usd_stage_(self, dtb_resource):
         dtb_version = self._dtb_opt.get_entity(
             entity_type=self._dtb_opt.EntityTypes.Version,
             filters=[
-                ('path', 'is', dtb_resource_version_port.value),
+                ('path', 'is', self._dtb_opt.get_property(dtb_resource.path, 'version')),
             ],
         )
-        self._gui_directory_opt.gui_add_all(dtb_version)
+        if self._qt_thread_enable is True:
+            self._gui_usd_stage_view_opt.refresh_textures_use_thread(dtb_resource, dtb_version)
+        else:
+            self._gui_usd_stage_view_opt.refresh_textures(dtb_resource, dtb_version)
+
+    def __gui_add_directories_(self, dtb_resource):
+        dtb_version = self._dtb_opt.get_entity(
+            entity_type=self._dtb_opt.EntityTypes.Version,
+            filters=[
+                ('path', 'is', self._dtb_opt.get_property(dtb_resource.path, 'version')),
+            ],
+        )
+        if self._qt_thread_enable is True:
+            self._gui_directory_opt.gui_add_all_use_thread(dtb_version)
+        else:
+            self._gui_directory_opt.gui_add_all(dtb_version)
+
+    def __execute_gui_refresh_for_storage_files_(self):
+        self._gui_file_opt.restore()
+        if self._main_h_s.get_is_contracted_at(2) is False:
+            dtb_entity = self._gui_directory_opt.get_current_dtb_entity()
+            if dtb_entity is not None:
+                self.__gui_add_files_(dtb_entity)
+
+    def __gui_add_files_(self, dtb_storage):
+        location = self._dtb_opt.get_property(
+            dtb_storage.path, 'location'
+        )
+        print location

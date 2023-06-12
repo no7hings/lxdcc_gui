@@ -13,12 +13,12 @@ class QtTreeWidgetItem(
     utl_gui_qt_abstract.AbsQtItemDagLoading,
     #
     utl_gui_qt_abstract.AbsQtTypeDef,
-    utl_gui_qt_abstract.AbsQtPathDef,
+    utl_gui_qt_abstract.AbsQtPathBaseDef,
     utl_gui_qt_abstract.AbsQtNameBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtIconDef,
+    utl_gui_qt_abstract.AbsQtIconBaseDef,
     utl_gui_qt_abstract.AbsQtShowForItemDef,
-    utl_gui_qt_abstract.AbsQtMenuDef,
+    utl_gui_qt_abstract.AbsQtMenuBaseDef,
     #
     utl_gui_qt_abstract.AbsQtItemFilterDef,
     #
@@ -48,10 +48,10 @@ class QtTreeWidgetItem(
         self._emit_send_enable = False
         #
         self._init_type_def_(self)
-        self._init_path_def_(self)
+        self._init_path_base_def_(self)
         self._init_name_base_def_(self)
-        self._init_icon_def_(self)
-        self._init_menu_def_()
+        self._init_icon_base_def_(self)
+        self._init_menu_base_def_(self)
         #
         self._init_item_filter_extra_def_(self)
         #

@@ -24,8 +24,8 @@ class PrxListView(
     #
     utl_gui_prx_abstract.AbsPrxViewVisibleConnectionDef,
 ):
-    QT_WIDGET_CLASS = _utl_gui_qt_wgt_entry_base.QtEntryFrame
-    QT_VIEW_CLASS = _utl_gui_qt_wgt_view_for_list.QtListWidget
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_entry_base.QtEntryFrame
+    QT_VIEW_CLS = _utl_gui_qt_wgt_view_for_list.QtListWidget
     #
     FILTER_MAXIMUM = 50
     def __init__(self, *args, **kwargs):
@@ -39,13 +39,13 @@ class PrxListView(
         self._prx_top_tool_bar.set_border_radius(1)
         # check
         self._prx_check_tool_box = _utl_gui_prx_wdt_utility.PrxHToolBox()
-        self._prx_top_tool_bar.set_widget_add(self._prx_check_tool_box)
+        self._prx_top_tool_bar.add_widget(self._prx_check_tool_box)
         self._prx_check_tool_box.set_expanded(True)
         self._prx_check_tool_box.set_visible(False)
         #
         self._check_all_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
         self._check_all_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('all_checked'))
-        self._prx_check_tool_box.set_widget_add(self._check_all_button)
+        self._prx_check_tool_box.add_widget(self._check_all_button)
         self._check_all_button.clicked.connect(self.__check_all_items)
         self._check_all_button._set_tool_tip_text_(
             '"LMB click" for checked all items'
@@ -53,18 +53,18 @@ class PrxListView(
         #
         self._uncheck_all_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
         self._uncheck_all_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('all_unchecked'))
-        self._prx_check_tool_box.set_widget_add(self._uncheck_all_button)
+        self._prx_check_tool_box.add_widget(self._uncheck_all_button)
         self._uncheck_all_button.clicked.connect(self.__uncheck_all_items)
         self._uncheck_all_button._set_tool_tip_text_(
             '"LMB click" for unchecked all items'
         )
         # mode switch
         self._prx_mode_switch_tool_box = _utl_gui_prx_wdt_utility.PrxHToolBox()
-        self._prx_top_tool_bar.set_widget_add(self._prx_mode_switch_tool_box)
+        self._prx_top_tool_bar.add_widget(self._prx_mode_switch_tool_box)
         self._prx_mode_switch_tool_box.set_expanded(True)
         #
         self._view_mode_swap_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
-        self._prx_mode_switch_tool_box.set_widget_add(self._view_mode_swap_button)
+        self._prx_mode_switch_tool_box.add_widget(self._view_mode_swap_button)
         self._view_mode_swap_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('grid_mode'))
         self._view_mode_swap_button.clicked.connect(self.__swap_view_mode)
         self._view_mode_swap_button._set_tool_tip_text_(
@@ -72,24 +72,24 @@ class PrxListView(
         )
         # scale switch
         self._prx_scale_switch_tool_box = _utl_gui_prx_wdt_utility.PrxHToolBox()
-        self._prx_top_tool_bar.set_widget_add(self._prx_scale_switch_tool_box)
+        self._prx_top_tool_bar.add_widget(self._prx_scale_switch_tool_box)
         self._prx_scale_switch_tool_box.set_expanded(True)
         self._prx_scale_switch_tool_box.set_visible(False)
         # sort
         self._prx_sort_switch_tool_box = _utl_gui_prx_wdt_utility.PrxHToolBox()
-        self._prx_top_tool_bar.set_widget_add(self._prx_sort_switch_tool_box)
+        self._prx_top_tool_bar.add_widget(self._prx_sort_switch_tool_box)
         self._prx_sort_switch_tool_box.set_expanded(True)
         self._prx_sort_switch_tool_box.set_visible(False)
         # filter
         self._prx_filter_tool_box = _utl_gui_prx_wdt_utility.PrxHToolBox()
-        self._prx_top_tool_bar.set_widget_add(self._prx_filter_tool_box)
+        self._prx_top_tool_bar.add_widget(self._prx_filter_tool_box)
         self._prx_filter_tool_box.set_expanded(True)
         self._prx_filter_tool_box.set_size_mode(1)
         #
         self._prx_filer_bar_0 = _utl_gui_prx_wdt_utility.PrxFilterBar()
-        self._prx_filter_tool_box.set_widget_add(self._prx_filer_bar_0)
+        self._prx_filter_tool_box.add_widget(self._prx_filer_bar_0)
         # add custom menu
-        self._qt_view = self.QT_VIEW_CLASS()
+        self._qt_view = self.QT_VIEW_CLS()
         self._qt_layout_0.addWidget(self._qt_view)
         self._set_prx_view_def_init_(self._qt_view)
         self._qt_view._set_sort_enable_(True)
@@ -113,7 +113,7 @@ class PrxListView(
             self.__keyword_filter_cbk
         )
         self._qt_view._set_view_keyword_filter_bar_(self._prx_filter_bar._qt_widget)
-        self._prx_filter_bar._qt_widget._set_popup_completion_gain_fnc_(self.__keyword_filter_completion_gain_fnc)
+        self._prx_filter_bar._qt_widget._set_completion_extra_gain_fnc_(self.__keyword_filter_completion_gain_fnc)
         self._prx_filter_bar._qt_widget.user_choose_changed.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_current_)
         self._prx_filter_bar._qt_widget.occurrence_previous_press_clicked.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_previous_)
         self._prx_filter_bar._qt_widget.occurrence_next_press_clicked.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_next_)
@@ -172,7 +172,7 @@ class PrxListView(
             ('small', .5), ('medium', 0.75), ('large', 1.0), ('super', 1.25)
         ]:
             i_tool = _utl_gui_prx_wdt_utility.PrxEnableItem()
-            self._prx_scale_switch_tool_box.set_widget_add(i_tool)
+            self._prx_scale_switch_tool_box.add_widget(i_tool)
             i_tool._qt_widget._set_size_(24, 24)
             i_tool._qt_widget._set_icon_frame_draw_size_(24, 24)
             i_tool._qt_widget._set_icon_file_draw_size_(20, 20)
@@ -196,7 +196,7 @@ class PrxListView(
             ('number', 0), ('name', 1)
         ]:
             i_tool = _utl_gui_prx_wdt_utility.PrxEnableItem()
-            self._prx_sort_switch_tool_box.set_widget_add(i_tool)
+            self._prx_sort_switch_tool_box.add_widget(i_tool)
             i_tool._qt_widget._set_size_(24, 24)
             i_tool._qt_widget._set_icon_frame_draw_size_(24, 24)
             i_tool._qt_widget._set_icon_file_draw_size_(20, 20)
@@ -331,7 +331,7 @@ class PrxListView(
     def get_checked_items(self):
         return [i.gui_proxy for i in self._qt_view._get_checked_item_widgets_()]
 
-    def set_restore(self):
+    def restore_all(self):
         self.set_clear()
 
     def set_draw_enable(self, boolean):

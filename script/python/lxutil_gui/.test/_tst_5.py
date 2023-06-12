@@ -12,7 +12,7 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
     def _test_(self):
         wdt = _utl_gui_prx_wgt_view.PrxListView()
         wdt.set_clear()
-        self.set_widget_add(wdt)
+        self.add_widget(wdt)
         for i in range(50):
             item_prx = wdt.set_item_add(name=str(i))
             item_prx.set_image('/data/f/vedio_test/laohu_da.rig.layout_rigging.v002.thumbnail.jpg')

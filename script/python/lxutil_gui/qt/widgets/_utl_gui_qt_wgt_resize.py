@@ -74,13 +74,13 @@ class QtHResizeHandle(
                 )
             elif event.type() == QtCore.QEvent.Leave:
                 self._set_action_hovered_(False)
-                self._clear_action_flag_()
+                self._clear_all_action_flags_()
             elif event.type() == QtCore.QEvent.Resize:
                 self._refresh_widget_draw_geometry_()
                 self._refresh_widget_draw_()
             elif event.type() == QtCore.QEvent.MouseButtonPress:
                 self._set_action_flag_(
-                    [self.ActionFlag.SplitHPess, self.ActionFlag.SplitVPess][self._resize_orientation]
+                    [self.ActionFlag.SplitHPress, self.ActionFlag.SplitVPress][self._resize_orientation]
                 )
                 self._execute_action_resize_move_start_(event)
                 self._set_pressed_(True)
@@ -92,7 +92,7 @@ class QtHResizeHandle(
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 self._execute_action_resize_move_stop_(event)
                 self._set_pressed_(False)
-                self._clear_action_flag_()
+                self._clear_all_action_flags_()
         return False
 
     def paintEvent(self, event):

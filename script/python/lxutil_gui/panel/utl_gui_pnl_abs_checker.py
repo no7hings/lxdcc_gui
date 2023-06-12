@@ -22,8 +22,8 @@ class AbsSceneCheckerToolPanel(
     #
     DCC_SELECTION_CLS = None
     #
-    STEP_LOADER_CLASS = None
-    METHOD_CREATOR_CLASS = None
+    STEP_LOADER_CLS = None
+    METHOD_CREATOR_CLS = None
     #
     TEST_ENABLE = False
     TEST_KEYS = []
@@ -48,9 +48,9 @@ class AbsSceneCheckerToolPanel(
         self._obj_names = []
         self._obj_name_dict = {}
         if properties:
-            step_key = self.STEP_LOADER_CLASS.get_key(properties)
-            self._step_loader = self.STEP_LOADER_CLASS(step_key)
-            self._method_creator = self.METHOD_CREATOR_CLASS(self._get_checker_keys_())
+            step_key = self.STEP_LOADER_CLS.get_key(properties)
+            self._step_loader = self.STEP_LOADER_CLS(step_key)
+            self._method_creator = self.METHOD_CREATOR_CLS(self._get_checker_keys_())
             self._set_method_obj_guis_build_()
 
     def set_panel_build(self):
@@ -80,9 +80,9 @@ class AbsSceneCheckerToolPanel(
         expand_box_0 = prx_widgets.PrxExpandedGroup()
         expand_box_0.set_name('Viewer(s)')
         expand_box_0.set_expanded(True)
-        self.set_widget_add(expand_box_0)
+        self.add_widget(expand_box_0)
         self._tree_viewer = prx_widgets.PrxTreeView()
-        expand_box_0.set_widget_add(self._tree_viewer)
+        expand_box_0.add_widget(self._tree_viewer)
         self._tree_viewer.set_header_view_create(
             [('Name(s)', 6), ('Type(s)', 2), ('Ignore-enable(s)', 2), ('Description(s)', 4)],
             self.get_definition_window_size()[0] - 16
@@ -94,7 +94,7 @@ class AbsSceneCheckerToolPanel(
                     'Main', None,
                     [
                         ('Log', None, self.set_log_unit_show),
-                        ('Help', None, self.set_help_unit_show)
+                        ('Help', None, self.show_help)
                     ]
                 ],
                 ('Check All', None, self.set_check_run),
@@ -114,15 +114,15 @@ class AbsSceneCheckerToolPanel(
         expand_box_0 = prx_widgets.PrxExpandedGroup()
         expand_box_0.set_name('Configure(s)')
         # expand_box_0.set_expanded(True)
-        self.set_widget_add(expand_box_0)
+        self.add_widget(expand_box_0)
         #
         qt_widget_0 = qt_widgets.QtWidget()
-        expand_box_0.set_widget_add(qt_widget_0)
+        expand_box_0.add_widget(qt_widget_0)
         qt_layout_0 = qt_widgets.QtVBoxLayout(qt_widget_0)
         self._configure_gui = prx_widgets.PrxNode()
         qt_layout_0.addWidget(self._configure_gui.widget)
         #
-        _port = self._configure_gui.set_port_add(
+        _port = self._configure_gui.add_port(
             prx_widgets.PrxFileOpenPort('file_path', 'File-path')
         )
 
@@ -298,7 +298,7 @@ class AbsSceneCheckerToolPanel(
             error_description = inspection.get_error_description_at(check_index)
             ignore_enable = inspection.loader.get_ignore_enable_at(check_index)
             gui_description = inspection.loader.get_gui_description_at(check_index)
-            sub_obj_gui = tree_item.set_child_add(
+            sub_obj_gui = tree_item.add_child(
                 name=(sub_obj.name, sub_obj.type, ignore_enable, error_description),
                 item_class=prx_widgets.PrxDccObjTreeItem,
                 tool_tip=(u'type:"{}"\npath:"{}"'.format(sub_obj.type, sub_obj.path), None, None, gui_description),
@@ -319,7 +319,7 @@ class AbsSceneCheckerToolPanel(
             error_description = inspection.get_error_description_at(check_index)
             ignore_enable = inspection.loader.get_ignore_enable_at(check_index)
             gui_description = inspection.loader.get_gui_description_at(check_index)
-            sub_obj_gui = tree_item.set_child_add(
+            sub_obj_gui = tree_item.add_child(
                 name=(sub_obj.name, sub_obj.type, ignore_enable, error_description),
                 item_class=prx_widgets.PrxStgObjTreeItem,
                 icon=sub_obj.icon,
@@ -341,7 +341,7 @@ class AbsSceneCheckerToolPanel(
             error_description = inspection.get_error_description_at(check_index)
             ignore_enable = inspection.loader.get_ignore_enable_at(check_index)
             gui_description = inspection.loader.get_gui_description_at(check_index)
-            sub_obj_gui = tree_item.set_child_add(
+            sub_obj_gui = tree_item.add_child(
                 name=(sub_obj.name, sub_obj.type, ignore_enable, error_description),
                 item_class=prx_widgets.PrxDccObjTreeItem,
                 tool_tip=(u'type:"{}"\npath:"{}"'.format(sub_obj.type, sub_obj.path), None, None, gui_description),
@@ -434,7 +434,7 @@ class AbsSceneCheckerToolPanel(
             #
             obj_name = dcc_obj.PATHSEP.join(obj_path.split(dcc_obj.PATHSEP)[-2:])
         #
-        obj_gui = inspection_gui.set_child_add(
+        obj_gui = inspection_gui.add_child(
             name=(obj_name, obj_type_name, ignore_enable, error_description),
             item_class=prx_widgets.PrxDccObjTreeItem,
             tool_tip=('type:"{}"\npath:"{}"'.format(obj_type_name, obj_path), None, None, gui_description),

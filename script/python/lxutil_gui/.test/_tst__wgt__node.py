@@ -15,26 +15,26 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
     def _test_(self):
         f = utl_prx_widgets.PrxFilterBar()
         f.set_history_key('filter.test')
-        self.set_widget_add(f)
+        self.add_widget(f)
         n = utl_prx_widgets.PrxNode_('root')
-        self.set_widget_add(n)
-        p = n.set_port_add(
+        self.add_widget(n)
+        p = n.add_port(
             utl_prx_widgets.PrxPortAsEnumerate(
                 'test_enumerate'
             )
         )
         p.set(['a', 'b'])
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxDirectorySavePort(
                 'test_directory_save'
             )
         )
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxPortForFloatTuple(
                 'test_float_array'
             )
         )
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxFilesOpenPort(
                 'test_files_open'
             )
@@ -44,25 +44,25 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
             ['/home/dongchangbao/Desktop/app-kit.desktop']
         )
         p.set_use_enable(True)
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxDirectoriesOpenPort(
                 'test_directories_open'
             )
         )
 
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxMediasOpenPort(
                 'test_medias_open'
             )
         )
 
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxPortAsScript(
                 'test_script'
             )
         )
 
-        p = n.set_port_add(
+        p = n.add_port(
             utl_prx_widgets.PrxRgbaPort(
                 'test_rgb'
             )

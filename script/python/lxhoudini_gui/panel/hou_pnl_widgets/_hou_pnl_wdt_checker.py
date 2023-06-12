@@ -12,8 +12,8 @@ class SceneCheckerToolPanel(utl_gui_pnl_abs_checker.AbsSceneCheckerToolPanel):
     HELP_FILE_PATH = '{}/maya/validation_tool.md'.format(utl_configure.Root.DATA)
     DCC_SELECTION_CLS = hou_dcc_objects.Selection
     #
-    STEP_LOADER_CLASS = hou_fnc_core.StpLoader
-    METHOD_CREATOR_CLASS = hou_fnc_core.CheckerCreator
+    STEP_LOADER_CLS = hou_fnc_core.StpLoader
+    METHOD_CREATOR_CLS = hou_fnc_core.CheckerCreator
     def __init__(self, *args, **kwargs):
         import lxresolver.commands as rsv_commands
         resolver = rsv_commands.get_resolver()

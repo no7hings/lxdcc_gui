@@ -75,14 +75,14 @@ class AbsScenePackagerPanel(
         expand_box_0 = prx_widgets.PrxExpandedGroup()
         expand_box_0.set_name('Viewer(s)')
         expand_box_0.set_expanded(True)
-        self.set_widget_add(expand_box_0)
+        self.add_widget(expand_box_0)
         #
         h_splitter_0 = prx_widgets.PrxHSplitter()
-        expand_box_0.set_widget_add(h_splitter_0)
+        expand_box_0.add_widget(h_splitter_0)
         self._filter_tree_viewer_0 = prx_widgets.PrxTreeView()
-        h_splitter_0.set_widget_add(self._filter_tree_viewer_0)
+        h_splitter_0.add_widget(self._filter_tree_viewer_0)
         self._obj_tree_viewer_0 = prx_widgets.PrxTreeView()
-        h_splitter_0.set_widget_add(self._obj_tree_viewer_0)
+        h_splitter_0.add_widget(self._obj_tree_viewer_0)
         h_splitter_0.set_stretches([1, 3])
         #
         self._set_filter_tree_view_build_()
@@ -143,24 +143,24 @@ class AbsScenePackagerPanel(
         # operator
         expand_box_0 = prx_widgets.PrxExpandedGroup()
         expand_box_0.set_name('Operator')
-        self.set_widget_add(expand_box_0)
+        self.add_widget(expand_box_0)
         qt_widget_0 = qt_widgets.QtWidget()
-        expand_box_0.set_widget_add(qt_widget_0)
+        expand_box_0.add_widget(qt_widget_0)
         qt_layout_0 = qt_widgets.QtVBoxLayout(qt_widget_0)
         attribute_box_0 = prx_widgets.PrxNode()
         qt_layout_0.addWidget(attribute_box_0.widget)
         #
-        self._search_string_attribute = attribute_box_0.set_port_add(
+        self._search_string_attribute = attribute_box_0.add_port(
             prx_widgets.PrxTextPort(
                 'search_string', 'Search String'
             )
         )
-        self._replace_string_attribute = attribute_box_0.set_port_add(
+        self._replace_string_attribute = attribute_box_0.add_port(
             prx_widgets.PrxTextPort(
                 'replace_string', 'Replace String'
             )
         )
-        self._replace_start_attribute = attribute_box_0.set_port_add(
+        self._replace_start_attribute = attribute_box_0.add_port(
             prx_widgets.PrxPortAsEnumerate(
                 'replace_with', 'Replace With'
             )
@@ -179,29 +179,29 @@ class AbsScenePackagerPanel(
         expand_box_0 = prx_widgets.PrxExpandedGroup()
         expand_box_0.set_name('Package')
         expand_box_0.set_size_mode(1)
-        self.set_widget_add(expand_box_0)
+        self.add_widget(expand_box_0)
         qt_widget_0 = qt_widgets.QtWidget()
-        expand_box_0.set_widget_add(qt_widget_0)
+        expand_box_0.add_widget(qt_widget_0)
         qt_layout_0 = qt_widgets.QtVBoxLayout(qt_widget_0)
         self._package_node_gui = prx_widgets.PrxNode()
         qt_layout_0.addWidget(self._package_node_gui.widget)
         #
-        _port = self._package_node_gui.set_port_add(
+        _port = self._package_node_gui.add_port(
             prx_widgets.PrxTextPort('target_directory', 'Target-directory')
         )
         _port.set('/data/package_temporary')
         #
-        _port = self._package_node_gui.set_port_add(
+        _port = self._package_node_gui.add_port(
             prx_widgets.PrxPortAsBoolean('ignore_structure', 'Ignore-structure')
         )
         _port.set(False)
         #
-        _port = self._package_node_gui.set_port_add(
+        _port = self._package_node_gui.add_port(
             prx_widgets.PrxPortAsBoolean('repath', 'Repath')
         )
         _port.set_enable(False)
         #
-        _port = self._package_node_gui.set_port_add(
+        _port = self._package_node_gui.add_port(
             prx_widgets.PrxPortAsButton('package_file', 'Package-file(s)')
         )
         _port.set(self.set_package)
@@ -210,21 +210,21 @@ class AbsScenePackagerPanel(
         expand_box_0 = prx_widgets.PrxExpandedGroup()
         expand_box_0.set_name('Search')
         expand_box_0.set_size_mode(1)
-        self.set_widget_add(expand_box_0)
+        self.add_widget(expand_box_0)
         qt_widget_0 = qt_widgets.QtWidget()
-        expand_box_0.set_widget_add(qt_widget_0)
+        expand_box_0.add_widget(qt_widget_0)
         qt_layout_0 = qt_widgets.QtVBoxLayout(qt_widget_0)
         self._search_node_gui = prx_widgets.PrxNode()
         qt_layout_0.addWidget(self._search_node_gui.widget)
         #
-        _port = self._search_node_gui.set_port_add(
+        _port = self._search_node_gui.add_port(
             prx_widgets.PrxTextPort('target_directory', 'Target-directory')
         )
-        _port = self._search_node_gui.set_port_add(
+        _port = self._search_node_gui.add_port(
             prx_widgets.PrxPortAsBoolean('ignore_source_resolved', 'Ignore-source-resolved')
         )
         _port.set(True)
-        _port = self._search_node_gui.set_port_add(
+        _port = self._search_node_gui.add_port(
             prx_widgets.PrxPortAsButton('search_file', 'Search-file(s)')
         )
         _port.set(self.set_search)
@@ -233,17 +233,17 @@ class AbsScenePackagerPanel(
         expand_box_0 = prx_widgets.PrxExpandedGroup()
         expand_box_0.set_name('Copy & Repath')
         expand_box_0.set_size_mode(1)
-        self.set_widget_add(expand_box_0)
+        self.add_widget(expand_box_0)
         qt_widget_0 = qt_widgets.QtWidget()
-        expand_box_0.set_widget_add(qt_widget_0)
+        expand_box_0.add_widget(qt_widget_0)
         qt_layout_0 = qt_widgets.QtVBoxLayout(qt_widget_0)
         self._copy_and_repath_node_gui = prx_widgets.PrxNode()
         qt_layout_0.addWidget(self._copy_and_repath_node_gui.widget)
         #
-        _port = self._copy_and_repath_node_gui.set_port_add(
+        _port = self._copy_and_repath_node_gui.add_port(
             prx_widgets.PrxTextPort('target_directory', 'Target-directory')
         )
-        _port = self._copy_and_repath_node_gui.set_port_add(
+        _port = self._copy_and_repath_node_gui.add_port(
             prx_widgets.PrxPortAsButton('copy_and_repath_file', 'Copy & repath-file(s)')
         )
         _port.set(self.set_copy_and_repath)
@@ -317,7 +317,7 @@ class AbsScenePackagerPanel(
         self._file_references = None
 
     def _set_file_guis_refresh_(self):
-        self._prx_stg_obj_tree_view_add_opt.set_restore()
+        self._prx_stg_obj_tree_view_add_opt.restore_all()
         if self._file_references is not None:
             dcc_objs = self._file_references.get_objs()
             if dcc_objs:
