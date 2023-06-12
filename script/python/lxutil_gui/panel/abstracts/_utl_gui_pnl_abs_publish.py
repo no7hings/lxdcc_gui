@@ -790,7 +790,7 @@ class GenPublishOpt(object):
         )
         self._review_file = None
 
-    def create_version_directory_fnc(self):
+    def create_or_unlock_version_directory_fnc(self):
         directory_path = self._options.get('version_directory')
         if bsc_core.StgDirectoryOpt(directory_path).get_is_exists() is False:
             bsc_core.StgPathPermissionMtd.create_directory(
@@ -805,7 +805,7 @@ class GenPublishOpt(object):
             )
 
     def pre_fnc(self):
-        self.create_version_directory_fnc()
+        self.create_or_unlock_version_directory_fnc()
 
     def export_review_fnc(self):
         file_paths = self._options['review']
