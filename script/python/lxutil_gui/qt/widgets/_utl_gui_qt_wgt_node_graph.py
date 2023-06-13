@@ -525,13 +525,13 @@ class _QtNGConnection(
     def _refresh_widget_(self):
         self._set_wgt_update_shape_()
         self._set_ng_sbj_update_draw_()
-        self._set_wgt_update_draw_geometry_(self.rect())
+        self._refresh_widget_draw_geometry_(self.rect())
         self._refresh_widget_draw_()
 
     def _refresh_widget_draw_(self):
         self.update()
 
-    def _set_wgt_update_draw_geometry_(self, rect):
+    def _refresh_widget_draw_geometry_(self, rect):
         def add_cubic_fnc_(p_0, p_1, index):
             c1, c2 = (
                 QtCore.QPointF((p_0.x()+p_1.x())/index, p_0.y()),
@@ -676,7 +676,7 @@ class _QtNGConnection(
         painter.drawPath(
             self._ng_draw_connection_path_curve
         )
-        painter._set_path_draw_by_coords_(
+        painter._draw_path_by_coords_(
             self._ng_draw_connection_coord_arrow
         )
 
@@ -734,7 +734,7 @@ class AbsQtNGNodeDef(AbsQtNGSbjDef):
     def _refresh_widget_draw_(self):
         raise NotImplementedError()
 
-    def _set_wgt_update_draw_geometry_(self, rect):
+    def _refresh_widget_draw_geometry_(self, rect):
         raise NotImplementedError()
 
     def _set_ng_node_connection_update_(self):
@@ -910,7 +910,7 @@ class _QtNGNode(
         self._set_wgt_update_shape_()
         self._set_ng_sbj_update_draw_()
         #
-        self._set_wgt_update_draw_geometry_(self.rect())
+        self._refresh_widget_draw_geometry_(self.rect())
         #
         self._set_ng_node_connection_update_()
         #
@@ -919,7 +919,7 @@ class _QtNGNode(
     def _refresh_widget_draw_(self):
         self.update()
 
-    def _set_wgt_update_draw_geometry_(self, rect):
+    def _refresh_widget_draw_geometry_(self, rect):
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
 
@@ -1269,7 +1269,7 @@ class _QtNGGraph(
         self._set_ng_draw_graph_update_(
             self._ng_graph_translate_x, self._ng_graph_translate_y
         )
-        self._set_wgt_update_draw_geometry_(
+        self._refresh_widget_draw_geometry_(
             self.rect()
         )
         #
@@ -1278,7 +1278,7 @@ class _QtNGGraph(
 
         self._refresh_widget_draw_()
 
-    def _set_wgt_update_draw_geometry_(self, rect):
+    def _refresh_widget_draw_geometry_(self, rect):
         self._ng_graph_node_connection_layer.setGeometry(
             rect
         )
@@ -2035,7 +2035,7 @@ class _QtNGImage(_QtNGNode):
                 offset=offset
             )
 
-    def _set_wgt_update_draw_geometry_(self, rect):
+    def _refresh_widget_draw_geometry_(self, rect):
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
 

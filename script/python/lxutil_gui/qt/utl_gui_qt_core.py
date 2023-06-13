@@ -2589,7 +2589,6 @@ class QtPainter(QtGui.QPainter):
             )
 
     def _draw_tab_buttons_by_rects_(self, frame_rect, rects, name_texts, icon_name_texts, hovered_index, pressed_index, current_index):
-        self._set_antialiasing_()
         for i_index, i_name_text in enumerate(name_texts):
             i_rect = rects[i_index]
             i_icon_name_text = icon_name_texts[i_index]
@@ -2600,7 +2599,7 @@ class QtPainter(QtGui.QPainter):
                 self._draw_tab_button_at_(
                     frame_rect, i_rect, i_name_text, i_icon_name_text, i_is_hovered, i_is_pressed, i_is_current
                 )
-        #
+        # draw current
         for i_index, i_name_text in enumerate(name_texts):
             i_rect = rects[i_index]
             i_icon_name_text = icon_name_texts[i_index]
@@ -2613,7 +2612,6 @@ class QtPainter(QtGui.QPainter):
                 )
 
     def _draw_tab_button_at_(self, frame_rect, rect, text, icon_name_text, is_hovered, is_pressed, is_current):
-        #
         f_x, f_y = frame_rect.x(), frame_rect.y()
         f_w, f_h = frame_rect.width(), frame_rect.height()
         a = 255
@@ -2666,7 +2664,8 @@ class QtPainter(QtGui.QPainter):
         self._set_border_color_(QtBorderColors.Dim)
         self._set_border_width_(border_width)
         self._set_background_color_(l_color_0)
-        self._set_path_draw_by_coords_(frame_coords)
+        #
+        self._draw_path_by_coords_(frame_coords)
         #
         if icon_name_text is not None:
             coords = [
@@ -2681,7 +2680,7 @@ class QtPainter(QtGui.QPainter):
                 self._set_background_color_(l_color_1)
             else:
                 self._set_background_color_(i_r, i_g, i_b)
-            self._set_path_draw_by_coords_(coords)
+            self._draw_path_by_coords_(coords)
         #
         if text is not None:
             txt_rect = QtCore.QRect(
@@ -2709,7 +2708,7 @@ class QtPainter(QtGui.QPainter):
         ]
         i_r, i_g, i_b = bsc_core.RawTextOpt(text).to_rgb_0(s_p=50, v_p=50)
         self._set_background_color_(i_r, i_g, i_b)
-        self._set_path_draw_by_coords_(coords)
+        self._draw_path_by_coords_(coords)
         #
         txt_rect = QtCore.QRect(
             frm_x+bsc_w-frm_w-frm_w*.25, frm_y, frm_w, frm_h
@@ -2736,7 +2735,7 @@ class QtPainter(QtGui.QPainter):
         ]
         self._set_border_color_(QtBorderColors.Transparent)
         self._set_background_color_(QtBackgroundColors.Dark)
-        self._set_path_draw_by_coords_(coords)
+        self._draw_path_by_coords_(coords)
 
         txt_r = 12
         txt_w, txt_h = txt_r-offset, txt_r-offset
@@ -3275,11 +3274,12 @@ class QtPainter(QtGui.QPainter):
         #
         self._set_border_width_(border_width)
         self.drawEllipse(ellipse_rect)
-        self._set_path_draw_by_coords_(points)
+        self._draw_path_by_coords_(points)
 
-    def _set_path_draw_by_coords_(self, points):
+    def _draw_path_by_coords_(self, points):
         path = QtPainterPath()
         path._set_points_add_(points)
+        self._set_antialiasing_(False)
         self.drawPath(path)
         return path
 
@@ -3462,7 +3462,7 @@ class QtPainter(QtGui.QPainter):
             ((x3, y3-l_), (x3, y3), (x3-l_, y3)),
             ((x4+l_, y4), (x4, y4), (x4, y4-l_))
         )
-        [self._set_path_draw_by_coords_(i) for i in point_coords]
+        [self._draw_path_by_coords_(i) for i in point_coords]
 
     def _draw_line_by_rect_(self, rect, border_color, background_color, border_width=1):
         self._set_border_color_(border_color)
@@ -4399,7 +4399,7 @@ class QtNGPainter(QtPainter):
             utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=90)
         ]
         #
-        self._set_path_draw_by_coords_(coords)
+        self._draw_path_by_coords_(coords)
 
     def _set_ng_node_resize_button_draw_(self, rect, border_width, mode, is_current, is_hovered):
         if is_current is True:

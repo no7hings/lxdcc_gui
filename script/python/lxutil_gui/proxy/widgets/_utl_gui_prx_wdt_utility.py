@@ -1501,9 +1501,9 @@ class PrxSessionWindow(PrxToolWindow):
     def _main_fnc_(self, *args, **kwargs):
         self._session = args[0]
         self._session.reload_configure()
-        if self._session.get_td_enable() is True:
+        if self._session.get_is_td_enable() is True:
             self.set_window_title('[TD] {} for {}'.format(self._session.gui_configure.get('name'), str(self._session.application).capitalize()))
-        elif self._session.get_rez_beta() is True:
+        elif self._session.get_is_beta_enable() is True:
             self.set_window_title('[BETA] {} for {}'.format(self._session.gui_configure.get('name'), str(self._session.application).capitalize()))
         else:
             self.set_window_title('{} for {}'.format(self._session.gui_configure.get('name'), str(self._session.application).capitalize()))

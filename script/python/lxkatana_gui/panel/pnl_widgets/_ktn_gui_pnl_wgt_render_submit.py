@@ -225,8 +225,8 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
                     default_render_frames=default_render_frames,
                     auto_convert_mov=True,
                     #
-                    td_enable=bsc_core.EnvExtraMtd.get_td_enable(),
-                    rez_beta=bsc_core.EnvExtraMtd.get_rez_beta(),
+                    td_enable=bsc_core.EnvExtraMtd.get_is_td_enable(),
+                    rez_beta=bsc_core.EnvExtraMtd.get_is_beta_enable(),
                 )
             )
             #

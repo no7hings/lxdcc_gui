@@ -683,7 +683,7 @@ class QtWaitingChart(
                     utl_gui_core.Ellipse2dMtd.get_coord_at_angle_(center=(i_x, i_y), radius=i_r, angle=-330+i_a),
                     utl_gui_core.Ellipse2dMtd.get_coord_at_angle_(center=(i_x, i_y), radius=i_r, angle=-90+i_a)
                 ]
-                painter._set_path_draw_by_coords_(
+                painter._draw_path_by_coords_(
                     i_coords
                 )
 

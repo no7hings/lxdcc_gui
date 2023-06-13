@@ -342,8 +342,8 @@ class DccPublishOpt(object):
                 #
                 user=user,
                 #
-                td_enable=self._session.get_td_enable(),
-                rez_beta=self._session.get_rez_beta(),
+                td_enable=self._session.get_is_td_enable(),
+                rez_beta=self._session.get_is_beta_enable(),
                 #
                 localhost_enable=self._kwargs['process.deadline.scheme'] == 'localhost'
             )

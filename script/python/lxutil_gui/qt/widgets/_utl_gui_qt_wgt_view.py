@@ -20,6 +20,7 @@ class AbsQtItemsDef(object):
         self._widget = widget
 
         self._items = []
+        self._item_count = 0
         self._item_index_current = 0
         self._item_index_hovered = None
         self._item_index_pressed = None
@@ -53,6 +54,8 @@ class QtTabView(
         self._init_frame_base_def_(self)
         self._init_widget_base_def_(self)
 
+        self._tab_rect = QtCore.QRect()
+
         self._tab_w, self._tab_h = 48, 24
 
         self.setFont(
@@ -63,6 +66,7 @@ class QtTabView(
         widget.setParent(self)
         #
         self._items.append(widget)
+        self._item_count += 1
         self._item_rects.append(QtCore.QRect())
         if 'name' in kwargs:
             self._item_name_texts.append(kwargs['name'])
@@ -82,10 +86,10 @@ class QtTabView(
         self.update()
 
     def _refresh_widget_(self):
-        self._set_wgt_update_draw_geometry_(self.rect())
+        self._refresh_widget_draw_geometry_(self.rect())
         self._refresh_widget_draw_()
 
-    def _set_wgt_update_draw_geometry_(self, rect):
+    def _refresh_widget_draw_geometry_(self, rect):
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
         #
@@ -94,6 +98,9 @@ class QtTabView(
         )
         spacing = 4
         t_w, t_h = self._tab_w, self._tab_h
+        self._tab_rect.setRect(
+            x, y, w, t_h
+        )
         #
         c_x = x
         #
@@ -129,41 +136,6 @@ class QtTabView(
             else:
                 i_item.hide()
 
-    def _set_item_hovered_clear_(self):
-        self._item_index_hovered = None
-        self._refresh_widget_draw_()
-
-    def _set_item_index_pressed_(self, index):
-        if index != self._item_index_pressed:
-            self._item_index_pressed = index
-        #
-        self._refresh_widget_()
-
-    def _set_item_index_current_(self, index):
-        if index != self._item_index_current:
-            self._item_index_current = index
-            self.current_changed.emit()
-        #
-        self._item_index_pressed = None
-        self._refresh_widget_()
-
-    def _set_item_current_changed_connect_to_(self, fnc):
-        self.current_changed.connect(fnc)
-
-    def _execute_action_hover_move_(self, event):
-        point = event.pos()
-        self._item_index_hovered = None
-
-        for i_index, i in enumerate(self._item_rects):
-            if i.contains(point):
-                self._item_index_hovered = i_index
-                break
-
-        self._refresh_widget_draw_()
-
-    def _get_current_name_text_(self):
-        return self._item_name_texts[self._item_index_current]
-
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
@@ -198,13 +170,17 @@ class QtTabView(
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 if event.button() == QtCore.Qt.LeftButton:
                     if self._item_index_hovered is not None:
-                        self._set_item_index_current_(self._item_index_hovered)
+                        self._set_item_index_current_(
+                            self._item_index_hovered
+                        )
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
                 elif event.button() == QtCore.Qt.MidButton:
                     pass
                 else:
                     event.ignore()
+            elif event.type() == QtCore.QEvent.Wheel:
+                self._execute_action_wheel_(event)
         else:
             if event.type() == QtCore.QEvent.Enter:
                 self._set_item_hovered_clear_()
@@ -224,6 +200,55 @@ class QtTabView(
             self._item_index_pressed,
             self._item_index_current,
         )
+
+    def _set_item_hovered_clear_(self):
+        self._item_index_hovered = None
+        self._refresh_widget_draw_()
+
+    def _set_item_index_pressed_(self, index):
+        if index != self._item_index_pressed:
+            self._item_index_pressed = index
+        #
+        self._refresh_widget_()
+
+    def _set_item_index_current_(self, index):
+        if index != self._item_index_current:
+            self._item_index_current = index
+            self.current_changed.emit()
+        #
+        self._item_index_pressed = None
+        self._refresh_widget_()
+
+    def _set_item_current_changed_connect_to_(self, fnc):
+        self.current_changed.connect(fnc)
+
+    def _execute_action_hover_move_(self, event):
+        point = event.pos()
+        self._item_index_hovered = None
+
+        for i_index, i in enumerate(self._item_rects):
+            if i.contains(point):
+                self._item_index_hovered = i_index
+                break
+
+        self._refresh_widget_draw_()
+
+    def _execute_action_wheel_(self, event):
+        p = event.pos()
+        if self._tab_rect.contains(p):
+            delta = event.angleDelta().y()
+            if self._item_count > 1:
+                maximum, minimum = self._item_count-1, 0
+                index_cur = self._item_index_current
+                if delta > 0:
+                    index = bsc_core.RawIndexMtd.to_previous(maximum, minimum, index_cur)
+                else:
+                    index = bsc_core.RawIndexMtd.to_next(maximum, minimum, index_cur)
+                #
+                self._set_item_index_current_(index)
+
+    def _get_current_name_text_(self):
+        return self._item_name_texts[self._item_index_current]
 
 
 class _QtMenuBar(
