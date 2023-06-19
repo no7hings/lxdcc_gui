@@ -460,7 +460,7 @@ class QtPopupForChoose(
                     # tag filter
                     if self._tag_filter_is_enable is True:
                         tags = list(set([i for k, v in tag_filter_dict.items() for i in v]))
-                        tags = bsc_core.RawTextsMtd.set_sort_by_initial(tags)
+                        tags = bsc_core.RawTextsMtd.sort_by_initial(tags)
                         if self.TAG_ALL in tags:
                             tags.remove(self.TAG_ALL)
                             tags.insert(0, self.TAG_ALL)

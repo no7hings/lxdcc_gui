@@ -605,7 +605,8 @@ class QtTreeWidgetItem(
         self.takeChildren()
 
     def _set_selected_(self, boolean):
-        self.treeWidget().setItemSelected(self, boolean)
+        # self.treeWidget().setItemSelected(self, boolean)
+        self.setSelected(boolean)
 
     def _set_current_(self):
         self.treeWidget().setCurrentItem(self)

@@ -122,7 +122,7 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
             #
             latest_render_output_image_file_path = render_layer_scp.get_latest_render_output_image()
             if latest_render_output_image_file_path is not None:
-                image_file_paths = bsc_core.StgFileMultiplyMtd.get_exists_tiles(
+                image_file_paths = bsc_core.StgFileMultiplyMtd.get_exists_unit_paths(
                     latest_render_output_image_file_path
                 )
                 if image_file_paths:

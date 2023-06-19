@@ -19,9 +19,8 @@ class PrxHSplitter(utl_gui_prx_abstract.AbsPrxWidget):
         #
         self.widget._add_widget_(qt_widget)
 
-    def set_stretches(self, stretches):
-        for seq, i in enumerate(stretches):
-            self.widget._set_stretch_factor_at_(seq, i)
+    def set_stretches(self, values):
+        self._qt_widget._set_stretch_factors_(values)
 
     def set_fixed_size_at(self, index, value):
         self._qt_widget._set_fixed_size_at_(index, value)
@@ -46,6 +45,9 @@ class PrxHSplitter(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_window(self, widget):
         self._qt_widget._set_window_(widget)
+
+    def set_width(self, value):
+        self._qt_widget.setFixedWidth(value)
 
 
 class PrxVSplitter(PrxHSplitter):

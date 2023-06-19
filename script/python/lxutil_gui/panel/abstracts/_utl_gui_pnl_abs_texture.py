@@ -627,7 +627,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             prx_tree_view_tgt=self._tree_view,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
         )
-        self.connect_refresh_action_to(self._set_gui_refresh_)
+        self.connect_refresh_action_to(self.refresh_gui_fnc)
         #
         self._options_prx_node = prx_widgets.PrxNode_('options')
         s_a_0.add_widget(self._options_prx_node)
@@ -663,14 +663,14 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         self._refresh_button = prx_widgets.PrxPressItem()
         self.set_button_add(self._refresh_button)
         self._refresh_button.set_name('refresh')
-        self._refresh_button.connect_press_clicked_to(self._set_gui_refresh_)
+        self._refresh_button.connect_press_clicked_to(self.refresh_gui_fnc)
 
         self.post_setup_fnc()
 
         self.set_refresh_all()
 
     def set_refresh_all(self):
-        self._set_gui_refresh_()
+        self.refresh_gui_fnc()
 
     def _set_dcc_texture_references_update_(self):
         self._dcc_texture_references = None
@@ -678,7 +678,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
     def _set_dcc_objs_update_(self):
         self._dcc_objs = []
 
-    def _set_gui_refresh_(self):
+    def refresh_gui_fnc(self):
         self._set_dcc_texture_references_update_()
         self._set_dcc_objs_update_()
         method_args = [
@@ -827,7 +827,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                     if i_directory_args_dpt:
                         i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args_dpt)
                         if i_texture_src is not None:
-                            i_texture_src_units = i_texture_src.get_exists_files_()
+                            i_texture_src_units = i_texture_src.get_exists_units()
                             i_output_directory_path = i_texture_tgt.directory.path
                             for j_texture_src_unit in i_texture_src_units:
                                 if force_enable is True:
@@ -954,7 +954,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         button = self._options_prx_node.get_port('target.create_target')
         method_args = [
             (self._set_target_create_data_update_, (ext_tgt, force_enable)),
-            (self._set_target_create_by_data_, (button, self._set_gui_refresh_))
+            (self._set_target_create_by_data_, (button, self.refresh_gui_fnc))
         ]
         with utl_core.GuiProgressesRunner.create(maximum=len(method_args), label='create texture by data') as g_p:
             for i_fnc, i_args in method_args:
@@ -993,7 +993,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                                             j_dcc_obj, i_port_path, i_texture_src.path
                                         )
                 #
-                self._set_gui_refresh_()
+                self.refresh_gui_fnc()
                 return True
         else:
             contents.append(
@@ -1041,7 +1041,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                                         j_dcc_obj, i_port_path, i_texture_tgt.path
                                     )
                 #
-                self._set_gui_refresh_()
+                self.refresh_gui_fnc()
                 return True
         else:
             contents.append(
@@ -1094,7 +1094,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                                     j_dcc_obj, i_port_path, i_result
                                 )
 
-            self._set_gui_refresh_()
+            self.refresh_gui_fnc()
 
     def execute_search_with_dialog(self):
         contents = []
@@ -1177,11 +1177,11 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
 
                         if copy_or_link_enable is True:
                             if mode == 'copy':
-                                [j.set_copy_to_directory(i_directory_src_dst, replace=replace_enable) for j in i_texture_src.get_exists_files_()]
-                                [j.set_copy_to_directory(i_directory_tgt_dst, replace=replace_enable) for j in i_texture_tgt.get_exists_files_()]
+                                [j.set_copy_to_directory(i_directory_src_dst, replace=replace_enable) for j in i_texture_src.get_exists_units()]
+                                [j.set_copy_to_directory(i_directory_tgt_dst, replace=replace_enable) for j in i_texture_tgt.get_exists_units()]
                             elif mode == 'link':
-                                [j.set_link_to_directory(i_directory_src_dst, replace=replace_enable) for j in i_texture_src.get_exists_files_()]
-                                [j.set_link_to_directory(i_directory_tgt_dst, replace=replace_enable) for j in i_texture_tgt.get_exists_files_()]
+                                [j.set_link_to_directory(i_directory_src_dst, replace=replace_enable) for j in i_texture_src.get_exists_units()]
+                                [j.set_link_to_directory(i_directory_tgt_dst, replace=replace_enable) for j in i_texture_tgt.get_exists_units()]
                         #
                         if repath_enable is True:
                             i_dcc_obj_prx_items = i_texture_prx_item.get_children()
@@ -1204,7 +1204,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                                             j_dcc_obj, i_port_path, i_texture_any_dst.path
                                         )
             #
-            self._set_gui_refresh_()
+            self.refresh_gui_fnc()
             return True
 
     def execute_collection_with_dialog(self):

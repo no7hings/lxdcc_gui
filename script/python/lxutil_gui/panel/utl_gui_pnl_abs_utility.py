@@ -437,7 +437,7 @@ class AbsSceneTextureManagerPanel(
                                                 texture_color_space, self.DSC_IDX_COLORS_SPACE
                                             )
                                             #
-                                            texture_used_color_space = j_file.get_tx_color_space()
+                                            texture_used_color_space = j_file.get_color_space_src()
                                             j_file_prx_item.set_name(
                                                 texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
                                             )
@@ -515,7 +515,7 @@ class AbsSceneTextureManagerPanel(
                                 i_list_item_prx.set_gui_dcc_obj(i_file, namespace='storage')
                                 set_show_fnc_(i_file, i_list_item_prx)
                 else:
-                    file_units = _.get_exists_files_()
+                    file_units = _.get_exists_units()
                     c = len(file_units)
                     if c > 50:
                         w = utl_core.DialogWindow.set_create(

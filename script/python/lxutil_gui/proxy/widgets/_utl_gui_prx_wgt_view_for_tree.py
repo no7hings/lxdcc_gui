@@ -339,7 +339,7 @@ class PrxTreeView(
             _ = fnmatch.filter(
                 self._filter_completion_cache, '*{}*'.format(keyword)
             )
-            return bsc_core.RawTextsMtd.set_sort_by_initial(_)[:self.FILTER_MAXIMUM]
+            return bsc_core.RawTextsMtd.sort_by_initial(_)[:self.FILTER_MAXIMUM]
         return []
 
     def restore_filter(self):

@@ -27,6 +27,8 @@ import lxsession.commands as ssn_commands
 
 from lxusd import usd_core
 
+LOAD_INDEX = utl_gui_qt_core.LOAD_INDEX
+
 
 class _GuiBaseOpt(object):
     DCC_NAMESPACE = 'database'
@@ -1013,7 +1015,7 @@ class _GuiUsdStageViewOpt(_GuiBaseOpt):
         usd_file_path = '{}/geometry/usd/{}.usd'.format(version_stg_path, dtb_resource.name)
         if bsc_core.StgPathMtd.get_is_exists(usd_file_path):
             return usd_file_path
-        return bsc_core.RscFileMtd.get('asset/library/preview_sphere.usda')
+        return bsc_core.RscFileMtd.get('asset/library/geo/sphere.usda')
 
     def refresh_textures_use_thread(self, dtb_resource, dtb_version):
         def cache_fnc_():
@@ -1021,7 +1023,7 @@ class _GuiUsdStageViewOpt(_GuiBaseOpt):
                 self.get_usd_file(dtb_resource, dtb_version),
                 self.get_texture_dict(dtb_version)
             )
-            return self.__thread_stack_index, None
+            return [self.__thread_stack_index, None]
 
         def build_fnc_(*args):
             _thread_stack_index, _ = args[0]
@@ -1053,6 +1055,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
     FILTER_MAXIMUM = 50
     HISTORY_KEY = 'gui.resource-library'
     def set_all_setup(self):
+        #
         self._item_frame_size = self._session.gui_configure.get('item_frame_size')
         self._item_icon_frame_size = self._session.gui_configure.get('item_icon_frame_size')
         self._item_icon_size = self._session.gui_configure.get('item_icon_size')
@@ -1151,7 +1154,11 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         storage_v_s = prx_widgets.PrxVSplitter()
         self._main_h_s.add_widget(storage_v_s)
         #
-        self._usd_stage_prx_view = prx_widgets.PrxUsdStageView()
+        if LOAD_INDEX == 0:
+            self._usd_stage_prx_view = prx_widgets.PrxUsdStageViewProxy()
+        else:
+            self._usd_stage_prx_view = prx_widgets.PrxUsdStageView()
+        #
         storage_v_s.add_widget(self._usd_stage_prx_view)
         #
         self._directory_prx_view = prx_widgets.PrxTreeView()
@@ -1174,8 +1181,9 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._file_prx_view.set_item_names_draw_range([None, 1])
         self._file_prx_view.set_item_image_frame_draw_enable(True)
         #
-        storage_v_s.set_stretches([1, 1, 1])
-        self._main_h_s.set_stretches([1, 2, 1])
+        self._main_h_s.set_fixed_size_at(0, 320)
+        self._main_h_s.set_fixed_size_at(2, 320)
+        self._main_h_s.set_contract_right_or_bottom_at(2)
         #
         self._type_guide_bar.connect_user_text_choose_accepted_to(self.gui_guide_choose_cbk)
         self._type_guide_bar.connect_user_text_press_accepted_to(self.gui_guide_press_cbk)
@@ -1321,7 +1329,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             _ = fnmatch.filter(
                 self._gui_resource_opt._keys, '*{}*'.format(keyword)
             )
-            return bsc_core.RawTextsMtd.set_sort_by_initial(_)[:self.FILTER_MAXIMUM]
+            return bsc_core.RawTextsMtd.sort_by_initial(_)[:self.FILTER_MAXIMUM]
         return []
 
     def __restore_thread_stack_(self):
@@ -1603,7 +1611,6 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                 #
                 self._resource_prx_view.refresh_viewport_showable_auto()
     # build for textures
-
     def __execute_gui_refresh_for_storage_directories_(self):
         self._gui_directory_opt.restore()
         self._gui_file_opt.restore()

@@ -515,7 +515,7 @@ class QtGuideBar(
             _ = fnmatch.filter(
                 path_texts, '*{}*'.format(keyword)
             )
-            return bsc_core.RawTextsMtd.set_sort_by_initial(_)[:self.FILTER_MAXIMUM]
+            return bsc_core.RawTextsMtd.sort_by_initial(_)[:self.FILTER_MAXIMUM]
         return []
 
     def _guide_entry_cbk_(self, text):

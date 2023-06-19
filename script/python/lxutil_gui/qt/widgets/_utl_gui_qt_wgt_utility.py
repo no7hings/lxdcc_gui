@@ -1202,6 +1202,14 @@ class QtIconEnableItem(
             'state/popup'
         )
 
+    def _set_menu_data_gain_fnc_(self, fnc):
+        super(QtIconEnableItem, self)._set_menu_data_gain_fnc_(fnc)
+        #
+        self._icon_state_draw_is_enable = True
+        self._icon_state_file_path = utl_gui_core.RscIconFile.get(
+            'state/popup'
+        )
+
 
 class QtMainWindow(
     QtWidgets.QMainWindow,

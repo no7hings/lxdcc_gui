@@ -144,7 +144,7 @@ class PrxListView(
             _ = fnmatch.filter(
                 self._filter_completion_cache, '*{}*'.format(keyword)
             )
-            return bsc_core.RawTextsMtd.set_sort_by_initial(_)[:self.FILTER_MAXIMUM]
+            return bsc_core.RawTextsMtd.sort_by_initial(_)[:self.FILTER_MAXIMUM]
         return []
 
     def __keyword_filter_cbk(self):
@@ -363,7 +363,7 @@ class PrxImageView(PrxListView):
 
     def set_textures(self, textures):
         for i_texture in textures:
-            for j_texture_unit in i_texture.get_exists_files_():
+            for j_texture_unit in i_texture.get_exists_units():
                 self._set_texture_show_(self.set_item_add(), j_texture_unit)
 
     def _set_texture_show_(self, prx_item, texture_unit):

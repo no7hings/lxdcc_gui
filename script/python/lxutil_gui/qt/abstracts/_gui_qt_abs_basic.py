@@ -170,9 +170,9 @@ class AbsQtMenuBaseDef(object):
                     menu._set_title_text_(self._menu_title_text)
             #
             menu_data = self._menu_data_gain_fnc()
-            #
-            menu._set_menu_data_(menu_data)
-            menu._set_show_()
+            if menu_data:
+                menu._set_menu_data_(menu_data)
+                menu._set_show_()
 
     def _set_menu_content_(self, content):
         self._menu_content = content

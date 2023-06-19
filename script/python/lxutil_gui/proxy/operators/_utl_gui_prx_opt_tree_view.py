@@ -174,7 +174,7 @@ class GuiTagFilterOpt(object):
         leaf_paths = self._filter_content.get_leaf_key_as_paths()
         all_paths = self._filter_content.get_key_as_paths()
         all_paths.sort()
-        all_paths = bsc_core.RawTextsOpt(all_paths).set_sort_to()
+        all_paths = bsc_core.RawTextsOpt(all_paths).sort_by_number()
         for path in all_paths:
             i_is_create, i_prx_item_src = self._add_prx_item_src_(path)
             if path in leaf_paths:
@@ -626,7 +626,7 @@ class PrxStgObjTreeViewAddOpt(object):
             u'path="{}"'.format(obj_path)
         ]
         if obj.get_is_file():
-            file_tiles = obj.get_exists_files_()
+            file_tiles = obj.get_exists_units()
             if file_tiles:
                 tool_tip_ = []
                 if len(file_tiles) > 10:
@@ -735,7 +735,7 @@ class PrxStgTextureTreeViewAddOpt(PrxStgObjTreeViewAddOpt):
             u'path="{}"'.format(obj_path)
         ]
         if obj.get_is_file():
-            file_tiles = obj.get_exists_files_()
+            file_tiles = obj.get_exists_units()
             if file_tiles:
                 tool_tip_ = []
                 if len(file_tiles) > 10:

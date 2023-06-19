@@ -668,7 +668,7 @@ class PrxEntryAsFilesOpen(_PrxStgObjsEntry):
                 ext = os.path.splitext(value)[-1]
                 if ext not in self._ext_includes:
                     return False
-            return bsc_core.StgFileMultiplyMtd.get_exists(value)
+            return bsc_core.StgFileMultiplyMtd.get_is_exists(value)
         return False
 
 
@@ -880,7 +880,7 @@ class _AbsShotgunDef(object):
                     i_filter_keys.insert(0, 'All')
                     tag_filter_dict[i_key] = i_filter_keys
             #
-            names = bsc_core.RawTextsMtd.set_sort_by_initial(names)
+            names = bsc_core.RawTextsMtd.sort_by_initial(names)
             return names, image_url_dict, keyword_filter_dict, tag_filter_dict
 
 
@@ -1713,14 +1713,14 @@ class _PrxEntryAsRsvObj(_AbsPrxTypeEntry):
             #
             if use_show_thread is True:
                 prx_item.set_show_method(
-                    lambda *args, **kwargs: self.__set_item_show_deferred_(prx_item)
+                    lambda *args, **kwargs: self.__item_show_deferred_fnc(prx_item)
                 )
                 return True, prx_item, None
             else:
-                self.__set_item_show_deferred_(prx_item)
+                self.__item_show_deferred_fnc(prx_item)
                 return True, prx_item, None
 
-    def __set_item_show_deferred_(self, prx_item, use_as_tree=True):
+    def __item_show_deferred_fnc(self, prx_item, use_as_tree=True):
         obj = prx_item.get_gui_dcc_obj(namespace=self.NAMESPACE)
         obj_type_name = obj.type_name
         obj_name = obj.name
@@ -1754,7 +1754,7 @@ class _PrxEntryAsRsvObj(_AbsPrxTypeEntry):
         prx_item.set_gui_menu_raw(menu_raw)
         prx_item.set_menu_content(obj.get_gui_menu_content())
 
-    def __add_item_as_tree_(self, obj):
+    def __add_item_as_tree(self, obj):
         ancestors = obj.get_ancestors()
         if ancestors:
             ancestors.reverse()
@@ -1765,7 +1765,7 @@ class _PrxEntryAsRsvObj(_AbsPrxTypeEntry):
         #
         self.__set_item_comp_add_as_tree_(obj, use_show_thread=True)
 
-    def __add_item_as_list_(self, obj):
+    def __add_item_as_list(self, obj):
         obj_path = obj.path
         obj_type = obj.type
         #
@@ -1784,11 +1784,11 @@ class _PrxEntryAsRsvObj(_AbsPrxTypeEntry):
         #
         prx_item.set_show_method(
             functools.partial(
-                self.__set_item_show_deferred_, prx_item, False
+                self.__item_show_deferred_fnc, prx_item, False
             )
         )
 
-    def __set_item_selected_(self, obj):
+    def __set_item_selected(self, obj):
         item = obj.get_obj_gui()
         self._prx_entry_widget.set_item_selected(
             item, exclusive=True
@@ -1806,9 +1806,9 @@ class _PrxEntryAsRsvObj(_AbsPrxTypeEntry):
                     for i in objs:
                         g_p.set_update()
                         #
-                        self.__add_item_as_list_(i)
+                        self.__add_item_as_list(i)
                     #
-                    self.__set_item_selected_(
+                    self.__set_item_selected(
                         objs[-1]
                     )
         else:
@@ -1879,14 +1879,14 @@ class _PrxEntryAsNodes(_AbsPrxTypeEntry):
             #
             if use_show_thread is True:
                 prx_item.set_show_method(
-                    lambda *args, **kwargs: self.__set_item_show_deferred_(prx_item)
+                    lambda *args, **kwargs: self.__item_show_deferred_fnc(prx_item)
                 )
                 return True, prx_item, None
             else:
-                self.__set_item_show_deferred_(prx_item)
+                self.__item_show_deferred_fnc(prx_item)
                 return True, prx_item, None
 
-    def __set_item_show_deferred_(self, prx_item, use_as_tree=True):
+    def __item_show_deferred_fnc(self, prx_item, use_as_tree=True):
         obj = prx_item.get_gui_dcc_obj(namespace=self.NAMESPACE)
         prx_item.set_name(
             obj.get_name()
@@ -1920,7 +1920,7 @@ class _PrxEntryAsNodes(_AbsPrxTypeEntry):
         # self._prx_entry_widget.set_loading_update()
 
     #
-    def __add_item_as_tree_(self, obj):
+    def __add_item_as_tree(self, obj):
         ancestors = obj.get_ancestors()
         if ancestors:
             ancestors.reverse()
@@ -1933,7 +1933,7 @@ class _PrxEntryAsNodes(_AbsPrxTypeEntry):
         #
         self.__add_item_comp_as_tree_(obj, use_show_thread=True)
 
-    def __add_item_as_list_(self, obj):
+    def __add_item_as_list(self, obj):
         path = obj.path
         type_name = obj.type_name
         #
@@ -1953,9 +1953,9 @@ class _PrxEntryAsNodes(_AbsPrxTypeEntry):
         prx_item.set_tool_tip(path)
         self._obj_add_dict[path] = prx_item
         #
-        self.__set_item_show_deferred_(prx_item, use_as_tree=False)
+        self.__item_show_deferred_fnc(prx_item, use_as_tree=False)
 
-    def __set_item_selected_(self, obj):
+    def __set_item_selected(self, obj):
         item = obj.get_obj_gui()
         self._prx_entry_widget.set_item_selected(
             item, exclusive=True
@@ -1974,11 +1974,11 @@ class _PrxEntryAsNodes(_AbsPrxTypeEntry):
             if objs:
                 for i in objs:
                     if self._view_mode == 'list':
-                        self.__add_item_as_list_(i)
+                        self.__add_item_as_list(i)
                     elif self._view_mode == 'tree':
-                        self.__add_item_as_tree_(i)
+                        self.__add_item_as_tree(i)
                 #
-                self.__set_item_selected_(
+                self.__set_item_selected(
                     objs[-1]
                 )
         else:
@@ -2027,7 +2027,7 @@ class _PrxEntryAsFiles(_AbsPrxTypeEntry):
         self._qt_widget.setFixedHeight(162)
         self._prx_entry_widget.set_header_view_create(
             [('name', 3), ('update', 1)],
-            640
+            480
         )
         self._prx_entry_widget.set_selection_use_single()
         self._prx_entry_widget.set_size_policy_height_fixed_mode()
@@ -2074,22 +2074,38 @@ class _PrxEntryAsFiles(_AbsPrxTypeEntry):
         self._obj_add_dict[path] = prx_item
         #
         prx_item.set_show_method(
-            lambda *args, **kwargs: self.__set_item_show_deferred_(prx_item, scheme)
+            lambda *args, **kwargs: self.__item_show_deferred_fnc(prx_item, scheme)
         )
         return True, prx_item, None
 
-    def __set_item_show_deferred_(self, prx_item, scheme, use_as_tree=True):
-        def unlock_folder_fnc_():
+    def __item_show_deferred_fnc(self, prx_item, scheme, use_as_tree=True):
+        def rpc_lock_folder_fnc_():
+            bsc_core.StgPathPermissionMtd.change_mode(path, mode='555')
+            prx_item.set_status(
+                prx_item.ValidatorStatus.Locked
+            )
+
+        def rpc_unlock_folder_fnc_():
             bsc_core.StgPathPermissionMtd.change_mode(path, mode='777')
             prx_item.set_status(
                 prx_item.ValidatorStatus.Normal
             )
 
-        def lock_folder_fnc_():
-            bsc_core.StgPathPermissionMtd.change_mode(path, mode='555')
-            prx_item.set_status(
-                prx_item.ValidatorStatus.Locked
-            )
+        def rpc_lock_files_fnc_():
+            file_paths = bsc_core.StgDirectoryOpt(path).get_all_file_paths()
+            for i_file_path in file_paths:
+                bsc_core.StgPathPermissionMtd.change_mode(i_file_path, mode='555')
+                prx_item.set_status(
+                    prx_item.ValidatorStatus.Normal
+                )
+
+        def rpc_unlock_files_fnc_():
+            file_paths = bsc_core.StgDirectoryOpt(path).get_all_file_paths()
+            for i_file_path in file_paths:
+                bsc_core.StgPathPermissionMtd.change_mode(i_file_path, mode='777')
+                prx_item.set_status(
+                    prx_item.ValidatorStatus.Normal
+                )
 
         obj = prx_item.get_gui_dcc_obj(namespace=self.NAMESPACE)
         path = obj.get_path()
@@ -2144,9 +2160,12 @@ class _PrxEntryAsFiles(_AbsPrxTypeEntry):
         elif scheme == 'folder':
             menu_raw.extend(
                 [
-                    ('lock',),
-                    ('lock folder', 'lock', lock_folder_fnc_),
-                    ('unlock folder', 'lock', unlock_folder_fnc_),
+                    ('rpc folder permission',),
+                    ('rpc lock folder', 'lock', rpc_lock_folder_fnc_),
+                    ('rpc unlock folder', 'lock', rpc_unlock_folder_fnc_),
+                    ('rpc file permission',),
+                    ('rpc lock files', 'lock', rpc_lock_files_fnc_),
+                    ('rpc unlock files', 'lock', rpc_unlock_files_fnc_),
                 ]
             )
         #
@@ -2158,11 +2177,10 @@ class _PrxEntryAsFiles(_AbsPrxTypeEntry):
             prx_item.set_status(
                 prx_item.ValidatorStatus.Locked
             )
-
     #
-    def __add_item_as_tree_(self, obj, scheme):
+    def __add_item_as_tree(self, obj, scheme):
         if self._root_location is not None:
-            i_is_create, i_prx_item, _ = self.__add_item_as_list_(self._root_obj, scheme)
+            i_is_create, i_prx_item, _ = self.__add_item_as_list(self._root_obj, scheme)
             if i_is_create is True:
                 i_prx_item.set_expanded(True)
             ancestor_paths = obj.get_ancestor_paths()
@@ -2190,7 +2208,7 @@ class _PrxEntryAsFiles(_AbsPrxTypeEntry):
         #
         self.__add_item_comp_as_tree_(obj, scheme)
 
-    def __add_item_as_list_(self, obj, scheme):
+    def __add_item_as_list(self, obj, scheme):
         path = obj.get_path()
         type_name = obj.get_type_name()
         if path in self._obj_add_dict:
@@ -2213,11 +2231,11 @@ class _PrxEntryAsFiles(_AbsPrxTypeEntry):
         self._obj_add_dict[path] = prx_item
         #
         prx_item.set_show_method(
-            lambda *args, **kwargs: self.__set_item_show_deferred_(prx_item, scheme, use_as_tree=False)
+            lambda *args, **kwargs: self.__item_show_deferred_fnc(prx_item, scheme, use_as_tree=False)
         )
         return True, prx_item, None
 
-    def __set_item_selected_(self, obj):
+    def __set_item_selected(self, obj):
         item = obj.get_obj_gui()
         self._prx_entry_widget.set_item_selected(
             item, exclusive=True
@@ -2249,11 +2267,11 @@ class _PrxEntryAsFiles(_AbsPrxTypeEntry):
                     obj_cur = i_obj
                     #
                     if self._view_mode == 'list':
-                        self.__add_item_as_list_(i_obj, i_scheme)
+                        self.__add_item_as_list(i_obj, i_scheme)
                     elif self._view_mode == 'tree':
-                        self.__add_item_as_tree_(i_obj, i_scheme)
+                        self.__add_item_as_tree(i_obj, i_scheme)
                 #
-                self.__set_item_selected_(obj_cur)
+                self.__set_item_selected(obj_cur)
         else:
             pass
 

@@ -261,7 +261,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             _ = fnmatch.filter(
                 self.__asset_keys, '*{}*'.format(keyword)
             )
-            return bsc_core.RawTextsMtd.set_sort_by_initial(_)[:50]
+            return bsc_core.RawTextsMtd.sort_by_initial(_)[:50]
         return []
 
     def __filter_completion_gain_fnc_(self, *args, **kwargs):
@@ -270,7 +270,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             _ = fnmatch.filter(
                 self.__task_keys, '*{}*'.format(keyword)
             )
-            return bsc_core.RawTextsMtd.set_sort_by_initial(_)
+            return bsc_core.RawTextsMtd.sort_by_initial(_)
         return []
 
     def __setup_gui_viewers_(self, scroll_area):

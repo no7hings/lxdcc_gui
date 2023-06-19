@@ -1648,7 +1648,7 @@ class _QtNGGraph(
         #
         if c2o_dict:
             for column, v in c2o_dict.items():
-                v = bsc_core.RawTextsMtd.set_sort_to(v)
+                v = bsc_core.RawTextsMtd.sort_by_number(v)
                 row_count = len(v)
                 if dir_x == 'r-l':
                     s_x = x-column*w*2

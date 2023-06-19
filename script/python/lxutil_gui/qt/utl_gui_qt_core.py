@@ -1473,7 +1473,7 @@ class QtBuildThread(QtCore.QThread):
                 cache = self._cache_fnc()
                 self.cache_finished.emit()
                 #
-                self.built.emit(cache)
+                self.built.emit(list(cache))
             except:
                 self.run_failed.emit()
                 self.set_status(self.Status.Failed)

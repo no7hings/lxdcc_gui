@@ -33,15 +33,15 @@ class W(prx_widgets.PrxToolWindow):
         v_s_1.add_widget(t_3)
         t_4 = prx_widgets.PrxListView()
         v_s_1.add_widget(t_4)
-
-        h_s.set_stretches([1, 2, 1])
+        # h_s.set_stretches([1, 2, 1])
 
         # h_s.set_widget_hide_at(0)
 
         h_s.set_fixed_size_at(0, 320)
+        h_s.set_fixed_size_at(2, 320)
 
-        # h_s.set_contract_left_or_top_at(0, 320)
-        # h_s.set_contract_right_or_bottom_at(2, 320)
+        # h_s.set_contract_left_or_top_at(0)
+        h_s.set_contract_right_or_bottom_at(2)
 
     def test(self):
         pass
@@ -55,7 +55,7 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     #
     w = W()
-    w.set_definition_window_size((800, 800))
+    w.set_definition_window_size((1280, 960))
     w.set_window_show()
     #
     sys.exit(app.exec_())

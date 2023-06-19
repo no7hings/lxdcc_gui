@@ -271,7 +271,7 @@ class AbsScenePackagerPanel(
         for file_plf_obj in os_objs:
             p.set_update()
             if file_plf_obj.get_is_file():
-                for i in file_plf_obj.get_exists_files_():
+                for i in file_plf_obj.get_exists_units():
                     i.set_copy_to(target_directory, ignore_structure)
         p.set_stop()
 
