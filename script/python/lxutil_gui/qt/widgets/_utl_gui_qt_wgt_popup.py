@@ -180,7 +180,7 @@ class QtPopupForChoose(
     def __init__(self, *args, **kwargs):
         super(QtPopupForChoose, self).__init__(*args, **kwargs)
         # use popup,
-        self.setWindowFlags(QtCore.Qt.Tool | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowDoesNotAcceptFocus)
+        self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowDoesNotAcceptFocus)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         #

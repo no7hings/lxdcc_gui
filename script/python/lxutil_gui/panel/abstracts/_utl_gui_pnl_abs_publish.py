@@ -282,7 +282,7 @@ class AbsValidatorOpt(object):
         return prx_item
 
 
-class DccPublishOpt(object):
+class SurfacePublishOpt(object):
     def __init__(self, session, scene_file_path, validation_info_file, rsv_scene_properties, **kwargs):
         self._session = session
         self._scene_file_path = scene_file_path
@@ -716,7 +716,7 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
         def yes_fnc_():
             _kwargs = w.get_options_as_kwargs()
             #
-            DccPublishOpt(
+            SurfacePublishOpt(
                 self._session,
                 self._scene_file_path,
                 self._validation_info_file,
@@ -776,7 +776,7 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
             o.set('notice', self._notice_user_names)
 
 
-class GenPublishOpt(object):
+class GeneralPublishOpt(object):
     VERSION_NAME_PATTERN = '{project}.{resource}.{task}.{version}'
     def __init__(self, window, session, rsv_task, version_properties, options):
         self._window = window
@@ -1359,7 +1359,7 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
             self.refresh_publish_scene()
     
     def execute_publish(self):
-        p = GenPublishOpt(
+        p = GeneralPublishOpt(
             self,
             self._session,
             self._rsv_task,

@@ -535,8 +535,9 @@ class QtEntryAsContentEdit(
         self._empty_text = text
 
     def insertFromMimeData(self, data):
+        # add data as clear
         if data.text():
-            self.setText(data.text())
+            self._add_content_(data.text())
 
 
 class QtEntryAsListForPopup(utl_gui_qt_abstract.AbsQtListWidget):
