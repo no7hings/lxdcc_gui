@@ -362,7 +362,7 @@ class AbsDccComparerOpt(object):
             dcc_obj_src, self.DCC_NAMESPACE
         )
 
-        self._filter_opt.set_register(
+        self._filter_opt.register(
             prx_item_src, [description]
         )
         return prx_item_src

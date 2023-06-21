@@ -12,15 +12,15 @@ option:
         color-light-hover: '103, 103, 103, 255'
         color-white: '223, 223, 223, 255'
         #
-        color-hovered: '255, 159, 95, 255'
-        color-selected: '95, 159, 223, 255'
+        color-hovered: '255, 179, 47, 255'
+        color-selected: '79, 95, 151, 255'
         color-checked: '255, 95, 159, 255'
         color-pressed: '95, 255, 159, 255'
         color-actioned: '95, 255, 159, 255'
         #
-        color-item-selected: '95, 159, 255, 255'
+        color-item-selected: '79, 95, 151, 255'
         color-item-selected-indirect: '39, 79, 127, 255'
-        color-item-hovered: '255, 159, 95, 255'
+        color-item-hovered: '255, 179, 47, 255'
         #
         color-item-loading: '31, 31, 31, 63'
         #
@@ -50,8 +50,8 @@ option:
         #
         color-tool-tip: '223, 223, 191, 255'
         #
-        color-hovered: '255, 127, 63, 255'
-        color-selected: '63, 127, 255, 255'
+        color-hovered: '255, 179, 47, 255'
+        color-selected: '79, 95, 151, 255'
         color-actioned: '63, 255, 127, 255'
         #
         color-icon: '207, 207, 207, 255'
@@ -68,7 +68,7 @@ option:
         color-hovered: '31, 31, 31, 255'
         color-selected: '31, 31, 31, 255'
         #
-        color-item-hovered: '255, 127, 63, 255'
+        color-item-hovered: '255, 179, 47, 255'
         color-item-selected: '79, 159, 255, 255'
         #
         color-key-basic: '191, 191, 191, 255'
@@ -322,7 +322,7 @@ widget:
             background: rgba(<option.background.color-transparent>); 
             color: rgba(<option.font.color-basic>);
             border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
-            selection-color: rgba(<option.font.color-basic>) ; selection-background-color: rgba(79, 159, 255, 255)
+            selection-color: rgba(<option.font.color-basic>) ; selection-background-color: rgba(<option.background.color-selected>)
         }
     QTextEdit:
         |-
@@ -330,7 +330,7 @@ widget:
             background: rgba(<option.background.color-transparent>); 
             color: rgba(<option.font.color-basic>);
             border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
-            selection-color: rgba(<option.font.color-basic>) ; selection-background-color: rgba(79, 159, 255, 255)
+            selection-color: rgba(<option.font.color-basic>) ; selection-background-color: rgba(<option.background.color-selected>)
         }
     QLineEdit:
         |-
@@ -338,7 +338,7 @@ widget:
             background: rgba(<option.background.color-transparent>); 
             color: rgba(<option.font.color-basic>);
             border: 1px rgba(<option.border.color-transparent>); border-radius: 0px; border-style: solid;
-            selection-color: rgba(<option.font.color-basic>) ; selection-background-color: rgba(79, 159, 255, 255)
+            selection-color: rgba(<option.font.color-basic>) ; selection-background-color: rgba(<option.background.color-selected>)
         }
     QSplitter:
         |-

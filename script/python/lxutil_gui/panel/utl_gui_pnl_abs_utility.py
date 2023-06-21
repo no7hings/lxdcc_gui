@@ -423,12 +423,6 @@ class AbsSceneTextureManagerPanel(
                                 if j_file_prx_item is not None:
                                     if j_is_create is True:
                                         if j_file.get_is_exists() is True:
-                                            # tx_is_exists = j_file.get_is_exists_as_tx()
-                                            # if tx_is_exists is True:
-                                            #     j_file_prx_item.set_state(utl_gui_core.State.NORMAL)
-                                            # else:
-                                            #     j_file_prx_item.set_state(utl_gui_core.State.WARNING)
-                                            #
                                             texture_color_space = j_file.get_color_space()
                                             j_file_prx_item.set_name(
                                                 texture_color_space, self.DSC_IDX_COLORS_SPACE

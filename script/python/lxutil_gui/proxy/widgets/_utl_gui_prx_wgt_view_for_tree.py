@@ -1,6 +1,7 @@
 # coding:utf-8
 import collections
 
+import six
 from lxbasic import bsc_core
 
 from lxutil_gui import utl_gui_configure
@@ -337,7 +338,7 @@ class PrxTreeView(
                 )
             #
             _ = fnmatch.filter(
-                self._filter_completion_cache, '*{}*'.format(keyword)
+                self._filter_completion_cache, six.u('*{}*').format(keyword)
             )
             return bsc_core.RawTextsMtd.sort_by_initial(_)[:self.FILTER_MAXIMUM]
         return []

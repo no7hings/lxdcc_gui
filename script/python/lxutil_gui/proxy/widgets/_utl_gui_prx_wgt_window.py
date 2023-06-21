@@ -583,9 +583,17 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
         )
 
 
-class PrxMonitorWindow(utl_gui_prx_abstract.AbsPrxWindow):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtMainWindow
+class PrxMonitorWindow(
+    utl_gui_prx_abstract.AbsPrxWindow,
+    utl_gui_prx_abstract.AbsPrxWaitingDef,
+    utl_gui_prx_abstract.AbsPrxProgressingDef,
+):
     ValidatorStatus = bsc_configure.ValidatorStatus
+    #
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtMainWindow
+    #
+    QT_WAITING_CHART_CLS = _utl_gui_qt_wgt_chart.QtWaitingChart
+    QT_PROGRESSING_CHART_CLS = _utl_gui_qt_wgt_chart.QtProgressingChart
     def __init__(self, *args, **kwargs):
         super(PrxMonitorWindow, self).__init__(*args, **kwargs)
         if kwargs.get('parent'):
@@ -617,6 +625,9 @@ class PrxMonitorWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._entry_button_layout.addWidget(self._status_button.widget)
         self._status_button.set_name('process')
         self._status_button.set_icon_by_name('process')
+
+        self._set_waiting_def_init_()
+        self._set_progressing_def_init_()
 
     def set_status(self, status):
         self._central_widget._set_status_(status)

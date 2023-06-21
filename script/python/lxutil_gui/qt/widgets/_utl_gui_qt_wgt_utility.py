@@ -36,7 +36,7 @@ class QtWidget(
         if self._get_status_is_enable_() is True:
             painter = QtPainter(self)
             #
-            color, hover_color = self._get_border_color_by_validator_status_(self._status)
+            color, hover_color = self._get_border_color_by_validator_status_rgba_args_(self._status)
             border_color = color
             pox_x, pos_y = 0, 0
             width, height = self.width(), self.height()
@@ -795,7 +795,7 @@ class QtTextItem(
         self._refresh_widget_draw_geometry_()
         # name
         if self._name_text is not None:
-            color, hover_color = self._get_text_color_by_validator_status_(self._status)
+            color, hover_color = self._get_text_color_by_validator_status_rgba_args_(self._status)
             text_color = [color, hover_color][self._action_is_hovered]
             #
             painter._draw_text_by_rect_(
@@ -2078,7 +2078,7 @@ class _QtScreenshotFrame(
             painter._set_screenshot_draw_by_rect_(
                 rect_0=self._frame_draw_rect,
                 rect_1=self._screenshot_rect,
-                border_color=(63, 127, 255),
+                border_color=(79, 95, 151),
                 background_color=(0, 0, 0, 127)
             )
 

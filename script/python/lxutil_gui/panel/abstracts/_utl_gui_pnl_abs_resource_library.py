@@ -591,17 +591,19 @@ class _GuiResourceOpt(_GuiBaseOpt):
             #
             prx_item = self._list_view.set_item_add()
             self.gui_register(path, prx_item)
-            prx_item.get_item()._set_item_semantic_tag_filter_key_update_(semantic_tag_filter_data)
+            prx_item.get_item()._update_item_semantic_tag_filter_keys_tgt_(
+                semantic_tag_filter_data
+            )
             prx_item.get_item()._update_item_keyword_filter_keys_tgt_(
                 [dtb_resource.name, dtb_resource.gui_name]
             )
             prx_item.set_gui_dcc_obj(
                 dtb_resource, namespace=self.DCC_NAMESPACE
             )
-            prx_item.set_sort_name_key(
+            prx_item.set_name(
                 dtb_resource.gui_name
             )
-            prx_item.set_name(
+            prx_item.set_sort_name_key(
                 dtb_resource.gui_name
             )
             prx_item.set_gui_attribute(
@@ -1126,7 +1128,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             self.__execute_gui_refresh_for_resources_by_property_check_
         )
         #
-        filter_v_s.set_stretches([2, 1])
+        filter_v_s.set_fixed_size_at(1, 320)
         #
         self._resource_prx_view = prx_widgets.PrxListView()
         self._main_h_s.add_widget(self._resource_prx_view._qt_widget)
@@ -1151,18 +1153,18 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             self.__execute_gui_refresh_for_resources_by_type_selection_
         )
         #
-        storage_v_s = prx_widgets.PrxVSplitter()
-        self._main_h_s.add_widget(storage_v_s)
+        extra_v_s = prx_widgets.PrxVSplitter()
+        self._main_h_s.add_widget(extra_v_s)
         #
         if LOAD_INDEX == 0:
             self._usd_stage_prx_view = prx_widgets.PrxUsdStageViewProxy()
         else:
             self._usd_stage_prx_view = prx_widgets.PrxUsdStageView()
         #
-        storage_v_s.add_widget(self._usd_stage_prx_view)
+        extra_v_s.add_widget(self._usd_stage_prx_view)
         #
         self._directory_prx_view = prx_widgets.PrxTreeView()
-        storage_v_s.add_widget(self._directory_prx_view)
+        extra_v_s.add_widget(self._directory_prx_view)
         self._directory_prx_view.set_header_view_create(
             [('directory', 1)]
         )
@@ -1172,7 +1174,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         )
         #
         self._file_prx_view = prx_widgets.PrxListView()
-        storage_v_s.add_widget(self._file_prx_view)
+        extra_v_s.add_widget(self._file_prx_view)
         self._file_prx_view.set_item_frame_size_basic(*self._item_frame_size)
         self._file_prx_view.set_item_icon_frame_size(*self._item_icon_frame_size)
         self._file_prx_view.set_item_icon_size(*self._item_icon_size)
@@ -1181,6 +1183,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._file_prx_view.set_item_names_draw_range([None, 1])
         self._file_prx_view.set_item_image_frame_draw_enable(True)
         #
+        extra_v_s.set_fixed_size_at(0, 320)
         self._main_h_s.set_fixed_size_at(0, 320)
         self._main_h_s.set_fixed_size_at(2, 320)
         self._main_h_s.set_contract_right_or_bottom_at(2)
@@ -1389,7 +1392,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             with self.gui_waiting():
                 for i_dtb_categories in dtb_categories_map:
                     [self._gui_type_opt.gui_add_category(i) for i in i_dtb_categories]
-                    ts.set_register(
+                    ts.register(
                         cache_fnc=functools.partial(self._gui_type_opt.gui_cache_fnc_for_types_by_categories, i_dtb_categories),
                         build_fnc=self._gui_type_opt.gui_build_fnc_for_types
                     )
@@ -1464,7 +1467,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             ts.run_finished.connect(post_fnc_)
             with self.gui_waiting():
                 for i_dtb_types in dtb_types_map:
-                    ts.set_register(
+                    ts.register(
                         functools.partial(self.__batch_gui_cache_fnc_for_resources_by_entities_, i_dtb_types, thread_stack_index),
                         self.__batch_gui_build_fnc_for_resources_
                     )
@@ -1513,7 +1516,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                 self.__running_threads_stacks.append(ts)
                 ts.run_finished.connect(post_fnc_)
                 for i_dtb_type_assigns in dtb_type_assigns_map:
-                    ts.set_register(
+                    ts.register(
                         functools.partial(self.__gui_cache_fnc_for_resources_, i_dtb_type_assigns, thread_stack_index),
                         self.__gui_build_fnc_for_resources_
                     )

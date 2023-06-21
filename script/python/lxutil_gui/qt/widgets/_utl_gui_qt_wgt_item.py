@@ -317,19 +317,22 @@ class QtPressItem(
         )
         # status
         if self._get_status_is_enable_() is True:
-            status_color = [self._status_color, self._hover_status_color][self._action_is_hovered]
-            painter._set_status_draw_by_rect_(
-                self._status_rect,
-                color=status_color,
-                border_radius=4,
-                offset=offset
-            )
+            status_rgba = [self._status_color, self._hover_status_color][self._action_is_hovered]
+            # painter._set_status_draw_by_rect_(
+            #     self._status_rect,
+            #     color=status_rgba,
+            #     border_radius=4,
+            #     offset=offset
+            # )
         # sub process
         if self._get_sub_process_is_enable_() is True:
-            status_colors = [self._sub_process_status_colors, self._hover_sub_process_status_colors][self._action_is_hovered]
+            status_rgba = [self._status_color, self._hover_status_color][self._action_is_hovered]
+            status_rgba_array = [self._sub_process_status_colors, self._hover_sub_process_status_colors][self._action_is_hovered]
+            #
+            r, g, b, a = status_rgba
             painter._draw_alternating_colors_by_rect_(
                 rect=self._frame_draw_rect,
-                colors=((31, 31, 31, 127), (0, 0, 0, 0)),
+                colors=((r, g, b, 63), (0, 0, 0, 0)),
                 offset=offset,
                 border_radius=4,
                 running=not self._get_sub_process_is_finished_()
@@ -337,16 +340,16 @@ class QtPressItem(
             #
             painter._draw_process_statuses_by_rect_(
                 rect=self._sub_process_status_rect,
-                colors=status_colors,
+                colors=status_rgba_array,
                 offset=offset,
                 border_radius=1,
             )
         # validator
         elif self._get_validator_is_enable_() is True:
-            status_colors = [self._validator_status_colors, self._hover_validator_status_colors][self._action_is_hovered]
+            status_rgba_array = [self._validator_status_colors, self._hover_validator_status_colors][self._action_is_hovered]
             painter._draw_process_statuses_by_rect_(
                 self._validator_status_rect,
-                colors=status_colors,
+                colors=status_rgba_array,
                 offset=offset,
                 border_radius=1,
             )
@@ -608,7 +611,7 @@ class _QtStatusItem(
         is_hovered = self._get_is_hovered_()
         #
         if self._get_is_checked_():
-            background_color = [(255, 255, 63), (255, 127, 63)][is_hovered]
+            background_color = [QtStatusColors.Warning, QtBackgroundColors.Hovered][is_hovered]
             painter._draw_icon_use_text_by_rect_(
                 rect=self._icon_color_draw_rect,
                 text='l',
@@ -618,7 +621,7 @@ class _QtStatusItem(
                 border_radius=1
             )
         else:
-            background_color = [(71, 71, 71), (255, 127, 63)][is_hovered]
+            background_color = [QtStatusColors.Normal, QtBackgroundColors.Hovered][is_hovered]
             painter._draw_icon_use_text_by_rect_(
                 rect=self._icon_color_draw_rect,
                 text='d',

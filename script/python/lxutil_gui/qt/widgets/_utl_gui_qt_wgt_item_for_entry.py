@@ -82,7 +82,7 @@ class QtValueEntryAsContentEdit(
         self._resize_handle.raise_()
 
     def _set_item_value_entry_enable_(self, boolean):
-        self._value_entry.setReadOnly(not boolean)
+        self._value_entry._set_entry_enable_(not boolean)
 
     def _set_resize_enable_(self, boolean):
         self._resize_handle.setVisible(boolean)

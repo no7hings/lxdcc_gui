@@ -790,7 +790,7 @@ class QtRadarChart(
         #
         self.installEventFilter(self)
         #
-        self._map_background_color = 63, 127, 255, 255
+        self._map_background_color = 79, 95, 151, 255
         self._map_border_color = 159, 159, 159, 255
         self._rim_background_color = 39, 39, 39, 255
         self._rim_border_color = 95, 95, 95, 255

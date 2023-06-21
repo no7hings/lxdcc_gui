@@ -350,6 +350,7 @@ class QtEntryAsTextEdit(
         self._set_value_('')
 
     def _set_entry_enable_(self, boolean):
+        super(QtEntryAsTextEdit, self)._set_entry_enable_(boolean)
         self.setReadOnly(not boolean)
 
     def _set_all_selected_(self):
@@ -534,10 +535,14 @@ class QtEntryAsContentEdit(
     def _set_empty_text_(self, text):
         self._empty_text = text
 
+    def _set_entry_enable_(self, boolean):
+        super(QtEntryAsContentEdit, self)._set_entry_enable_(boolean)
+        self.setReadOnly(not boolean)
+
     def insertFromMimeData(self, data):
         # add data as clear
         if data.text():
-            self._add_content_(data.text())
+            self.insertPlainText(data.text())
 
 
 class QtEntryAsListForPopup(utl_gui_qt_abstract.AbsQtListWidget):
@@ -1107,7 +1112,7 @@ class QtEntryFrame(
         if self._thread_draw_is_enable is True:
             painter._draw_alternating_colors_by_rect_(
                 rect=self._frame_draw_rect,
-                colors=((23, 23, 23, 127), (0, 0, 0, 0)),
+                colors=((0, 0, 0, 63), (0, 0, 0, 0)),
                 # border_radius=4,
                 running=True
             )

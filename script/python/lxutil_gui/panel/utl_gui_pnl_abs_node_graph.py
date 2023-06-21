@@ -391,7 +391,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
             ts = utl_gui_qt_core.QtBuildThreadStack(self.widget)
             ts.run_finished.connect(post_fnc_)
             for i_rsv_tag in rsv_tags:
-                ts.set_register(
+                ts.register(
                     functools.partial(
                         self.__cache_rsv_entities_by_tag_,
                         i_rsv_tag
@@ -467,20 +467,20 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
                 )
                 if result is not None:
                     self._image_dict[rsv_entity.path] = result
-                    rsv_entity_gui.set_state(
-                        rsv_entity_gui.State.ENABLE
+                    rsv_entity_gui.set_status(
+                        rsv_entity_gui.ValidatorStatus.Correct
                     )
                 else:
-                    rsv_entity_gui.set_state(
-                        rsv_entity_gui.State.DISABLE
+                    rsv_entity_gui.set_status(
+                        rsv_entity_gui.ValidatorStatus.Disable
                     )
             else:
-                rsv_entity_gui.set_state(
-                    rsv_entity_gui.State.WARNING
+                rsv_entity_gui.set_status(
+                    rsv_entity_gui.ValidatorStatus.Warning
                 )
         else:
-            rsv_entity_gui.set_state(
-                rsv_entity_gui.State.ERROR
+            rsv_entity_gui.set_status(
+                rsv_entity_gui.ValidatorStatus.Error
             )
 
     def _set_graph_reload_(self):

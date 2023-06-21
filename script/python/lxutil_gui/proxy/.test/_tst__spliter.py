@@ -33,7 +33,6 @@ class W(prx_widgets.PrxToolWindow):
         v_s_1.add_widget(t_3)
         t_4 = prx_widgets.PrxListView()
         v_s_1.add_widget(t_4)
-        # h_s.set_stretches([1, 2, 1])
 
         # h_s.set_widget_hide_at(0)
 

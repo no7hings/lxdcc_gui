@@ -120,7 +120,7 @@ class GuiTagFilterOpt(object):
         return self._filter_content._to_key_path_(key)
 
     def set_tgt_item_tag_update(self, key, prx_item_tgt, dcc_obj=None):
-        self.set_register(
+        self.register(
             prx_item_tgt,
             [key],
             dcc_obj=dcc_obj
@@ -258,7 +258,7 @@ class GuiTagFilterOpt(object):
 
         self.set_filter()
 
-    def set_register(self, prx_item_tgt, keys, dcc_obj=None, expand_depth=1):
+    def register(self, prx_item_tgt, keys, dcc_obj=None, expand_depth=1):
         for i_key in keys:
             i_path = self._to_filter_key_path_(i_key)
             #
@@ -780,9 +780,9 @@ class PrxStgTextureTreeViewAddOpt(PrxStgObjTreeViewAddOpt):
         prx_item.set_menu_content(obj.get_gui_menu_content())
         #
         if obj.get_is_exists() is False:
-            prx_item.set_state(prx_item.DISABLE_STATE)
+            prx_item.set_status(prx_item.ValidatorStatus.Disable)
         else:
-            prx_item.set_state(prx_item.NORMAL_STATE)
+            prx_item.set_status(prx_item.ValidatorStatus.Normal)
             if obj.get_is_directory() is True:
                 prx_item.set_expanded(True)
             else:
@@ -790,9 +790,9 @@ class PrxStgTextureTreeViewAddOpt(PrxStgObjTreeViewAddOpt):
                     obj.path, obj.TX_EXT, self._output_directory_path
                 )
                 if i_tx_exists is True:
-                    prx_item.set_state(prx_item.State.NORMAL)
+                    prx_item.set_status(prx_item.ValidatorStatus.Normal)
                 else:
-                    prx_item.set_state(prx_item.State.WARNING)
+                    prx_item.set_status(prx_item.ValidatorStatus.Warning)
         #
         # self._prx_tree_view.set_loading_update()
 

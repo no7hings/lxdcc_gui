@@ -179,8 +179,8 @@ class QtPopupForChoose(
 
     def __init__(self, *args, **kwargs):
         super(QtPopupForChoose, self).__init__(*args, **kwargs)
-        # use popup,
-        self.setWindowFlags(QtCore.Qt.Popup | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowDoesNotAcceptFocus)
+        # use popup?
+        self.setWindowFlags(QtCore.Qt.ToolTip | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowDoesNotAcceptFocus)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         #
@@ -621,6 +621,7 @@ class QtPopupForCompletion(
 
     def __init__(self, *args, **kwargs):
         super(QtPopupForCompletion, self).__init__(*args, **kwargs)
+        # use tool tip
         self.setWindowFlags(QtCore.Qt.ToolTip | QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setFocusPolicy(QtCore.Qt.NoFocus)

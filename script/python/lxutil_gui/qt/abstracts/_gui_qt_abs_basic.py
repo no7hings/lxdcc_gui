@@ -183,138 +183,69 @@ class AbsQtMenuBaseDef(object):
 
 class AbsQtStatusBaseDef(object):
     Status = bsc_configure.Status
+    ShowStatus = bsc_configure.ShowStatus
     ValidationStatus = bsc_configure.ValidatorStatus
-
-    class StatusRgba(object):
-        Error = 255, 0, 63
-        Warning = 255, 255, 63
-        Correct = 63, 255, 127
-        Locked = 127, 127, 255
-        Disable = 127, 127, 127
+    StatusRgba = bsc_configure.StatusRgba
+    #
     @classmethod
-    def _get_sub_process_status_color_(cls, status):
+    def _get_rgb_args_(cls, r, g, b, a):
+        h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+        r_, g_, b_ = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
+        return (r_, g_, b_, a), (r, g, b, a)
+    @classmethod
+    def _get_sub_process_status_rgba_args_(cls, status):
         if status in {bsc_configure.Status.Started}:
-            color = 0, 0, 0, 0
-            hover_color = 0, 0, 0, 0
+            return cls._get_rgb_args_(*cls.StatusRgba.Opacity)
         elif status in {bsc_configure.Status.Failed, bsc_configure.Status.Error, bsc_configure.Status.Killed}:
-            r, g, b = 255, 0, 63
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
-            hover_color = r, g, b
+            return cls._get_rgb_args_(*cls.StatusRgba.Red)
         elif status in {bsc_configure.Status.Waiting}:
-            r, g, b = 255, 127, 63
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
-            hover_color = r, g, b
+            return cls._get_rgb_args_(*cls.StatusRgba.Orange)
         elif status in {bsc_configure.Status.Suspended}:
-            r, g, b = 255, 255, 63
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
-            hover_color = r, g, b
+            return cls._get_rgb_args_(*cls.StatusRgba.Yellow)
         elif status in {bsc_configure.Status.Running}:
-            r, g, b = 63, 127, 255
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
-            hover_color = r, g, b
+            return cls._get_rgb_args_(*cls.StatusRgba.Blue)
         elif status in {bsc_configure.Status.Completed}:
-            r, g, b = 63, 255, 127
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
-            hover_color = r, g, b
-        else:
-            color = QtBackgroundColors.Transparent
-            hover_color = QtBackgroundColors.Transparent
-        return color, hover_color
+            return cls._get_rgb_args_(*cls.StatusRgba.Green)
+        return cls._get_rgb_args_(*cls.StatusRgba.Opacity)
     @classmethod
-    def _get_text_color_by_validator_status_(cls, status):
+    def _get_text_color_by_validator_status_rgba_args_(cls, status):
         if status in {bsc_configure.ValidatorStatus.Warning}:
-            r, g, b = 255, 255, 63
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
-            hover_color = r, g, b
+            return cls._get_rgb_args_(*cls.StatusRgba.Yellow)
         elif status in {bsc_configure.ValidatorStatus.Error}:
-            r, g, b = 255, 0, 63
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
-            hover_color = r, g, b
+            return cls._get_rgb_args_(*cls.StatusRgba.Red)
         elif status in {bsc_configure.ValidatorStatus.Correct}:
-            r, g, b = 63, 255, 127
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
-            hover_color = r, g, b
+            return cls._get_rgb_args_(*cls.StatusRgba.Green)
         elif status in {bsc_configure.ValidatorStatus.Locked}:
-            r, g, b = 127, 127, 255
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
-            hover_color = r, g, b
+            return cls._get_rgb_args_(*cls.StatusRgba.Purple)
         elif status in {bsc_configure.ValidatorStatus.Active}:
-            r, g, b = 63, 127, 255
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
-            hover_color = r, g, b
-        else:
-            r, g, b = 255, 255, 255
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
-            hover_color = r, g, b
-        return color, hover_color
+            return cls._get_rgb_args_(*cls.StatusRgba.Blue)
+        return cls._get_rgb_args_(*cls.StatusRgba.White)
     @classmethod
-    def _get_border_color_by_validator_status_(cls, status):
+    def _get_border_color_by_validator_status_rgba_args_(cls, status):
         if status in [bsc_configure.ValidatorStatus.Warning]:
-            r, g, b = 255, 255, 63
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
-            hover_color = r, g, b
+            return cls._get_rgb_args_(*cls.StatusRgba.Yellow)
         elif status in [bsc_configure.ValidatorStatus.Error]:
-            r, g, b = 255, 0, 63
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
-            hover_color = r, g, b
+            return cls._get_rgb_args_(*cls.StatusRgba.Red)
         elif status in [bsc_configure.ValidatorStatus.Correct]:
-            r, g, b = 63, 255, 127
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
-            hover_color = r, g, b
+            return cls._get_rgb_args_(*cls.StatusRgba.Green)
         elif status in [bsc_configure.ValidatorStatus.Locked]:
-            r, g, b = 127, 127, 255
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
-            hover_color = r, g, b
+            return cls._get_rgb_args_(*cls.StatusRgba.Purple)
         elif status in [bsc_configure.ValidatorStatus.Active]:
-            r, g, b = 63, 127, 255
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
-            hover_color = r, g, b
-        else:
-            color = QtBackgroundColors.Transparent
-            hover_color = QtBackgroundColors.Transparent
-        return color, hover_color
+            return cls._get_rgb_args_(*cls.StatusRgba.Blue)
+        return cls._get_rgb_args_(*cls.StatusRgba.Opacity)
     @classmethod
-    def _get_background_color_by_validator_status_(cls, status):
+    def _get_background_color_by_validator_status_rgba_args_(cls, status):
         if status in [bsc_configure.ValidatorStatus.Warning]:
-            r, g, b = 255, 255, 63
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
-            hover_color = r, g, b
+            return cls._get_rgb_args_(*cls.StatusRgba.Yellow)
         elif status in [bsc_configure.ValidatorStatus.Error]:
-            r, g, b = 255, 0, 63
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
-            hover_color = r, g, b
+            return cls._get_rgb_args_(*cls.StatusRgba.Red)
         elif status in [bsc_configure.ValidatorStatus.Correct]:
-            r, g, b = 63, 255, 127
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
-            hover_color = r, g, b
+            return cls._get_rgb_args_(*cls.StatusRgba.Green)
         elif status in [bsc_configure.ValidatorStatus.Locked]:
-            r, g, b = 127, 127, 255
-            h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            color = bsc_core.RawColorMtd.hsv2rgb(h, s*.875, v*.875)
-            hover_color = r, g, b
-        else:
-            color = QtBackgroundColors.Transparent
-            hover_color = QtBackgroundColors.Transparent
-        return color, hover_color
+            return cls._get_rgb_args_(*cls.StatusRgba.Purple)
+        elif status in [bsc_configure.ValidatorStatus.Active]:
+            return cls._get_rgb_args_(*cls.StatusRgba.Blue)
+        return cls._get_rgb_args_(*cls.StatusRgba.Opacity)
 
     def _init_status_base_def_(self, widget):
         self._widget = widget
@@ -341,7 +272,7 @@ class AbsQtStatusBaseDef(object):
         else:
             self._widget.unsetCursor()
         #
-        self._status_color, self._hover_status_color = self._get_sub_process_status_color_(
+        self._status_color, self._hover_status_color = self._get_sub_process_status_rgba_args_(
             self._status
         )
         self._refresh_widget_draw_()
@@ -389,7 +320,7 @@ class AbsQtSubProcessDef(object):
         if count > 0:
             self._sub_process_is_enable = True
             self._sub_process_statuses = [status]*count
-            color, hover_color = AbsQtStatusBaseDef._get_sub_process_status_color_(status)
+            color, hover_color = AbsQtStatusBaseDef._get_sub_process_status_rgba_args_(status)
             self._sub_process_status_colors = [color]*count
             self._hover_sub_process_status_colors = [hover_color]*count
             self._sub_process_finished_results = [False]*count
@@ -408,7 +339,7 @@ class AbsQtSubProcessDef(object):
             self._sub_process_status_colors = []
             self._hover_sub_process_status_colors = []
             for i_status in statuses:
-                i_color, i_hover_color = AbsQtStatusBaseDef._get_sub_process_status_color_(i_status)
+                i_color, i_hover_color = AbsQtStatusBaseDef._get_sub_process_status_rgba_args_(i_status)
                 self._sub_process_status_colors.append(i_color)
                 self._hover_sub_process_status_colors.append(i_hover_color)
 
@@ -422,7 +353,7 @@ class AbsQtSubProcessDef(object):
     def _set_sub_process_status_at_(self, index, status):
         self._sub_process_statuses[index] = status
         #
-        color, hover_color = AbsQtStatusBaseDef._get_sub_process_status_color_(status)
+        color, hover_color = AbsQtStatusBaseDef._get_sub_process_status_rgba_args_(status)
         self._sub_process_status_colors[index] = color
         self._hover_sub_process_status_colors[index] = hover_color
         #
@@ -512,7 +443,7 @@ class AbsQtValidatorDef(object):
 
     def _set_validator_status_at_(self, index, status):
         self._validator_statuses[index] = status
-        color, hover_color = AbsQtStatusBaseDef._get_background_color_by_validator_status_(status)
+        color, hover_color = AbsQtStatusBaseDef._get_background_color_by_validator_status_rgba_args_(status)
         self._validator_status_colors[index] = color
         self._hover_validator_status_colors[index] = hover_color
         #
@@ -531,7 +462,7 @@ class AbsQtValidatorDef(object):
             self._validator_status_colors = []
             self._hover_validator_status_colors = []
             for i_status in statuses:
-                i_color, i_hover_color = AbsQtStatusBaseDef._get_background_color_by_validator_status_(i_status)
+                i_color, i_hover_color = AbsQtStatusBaseDef._get_background_color_by_validator_status_rgba_args_(i_status)
                 self._validator_status_colors.append(i_color)
                 self._hover_validator_status_colors.append(i_hover_color)
         else:
@@ -2352,6 +2283,8 @@ class AbsQtThreadBaseDef(object):
             self._refresh_thread_draw_
         )
 
+        self._threads = []
+
     def _start_thread_draw_(self):
         self._thread_draw_is_enable = True
         self._thread_timer.start(100)
@@ -2361,6 +2294,16 @@ class AbsQtThreadBaseDef(object):
         self._thread_draw_is_enable = False
         self._thread_timer.stop()
         self._refresh_thread_draw_()
+
+    def _thread_start_accept_fnc_(self, thread):
+        self._threads.append(thread)
+        if self._thread_draw_is_enable is False:
+            self._start_thread_draw_()
+
+    def _thread_finish_accept_fnc_(self, thread):
+        self._threads.remove(thread)
+        if not self._threads:
+            self._stop_thread_draw_()
 
     def _refresh_thread_draw_(self):
         self._widget.update()
@@ -2372,10 +2315,9 @@ class AbsQtThreadBaseDef(object):
                 cache_fnc
             )
             t.built.connect(build_fnc)
-            t.run_finished.connect(self._stop_thread_draw_)
             t.run_finished.connect(post_fnc)
-            #
-            self._start_thread_draw_()
+            t.start_accepted.connect(self._thread_start_accept_fnc_)
+            t.finish_accepted.connect(self._thread_finish_accept_fnc_)
             t.start()
         else:
             build_fnc(cache_fnc())
@@ -2907,7 +2849,7 @@ class AbsQtBuildItemDef(object):
         self._build_runnable_runner = view._build_runnable_runner
 
     def _set_build_item_runnable_create_(self, cache_fnc, build_fnc, post_fnc=None):
-        return self._build_runnable_runner.set_thread_create(
+        return self._build_runnable_runner.create_thread(
             cache_fnc, build_fnc, post_fnc
         )
 
@@ -3036,16 +2978,15 @@ class AbsQtItemFilterDef(object):
         return '+'.join(self._get_keyword_filter_keys_auto_use_cache_())
 
     def _get_item_keyword_filter_match_args_(self, texts):
-        # todo: use match all mode then, maybe use match one mode aso
+        # todo: use match all mode then, maybe use match one mode also
         if texts:
             context = self._get_item_keyword_filter_context_()
             context = context.lower()
             for i_text in texts:
-                if isinstance(i_text, six.text_type):
-                    i_text = i_text.encode('utf-8')
+                # do not encode, keyword can be use unicode
                 i_text = i_text.lower()
                 if '*' in i_text:
-                    i_filter_key = '*{}*'.format(i_text.lstrip('*').rstrip('*'))
+                    i_filter_key = six.u('*{}*').format(i_text.lstrip('*').rstrip('*'))
                     if not fnmatch.filter([context], i_filter_key):
                         return True, True
                 else:
@@ -3112,7 +3053,7 @@ class AbsQtItemFilterDef(object):
             key, set()
         ).add(value)
 
-    def _set_item_semantic_tag_filter_key_update_(self, data):
+    def _update_item_semantic_tag_filter_keys_tgt_(self, data):
         self._item_semantic_tag_filter_keys_tgt.update(data)
 
     def _get_item_semantic_tag_filter_keys_tgt_(self):
@@ -3581,17 +3522,16 @@ class AbsQtShowForItemDef(
             self.ShowStatus.Completed
         )
 
-    def _set_item_show_start_(self, time=50, force=False):
-        def run_fnc():
+    def _set_item_show_start_(self, delay_time=50, force=False):
+        def run_fnc_():
             if self._item_show_cache_fnc is not None:
                 self._set_item_show_fnc_start_()
-
         #
         if self._item_show_status == self.ShowStatus.Waiting or force is True:
             self._set_item_show_start_loading_()
             #
-            self._item_show_timer.timeout.connect(run_fnc)
-            self._item_show_timer.start(time)
+            self._item_show_timer.timeout.connect(run_fnc_)
+            self._item_show_timer.start(delay_time)
 
     def _set_item_show_stop_(self, status):
         self._item_show_status = status
@@ -3670,7 +3610,7 @@ class AbsQtShowForItemDef(
             else:
                 self._set_item_show_image_stop_(self.ShowStatus.Failed)
 
-    def _set_item_show_image_start_(self, time=50, force=False):
+    def _set_item_show_image_start_(self, delay_time=50, force=False):
         def run_fnc():
             if self._item_show_cache_fnc is not None:
                 self._set_item_show_image_fnc_start_()
@@ -3680,7 +3620,7 @@ class AbsQtShowForItemDef(
             self._set_item_show_image_start_loading_()
             #
             self._item_show_image_timer.timeout.connect(run_fnc)
-            self._item_show_image_timer.start(time)
+            self._item_show_image_timer.start(delay_time)
 
     def _set_item_show_image_stop_(self, status):
         self._item_show_image_status = status

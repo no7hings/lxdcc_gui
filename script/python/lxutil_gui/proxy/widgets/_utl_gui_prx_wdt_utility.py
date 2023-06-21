@@ -662,9 +662,6 @@ class ContentWidget(utl_gui_prx_abstract.AbsPrxWidget):
     def __init__(self, *args, **kwargs):
         super(ContentWidget, self).__init__(*args, **kwargs)
 
-    def set_name(self, text):
-        self._qt_label_0._set_name_text_(text)
-
     def _set_build_(self):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
@@ -694,6 +691,12 @@ class ContentWidget(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_central_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_central_widget_0)
         self._qt_central_layout.setContentsMargins(0, 0, 0, 0)
 
+    def set_name(self, text):
+        self._qt_label_0._set_name_text_(text)
+
+    def set_status(self, status):
+        self._qt_label_0._set_status_(status)
+
     def add_widget(self, widget):
         self._qt_central_layout.addWidget(widget)
 
@@ -715,6 +718,7 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
     def _set_build_(self):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
         widget = _utl_gui_qt_wgt_item_for_entry.QtValueEntryAsContentEdit()
+        widget._set_value_entry_enable_(False)
         qt_layout_0.addWidget(widget)
         self._qt_text_browser_0 = widget._value_entry
 
@@ -1072,7 +1076,7 @@ class PrxToolWindow(
     #
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtMainWindow
     #
-    CONTENT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtWidget
+    QT_UNIT_BASE_CLS = _utl_gui_qt_wgt_utility.QtWidget
     PROGRESS_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtProgressBar
     #
     QT_WAITING_CHART_CLS = _utl_gui_qt_wgt_chart.QtWaitingChart
@@ -1120,7 +1124,7 @@ class PrxToolWindow(
         self._qt_central_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_central_widget)
         # progress-bar
         #
-        self._set_widget_content_def_init_(self._qt_central_layout)
+        self._init_unit_base_def_(self._qt_central_layout)
         #
         self._set_cnt_wdt_0_build_()
         self._set_cnt_wdt_1_build_()
@@ -1132,7 +1136,7 @@ class PrxToolWindow(
         #
         self._set_waiting_def_init_()
         #
-        self.set_current_unit('main_0')
+        self.show_unit('main_0')
 
     def set_menu_add(self, name):
         menu = PrxMenu(self._qt_menu_bar_0)
@@ -1142,7 +1146,7 @@ class PrxToolWindow(
     # main
     def _set_cnt_wdt_0_build_(self):
         # content_widget_0
-        qt_widget_0 = self.create_content_widget('main_0')
+        qt_widget_0 = self.create_unit('main_0')
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_0)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
         # central widget
@@ -1168,9 +1172,9 @@ class PrxToolWindow(
     # option
     def _set_cnt_wdt_1_build_(self):
         def fnc_():
-            self.set_current_unit('main_0')
+            self.show_unit('main_0')
         #
-        qt_widget_0 = self.create_content_widget('option_0')
+        qt_widget_0 = self.create_unit('option_0')
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_0)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
         #
@@ -1183,9 +1187,9 @@ class PrxToolWindow(
     # log
     def _set_cnt_wdt_2_build_(self):
         def fnc_():
-            self.set_current_unit('main_0')
+            self.show_unit('main_0')
         #
-        qt_widget_0 = self.create_content_widget('log_0')
+        qt_widget_0 = self.create_unit('log_0')
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_0)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
         #
@@ -1199,9 +1203,9 @@ class PrxToolWindow(
     # help
     def _set_cnt_wdt_3_build_(self):
         def fnc_():
-            self.set_current_unit('main_0')
+            self.show_unit('main_0')
         #
-        qt_widget_0 = self.create_content_widget('help_0')
+        qt_widget_0 = self.create_unit('help_0')
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_0)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
         #
@@ -1215,9 +1219,9 @@ class PrxToolWindow(
     # loading
     def _set_cnt_wdt_4_build_(self):
         def fnc_():
-            self.set_current_unit('main_0')
+            self.show_unit('main_0')
 
-        qt_widget_0 = self.create_content_widget('window_loading_0')
+        qt_widget_0 = self.create_unit('window_loading_0')
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_0)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
 
@@ -1229,9 +1233,9 @@ class PrxToolWindow(
     # exception
     def _set_cnt_wdt_5_build_(self):
         def fnc_():
-            self.set_current_unit('main_0')
+            self.show_unit('main_0')
         #
-        qt_widget_0 = self.create_content_widget('exception_0')
+        qt_widget_0 = self.create_unit('exception_0')
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_0)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
         #
@@ -1246,9 +1250,9 @@ class PrxToolWindow(
     # message
     def _set_cnt_wdt_6_build_(self):
         def fnc_():
-            self.set_current_unit('main_0')
+            self.show_unit('main_0')
         #
-        qt_widget_0 = self.create_content_widget('message_0')
+        qt_widget_0 = self.create_unit('message_0')
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_0)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
         #
@@ -1288,11 +1292,14 @@ class PrxToolWindow(
     def set_option_unit_name(self, text):
         self._option_unit_0.set_name(text)
 
-    def set_option_unit_show(self):
-        self.set_current_unit('option_0')
+    def set_option_unit_status(self, status):
+        self._option_unit_0.set_status(status)
+
+    def show_option_unit(self):
+        self.show_unit('option_0')
 
     def set_option_unit_hide(self):
-        self.set_current_unit('main_0')
+        self.show_unit('main_0')
 
     def get_option_unit_layout(self):
         return self._option_unit_layout_0
@@ -1320,7 +1327,7 @@ class PrxToolWindow(
         #
         self._is_loading = True
         self._loading_index = 0
-        self.set_current_unit('window_loading_0')
+        self.show_unit('window_loading_0')
         #
         self.start_waiting(auto_stop_time=time)
         #
@@ -1335,12 +1342,12 @@ class PrxToolWindow(
             self.widget, size=self.get_definition_window_size()
         )
         #
-        self.set_current_unit('main_0')
+        self.show_unit('main_0')
         #
         self._is_loading = False
     # log
     def set_log_unit_show(self):
-        self.set_current_unit('log_0')
+        self.show_unit('log_0')
         #
         context = self._log_text_browser_0.get_content()
         self._log_text_browser.set_content(context)
@@ -1372,7 +1379,7 @@ class PrxToolWindow(
                 log.close()
     # help
     def show_help(self):
-        self.set_current_unit('help_0')
+        self.show_unit('help_0')
         #
         if self.HELP_FILE_PATH is not None:
             self._help_text_browser.set_markdown_file_open(
@@ -1391,7 +1398,7 @@ class PrxToolWindow(
         self._help_text_browser.set_markdown_file_open(file_path)
     # exception
     def show_exception(self):
-        self.set_current_unit('exception_0')
+        self.show_unit('exception_0')
 
     def set_exception_content(self, text):
         if isinstance(text, six.string_types):
@@ -1401,9 +1408,11 @@ class PrxToolWindow(
                 '\n'.join(text)
             )
 
-    def show_message(self, text=None):
-        self.set_current_unit('message_0')
+    def show_message(self, text=None, status=None):
+        self.show_unit('message_0')
         if text:
+            unit = self.get_unit('message_0')
+            # unit.set_status(status)
             self._message_text_browser.set_content(
                 text
             )

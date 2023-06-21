@@ -466,17 +466,6 @@ class PrxTreeItem(
             utl_gui_qt_core.QtCore.Qt.UserRole,
             user_data
         )
-    # noinspection PyUnusedLocal
-    def get_state(self, column=0):
-        return self.get_gui_attribute(
-            'state', default='normal'
-        )
-    # noinspection PyUnusedLocal
-    def set_state(self, state, column=0):
-        self.set_gui_attribute(
-            'state', state
-        )
-        self.widget._set_state_(state, column)
 
     def set_status(self, status, column=0):
         self.widget._set_status_(status, column)

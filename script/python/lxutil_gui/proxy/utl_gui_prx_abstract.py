@@ -36,6 +36,10 @@ class AbsPrx(object):
     DCC_OBJ_KEY = 'dcc_obj'
     #
     PRX_CATEGORY = 'dialog_window'
+    #
+    ProcessStatus = bsc_configure.Status
+    ShowStatus = bsc_configure.ShowStatus
+    ValidatorStatus = bsc_configure.ValidatorStatus
     def __init__(self, *args, **kwargs):
         self._qt_widget = self.QT_WIDGET_CLS(*args, **kwargs)
         self._qt_widget.gui_proxy = self
@@ -100,8 +104,6 @@ class AbsPrx(object):
 
 
 class AbsPrxWidget(AbsPrx):
-    ProcessStatus = bsc_configure.Status
-    ValidatorStatus = bsc_configure.ValidatorStatus
     def __init__(self, *args, **kwargs):
         super(AbsPrxWidget, self).__init__(*args, **kwargs)
         #
@@ -348,29 +350,36 @@ class AbsPrxWindow(AbsPrx):
 
 
 class AbsWidgetContentDef(object):
-    CONTENT_WIDGET_CLS = None
-    def _set_widget_content_def_init_(self, layout):
-        self._widget_content_qt_layout_0 = layout
-        self._widget_content_widget_dict = {}
-        self._widget_content_widget_current = None
+    QT_UNIT_BASE_CLS = None
+    def _init_unit_base_def_(self, layout):
+        self._qt_unit_layout = layout
+        self._unit_dict = {}
+        self._unit_current = None
 
-    def create_content_widget(self, key):
-        qt_widget_0 = self.CONTENT_WIDGET_CLS()
+    def create_unit(self, key):
+        qt_widget_0 = self.QT_UNIT_BASE_CLS()
         qt_widget_0.hide()
-        self._widget_content_qt_layout_0.addWidget(qt_widget_0)
-        self._widget_content_widget_dict[key] = qt_widget_0
+        self._qt_unit_layout.addWidget(qt_widget_0)
+        self._unit_dict[key] = qt_widget_0
         return qt_widget_0
 
-    def set_current_unit(self, key):
-        pre_widget = self._widget_content_widget_current
-        cur_widget = self._widget_content_widget_dict[key]
+    def get_unit(self, key):
+        return self._unit_dict[key]
+
+    def show_unit(self, key):
+        pre_widget = self._unit_current
+        cur_widget = self._unit_dict[key]
         if pre_widget is not None:
             pre_widget.hide()
+        #
         cur_widget.show()
-        self._widget_content_widget_current = cur_widget
+        self._unit_current = cur_widget
 
-    def get_current_content_qt_widget(self):
-        return self._widget_content_widget_current
+    def show_next_unit(self):
+        pass
+
+    def get_current_unit(self):
+        return self._unit_current
 
 
 class GuiProgress(object):
@@ -712,9 +721,6 @@ class AbsPrxItemFilterTgtDef(object):
 
     def get_states(self):
         return self.item._get_state_()
-
-    def set_states(self, *args, **kwargs):
-        self.item._set_state_(*args, **kwargs)
 
     def set_keyword_filter_keys_tgt(self, keys):
         self.item._set_item_keyword_filter_keys_tgt_(keys)

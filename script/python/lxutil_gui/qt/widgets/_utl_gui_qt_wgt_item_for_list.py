@@ -166,6 +166,135 @@ class _QtListItemWidget(
                         x+(w-h), y, h, h
                     )
 
+    def _refresh_widget_draw_geometry_(self):
+        self._refresh_widget_frame_draw_geometries_()
+        #
+        self._refresh_widget_icon_draw_geometries_()
+        self._refresh_widget_image_draw_geometries_()
+        self._refresh_widget_name_draw_geometries_()
+
+    def _refresh_widget_frame_draw_geometries_(self):
+        if self._list_widget is not None:
+            side = 4
+
+            x, y = 0, 0
+            w, h = self.width(), self.height()
+
+            b_x, b_y = side, side
+            b_w, b_h = w-side*2, h-side*2
+            self._set_frame_draw_rect_(b_x, b_y, b_w, b_h)
+
+            frm_x, frm_y = side, side
+            frm_w, frm_h = self._frame_size
+            #
+            m_frm_x, m_frm_y = frm_x+x, frm_y+y
+            m_frm_w, m_frm_h = frm_w-x, frm_h-y
+
+            if self._list_widget._get_is_grid_mode_():
+                self._set_widget_frame_geometry_update_as_grid_mode_(
+                    (m_frm_x, m_frm_y), (m_frm_w, m_frm_h)
+                )
+            else:
+                self._set_widget_frame_geometry_update_as_list_mode_(
+                    (m_frm_x, m_frm_y), (m_frm_w, m_frm_h)
+                )
+    # frame for grid mode
+    def _set_widget_frame_geometry_update_as_grid_mode_(self, pos, size):
+        x, y = pos
+        w, h = size
+        frm_s = self._frame_spacing
+        # name
+        name_bsc_w, name_bsc_h = 0, -frm_s
+        if self._get_has_names_() is True:
+            name_f_w, name_f_h = self._name_frame_size
+            name_c = len(self._get_name_indices_())
+            if self._names_draw_range is not None:
+                name_c = len(self._get_name_indices_()[self._names_draw_range[0]:self._names_draw_range[1]])
+            #
+            name_bsc_w, name_bsc_h = w, name_c*name_f_h
+            name_x_, name_y_ = x, y+h-name_bsc_h
+            #
+            self._name_frame_draw_rect.setRect(
+                name_x_, name_y_,
+                name_bsc_w, name_bsc_h
+            )
+        # icon
+        icon_bsc_w, icon_bsc_h = -frm_s, 0
+        if self._get_has_icons_() is True or self._check_is_enable is True:
+            #
+            icn_frm_w, icn_frm_h = self._icon_frame_draw_size
+            icn_x_, icn_y_ = x, y
+            # add when check is enable
+            icn_c = self._get_icon_count_()+[0, 1][self._check_is_enable]
+            icon_bsc_h = h-name_bsc_h-frm_s
+            c_0 = int(float(icon_bsc_h)/float(icn_frm_h))
+            if c_0 > 0:
+                c_1 = math.ceil(float(icn_c)/c_0)
+                icon_bsc_w, icon_bsc_h = icn_frm_w*c_1, icon_bsc_h
+                #
+                self._icon_frame_draw_rect.setRect(
+                    icn_x_, icn_y_,
+                    icon_bsc_w, icon_bsc_h
+                )
+            else:
+                self._icon_frame_draw_rect.setRect(
+                    -40, -40, 20, 20
+                )
+        # image
+        if self._get_has_image_() is True:
+            image_x_, image_y_ = x+icon_bsc_w+frm_s, y
+            image_bsc_w, image_bsc_h = w-(icon_bsc_w+frm_s), h-(name_bsc_h+frm_s)
+            self._image_frame_rect.setRect(
+                image_x_, image_y_, image_bsc_w, image_bsc_h
+            )
+
+    def _set_widget_frame_geometry_update_as_list_mode_(self, pos, size):
+        x, y = pos
+        w, h = size
+        width, height = self.width(), self.height()
+        f_side = self._frame_side
+        frm_s = self._frame_spacing
+        #
+        # icon
+        icon_bsc_w, icon_bsc_h = -frm_s, 0
+        if self._get_has_icons_() is True or self._check_is_enable is True:
+            icn_frm_w, icn_frm_h = self._icon_frame_draw_size
+            icn_x_, icn_y_ = x, y
+            # add when check is enable
+            icn_c = self._get_icon_count_() + [0, 1][self._check_is_enable]
+            icon_bsc_h = h
+            c_0 = int(float(icon_bsc_h)/icn_frm_h)
+            if c_0 > 0:
+                c_1 = math.ceil(float(icn_c) / c_0)
+                # grid to
+                icon_bsc_w, icon_bsc_h = icn_frm_w*c_1, icon_bsc_h
+                #
+                self._icon_frame_draw_rect.setRect(
+                    icn_x_, icn_y_,
+                    icon_bsc_w, icon_bsc_h
+                )
+            else:
+                self._icon_frame_draw_rect.setRect(
+                    -40, -40, 20, 20
+                )
+        #
+        image_bsc_w, image_bsc_h = -frm_s, 0
+        if self._get_has_image_() is True:
+            image_x_, image_y_ = x+(icon_bsc_w+frm_s), y
+            image_bsc_w, image_bsc_h = w-(icon_bsc_w+frm_s), h
+            self._image_frame_rect.setRect(
+                image_x_, image_y_, image_bsc_w, image_bsc_h
+            )
+        #
+        if self._get_has_names_() is True:
+            name_x_, name_y_ = x+(icon_bsc_w+frm_s)+(image_bsc_w+frm_s), y
+            name_bsc_w, name_bsc_h = width-(icon_bsc_w+frm_s)-(image_bsc_w+frm_s)-f_side*2, h
+            #
+            self._name_frame_draw_rect.setRect(
+                name_x_, name_y_,
+                name_bsc_w, name_bsc_h
+            )
+
     def __init__(self, *args, **kwargs):
         super(_QtListItemWidget, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -319,7 +448,7 @@ class _QtListItemWidget(
             is_selected=self._is_selected,
         )
         if self._get_status_is_enable_() is True:
-            bdr_color_, bdr_hover_color = self._get_border_color_by_validator_status_(
+            bdr_color_, bdr_hover_color = self._get_border_color_by_validator_status_rgba_args_(
                 self._status
             )
             if self._press_is_hovered is True:
@@ -563,135 +692,6 @@ class _QtListItemWidget(
 
     def _get_view_(self):
         return self._list_widget
-
-    def _refresh_widget_draw_geometry_(self):
-        self._refresh_widget_frame_draw_geometries_()
-        #
-        self._refresh_widget_icon_draw_geometries_()
-        self._refresh_widget_image_draw_geometries_()
-        self._refresh_widget_name_draw_geometries_()
-
-    def _refresh_widget_frame_draw_geometries_(self):
-        if self._list_widget is not None:
-            side = 4
-
-            x, y = 0, 0
-            w, h = self.width(), self.height()
-
-            b_x, b_y = side, side
-            b_w, b_h = w-side*2, h-side*2
-            self._set_frame_draw_rect_(b_x, b_y, b_w, b_h)
-
-            frm_x, frm_y = side, side
-            frm_w, frm_h = self._frame_size
-            #
-            m_frm_x, m_frm_y = frm_x+x, frm_y+y
-            m_frm_w, m_frm_h = frm_w-x, frm_h-y
-
-            if self._list_widget._get_is_grid_mode_():
-                self._set_widget_frame_geometry_update_as_grid_mode_(
-                    (m_frm_x, m_frm_y), (m_frm_w, m_frm_h)
-                )
-            else:
-                self._set_widget_frame_geometry_update_as_list_mode_(
-                    (m_frm_x, m_frm_y), (m_frm_w, m_frm_h)
-                )
-    # frame for grid mode
-    def _set_widget_frame_geometry_update_as_grid_mode_(self, pos, size):
-        x, y = pos
-        w, h = size
-        frm_s = self._frame_spacing
-        # name
-        name_bsc_w, name_bsc_h = 0, -frm_s
-        if self._get_has_names_() is True:
-            name_f_w, name_f_h = self._name_frame_size
-            name_c = len(self._get_name_indices_())
-            if self._names_draw_range is not None:
-                name_c = len(self._get_name_indices_()[self._names_draw_range[0]:self._names_draw_range[1]])
-            #
-            name_bsc_w, name_bsc_h = w, name_c*name_f_h
-            name_x_, name_y_ = x, y+h-name_bsc_h
-            #
-            self._name_frame_draw_rect.setRect(
-                name_x_, name_y_,
-                name_bsc_w, name_bsc_h
-            )
-        # icon
-        icon_bsc_w, icon_bsc_h = -frm_s, 0
-        if self._get_has_icons_() is True or self._check_is_enable is True:
-            #
-            icn_frm_w, icn_frm_h = self._icon_frame_draw_size
-            icn_x_, icn_y_ = x, y
-            # add when check is enable
-            icn_c = self._get_icon_count_()+[0, 1][self._check_is_enable]
-            icon_bsc_h = h-name_bsc_h-frm_s
-            c_0 = int(float(icon_bsc_h)/float(icn_frm_h))
-            if c_0 > 0:
-                c_1 = math.ceil(float(icn_c)/c_0)
-                icon_bsc_w, icon_bsc_h = icn_frm_w*c_1, icon_bsc_h
-                #
-                self._icon_frame_draw_rect.setRect(
-                    icn_x_, icn_y_,
-                    icon_bsc_w, icon_bsc_h
-                )
-            else:
-                self._icon_frame_draw_rect.setRect(
-                    -40, -40, 20, 20
-                )
-        # image
-        if self._get_has_image_() is True:
-            image_x_, image_y_ = x+icon_bsc_w+frm_s, y
-            image_bsc_w, image_bsc_h = w-(icon_bsc_w+frm_s), h-(name_bsc_h+frm_s)
-            self._image_frame_rect.setRect(
-                image_x_, image_y_, image_bsc_w, image_bsc_h
-            )
-
-    def _set_widget_frame_geometry_update_as_list_mode_(self, pos, size):
-        x, y = pos
-        w, h = size
-        width, height = self.width(), self.height()
-        f_side = self._frame_side
-        frm_s = self._frame_spacing
-        #
-        # icon
-        icon_bsc_w, icon_bsc_h = -frm_s, 0
-        if self._get_has_icons_() is True or self._check_is_enable is True:
-            icn_frm_w, icn_frm_h = self._icon_frame_draw_size
-            icn_x_, icn_y_ = x, y
-            # add when check is enable
-            icn_c = self._get_icon_count_() + [0, 1][self._check_is_enable]
-            icon_bsc_h = h
-            c_0 = int(float(icon_bsc_h)/icn_frm_h)
-            if c_0 > 0:
-                c_1 = math.ceil(float(icn_c) / c_0)
-                # grid to
-                icon_bsc_w, icon_bsc_h = icn_frm_w*c_1, icon_bsc_h
-                #
-                self._icon_frame_draw_rect.setRect(
-                    icn_x_, icn_y_,
-                    icon_bsc_w, icon_bsc_h
-                )
-            else:
-                self._icon_frame_draw_rect.setRect(
-                    -40, -40, 20, 20
-                )
-        #
-        image_bsc_w, image_bsc_h = -frm_s, 0
-        if self._get_has_image_() is True:
-            image_x_, image_y_ = x+(icon_bsc_w+frm_s), y
-            image_bsc_w, image_bsc_h = w-(icon_bsc_w+frm_s), h
-            self._image_frame_rect.setRect(
-                image_x_, image_y_, image_bsc_w, image_bsc_h
-            )
-        #
-        if self._get_has_names_() is True:
-            name_x_, name_y_ = x+(icon_bsc_w+frm_s)+(image_bsc_w+frm_s), y
-            name_bsc_w, name_bsc_h = width-(icon_bsc_w+frm_s)-(image_bsc_w+frm_s)-f_side*2, h
-            #
-            self._name_frame_draw_rect.setRect(
-                name_x_, name_y_,
-                name_bsc_w, name_bsc_h
-            )
 
     def _set_sort_number_key_(self, value):
         self._sort_number_key = value

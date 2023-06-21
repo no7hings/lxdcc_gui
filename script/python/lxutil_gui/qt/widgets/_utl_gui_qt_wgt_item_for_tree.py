@@ -238,28 +238,6 @@ class QtTreeWidgetItem(
                     QtGui.QIcon.On
                 )
                 self.setIcon(column, icon)
-
-    def _set_state_(self, state, column=0):
-        self._icon_state = state
-        #
-        self._set_icon_state_update_(column)
-        #
-        if state == utl_gui_core.State.NORMAL:
-            self.setForeground(
-                column, QtGui.QBrush(Color.NORMAL)
-            )
-        elif state == utl_gui_core.State.ENABLE:
-            self.setForeground(column, QtGui.QBrush(Color.ENABLE))
-        elif state == utl_gui_core.State.DISABLE:
-            self.setForeground(column, QtGui.QBrush(Color.DISABLE))
-        elif state == utl_gui_core.State.WARNING:
-            self.setForeground(column, QtGui.QBrush(Color.WARNING))
-        elif state == utl_gui_core.State.ERROR:
-            self.setForeground(column, QtGui.QBrush(Color.ERROR))
-        elif state == utl_gui_core.State.LOCKED:
-            self.setForeground(column, QtGui.QBrush(Color.LOCKED))
-        elif state == utl_gui_core.State.LOST:
-            self.setForeground(column, QtGui.QBrush(Color.LOST))
     # status
     def _set_status_(self, status, column=0):
         if status != self._status:
@@ -334,17 +312,17 @@ class QtTreeWidgetItem(
                     draw_status = True
                     if status == self.ValidatorStatus.Normal:
                         draw_status = False
-                        background_color = Color.NORMAL
+                        background_color = QtFontColors.Normal
                     elif status == self.ValidatorStatus.Correct:
-                        background_color = Color.CORRECT
+                        background_color = QtFontColors.Correct
                     elif status == self.ValidatorStatus.Warning:
-                        background_color = Color.WARNING
+                        background_color = QtFontColors.Warning
                     elif status == self.ValidatorStatus.Error:
-                        background_color = Color.ERROR
+                        background_color = QtFontColors.Error
                     elif status == self.ValidatorStatus.Active:
-                        background_color = Color.ACTIVE
+                        background_color = QtFontColors.Active
                     elif status == self.ValidatorStatus.Disable:
-                        background_color = Color.DISABLE
+                        background_color = QtFontColors.Disable
                     elif status == self.ValidatorStatus.Locked:
                         background_color = QtStatusColors.Locked
                     else:

@@ -493,7 +493,7 @@ class QtBackgroundColors(object):
     DeleteHovered = QtGui.QColor(255, 63, 127, 255)
     #
     Pressed = QtGui.QColor(95, 255, 159, 255)
-    PressedHovered = QtGui.QColor(255, 159, 95, 255)
+    PressedHovered = QtGui.QColor(255, 179, 47, 255)
     #
     Actioned = QtGui.QColor(
         *utl_gui_core.QtStyleMtd.get_background('color-actioned')
@@ -534,7 +534,7 @@ class QtBackgroundColors(object):
     )
 
     Bubble = QtGui.QColor(191, 191, 191, 255)
-    BubbleHovered = QtGui.QColor(255, 159, 95, 255)
+    BubbleHovered = QtGui.QColor(255, 179, 47, 255)
 
 
 class QtFontColors(object):
@@ -603,7 +603,11 @@ class QtFontColors(object):
 
 
 class QtStatusColors(object):
+    Normal = QtGui.QColor(0, 0, 0, 0)
     Locked = QtGui.QColor(127, 127, 255, 255)
+    Correct = QtGui.QColor(63, 255, 127, 255)
+    Warning = QtGui.QColor(255, 255, 63, 255)
+    Error = QtGui.QColor(255, 0, 63, 255)
 
 
 class QtFonts(object):
@@ -637,7 +641,7 @@ class Brush(object):
 class QtUtilMtd(object):
     ICON_KEY_PATTERN = r'[@](.*?)[@]'
     @classmethod
-    def set_fonts_add(cls, fonts):
+    def add_fonts(cls, fonts):
         for i in fonts:
             QtGui.QFontDatabase.addApplicationFont(
                 i
@@ -1275,7 +1279,7 @@ def set_window_show_standalone(prx_window_class, show_kwargs=None, **kwargs):
         app = QtWidgets.QApplication(sys.argv)
         app.setPalette(QtDccMtd.get_palette())
 
-        QtUtilMtd.set_fonts_add(
+        QtUtilMtd.add_fonts(
             utl_gui_core.RscFontFile.get_all()
         )
         prx_window = prx_window_class(**kwargs)
@@ -1430,11 +1434,14 @@ class QtBuildThread(QtCore.QThread):
     #
     run_started = qt_signal()
     run_finished = qt_signal()
-
+    #
+    start_accepted = qt_signal(QtCore.QObject)
+    finish_accepted = qt_signal(QtCore.QObject)
+    #
     run_failed = qt_signal()
-
+    #
     status_changed = qt_signal(int)
-
+    #
     Status = bsc_configure.Status
     def __init__(self, *args, **kwargs):
         super(QtBuildThread, self).__init__(*args, **kwargs)
@@ -1465,7 +1472,9 @@ class QtBuildThread(QtCore.QThread):
 
     def run(self):
         if self._status == self.Status.Waiting:
+            self._status = self.Status.Running
             self.run_started.emit()
+            self.start_accepted.emit(self)
             self.set_status(self.Status.Started)
             # noinspection PyBroadException
             try:
@@ -1481,6 +1490,7 @@ class QtBuildThread(QtCore.QThread):
             #
             finally:
                 self.run_finished.emit()
+                self.finish_accepted.emit(self)
                 self.set_status(self.Status.Finished)
 
 
@@ -1488,6 +1498,7 @@ class QtBuildThreadStack(QtCore.QObject):
     run_started = qt_signal()
     run_finished = qt_signal()
     run_resulted = qt_signal(list)
+    Status = bsc_configure.Status
     def __init__(self, *args, **kwargs):
         super(QtBuildThreadStack, self).__init__(*args, **kwargs)
         #
@@ -1495,29 +1506,45 @@ class QtBuildThreadStack(QtCore.QObject):
 
         self._threads = []
         self._results = []
+        #
+        self._threads_started = []
+
+        self._status = self.Status.Waiting
+        self._sub_statuses = []
 
         # self._mutex = QtCore.QMutex()
 
-    def set_thread_create(self, cache_fnc, build_fnc, post_fnc=None):
+    def create_thread(self, cache_fnc, build_fnc, post_fnc=None):
         thread = QtBuildThread(self._widget)
         thread.set_cache_fnc(cache_fnc)
         thread.built.connect(build_fnc)
+        thread.start_accepted.connect(self.start_accept_fnc)
+        thread.finish_accepted.connect(self.finish_accept_fnc)
+        self._results.append(0)
+        self._sub_statuses.append(
+            self.Status.Waiting
+        )
         if post_fnc is not None:
             thread.run_finished.connect(post_fnc)
         return thread
 
-    def set_register(self, cache_fnc, build_fnc, post_fnc=None):
-        thread = self.set_thread_create(cache_fnc, build_fnc, post_fnc)
+    def register(self, cache_fnc, build_fnc, post_fnc=None):
+        thread = self.create_thread(cache_fnc, build_fnc, post_fnc)
         self._threads.append(thread)
-        self._results.append(0)
         return thread
 
-    def set_result_at(self, thread, result):
-        if thread in self._threads:
-            index = self._threads.index(thread)
-            self._results[index] = result
-            if sum(self._results) == len(self._results):
-                self.run_finished.emit()
+    def start_accept_fnc(self, thread):
+        self._threads_started.append(thread)
+        index = self._threads.index(thread)
+        self._sub_statuses[index] = self.Status.Running
+
+    def finish_accept_fnc(self, thread):
+        self._threads_started.remove(thread)
+        index = self._threads.index(thread)
+        self._sub_statuses[index] = self.Status.Finished
+        self._results[index] = 1
+        if len(self._results) == sum(self._results):
+            self.run_finished.emit()
 
     def set_kill(self):
         [i.set_kill() for i in self._threads]
@@ -1534,13 +1561,11 @@ class QtBuildThreadStack(QtCore.QObject):
 
     def set_start(self):
         # self._mutex.lock()
+        self._status = self.Status.Running
         self.run_started.emit()
         c_t = None
+        # running one by one
         for i_t in self._threads:
-            i_t.run_finished.connect(
-                functools.partial(self.set_result_at, i_t, 1)
-            )
-            #
             if c_t is None:
                 i_t.start()
             else:
@@ -1616,7 +1641,7 @@ class QtBuildRunnableRunner(QtCore.QObject):
         self._threads = []
         self._results = []
 
-    def set_thread_create(self, cache_fnc, build_fnc, post_fnc=None):
+    def create_thread(self, cache_fnc, build_fnc, post_fnc=None):
         runnable = QtBuildRunnable(self._pool)
         runnable.set_cache_fnc(cache_fnc)
         runnable._build_signals.built.connect(build_fnc)
@@ -1624,8 +1649,8 @@ class QtBuildRunnableRunner(QtCore.QObject):
             runnable._build_signals.run_finished.connect(post_fnc)
         return runnable
 
-    def set_register(self, cache_fnc, build_fnc, post_fnc=None):
-        thread = self.set_thread_create(cache_fnc, build_fnc, post_fnc)
+    def register(self, cache_fnc, build_fnc, post_fnc=None):
+        thread = self.create_thread(cache_fnc, build_fnc, post_fnc)
         self._threads.append(thread)
         self._results.append(0)
         return thread
@@ -3011,7 +3036,7 @@ class QtPainter(QtGui.QPainter):
                 QtCore.Qt.IgnoreAspectRatio,
                 QtCore.Qt.SmoothTransformation
             )
-            c = hover_color or QtGui.QColor(255, 127, 63, 127)
+            c = hover_color or QtGui.QColor(255, 179, 47, 127)
             hover_pixmap.fill(QtGui.QColor(c.red(), c.green(), c.blue(), 127))
             hover_pixmap.setMask(mask)
             rect__ = QtCore.QRect(
@@ -3071,7 +3096,7 @@ class QtPainter(QtGui.QPainter):
                 QtCore.Qt.IgnoreAspectRatio,
                 QtCore.Qt.SmoothTransformation
             )
-            c = hover_color or QtGui.QColor(255, 127, 63, 127)
+            c = hover_color or QtGui.QColor(255, 179, 47, 127)
             hover_pixmap.fill(QtGui.QColor(c.red(), c.green(), c.blue(), 127))
             hover_pixmap.setMask(mask)
             rect__ = QtCore.QRect(
@@ -3172,27 +3197,17 @@ class QtPainter(QtGui.QPainter):
         self.setRenderHint(self.Antialiasing, boolean)
 
     def _set_loading_draw_by_rect_(self, rect, loading_index):
-        self._set_border_color_(QtBackgroundColors.ItemLoading)
-        self._set_background_color_(QtBackgroundColors.ItemLoading)
-        # self._set_background_style_(QtCore.Qt.FDiagPattern)
-        x, y = rect.x(), rect.y()
-        w, h = rect.width(), rect.height()
-        self.drawRect(rect)
-        process_frame = QtCore.QRect(
-            x+8, h/2-10, w-16, 20
+        self._set_border_color_(QtBorderColors.Basic)
+        self._draw_alternating_colors_by_rect_(
+            rect=rect,
+            colors=((0, 0, 0, 63), (0, 0, 0, 0)),
+            # border_radius=4,
+            # running=True
         )
-        # self._set_border_color_(255, 255, 255)
-        # self._set_background_color_(255, 255, 255, 63)
-        # self.drawRoundedRect(
-        #     process_frame,
-        #     10, 10,
-        #     QtCore.Qt.AbsoluteSize
-        # )
-        #
         self._set_font_(Font.LOADING)
         self._set_border_color_(QtFontColors.Basic)
         self.drawText(
-            process_frame,
+            rect,
             QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
             'loading .{}'.format('.'*(loading_index % 3))
         )
@@ -3341,7 +3356,7 @@ class QtPainter(QtGui.QPainter):
             )
             if is_hovered is True:
                 self._set_background_color_(
-                    255, 127, 63, 63
+                    255, 179, 47, 63
                 )
                 self.drawRoundedRect(
                     frame_rect,
@@ -3359,7 +3374,7 @@ class QtPainter(QtGui.QPainter):
             )
             if is_hovered is True:
                 self._set_background_color_(
-                    255, 127, 63, 63
+                    255, 179, 47, 63
                 )
                 self.drawRoundedRect(
                     frame_rect,
@@ -4325,8 +4340,8 @@ class QtNGPainter(QtPainter):
     def _get_ng_node_background_color_(cls, rect, is_hovered=False, is_selected=False, is_actioned=False):
         conditions = [is_hovered, is_selected]
         a = 255
-        color_hovered = QtGui.QColor(255, 127, 63, a)
-        color_selected = QtGui.QColor(63, 127, 255, a)
+        color_hovered = QtGui.QColor(255, 179, 47, a)
+        color_selected = QtGui.QColor(79, 95, 151, a)
         color_actioned = QtGui.QColor(63, 255, 127, a)
         color = QtGui.QColor(191, 191, 191, a)
         if conditions == [False, False]:

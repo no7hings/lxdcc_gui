@@ -404,6 +404,7 @@ class _AbsQtSplitterHandle(
                 # record size
                 size_l = splitter._get_size_at_(index_l)
                 size_r = splitter._get_size_at_(index_r)
+                h_f_w = splitter.QT_HANDLE_WIDTH
                 splitter._sizes_contracted_dict[index_l] = size_l
                 if size_mark is not None:
                     splitter._size_fixed_dict[index_l] = size_mark
@@ -414,13 +415,14 @@ class _AbsQtSplitterHandle(
                         splitter._sizes_contracted_dict[index_l] = size_fixed
                 #
                 splitter._update_contracted_at_(index_l, True)
-                splitter._accept_split_sizes_between_(indices, (0, size_l+size_r))
+                # contract size use handle width, do not use zero
+                splitter._update_split_sizes_between_(indices, (h_f_w, size_l+size_r-h_f_w))
             # expand
             else:
                 size_l = splitter._sizes_contracted_dict[index_l]
                 size_r = splitter._get_size_at_(index_r)
                 splitter._update_contracted_at_(index_l, False)
-                splitter._accept_split_sizes_between_(indices, (size_l, (size_r-size_l)))
+                splitter._update_split_sizes_between_(indices, (size_l, (size_r-size_l)))
         #
         self._refresh_widget_draw_()
 
@@ -439,6 +441,7 @@ class _AbsQtSplitterHandle(
                 # record size
                 size_l = splitter._get_size_at_(index_l)
                 size_r = splitter._get_size_at_(index_r)
+                h_f_w = splitter.QT_HANDLE_WIDTH
                 splitter._sizes_contracted_dict[index_r] = size_r
                 if size_mark is not None:
                     splitter._size_fixed_dict[index_r] = size_mark
@@ -449,12 +452,13 @@ class _AbsQtSplitterHandle(
                         splitter._sizes_contracted_dict[index_r] = size_fixed
                 #
                 splitter._update_contracted_at_(index_r, True)
-                splitter._accept_split_sizes_between_(indices, (size_l+size_r, 0))
+                # contract size use handle width, do not use zero
+                splitter._update_split_sizes_between_(indices, (size_l+size_r-h_f_w, h_f_w))
             else:
                 size_l = splitter._get_size_at_(index_l)
                 size_r = splitter._sizes_contracted_dict[index_r]
                 splitter._update_contracted_at_(index_r, False)
-                splitter._accept_split_sizes_between_(indices, ((size_l-size_r), size_r))
+                splitter._update_split_sizes_between_(indices, ((size_l-size_r), size_r))
         #
         self._refresh_widget_draw_()
 
@@ -503,7 +507,7 @@ class _AbsQtSplitterHandle(
                         if index_l == 0:
                             if s_l <= 0:
                                 return
-                        splitter._accept_split_sizes_between_(indices, [s_l, s_r])
+                        splitter._update_split_sizes_between_(indices, [s_l, s_r])
             # move right, when left is contracted ignore
             elif x > 0:
                 if splitter._has_index_(index_l):
@@ -512,7 +516,7 @@ class _AbsQtSplitterHandle(
                         if index_r == splitter._get_index_maximum_():
                             if s_r <= self.width():
                                 return
-                        splitter._accept_split_sizes_between_(indices, [s_l, s_r])
+                        splitter._update_split_sizes_between_(indices, [s_l, s_r])
         elif self._get_orientation_() == QtCore.Qt.Vertical:
             s_l, s_r = s_l_o+y, s_r_o-y
             # move up, same as move left
@@ -522,7 +526,7 @@ class _AbsQtSplitterHandle(
                         if index_l == 0:
                             if s_l <= 0:
                                 return
-                        splitter._accept_split_sizes_between_(indices, [s_l, s_r])
+                        splitter._update_split_sizes_between_(indices, [s_l, s_r])
             # move down, same as move right
             elif y > 0:
                 if splitter._has_index_(index_l):
@@ -530,7 +534,7 @@ class _AbsQtSplitterHandle(
                         if index_r == splitter._get_index_maximum_():
                             if s_r <= self.height():
                                 return
-                        splitter._accept_split_sizes_between_(indices, [s_l, s_r])
+                        splitter._update_split_sizes_between_(indices, [s_l, s_r])
 
     def _execute_action_split_move_stop_(self, event):
         self._splitter_press_pos = 0, 0
@@ -582,7 +586,7 @@ class _AbsQtSplitter(QtWidgets.QWidget):
             self._widget_list[i].setVisible(not self._is_contracted_dict[i])
         self._refresh_widget_()
 
-    def _accept_split_sizes_between_(self, indices, sizes):
+    def _update_split_sizes_between_(self, indices, sizes):
         w, h = self.width(), self.height()
         indices_l, indices_r = indices[:indices[0]], indices[indices[1]:]
         #
@@ -614,13 +618,12 @@ class _AbsQtSplitter(QtWidgets.QWidget):
         self._widget_list[index].setVisible(not boolean)
 
     def _refresh_widget_draw_geometry_(self):
-        c_pos = 0
         w, h = self.width(), self.height()
-        c = len(self._handle_list)
         h_f_w = self.QT_HANDLE_WIDTH
-
-        for idx in range(c):
+        c_pos = -h_f_w
+        for idx in self._indices:
             i_handle = self._handle_list[idx]
+            #
             i_widget = self._widget_list[idx]
             i_handle_rect = self._handle_rect_list[idx]
             i_widget_rect = self._widget_rect_list[idx]
@@ -632,13 +635,11 @@ class _AbsQtSplitter(QtWidgets.QWidget):
                 # handle
                 hx, hy = i_pos, 0
                 hw, hh = h_f_w, h
-                if idx == 0:
-                    hx, hy = i_pos-h_f_w, 0
-                else:
-                    if i_size == 0 and idx != self._index_maximum:
-                        hx, hy = i_pos-h_f_w, 0
                 #
-                i_handle.show()
+                if idx == 0:
+                    i_handle.hide()
+                else:
+                    i_handle.show()
                 i_handle.setGeometry(
                     hx, hy, hw, hh
                 )
@@ -649,11 +650,6 @@ class _AbsQtSplitter(QtWidgets.QWidget):
                 # widget
                 wx, wy = i_pos+h_f_w, 0
                 ww, wh = i_size-h_f_w, h
-                if idx == 0:
-                    wx, wy = i_pos, 0
-                    ww, wh = i_size, h
-                if ns == 0:
-                    ww, wh = i_size-h_f_w, h
                 #
                 i_widget_rect.setRect(
                     wx+1, wy+1, ww-2, wh-2
@@ -666,13 +662,11 @@ class _AbsQtSplitter(QtWidgets.QWidget):
                 # handle
                 hx, hy = 0, i_pos
                 hw, hh = w, h_f_w
-                if idx == 0:
-                    hx, hy = 0, i_pos-h_f_w
-                else:
-                    if i_size == 0 and idx != self._index_maximum:
-                        hx, hy = 0, i_pos-h_f_w
                 #
-                i_handle.show()
+                if idx == 0:
+                    i_handle.hide()
+                else:
+                    i_handle.show()
                 i_handle.setGeometry(
                     hx, hy, hw, hh
                 )
@@ -683,11 +677,6 @@ class _AbsQtSplitter(QtWidgets.QWidget):
                 # widget
                 wx, wy = 0, i_pos+h_f_w
                 ww, wh = w, i_size-h_f_w
-                if idx == 0:
-                    wx, wy = 0, i_pos
-                    ww, wh = w, i_size
-                if ns == 0:
-                    ww, wh = w, i_size-h_f_w
                 #
                 i_widget_rect.setRect(
                     wx+1, wy+1, ww-2, wh-2
@@ -699,39 +688,68 @@ class _AbsQtSplitter(QtWidgets.QWidget):
             #
             c_pos += i_size
 
-    def _set_update_by_size_(self):
+    def _get_fixed_args_(self):
+        # include contracted and has fixed value
+        indices = []
+        sizes = [0 for _ in self._indices]
+        for idx in self._indices:
+            # when contracted use handle width
+            if self._is_contracted_dict[idx] is False:
+                if idx in self._size_fixed_dict:
+                    i_size = self._size_fixed_dict[idx]
+                    indices.append(idx)
+                    sizes[idx] = i_size
+            else:
+                indices.append(idx)
+                sizes[idx] = self.QT_HANDLE_WIDTH
+        return indices, sizes
+
+    def _get_free_args_(self):
+        # exclude contracted and has fixed value
+        indices = []
+        sizes = [0 for _ in self._indices]
+        for idx in self._indices:
+            if self._is_contracted_dict[idx] is False:
+                if idx not in self._size_fixed_dict:
+                    indices.append(idx)
+                    # when size is 0 use 1 instance
+                    i_size = self._size_dict[idx] or 1
+                    sizes[idx] = i_size
+        return indices, sizes
+
+    def _refresh_widget_geometry_size_(self):
         sizes_all = [v for k, v in self._size_dict.items()]
         indices_fixed, sizes_fixed = self._get_fixed_args_()
         size_fixed = sum(sizes_fixed)
-
+        w, h = self.width(), self.height()
+        w_f_h = self.QT_HANDLE_WIDTH
         maximum_size = sum(sizes_all)
         if maximum_size > 0:
             if self.QT_ORIENTATION == QtCore.Qt.Horizontal:
-                w, h = self.width(), self.height()
+                for idx in indices_fixed:
+                    self._size_dict[idx] = sizes_fixed[idx]
+                #
                 indices_free, sizes_free = self._get_free_args_()
-                size_free_maximum = w - size_fixed
-                size_free = sum(sizes_free)
-                if size_free > 0:
-                    for idx in self._indices:
-                        if idx in indices_fixed:
-                            i_size = sizes_fixed[idx]
-                        else:
+                if indices_free:
+                    # size maximum add handle-width, when update draw geometry left offset handle-width
+                    size_free_maximum = w+w_f_h-size_fixed
+                    size_free = sum(sizes_free)
+                    if size_free > 0:
+                        for idx in indices_free:
                             i_size = size_free_maximum*(float(sizes_free[idx])/float(size_free))
-                        #
-                        self._size_dict[idx] = i_size
+                            self._size_dict[idx] = i_size
             elif self.QT_ORIENTATION == QtCore.Qt.Vertical:
-                w, h = self.width(), self.height()
-                indices_free = [i for i in self._indices if i not in indices_fixed]
-                size_free_maximum = h-size_fixed
-                size_free = sum([sizes_all[i] for i in indices_free])
-                if size_free > 0:
-                    for idx in self._indices:
-                        if idx in indices_fixed:
-                            i_size = sizes_fixed[idx]
-                        else:
+                for idx in indices_fixed:
+                    self._size_dict[idx] = sizes_fixed[idx]
+                #
+                indices_free, sizes_free = self._get_free_args_()
+                if indices_free:
+                    size_free_maximum = h+w_f_h-size_fixed
+                    size_free = sum([sizes_all[i] for i in indices_free])
+                    if size_free > 0:
+                        for idx in indices_free:
                             i_size = size_free_maximum*(float(sizes_all[idx])/float(size_free))
-                        #
-                        self._size_dict[idx] = i_size
+                            self._size_dict[idx] = i_size
             else:
                 raise TypeError()
 
@@ -857,39 +875,12 @@ class _AbsQtSplitter(QtWidgets.QWidget):
         return list_
 
     def _refresh_widget_(self):
-        self._set_update_by_size_()
+        self._refresh_widget_geometry_size_()
         self._refresh_widget_draw_geometry_()
         self._refresh_widget_draw_()
 
     def _refresh_widget_draw_(self):
         self.update()
-
-    def _get_fixed_args_(self):
-        indices = []
-        sizes = [0 for _ in self._indices]
-        for idx in self._indices:
-            # when contracted use 0
-            is_contracted = self._is_contracted_dict[idx]
-            if is_contracted is False:
-                if idx in self._size_fixed_dict:
-                    i_size = self._size_fixed_dict[idx]
-                    indices.append(idx)
-                    sizes[idx] = i_size
-            else:
-                sizes[idx] = self.QT_HANDLE_WIDTH
-        return indices, sizes
-
-    def _get_free_args_(self):
-        indices = []
-        sizes = [0 for _ in self._indices]
-        for idx in self._indices:
-            is_contracted = self._is_contracted_dict[idx]
-            if is_contracted is False:
-                if idx not in self._size_fixed_dict:
-                    indices.append(idx)
-                    i_size = self._size_dict[idx]
-                    sizes[idx] = i_size
-        return indices, sizes
 
     def _add_widget_(self, widget):
         index = len(self._handle_list)
@@ -979,7 +970,7 @@ class _AbsQtSplitter(QtWidgets.QWidget):
     def _set_stretch_factors_(self, values):
         for seq, i in enumerate(values):
             self._set_stretch_factor_at_(seq, i)
-        # self._set_update_by_size_()
+        # self._refresh_widget_geometry_size_()
 
     def _set_stretch_factor_at_(self, index, size):
         self._stretch_factor_dict[index] = size

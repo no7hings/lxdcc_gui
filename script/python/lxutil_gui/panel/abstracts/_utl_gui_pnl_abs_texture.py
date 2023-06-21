@@ -598,10 +598,8 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             [('name', 4), ('color-space', 2), ('description', 2)],
             self.get_definition_window_size()[0]*(3.0/4.0)-32
         )
-        h_s_0.set_stretches(
-            [1, 3]
-        )
-        h_s_0.set_widget_hide_at(0)
+        h_s_0.set_fixed_size_at(0, 240)
+        h_s_0.set_contract_left_or_top_at(0)
         #
         self._texture_add_opt = utl_prx_operators.PrxStgObjTreeViewAddOpt(
             prx_tree_view=self._tree_view,
@@ -795,11 +793,11 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                     j_color_space = j_dcc_obj.get_color_space()
                     j_dcc_obj_prx_item.set_name(j_color_space, 1)
                     if i_descriptions:
-                        self._tree_view_filter_opt.set_register(
+                        self._tree_view_filter_opt.register(
                             j_dcc_obj_prx_item, [bsc_core.SPathMtd.set_quote_to(i) for i in i_descriptions]
                         )
                     else:
-                        self._tree_view_filter_opt.set_register(
+                        self._tree_view_filter_opt.register(
                             j_dcc_obj_prx_item, [bsc_core.SPathMtd.set_quote_to(i) for i in ['N/a']]
                         )
 

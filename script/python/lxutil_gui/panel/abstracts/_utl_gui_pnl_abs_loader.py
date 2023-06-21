@@ -278,7 +278,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         self._left_contract_group.add_widget(v_s)
         self._result_tree_view = prx_widgets.PrxTreeView()
         v_s.add_widget(self._result_tree_view)
-        self._result_tree_view.get_top_tool_bar().set_expanded(True)
+        # self._result_tree_view.get_top_tool_bar().set_expanded(True)
         self._result_tree_view.set_filter_history_key(
             'filter.{}-results'.format(self._session.name)
         )
@@ -292,7 +292,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         #
         self._rsv_uint_list_view_0 = prx_widgets.PrxListView()
         scroll_area.add_widget(self._rsv_uint_list_view_0)
-        self._rsv_uint_list_view_0.get_top_tool_bar().set_expanded(True)
+        # self._rsv_uint_list_view_0.get_top_tool_bar().set_expanded(True)
         #
         self._options_prx_node = prx_widgets.PrxNode_('options')
         self._left_contract_group.add_widget(self._options_prx_node)
@@ -430,7 +430,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             ts = utl_gui_qt_core.QtBuildThreadStack(self.widget)
             ts.run_finished.connect(post_fnc_)
             for i_rsv_resource_group in rsv_resource_groups:
-                ts.set_register(
+                ts.register(
                     cache_fnc=functools.partial(self.__gui_cache_fnc_for_resources_by_group_, i_rsv_resource_group),
                     build_fnc=self.__gui_build_fnc_for_resources_
                 )
@@ -521,7 +521,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                 )
             #
             keys = ['{}.{}'.format(step, task)]
-            self._prx_dcc_obj_tree_view_tag_filter_opt.set_register(
+            self._prx_dcc_obj_tree_view_tag_filter_opt.register(
                 rsv_task_item_prx, keys
             )
             #
@@ -569,7 +569,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             self.__running_threads_stacks.append(ts)
             ts.run_finished.connect(post_fnc_)
             for i_rsv_entities in rsv_entities_map:
-                ts.set_register(
+                ts.register(
                     functools.partial(self.__batch_gui_cache_fnc_for_tasks_and_units_by_entities_, i_rsv_entities, thread_stack_index),
                     self.__batch_gui_build_fnc_for_tasks_and_units_
                 )
@@ -617,7 +617,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             self.__running_threads_stacks.append(ts)
             ts.run_finished.connect(post_fnc_)
             for i_rsv_entities in rsv_entities_map:
-                ts.set_register(
+                ts.register(
                     functools.partial(self.__gui_cache_fnc_for_tasks_and_units_by_entities_, i_rsv_entities, thread_stack_index),
                     self.__gui_build_fnc_for_tasks_and_units_
                 )
