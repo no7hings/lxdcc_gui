@@ -15,7 +15,7 @@ from lxutil_gui import utl_gui_core
 
 
 class AbsSceneCheckerToolPanel(
-    prx_widgets.PrxToolWindow,
+    prx_widgets.PrxBaseWindow,
     utl_gui_pnl_abstract.AbsGuiMethodDef
 ):
     PANEL_KEY = 'scene_checker'
@@ -77,7 +77,7 @@ class AbsSceneCheckerToolPanel(
 
     def _set_viewer_groups_build_(self):
         # viewer
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Viewer(s)')
         expand_box_0.set_expanded(True)
         self.add_widget(expand_box_0)
@@ -111,7 +111,7 @@ class AbsSceneCheckerToolPanel(
         )
 
     def _set_configure_groups_build_(self):
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Configure(s)')
         # expand_box_0.set_expanded(True)
         self.add_widget(expand_box_0)
@@ -143,7 +143,7 @@ class AbsSceneCheckerToolPanel(
             inspection = self._method_creator._set_method_create_(method_key)
             if inspection:
                 if method_key not in self._method_gui_dict:
-                    inspection_gui = self._tree_viewer.set_item_add(
+                    inspection_gui = self._tree_viewer.create_item(
                         name=(inspection.loader.label,),
                         item_class=prx_widgets.PrxLabelTreeItem,
                         tool_tip=(inspection.loader.get_gui_descriptions(),),

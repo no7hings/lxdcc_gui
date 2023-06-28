@@ -13,7 +13,7 @@ y_f = '{}.yml'.format(os.path.splitext(__file__)[0])
 c = bsc_core.StgFileOpt(y_f).set_read()
 
 
-class TestWindow(utl_prx_widgets.PrxToolWindow):
+class TestWindow(utl_prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(TestWindow, self).__init__(*args, **kwargs)
         self.set_definition_window_size([720, 960])

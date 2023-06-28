@@ -4,7 +4,7 @@ import lxutil_gui.proxy.widgets as utl_prx_widgets
 import lxresolver.commands as rsv_commands
 
 
-class TestWindow(utl_prx_widgets.PrxToolWindow):
+class TestWindow(utl_prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(TestWindow, self).__init__(*args, **kwargs)
         self._test_()

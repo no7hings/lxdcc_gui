@@ -8,7 +8,7 @@ import lxbasic.objects as bsc_objects
 from lxutil_gui.qt.utl_gui_qt_core import *
 
 
-class W(_utl_gui_prx_wdt_utility.PrxToolWindow):
+class W(_utl_gui_prx_wdt_utility.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(W, self).__init__(*args, **kwargs)
 

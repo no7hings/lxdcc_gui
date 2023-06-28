@@ -167,7 +167,7 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
             ('open output directory (force)', 'file/folder', (True, open_fnc_, False))
         ]
 
-        prx_item.set_menu_raw(
+        prx_item.set_menu_data(
             menu_raw
         )
 
@@ -184,7 +184,7 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
                 prx_item
             )
 
-        prx_item = self._result_list_view.set_item_add()
+        prx_item = self._result_list_view.create_item()
         # print path, semantic_tag_filter_data
         prx_item.set_gui_dcc_obj(
             render_node_opt, namespace=self.DCC_NAMESPACE

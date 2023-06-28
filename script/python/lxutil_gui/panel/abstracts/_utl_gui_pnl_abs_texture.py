@@ -44,11 +44,12 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
         self._file_path = None
 
     def set_all_setup(self):
+        self.set_main_style_mode(1)
         self._tab_view = prx_widgets.PrxTabView()
         self.add_widget(self._tab_view)
 
         s_0 = prx_widgets.PrxVScrollArea()
-        self._tab_view.set_item_add(
+        self._tab_view.create_item(
             s_0,
             name='workspace',
             icon_name_text='workspace',
@@ -567,17 +568,18 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         pass
 
     def set_all_setup(self):
+        self.set_main_style_mode(1)
         self._tab_view = prx_widgets.PrxTabView()
         self.add_widget(self._tab_view)
 
         s_a_0 = prx_widgets.PrxVScrollArea()
-        self._tab_view.set_item_add(
+        self._tab_view.create_item(
             s_a_0,
             name='dcc',
             icon_name_text='dcc',
         )
 
-        e_p_0 = prx_widgets.PrxExpandedGroup()
+        e_p_0 = prx_widgets.PrxHToolGroup()
         s_a_0.add_widget(e_p_0)
         h_s_0 = prx_widgets.PrxHSplitter()
         e_p_0.add_widget(h_s_0)

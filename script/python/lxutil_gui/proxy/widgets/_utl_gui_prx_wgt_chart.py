@@ -60,7 +60,7 @@ class PrxSequenceChart(utl_gui_prx_abstract.AbsPrxWidget):
     def set_height(self, h):
         self.widget._set_height_(h)
 
-    def set_menu_raw(self, raw):
+    def set_menu_data(self, raw):
         self.widget._set_menu_data_(raw)
 
     def get_status(self):

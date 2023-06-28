@@ -10,6 +10,7 @@ import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
 class _QtListItemWidget(
     QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtWidgetBaseDef,
     utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtTypeDef,
     utl_gui_qt_abstract.AbsQtIndexDef,
@@ -42,9 +43,26 @@ class _QtListItemWidget(
     #
     QT_MENU_CLS = _utl_gui_qt_wgt_utility.QtMenu
     #
+    def _refresh_widget_(self, *args, **kwargs):
+        self._refresh_widget_draw_geometry_()
+        self._refresh_widget_draw_()
+    #
     def _refresh_widget_draw_(self):
+        self._refresh_widget_draw_geometry_()
         # noinspection PyUnresolvedReferences
         self.update()
+
+    def _refresh_widget_draw_geometry_(self):
+        w_pre, h_pre = self._w, self._h
+        w, h = self.width(), self.height()
+        if w != w_pre or h != h_pre:
+            self._w, self._h = w, h
+
+        self._refresh_widget_frame_draw_geometries_()
+        #
+        self._refresh_widget_icon_draw_geometries_()
+        self._refresh_widget_image_draw_geometries_()
+        self._refresh_widget_name_draw_geometries_()
 
     def _refresh_widget_icon_draw_geometries_(self):
         if self._get_has_icons_() is True or self._check_is_enable is True:
@@ -102,33 +120,38 @@ class _QtListItemWidget(
 
     def _refresh_widget_image_draw_geometries_(self):
         if self._get_has_image_() is True:
-            image_file_path = self._get_image_file_path_()
             rect = self._image_frame_rect
             x, y = rect.x(), rect.y()
             w, h = rect.width(), rect.height()
             frm_r = min(w, h)
             i_w_0, i_h_0 = self._get_image_size_()
             if (i_w_0, i_h_0) != (0, 0):
-                i_x, i_y, icn_w, icn_h = bsc_core.RawSizeMtd.set_fit_to(
+                i_x, i_y, img_w, img_h = bsc_core.RawSizeMtd.set_fit_to(
                     (i_w_0, i_h_0), (w, h)
                 )
                 if self._get_play_draw_is_enable_() is True:
                     m_f_w, m_f_h = frm_r/4, frm_r/4
                     self._set_movie_rect_(
-                        x+i_x+(icn_w-m_f_w)/2, y+i_y+(icn_h-m_f_h)/2,
+                        x+i_x+(img_w-m_f_w)/2, y+i_y+(img_h-m_f_h)/2,
                         m_f_w, m_f_h
                     )
                 #
-                if image_file_path is not None:
-                    self._set_image_rect_(
-                        x+i_x+2, y+i_y+2, icn_w-4, icn_h-4
+                if self._image_file_path is not None:
+                    self._image_draw_rect.setRect(
+                        x+i_x+2, y+i_y+2, img_w-4, img_h-4
                     )
                 else:
-                    image_name_text = self._image_name_text
+                    image_name_text = self._image_text
                     if image_name_text is not None:
-                        self._set_image_rect_(
-                            x+i_x, y+i_y, icn_w, icn_h
+                        self._image_draw_rect.setRect(
+                            x+i_x, y+i_y, img_w, img_h
                         )
+                #
+                if self._image_sub_file_path:
+                    img_s_w, img_s_h = 24, 24
+                    self._image_sub_draw_rect.setRect(
+                        x+i_x+img_w-img_s_w, y+i_y+img_h-img_s_h, img_s_w, img_s_h
+                    )
 
     def _refresh_widget_name_draw_geometries_(self):
         if self._get_has_names_():
@@ -165,13 +188,6 @@ class _QtListItemWidget(
                     self._icon_name_draw_rect.setRect(
                         x+(w-h), y, h, h
                     )
-
-    def _refresh_widget_draw_geometry_(self):
-        self._refresh_widget_frame_draw_geometries_()
-        #
-        self._refresh_widget_icon_draw_geometries_()
-        self._refresh_widget_image_draw_geometries_()
-        self._refresh_widget_name_draw_geometries_()
 
     def _refresh_widget_frame_draw_geometries_(self):
         if self._list_widget is not None:
@@ -301,6 +317,7 @@ class _QtListItemWidget(
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setMouseTracking(True)
         #
+        self._init_widget_base_def_(self)
         self._init_frame_base_def_(self)
         self._init_type_def_(self)
         self._init_index_def_()
@@ -363,7 +380,7 @@ class _QtListItemWidget(
                 self._set_action_hovered_(False)
             #
             elif event.type() == QtCore.QEvent.Resize:
-                self.update()
+                self._refresh_widget_draw_()
             elif event.type() == QtCore.QEvent.MouseMove:
                 if self._get_action_flag_is_match_(self.ActionFlag.PressClick):
                     if self._drag_is_enable is True:
@@ -408,7 +425,7 @@ class _QtListItemWidget(
                 if self._get_action_flag_is_match_(self.ActionFlag.PressClick):
                     self._send_press_clicked_emit_()
                 elif self._get_action_flag_is_match_(self.ActionFlag.PressDbClick):
-                    self._set_action_press_db_click_emit_send_()
+                    self.press_db_clicked.emit()
                 #
                 self._set_pressed_(False)
                 self._clear_all_action_flags_()
@@ -426,8 +443,6 @@ class _QtListItemWidget(
 
     def paintEvent(self, event):
         painter = QtPainter(self)
-        #
-        self._refresh_widget_draw_geometry_()
         #
         x, y = 0, 0
         w, h = self.width(), self.height()
@@ -459,7 +474,7 @@ class _QtListItemWidget(
             bdr_color = QtBackgroundColors.Transparent
         #
         item = self._get_item_()
-        if item._item_show_status in [item.ShowStatus.Loading, item.ShowStatus.Waiting]:
+        if item._item_show_status in {item.ShowStatus.Loading, item.ShowStatus.Waiting}:
             painter._set_loading_draw_by_rect_(
                 self._frame_draw_rect,
                 item._item_show_loading_index
@@ -571,7 +586,7 @@ class _QtListItemWidget(
                                 value_text=i_value,
                                 key_text_width=key_text_width,
                                 offset=offset,
-                                is_hovered=self._action_is_hovered,
+                                is_hovered=self._is_hovered,
                                 is_selected=self._is_selected
                             )
                     else:
@@ -583,35 +598,48 @@ class _QtListItemWidget(
                                 text_option=text_option,
                                 word_warp=self._name_word_warp,
                                 offset=offset,
-                                is_hovered=self._action_is_hovered,
+                                is_hovered=self._is_hovered,
                                 is_selected=self._is_selected
                             )
             # image
             if self._get_has_image_() is True:
-                image_file_path = self._image_file_path
                 # draw by image file
-                if image_file_path:
-                    painter._set_any_image_draw_by_rect_(
-                        self._get_image_rect_(),
-                        image_file_path,
+                if self._image_file_path:
+                    painter._draw_image_use_file_path_by_rect_(
+                        rect=self._image_draw_rect,
+                        file_path=self._image_file_path,
                         offset=offset
                     )
                 else:
-                    image_name_text = self._image_name_text
-                    # draw by text
-                    if image_name_text:
-                        painter._draw_icon_use_text_by_rect_(
-                            self._get_image_rect_(),
-                            image_name_text,
+                    # draw image by text
+                    if self._image_text:
+                        painter._draw_image_use_text_by_rect_(
+                            rect=self._image_draw_rect,
+                            text=self._image_text,
                             border_radius=4,
-                            offset=offset
+                            offset=offset,
+                            border_color=QtBorderColors.Icon,
+                            border_width=2
                         )
+                #
+                if self._image_sub_file_path:
+                    painter._draw_image_use_file_path_by_rect_(
+                        rect=self._image_sub_draw_rect,
+                        file_path=self._image_sub_file_path,
+                        offset=offset,
+                        #
+                        draw_frame=True,
+                        background_color=QtBorderColors.Icon,
+                        border_color=QtBorderColors.Icon,
+                        border_radius=4
+                    )
+                #
             # play button
             if self._get_play_draw_is_enable_() is True:
                 painter._set_movie_play_button_draw_by_rect_(
                     self._movie_rect,
                     offset=offset,
-                    is_hovered=self._action_is_hovered,
+                    is_hovered=self._is_hovered,
                     is_selected=self._is_selected,
                     is_actioned=self._get_is_actioned_()
                 )

@@ -131,7 +131,7 @@ class GuiTagFilterOpt(object):
         name = bsc_core.SPathMtd.set_unquote_to(path_dag_opt.name)
         path = bsc_core.SPathMtd.set_unquote_to(path_dag_opt.path)
         prx_item.set_name(name)
-        prx_item.set_icon_by_name(path, 0)
+        prx_item.set_icon_by_text(path, 0)
         prx_item.set_tool_tip(path)
 
     def _add_prx_item_src_(self, path):
@@ -153,7 +153,7 @@ class GuiTagFilterOpt(object):
                 **_kwargs
             )
         else:
-            prx_item = self._prx_tree_view_src.set_item_add(
+            prx_item = self._prx_tree_view_src.create_item(
                 **_kwargs
             )
         #
@@ -161,7 +161,7 @@ class GuiTagFilterOpt(object):
         prx_item.set_emit_send_enable(True)
         prx_item.set_gui_dcc_obj(path_dag_opt, self._namespace_src)
         #
-        prx_item.set_show_method(
+        prx_item.set_show_build_fnc(
             self._set_item_src_show_deferred_(
                 prx_item
             )
@@ -336,14 +336,14 @@ class PrxDccObjTreeViewAddOpt(object):
                     **kwargs
                 )
             else:
-                prx_item = self._prx_tree_view.set_item_add(
+                prx_item = self._prx_tree_view.create_item(
                     **kwargs
                 )
             #
             prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
             prx_item.set_expanded(True)
             prx_item.set_checked(False)
-            prx_item.set_icon_by_name(obj.type_name, 1)
+            prx_item.set_icon_by_text(obj.type_name, 1)
             self._obj_add_dict[obj_path] = prx_item
             return prx_item
 
@@ -374,7 +374,7 @@ class PrxDccObjTreeViewAddOpt(object):
                 **kwargs
             )
         else:
-            prx_item = self._prx_tree_view.set_item_add(
+            prx_item = self._prx_tree_view.create_item(
                 **kwargs
             )
         prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
@@ -479,7 +479,7 @@ class PrxStgObjTreeViewAddOpt(object):
                     **kwargs
                 )
             else:
-                prx_item = self._prx_tree_view.set_item_add(
+                prx_item = self._prx_tree_view.create_item(
                     **kwargs
                 )
             #
@@ -541,7 +541,7 @@ class PrxStgObjTreeViewAddOpt(object):
                     **create_kwargs
                 )
             else:
-                prx_item = self._prx_tree_view.set_item_add(
+                prx_item = self._prx_tree_view.create_item(
                     **create_kwargs
                 )
             #
@@ -556,7 +556,7 @@ class PrxStgObjTreeViewAddOpt(object):
                 prx_item.set_gui_dcc_obj(obj, namespace='storage-directory')
             #
             if use_show_thread is True:
-                prx_item.set_show_method(
+                prx_item.set_show_build_fnc(
                     lambda *args, **kwargs: self._set_prx_item_show_deferred_(prx_item, name_use_path_prettify)
                 )
                 return True, prx_item
@@ -827,7 +827,7 @@ class PrxDccObjTreeViewAddOpt1(object):
                     **kwargs
                 )
             else:
-                prx_item = self._prx_tree_view.set_item_add(
+                prx_item = self._prx_tree_view.create_item(
                     **kwargs
                 )
             #
@@ -850,7 +850,7 @@ class PrxDccObjTreeViewAddOpt1(object):
         menu_raw = obj.get_gui_menu_raw()
 
         prx_item.set_icon_by_file(icon)
-        prx_item.set_icon_by_name(obj_type_name, 1)
+        prx_item.set_icon_by_text(obj_type_name, 1)
         prx_item.set_name(obj_name)
         prx_item.set_tool_tip(obj_path)
 
@@ -878,7 +878,7 @@ class PrxDccObjTreeViewAddOpt1(object):
                 **kwargs
             )
         else:
-            prx_item = self._prx_tree_view.set_item_add(
+            prx_item = self._prx_tree_view.create_item(
                 **kwargs
             )
         #
@@ -888,7 +888,7 @@ class PrxDccObjTreeViewAddOpt1(object):
         prx_item.set_checked(True)
         #
         self._obj_add_dict[obj.path] = prx_item
-        # prx_item.set_show_method(
+        # prx_item.set_show_build_fnc(
         #     functools.partial(
         #         self._set_prx_item_show_deferred_, prx_item, name_use_path_prettify
         #     )
@@ -1003,7 +1003,7 @@ class PrxObjTreeViewAddOpt(object):
         #
         self._obj_add_dict = self._prx_tree_view._item_dict
 
-    def _set_item_add_(self, path_dag_opt, parent_path_dag_opt=None):
+    def _add_item_(self, path_dag_opt, parent_path_dag_opt=None):
         if parent_path_dag_opt is not None:
             parent_item = self._obj_add_dict[parent_path_dag_opt.path]
             tree_item = parent_item.add_child(
@@ -1011,7 +1011,7 @@ class PrxObjTreeViewAddOpt(object):
                 item_class=self._prx_tree_item_cls,
             )
         else:
-            tree_item = self._prx_tree_view.set_item_add(
+            tree_item = self._prx_tree_view.create_item(
                 name=path_dag_opt.name,
                 item_class=self._prx_tree_item_cls,
             )
@@ -1021,7 +1021,7 @@ class PrxObjTreeViewAddOpt(object):
         #
         self._obj_add_dict[path_dag_opt.path] = tree_item
 
-    def set_item_add(self, path):
+    def create_item(self, path):
         path_dag_opt = bsc_core.DccPathDagOpt(path)
 
         components = path_dag_opt.get_components()
@@ -1030,7 +1030,7 @@ class PrxObjTreeViewAddOpt(object):
             parent_path_dag_opt = None
             for i_path_dag_opt in components:
                 if i_path_dag_opt.path not in self._obj_add_dict:
-                    self._set_item_add_(i_path_dag_opt, parent_path_dag_opt)
+                    self._add_item_(i_path_dag_opt, parent_path_dag_opt)
                 #
                 parent_path_dag_opt = i_path_dag_opt
 

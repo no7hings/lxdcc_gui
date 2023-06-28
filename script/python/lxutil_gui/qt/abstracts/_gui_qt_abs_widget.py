@@ -20,7 +20,7 @@ class AbsQtTreeWidget(
     _gui_qt_abs_basic.AbsQtBuildViewDef,
     _gui_qt_abs_basic.AbsQtShowForViewDef,
     #
-    _gui_qt_abs_basic.AbsQtWaitingDef,
+    _gui_qt_abs_basic.AbsQtBusyBaseDef,
 ):
     def __init__(self, *args, **kwargs):
         super(AbsQtTreeWidget, self).__init__(*args, **kwargs)
@@ -46,7 +46,7 @@ class AbsQtTreeWidget(
 
         self._init_show_for_view_def_(self)
         #
-        self._init_waiting_def_(self)
+        self._init_busy_base_def_(self)
         self.setFont(QtFonts.Default)
         #
         self.customContextMenuRequested.connect(
@@ -187,7 +187,7 @@ class AbsQtListWidget(
     _gui_qt_abs_basic.AbsQtViewVisibleConnectionDef,
     _gui_qt_abs_basic.AbsQtBuildViewDef,
     _gui_qt_abs_basic.AbsQtShowForViewDef,
-    _gui_qt_abs_basic.AbsQtWaitingDef,
+    _gui_qt_abs_basic.AbsQtBusyBaseDef,
 ):
     SortMode = utl_gui_configure.SortMode
     SortOrder = utl_gui_configure.SortOrder
@@ -241,7 +241,7 @@ class AbsQtListWidget(
         self._set_build_view_setup_(self)
 
         self._init_show_for_view_def_(self)
-        self._init_waiting_def_(self)
+        self._init_busy_base_def_(self)
 
         self._sort_mode = self.SortMode.Number
         self._sort_order = self.SortOrder.Ascend
@@ -411,8 +411,8 @@ class AbsQtListWidget(
 
     def _set_clear_(self):
         for i in self._get_all_items_():
-            i._set_item_show_kill_all_()
-            i._set_item_show_stop_all_()
+            i._kill_item_all_show_runnables_()
+            i._stop_item_show_all_()
         #
         self._pre_selected_items = []
         #
@@ -501,3 +501,21 @@ class AbsQtListWidget(
         for i in self._get_all_item_widgets_():
             if i is not None:
                 i._refresh_widget_()
+
+    def _set_scroll_enable_(self, boolean):
+        super(AbsQtListWidget, self)._set_scroll_enable_(boolean)
+        if boolean is False:
+            self.setHorizontalScrollBarPolicy(
+                QtCore.Qt.ScrollBarAlwaysOff
+            )
+            self.setVerticalScrollBarPolicy(
+                QtCore.Qt.ScrollBarAlwaysOff
+            )
+            # self.setResizeMode(self.Fixed)
+        else:
+            self.setHorizontalScrollBarPolicy(
+                QtCore.Qt.ScrollBarAsNeeded
+            )
+            self.setVerticalScrollBarPolicy(
+                QtCore.Qt.ScrollBarAsNeeded
+            )

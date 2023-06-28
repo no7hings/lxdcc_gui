@@ -91,10 +91,14 @@ class QtValueEntryAsContentEdit(
         super(QtValueEntryAsContentEdit, self)._set_value_entry_enable_(boolean)
 
         self._value_entry.setReadOnly(not boolean)
-        self._frame_background_color = [
-            QtBackgroundColors.Basic, QtBackgroundColors.Dim
-        ][boolean]
-        self._refresh_widget_draw_()
+        # self._frame_background_color = [
+        #     QtBackgroundColors.Basic, QtBackgroundColors.Dim
+        # ][boolean]
+        # self._refresh_widget_draw_()
+
+    def _set_value_entry_drop_enable_(self, boolean):
+        self._value_entry._set_drop_enable_(boolean)
+        self._frame_border_draw_style = QtCore.Qt.DashLine
 
     def _set_empty_text_(self, text):
         self._value_entry._set_empty_text_(text)
@@ -171,7 +175,7 @@ class QtValueEntryAsTupleByChoose(
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
                 #
-                self._action_is_hovered = True
+                self._is_hovered = True
                 self.update()
             elif event.type() == QtCore.QEvent.MouseButtonDblClick:
                 if event.button() == QtCore.Qt.LeftButton:
@@ -186,7 +190,7 @@ class QtValueEntryAsTupleByChoose(
                 #
                 self._clear_all_action_flags_()
                 #
-                self._action_is_hovered = False
+                self._is_hovered = False
                 self.update()
             elif event.type() == QtCore.QEvent.Resize:
                 self._refresh_widget_draw_geometry_()
@@ -305,11 +309,11 @@ class QtValueEntryAsTextEditByChoose(
     def _build_value_entry_(self, value_type):
         self._value_type = value_type
         #
-        self._main_layout = QtVBoxLayout(self)
-        self._main_layout.setContentsMargins(0, 0, 0, 0)
-        self._main_layout.setSpacing(0)
+        self._qt_main_layout = QtVBoxLayout(self)
+        self._qt_main_layout.setContentsMargins(0, 0, 0, 0)
+        self._qt_main_layout.setSpacing(0)
         entry_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
-        self._main_layout.addWidget(entry_widget)
+        self._qt_main_layout.addWidget(entry_widget)
         #
         self._value_entry_layout = QtHBoxLayout(entry_widget)
         self._value_entry_layout.setContentsMargins(2, 0, 2, 0)
@@ -512,7 +516,7 @@ class QtValueEntryAsCapsule(
         self._capsule_draw_texts = []
         self._capsule_draw_rects = []
         #
-        self._capsule_states = []
+        self._capsule_checked_indices = []
 
         self._capsule_height = 18
 
@@ -522,14 +526,14 @@ class QtValueEntryAsCapsule(
         self._capsule_indices = range(c)
         self._capsule_draw_rects = []
         self._capsule_draw_texts = []
-        self._capsule_states = []
+        self._capsule_checked_indices = []
         for i_index in self._capsule_indices:
             self._capsule_draw_rects.append(QtCore.QRect())
             # noinspection PyArgumentEqualDefault
             self._capsule_draw_texts.append(
                 bsc_core.RawTextMtd.to_prettify(texts[i_index], capitalize=True)
             )
-            self._capsule_states.append(False)
+            self._capsule_checked_indices.append(False)
         #
         self._refresh_widget_draw_()
 
@@ -537,12 +541,12 @@ class QtValueEntryAsCapsule(
         if self._capsule_use_exclusive:
             index = self._capsule_texts.index(value)
             self._capsule_index_current = index
-            self._capsule_states = [True if i in [index] else False for i in self._capsule_indices]
+            self._capsule_checked_indices = [True if i in [index] else False for i in self._capsule_indices]
         else:
             if value:
                 indices = [self._capsule_texts.index(i) for i in value if i in self._capsule_texts]
                 self._capsule_index_current = indices[0]
-                self._capsule_states = [True if i in indices else False for i in self._capsule_indices]
+                self._capsule_checked_indices = [True if i in indices else False for i in self._capsule_indices]
 
         self._update_value_current_()
         #
@@ -552,7 +556,7 @@ class QtValueEntryAsCapsule(
         return self._capsule_value_current
 
     def _get_value_fnc_(self):
-        _ = [self._capsule_texts[i] for i in self._capsule_indices if self._capsule_states[i] is True]
+        _ = [self._capsule_texts[i] for i in self._capsule_indices if self._capsule_checked_indices[i] is True]
         if self._capsule_use_exclusive:
             if _:
                 return _[0]
@@ -591,6 +595,8 @@ class QtValueEntryAsCapsule(
                 )
 
     def _execute_capsule_action_hover_move_(self, event):
+        if self._action_is_enable is False:
+            return
         if not self._capsule_per_width:
             return
         p = event.pos()
@@ -599,6 +605,8 @@ class QtValueEntryAsCapsule(
         self._refresh_widget_draw_()
 
     def _execute_capsule_action_press_start_(self, event):
+        if self._action_is_enable is False:
+            return
         if not self._capsule_per_width:
             return
         p = event.pos()
@@ -610,16 +618,18 @@ class QtValueEntryAsCapsule(
             self._capsule_pressed_index = self._capsule_index_current
             if self._capsule_use_exclusive is True:
                 if index_pre is not None:
-                    self._capsule_states[index_pre] = False
-                self._capsule_states[self._capsule_index_current] = True
+                    self._capsule_checked_indices[index_pre] = False
+                self._capsule_checked_indices[self._capsule_index_current] = True
             else:
-                self._capsule_states[self._capsule_index_current] = not self._capsule_states[self._capsule_index_current]
+                self._capsule_checked_indices[self._capsule_index_current] = not self._capsule_checked_indices[self._capsule_index_current]
 
-            self._capsule_press_state = self._capsule_states[self._capsule_index_current]
+            self._capsule_press_state = self._capsule_checked_indices[self._capsule_index_current]
 
             self._update_value_current_()
 
     def _execute_capsule_action_press_move_(self, event):
+        if self._action_is_enable is False:
+            return
         if not self._capsule_per_width:
             return
         p = event.pos()
@@ -632,14 +642,16 @@ class QtValueEntryAsCapsule(
             if index_pre != self._capsule_index_current:
                 if self._capsule_use_exclusive is True:
                     if index_pre is not None:
-                        self._capsule_states[index_pre] = False
-                    self._capsule_states[self._capsule_index_current] = True
+                        self._capsule_checked_indices[index_pre] = False
+                    self._capsule_checked_indices[self._capsule_index_current] = True
                 else:
-                    self._capsule_states[self._capsule_index_current] = self._capsule_press_state
+                    self._capsule_checked_indices[self._capsule_index_current] = self._capsule_press_state
                 #
                 self._update_value_current_()
     # noinspection PyUnusedLocal
     def _execute_capsule_action_press_end_(self, event):
+        if self._action_is_enable is False:
+            return
         self._capsule_pressed_index = None
 
     def eventFilter(self, *args):
@@ -681,11 +693,15 @@ class QtValueEntryAsCapsule(
             painter._draw_capsule_by_rects_(
                 rects=self._capsule_draw_rects,
                 texts=self._capsule_draw_texts,
-                states=self._capsule_states,
+                checked_indices=self._capsule_checked_indices,
                 hovered_index=self._capsule_hovered_index,
                 pressed_index=self._capsule_pressed_index,
-                use_exclusive=self._capsule_use_exclusive
+                use_exclusive=self._capsule_use_exclusive,
+                is_enable=self._action_is_enable
             )
+
+    def _set_value_entry_enable_(self, boolean):
+        self._set_action_enable_(boolean)
 
 
 class QtValueEntryAsTextEdits(
@@ -759,12 +775,12 @@ class QtValueEntryAsList(
     def _build_value_entry_(self, value_type):
         self._value_type = value_type
 
-        self._main_layout = QtVBoxLayout(self)
-        self._main_layout.setContentsMargins(0, 0, 0, 0)
-        self._main_layout.setSpacing(0)
+        self._qt_main_layout = QtVBoxLayout(self)
+        self._qt_main_layout.setContentsMargins(0, 0, 0, 0)
+        self._qt_main_layout.setSpacing(0)
         #
         entry_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
-        self._main_layout.addWidget(entry_widget)
+        self._qt_main_layout.addWidget(entry_widget)
         #
         self._value_entry_layout = QtHBoxLayout(entry_widget)
         self._value_entry_layout.setContentsMargins(2, 2, 2, 2)
@@ -812,6 +828,7 @@ class QtValueEntryAsList(
 
     def _set_value_entry_drop_enable_(self, boolean):
         self._value_entry._set_drop_enable_(boolean)
+        self._frame_border_draw_style = QtCore.Qt.DashLine
 
     def _set_value_entry_choose_enable_(self, boolean):
         self._value_choose_button._set_action_enable_(boolean)
@@ -911,12 +928,12 @@ class QtValueEntryAsListWithChoose(
     def _build_value_entry_(self, value_type):
         self._value_type = value_type
 
-        self._main_layout = QtVBoxLayout(self)
-        self._main_layout.setContentsMargins(0, 0, 0, 0)
-        self._main_layout.setSpacing(0)
+        self._qt_main_layout = QtVBoxLayout(self)
+        self._qt_main_layout.setContentsMargins(0, 0, 0, 0)
+        self._qt_main_layout.setSpacing(0)
 
         entry_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
-        self._main_layout.addWidget(entry_widget)
+        self._qt_main_layout.addWidget(entry_widget)
         #
         self._value_entry_layout = QtHBoxLayout(entry_widget)
         self._value_entry_layout.setContentsMargins(2, 2, 2, 2)

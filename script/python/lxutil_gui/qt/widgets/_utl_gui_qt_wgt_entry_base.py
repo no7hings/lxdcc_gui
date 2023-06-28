@@ -14,7 +14,7 @@ class QtEntryAsTextEdit(
     utl_gui_qt_abstract.AbsQtValueDef,
     #
     utl_gui_qt_abstract.AbsQtEntryBaseDef,
-    utl_gui_qt_abstract.AbsQtActionDropDef,
+    utl_gui_qt_abstract.AbsQtDropBaseDef,
 ):
     entry_changed = qt_signal()
     entry_cleared = qt_signal()
@@ -63,7 +63,7 @@ class QtEntryAsTextEdit(
         )
         self._set_value_def_init_(self)
         self._init_entry_base_def_(self)
-        self._init_action_drop_def_(self)
+        self._init_drop_base_def_(self)
         self.setAcceptDrops(self._action_drop_is_enable)
 
         # self.setPlaceholderText()
@@ -376,6 +376,7 @@ class QtEntryAsTextEdit(
 class QtEntryAsContentEdit(
     QtWidgets.QTextBrowser,
     utl_gui_qt_abstract.AbsQtEntryBaseDef,
+    utl_gui_qt_abstract.AbsQtDropBaseDef,
 ):
     def __init__(self, *args, **kwargs):
         super(QtEntryAsContentEdit, self).__init__(*args, **kwargs)
@@ -406,6 +407,7 @@ class QtEntryAsContentEdit(
             utl_gui_core.QtStyleMtd.get('QScrollBar')
         )
         self._init_entry_base_def_(self)
+        self._init_drop_base_def_(self)
 
         self._empty_icon_name = None
         self._empty_text = None
@@ -539,6 +541,25 @@ class QtEntryAsContentEdit(
         super(QtEntryAsContentEdit, self)._set_entry_enable_(boolean)
         self.setReadOnly(not boolean)
 
+    def dropEvent(self, event):
+        self._execute_action_drop_(event)
+
+    def _execute_action_drop_(self, event):
+        if self._action_drop_is_enable is True:
+            data = event.mimeData()
+            if data.hasUrls():
+                urls = event.mimeData().urls()
+                if urls:
+                    for i_url in urls:
+                        i_path = i_url.toLocalFile()
+                        if bsc_core.StgPathMtd.get_is_file(i_path) is True:
+                            i_file_opt = bsc_core.StgFileOpt(i_path)
+                            i_data = i_file_opt.set_read()
+                            self.insertPlainText(i_data)
+                    event.accept()
+        else:
+            event.ignore()
+
     def insertFromMimeData(self, data):
         # add data as clear
         if data.text():
@@ -578,7 +599,7 @@ class QtEntryAsList(
     #
     utl_gui_qt_abstract.AbsQtEntryBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtActionDropDef,
+    utl_gui_qt_abstract.AbsQtDropBaseDef,
 ):
     entry_changed = qt_signal()
     entry_added = qt_signal()
@@ -614,7 +635,7 @@ class QtEntryAsList(
         self._set_values_def_init_(self)
         #
         self._init_entry_base_def_(self)
-        self._init_action_drop_def_(self)
+        self._init_drop_base_def_(self)
 
         self.setAcceptDrops(self._action_drop_is_enable)
 
@@ -874,7 +895,7 @@ class QtEntryAsList(
         if self._item_icon_file_path is not None:
             item_widget._set_icon_file_path_(self._item_icon_file_path)
         else:
-            item_widget._set_icon_name_text_(value)
+            item_widget._set_icon_text_(value)
 
     def _create_value_item_(self, value):
         def cache_fnc_():
@@ -1046,7 +1067,7 @@ class QtEntryFrame(
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
-        self._action_is_hovered = False
+        self._is_hovered = False
         self._is_focused = False
         self._entry_count = 1
         #
@@ -1085,11 +1106,10 @@ class QtEntryFrame(
     def paintEvent(self, event):
         painter = QtPainter(self)
         #
-        # is_hovered = self._action_is_hovered
         is_selected = self._is_focused
         background_color = self._frame_background_color
         bdr_color = [QtBorderColors.Basic, QtBorderColors.HighLight][is_selected]
-        bdr_w = [1, 2][is_selected]
+        bdr_w = [self._frame_border_draw_width, self._frame_border_draw_width+1][is_selected]
         for i_rect in self._frame_draw_rects:
             painter._draw_frame_by_rect_(
                 i_rect,
@@ -1097,6 +1117,7 @@ class QtEntryFrame(
                 background_color=background_color,
                 # border_radius=1,
                 border_width=bdr_w,
+                border_style=self._frame_border_draw_style
             )
         #
         if self._tip_draw_enable is True:

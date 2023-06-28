@@ -67,7 +67,7 @@ class AbsRenderSubmitterDef(object):
 
 
 class AbsRenderSubmitterPanel(
-    prx_widgets.PrxToolWindow,
+    prx_widgets.PrxBaseWindow,
     AbsRenderSubmitterDef,
 ):
     ITEM_ICON_FRAME_SIZE = 26, 26
@@ -123,7 +123,7 @@ class AbsRenderSubmitterPanel(
         self._options_prx_node = prx_widgets.PrxNode_('options')
         qt_layout_0.addWidget(self._options_prx_node.widget)
         #
-        prx_expanded_group_0 = prx_widgets.PrxExpandedGroup()
+        prx_expanded_group_0 = prx_widgets.PrxHToolGroup()
         v_splitter_0.add_widget(prx_expanded_group_0)
         prx_expanded_group_0.set_name('combinations')
         prx_expanded_group_0.set_expanded(True)
@@ -132,7 +132,7 @@ class AbsRenderSubmitterPanel(
         prx_expanded_group_0.add_widget(self._filter_tree_viewer_0)
         v_splitter_0.set_stretches([2, 1])
         #
-        prx_expanded_group_1 = prx_widgets.PrxExpandedGroup()
+        prx_expanded_group_1 = prx_widgets.PrxHToolGroup()
         h_splitter_0.add_widget(prx_expanded_group_1)
         prx_expanded_group_1.set_expanded(True)
         prx_expanded_group_1.set_name('renderers')
@@ -739,7 +739,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 rsv_unit_prx_item, variants
             )
         #
-        rsv_unit_prx_item = self._rsv_renderer_list_view.set_item_add()
+        rsv_unit_prx_item = self._rsv_renderer_list_view.create_item()
         keys = []
         for j_key in self._variable_keys:
             keys.append(
@@ -1387,7 +1387,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
     @utl_gui_qt_core.set_prx_window_waiting
     def set_renderers_refresh(self):
         def set_thread_create_fnc_(prx_item_, variants_):
-            prx_item_.set_show_method(
+            prx_item_.set_show_build_fnc(
                 lambda *args, **kwargs: self._set_gui_rsv_task_unit_show_deferred_(
                     prx_item_, variants_
                 )
@@ -1405,7 +1405,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         )
         for i_seq, i_variants in enumerate(combinations):
             # print i_seq, i_variants
-            i_prx_item = self._rsv_renderer_list_view.set_item_add()
+            i_prx_item = self._rsv_renderer_list_view.create_item()
             set_thread_create_fnc_(i_prx_item, i_variants)
             for j_key in self._variable_keys:
                 self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(

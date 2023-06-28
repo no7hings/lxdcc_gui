@@ -132,7 +132,7 @@ def _set_texture_jpg_repath(texture_references, includes):
 
 
 class AbsSceneTextureManagerPanel(
-    prx_widgets.PrxToolWindow
+    prx_widgets.PrxBaseWindow
 ):
     CONFIGURE_FILE_PATH = 'utility/panel/texture-manager'
     HELP_FILE_PATH = utl_configure.MainData.get_help_file('utility/panel/texture-manager')
@@ -188,7 +188,7 @@ class AbsSceneTextureManagerPanel(
 
     def _set_viewer_groups_build_(self):
         # viewer
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Viewer(s)')
         expand_box_0.set_expanded(True)
         self.add_widget(expand_box_0)
@@ -220,7 +220,7 @@ class AbsSceneTextureManagerPanel(
         self._set_tool_group_2_build_()
 
     def _set_tool_group_0_build_(self):
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Tool(s)')
         expand_box_0.set_size_mode(1)
         expand_box_0.set_expanded(True)
@@ -307,7 +307,7 @@ class AbsSceneTextureManagerPanel(
         )
     # search
     def _set_tool_group_1_build_(self):
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Search')
         expand_box_0.set_size_mode(1)
         self.add_widget(expand_box_0)
@@ -336,7 +336,7 @@ class AbsSceneTextureManagerPanel(
         _port.set(self.set_search)
     # copy & repath
     def _set_tool_group_2_build_(self):
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Copy & Repath')
         expand_box_0.set_size_mode(1)
         self.add_widget(expand_box_0)
@@ -427,7 +427,7 @@ class AbsSceneTextureManagerPanel(
                                             j_file_prx_item.set_name(
                                                 texture_color_space, self.DSC_IDX_COLORS_SPACE
                                             )
-                                            j_file_prx_item.set_icon_by_name(
+                                            j_file_prx_item.set_icon_by_text(
                                                 texture_color_space, self.DSC_IDX_COLORS_SPACE
                                             )
                                             #
@@ -435,7 +435,7 @@ class AbsSceneTextureManagerPanel(
                                             j_file_prx_item.set_name(
                                                 texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
                                             )
-                                            j_file_prx_item.set_icon_by_name(
+                                            j_file_prx_item.set_icon_by_text(
                                                 texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
                                             )
                                     #
@@ -460,7 +460,7 @@ class AbsSceneTextureManagerPanel(
                                     i_dcc_prx_item.set_name(
                                         node_color_space, self.DSC_IDX_USED_COLORS_SPACE
                                     )
-                                    i_dcc_prx_item.set_icon_by_name(
+                                    i_dcc_prx_item.set_icon_by_text(
                                         node_color_space, self.DSC_IDX_USED_COLORS_SPACE
                                     )
                 #
@@ -476,7 +476,7 @@ class AbsSceneTextureManagerPanel(
                         [stg_file_.name]
                     )
             #
-            i_list_item_prx_.set_show_method(show_fnc_)
+            i_list_item_prx_.set_show_build_fnc(show_fnc_)
         #
         self._obj_list_viewer_0.set_clear()
         tree_item_prxes = self._obj_tree_viewer_0.get_selected_items()
@@ -505,7 +505,7 @@ class AbsSceneTextureManagerPanel(
                         i_file = i_item_prx.get_gui_dcc_obj(namespace='storage-file')
                         if i_file is not None:
                             if i_file.get_is_exists() is True:
-                                i_list_item_prx = self._obj_list_viewer_0.set_item_add()
+                                i_list_item_prx = self._obj_list_viewer_0.create_item()
                                 i_list_item_prx.set_gui_dcc_obj(i_file, namespace='storage')
                                 set_show_fnc_(i_file, i_list_item_prx)
                 else:
@@ -525,7 +525,7 @@ class AbsSceneTextureManagerPanel(
                             return
                     #
                     for i_file_unit in file_units:
-                        i_list_item_prx = self._obj_list_viewer_0.set_item_add()
+                        i_list_item_prx = self._obj_list_viewer_0.create_item()
                         set_show_fnc_(i_file_unit, i_list_item_prx)
 
     def _set_dcc_texture_references_update_(self):
@@ -655,7 +655,7 @@ class AbsSceneTextureManagerPanel(
 
 
 class AbsShotgunEntitiesCreatorPanel(
-    prx_widgets.PrxToolWindow
+    prx_widgets.PrxBaseWindow
 ):
     CONFIGURE_FILE_PATH = 'utility/panel/shotgun-entity-creator'
     HELP_FILE_PATH = utl_configure.MainData.get_help_file(
@@ -695,7 +695,7 @@ class AbsShotgunEntitiesCreatorPanel(
         self.refresh_all_fnc()
 
     def _set_tool_group_0_build_(self):
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Create-tool(s)')
         expand_box_0.set_size_mode(1)
         expand_box_0.set_expanded(True)
@@ -804,7 +804,7 @@ class AbsPnlHashGeometry(
         self._set_hash_uv_group_build_()
 
     def _set_utility_group_build_(self):
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Utility')
         expand_box_0.set_size_mode(1)
         expand_box_0.set_expanded(True)
@@ -856,7 +856,7 @@ class AbsPnlHashGeometry(
         _port.set(self._set_usd_file_import_)
 
     def _set_database_export_group_build_(self):
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Database Export')
         expand_box_0.set_size_mode(1)
         expand_box_0.set_expanded(True)
@@ -886,7 +886,7 @@ class AbsPnlHashGeometry(
         _port.set(self._set_database_uv_map_export_)
 
     def _set_database_import_group_build_(self):
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Database Import')
         expand_box_0.set_size_mode(1)
         expand_box_0.set_expanded(True)
@@ -908,7 +908,7 @@ class AbsPnlHashGeometry(
         _port.set(self._set_database_uv_map_import_)
 
     def _set_hash_uv_group_build_(self):
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Database Extend')
         expand_box_0.set_size_mode(1)
         expand_box_0.set_expanded(True)
@@ -923,7 +923,7 @@ class AbsPnlHashGeometry(
             prx_widgets.PrxSubProcessPort('geometry_unify', 'Unify Geometry by Select(s)')
         )
         _port.set(self._set_geometry_unify_run_)
-        _port.set_menu_raw(
+        _port.set_menu_data(
             [
                 ('Stop Deadline-job', None, self._set_geometry_unify_ddl_job_stop_)
             ]
@@ -936,7 +936,7 @@ class AbsPnlHashGeometry(
             prx_widgets.PrxSubProcessPort('geometry_uv_map_assign', 'Assign Geometry UV-map By Select(s)')
         )
         _port.set(self._set_geometry_uv_map_assign_run_)
-        _port.set_menu_raw(
+        _port.set_menu_data(
             [
                 ('Stop Deadline-job', None, self._set_geometry_uv_map_assign_ddl_job_stop_)
             ]
@@ -989,7 +989,7 @@ class AbsPnlHashGeometry(
 
 
 class AbsGeometryCheckerPanel(
-    prx_widgets.PrxToolWindow
+    prx_widgets.PrxBaseWindow
 ):
     CONFIGURE_FILE_PATH = 'utility/panel/geometry-checker'
     def __init__(self, *args, **kwargs):
@@ -1022,7 +1022,7 @@ class AbsGeometryCheckerPanel(
         pass
 
 
-class AbsFncPanel(prx_widgets.PrxToolWindow):
+class AbsFncPanel(prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(AbsFncPanel, self).__init__(*args, **kwargs)
         #

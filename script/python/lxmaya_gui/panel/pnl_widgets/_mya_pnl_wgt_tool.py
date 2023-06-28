@@ -173,7 +173,7 @@ class PnlGeometryBuilder(prx_widgets.PrxSessionToolWindow):
             self._session.configure.get('build.node.options'),
         )
         # tip
-        self._tip_group = prx_widgets.PrxExpandedGroup()
+        self._tip_group = prx_widgets.PrxHToolGroup()
         self.add_widget(self._tip_group)
         self._tip_group.set_expanded(True)
         self._tip_group.set_name('tips')
@@ -301,7 +301,7 @@ class PnlLookBuilder(prx_widgets.PrxSessionToolWindow):
             self._session.configure.get('build.node.options'),
         )
         # tip
-        self._tip_group = prx_widgets.PrxExpandedGroup()
+        self._tip_group = prx_widgets.PrxHToolGroup()
         self.add_widget(self._tip_group)
         self._tip_group.set_expanded(True)
         self._tip_group.set_name('tips')

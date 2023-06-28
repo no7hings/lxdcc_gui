@@ -134,7 +134,7 @@ class AbsPrxViewDef(object):
     def view(self):
         return self._qt_view
 
-    def set_item_add(self, *args, **kwargs):
+    def create_item(self, *args, **kwargs):
         raise NotImplementedError()
     #
     def connect_item_select_changed_to(self, fnc):
@@ -320,13 +320,13 @@ class AbsPrxWindow(AbsPrx):
         text = args[0]
         self._window_title = text
         self._qt_widget.setWindowTitle(text)
-        self._qt_widget._set_icon_name_text_(text)
+        self._qt_widget._set_icon_text_(text)
 
     def get_window_title(self):
         return self._window_title
 
     def set_window_icon_name_text(self, text):
-        self.widget._set_icon_name_text_(text)
+        self.widget._set_icon_text_(text)
 
     def set_window_icon_name(self, icon_name):
         self.widget._set_icon_name_(icon_name)
@@ -349,37 +349,40 @@ class AbsPrxWindow(AbsPrx):
         return self._qt_widget.isActiveWindow()
 
 
-class AbsWidgetContentDef(object):
-    QT_UNIT_BASE_CLS = None
-    def _init_unit_base_def_(self, layout):
-        self._qt_unit_layout = layout
-        self._unit_dict = {}
-        self._unit_current = None
+class AbsPrxLayerBaseDef(object):
+    PRX_LAYER_CLS = None
+    def _init_layer_base_def_(self, layout):
+        self._qt_layer_unit_layout = layout
+        self._layer_dict = {}
+        self._layer_current = None
 
-    def create_unit(self, key):
-        qt_widget_0 = self.QT_UNIT_BASE_CLS()
-        qt_widget_0.hide()
-        self._qt_unit_layout.addWidget(qt_widget_0)
-        self._unit_dict[key] = qt_widget_0
-        return qt_widget_0
+    def create_layer(self, key):
+        layer = self.PRX_LAYER_CLS()
+        layer._qt_widget.hide()
+        self._qt_layer_unit_layout.addWidget(layer._qt_widget)
+        self._layer_dict[key] = layer
+        return layer
 
-    def get_unit(self, key):
-        return self._unit_dict[key]
+    def get_layer(self, key):
+        return self._layer_dict[key]
 
-    def show_unit(self, key):
-        pre_widget = self._unit_current
-        cur_widget = self._unit_dict[key]
+    def get_layer_widget(self, key):
+        return self.get_layer(key).get_widget()
+
+    def get_layer_layout(self, key):
+        return self.get_layer_widget(key).get_layout()
+
+    def show_layer(self, key):
+        pre_widget = self._layer_current
+        cur_widget = self._layer_dict[key]
         if pre_widget is not None:
-            pre_widget.hide()
+            pre_widget._qt_widget.hide()
         #
-        cur_widget.show()
-        self._unit_current = cur_widget
+        cur_widget._qt_widget.show()
+        self._layer_current = cur_widget
 
-    def show_next_unit(self):
+    def show_next_layer(self):
         pass
-
-    def get_current_unit(self):
-        return self._unit_current
 
 
 class GuiProgress(object):
@@ -680,7 +683,7 @@ class AbsPrxMenuDef(object):
     def set_menu_title(self, text):
         self.widget._set_menu_title_text_(text)
 
-    def set_menu_raw(self, raw):
+    def set_menu_data(self, raw):
         self.widget._set_menu_data_(raw)
 
     def set_menu_raw_add(self, raw):

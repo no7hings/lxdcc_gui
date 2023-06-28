@@ -17,7 +17,7 @@ class QtTreeWidgetItem(
     utl_gui_qt_abstract.AbsQtNameBaseDef,
     #
     utl_gui_qt_abstract.AbsQtIconBaseDef,
-    utl_gui_qt_abstract.AbsQtShowForItemDef,
+    utl_gui_qt_abstract.AbsQtShowBaseForItemDef,
     utl_gui_qt_abstract.AbsQtMenuBaseDef,
     #
     utl_gui_qt_abstract.AbsQtItemFilterDef,
@@ -31,6 +31,12 @@ class QtTreeWidgetItem(
     #
     utl_gui_qt_abstract.AbsQtActionDragDef,
 ):
+    def _refresh_widget_(self):
+        pass
+
+    def _refresh_widget_draw_(self):
+        self._get_view_().update()
+
     ValidatorStatus = bsc_configure.ValidatorStatus
     def update(self):
         pass
@@ -42,7 +48,7 @@ class QtTreeWidgetItem(
         )
         #
         self._set_item_dag_loading_def_init_(self)
-        self._set_show_for_item_def_init_(self)
+        self._init_show_base_for_item_def_(self)
         #
         self._check_action_is_enable = True
         self._emit_send_enable = False
@@ -123,9 +129,6 @@ class QtTreeWidgetItem(
     def _get_item_is_hidden_(self):
         return self.isHidden()
 
-    def _refresh_widget_draw_(self):
-        self._get_view_().update()
-
     def _set_icon_(self, icon, column=0):
         self._icon = icon
         self.setIcon(column, self._icon)
@@ -146,7 +149,7 @@ class QtTreeWidgetItem(
             utl_gui_qt_core.QtUtilMtd.get_color_icon(rgb)
         )
 
-    def _set_icon_name_text_(self, text, column=0):
+    def _set_icon_text_(self, text, column=0):
         self._icon_name_text = text
         icon = QtGui.QIcon()
         pixmap = QtPixmapMtd.get_by_name(
@@ -479,7 +482,7 @@ class QtTreeWidgetItem(
         self._tree_widget = widget
 
     def _set_item_show_connect_(self):
-        self._set_item_show_def_setup_(self.treeWidget())
+        self._setup_item_show_(self.treeWidget())
 
     def _get_view_(self):
         return self.treeWidget()

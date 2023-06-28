@@ -329,7 +329,7 @@ class QtFilterBar(
 
     def _refresh_history_extra_(self):
         if self._history_extra_key is not None:
-            values = utl_core.History.get(
+            values = utl_core.History.get_all(
                 self._history_extra_key
             )
             if values:

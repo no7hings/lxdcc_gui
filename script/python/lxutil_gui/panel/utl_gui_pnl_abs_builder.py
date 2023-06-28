@@ -11,7 +11,7 @@ import lxresolver.commands as rsv_commands
 
 
 class AbsAssetBuilderPanel(
-    prx_widgets.PrxToolWindow
+    prx_widgets.PrxBaseWindow
 ):
     CONFIGURE_FILE_PATH = 'utility/panel/asset-builder'
     def __init__(self, *args, **kwargs):

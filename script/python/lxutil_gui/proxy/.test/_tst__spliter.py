@@ -4,7 +4,7 @@ from lxutil_gui import utl_gui_configure
 import lxutil_gui.proxy.widgets as prx_widgets
 
 
-class W(prx_widgets.PrxToolWindow):
+class W(prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(W, self).__init__(*args, **kwargs)
         h_s = prx_widgets.PrxHSplitter()

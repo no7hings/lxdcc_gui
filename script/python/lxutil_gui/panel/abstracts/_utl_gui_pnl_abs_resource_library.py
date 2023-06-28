@@ -137,7 +137,7 @@ class _GuiTypeOpt(_GuiBaseOpt):
     def gui_add_root(self):
         path = '/'
         if self.gui_get_is_exists(path) is False:
-            prx_item = self._tree_view.set_item_add(
+            prx_item = self._tree_view.create_item(
                 self.ROOT_NAME,
                 icon=utl_gui_core.RscIconFile.get('database/all'),
             )
@@ -396,7 +396,7 @@ class _GuiTagOpt(_GuiBaseOpt):
     def gui_add_root(self):
         path = '/'
         if self.gui_get_group_is_exists(path) is False:
-            prx_item = self._tree_view.set_item_add(
+            prx_item = self._tree_view.create_item(
                 self.ROOT_NAME,
                 icon=utl_gui_core.RscIconFile.get('database/all'),
             )
@@ -577,19 +577,79 @@ class _GuiResourceOpt(_GuiBaseOpt):
 
     def gui_add(self, dtb_type, dtb_resource, semantic_tag_filter_data):
         def cache_fnc_():
-            _list = []
-            return _list
+            name_dict = collections.OrderedDict()
+            pixmaps = []
+            name_dict['resource'] = dtb_resource.gui_name
+            for i_k, i_v in semantic_tag_filter_data.items():
+                if '/geometry/fbx' in i_v:
+                    i_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_file_ext('.fbx')
+                    pixmaps.append(i_pixmap)
+                #
+                name_dict[bsc_core.DccPathDagOpt(i_k).get_name()] = ', '.join(
+                    [bsc_core.DccPathDagOpt(j).get_name() for j in i_v]
+                )
+            #
+            dtb_version_port = self._dtb_opt.get_entity(
+                entity_type=self._dtb_opt.EntityTypes.Attribute,
+                filters=[
+                    ('node', 'is', dtb_resource.path),
+                    ('port', 'is', 'version')
+                ],
+            )
+            dtb_version = self._dtb_opt.get_entity(
+                entity_type=self._dtb_opt.EntityTypes.Version,
+                filters=[
+                    ('path', 'is', dtb_version_port.value),
+                ],
+            )
+            #
+            preview_image_dtb_port = self._dtb_opt.get_entity(
+                entity_type=self._dtb_opt.EntityTypes.Attribute,
+                filters=[
+                    ('node', 'is', dtb_version_port.value),
+                    ('port', 'is', 'image_preview_file'),
+                ]
+            )
+            image_args = None
+            if preview_image_dtb_port:
+                image_path_src = preview_image_dtb_port.value
+                if bsc_core.StgFileOpt(image_path_src).get_is_exists() is True:
+                    image_file_path, image_sub_process_cmd = bsc_core.ImgFileOpt(image_path_src).get_thumbnail_create_args(
+                        width=256, ext='.png'
+                    )
+                    image_args = image_file_path, image_sub_process_cmd
+            #
+            drag_data = None
+            if self._session.get_application() == 'katana':
+                drag_data = {
+                    'nodegraph/noderefs': 'rootNode',
+                    # 'nodegraph/fileref': '/l/resource/td/asset/scene/empty.katana',
+                    'pre-import/hook-option': self.get_callback_hook_option_fnc(
+                        option_hook_key='dtb-callbacks/katana/resource-pre-import-by-drag',
+                        dtb_entity=dtb_resource
+                    ),
+                    'import/hook-option': self.get_callback_hook_option_fnc(
+                        option_hook_key='dtb-callbacks/katana/resource-import-by-drag',
+                        dtb_entity=dtb_resource
+                    )
+                }
+            #
+            menu_content = self.get_dtb_entity_menu_content(dtb_resource)
+            menu_content_extra = self.get_dtb_entity_menu_content(dtb_version)
+            if menu_content_extra:
+                menu_content.set_update(menu_content_extra.get_value())
+            return name_dict, pixmaps, image_args, drag_data, menu_content
 
         def build_fnc_(data_):
             self.gui_show_deferred_fnc(
-                dtb_type, dtb_resource, prx_item, semantic_tag_filter_data, data_
+                dtb_type, dtb_resource, prx_item, data_
             )
 
         path = dtb_resource.path
         if self.gui_get_is_exists(path) is False:
             self._keys.add(dtb_resource.gui_name)
             #
-            prx_item = self._list_view.set_item_add()
+            prx_item = self._list_view.create_item()
             self.gui_register(path, prx_item)
             prx_item.get_item()._update_item_semantic_tag_filter_keys_tgt_(
                 semantic_tag_filter_data
@@ -628,102 +688,47 @@ class _GuiResourceOpt(_GuiBaseOpt):
             list_.append(i_dtb_resource)
         return list_
 
-    def gui_show_deferred_fnc(self, dtb_type, dtb_resource, prx_item, semantic_tag_filter_data, data):
-        # type_ = dtb_resource.type
+    def gui_show_deferred_fnc(self, dtb_type, dtb_resource, prx_item, data):
         prx_item.set_check_enable(True)
-        # r, g, b = bsc_core.RawTextOpt(type_).to_rgb_()
-        # prx_item.set_name_frame_background_color((r, g, b, 127))
-        name_dict = collections.OrderedDict()
-        pixmaps = []
-        name_dict['resource'] = dtb_resource.gui_name
-        for i_k, i_v in semantic_tag_filter_data.items():
-            if '/geometry/fbx' in i_v:
-                i_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_file_ext('.fbx')
-                pixmaps.append(i_pixmap)
-            name_dict[bsc_core.DccPathDagOpt(i_k).get_name()] = ', '.join([bsc_core.DccPathDagOpt(j).get_name() for j in i_v])
+        name_dict, pixmaps, image_args, drag_data, menu_content = data
 
         prx_item.set_image(
             utl_gui_core.RscIconFile.get('image_loading_failed_error')
         )
 
         prx_item.set_icons_by_pixmap(pixmaps)
-
-        dtb_version_port = self._dtb_opt.get_entity(
-            entity_type=self._dtb_opt.EntityTypes.Attribute,
-            filters=[
-                ('node', 'is', dtb_resource.path),
-                ('port', 'is', 'version')
-            ],
-        )
-
-        dtb_version = self._dtb_opt.get_entity(
-            entity_type=self._dtb_opt.EntityTypes.Version,
-            filters=[
-                ('path', 'is', dtb_version_port.value),
-            ],
-        )
-        if dtb_version is not None:
-            # drag action
+        # image
+        if image_args:
+            image_file_path, image_sub_process_cmd = image_args
+            prx_item.set_image(image_file_path)
+            if image_sub_process_cmd is not None:
+                prx_item.set_image_show_args(image_file_path, image_sub_process_cmd)
+        else:
+            prx_item.set_image(
+                utl_gui_core.RscIconFile.get('image_loading_failed_error')
+            )
+        # drag action
+        if drag_data:
             prx_item.set_drag_enable(True)
-            if self._session.get_application() == 'katana':
-                prx_item.set_drag_data(
-                    {
-                        'nodegraph/noderefs': 'rootNode',
-                        # 'nodegraph/fileref': '/l/resource/td/asset/scene/empty.katana',
-                        'pre-import/hook-option': self.get_callback_hook_option_fnc(
-                            option_hook_key='dtb-callbacks/katana/resource-pre-import-by-drag',
-                            dtb_entity=dtb_resource
-                        ),
-                        'import/hook-option': self.get_callback_hook_option_fnc(
-                            option_hook_key='dtb-callbacks/katana/resource-import-by-drag',
-                            dtb_entity=dtb_resource
-                        )
-                    }
-                )
-                prx_item.connect_drag_pressed_to(
-                    self.drag_pressed_fnc
-                )
-                prx_item.connect_drag_released_to(
-                    self.drag_release_fnc
-                )
-            # menu
-            dtb_resource_menu_content = self.get_dtb_entity_menu_content(dtb_resource)
-            dtb_version_menu_content = self.get_dtb_entity_menu_content(dtb_version)
-            dtb_resource_menu_content.set_update(dtb_version_menu_content.get_value())
-            prx_item.set_menu_content(dtb_resource_menu_content)
-            prx_item.set_index_draw_enable(True)
-            prx_item.set_icon_by_name(dtb_type.name)
-            prx_item.set_name_dict(
-                name_dict
+            prx_item.set_drag_data(drag_data)
+            prx_item.connect_drag_pressed_to(
+                self.drag_pressed_fnc
             )
-            prx_item.set_tool_tip(
-                dtb_resource.to_string()
+            prx_item.connect_drag_released_to(
+                self.drag_release_fnc
             )
-
-            preview_image_dtb_port = self._dtb_opt.get_entity(
-                entity_type=self._dtb_opt.EntityTypes.Attribute,
-                filters=[
-                    ('node', 'is', dtb_version_port.value),
-                    ('port', 'is', 'image_preview_file'),
-                ],
-                new_connection=False
-            )
-            if preview_image_dtb_port:
-                image_path = preview_image_dtb_port.value
-                if bsc_core.StgFileOpt(image_path).get_is_exists() is True:
-                    prx_item.set_image(
-                        image_path
-                    )
-                    image_file_path, image_sub_process_cmds = bsc_core.ImgFileOpt(image_path).get_thumbnail_create_args(
-                        width=256, ext='.png'
-                    )
-                    prx_item.set_image(image_file_path)
-                    if image_sub_process_cmds is not None:
-                        prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
-            else:
-                prx_item.set_image(
-                    utl_gui_core.RscIconFile.get('image_loading_failed_error')
-                )
+        # menu
+        if menu_content:
+            prx_item.set_menu_content(menu_content)
+        #
+        prx_item.set_index_draw_enable(True)
+        prx_item.set_icon_by_text(dtb_type.name)
+        prx_item.set_name_dict(
+            name_dict
+        )
+        prx_item.set_tool_tip(
+            dtb_resource.to_string()
+        )
 
     def get_callback_hook_option_fnc(self, option_hook_key, dtb_entity):
         return bsc_core.ArgDictStringOpt(
@@ -859,7 +864,7 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
     def gui_add_root(self, name):
         path = '/'
         if self.gui_get_is_exists(path) is False:
-            prx_item = self._tree_view.set_item_add(
+            prx_item = self._tree_view.create_item(
                 name,
                 icon=utl_gui_core.RscIconFile.get('database/group'),
             )
@@ -1070,7 +1075,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._top_tool_bar = prx_widgets.PrxHToolBar()
         v_qt_layout.addWidget(self._top_tool_bar._qt_widget)
         self._top_tool_bar.set_expanded(True)
-        self._top_tool_bar.set_alignment_left()
+        self._top_tool_bar.set_left_alignment_mode()
         #   guide
         self._guide_tool_box = prx_widgets.PrxHToolBox()
         self._top_tool_bar.add_widget(self._guide_tool_box)
@@ -1106,7 +1111,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._type_prx_view = prx_widgets.PrxTreeView()
         filter_v_s.add_widget(self._type_prx_view)
         self._type_prx_view.set_filter_entry_tip('fiter by type ...')
-        self._type_prx_view.get_top_tool_bar().set_expanded(True)
+        # self._type_prx_view.get_top_tool_bar().set_expanded(True)
         self._type_prx_view.set_selection_use_single()
         self._type_prx_view.set_header_view_create(
             [('type', 3), ('count', 1)],
@@ -1207,7 +1212,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self.setup_menu()
 
     def setup_menu(self):
-        menu = self.set_menu_add('tool')
+        menu = self.create_menu('tool')
         menu_content = self.get_tool_menu_content()
         menu.set_menu_content(menu_content)
 
@@ -1389,7 +1394,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         if self._qt_thread_enable is True:
             ts = utl_gui_qt_core.QtBuildThreadStack(self.widget)
             ts.run_finished.connect(post_fnc_)
-            with self.gui_waiting():
+            with self.gui_bustling():
                 for i_dtb_categories in dtb_categories_map:
                     [self._gui_type_opt.gui_add_category(i) for i in i_dtb_categories]
                     ts.register(
@@ -1465,11 +1470,13 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             ts = utl_gui_qt_core.QtBuildThreadStack(self.widget)
             self.__running_threads_stacks.append(ts)
             ts.run_finished.connect(post_fnc_)
-            with self.gui_waiting():
+            with self.gui_bustling():
                 for i_dtb_types in dtb_types_map:
                     ts.register(
-                        functools.partial(self.__batch_gui_cache_fnc_for_resources_by_entities_, i_dtb_types, thread_stack_index),
-                        self.__batch_gui_build_fnc_for_resources_
+                        cache_fnc=functools.partial(
+                            self.__batch_gui_cache_fnc_for_resources_by_entities_, i_dtb_types, thread_stack_index
+                        ),
+                        build_fnc=self.__batch_gui_build_fnc_for_resources_
                     )
             #
             ts.set_start()
@@ -1517,8 +1524,10 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                 ts.run_finished.connect(post_fnc_)
                 for i_dtb_type_assigns in dtb_type_assigns_map:
                     ts.register(
-                        functools.partial(self.__gui_cache_fnc_for_resources_, i_dtb_type_assigns, thread_stack_index),
-                        self.__gui_build_fnc_for_resources_
+                        cache_fnc=functools.partial(
+                            self.__gui_cache_fnc_for_resources_, i_dtb_type_assigns, thread_stack_index
+                        ),
+                        build_fnc=self.__gui_build_fnc_for_resources_
                     )
                 #
                 ts.set_start()
@@ -1533,12 +1542,6 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                         )
 
     def __gui_cache_fnc_for_resources_(self, dtb_assigns, thread_stack_index):
-        dtb_resources = self._dtb_opt.get_entities(
-            entity_type=self._dtb_opt.EntityTypes.Resource,
-            filters=[
-                ('path', 'in', [i.node for i in dtb_assigns])
-            ]
-        )
         build_args = []
 
         for i_dtb_assign in dtb_assigns:
@@ -1601,7 +1604,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             return
 
         if thread_stack_index == self.__thread_stack_index:
-            with self.gui_waiting():
+            with self.gui_bustling():
                 for i_dtg_type, i_dtb_resource, i_dtb_tags, i_semantic_tag_filter_data in build_args:
                     self._gui_resource_opt.gui_add(
                         i_dtg_type, i_dtb_resource, i_semantic_tag_filter_data

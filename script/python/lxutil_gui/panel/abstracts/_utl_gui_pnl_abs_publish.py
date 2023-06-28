@@ -64,7 +64,7 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
         )
         #
         self._next_button = prx_widgets.PrxPressItem()
-        self._next_button.set_name('next >')
+        self._next_button.set_name('next')
         self.set_button_add(
             self._next_button
         )
@@ -74,10 +74,9 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
             False
         )
         # publish
-        self.set_option_unit_name('publish')
-        layout = self.get_option_unit_layout()
+        layer_widget = self.create_layer_widget('publish', 'Publish')
         sa_2 = prx_widgets.PrxVScrollArea()
-        layout.addWidget(sa_2.widget)
+        layer_widget.add_widget(sa_2)
         self._publish_options_prx_node = prx_widgets.PrxNode_('options')
         sa_2.add_widget(self._publish_options_prx_node)
         self._publish_options_prx_node.create_ports_by_configure(
@@ -96,7 +95,7 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
         self._publish_tip.set_font_size(12)
 
         tool_bar = prx_widgets.PrxHToolBar()
-        layout.addWidget(tool_bar.widget)
+        layer_widget.add_widget(tool_bar)
         tool_bar.set_expanded(True)
 
         self._publish_button = prx_widgets.PrxPressItem()
@@ -125,10 +124,18 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
                 'resource_type', resource_type
             )
             #
-            self.refresh_project_fnc(self._task_data)
-            self.refresh_resource_fnc(self._task_data)
-            self.refresh_task_fnc(self._task_data)
-            self.refresh_next_enable_fnc(self._task_data)
+            fncs = [
+                (self.refresh_project_fnc, (self._task_data, )),
+                (self.refresh_resource_fnc, (self._task_data,)),
+                (self.refresh_task_fnc, (self._task_data,)),
+                (self.refresh_next_enable_fnc, (self._task_data,)),
+            ]
+            #
+            with self.gui_progressing(maximum=len(fncs), label='load from task') as g_p:
+                for i_fnc, i_args in fncs:
+                    g_p.set_update()
+                    i_fnc(*i_args)
+            #
             self.execute_show_next()
 
     def refresh_all_fnc(self):
@@ -462,8 +469,8 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
                 str(self._stg_task['id'])
             )
             if self.validator_fnc() is True:
-                self.show_option_unit()
-                self.set_option_unit_name(
+                self.show_layer('publish')
+                self.get_layer_widget('publish').set_name(
                     'publish for [{project}.{resource}.{task}]'.format(
                         **self._task_data
                     )
@@ -641,7 +648,7 @@ class AbsValidatorOpt(object):
         #
         stg_file = utl_dcc_objects.OsFile(file_path)
         name = stg_file.get_path_prettify_()
-        prx_item = self._result_tree_view.set_item_add(
+        prx_item = self._result_tree_view.create_item(
             name=name,
             icon=stg_file.icon,
             tool_tip=file_path,
@@ -773,31 +780,28 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
             'validation.ignore_texture_check': 'with_texture_check',
             'validation.ignore_texture_workspace_check': 'with_texture_workspace_check',
         }
-
+        self.set_main_style_mode(1)
         self._tab_view = prx_widgets.PrxTabView()
         self.add_widget(self._tab_view)
 
         sa_0 = prx_widgets.PrxVScrollArea()
-        self._tab_view.set_item_add(
+        self._tab_view.create_item(
             sa_0,
             name='Validation',
             icon_name_text='Validation',
         )
 
         sa_1 = prx_widgets.PrxVScrollArea()
-        self._tab_view.set_item_add(
+        self._tab_view.create_item(
             sa_1,
             name='Configure',
             icon_name_text='Configure',
         )
 
-        ep_0 = prx_widgets.PrxExpandedGroup()
+        ep_0 = prx_widgets.PrxHToolGroup()
         sa_0.add_widget(ep_0)
         ep_0.set_expanded(True)
         ep_0.set_name('check results')
-
-        # v_t = prx_widgets.PrxVToolBar()
-        # ep_0.add_widget(v_t)
 
         h_s_0 = prx_widgets.PrxHSplitter()
         ep_0.add_widget(h_s_0)
@@ -846,7 +850,7 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
         self._validation_button.connect_press_clicked_to(self.execute_validation)
 
         self._next_button = prx_widgets.PrxPressItem()
-        self._next_button.set_name('next >')
+        self._next_button.set_name('next')
         self.set_button_add(
             self._next_button
         )
@@ -876,10 +880,9 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
             'validation.ignore_clear', self._set_validation_ignore_clear_
         )
         # publish
-        self.set_option_unit_name('publish')
-        layout = self.get_option_unit_layout()
+        layer_widget = self.create_layer_widget('publish', 'Publish')
         sa_2 = prx_widgets.PrxVScrollArea()
-        layout.addWidget(sa_2.widget)
+        layer_widget.add_widget(sa_2)
         self._publish_options_prx_node = prx_widgets.PrxNode_('options')
         sa_2.add_widget(self._publish_options_prx_node)
         self._publish_options_prx_node.create_ports_by_configure(
@@ -894,7 +897,7 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
         self._publish_tip.set_font_size(12)
 
         tool_bar = prx_widgets.PrxHToolBar()
-        layout.addWidget(tool_bar.widget)
+        layer_widget.add_widget(tool_bar)
         tool_bar.set_expanded(True)
 
         self._publish_button = prx_widgets.PrxPressItem()
@@ -935,6 +938,9 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
             list_.append(self._validation_checker.get_info())
             return list_
         return ['validation check run: off']
+
+    def refresh_validation_enable_fnc(self):
+        pass
 
     def refresh_next_enable_fnc(self):
         self._validation_info_file = self._get_validation_info_file_path_()
@@ -1078,7 +1084,7 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
                 )
             ).to_string()
         )
-        cmd = s.get_execute_shell_command()
+        cmd = s.get_shell_script_command()
         #
         q_c_s = utl_core.CommandMonitor.set_create(
             'Validation for {}'.format(self._rsv_task),
@@ -1156,8 +1162,8 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
     
     def execute_show_next(self):
         if self._next_button.get_is_enable() is True:
-            self.show_option_unit()
-            self.set_option_unit_name(
+            self.show_layer('publish')
+            self.get_layer_widget('publish').set_name(
                 'publish for [{project}.{resource}.{task}]'.format(
                     **self._rsv_scene_properties.get_value()
                 )

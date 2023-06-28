@@ -1138,7 +1138,7 @@ class _QtNGNode(
             )
 
         if self._icon_name_text is not None:
-            painter._draw_icon_use_text_by_rect_(
+            painter._draw_image_use_text_by_rect_(
                 self._icon_name_draw_rect,
                 text=self._icon_name_text,
                 offset=offset,
@@ -1469,7 +1469,7 @@ class _QtNGGraph(
             i_ng_node._set_name_text_(
                 i_obj.name
             )
-            i_ng_node._set_icon_name_text_(
+            i_ng_node._set_icon_text_(
                 i_obj.type_name
             )
             i_ng_node._set_tool_tip_(['path: "{}"'.format(i_obj.path)])
@@ -1966,7 +1966,7 @@ class _QtNGTree(
             self.addTopLevelItem(item)
 
         item._set_name_text_(obj.name)
-        item._set_icon_name_text_(obj.type_name)
+        item._set_icon_text_(obj.type_name)
 
         item._set_check_state_(True)
         item._ng_node_obj = obj
@@ -2010,7 +2010,7 @@ class _QtNGImage(_QtNGNode):
             self._ng_node_rect_frame,
             border_width=self._ng_draw_border_w,
             is_selected=self._is_selected,
-            is_hovered=self._action_is_hovered,
+            is_hovered=self._is_hovered,
             is_actioned=self._get_is_actioned_()
         )
 
@@ -2124,7 +2124,7 @@ class _QtNGImageGraph(_QtNGGraph):
                 i_ng_node._set_name_text_(
                     i_obj.name
                 )
-                i_ng_node._set_icon_name_text_(
+                i_ng_node._set_icon_text_(
                     i_obj.type_name
                 )
 

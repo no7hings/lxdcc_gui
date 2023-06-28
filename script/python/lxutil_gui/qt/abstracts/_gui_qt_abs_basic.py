@@ -17,6 +17,7 @@ class AbsQtWidgetBaseDef(object):
     def _init_widget_base_def_(self, widget):
         self._widget = widget
         self._basic_rect = QtCore.QRect()
+        self._w, self._h = 0, 0
 
     def _get_text_draw_width_(self, text=None):
         return self._widget.fontMetrics().width(text)
@@ -25,11 +26,11 @@ class AbsQtWidgetBaseDef(object):
         self._widget.setFixedSize(QtCore.QSize(w, h))
 
 
-class AbsQtWaitingDef(object):
-    def _init_waiting_def_(self, widget):
+class AbsQtBusyBaseDef(object):
+    def _init_busy_base_def_(self, widget):
         self._widget = widget
     @contextmanager
-    def _gui_waiting_(self):
+    def _gui_bustling_(self):
         self._widget.setCursor(QtCore.Qt.BusyCursor)
         yield self
         self._widget.unsetCursor()
@@ -489,10 +490,12 @@ class AbsQtFrameBaseDef(object):
         #
         self._frame_border_radius = 0
         #
-        self._frame_draw_enable = False
+        self._frame_draw_is_enable = False
         self._frame_draw_rect = QtCore.QRect()
         self._frame_draw_margins = 0, 0, 0, 0
         self._frame_size = 20, 20
+        self._frame_border_draw_style = QtCore.Qt.SolidLine
+        self._frame_border_draw_width = 1
 
         self._frame_draw_rects = [QtCore.QRect()]
 
@@ -525,7 +528,8 @@ class AbsQtFrameBaseDef(object):
         self._frame_size = w, h
 
     def _set_frame_draw_enable_(self, boolean):
-        self._frame_draw_enable = boolean
+        self._frame_draw_is_enable = boolean
+        self._refresh_widget_draw_()
 
     def _set_frame_border_radius_(self, radius):
         self._frame_border_radius = radius
@@ -835,8 +839,8 @@ class AbsQtEntryBaseDef(object):
         return self._value_type
 
 
-class AbsQtActionDropDef(object):
-    def _init_action_drop_def_(self, widget):
+class AbsQtDropBaseDef(object):
+    def _init_drop_base_def_(self, widget):
         self._widget = widget
         self._action_drop_is_enable = False
 
@@ -902,7 +906,7 @@ class AbsQtIconBaseDef(object):
         #
         self._icon_frame_draw_rect = QtCore.QRect()
         self._icon_draw_rect = QtCore.QRect()
-        self._sub_icon_draw_rect = QtCore.QRect()
+        self._icon_sub_draw_rect = QtCore.QRect()
         #
         self._icon_color_draw_rect = QtCore.QRect()
         self._icon_name_draw_rect = QtCore.QRect()
@@ -914,7 +918,7 @@ class AbsQtIconBaseDef(object):
         self._icon_draw_size = 16, 16
         self._icon_draw_percent = .8
         self._sub_icon_draw_size = 10, 10
-        self._sub_icon_draw_percent = .5
+        self._icon_sub_draw_percent = .5
         #
         self._icon_color_draw_size = 12, 12
         self._icon_name_draw_size = 12, 12
@@ -922,6 +926,7 @@ class AbsQtIconBaseDef(object):
         #
         self._icon_state_draw_is_enable = False
         self._icon_state_draw_rect = QtCore.QRect()
+        self._icon_state_rect = QtCore.QRect()
         self._icon_state_file_path = None
         self._icon_state_draw_percent = .25
         self._icon_state_draw_rgb = 72, 72, 72
@@ -958,7 +963,7 @@ class AbsQtIconBaseDef(object):
         self._icon_sub_file_path = file_path
         self._widget.update()
 
-    def _set_sub_icon_text_(self, text):
+    def _set_icon_sub_text_(self, text):
         self._icon_sub_text = text
         self._widget.update()
 
@@ -991,7 +996,7 @@ class AbsQtIconBaseDef(object):
         self._icon_color_rgb = rgb
         self._widget.update()
 
-    def _set_icon_name_text_(self, text):
+    def _set_icon_text_(self, text):
         self._icon_is_enable = True
         self._icon_name_text = text
         self._widget.update()
@@ -1021,7 +1026,7 @@ class AbsQtIconBaseDef(object):
         )
 
     def _set_sub_icon_file_draw_rect_(self, x, y, w, h):
-        self._sub_icon_draw_rect.setRect(
+        self._icon_sub_draw_rect.setRect(
             x, y, w, h
         )
 
@@ -1237,6 +1242,8 @@ class AbsQtNameBaseDef(object):
         self._hover_name_color = QtFontColors.Light
         self._name_text_option = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
         #
+        self._name_word_warp = True
+        #
         self._name_width = 160
         #
         self._name_frame_size = 20, 20
@@ -1340,10 +1347,10 @@ class AbsQtNameBaseDef(object):
             self.setToolTip(css)
 
     def _set_name_font_size_(self, size):
-        self._widget.setFont(self._name_draw_font)
         font = self._widget.font()
         font.setPointSize(size)
         self._name_draw_font = font
+        self._widget.setFont(self._name_draw_font)
 
     def _set_name_draw_font_(self, font):
         self._name_draw_font = font
@@ -1602,7 +1609,8 @@ class AbsQtImageBaseDef(object):
         self._image_draw_is_enable = False
         #
         self._image_file_path = None
-        self._image_name_text = None
+        self._image_sub_file_path = None
+        self._image_text = None
         self._image_data = None
         #
         self._image_frame_size = 32, 32
@@ -1612,18 +1620,24 @@ class AbsQtImageBaseDef(object):
         #
         self._image_frame_rect = QtCore.QRect(0, 0, 0, 0)
         self._image_draw_rect = QtCore.QRect(0, 0, 0, 0)
+        self._image_sub_draw_rect = QtCore.QRect(0, 0, 0, 0)
 
     def _refresh_widget_draw_(self):
         raise NotImplementedError()
 
     def _set_image_file_path_(self, file_path):
-        self._image_draw_is_enable = True
         self._image_enable = True
+        self._image_draw_is_enable = True
         self._image_file_path = file_path
         self._refresh_widget_draw_()
 
-    def _set_image_name_text_(self, text):
-        self._image_name_text = text
+    def _set_image_sub_file_path_(self, file_path):
+        self._image_sub_file_path = file_path
+        self._refresh_widget_draw_()
+
+    def _set_image_text_(self, text):
+        self._image_text = text
+        self._refresh_widget_draw_()
 
     def _set_image_url_(self, url):
         self._image_draw_is_enable = True
@@ -1677,7 +1691,8 @@ class AbsQtImageBaseDef(object):
     def _get_has_image_(self):
         return (
                 self._image_file_path is not None or
-                self._image_name_text is not None
+                self._image_sub_file_path is not None or
+                self._image_text is not None
         )
 
     def _set_image_frame_draw_enable_(self, boolean):
@@ -1973,15 +1988,15 @@ class AbsQtActionForHoverDef(object):
     def _init_action_for_hover_def_(self, widget):
         self._widget = widget
         #
-        self._action_is_hovered = False
+        self._is_hovered = False
 
     def _set_action_hovered_(self, boolean):
-        self._action_is_hovered = boolean
+        self._is_hovered = boolean
         #
         self._widget.update()
 
     def _get_is_hovered_(self):
-        return self._action_is_hovered
+        return self._is_hovered
 
     def _execute_action_hover_by_filter_(self, event):
         if event.type() == QtCore.QEvent.Enter:
@@ -1999,7 +2014,6 @@ class AbsQtActionForPressDef(object):
     press_toggled = qt_signal(bool)
     #
     clicked = qt_signal()
-    db_clicked = qt_signal()
     #
     ActionFlag = utl_gui_configure.ActionFlag
 
@@ -2838,36 +2852,12 @@ class AbsQtItemMovieActionDef(object):
         self.movie_play_press_clicked.emit()
 
 
-class AbsQtBuildItemDef(object):
-    def _set_build_item_def_init_(self):
-        pass
-
-    def _get_view_(self):
-        raise NotImplementedError()
-
-    def _set_build_item_setup_(self, view):
-        self._build_runnable_runner = view._build_runnable_runner
-
-    def _set_build_item_runnable_create_(self, cache_fnc, build_fnc, post_fnc=None):
-        return self._build_runnable_runner.create_thread(
-            cache_fnc, build_fnc, post_fnc
-        )
-
-    def _set_build_item_thread_create_(self, cache_fnc, build_fnc, post_fnc=None):
-        t = QtBuildThread(self._get_view_())
-        t.set_cache_fnc(cache_fnc)
-        t.built.connect(build_fnc)
-        if post_fnc is not None:
-            t.run_finished.connect(post_fnc)
-        return t
-
-
 class AbsQtBuildViewDef(object):
     def _set_build_view_def_init_(self):
         pass
 
     def _set_build_view_setup_(self, view):
-        self._build_runnable_runner = QtBuildRunnableRunner(
+        self._build_runnable_stack = QtBuildRunnableStack(
             view
         )
 
@@ -2894,7 +2884,10 @@ class AbsQtViewSelectActionDef(object):
 
 class AbsQtViewScrollActionDef(object):
     def _set_view_scroll_action_def_init_(self):
-        pass
+        self._scroll_is_enable = True
+
+    def _set_scroll_enable_(self, boolean):
+        self._scroll_is_enable = boolean
 
     def _get_view_h_scroll_bar_(self):
         raise NotImplementedError()
@@ -2951,7 +2944,7 @@ class AbsQtItemFilterDef(object):
         return list(self._item_keyword_filter_keys_tgt)
 
     def _get_keyword_filter_keys_tgt_as_split_(self):
-        return [j for i in self._get_keyword_filter_keys_tgt_() for j in bsc_core.RawTextMtd.split_to(i)]
+        return [j for i in self._get_keyword_filter_keys_tgt_() for j in bsc_core.RawTextMtd.find_words(i)]
 
     def _get_keyword_filter_keys_auto_(self):
         keys = self._get_keyword_filter_keys_tgt_()
@@ -3423,10 +3416,31 @@ class AbsQtViewStateDef(object):
         return []
 
 
-class AbsQtShowForItemDef(
+class AbsQtBuildItemDef(object):
+    def _set_build_item_def_init_(self):
+        pass
+
+    def _get_view_(self):
+        raise NotImplementedError()
+
+    def _setup_item_show_runnable_stack_(self, view):
+        self._build_runnable_stack = view._build_runnable_stack
+
+    def _create_item_show_runnable_(self, cache_fnc, build_fnc, post_fnc=None):
+        return self._build_runnable_stack.create_thread(
+            cache_fnc, build_fnc, post_fnc
+        )
+
+
+# show base
+# for item
+class AbsQtShowBaseForItemDef(
     AbsQtBuildItemDef
 ):
     ShowStatus = bsc_configure.ShowStatus
+
+    def _refresh_widget_(self, *args, **kwargs):
+        raise NotImplementedError()
 
     def _refresh_widget_draw_(self):
         raise NotImplementedError()
@@ -3437,8 +3451,7 @@ class AbsQtShowForItemDef(
     def _get_item_widget_(self):
         raise NotImplementedError()
 
-    def _set_show_for_item_def_init_(self, widget):
-        #
+    def _init_show_base_for_item_def_(self, widget):
         self._widget = widget
         #
         if bsc_core.ApplicationMtd.get_is_maya():
@@ -3446,23 +3459,23 @@ class AbsQtShowForItemDef(
         else:
             self._item_show_use_thread = True
         #
-        self._item_show_thread = None
-        self._item_show_image_thread = None
+        self._item_show_runnable = None
+        self._item_show_image_runnable = None
         #
         self._item_show_cache_fnc = None
         self._item_show_build_fnc = None
         #
-        self._item_show_status = self.ShowStatus.Stopped
+        self._item_show_status = self.ShowStatus.Unknown
         # image
         self._item_show_image_cache_fnc = None
         self._item_show_image_build_fnc = None
         #
-        self._item_show_image_status = self.ShowStatus.Stopped
+        self._item_show_image_status = self.ShowStatus.Unknown
 
         self._set_build_item_def_init_()
 
-    def _set_item_show_def_setup_(self, view):
-        self._set_build_item_setup_(view)
+    def _setup_item_show_(self, view):
+        self._setup_item_show_runnable_stack_(view)
 
         self._item_show_runnable = None
         self._item_show_image_runnable = None
@@ -3479,7 +3492,7 @@ class AbsQtShowForItemDef(
         self._item_show_image_cmd = None
         self._item_show_image_file_path = None
 
-    def _set_item_show_method_(self, method):
+    def _set_item_show_build_fnc_(self, method):
         def cache_fnc_():
             return []
 
@@ -3497,67 +3510,74 @@ class AbsQtShowForItemDef(
                 #
                 self._item_show_status = self.ShowStatus.Waiting
                 if self._get_item_is_viewport_showable_() is True:
-                    self._set_item_show_start_()
+                    self._checkout_item_show_()
 
-    def _set_item_show_fnc_start_(self):
+    def _checkout_item_show_(self, delay_time=10, force=False):
+        def run_fnc_():
+            if self._item_show_cache_fnc is not None:
+                self._start_item_show_()
+        #
+        if self._item_show_status == self.ShowStatus.Waiting or force is True:
+            self._checkout_item_show_loading_()
+            #
+            self._item_show_timer.timeout.connect(run_fnc_)
+            self._item_show_timer.start(delay_time)
+    #
+    def _checkout_item_show_loading_(self):
+        if self._item_show_status == self.ShowStatus.Waiting:
+            self._item_show_loading_timer.timeout.connect(
+                self._update_item_show_loading_
+            )
+            self._item_show_loading_timer.start(10)
+
+    def _start_item_show_(self):
         if self._item_show_status == self.ShowStatus.Waiting:
             if self._item_show_use_thread is True:
                 self._item_show_status = self.ShowStatus.Loading
                 #
-                self._item_show_thread = self._set_build_item_runnable_create_(
+                self._item_show_runnable = self._create_item_show_runnable_(
                     self._item_show_cache_fnc,
                     self._item_show_build_fnc,
-                    self._set_item_show_fnc_stop_
+                    self._finish_item_show_
                 )
                 #
-                self._item_show_thread.set_start()
+                self._build_runnable_stack.start_runnable(self._item_show_runnable)
             else:
                 self._item_show_build_fnc(
                     self._item_show_cache_fnc()
                 )
-                self._set_item_show_fnc_stop_()
+                self._finish_item_show_()
 
-    def _set_item_show_fnc_stop_(self):
+    def _finish_item_show_(self):
         self._set_item_show_stop_(
-            self.ShowStatus.Completed
+            self.ShowStatus.Finished
         )
-
-    def _set_item_show_start_(self, delay_time=50, force=False):
-        def run_fnc_():
-            if self._item_show_cache_fnc is not None:
-                self._set_item_show_fnc_start_()
-        #
-        if self._item_show_status == self.ShowStatus.Waiting or force is True:
-            self._set_item_show_start_loading_()
-            #
-            self._item_show_timer.timeout.connect(run_fnc_)
-            self._item_show_timer.start(delay_time)
 
     def _set_item_show_stop_(self, status):
         self._item_show_status = status
         self._item_show_timer.stop()
-        self._set_item_show_stop_loading_()
+        self._finish_item_show_loading_()
 
     def _get_item_show_is_finished_(self):
-        return self._item_show_status in [
+        return self._item_show_status in {
             self.ShowStatus.Completed, self.ShowStatus.Failed
-        ]
+        }
     # loading
-    def _set_item_show_start_loading_(self):
-        if self._item_show_status == self.ShowStatus.Waiting:
-            self._set_item_show_update_loading_()
-            self._item_show_loading_timer.timeout.connect(
-                self._set_item_show_update_loading_
-            )
-            self._item_show_loading_timer.start(100)
-
-    def _set_item_show_update_loading_(self):
+    def _update_item_show_loading_(self):
         self._item_show_loading_index += 1
-        # self._refresh_widget_draw_()
+        # noinspection PyBroadException
+        try:
+            self._refresh_widget_draw_()
+        except:
+            pass
 
-    def _set_item_show_stop_loading_(self):
+    def _finish_item_show_loading_(self):
         self._item_show_loading_timer.stop()
-        # self._refresh_widget_draw_()
+        # noinspection PyBroadException
+        try:
+            self._refresh_widget_draw_()
+        except:
+            pass
     # image fnc
     def _set_item_show_image_cmd_(self, image_file_path, cmd):
         def cache_fnc_():
@@ -3566,7 +3586,7 @@ class AbsQtShowForItemDef(
         def build_fnc_(data):
             # noinspection PyBroadException
             try:
-                bsc_core.SubProcessMtd.set_run_with_result(
+                bsc_core.SubProcessMtd.execute_with_result(
                     cmd
                 )
             except:
@@ -3584,43 +3604,50 @@ class AbsQtShowForItemDef(
                 #
                 self._item_show_image_status = self.ShowStatus.Waiting
                 if self._get_item_is_viewport_showable_() is True:
-                    self._set_item_show_image_start_()
+                    self._checkout_item_show_image_()
 
-    def _set_item_show_image_fnc_start_(self):
+    def _checkout_item_show_image_(self, delay_time=10, force=False):
+        def run_fnc():
+            if self._item_show_cache_fnc is not None:
+                self._start_item_show_image_()
+        #
+        if self._item_show_image_status == self.ShowStatus.Waiting or force is True:
+            self._checkout_item_show_image_loading_()
+            #
+            self._item_show_image_timer.timeout.connect(run_fnc)
+            self._item_show_image_timer.start(delay_time)
+
+    def _checkout_item_show_image_loading_(self):
+        if self._item_show_image_status == self.ShowStatus.Waiting:
+            self._update_item_show_image_loading_()
+            self._item_show_image_loading_timer.timeout.connect(
+                self._update_item_show_image_loading_
+            )
+            self._item_show_image_loading_timer.start(100)
+
+    def _start_item_show_image_(self):
         if self._item_show_image_status == self.ShowStatus.Waiting:
             self._item_show_image_status = self.ShowStatus.Loading
             if self._item_show_use_thread is True:
-                self._item_show_image_thread = self._set_build_item_runnable_create_(
+                self._item_show_image_runnable = self._create_item_show_runnable_(
                     self._item_show_image_cache_fnc,
                     self._item_show_image_build_fnc,
-                    self._set_item_show_image_fnc_stop_
+                    self._finish_item_show_image_
                 )
                 #
-                self._item_show_image_thread.set_start()
+                self._build_runnable_stack.start_runnable(self._item_show_image_runnable)
             else:
                 self._item_show_image_build_fnc(
                     self._item_show_image_cache_fnc()
                 )
-                self._set_item_show_image_fnc_stop_()
+                self._finish_item_show_image_()
 
-    def _set_item_show_image_fnc_stop_(self):
+    def _finish_item_show_image_(self):
         if self._item_show_image_file_path is not None:
             if os.path.isfile(self._item_show_image_file_path) is True:
                 self._set_item_show_image_stop_(self.ShowStatus.Completed)
             else:
                 self._set_item_show_image_stop_(self.ShowStatus.Failed)
-
-    def _set_item_show_image_start_(self, delay_time=50, force=False):
-        def run_fnc():
-            if self._item_show_cache_fnc is not None:
-                self._set_item_show_image_fnc_start_()
-
-        #
-        if self._item_show_image_status == self.ShowStatus.Waiting or force is True:
-            self._set_item_show_image_start_loading_()
-            #
-            self._item_show_image_timer.timeout.connect(run_fnc)
-            self._item_show_image_timer.start(delay_time)
 
     def _set_item_show_image_stop_(self, status):
         self._item_show_image_status = status
@@ -3632,24 +3659,20 @@ class AbsQtShowForItemDef(
                 )
         #
         self._item_show_image_timer.stop()
-        self._set_item_show_image_stop_loading_()
+        self._finish_item_show_image_loading_()
 
     def _get_item_is_viewport_showable_(self, *args, **kwargs):
         raise NotImplementedError()
 
-    def _set_item_show_image_start_loading_(self):
-        if self._item_show_image_status == self.ShowStatus.Waiting:
-            self._set_item_show_image_update_loading_()
-            self._item_show_image_loading_timer.timeout.connect(
-                self._set_item_show_image_update_loading_
-            )
-            self._item_show_image_loading_timer.start(100)
-
-    def _set_item_show_image_update_loading_(self):
+    def _update_item_show_image_loading_(self):
         self._item_show_image_loading_index += 1
-        # self._refresh_widget_draw_()
+        # noinspection PyBroadException
+        try:
+            self._refresh_widget_draw_()
+        except:
+            pass
 
-    def _set_item_show_image_stop_loading_(self):
+    def _finish_item_show_image_loading_(self):
         self._item_show_image_loading_timer.stop()
         # noinspection PyBroadException
         try:
@@ -3657,24 +3680,24 @@ class AbsQtShowForItemDef(
         except:
             pass
 
-    def _set_item_show_start_all_(self, force=False):
-        self._set_item_show_start_(force=force)
-        self._set_item_show_image_start_(force=force)
+    def _checkout_item_show_all_(self, force=False):
+        self._checkout_item_show_(force=force)
+        self._checkout_item_show_image_(force=force)
 
-    def _set_item_show_stop_all_(self):
+    def _stop_item_show_all_(self):
         self._set_item_show_stop_(self.ShowStatus.Stopped)
         self._set_item_show_image_stop_(self.ShowStatus.Stopped)
 
-    def _set_item_show_kill_all_(self):
-        if self._item_show_thread is not None:
-            self._item_show_thread.set_kill()
+    def _kill_item_all_show_runnables_(self):
+        if self._item_show_runnable is not None:
+            self._item_show_runnable.set_kill()
         #
-        if self._item_show_image_thread is not None:
-            self._item_show_image_thread.set_kill()
+        if self._item_show_image_runnable is not None:
+            self._item_show_image_runnable.set_kill()
 
     def _set_item_viewport_visible_(self, boolean):
         if boolean is True:
-            self._set_item_show_start_all_()
+            self._checkout_item_show_all_()
         #
         self._set_item_widget_visible_(boolean)
 
@@ -3686,22 +3709,13 @@ class AbsQtShowForItemDef(
 
     def _set_item_show_start_auto_(self):
         if self._get_item_is_viewport_showable_() is True:
-            self._set_item_show_start_all_()
+            self._checkout_item_show_all_()
 
     def _set_item_show_force_(self):
-        self._set_item_show_start_all_(force=True)
+        self._checkout_item_show_all_(force=True)
 
 
-class ShowFnc(object):
-    def __init__(self):
-        pass
-
-
-class AbsQtShowStackForItemDef(object):
-    def _init_show_stack_for_item_(self):
-        pass
-
-
+# for view
 class AbsQtShowForViewDef(object):
     def _init_show_for_view_def_(self, widget):
         self._widget = widget
@@ -3733,6 +3747,16 @@ class AbsQtShowForViewDef(object):
 
     def _refresh_viewport_showable_auto_(self):
         self._refresh_view_all_items_viewport_showable_()
+
+
+class ShowFnc(object):
+    def __init__(self):
+        pass
+
+
+class AbsQtShowStackForItemDef(object):
+    def _init_show_stack_for_item_(self):
+        pass
 
 
 class AbsQtValueEntryExtraDef(object):
@@ -4324,8 +4348,8 @@ class AbsQtItemDagLoading(object):
 
     def _set_item_dag_loading_end_(self):
         if self._loading_item is not None:
-            self._loading_item._set_item_show_kill_all_()
-            self._loading_item._set_item_show_stop_all_()
+            self._loading_item._kill_item_all_show_runnables_()
+            self._loading_item._stop_item_show_all_()
             self._widget.takeChild(
                 self._widget.indexOfChild(self._loading_item)
             )

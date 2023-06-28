@@ -108,6 +108,13 @@ class QtLineWidget(QtWidgets.QWidget):
         Null = 0x00
         Solid = 0x01
 
+    def _refresh_widget_(self):
+        self._refresh_widget_draw_geometry_()
+        self._refresh_widget_draw_()
+
+    def _refresh_widget_draw_(self):
+        self.update()
+
     def __init__(self, *args, **kwargs):
         super(QtLineWidget, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -122,7 +129,11 @@ class QtLineWidget(QtWidgets.QWidget):
         # top, bottom, left, right
         self._line_styles = line_styles
 
-    def _refresh_line_draw_geometry_(self):
+    def _set_top_line_mode_(self):
+        self._line_styles = [self.Style.Solid, self.Style.Null, self.Style.Null, self.Style.Null]
+        self._refresh_widget_()
+
+    def _refresh_widget_draw_geometry_(self):
         x, y = 0, 0
         w, h = self.width(), self.height()
         t_l, b_l, l_l, r_l = self._lines
@@ -140,17 +151,62 @@ class QtLineWidget(QtWidgets.QWidget):
         r_l.setP2(QtCore.QPoint(x+w-1, y+h))
 
     def resizeEvent(self, event):
-        self._refresh_line_draw_geometry_()
+        self._refresh_widget_draw_geometry_()
 
     def paintEvent(self, event):
         painter = QtPainter(self)
         for seq, i in enumerate(self._line_styles):
             i_line = self._lines[seq]
-            painter._set_border_color_(self._line_border_color)
-            painter._set_border_width_(self._line_border_width)
             if i == self.Style.Solid:
+                painter._set_border_color_(self._line_border_color)
+                painter._set_border_width_(self._line_border_width)
                 painter._set_antialiasing_(False)
                 painter.drawLine(i_line)
+
+
+class QtHLine(QtWidgets.QWidget):
+    def __init__(self, *args, **kwargs):
+        super(QtHLine, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setFixedHeight(1)
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
+        )
+
+    def paintEvent(self, event):
+        painter = QtPainter(self)
+        painter._set_border_color_(
+            79, 79, 79, 255
+        )
+        painter.drawLine(
+            QtCore.QLine(
+                0, 0, self.width(), 1
+            )
+        )
+
+
+class QtHFrame(QtWidgets.QWidget):
+    def __init__(self, *args, **kwargs):
+        super(QtHFrame, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setFixedHeight(24)
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
+        )
+
+    def paintEvent(self, event):
+        painter = QtPainter(self)
+        painter._set_border_color_(
+            55, 55, 55, 255
+        )
+        painter._set_background_color_(
+            55, 55, 55, 255
+        )
+        painter.drawRect(
+            QtCore.QRect(
+                0, 0, self.width(), self.height()
+            )
+        )
 
 
 class _QtTranslucentWidget(QtWidgets.QWidget):
@@ -179,7 +235,7 @@ class QtPressButton(QtWidgets.QPushButton):
 class QtMenuBar(QtWidgets.QMenuBar):
     def __init__(self, *args, **kwargs):
         super(QtMenuBar, self).__init__(*args, **kwargs)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setPalette(QtDccMtd.get_palette())
         self.setAutoFillBackground(True)
         #
@@ -561,7 +617,7 @@ class QtTextBubble(
                     #
                     self._clear_all_action_flags_()
                     #
-                    self._action_is_hovered = False
+                    self._is_hovered = False
                     self._refresh_widget_draw_()
         return False
 
@@ -796,7 +852,7 @@ class QtTextItem(
         # name
         if self._name_text is not None:
             color, hover_color = self._get_text_color_by_validator_status_rgba_args_(self._status)
-            text_color = [color, hover_color][self._action_is_hovered]
+            text_color = [color, hover_color][self._is_hovered]
             #
             painter._draw_text_by_rect_(
                 rect=self._name_draw_rect,
@@ -821,9 +877,14 @@ class QtIconPressItem(
     utl_gui_qt_abstract.AbsQtActionForPressDef,
 ):
     clicked = qt_signal()
-    db_clicked = qt_signal()
+    press_db_clicked = qt_signal()
     #
     QT_MENU_CLS = QtMenu
+
+    def _refresh_widget_(self):
+        self._refresh_widget_draw_geometry_()
+        self._refresh_widget_draw_()
+
     def _refresh_widget_draw_(self):
         self.update()
 
@@ -831,51 +892,53 @@ class QtIconPressItem(
         x, y = 0, 0
         w, h = self.width(), self.height()
         #
-        frm_w, frm_h = w, h
-        icn_frm_w, icn_frm_h = self._icon_frame_draw_size
-        icn_frm_m_w, icn_frm_m_h = (frm_w-icn_frm_w)/2, (frm_h-icn_frm_h)/2
+        icn_frm_w = icn_frm_h = w
         #
         icn_w, icn_h = int(icn_frm_w*self._icon_draw_percent), int(icn_frm_h*self._icon_draw_percent)
-        i_c_w, i_c_h = self._icon_color_draw_size
-        i_n_w, i_n_h = self._icon_name_draw_size
-        # check
-        c_w, c_h = w, h
-        c_x, c_y = x, y
+        icn_x, icn_y = x+(icn_frm_w-icn_w)/2, y+(icn_frm_h-icn_h)/2
+        #
         if self._icon_is_enable is True:
-            if self._icon_sub_file_path or self._icon_sub_text:
-                self._set_icon_file_draw_rect_(
-                    x+1, y+1, icn_w, icn_h
-                )
-                #
-                icn_p_s = self._sub_icon_draw_percent
-                icn_w_s, icn_h_s = icn_frm_w*icn_p_s, icn_frm_h*icn_p_s
-                self._sub_icon_draw_rect.setRect(
-                    x+w-icn_w_s-1, y+h-icn_h_s-1, icn_w_s, icn_h_s
-                )
-            # state
-            elif self._icon_state_draw_is_enable is True:
-                icn_p_s = self._icon_state_draw_percent
-                icn_w_s, icn_h_s = icn_frm_w*icn_p_s, icn_frm_h*icn_p_s
-                self._icon_state_draw_rect.setRect(
-                    x+w-icn_w_s-1, y+h-icn_h_s-1, icn_w_s, icn_h_s
-                )
-                self._set_icon_file_draw_rect_(
-                    x+1, y+1, w-icn_w_s, h-icn_h_s
-                )
+            # sub icon
+            if self._icon_sub_file_path or self._icon_sub_text or self._icon_state_draw_is_enable:
+                if self._icon_state_draw_is_enable is True:
+                    icn_s_p = self._icon_sub_draw_percent
+                    icn_s_w, icn_s_h = icn_frm_w*icn_s_p, icn_frm_h*icn_s_p
+                    o_x, o_y = icn_x, icn_y
+                    self._icon_draw_rect.setRect(
+                        x+1, y+1, icn_w, icn_h
+                    )
+                    icn_s_w, icn_s_h = min(icn_s_w, 16), min(icn_s_h, 16)
+                    self._icon_sub_draw_rect.setRect(
+                        x+icn_frm_w-icn_s_w-1-o_x, y+icn_frm_h-icn_s_h-1-o_y, icn_s_w, icn_s_h
+                    )
+                    icn_sst_p = self._icon_state_draw_percent
+                    icn_stt_w, icn_stt_h = icn_frm_w*icn_sst_p, icn_frm_h*icn_sst_p
+                    #
+                    self._icon_state_rect.setRect(
+                        x+icn_frm_w-icn_stt_w-1, y+icn_frm_h-icn_stt_h-1, icn_stt_w, icn_stt_h
+                    )
+                    icn_stt_w, icn_stt_h = min(icn_stt_w, 8), min(icn_stt_h, 8)
+                    self._icon_state_draw_rect.setRect(
+                        x+icn_frm_w-icn_stt_w-1, y+icn_frm_h-icn_stt_h-1, icn_stt_w, icn_stt_h
+                    )
+                else:
+                    icn_s_p = self._icon_sub_draw_percent
+                    icn_s_w, icn_s_h = icn_frm_w*icn_s_p, icn_frm_h*icn_s_p
+                    icn_s_w, icn_s_h = min(icn_s_w, 16), min(icn_s_h, 16)
+                    self._icon_draw_rect.setRect(
+                        icn_x, icn_y, icn_w, icn_h
+                    )
+                    self._icon_sub_draw_rect.setRect(
+                        x+icn_frm_w-icn_s_w-1, y+icn_frm_h-icn_s_h-1, icn_s_w, icn_s_h
+                    )
             else:
-                self._set_icon_file_draw_rect_(
-                    x+(icn_frm_w-icn_w)/2, y+(icn_frm_h-icn_h)/2, icn_w, icn_h
+                self._icon_draw_rect.setRect(
+                    icn_x, icn_y, icn_w, icn_h
                 )
-            #
-            self._icon_color_draw_rect.setRect(
-                c_x+(icn_frm_w-i_c_w)/2, c_y+(icn_frm_h-i_c_h)/2, i_c_w, i_c_h
-            )
-            self._icon_name_draw_rect.setRect(
-                c_x+(icn_frm_w-i_n_w)/2, c_y+(icn_frm_h-i_n_h)/2, i_n_w, i_n_h
-            )
-            #
-            c_x += icn_frm_h
-            c_w -= icn_frm_w
+
+        self._name_draw_rect.setRect(
+            x, y+icn_frm_h, w, h-icn_frm_w
+        )
 
         s_w, s_h = w*.5, w*.5
         self._action_state_rect.setRect(
@@ -886,8 +949,7 @@ class QtIconPressItem(
         super(QtIconPressItem, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setFont(Font.NAME)
-        self.setMaximumSize(20, 20)
-        self.setMinimumSize(20, 20)
+        self.setFixedSize(20, 20)
         self.installEventFilter(self)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         #
@@ -918,19 +980,26 @@ class QtIconPressItem(
                         self._set_action_flag_(self.ActionFlag.PressClick)
                     elif event.button() == QtCore.Qt.RightButton:
                         self._popup_menu_()
+                    self._refresh_widget_draw_()
                 elif event.type() == QtCore.QEvent.MouseButtonDblClick:
                     if event.button() == QtCore.Qt.LeftButton:
                         self._set_pressed_(True)
-                        self.db_clicked.emit()
                         self._set_action_flag_(self.ActionFlag.PressDbClick)
                     elif event.button() == QtCore.Qt.RightButton:
                         pass
                 elif event.type() == QtCore.QEvent.MouseButtonRelease:
                     if event.button() == QtCore.Qt.LeftButton:
-                        if self._get_action_press_flag_is_click_() is True:
-                            self.clicked.emit()
-                            self.press_clicked.emit()
-                            self._popup_menu_()
+                        if self._get_action_flag_is_match_(self.ActionFlag.PressDbClick):
+                            self.press_db_clicked.emit()
+                        elif self._get_action_flag_is_match_(self.ActionFlag.PressClick):
+                            p = event.pos()
+                            if self._icon_state_draw_is_enable:
+                                if self._icon_state_rect.contains(p):
+                                    self._popup_menu_()
+                                else:
+                                    self._send_press_clicked_emit_()
+                            else:
+                                self._send_press_clicked_emit_()
                     elif event.button() == QtCore.Qt.RightButton:
                         pass
                     #
@@ -942,7 +1011,6 @@ class QtIconPressItem(
     def paintEvent(self, event):
         painter = QtPainter(self)
         self._refresh_widget_draw_geometry_()
-
         offset = self._get_action_offset_()
         # icon
         if self._icon_is_enable is True:
@@ -951,50 +1019,56 @@ class QtIconPressItem(
                     rect=self._icon_draw_rect,
                     file_path=self._icon_file_path,
                     offset=offset,
-                    is_hovered=self._action_is_hovered
-                )
-                if self._icon_sub_text:
-                    painter._draw_icon_use_text_by_rect_(
-                        rect=self._sub_icon_draw_rect,
-                        text=self._icon_sub_text,
-                        border_radius=4,
-                        offset=offset
-                    )
-                elif self._icon_sub_file_path:
-                    painter._draw_icon_file_by_rect_(
-                        rect=self._sub_icon_draw_rect,
-                        file_path=self._icon_sub_file_path,
-                        offset=offset,
-                        is_hovered=self._action_is_hovered
-                    )
-                elif self._icon_state_draw_is_enable is True:
-                    if self._icon_state_file_path is not None:
-                        painter._draw_icon_file_by_rect_(
-                            rect=self._icon_state_draw_rect,
-                            file_path=self._icon_state_file_path,
-                            offset=offset,
-                            is_hovered=self._action_is_hovered
-                        )
-            #
-            elif self._icon_color_rgb is not None:
-                painter._set_color_icon_draw_(
-                    self._icon_color_draw_rect,
-                    self._icon_color_rgb,
-                    offset=offset
+                    is_hovered=self._is_hovered,
+                    is_pressed=self._is_pressed
                 )
             elif self._icon_name_text is not None:
-                painter._draw_icon_use_text_by_rect_(
-                    self._icon_name_draw_rect,
-                    self._icon_name_text,
+                painter._draw_image_use_text_by_rect_(
+                    rect=self._icon_draw_rect,
+                    text=self._icon_name_text,
                     offset=offset,
                     border_radius=2,
-                    is_hovered=self._action_is_hovered
+                    is_hovered=self._is_hovered,
+                    is_pressed=self._is_pressed
                 )
+            #
+            if self._icon_sub_file_path:
+                painter._draw_image_use_file_path_by_rect_(
+                    rect=self._icon_sub_draw_rect,
+                    file_path=self._icon_sub_file_path,
+                    offset=offset,
+                    is_hovered=self._is_hovered,
+                    #
+                    draw_frame=True,
+                    background_color=QtBorderColors.Icon,
+                    border_color=QtBorderColors.Icon,
+                    border_radius=4
+                )
+            #
+            if self._icon_state_draw_is_enable is True:
+                if self._icon_state_file_path is not None:
+                    painter._draw_icon_file_by_rect_(
+                        rect=self._icon_state_draw_rect,
+                        file_path=self._icon_state_file_path,
+                        offset=offset,
+                        is_hovered=self._is_hovered
+                    )
         #
         if self._action_state in [self.ActionState.Disable]:
             painter._draw_icon_file_by_rect_(
                 self._action_state_rect,
                 utl_gui_core.RscIconFile.get('state-disable')
+            )
+        #
+        if self._name_text:
+            painter._draw_text_by_rect_(
+                rect=self._name_draw_rect,
+                text=self._name_text,
+                font=get_font(),
+                text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop,
+                word_warp=self._name_word_warp,
+                offset=offset,
+                # is_hovered=self._is_hovered,
             )
 
     def _set_visible_(self, boolean):
@@ -1087,20 +1161,20 @@ class QtIconEnableItem(
                     x+1, y+1, icn_w, icn_h
                 )
                 #
-                icn_p_s = self._sub_icon_draw_percent
-                icn_w_s, icn_h_s = icn_frm_w*icn_p_s, icn_frm_h*icn_p_s
-                self._sub_icon_draw_rect.setRect(
-                    x+w-icn_w_s-1, y+h-icn_h_s-1, icn_w_s, icn_h_s
+                icn_s_p = self._icon_sub_draw_percent
+                icn_s_w, icn_s_h = icn_frm_w*icn_s_p, icn_frm_h*icn_s_p
+                self._icon_sub_draw_rect.setRect(
+                    x+w-icn_s_w-1, y+h-icn_s_h-1, icn_s_w, icn_s_h
                 )
             # state
             elif self._icon_state_draw_is_enable is True:
-                icn_p_s = self._icon_state_draw_percent
-                icn_w_s, icn_h_s = icn_frm_w*icn_p_s, icn_frm_h*icn_p_s
+                icn_s_p = self._icon_state_draw_percent
+                icn_s_w, icn_s_h = icn_frm_w*icn_s_p, icn_frm_h*icn_s_p
                 self._icon_state_draw_rect.setRect(
-                    x+w-icn_w_s-1, y+h-icn_h_s-1, icn_w_s, icn_h_s
+                    x+w-icn_s_w-1, y+h-icn_s_h-1, icn_s_w, icn_s_h
                 )
                 self._set_icon_file_draw_rect_(
-                    x+1, y+1, w-icn_w_s, h-icn_h_s
+                    x+1, y+1, w-icn_s_w, h-icn_s_h
                 )
             else:
                 self._set_icon_file_draw_rect_(
@@ -1139,7 +1213,7 @@ class QtIconEnableItem(
         #
         background_color = painter._get_item_background_color_by_rect_(
             self._check_action_rect,
-            is_hovered=self._action_is_hovered,
+            is_hovered=self._is_hovered,
             is_selected=self._is_checked,
             is_actioned=self._get_is_actioned_()
         )
@@ -1157,21 +1231,21 @@ class QtIconEnableItem(
                     rect=self._icon_draw_rect,
                     file_path=self._icon_file_path,
                     offset=offset,
-                    is_hovered=self._action_is_hovered
+                    is_hovered=self._is_hovered
                 )
                 if self._icon_sub_text:
-                    painter._draw_icon_use_text_by_rect_(
-                        rect=self._sub_icon_draw_rect,
+                    painter._draw_image_use_text_by_rect_(
+                        rect=self._icon_sub_draw_rect,
                         text=self._icon_sub_text,
                         border_radius=4,
                         offset=offset
                     )
                 elif self._icon_sub_file_path:
                     painter._draw_icon_file_by_rect_(
-                        rect=self._sub_icon_draw_rect,
+                        rect=self._icon_sub_draw_rect,
                         file_path=self._icon_sub_file_path,
                         offset=offset,
-                        is_hovered=self._action_is_hovered
+                        is_hovered=self._is_hovered
                     )
                 elif self._icon_state_draw_is_enable is True:
                     if self._icon_state_file_path is not None:
@@ -1179,7 +1253,7 @@ class QtIconEnableItem(
                             rect=self._icon_state_draw_rect,
                             file_path=self._icon_state_file_path,
                             offset=offset,
-                            is_hovered=self._action_is_hovered
+                            is_hovered=self._is_hovered
                         )
         #
         if self._name_text is not None:
@@ -1215,7 +1289,7 @@ class QtMainWindow(
     QtWidgets.QMainWindow,
     #
     utl_gui_qt_abstract.AbsQtIconBaseDef,
-    utl_gui_qt_abstract.AbsQtWaitingDef,
+    utl_gui_qt_abstract.AbsQtBusyBaseDef,
     utl_gui_qt_abstract.AbsQtThreadBaseDef,
     #
     QtThreadDef
@@ -1230,9 +1304,10 @@ class QtMainWindow(
         self.installEventFilter(self)
         self.setWindowFlags(QtCore.Qt.Window)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
         self.setPalette(QtDccMtd.get_palette())
-        self.setAutoFillBackground(True)
+        # self.setAutoFillBackground(True)
         # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
         self.setFont(Font.NAME)
@@ -1241,13 +1316,32 @@ class QtMainWindow(
         #
         self._init_icon_base_def_(self)
         self._window_system_tray_icon = None
-        self._init_waiting_def_(self)
+        self._init_busy_base_def_(self)
         self._init_thread_base_def_(self)
+        self.setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QMainWindow')
+        )
+        self.menuBar().setStyleSheet(
+            utl_gui_core.QtStyleMtd.get('QMenuBar')
+        )
+        self._frame_draw_rect = QtCore.QRect()
+        self._menu_frame_draw_rect = QtCore.QRect()
     #
     def _refresh_widget_draw_(self):
         self.update()
+
+    def _refresh_widget_draw_geometry_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        m_h = self.menuBar().height()
+        self._frame_draw_rect.setRect(
+            x, y, w, h
+        )
+        self._menu_frame_draw_rect.setRect(
+            x, y, w, m_h
+        )
     #
-    def _set_icon_name_text_(self, text):
+    def _set_icon_text_(self, text):
         self.setWindowIcon(QtUtilMtd.get_name_text_icon_(text))
 
     def _set_icon_name_(self, icon_name):
@@ -1285,6 +1379,18 @@ class QtMainWindow(
                 #         event.ignore()
         return False
 
+    def paintEvent(self, event):
+        self._refresh_widget_draw_geometry_()
+        painter = QtPainter(self)
+        painter.fillRect(
+            self._frame_draw_rect,
+            QtBackgroundColors.Basic
+        )
+        painter.fillRect(
+            self._menu_frame_draw_rect,
+            QtBackgroundColors.Dark
+        )
+
     def _set_size_changed_connect_to_(self, fnc):
         self.size_changed.connect(fnc)
 
@@ -1292,10 +1398,10 @@ class QtMainWindow(
         self.close()
         self.deleteLater()
 
-    def _set_close_later_(self, time):
+    def _set_close_later_(self, delay_time):
         close_timer = QtCore.QTimer(self)
         close_timer.timeout.connect(self._set_close_)
-        close_timer.start(time)
+        close_timer.start(delay_time)
 
     def _create_window_shortcut_action_(self, fnc, shortcut):
         action = QtWidgets.QAction(self)
@@ -1337,7 +1443,7 @@ class QtDialog(
     def _refresh_widget_draw_(self):
         self.update()
     #
-    def _set_icon_name_text_(self, text):
+    def _set_icon_text_(self, text):
         self.setWindowIcon(
             QtUtilMtd.get_name_text_icon_(text, background_color=(64, 64, 64))
         )
@@ -1569,7 +1675,8 @@ class QtFileDialog(QtWidgets.QFileDialog):
 
 class QtListWidgetItem(
     QtWidgets.QListWidgetItem,
-    utl_gui_qt_abstract.AbsQtShowForItemDef,
+    utl_gui_qt_abstract.AbsQtShowBaseForItemDef,
+    utl_gui_qt_abstract.AbsQtMenuBaseDef,
     #
     utl_gui_qt_abstract.AbsQtItemFilterDef,
     #
@@ -1580,12 +1687,23 @@ class QtListWidgetItem(
     #
     utl_gui_qt_abstract.AbsQtItemVisibleConnectionDef,
 ):
+    def _refresh_widget_(self, *args, **kwargs):
+        item_widget = self._get_item_widget_()
+        if item_widget is not None:
+            item_widget._refresh_widget_(*args, **kwargs)
+
+    def _refresh_widget_draw_(self):
+        item_widget = self._get_item_widget_()
+        if item_widget is not None:
+            item_widget._refresh_widget_draw_()
+
     def __init__(self, *args, **kwargs):
         super(QtListWidgetItem, self).__init__(*args, **kwargs)
         self.setFlags(
             QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled
         )
-        self._set_show_for_item_def_init_(self)
+        self._init_menu_base_def_(self)
+        self._init_show_base_for_item_def_(self)
         #
         self._visible_tgt_key = None
         self._init_item_filter_extra_def_(self)
@@ -1623,11 +1741,6 @@ class QtListWidgetItem(
     def _get_item_is_hidden_(self):
         return self.isHidden()
 
-    def _refresh_widget_draw_(self):
-        item_widget = self._get_item_widget_()
-        if item_widget is not None:
-            item_widget.update()
-
     def _set_item_widget_(self, widget):
         list_widget = self.listWidget()
         list_widget.setItemWidget(self, widget)
@@ -1643,7 +1756,7 @@ class QtListWidgetItem(
         return self._visible_tgt_key
 
     def _set_item_show_connect_(self):
-        self._set_item_show_def_setup_(self.listWidget())
+        self._setup_item_show_(self.listWidget())
     # def _get_keyword_filter_keys_tgt_(self):
     #     item_widget = self._get_item_widget_()
     #     if item_widget is not None:
@@ -1660,7 +1773,7 @@ class QtListWidgetItem(
         item = self
         view = self.listWidget()
         #
-        self._set_item_show_start_loading_()
+        self._checkout_item_show_loading_()
         return view._get_view_item_viewport_showable_(item)
 
     def _set_item_widget_visible_(self, boolean):
@@ -1728,7 +1841,7 @@ class _QtHItem(
         #
         self._frame_background_color = QtBackgroundColors.Light
 
-    def _refresh_widget_(self):
+    def _refresh_widget_(self, *args, **kwargs):
         self._refresh_widget_draw_geometry_()
         self._refresh_widget_draw_()
 
@@ -1839,7 +1952,7 @@ class _QtHItem(
                 self._check_is_hovered = False
                 self._press_is_hovered = False
                 self._delete_is_hovered = False
-                self._action_is_hovered = False
+                self._is_hovered = False
                 #
                 self._refresh_widget_draw_()
             elif event.type() == QtCore.QEvent.Resize:
@@ -1906,7 +2019,7 @@ class _QtHItem(
             )
         # icon
         if self._icon_name_text is not None:
-            painter._draw_icon_use_text_by_rect_(
+            painter._draw_image_use_text_by_rect_(
                 rect=self._icon_name_draw_rect,
                 text=self._icon_name_text,
                 background_color=bkg_color,
@@ -1936,7 +2049,7 @@ class _QtHItem(
                     font_color=self._name_color,
                     font=self._name_draw_font,
                     text_option=self._name_text_option,
-                    is_hovered=self._action_is_hovered,
+                    is_hovered=self._is_hovered,
                     is_selected=self._is_selected,
                     offset=offset
                 )
@@ -1948,7 +2061,7 @@ class _QtHItem(
                 font_color=self._name_color,
                 font=self._name_draw_font,
                 text_option=self._name_text_option,
-                is_hovered=self._action_is_hovered,
+                is_hovered=self._is_hovered,
                 is_selected=self._is_selected,
                 offset=offset
             )
@@ -1989,7 +2102,7 @@ class _QtHItem(
             if self._delete_action_rect.contains(p):
                 self._delete_is_hovered = True
         #
-        self._action_is_hovered = self._check_is_hovered or self._press_is_hovered or self._delete_is_hovered
+        self._is_hovered = self._check_is_hovered or self._press_is_hovered or self._delete_is_hovered
         #
         self._refresh_widget_draw_()
 

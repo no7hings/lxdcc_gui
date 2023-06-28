@@ -34,7 +34,7 @@ class AbsObjGuiDef(object):
             item_class=prx_widgets.PrxObjTreeItem,
         )
         if parent_obj_path is None:
-            obj_gui = tree_view_gui.set_item_add(
+            obj_gui = tree_view_gui.create_item(
                 **_kwargs
             )
             item_dict[obj_path] = obj_gui
@@ -88,7 +88,7 @@ class AbsObjGuiDef(object):
             item_dict[utl_obj.path] = obj_gui
             return obj_gui
         else:
-            obj_gui = tree_view_gui.set_item_add(
+            obj_gui = tree_view_gui.create_item(
                 **_kwargs
             )
             item_dict[utl_obj.path] = obj_gui
@@ -113,7 +113,7 @@ class AbsGuiMethodDef(object):
         return self._method_gui_dict[method_key]
 
 
-class AbsUtilToolPanel(prx_widgets.PrxToolWindow):
+class AbsUtilToolPanel(prx_widgets.PrxBaseWindow):
     TOOL_PANEL_KEY = None
     TOOL_SCHEME = None
     DCC_SELECTION_CLS = None
@@ -128,7 +128,7 @@ class AbsUtilToolPanel(prx_widgets.PrxToolWindow):
 
 
 class AbsSceneComposeToolPanel(
-    prx_widgets.PrxToolWindow,
+    prx_widgets.PrxBaseWindow,
 ):
     DCC_SELECTION_CLS = None
     DCC_NODE_CLS = None
@@ -152,7 +152,7 @@ class AbsSceneComposeToolPanel(
 
     def set_panel_build(self):
         # viewer
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Viewer(s)')
         expand_box_0.set_expanded(True)
         self.add_widget(expand_box_0)
@@ -252,7 +252,7 @@ class AbsSceneComposeToolPanel(
                 item_class=prx_widgets.PrxObjTreeItem,
             )
             if _parent is None:
-                _obj_gui = self._tree_viewer.set_item_add(
+                _obj_gui = self._tree_viewer.create_item(
                     **_kwargs
                 )
                 self._gui_dict[obj_op_.path] = _obj_gui
@@ -326,7 +326,7 @@ class AbsDccObjGuiDef(object):
                 **kwargs
             )
         elif tree_viewer is not None:
-            obj_gui = tree_viewer.set_item_add(
+            obj_gui = tree_viewer.create_item(
                 **kwargs
             )
         else:

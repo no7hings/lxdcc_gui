@@ -1124,7 +1124,7 @@ else:
         def paintEvent(self, event):
             painter = QtPainter(self)
             #
-            # is_hovered = self._action_is_hovered
+            # is_hovered = self._is_hovered
             is_selected = self._is_focused
             background_color = self._frame_background_color
             bdr_color = [QtBorderColors.Basic, QtBorderColors.HighLight][is_selected]

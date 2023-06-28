@@ -28,7 +28,7 @@ from lxsession import ssn_core
 import lxsession.objects as ssn_objects
 
 
-class AbsRezGraph(prx_widgets.PrxToolWindow):
+class AbsRezGraph(prx_widgets.PrxBaseWindow):
     OPTION_HOOK_KEY = None
     def __init__(self, hook_option, *args, **kwargs):
         super(AbsRezGraph, self).__init__(*args, **kwargs)
@@ -217,10 +217,10 @@ class AbsRezGraph(prx_widgets.PrxToolWindow):
 
         self._node_tree.set_universe(u)
 
-        menu = self.set_menu_add(
+        menu = self.create_menu(
             'Tool(s)'
         )
-        menu.set_menu_raw(
+        menu.set_menu_data(
             [
                 ('Save Graph', None, self._set_graph_save_),
             ]
@@ -236,7 +236,7 @@ class AbsRezGraph(prx_widgets.PrxToolWindow):
         p.save('/data/f/rez_test/png/test_0.png', 'PNG')
 
 
-class AbsAssetLineup(prx_widgets.PrxToolWindow):
+class AbsAssetLineup(prx_widgets.PrxBaseWindow):
     OPTION_HOOK_KEY = None
     DCC_NAMESPACE = 'resolver'
     def __init__(self, hook_option, *args, **kwargs):
@@ -327,10 +327,10 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
 
         h_s.set_stretches([1, 3])
 
-        menu = self.set_menu_add(
+        menu = self.create_menu(
             'Tool(s)'
         )
-        menu.set_menu_raw(
+        menu.set_menu_data(
             [
                 ('Save Graph', None, self._set_graph_save_),
             ]
@@ -590,7 +590,7 @@ class AbsAssetLineup(prx_widgets.PrxToolWindow):
     @classmethod
     def _get_rsv_unit_action_hook_args_(cls, session_dict, key, *args, **kwargs):
         def execute_fnc():
-            session._set_file_execute_(python_file_path, dict(session=session))
+            session.execute_python_file_fnc(python_file_path, session=session)
         #
         rsv_task = args[0]
         session_path = '{}/{}'.format(rsv_task.path, key)

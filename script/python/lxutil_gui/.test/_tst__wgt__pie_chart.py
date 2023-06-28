@@ -4,7 +4,7 @@ from lxutil import utl_configure
 import lxutil_gui.proxy.widgets as prx_widgets
 
 
-class W(prx_widgets.PrxToolWindow):
+class W(prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(W, self).__init__(*args, **kwargs)
         s_c = prx_widgets.PrxPieChart()

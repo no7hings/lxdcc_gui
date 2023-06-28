@@ -6,7 +6,7 @@ import lxutil.dcc.dcc_objects as utl_dcc_objects
 import lxuniverse.objects as unr_objects
 
 
-class W(prx_widgets.PrxToolWindow):
+class W(prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(W, self).__init__(*args, **kwargs)
         #

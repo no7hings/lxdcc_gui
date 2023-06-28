@@ -36,15 +36,15 @@ class AbsTaskMethodObjGuiDef(object):
                 **kwargs
             )
         elif tree_viewer is not None:
-            obj_gui = tree_viewer.set_item_add(
+            obj_gui = tree_viewer.create_item(
                 **kwargs
             )
         else:
             raise TypeError()
         #
         obj.set_obj_gui(obj_gui)
-        obj_gui.set_icon_by_name(obj.name)
-        obj_gui.set_icon_by_name(obj.type_name, 1)
+        obj_gui.set_icon_by_text(obj.name)
+        obj_gui.set_icon_by_text(obj.type_name, 1)
         return obj_gui
     @classmethod
     def _set_method_unit_obj_gui_add_(cls, method_obj, root_dcc_obj_gui):
@@ -74,7 +74,7 @@ class AbsTaskMethodObjGuiDef(object):
                 **kwargs
             )
         elif tree_viewer is not None:
-            obj_gui = tree_viewer.set_item_add(
+            obj_gui = tree_viewer.create_item(
                 **kwargs
             )
         else:
@@ -82,8 +82,8 @@ class AbsTaskMethodObjGuiDef(object):
         #
         obj_gui.set_checked(True)
         obj.set_obj_gui(obj_gui)
-        obj_gui.set_icon_by_name(obj.name)
-        obj_gui.set_icon_by_name(obj.type_name, 1)
+        obj_gui.set_icon_by_text(obj.name)
+        obj_gui.set_icon_by_text(obj.type_name, 1)
         obj_gui.set_gui_dcc_obj(obj, namespace='method')
         return obj_gui
     @classmethod
@@ -99,7 +99,7 @@ class AbsTaskMethodObjGuiDef(object):
                 **kwargs
             )
         elif tree_viewer is not None:
-            obj_gui = tree_viewer.set_item_add(
+            obj_gui = tree_viewer.create_item(
                 **kwargs
             )
         else:
@@ -123,7 +123,7 @@ class AbsTaskMethodObjGuiDef(object):
                 **kwargs
             )
         elif tree_viewer is not None:
-            obj_gui = tree_viewer.set_item_add(
+            obj_gui = tree_viewer.create_item(
                 **kwargs
             )
         else:
@@ -146,7 +146,7 @@ class AbsTaskMethodObjGuiDef(object):
                 **kwargs
             )
         elif tree_viewer is not None:
-            obj_gui = tree_viewer.set_item_add(
+            obj_gui = tree_viewer.create_item(
                 **kwargs
             )
         else:
@@ -159,7 +159,7 @@ class AbsTaskMethodObjGuiDef(object):
 
 
 class AbsSceneMethodRunnerPanel(
-    prx_widgets.PrxToolWindow,
+    prx_widgets.PrxBaseWindow,
     utl_gui_pnl_abstract.AbsGuiMethodDef,
     AbsTaskMethodObjGuiDef
 ):
@@ -200,26 +200,26 @@ class AbsSceneMethodRunnerPanel(
         self._set_configure_groups_build_()
         #
         self._check_button = prx_widgets.PrxPressItem()
-        self._check_button.set_icon_by_name('Check')
+        self._check_button.set_icon_by_text('Check')
         self._check_button.set_name('Check')
         self.set_button_add(self._check_button)
         self._check_button.connect_press_clicked_to(self._set_checked_methods_check_run_)
         #
         self._repair_button = prx_widgets.PrxPressItem()
-        self._repair_button.set_icon_by_name('Repair')
+        self._repair_button.set_icon_by_text('Repair')
         self._repair_button.set_name('Repair')
         self.set_button_add(self._repair_button)
         self._repair_button.connect_press_clicked_to(self._set_checked_methods_repair_run_)
         #
         self._export_button = prx_widgets.PrxPressItem()
-        self._export_button.set_icon_by_name('Export')
+        self._export_button.set_icon_by_text('Export')
         self._export_button.set_name('Export')
         self.set_button_add(self._export_button)
         self._export_button.connect_press_clicked_to(self._set_checked_methods_export_run_)
 
     def _set_viewer_groups_build_(self):
         # viewer
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Viewer(s)')
         expand_box_0.set_expanded(True)
         self.add_widget(expand_box_0)
@@ -232,7 +232,7 @@ class AbsSceneMethodRunnerPanel(
         self._tree_viewer.connect_item_select_changed_to(self._set_dcc_obj_select_)
 
     def _set_configure_groups_build_(self):
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Configure(s)')
         expand_box_0.set_expanded(True)
         expand_box_0.set_size_mode(1)

@@ -146,7 +146,7 @@ class _AbsQtSplitterHandle(
         self._swap_draw_rect = QtCore.QRect()
         self._swap_icon_file_path = utl_gui_core.RscIconFile.get(self._swap_icon_name)
         #
-        self._action_is_hovered = False
+        self._is_hovered = False
         #
         self._init_frame_base_def_(self)
         self._init_action_for_hover_def_(self)
@@ -308,7 +308,7 @@ class _AbsQtSplitterHandle(
         ]
         #
         if self._action_is_enable is True:
-            condition = self._action_is_hovered, self._is_pressed
+            condition = self._is_hovered, self._is_pressed
             if condition == (False, False):
                 border_color = QtBackgroundColors.Transparent
                 background_color = QtBackgroundColors.Transparent

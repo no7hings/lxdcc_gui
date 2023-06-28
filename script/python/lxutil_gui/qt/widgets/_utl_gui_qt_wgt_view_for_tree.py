@@ -659,13 +659,13 @@ class QtTreeWidget(
         self.scrollToItem(item, self.PositionAtTop)
         self.setCurrentItem(item)
 
-    def _set_item_add_(self):
+    def _add_item_(self):
         pass
 
     def _set_clear_(self):
         for i in self._get_all_items_():
-            i._set_item_show_kill_all_()
-            i._set_item_show_stop_all_()
+            i._stop_item_show_all_()
+            i._kill_item_all_show_runnables_()
         #
         self.clear()
         self._item_expand_method_dic = {}

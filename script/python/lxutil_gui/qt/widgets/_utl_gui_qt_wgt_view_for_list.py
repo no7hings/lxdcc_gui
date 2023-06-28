@@ -7,7 +7,8 @@ import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
 
 class QtListWidget(
-    utl_gui_qt_abstract.AbsQtListWidget
+    utl_gui_qt_abstract.AbsQtListWidget,
+    utl_gui_qt_abstract.AbsQtMenuBaseDef,
 ):
     ctrl_f_key_pressed = qt_signal()
     f5_key_pressed = qt_signal()
@@ -16,8 +17,10 @@ class QtListWidget(
     focus_changed = qt_signal()
     #
     info_text_accepted = qt_signal(str)
+    QT_MENU_CLS = _utl_gui_qt_wgt_utility.QtMenu
     def __init__(self, *args, **kwargs):
         super(QtListWidget, self).__init__(*args, **kwargs)
+        self._init_menu_base_def_(self)
         qt_palette = QtDccMtd.get_palette()
         self.setPalette(qt_palette)
         # self.setDragDropMode(self.DragOnly)
@@ -97,6 +100,29 @@ class QtListWidget(
             #
             self._refresh_viewport_showable_auto_()
 
+    def contextMenuEvent(self, event):
+        menu_data = []
+        #
+        view_menu_data = self._get_menu_data_()
+        if view_menu_data:
+            menu_data.extend(view_menu_data)
+            menu_data.append(
+                ()
+            )
+        #
+        item = self._get_item_current_()
+        if item:
+            item_menu_data = item._get_menu_data_()
+            menu_data.extend(
+                item_menu_data
+            )
+        #
+        if menu_data:
+            menu = self.QT_MENU_CLS(self)
+            #
+            menu._set_menu_data_(menu_data)
+            menu._popup_start_()
+
     def eventFilter(self, *args):
         widget, event = args
         if widget == self:
@@ -113,6 +139,7 @@ class QtListWidget(
             elif event.type() == QtCore.QEvent.Wheel:
                 self._execute_action_wheel_(event)
             elif event.type() == QtCore.QEvent.Resize:
+                self._refresh_size_()
                 self._refresh_view_all_items_viewport_showable_()
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
@@ -137,6 +164,14 @@ class QtListWidget(
                 self.rect(), self._empty_icon_name
             )
         # super(QtListWidget, self).paintEvent(event)
+
+    def _refresh_size_(self):
+        if self._scroll_is_enable is False:
+            w, h = self.viewport().width(), self.viewport().height()
+            # self.adjustSize()
+            h_add = self.verticalScrollBar().maximum()
+            print h+h_add
+            # self.adjustSize()
 
     def _refresh_info_(self, *args, **kwargs):
         c = sum([self.item(i)._get_is_checked_() for i in range(self.count())])
@@ -304,8 +339,8 @@ class QtListWidget(
 
     def _set_clear_(self):
         for i in self._get_all_items_():
-            i._set_item_show_kill_all_()
-            i._set_item_show_stop_all_()
+            i._kill_item_all_show_runnables_()
+            i._stop_item_show_all_()
         #
         self._pre_selected_items = []
         #

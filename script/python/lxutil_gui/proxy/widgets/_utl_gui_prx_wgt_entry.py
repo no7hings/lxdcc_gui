@@ -256,7 +256,7 @@ class _PrxStgObjEntry(AbsPrxTypeQtEntry):
                     value
                 )
         #
-        histories = utl_core.History.get(
+        histories = utl_core.History.get_all(
             self._history_key
         )
         if histories:
@@ -547,7 +547,7 @@ class _PrxStgObjsEntry(AbsPrxTypeQtEntry):
                             value
                         )
             #
-            histories = utl_core.History.get(
+            histories = utl_core.History.get_all(
                 self._history_key
             )
             if histories:
@@ -680,7 +680,7 @@ class PrxMediasOpenEntry(PrxEntryAsFilesOpen):
         self._create_button.connect_press_clicked_to(self._set_create_)
         self._create_button.set_name('create file')
         self._create_button.set_icon_name('camera')
-        self._create_button.set_sub_icon_name('action/add')
+        self._create_button.set_icon_sub_name('action/add')
         self._create_button.set_icon_frame_size(18, 18)
         self._create_button.set_tool_tip(
             [
@@ -717,7 +717,6 @@ class _PrxEntryForValueArray(AbsPrxTypeQtEntry):
         super(_PrxEntryForValueArray, self).__init__(*args, **kwargs)
         self._history_key = 'gui.values'
         #
-        self._qt_entry_widget._set_value_entry_drop_enable_(True)
         self._qt_entry_widget._set_value_entry_enable_(True)
         self._qt_entry_widget._get_resize_handle_()._set_resize_target_(self.widget)
         self._qt_entry_widget._set_resize_enable_(True)
@@ -895,8 +894,6 @@ class _PrxEntryAsShotgunEntityByChoose(
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsShotgunEntityByChoose, self).__init__(*args, **kwargs)
         self._shotgun_entity_kwargs = {}
-        # popup
-        self._qt_entry_widget._set_value_entry_drop_enable_(True)
         # entry
         self._qt_entry_widget._set_value_entry_enable_(True)
         # choose
@@ -1003,7 +1000,6 @@ class _PrxEntryAsShotgunEntitiesWithChoose(
         self._qt_entry_widget._value_entry._set_grid_size_(80, 20)
         self._qt_entry_widget._value_entry._set_grid_mode_()
         # popup
-        self._qt_entry_widget._set_value_entry_drop_enable_(True)
         self._qt_entry_widget._set_value_entry_enable_(True)
         # resize
         self._qt_entry_widget._get_resize_handle_()._set_resize_target_(self.widget)
@@ -1128,7 +1124,7 @@ class _PrxEntryAsRsvProject(AbsPrxTypeQtEntry):
                     project
                 )
         #
-        histories = utl_core.History.get(
+        histories = utl_core.History.get_all(
             self.HISTORY_KEY
         )
         if histories:
@@ -1145,7 +1141,7 @@ class _PrxEntryAsRsvProject(AbsPrxTypeQtEntry):
             self._qt_entry_widget._set_value_(_)
 
     def get_histories(self):
-        return utl_core.History.get(
+        return utl_core.History.get_all(
             self.HISTORY_KEY
         )
 
@@ -1192,7 +1188,7 @@ class PrxEntryForSchemeAsChoose(AbsPrxTypeQtEntry):
     #
     def get_histories(self):
         if self._scheme_key is not None:
-            return utl_core.History.get(
+            return utl_core.History.get_all(
                 self._scheme_key
             )
         return []
@@ -1214,7 +1210,7 @@ class PrxEntryForSchemeAsChoose(AbsPrxTypeQtEntry):
                     scheme
                 )
             #
-            histories = utl_core.History.get(
+            histories = utl_core.History.get_all(
                 self._scheme_key
             )
             if histories:
@@ -1363,6 +1359,9 @@ class _PrxEntryAsCapsule(AbsPrxTypeQtEntry):
             args[0]
         )
 
+    def set_locked(self, boolean):
+        self._qt_entry_widget._set_value_entry_enable_(not boolean)
+
     def set_default(self, *args, **kwargs):
         self._qt_entry_widget._set_value_default_(
             args[0]
@@ -1493,6 +1492,7 @@ class _PrxEntryAsScript(AbsPrxTypeQtEntry):
         #
         self._qt_entry_widget._get_resize_handle_()._set_resize_target_(self.widget)
         self._qt_entry_widget._set_resize_enable_(True)
+        self._qt_entry_widget._set_value_entry_drop_enable_(True)
         self._qt_entry_widget._set_item_value_entry_enable_(True)
         self._qt_entry_widget._set_size_policy_height_fixed_mode_()
 
@@ -1541,7 +1541,7 @@ class _PrxEntryAsButton(AbsPrxTypeQtEntry):
                 functools.partial(self.__exec_scp, raw)
             )
 
-    def set_menu_raw(self, raw):
+    def set_menu_data(self, raw):
         self._qt_entry_widget._set_menu_data_(raw)
 
     def set_option_enable(self, boolean):
@@ -1557,7 +1557,7 @@ class PrxSubProcessEntry(AbsPrxTypeQtEntry):
         self._stop_button = _utl_gui_prx_wdt_utility.PrxIconPressItem()
         self.set_button_add(self._stop_button)
         self._stop_button.set_name('Stop Process')
-        self._stop_button.set_icon_by_name('Stop Process')
+        self._stop_button.set_icon_by_text('Stop Process')
         self._stop_button.set_tool_tip('press to stop process')
 
     def get(self):
@@ -1573,7 +1573,7 @@ class PrxSubProcessEntry(AbsPrxTypeQtEntry):
                 functools.partial(self.__exec_fnc, raw)
             )
 
-    def set_menu_raw(self, raw):
+    def set_menu_data(self, raw):
         self._qt_entry_widget._set_menu_data_(raw)
 
     def set_stop(self, raw):
@@ -1608,7 +1608,7 @@ class PrxValidatorEntry(AbsPrxTypeQtEntry):
                 functools.partial(self.__exec_fnc, raw)
             )
 
-    def set_menu_raw(self, raw):
+    def set_menu_data(self, raw):
         self._qt_entry_widget._set_menu_data_(raw)
 
 
@@ -1702,7 +1702,7 @@ class _PrxEntryAsRsvObj(_AbsPrxTypeEntry):
                     **create_kwargs
                 )
             else:
-                prx_item = self._prx_entry_widget.set_item_add(
+                prx_item = self._prx_entry_widget.create_item(
                     **create_kwargs
                 )
             # prx_item.set_checked(True)
@@ -1712,7 +1712,7 @@ class _PrxEntryAsRsvObj(_AbsPrxTypeEntry):
             self._obj_add_dict[obj_path] = prx_item
             #
             if use_show_thread is True:
-                prx_item.set_show_method(
+                prx_item.set_show_build_fnc(
                     lambda *args, **kwargs: self.__item_show_deferred_fnc(prx_item)
                 )
                 return True, prx_item, None
@@ -1744,7 +1744,7 @@ class _PrxEntryAsRsvObj(_AbsPrxTypeEntry):
         #
         result = obj.get('result')
         update = obj.get('update')
-        prx_item.set_icon_by_name(obj_type_name)
+        prx_item.set_icon_by_text(obj_type_name)
         prx_item.set_names([obj_name, update])
         prx_item.set_tool_tip(obj.description)
         if result:
@@ -1773,7 +1773,7 @@ class _PrxEntryAsRsvObj(_AbsPrxTypeEntry):
             name='...',
             filter_key=obj_path
         )
-        prx_item = self._prx_entry_widget.set_item_add(
+        prx_item = self._prx_entry_widget.create_item(
             **create_kwargs
         )
         # prx_item.set_checked(True)
@@ -1782,7 +1782,7 @@ class _PrxEntryAsRsvObj(_AbsPrxTypeEntry):
         prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
         self._obj_add_dict[obj_path] = prx_item
         #
-        prx_item.set_show_method(
+        prx_item.set_show_build_fnc(
             functools.partial(
                 self.__item_show_deferred_fnc, prx_item, False
             )
@@ -1867,7 +1867,7 @@ class _PrxEntryAsNodes(_AbsPrxTypeEntry):
                     **create_kwargs
                 )
             else:
-                prx_item = self._prx_entry_widget.set_item_add(
+                prx_item = self._prx_entry_widget.create_item(
                     **create_kwargs
                 )
             #
@@ -1878,7 +1878,7 @@ class _PrxEntryAsNodes(_AbsPrxTypeEntry):
             self._obj_add_dict[obj_path] = prx_item
             #
             if use_show_thread is True:
-                prx_item.set_show_method(
+                prx_item.set_show_build_fnc(
                     lambda *args, **kwargs: self.__item_show_deferred_fnc(prx_item)
                 )
                 return True, prx_item, None
@@ -1942,7 +1942,7 @@ class _PrxEntryAsNodes(_AbsPrxTypeEntry):
             icon_name_text=type_name,
             filter_key=path
         )
-        prx_item = self._prx_entry_widget.set_item_add(
+        prx_item = self._prx_entry_widget.create_item(
             **create_kwargs
         )
         #
@@ -2063,7 +2063,7 @@ class _PrxEntryAsFiles(_AbsPrxTypeEntry):
                 **create_kwargs
             )
         else:
-            prx_item = self._prx_entry_widget.set_item_add(
+            prx_item = self._prx_entry_widget.create_item(
                 **create_kwargs
             )
         #
@@ -2073,7 +2073,7 @@ class _PrxEntryAsFiles(_AbsPrxTypeEntry):
         prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
         self._obj_add_dict[path] = prx_item
         #
-        prx_item.set_show_method(
+        prx_item.set_show_build_fnc(
             lambda *args, **kwargs: self.__item_show_deferred_fnc(prx_item, scheme)
         )
         return True, prx_item, None
@@ -2219,7 +2219,7 @@ class _PrxEntryAsFiles(_AbsPrxTypeEntry):
             name='...',
             filter_key=path
         )
-        prx_item = self._prx_entry_widget.set_item_add(
+        prx_item = self._prx_entry_widget.create_item(
             **create_kwargs
         )
         #
@@ -2230,7 +2230,7 @@ class _PrxEntryAsFiles(_AbsPrxTypeEntry):
         prx_item.set_tool_tip(path)
         self._obj_add_dict[path] = prx_item
         #
-        prx_item.set_show_method(
+        prx_item.set_show_build_fnc(
             lambda *args, **kwargs: self.__item_show_deferred_fnc(prx_item, scheme, use_as_tree=False)
         )
         return True, prx_item, None

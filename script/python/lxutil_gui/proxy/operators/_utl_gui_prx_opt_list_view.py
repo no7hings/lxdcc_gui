@@ -19,7 +19,7 @@ class PrxRsvTaskListViewAddOpt(object):
         def build_fnc_(data_):
             self._set_show_deferred_(data_)
 
-        prx_item = self._prx_list_view.set_item_add()
+        prx_item = self._prx_list_view.create_item()
         prx_item.set_gui_dcc_obj(
             rsv_task, namespace=self._namespace
         )

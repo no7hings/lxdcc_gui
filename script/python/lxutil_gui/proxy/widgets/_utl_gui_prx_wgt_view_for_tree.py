@@ -36,7 +36,7 @@ class PrxTreeView(
         self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
         self._prx_top_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
-        self._prx_top_tool_bar.set_alignment_left()
+        self._prx_top_tool_bar.set_left_alignment_mode()
         self._qt_layout_0.addWidget(self._prx_top_tool_bar.widget)
         self._prx_top_tool_bar.set_border_radius(1)
         self._prx_filer_bar_0 = _utl_gui_prx_wdt_utility.PrxFilterBar()
@@ -190,8 +190,8 @@ class PrxTreeView(
         else:
             self.view.setItemSelected(item_prx.widget, True)
 
-    def set_item_add(self, *args, **kwargs):
-        return self._set_item_add_(
+    def create_item(self, *args, **kwargs):
+        return self._add_item_(
             self.view.addTopLevelItem,
             *args, **kwargs
         )
@@ -349,5 +349,5 @@ class PrxTreeView(
     def set_draw_for_check_state_enable(self, boolean):
         self._qt_view._set_draw_for_check_state_enable_(boolean)
 
-    def gui_waiting(self):
-        return self._qt_view._gui_waiting_()
+    def gui_bustling(self):
+        return self._qt_view._gui_bustling_()

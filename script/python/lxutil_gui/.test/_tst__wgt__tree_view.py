@@ -4,7 +4,7 @@ import lxutil_gui.proxy.widgets as utl_prx_widgets
 import lxresolver.commands as rsv_commands
 
 
-class TestWindow(utl_prx_widgets.PrxToolWindow):
+class TestWindow(utl_prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(TestWindow, self).__init__(*args, **kwargs)
         self._test_()
@@ -15,7 +15,7 @@ class TestWindow(utl_prx_widgets.PrxToolWindow):
         tool_bar.set_expanded(True)
         tool_group_0 = utl_prx_widgets.PrxHToolBox()
         tool_bar.add_widget(tool_group_0)
-        tool_bar.set_alignment_left()
+        tool_bar.set_left_alignment_mode()
 
         tool = utl_prx_widgets.PrxIconPressItem()
         tool_group_0.add_widget(tool)

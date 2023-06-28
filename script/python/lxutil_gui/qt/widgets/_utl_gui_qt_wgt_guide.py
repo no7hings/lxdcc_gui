@@ -180,10 +180,10 @@ class QtGuideEntry(
                 self._refresh_guide_draw_geometry_()
                 self.update()
             elif event.type() == QtCore.QEvent.Enter:
-                self._action_is_hovered = True
+                self._is_hovered = True
                 self.update()
             elif event.type() == QtCore.QEvent.Leave:
-                self._action_is_hovered = False
+                self._is_hovered = False
                 self._delete_is_hovered = False
                 self._clear_guide_choose_current_()
                 self._clear_guide_current_()
@@ -209,7 +209,7 @@ class QtGuideEntry(
                 self._refresh_widget_draw_()
             elif event.type() == QtCore.QEvent.MouseButtonDblClick:
                 if event.button() == QtCore.Qt.LeftButton:
-                    self.db_clicked.emit()
+                    self.press_db_clicked.emit()
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
                 self._refresh_widget_draw_()
@@ -229,7 +229,7 @@ class QtGuideEntry(
                 #
                 self._clear_all_action_flags_()
                 #
-                self._action_is_hovered = False
+                self._is_hovered = False
                 self._refresh_widget_draw_()
             #
             elif event.type() == QtCore.QEvent.Wheel:

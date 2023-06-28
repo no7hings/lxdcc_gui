@@ -100,7 +100,7 @@ class QtHResizeHandle(
         painter._draw_icon_file_by_rect_(
             rect=self._resize_icon_draw_rect,
             file_path=self._resize_icon_file_path,
-            is_hovered=self._action_is_hovered,
+            is_hovered=self._is_hovered,
         )
 
     def _execute_action_resize_move_start_(self, event):

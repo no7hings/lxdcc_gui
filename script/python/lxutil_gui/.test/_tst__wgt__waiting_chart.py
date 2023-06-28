@@ -6,7 +6,7 @@ import lxutil_gui.proxy.widgets as prx_widgets
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_chart
 
 
-class W(prx_widgets.PrxToolWindow):
+class W(prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(W, self).__init__(*args, **kwargs)
         #

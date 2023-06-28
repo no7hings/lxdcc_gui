@@ -254,10 +254,10 @@ class QtPressItem(
             #
             if action_enable is True:
                 if event.type() == QtCore.QEvent.Enter:
-                    self._action_is_hovered = True
+                    self._is_hovered = True
                     self.update()
                 elif event.type() == QtCore.QEvent.Leave:
-                    self._action_is_hovered = False
+                    self._is_hovered = False
                     self.update()
                 # press
                 elif event.type() in [QtCore.QEvent.MouseButtonPress, QtCore.QEvent.MouseButtonDblClick]:
@@ -278,7 +278,7 @@ class QtPressItem(
                     elif event.button() == QtCore.Qt.RightButton:
                         self._popup_menu_()
                     #
-                    self._action_is_hovered = True
+                    self._is_hovered = True
                     self.update()
                 elif event.type() == QtCore.QEvent.MouseButtonRelease:
                     if self._action_flag == self.ActionFlag.CheckClick:
@@ -302,8 +302,8 @@ class QtPressItem(
         offset = self._get_action_offset_()
         #
         if self._action_is_enable is True:
-            border_color = [self._frame_border_color, self._hovered_frame_border_color][self._action_is_hovered]
-            background_color = [self._frame_background_color, self._hovered_frame_background_color][self._action_is_hovered]
+            border_color = [self._frame_border_color, self._hovered_frame_border_color][self._is_hovered]
+            background_color = [self._frame_background_color, self._hovered_frame_background_color][self._is_hovered]
         else:
             border_color = QtBorderColors.ButtonDisable
             background_color = QtBackgroundColors.ButtonDisable
@@ -317,7 +317,7 @@ class QtPressItem(
         )
         # status
         if self._get_status_is_enable_() is True:
-            status_rgba = [self._status_color, self._hover_status_color][self._action_is_hovered]
+            status_rgba = [self._status_color, self._hover_status_color][self._is_hovered]
             # painter._set_status_draw_by_rect_(
             #     self._status_rect,
             #     color=status_rgba,
@@ -326,8 +326,8 @@ class QtPressItem(
             # )
         # sub process
         if self._get_sub_process_is_enable_() is True:
-            status_rgba = [self._status_color, self._hover_status_color][self._action_is_hovered]
-            status_rgba_array = [self._sub_process_status_colors, self._hover_sub_process_status_colors][self._action_is_hovered]
+            status_rgba = [self._status_color, self._hover_status_color][self._is_hovered]
+            status_rgba_array = [self._sub_process_status_colors, self._hover_sub_process_status_colors][self._is_hovered]
             #
             r, g, b, a = status_rgba
             painter._draw_alternating_colors_by_rect_(
@@ -346,7 +346,7 @@ class QtPressItem(
             )
         # validator
         elif self._get_validator_is_enable_() is True:
-            status_rgba_array = [self._validator_status_colors, self._hover_validator_status_colors][self._action_is_hovered]
+            status_rgba_array = [self._validator_status_colors, self._hover_validator_status_colors][self._is_hovered]
             painter._draw_process_statuses_by_rect_(
                 self._validator_status_rect,
                 colors=status_rgba_array,
@@ -368,7 +368,7 @@ class QtPressItem(
                 self._check_icon_draw_rect,
                 self._check_icon_file_path_current,
                 offset=offset,
-                is_hovered=self._action_is_hovered
+                is_hovered=self._is_hovered
             )
         # icon
         if self._icon_is_enable is True:
@@ -377,25 +377,25 @@ class QtPressItem(
                     self._icon_draw_rect,
                     self._icon_file_path,
                     offset=offset,
-                    is_hovered=self._action_is_hovered
+                    is_hovered=self._is_hovered
                 )
             elif self._icon_color_rgb is not None:
                 painter._set_color_icon_draw_(
                     self._icon_color_draw_rect, self._icon_color_rgb, offset=offset
                 )
             elif self._icon_name_text is not None:
-                painter._draw_icon_use_text_by_rect_(
+                painter._draw_image_use_text_by_rect_(
                     self._icon_name_draw_rect,
                     self._icon_name_text,
                     offset=offset,
                     border_radius=2,
-                    is_hovered=self._action_is_hovered
+                    is_hovered=self._is_hovered
                 )
         # name
         if self._name_text is not None:
             name_text = self._name_text
             if self._action_is_enable is True:
-                text_color = [QtFontColors.Basic, QtFontColors.Light][self._action_is_hovered]
+                text_color = [QtFontColors.Basic, QtFontColors.Light][self._is_hovered]
             else:
                 text_color = QtFontColors.Disable
             #
@@ -417,7 +417,7 @@ class QtPressItem(
                 self._option_click_icon_rect,
                 self._option_icon_file_path,
                 offset=offset,
-                is_hovered=self._action_is_hovered
+                is_hovered=self._is_hovered
             )
 
 
@@ -526,13 +526,13 @@ class QtCheckItem(
                     rect=self._check_icon_draw_rect,
                     file_path=self._check_icon_file_path_current,
                     offset=offset,
-                    is_hovered=self._action_is_hovered
+                    is_hovered=self._is_hovered
                 )
         #
         if self._name_text is not None:
             name_text = self._name_text
             if self._action_is_enable is True:
-                text_color = [QtFontColors.Basic, QtFontColors.Light][self._action_is_hovered]
+                text_color = [QtFontColors.Basic, QtFontColors.Light][self._is_hovered]
             else:
                 text_color = QtFontColors.Disable
             #
@@ -612,7 +612,7 @@ class _QtStatusItem(
         #
         if self._get_is_checked_():
             background_color = [QtStatusColors.Warning, QtBackgroundColors.Hovered][is_hovered]
-            painter._draw_icon_use_text_by_rect_(
+            painter._draw_image_use_text_by_rect_(
                 rect=self._icon_color_draw_rect,
                 text='l',
                 background_color=background_color,
@@ -622,7 +622,7 @@ class _QtStatusItem(
             )
         else:
             background_color = [QtStatusColors.Normal, QtBackgroundColors.Hovered][is_hovered]
-            painter._draw_icon_use_text_by_rect_(
+            painter._draw_image_use_text_by_rect_(
                 rect=self._icon_color_draw_rect,
                 text='d',
                 background_color=background_color,
@@ -667,7 +667,7 @@ class _QtHContractItem(
         self._expand_sub_icon_file_path_0 = None
         self._expand_sub_icon_file_path_1 = None
 
-        self._action_is_hovered = False
+        self._is_hovered = False
         #
         self._refresh_expand_()
         #
@@ -769,7 +769,7 @@ class _QtHContractItem(
             self._icon_draw_rect,
             self._icon_file_path,
             offset=offset,
-            is_hovered=self._action_is_hovered
+            is_hovered=self._is_hovered
         )
 
     def set_expanded(self, boolean):

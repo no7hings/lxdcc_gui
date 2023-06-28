@@ -3,7 +3,7 @@
 from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wdt_node
 
 
-class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
+class TestWindow(_utl_gui_prx_wdt_utility.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(TestWindow, self).__init__(*args, **kwargs)
 

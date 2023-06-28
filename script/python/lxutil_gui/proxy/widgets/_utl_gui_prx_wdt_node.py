@@ -349,8 +349,8 @@ class AbsPrxTypePort(AbsPrxPortDef):
     def _set_key_widget_(self, widget):
         self._key_widget = widget
 
-    def set_menu_raw(self, raw):
-        self._prx_port_entry.set_menu_raw(raw)
+    def set_menu_data(self, raw):
+        self._prx_port_entry.set_menu_data(raw)
 
     def to_custom_widget(self, label_width=80):
         if self._custom_widget is not None:
@@ -1100,7 +1100,7 @@ class PrxGroupPort_(
     def __init__(self, path):
         self._set_prx_port_def_init_('group', path)
         #
-        self._prx_widget = _utl_gui_prx_wdt_utility.PrxExpandedGroup()
+        self._prx_widget = _utl_gui_prx_wdt_utility.PrxHToolGroup()
         self._prx_widget.set_height_match_to_minimum()
         self._qt_widget = self._prx_widget.widget
         self._prx_widget.set_name(self._label)
@@ -1564,6 +1564,10 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             else:
                 port.set(value_[-1])
                 port.set_default(value_[-1])
+            #
+            lock = option.get('lock') or False
+            if lock is True:
+                port.set_locked(True)
         #
         elif widget_ in {'capsule_strings'}:
             port = PrxPortAsCapsuleStrings(

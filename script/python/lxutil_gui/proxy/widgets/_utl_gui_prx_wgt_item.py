@@ -14,7 +14,7 @@ class AbsPrxTreeDef(object):
     def _set_prx_tree_def_init_(self):
         pass
     @classmethod
-    def _set_item_add_(cls, add_method, *args, **kwargs):
+    def _add_item_(cls, add_method, *args, **kwargs):
         if kwargs:
             if 'name' in kwargs:
                 _name = kwargs['name']
@@ -90,7 +90,7 @@ class AbsPrxTreeDef(object):
         if name_icons is not None:
             for column, i_name_icon in enumerate(name_icons):
                 if i_name_icon is not None:
-                    item_prx.set_icon_by_name(i_name_icon, column)
+                    item_prx.set_icon_by_text(i_name_icon, column)
         #
         if name is not None:
             pass
@@ -129,31 +129,31 @@ class PrxTreeItemCheckState(object):
             self.set_passed(column)
 
     def set_normal(self, column=0):
-        self.widget.setForeground(column, utl_gui_qt_core.Brush.default_text)
+        self._qt_widget.setForeground(column, utl_gui_qt_core.Brush.default_text)
         self._item_prx.set_gui_attribute(
             'state', 'normal'
         )
 
     def set_error(self, column=0):
-        self.widget.setForeground(column, utl_gui_qt_core.Brush.error_text)
+        self._qt_widget.setForeground(column, utl_gui_qt_core.Brush.error_text)
         self._item_prx.set_gui_attribute(
             'state', 'error'
         )
 
     def set_warning(self, column=0):
-        self.widget.setForeground(column, utl_gui_qt_core.Brush.warning_text)
+        self._qt_widget.setForeground(column, utl_gui_qt_core.Brush.warning_text)
         self._item_prx.set_gui_attribute(
             'state', 'warning'
         )
 
     def set_passed(self, column=0):
-        self.widget.setForeground(column, utl_gui_qt_core.Brush.adopt_text)
+        self._qt_widget.setForeground(column, utl_gui_qt_core.Brush.adopt_text)
         self._item_prx.set_gui_attribute(
             'state', 'adopt'
         )
 
     def set_ignored(self, column=0):
-        self.widget.setForeground(column, utl_gui_qt_core.Brush.temporary_text)
+        self._qt_widget.setForeground(column, utl_gui_qt_core.Brush.temporary_text)
         self._item_prx.set_gui_attribute(
             'state', 'temporary'
         )
@@ -185,16 +185,16 @@ class PrxTreeItem(
         self._qt_widget._set_type_text_(text)
 
     def set_name(self, text, column=0):
-        self.widget._set_name_text_(text, column)
+        self._qt_widget._set_name_text_(text, column)
 
     def set_name_orig(self, text):
-        self.widget._set_name_text_orig_(text)
+        self._qt_widget._set_name_text_orig_(text)
 
     def get_name(self, column=0):
-        return self.widget.text(column)
+        return self._qt_widget.text(column)
 
     def get_names(self):
-        qt_tree_widget = self.widget.treeWidget()
+        qt_tree_widget = self._qt_widget.treeWidget()
         column_count = qt_tree_widget.columnCount()
         return [self.get_name(i) for i in range(column_count)]
 
@@ -212,19 +212,19 @@ class PrxTreeItem(
 
     def set_icon_by_file(self, icon, column=0):
         if isinstance(icon, six.string_types):
-            self.widget._set_icon_file_path_(icon, column)
+            self._qt_widget._set_icon_file_path_(icon, column)
         elif isinstance(icon, utl_gui_qt_core.QtGui.QIcon):
             qt_icon = icon
-            self.widget._set_icon_(qt_icon, column)
+            self._qt_widget._set_icon_(qt_icon, column)
 
     def set_icon_by_color(self, color, column=0):
-        self.widget._set_color_icon_rgb_(color, column)
+        self._qt_widget._set_color_icon_rgb_(color, column)
 
-    def set_icon_by_name(self, text, column=0):
-        self.widget._set_icon_name_text_(text, column)
+    def set_icon_by_text(self, text, column=0):
+        self._qt_widget._set_icon_text_(text, column)
 
     def get_parent(self):
-        _ = self.widget.parent()
+        _ = self._qt_widget.parent()
         if _ is not None:
             return _.gui_proxy
 
@@ -232,25 +232,25 @@ class PrxTreeItem(
         return [i.gui_proxy for i in self.item._get_ancestors_()]
 
     def add_child(self, *args, **kwargs):
-        return self._set_item_add_(
-            self.widget.addChild,
+        return self._add_item_(
+            self._qt_widget.addChild,
             *args, **kwargs
         )
 
     def clear_children(self):
-        self.widget.takeChildren()
+        self._qt_widget.takeChildren()
 
     def get_children(self):
         lis = []
-        count = self.widget.childCount()
+        count = self._qt_widget.childCount()
         if count:
             for i in range(count):
-                qt_tree_item = self.widget.child(i)
+                qt_tree_item = self._qt_widget.child(i)
                 lis.append(qt_tree_item.gui_proxy)
         return lis
 
     def get_descendants(self):
-        return [i.gui_proxy for i in self.widget._get_descendants_()]
+        return [i.gui_proxy for i in self._qt_widget._get_descendants_()]
 
     def get_gui_menu_raw(self):
         return self._qt_widget._get_menu_data_()
@@ -265,7 +265,7 @@ class PrxTreeItem(
         self._qt_widget._extend_menu_data_(raw)
 
     def set_tool_tip(self, raw, column=0):
-        self.widget._set_tool_tip_(raw, column)
+        self._qt_widget._set_tool_tip_(raw, column)
 
     def set_tool_tips(self, texts):
         for column, text in enumerate(texts):
@@ -278,31 +278,31 @@ class PrxTreeItem(
         return self._qt_widget.isDisabled() is False
     # checked
     def set_checked(self, boolean=True, extra=False, column=0):
-        self.widget.setCheckState(column, [utl_gui_qt_core.QtCore.Qt.Unchecked, utl_gui_qt_core.QtCore.Qt.Checked][boolean])
+        self._qt_widget.setCheckState(column, [utl_gui_qt_core.QtCore.Qt.Unchecked, utl_gui_qt_core.QtCore.Qt.Checked][boolean])
         if extra is True:
-            self.widget._set_check_state_extra_(column)
+            self._qt_widget._set_check_state_extra_(column)
 
     def get_check_enable(self):
-        return self.widget._get_check_action_is_enable_()
+        return self._qt_widget._get_check_action_is_enable_()
 
     def set_check_enable(self, boolean, descendants=False, column=0):
-        self.widget.setDisabled(not boolean)
-        # self.widget.setForeground(column, [utl_gui_qt_core.Brush.temporary_text, utl_gui_qt_core.Brush.default_text][boolean])
-        self.widget._set_check_enable_(boolean, column=column)
+        self._qt_widget.setDisabled(not boolean)
+        # self._qt_widget.setForeground(column, [utl_gui_qt_core.Brush.temporary_text, utl_gui_qt_core.Brush.default_text][boolean])
+        self._qt_widget._set_check_enable_(boolean, column=column)
         if descendants is True:
             [i.set_check_enable(boolean, column=column) for i in self.get_descendants()]
 
     def get_is_checked(self, column=0):
-        return [False, True][self.widget.checkState(column) == utl_gui_qt_core.QtCore.Qt.Checked]
+        return [False, True][self._qt_widget.checkState(column) == utl_gui_qt_core.QtCore.Qt.Checked]
 
     def get_is_selected(self, column=0):
-        return self.widget.isSelected()
+        return self._qt_widget.isSelected()
     # expanded
     def set_expanded(self, boolean=True, ancestors=False):
-        self.widget._set_expanded_(boolean, ancestors)
+        self._qt_widget._set_expanded_(boolean, ancestors)
     # expand
     def set_expand(self, ancestors=False):
-        self.widget.setExpanded(True)
+        self._qt_widget.setExpanded(True)
         if ancestors is True:
             [i.widget.setExpanded(True) for i in self.get_ancestors()]
 
@@ -333,7 +333,7 @@ class PrxTreeItem(
         [i.set_ancestors_expand() for i in match_prx_items]
     # collapse
     def set_collapse(self):
-        self.widget.setExpanded(False)
+        self._qt_widget.setExpanded(False)
 
     def set_collapse_branch(self):
         self.set_collapse()
@@ -341,10 +341,10 @@ class PrxTreeItem(
         [i.set_collapse() for i in descendants]
     # select
     def set_select(self):
-        self.widget.setSelected(True)
+        self._qt_widget.setSelected(True)
     # hidden
     def set_hidden(self, boolean=True, ancestors=False):
-        self.widget.setHidden(boolean)
+        self._qt_widget.setHidden(boolean)
         self.set_gui_attribute('visible', not boolean)
         if ancestors is True:
             [i.set_visible_by_has_visible_children() for i in self.get_ancestors()]
@@ -352,16 +352,16 @@ class PrxTreeItem(
         self.set_visible_connection_refresh()
 
     def get_is_hidden(self, ancestors=False):
-        return self.widget._get_is_hidden_(ancestors=ancestors)
+        return self._qt_widget._get_is_hidden_(ancestors=ancestors)
 
     def set_emit_send_enable(self, boolean):
-        self.widget._set_emit_send_enable_(boolean)
+        self._qt_widget._set_emit_send_enable_(boolean)
 
     def set_visible(self, boolean, ancestors=False):
         self.set_hidden(not boolean, ancestors=ancestors)
 
     def get_is_visible(self, ancestors=False):
-        return not self.widget._get_is_hidden_(ancestors=ancestors)
+        return not self._qt_widget._get_is_hidden_(ancestors=ancestors)
 
     def set_force_hidden(self, boolean):
         self.set_gui_attribute('force_hidden', boolean)
@@ -424,8 +424,8 @@ class PrxTreeItem(
 
     def get_has_visible_children(self):
         return utl_gui_qt_core.QtTreeMtd._get_item_has_visible_children_(
-            self.widget.treeWidget(),
-            self.widget
+            self._qt_widget.treeWidget(),
+            self._qt_widget
         )
 
     def set_visible_by_has_visible_children(self):
@@ -445,60 +445,60 @@ class PrxTreeItem(
         return lis
 
     def set_foregrounds_raw(self, raw, column=0):
-        _ = self.widget.data(column, utl_gui_qt_core.QtCore.Qt.UserRole)
+        _ = self._qt_widget.data(column, utl_gui_qt_core.QtCore.Qt.UserRole)
         if isinstance(_, dict):
             user_data = _
         else:
             user_data = {}
         #
         user_data['foregrounds'] = raw
-        self.widget.setData(column, utl_gui_qt_core.QtCore.Qt.UserRole, user_data)
+        self._qt_widget.setData(column, utl_gui_qt_core.QtCore.Qt.UserRole, user_data)
 
     def set_states_raw(self, raw, column=0):
-        _ = self.widget.data(column, utl_gui_qt_core.QtCore.Qt.UserRole)
+        _ = self._qt_widget.data(column, utl_gui_qt_core.QtCore.Qt.UserRole)
         if isinstance(_, dict):
             user_data = _
         else:
             user_data = {}
         user_data['states'] = raw
-        self.widget.setData(
+        self._qt_widget.setData(
             column,
             utl_gui_qt_core.QtCore.Qt.UserRole,
             user_data
         )
 
     def set_status(self, status, column=0):
-        self.widget._set_status_(status, column)
+        self._qt_widget._set_status_(status, column)
 
     def get_status(self, column=0):
-        return self.widget._get_status_(column)
+        return self._qt_widget._get_status_(column)
 
     def get_view(self):
-        qt_tree_view = self.widget.treeWidget()
+        qt_tree_view = self._qt_widget.treeWidget()
         return qt_tree_view.gui_proxy
 
     def _set_filter_keyword_(self, keyword, column=0):
-        _ = self.widget.data(column, utl_gui_qt_core.QtCore.Qt.UserRole)
+        _ = self._qt_widget.data(column, utl_gui_qt_core.QtCore.Qt.UserRole)
         if isinstance(_, dict):
             user_data = _
         else:
             user_data = {}
         #
         user_data['filter_keyword'] = keyword
-        self.widget.setData(
+        self._qt_widget.setData(
             column, utl_gui_qt_core.QtCore.Qt.UserRole,
             user_data
         )
 
     def _set_item_filter_occurrence_(self, boolean, column=0):
-        _ = self.widget.data(column, utl_gui_qt_core.QtCore.Qt.UserRole)
+        _ = self._qt_widget.data(column, utl_gui_qt_core.QtCore.Qt.UserRole)
         if isinstance(_, dict):
             user_data = _
         else:
             user_data = {}
         #
         user_data['filter_occurrence'] = boolean
-        self.widget.setData(
+        self._qt_widget.setData(
             column, utl_gui_qt_core.QtCore.Qt.UserRole,
             user_data
         )
@@ -545,21 +545,21 @@ class PrxTreeItem(
         # self._loading_item_prx = item_prx
         # view.set_loading_item_add(self._loading_item_prx)
 
-        self.widget._set_item_dag_loading_start_()
+        self._qt_widget._set_item_dag_loading_start_()
 
     def set_loading_end(self):
         # if self._loading_item_prx is not None:
         #     view = self.get_view()
-        #     self.widget.takeChild(
-        #         self.widget.indexOfChild(self._loading_item_prx.widget)
+        #     self._qt_widget.takeChild(
+        #         self._qt_widget.indexOfChild(self._loading_item_prx.widget)
         #     )
         #     self._loading_item_prx = None
         #     view.set_loading_item_remove(self._loading_item_prx)
 
         self._qt_widget._set_item_dag_loading_end_()
 
-    def set_show_method(self, method):
-        self.widget._set_item_show_method_(method)
+    def set_show_build_fnc(self, method):
+        self._qt_widget._set_item_show_build_fnc_(method)
 
     def connect_press_db_clicked_to(self, fnc):
         self._qt_widget._signals.press_db_clicked.connect(fnc)
@@ -628,12 +628,12 @@ class PrxLabelTreeItem(PrxTreeItem):
         self.set_foreground_update(utl_gui_qt_core.Brush.temporary_text)
 
     def set_foreground_update(self, qt_brush):
-        qt_tree_widget = self.widget.treeWidget()
+        qt_tree_widget = self._qt_widget.treeWidget()
         if qt_tree_widget is not None:
             for column in range(qt_tree_widget.columnCount()):
-                self.widget.setForeground(column, qt_brush)
+                self._qt_widget.setForeground(column, qt_brush)
         else:
-            self.widget.setForeground(0, qt_brush)
+            self._qt_widget.setForeground(0, qt_brush)
 
 
 class PrxLoadingTreeItem(PrxTreeItem):
@@ -646,7 +646,7 @@ class PrxLoadingTreeItem(PrxTreeItem):
 class PrxObjTreeItem(PrxTreeItem):
     def __init__(self, *args, **kwargs):
         super(PrxObjTreeItem, self).__init__(*args, **kwargs)
-        self.widget.setForeground(0, utl_gui_qt_core.Brush.default_text)
+        self._qt_widget.setForeground(0, utl_gui_qt_core.Brush.default_text)
         # self.set_icon_by_file(utl_core.Icon.get('tag'))
         self.set_normal_state()
     @property
@@ -654,37 +654,37 @@ class PrxObjTreeItem(PrxTreeItem):
         return PrxTreeItemCheckState(self)
 
     def set_temporary_state(self, column=0):
-        self.widget.setForeground(column, utl_gui_qt_core.Brush.temporary_text)
+        self._qt_widget.setForeground(column, utl_gui_qt_core.Brush.temporary_text)
         self.set_gui_attribute(
             'state', 'temporary'
         )
 
     def set_normal_state(self, column=0):
-        self.widget.setForeground(column, utl_gui_qt_core.Brush.default_text)
+        self._qt_widget.setForeground(column, utl_gui_qt_core.Brush.default_text)
         self.set_gui_attribute(
             'state', 'normal'
         )
 
     def set_error_state(self, column=0):
-        self.widget.setForeground(column, utl_gui_qt_core.Brush.error_text)
+        self._qt_widget.setForeground(column, utl_gui_qt_core.Brush.error_text)
         self.set_gui_attribute(
             'state', 'error'
         )
 
     def set_warning_state(self, column=0):
-        self.widget.setForeground(column, utl_gui_qt_core.Brush.warning_text)
+        self._qt_widget.setForeground(column, utl_gui_qt_core.Brush.warning_text)
         self.set_gui_attribute(
             'state', 'warning'
         )
 
     def set_adopt_state(self, column=0):
-        self.widget.setForeground(column, utl_gui_qt_core.Brush.adopt_text)
+        self._qt_widget.setForeground(column, utl_gui_qt_core.Brush.adopt_text)
         self.set_gui_attribute(
             'state', 'adopt'
         )
 
     def set_current_state(self, column=0):
-        self.widget.setForeground(column, utl_gui_qt_core.Brush.current_text)
+        self._qt_widget.setForeground(column, utl_gui_qt_core.Brush.current_text)
         self.set_gui_attribute(
             'state', 'current'
         )
@@ -698,7 +698,7 @@ class PrxDccObjTreeItem(PrxObjTreeItem):
 class PrxStgObjTreeItem(PrxObjTreeItem):
     def __init__(self, *args, **kwargs):
         super(PrxStgObjTreeItem, self).__init__(*args, **kwargs)
-        # self.widget.setForeground(0, utl_gui_qt_core.Brush.default_text)
+        # self._qt_widget.setForeground(0, utl_gui_qt_core.Brush.default_text)
 
 
 class PrxListItem(
@@ -718,59 +718,69 @@ class PrxListItem(
     item = property(get_item)
 
     def set_gui_menu_raw(self, raw):
-        self.widget._set_menu_data_(raw)
+        self._qt_widget._set_menu_data_(raw)
 
     def set_index(self, index):
-        self.widget._set_index_(index)
+        self._qt_widget._set_index_(index)
 
     def set_icons_by_pixmap(self, icons):
-        self.widget._set_icon_pixmaps_(icons)
+        self._qt_widget._set_icon_pixmaps_(icons)
 
     def set_index_draw_enable(self, boolean):
         self._qt_widget._set_index_draw_enable_(boolean)
 
-    def set_icon_by_file(self, icon_name=None, icon_file_path=None):
-        if icon_file_path is not None:
-            self.widget._set_icon_file_path_(
-                icon_file_path
+    def set_icon_by_file(self, name=None, file_path=None):
+        if name is not None:
+            self._qt_widget._set_icon_text_(
+                utl_core.Icon.get(name)
             )
-        elif icon_name is not None:
-            self.widget._set_icon_name_text_(
-                utl_core.Icon.get(icon_name)
+        elif file_path is not None:
+            self._qt_widget._set_icon_file_path_(
+                file_path
+            )
+
+    def set_icon_sub_by_file(self, name=None, file_path=None):
+        if name is not None:
+            self._qt_widget._set_icon_sub_file_path_(
+                utl_core.Icon.get(name)
+            )
+        elif file_path is not None:
+            self._qt_widget._set_icon_sub_file_path_(
+                file_path
             )
 
     def set_file_icons(self, icon_names=None, icon_file_paths=None):
         if isinstance(icon_names, (tuple, list)):
-            self.widget._set_icon_file_paths_(
+            self._qt_widget._set_icon_file_paths_(
                 [utl_core.Icon.get(i) for i in icon_names]
             )
         elif isinstance(icon_file_paths, (tuple, list)):
-            self.widget._set_icon_file_paths_(icon_file_paths)
+            self._qt_widget._set_icon_file_paths_(icon_file_paths)
 
     def set_file_icon_add(self, icon_name):
-        self.widget._set_icon_file_path_add_(
+        self._qt_widget._set_icon_file_path_add_(
             utl_core.Icon.get(icon_name)
         )
 
-    def set_icon_by_name(self, text):
-        self.widget._set_icon_name_text_(
+    def set_icon_by_text(self, text):
+        self._qt_widget._set_icon_text_(
             text
         )
 
     def set_icon_frame_size(self, w, h):
-        self.widget._set_icon_frame_draw_size_(w, h)
+        self._qt_widget._set_icon_frame_draw_size_(w, h)
 
     def set_icon_size(self, w, h):
-        self.widget._set_icon_size_(w, h)
+        self._qt_widget._set_icon_size_(w, h)
 
     def set_sort_name_key(self, text):
         self._qt_widget._set_sort_name_key_(text)
 
     def set_name(self, name_text):
-        self.widget._set_name_text_(name_text)
+        self._qt_widget._set_name_text_(name_text)
 
     def set_names(self, name_texts):
-        self.widget._set_name_texts_(name_texts)
+        self._qt_widget._set_name_texts_(name_texts)
 
     def set_name_dict(self, name_dict):
         self._qt_widget._set_name_text_dict_(name_dict)
@@ -779,25 +789,28 @@ class PrxListItem(
         return self._qt_widget._get_name_text_dict_()
 
     def get_names(self):
-        return self.widget._get_name_texts_()
+        return self._qt_widget._get_name_texts_()
 
     def set_name_frame_border_color(self, color):
-        return self.widget._set_name_frame_border_color_(color)
+        return self._qt_widget._set_name_frame_border_color_(color)
 
     def set_name_frame_background_color(self, color):
-        return self.widget._set_name_frame_background_color_(color)
+        return self._qt_widget._set_name_frame_background_color_(color)
 
     def set_image(self, file_path):
-        self.widget._set_image_file_path_(file_path)
+        self._qt_widget._set_image_file_path_(file_path)
 
     def set_movie_enable(self, boolean):
-        self.widget._set_play_draw_enable_(boolean)
+        self._qt_widget._set_play_draw_enable_(boolean)
 
     def set_image_by_name(self, text):
-        self.widget._set_image_name_text_(text)
+        self._qt_widget._set_image_text_(text)
 
     def set_image_by_file(self, file_path):
-        self.widget._set_image_file_path_(file_path)
+        self._qt_widget._set_image_file_path_(file_path)
+
+    def set_image_sub_by_file(self, file_path):
+        self._qt_widget._set_image_sub_file_path_(file_path)
 
     def set_image_size(self, size):
         pass
@@ -806,7 +819,7 @@ class PrxListItem(
         pass
 
     def set_image_show_args(self, image, cmd):
-        self.widget._get_item_()._set_item_show_image_cmd_(image, cmd)
+        self._qt_widget._get_item_()._set_item_show_image_cmd_(image, cmd)
 
     def set_visible_tgt_key(self, key):
         self.set_gui_attribute(
@@ -829,36 +842,36 @@ class PrxListItem(
         )
 
     def set_hidden(self, boolean=True):
-        self.widget.setHidden(boolean)
-        self.widget._get_item_().setHidden(boolean)
+        self._qt_widget.setHidden(boolean)
+        self._qt_widget._get_item_().setHidden(boolean)
 
     def set_force_hidden(self, boolean):
         self.set_gui_attribute('force_hidden', boolean)
         self.set_hidden(boolean)
 
     def set_tool_tip(self, text):
-        self.widget._set_tool_tip_(text)
+        self._qt_widget._set_tool_tip_(text)
 
     def set_border_color(self, color):
-        self.widget._set_border_color_(color)
+        self._qt_widget._set_border_color_(color)
 
-    def set_show_method(self, method):
-        self.widget._get_item_()._set_item_show_method_(method)
+    def set_show_build_fnc(self, method):
+        self._qt_widget._get_item_()._set_item_show_build_fnc_(method)
 
     def set_show_fnc(self, cache_fnc, show_fnc):
-        self.widget._get_item_()._set_item_show_fnc_(cache_fnc, show_fnc)
+        self._qt_widget._get_item_()._set_item_show_fnc_(cache_fnc, show_fnc)
 
     def set_image_loading_start(self):
-        self.widget._get_item_()._set_item_show_image_start_loading_()
+        self._qt_widget._get_item_()._checkout_item_show_image_loading_()
 
     def connect_press_clicked_to(self, fnc):
-        self.widget.press_clicked.connect(fnc)
+        self._qt_widget.press_clicked.connect(fnc)
 
     def connect_press_db_clicked_to(self, fnc):
-        self.widget.press_db_clicked.connect(fnc)
+        self._qt_widget.press_db_clicked.connect(fnc)
 
     def set_press_db_clicked_method_add_(self, fnc):
-        self.widget._set_action_press_db_clicked_method_add_(fnc)
+        self._qt_widget._set_action_press_db_clicked_method_add_(fnc)
 
     def set_check_enable(self, boolean):
         self._qt_widget._set_check_enable_(boolean)
@@ -886,7 +899,7 @@ class PrxListItem(
         self._qt_widget.drag_released.connect(fnc)
 
     def set_status(self, status):
-        self.widget._set_status_(status)
+        self._qt_widget._set_status_(status)
 
     def get_is_checked(self):
         return self._qt_widget._get_is_checked_()

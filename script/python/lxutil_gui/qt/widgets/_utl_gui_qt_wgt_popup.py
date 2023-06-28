@@ -404,7 +404,7 @@ class QtPopupForChoose(
                                     i_icon_file_path = icon_file_path_dict[i_name_text]
                                     i_item_widget._set_icon_file_path_(i_icon_file_path)
                                 else:
-                                    i_item_widget._set_icon_name_text_(i_name_text)
+                                    i_item_widget._set_icon_text_(i_name_text)
                         #
                         if i_name_text in keyword_filter_dict:
                             i_filter_keys = keyword_filter_dict[i_name_text]
@@ -476,7 +476,7 @@ class QtPopupForChoose(
                             i_item._set_item_show_connect_()
                             #
                             i_item_widget._set_name_text_(i_tag)
-                            i_item_widget._set_icon_name_text_(i_tag)
+                            i_item_widget._set_icon_text_(i_tag)
                             i_item_widget._set_tool_tip_text_(i_tag)
                             #
                             i_item_widget._set_item_tag_filter_keys_src_add_(i_tag)
@@ -722,7 +722,7 @@ class QtPopupForCompletion(
                 i_item._set_item_show_connect_()
                 #
                 i_item_widget._set_name_text_(i_name_text)
-                i_item_widget._set_icon_name_text_(i_name_text)
+                i_item_widget._set_icon_text_(i_name_text)
                 i_item_widget._set_index_(index)
                 #
                 if current_name_text == i_name_text:
@@ -955,7 +955,7 @@ class QtPopupForGuideChoose(
                 #
                 if i_name_text:
                     i_item_widget._set_name_text_(i_name_text)
-                    i_item_widget._set_icon_name_text_(i_name_text)
+                    i_item_widget._set_icon_text_(i_name_text)
                 #
                 i_item_widget._set_index_(seq)
                 if current_name_text == i_name_text:

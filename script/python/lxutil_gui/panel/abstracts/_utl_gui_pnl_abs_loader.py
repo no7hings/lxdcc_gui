@@ -382,7 +382,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             #
             self._rsv_project_names.append(current_project)
         #
-        utl_core.History.set_extend(
+        utl_core.History.extend(
             'gui.projects',
             self._rsv_project_names
         )
@@ -653,7 +653,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         rsv_tasks, thread_stack_index = args[0]
         # print rsv_tasks
         if thread_stack_index == self.__thread_stack_index:
-            with self.gui_waiting():
+            with self.gui_bustling():
                 for i_rsv_task in rsv_tasks:
                     self.__gui_add_task_(i_rsv_task)
                     self.__gui_add_unit_(i_rsv_task)
@@ -686,7 +686,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         if task_prx_item is not None:
             visible = self._get_rsv_task_unit_visible_(rsv_task)
             if visible is True:
-                rsv_task_unit_prx_item = self._rsv_uint_list_view_0.set_item_add()
+                rsv_task_unit_prx_item = self._rsv_uint_list_view_0.create_item()
                 rsv_task_unit_prx_item.set_gui_dcc_obj(
                     rsv_task, namespace=self.DCC_NAMESPACE
                 )
@@ -812,7 +812,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         prx_item.set_name_dict(show_info_dict)
         r, g, b = bsc_core.RawTextOpt(task).to_rgb_(s_p=25, v_p=35)
         prx_item.set_name_frame_background_color((r, g, b, 127))
-        prx_item.set_icon_by_name(step)
+        prx_item.set_icon_by_text(step)
         prx_item.set_icons_by_pixmap(pixmaps)
         prx_item.set_tool_tip(
             rsv_task.description
@@ -947,7 +947,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
     @classmethod
     def _get_rsv_unit_action_hook_args_(cls, session_dict, key, *args, **kwargs):
         def execute_fnc():
-            session._set_file_execute_(python_file_path, dict(session=session))
+            session.execute_python_file_fnc(python_file_path, session=session)
         #
         rsv_task = args[0]
         session_path = '{}/{}'.format(rsv_task.path, key)

@@ -114,7 +114,7 @@ class AbsPrxDialogWindow(
         self._customize_layout.addWidget(self._options_prx_node.widget)
         self._options_prx_node.set_hide()
         # tip
-        self._tip_group = _utl_gui_prx_wdt_utility.PrxExpandedGroup()
+        self._tip_group = _utl_gui_prx_wdt_utility.PrxHToolGroup()
         self._customize_layout.addWidget(self._tip_group.widget)
         self._tip_group.set_visible(False)
         self._tip_group.set_name('tips')
@@ -159,7 +159,7 @@ class AbsPrxDialogWindow(
         # self._close_button.set_visible(False)
         # self._entry_button_layout.addWidget(self._close_button.widget)
         # self._close_button.set_name('Close')
-        # self._close_button.set_icon_by_name('close')
+        # self._close_button.set_icon_by_text('close')
         # self._close_button.set_width(self.BUTTON_WIDTH)
         #
         self._yes_methods = []
@@ -250,7 +250,7 @@ class AbsPrxDialogWindow(
 
     def set_yes_label(self, text):
         self._yes_button.set_name(text)
-        # self._yes_button.set_icon_by_name(text)
+        # self._yes_button.set_icon_by_text(text)
 
     def set_yes_method_add(self, method, args=None):
         self._yes_methods.append(method)
@@ -260,7 +260,7 @@ class AbsPrxDialogWindow(
 
     def set_no_label(self, text):
         self._no_button.set_name(text)
-        # self._no_button.set_icon_by_name(text)
+        # self._no_button.set_icon_by_text(text)
 
     def set_no_method_add(self, method, args=None):
         self._no_methods.append(method)
@@ -270,7 +270,7 @@ class AbsPrxDialogWindow(
 
     def set_cancel_label(self, text):
         self._cancel_button.set_name(text)
-        # self._cancel_button.set_icon_by_name(text)
+        # self._cancel_button.set_icon_by_text(text)
 
     def set_cancel_method_add(self, method, args=None):
         self._cancel_methods.append(method)
@@ -471,7 +471,7 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._stop_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         self._entry_button_layout.addWidget(self._stop_button.widget)
         self._stop_button.set_name('Stop')
-        self._stop_button.set_icon_by_name('Stop')
+        self._stop_button.set_icon_by_text('Stop')
         self._stop_button.set_width(80)
         self._stop_button.connect_press_clicked_to(self.set_process_stop)
         #
@@ -624,7 +624,7 @@ class PrxMonitorWindow(
         self._status_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         self._entry_button_layout.addWidget(self._status_button.widget)
         self._status_button.set_name('process')
-        self._status_button.set_icon_by_name('process')
+        self._status_button.set_icon_by_text('process')
 
         self._set_waiting_def_init_()
         self._set_progressing_def_init_()

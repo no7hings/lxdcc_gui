@@ -4,7 +4,7 @@ import lxutil_gui.proxy.widgets as prx_widgets
 import lxuniverse.objects as unr_objects
 
 
-class W(prx_widgets.PrxToolWindow):
+class W(prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(W, self).__init__(*args, **kwargs)
         #

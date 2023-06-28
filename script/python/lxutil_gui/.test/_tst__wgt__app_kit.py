@@ -12,7 +12,7 @@ utl_core.Environ.set_add(
 )
 
 
-class AppKit(prx_widgets.PrxToolWindow):
+class AppKit(prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(AppKit, self).__init__(*args, **kwargs)
         #
@@ -38,10 +38,10 @@ class AppKit(prx_widgets.PrxToolWindow):
                         i_list_view = self._list_view_dict[i_group_name]
                     else:
                         #
-                        i_group = prx_widgets.PrxExpandedGroup()
+                        i_group = prx_widgets.PrxHToolGroup()
                         self.add_widget(i_group)
                         i_group.set_name(i_group_name)
-                        i_group.set_icon_by_name(i_group_name)
+                        i_group.set_icon_by_text(i_group_name)
                         i_group.set_expanded(True)
                         #
                         i_list_view = prx_widgets.PrxListView()
@@ -52,7 +52,7 @@ class AppKit(prx_widgets.PrxToolWindow):
                         i_list_view.set_item_name_frame_size(48, 72)
                         self._list_view_dict[i_group_name] = i_list_view
                     #
-                    i_list_item = i_list_view.set_item_add()
+                    i_list_item = i_list_view.create_item()
                     i_name = i_gui_option.get('name')
                     i_tool_tip = i_gui_option.get('tool_tip')
                     i_list_item.set_name(i_name)
@@ -62,10 +62,10 @@ class AppKit(prx_widgets.PrxToolWindow):
                     )
                     i_list_item.set_tool_tip(i_tool_tip)
 
-                    i_list_item.set_menu_raw(
+                    i_list_item.set_menu_data(
                         [
-                            ('edit python-file', None, i_session.set_hook_python_file_open),
-                            ('edit yaml-file', None, i_session.set_hook_yaml_file_open),
+                            ('edit python-file', None, i_session.open_python_script_file),
+                            ('edit yaml-file', None, i_session.open_configure_file),
                         ]
                     )
 

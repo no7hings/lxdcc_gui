@@ -8,7 +8,7 @@ from lxutil_gui.qt import utl_gui_qt_core
 from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wgt_view_for_list
 
 
-class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
+class TestWindow(_utl_gui_prx_wdt_utility.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(TestWindow, self).__init__(*args, **kwargs)
 
@@ -52,8 +52,8 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxToolWindow):
                     )
                 # item_prx.set_image_loading_start()
 
-            item_prx = wdt.set_item_add()
-            item_prx.set_show_method(show_fnc_)
+            item_prx = wdt.create_item()
+            item_prx.set_show_build_fnc(show_fnc_)
             item_prx.set_check_enable(True)
             item_prx.set_drag_enable(True)
             item_prx.set_name_dict(

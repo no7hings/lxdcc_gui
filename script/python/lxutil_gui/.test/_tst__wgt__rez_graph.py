@@ -12,7 +12,7 @@ from lxutil_gui.qt import utl_gui_qt_core
 import lxuniverse.objects as unr_objects
 
 
-class W(prx_widgets.PrxToolWindow):
+class W(prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(W, self).__init__(*args, **kwargs)
 
@@ -136,10 +136,10 @@ class W(prx_widgets.PrxToolWindow):
         self._g.set_universe(u)
         self._g.set_node_show()
 
-        menu = self.set_menu_add(
+        menu = self.create_menu(
             'Tool(s)'
         )
-        menu.set_menu_raw(
+        menu.set_menu_data(
             [
                 ('Save Graph', None, self._set_graph_save_),
             ]

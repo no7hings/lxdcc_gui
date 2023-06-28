@@ -32,7 +32,7 @@ class GuiRsvObjOpt(object):
     def gui_add_root(self):
         path = '/'
         if self.gui_get_is_exists(path) is False:
-            prx_item = self._tree_view.set_item_add(
+            prx_item = self._tree_view.create_item(
                 self.ROOT_NAME,
                 icon=utl_gui_core.RscIconFile.get('database/all'),
             )
@@ -63,7 +63,7 @@ class GuiRsvObjOpt(object):
                     **create_kwargs
                 )
             else:
-                prx_item = self._tree_view.set_item_add(
+                prx_item = self._tree_view.create_item(
                     **create_kwargs
                 )
             #
@@ -77,7 +77,7 @@ class GuiRsvObjOpt(object):
             self.gui_register(path, prx_item)
             #
             if use_show_thread is True:
-                prx_item.set_show_method(
+                prx_item.set_show_build_fnc(
                     functools.partial(
                         self.gui_show_deferred_fnc, prx_item
                     )

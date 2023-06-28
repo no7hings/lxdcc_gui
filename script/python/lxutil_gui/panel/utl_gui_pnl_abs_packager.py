@@ -17,7 +17,7 @@ import lxutil_gui.proxy.operators as utl_prx_operators
 
 
 class AbsScenePackagerPanel(
-    prx_widgets.PrxToolWindow,
+    prx_widgets.PrxBaseWindow,
     utl_gui_pnl_abstract.AbsObjGuiDef,
 ):
     PANEL_KEY = 'scene_package'
@@ -65,14 +65,14 @@ class AbsScenePackagerPanel(
         self._is_tree_mode = not self._is_tree_mode
 
     def set_panel_build(self):
-        self._viewer_menu = self.set_menu_add('Configure(s)')
-        self._viewer_menu.set_menu_raw(
+        self._viewer_menu = self.create_menu('Configure(s)')
+        self._viewer_menu.set_menu_data(
             [
                 ('Tree-mode', None, (self._get_is_tree_mode_, self._set_tree_mode_switch_))
             ]
         )
         # viewer
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Viewer(s)')
         expand_box_0.set_expanded(True)
         self.add_widget(expand_box_0)
@@ -141,7 +141,7 @@ class AbsScenePackagerPanel(
 
     def _set_op_wdt_0_build_(self):
         # operator
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Operator')
         self.add_widget(expand_box_0)
         qt_widget_0 = qt_widgets.QtWidget()
@@ -176,7 +176,7 @@ class AbsScenePackagerPanel(
         self._preview_button_0.setText('Preview')
     # package
     def _set_op_wgt_1_build_(self):
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Package')
         expand_box_0.set_size_mode(1)
         self.add_widget(expand_box_0)
@@ -207,7 +207,7 @@ class AbsScenePackagerPanel(
         _port.set(self.set_package)
     # search
     def _set_op_wgt_2_build_(self):
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Search')
         expand_box_0.set_size_mode(1)
         self.add_widget(expand_box_0)
@@ -230,7 +230,7 @@ class AbsScenePackagerPanel(
         _port.set(self.set_search)
     # copy & repath
     def _set_op_wgt_3_build_(self):
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Copy & Repath')
         expand_box_0.set_size_mode(1)
         self.add_widget(expand_box_0)

@@ -6,7 +6,7 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry
 import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
 
-class QtHExpandHead0(
+class AbsQtHeadFrame(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtNameBaseDef,
@@ -18,7 +18,7 @@ class QtHExpandHead0(
     utl_gui_qt_abstract.AbsQtActionForExpandDef,
 ):
     def __init__(self, *args, **kwargs):
-        super(QtHExpandHead0, self).__init__(*args, **kwargs)
+        super(AbsQtHeadFrame, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
         #
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -45,7 +45,7 @@ class QtHExpandHead0(
         self._expand_sub_icon_file_path_0 = None
         self._expand_sub_icon_file_path_1 = None
 
-        self._action_is_hovered = False
+        self._is_hovered = False
         #
         self._refresh_expand_()
         #
@@ -72,7 +72,9 @@ class QtHExpandHead0(
         self._frame_background_color = color
         self._hovered_frame_background_color = hover_color
         # font
-        self.setFont(Font.NAME)
+        self.setFont(self._name_draw_font)
+
+        self._line_draw_points = QtCore.QPoint(), QtCore.QPoint()
 
         self._icon_draw_percent = .65
 
@@ -94,7 +96,7 @@ class QtHExpandHead0(
 
         if self._icon_sub_file_path is not None:
             frm_x, frm_y = c_x+(frm_w-icn_frm_w)/2, c_y+(frm_h-icn_frm_h)/2
-            sub_icn_w, sub_icn_h = icn_frm_w*self._sub_icon_draw_percent, icn_frm_h*self._sub_icon_draw_percent
+            sub_icn_w, sub_icn_h = icn_frm_w*self._icon_sub_draw_percent, icn_frm_h*self._icon_sub_draw_percent
             self._set_icon_file_draw_rect_(
                  c_x+icn_frm_m_w, c_y+icn_frm_m_h, icn_w, icn_h
             )
@@ -107,17 +109,11 @@ class QtHExpandHead0(
             )
         #
         c_x += icn_frm_w+spacing
-        # if self._icon_name_is_enable is True:
-        #     if self._icon_name_text is not None:
-        #         icn_w, icn_h = self._icon_name_draw_size
-        #         self._set_icon_name_draw_rect_(
-        #             c_x+(frm_w-icn_w)/2, c_y+(frm_h-icn_h)/2, icn_w, icn_h
-        #         )
-        #         c_x += icn_frm_w+spacing
         #
-        self._set_name_draw_rect_(
-            c_x, c_y, w-c_x, frm_h
-        )
+        if self._name_text:
+            self._set_name_draw_rect_(
+                c_x, c_y, w-c_x, frm_h
+            )
 
     def _set_expand_icon_file_path_(self, icon_file_path_0, icon_file_path_1):
         self._expand_icon_file_path_0 = icon_file_path_0
@@ -185,7 +181,7 @@ class QtHExpandHead0(
             self._icon_draw_rect,
             self._icon_file_path,
             offset=offset,
-            is_hovered=self._action_is_hovered
+            is_hovered=self._is_hovered
         )
         # text
         if self._name_text is not None:
@@ -208,6 +204,107 @@ class QtHExpandHead0(
         )
         #
         self._refresh_widget_draw_()
+
+
+class QtHHeadFrame(AbsQtHeadFrame):
+    def __init__(self, *args, **kwargs):
+        super(QtHHeadFrame, self).__init__(*args, **kwargs)
+
+
+class QtHHeadFrame_(AbsQtHeadFrame):
+    def __init__(self, *args, **kwargs):
+        super(QtHHeadFrame_, self).__init__(*args, **kwargs)
+
+    def _refresh_widget_draw_geometry_(self):
+        x, y = 0, 0
+        c_x, c_y = x, y
+        w, h = self.width(), self.height()
+        spacing = 2
+        #
+        self._set_frame_draw_rect_(
+            c_x+1, c_y+1, w-2, h-2
+        )
+        frm_w = frm_h = h
+        icn_frm_w, icn_frm_h = self._icon_frame_draw_size
+        icn_frm_m_w, icn_frm_m_h = (frm_w-icn_frm_w)/2, (frm_h-icn_frm_h)/2
+        icn_w, icn_h = icn_frm_w*self._icon_draw_percent, icn_frm_h*self._icon_draw_percent
+
+        if self._icon_sub_file_path is not None:
+            frm_x, frm_y = c_x+(frm_w-icn_frm_w)/2, c_y+(frm_h-icn_frm_h)/2
+            sub_icn_w, sub_icn_h = icn_frm_w*self._icon_sub_draw_percent, icn_frm_h*self._icon_sub_draw_percent
+            self._set_icon_file_draw_rect_(
+                 c_x+icn_frm_m_w, c_y+icn_frm_m_h, icn_w, icn_h
+            )
+            self._set_sub_icon_file_draw_rect_(
+                frm_x+frm_w-sub_icn_w-icn_frm_m_w, frm_y+frm_h-sub_icn_h-icn_frm_m_h, sub_icn_w, sub_icn_h
+            )
+        else:
+            self._set_icon_file_draw_rect_(
+                c_x+(frm_w-icn_w)/2, c_y+(frm_h-icn_h)/2, icn_w, icn_h
+            )
+        #
+        c_x += icn_frm_w+spacing
+        #
+        if self._name_text:
+            t_w = self._get_name_text_draw_width_(self._name_text) + 8
+            self._set_name_draw_rect_(
+                c_x, c_y, t_w, frm_h
+            )
+            c_x += t_w
+        #
+        if self._is_expanded is True:
+            self._line_draw_points[0].setX(x)
+            self._line_draw_points[0].setY(y+h-1)
+            self._line_draw_points[1].setX(w)
+            self._line_draw_points[1].setY(y+h-1)
+        else:
+            self._line_draw_points[0].setX(c_x)
+            self._line_draw_points[0].setY(c_y+h/2)
+            self._line_draw_points[1].setX(w)
+            self._line_draw_points[1].setY(c_y+h/2)
+
+    def paintEvent(self, event):
+        painter = QtPainter(self)
+        #
+        self._refresh_widget_draw_geometry_()
+        #
+        offset = self._get_action_offset_()
+        #
+        frame_color = Color.BAR_FRAME_NORMAL
+        painter._set_border_color_(frame_color)
+        background_color = self._frame_background_color
+        #
+        painter._draw_line_by_points_(
+            point_0=self._line_draw_points[0], point_1=self._line_draw_points[1],
+            border_color=background_color,
+            # border_width=1
+        )
+        # name-icon
+        if self._icon_name_is_enable is True:
+            if self._icon_name_text is not None:
+                painter._draw_frame_color_with_name_text_by_rect_(
+                    rect=self._frame_draw_rect,
+                    text=self._icon_name_text,
+                    offset=offset,
+                )
+        # file-icon
+        painter._draw_icon_file_by_rect_(
+            self._icon_draw_rect,
+            self._icon_file_path,
+            offset=offset,
+            is_hovered=self._is_hovered
+        )
+        # text
+        if self._name_text is not None:
+            color = self._name_color
+            painter._draw_text_by_rect_(
+                rect=self._name_draw_rect,
+                text=self._name_text,
+                font=self._name_draw_font,
+                font_color=color,
+                text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
+                offset=offset
+            )
 
 
 class AbsQtExpandHead1(
@@ -288,7 +385,7 @@ class AbsQtExpandHead1(
             rect=self._icon_draw_rect,
             file_path=self._icon_file_path,
             offset=offset,
-            is_hovered=self._action_is_hovered
+            is_hovered=self._is_hovered
         )
 
     def eventFilter(self, *args):
@@ -410,7 +507,7 @@ class AbsQtExpandHead2(
         self._expand_sub_icon_file_path_0 = None
         self._expand_sub_icon_file_path_1 = None
 
-        self._action_is_hovered = False
+        self._is_hovered = False
         #
         self._refresh_expand_()
         #
@@ -502,7 +599,7 @@ class AbsQtExpandHead2(
             self._icon_draw_rect,
             self._icon_file_path,
             offset=offset,
-            is_hovered=self._action_is_hovered
+            is_hovered=self._is_hovered
         )
 
     def _refresh_expand_(self):

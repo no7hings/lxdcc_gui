@@ -75,7 +75,7 @@ class AbsPnlAssetDccGeometryComparer(
         self._update_geometry_from_model_item.connect_press_clicked_to(self.import_fnc)
 
     def _set_viewer_groups_build_(self):
-        expand_box_0 = prx_widgets.PrxExpandedGroup()
+        expand_box_0 = prx_widgets.PrxHToolGroup()
         expand_box_0.set_name('Viewer(s)')
         expand_box_0.set_expanded(True)
         self.add_widget(expand_box_0)
@@ -372,7 +372,7 @@ class AbsDccComparerOpt(object):
         if path in self._obj_add_dict:
             return self._obj_add_dict[path]
 
-        prx_item = self._result_tree_view.set_item_add(
+        prx_item = self._result_tree_view.create_item(
             name=path_dag_opt.name,
             icon=utl_gui_core.RscIconFile.get('obj/transform'),
             tool_tip=path,
@@ -442,7 +442,7 @@ class AbsPnlAssetGeometryComparer(prx_widgets.PrxSessionWindow):
         s = prx_widgets.PrxVScrollArea()
         self.add_widget(s)
 
-        e_g = prx_widgets.PrxExpandedGroup()
+        e_g = prx_widgets.PrxHToolGroup()
         s.add_widget(e_g)
         e_g.set_name('viewers')
         e_g.set_expanded(True)

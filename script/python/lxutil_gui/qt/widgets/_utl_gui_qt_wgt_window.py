@@ -19,9 +19,9 @@ class _QtWindow(
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
-        self._main_layout = QtVBoxLayout(self)
-        self._main_layout.setContentsMargins(0, 0, 0, 0)
-        self._main_layout.setSpacing(0)
+        self._qt_main_layout = QtVBoxLayout(self)
+        self._qt_main_layout.setContentsMargins(0, 0, 0, 0)
+        self._qt_main_layout.setSpacing(0)
         #
         self._init_frame_base_def_(self)
         #
@@ -29,7 +29,7 @@ class _QtWindow(
         self._hovered_frame_background_color = 63, 63, 63, 255
         #
         self._menu_bar = _utl_gui_qt_wgt_view._QtMenuBar()
-        self._main_layout.addWidget(self._menu_bar)
+        self._qt_main_layout.addWidget(self._menu_bar)
 
     def _set_widget_geometries_update_(self):
         pos_x, pos_y = 0, 0
@@ -64,16 +64,16 @@ class _QtFramelessWindow(
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
-        self._main_layout = QtVBoxLayout(self)
-        self._main_layout.setContentsMargins(0, 0, 0, 0)
-        self._main_layout.setSpacing(0)
+        self._qt_main_layout = QtVBoxLayout(self)
+        self._qt_main_layout.setContentsMargins(0, 0, 0, 0)
+        self._qt_main_layout.setSpacing(0)
         self._header = _utl_gui_qt_wgt_item._QtWindowHead()
-        self._main_layout.addWidget(self._header)
+        self._qt_main_layout.addWidget(self._header)
         #
-        self._main_widget = _utl_gui_qt_wgt_utility.QtWidget()
-        self._main_widget.setSizePolicy(
+        self._qt_main_widget = _utl_gui_qt_wgt_utility.QtWidget()
+        self._qt_main_widget.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding,
             QtWidgets.QSizePolicy.Expanding
         )
-        self._main_layout.addWidget(self._main_widget)
+        self._qt_main_layout.addWidget(self._qt_main_widget)
 

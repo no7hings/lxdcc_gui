@@ -34,7 +34,7 @@ class PrxListView(
         self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
         self._prx_top_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
-        self._prx_top_tool_bar.set_alignment_left()
+        self._prx_top_tool_bar.set_left_alignment_mode()
         self._qt_layout_0.addWidget(self._prx_top_tool_bar.widget)
         self._prx_top_tool_bar.set_border_radius(1)
         # check
@@ -123,6 +123,9 @@ class PrxListView(
     @property
     def filter_bar(self):
         return self._prx_filter_bar
+
+    def hide_top_tool_bar(self):
+        self._prx_top_tool_bar.set_visible(False)
 
     def __keyword_filter_completion_gain_fnc(self, *args, **kwargs):
         keyword = args[0]
@@ -281,7 +284,7 @@ class PrxListView(
     def set_item_image_frame_draw_enable(self, boolean):
         self.view._set_item_image_frame_draw_enable_(boolean)
     #
-    def set_item_add(self, *args, **kwargs):
+    def create_item(self, *args, **kwargs):
         prx_item_widget = _utl_gui_prx_wgt_item.PrxListItem()
         prx_item_widget.set_view(self)
         self.view._add_item_widget_(prx_item_widget.widget, **kwargs)
@@ -337,8 +340,8 @@ class PrxListView(
     def set_draw_enable(self, boolean):
         self._qt_view._set_drag_enable_(boolean)
 
-    def gui_waiting(self):
-        return self._qt_view._gui_waiting_()
+    def gui_bustling(self):
+        return self._qt_view._gui_bustling_()
 
     def get_top_tool_bar(self):
         return self._prx_top_tool_bar
@@ -352,6 +355,12 @@ class PrxListView(
     def set_filter_entry_tip(self, text):
         self._prx_filter_bar.set_tip(text)
 
+    def set_menu_data(self, data):
+        self._qt_view._set_menu_data_(data)
+
+    def set_scroll_enable(self, boolean):
+        self._qt_view._set_scroll_enable_(boolean)
+
 
 class PrxImageView(PrxListView):
     def __init__(self, *args, **kwargs):
@@ -364,7 +373,7 @@ class PrxImageView(PrxListView):
     def set_textures(self, textures):
         for i_texture in textures:
             for j_texture_unit in i_texture.get_exists_units():
-                self._set_texture_show_(self.set_item_add(), j_texture_unit)
+                self._set_texture_show_(self.create_item(), j_texture_unit)
 
     def _set_texture_show_(self, prx_item, texture_unit):
         def cache_fnc_():
