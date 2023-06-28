@@ -232,9 +232,9 @@ else:
                             )
                         ).set_file('')
 
-            usd_core.UsdStageOpt(self._usd_stage).set_export_to(
-                '/data/e/myworkspace/td/lynxi/script/python/lxusd/.etc/usd_preview.usda'
-            )
+            # usd_core.UsdStageOpt(self._usd_stage).set_export_to(
+            #     '/data/e/myworkspace/td/lynxi/script/python/lxusd/.etc/usd_preview.usda'
+            # )
 
         def _refresh_usd_stage_for_asset_render_(self, usd_file_path, texture_dict=None, use_acescg=False):
             self._usd_stage.Reload()
@@ -311,9 +311,9 @@ else:
                             'filename', ''
                         )
 
-            usd_core.UsdStageOpt(self._usd_stage).set_export_to(
-                '/data/e/myworkspace/td/lynxi/script/python/lxusd/.etc/usd_arnold_render.usda'
-            )
+            # usd_core.UsdStageOpt(self._usd_stage).set_export_to(
+            #     '/data/e/myworkspace/td/lynxi/script/python/lxusd/.etc/usd_arnold_render.usda'
+            # )
 
         def _usd_update_camera_(self):
             (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).get_geometry_args('/')

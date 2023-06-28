@@ -1304,10 +1304,10 @@ class QtMainWindow(
         self.installEventFilter(self)
         self.setWindowFlags(QtCore.Qt.Window)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
         self.setPalette(QtDccMtd.get_palette())
-        # self.setAutoFillBackground(True)
+        self.setAutoFillBackground(True)
         # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
         self.setFont(Font.NAME)
