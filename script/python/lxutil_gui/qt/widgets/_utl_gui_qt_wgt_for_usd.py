@@ -61,7 +61,7 @@ else:
 
         def _get_main_menu_data_(self):
             return [
-                ('Export to', 'file/file', None),
+                ('Export to', 'file/file', self._usd_export_to_file_),
             ]
 
         def _refresh_usd_stage_for_texture_preview_(self, texture_dict=None, use_acescg=False):
@@ -1428,3 +1428,21 @@ else:
 
         def _get_usd_stage_(self):
             return self._usd_stage
+
+        def _usd_export_to_file_(self):
+            f = QtWidgets.QFileDialog()
+            options = f.Options()
+            # options |= f.DontUseNativeDialog
+            s = f.getSaveFileName(
+                self,
+                'Save File',
+                '',
+                filter=None,
+                options=options,
+            )
+            if s:
+                _ = s[0]
+                if _:
+                    usd_core.UsdStageOpt(self._usd_stage).set_export_to(
+                        _
+                    )
