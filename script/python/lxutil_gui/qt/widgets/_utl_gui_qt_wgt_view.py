@@ -18,6 +18,7 @@ class VirtualItem(object):
         self._name_text = None
         self._icon_text = None
         self._rect = QtCore.QRect()
+        self._popup_rect = QtCore.QRect()
 
     def get_widget(self):
         return self._widget
@@ -41,6 +42,10 @@ class VirtualItem(object):
         return self._rect
     rect = property(get_rect)
 
+    def get_popup_rect(self):
+        return self._popup_rect
+    rect_popup = property(get_popup_rect)
+
     def delete(self):
         self._widget.close()
         self._widget.deleteLater()
@@ -59,7 +64,8 @@ class VirtualItemStack(object):
         return item
 
     def get_item_at(self, index):
-        return self._item_list[index]
+        if self._item_list:
+            return self._item_list[index]
 
     def delete_item_at(self, index):
         item = self._item_list[index]
@@ -82,7 +88,9 @@ class VirtualItemStack(object):
                 return i_index
 
     def get_name_text_at(self, index):
-        return self.get_item_at(index).name_text
+        item = self.get_item_at(index)
+        if item:
+            return self.get_item_at(index).name_text
 
     def get_count(self):
         return self._count
@@ -97,13 +105,22 @@ class ScrollMode(object):
         self._abs_w = 0
         self._offset = 0
         #
-        self._is_scroll_enable = False
+        self._is_valid = False
 
     def set_w(self, v):
         self._w = v
 
     def set_abs_w(self, v):
         self._abs_w = v
+
+    def get_is_valid(self):
+        return self._is_valid
+
+    def update(self):
+        if self._abs_w > self._w:
+            self._is_valid = True
+        else:
+            self._is_valid = False
 
 
 class AbsQtItemsDef(object):
@@ -158,19 +175,27 @@ class QtTabView(
         self._tab_bar_draw_rect = QtCore.QRect()
         self._tab_left_tool_box_rect = QtCore.QRect()
         self._tab_left_tool_box_draw_rect = QtCore.QRect()
+        self._tab_right_tool_box_rect = QtCore.QRect()
+        self._tab_right_tool_box_draw_rect = QtCore.QRect()
 
         self._tab_add_is_enable = False
         self._tab_add_button = _utl_gui_qt_wgt_utility.QtIconMenuButton(self)
         self._tab_add_button.hide()
         self._tab_add_button._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get('tab-add')
+            utl_gui_core.RscIconFile.get('tab/tab-add')
+        )
+
+        self._tab_choose_button = _utl_gui_qt_wgt_utility.QtIconMenuButton(self)
+        self._tab_choose_button.hide()
+        self._tab_choose_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get('tab/tab-choose')
         )
 
         self._tab_menu_is_enable = False
         self._tab_menu_button = _utl_gui_qt_wgt_utility.QtIconMenuButton(self)
         self._tab_menu_button.hide()
         self._tab_menu_button._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get('tab-menu-v')
+            utl_gui_core.RscIconFile.get('tab/tab-menu-v')
         )
 
         self._tab_view_margins = 2, 2, 2, 2
@@ -183,6 +208,7 @@ class QtTabView(
             get_font(size=10)
         )
 
+        self._scroll_model = ScrollMode()
         self._set_menu_data_gain_fnc_(
             self._tab_item_menu_gain_fnc_
         )
@@ -210,6 +236,7 @@ class QtTabView(
         self._tab_bar_draw_rect.setRect(
             x, y, w, t_h-1
         )
+        scroll_w = w
         c_x, c_y = x, y
         btn_f_w, btn_f_h = t_h, t_h
         btn_w, btn_h = 20, 20
@@ -225,15 +252,10 @@ class QtTabView(
                 x+(btn_f_w-btn_w)/2, y+(btn_f_h-btn_h)/2, btn_w, btn_h
             )
             c_x += t_h+self._tab_offset
+            scroll_w -= t_h
         #
-        if self._tab_menu_is_enable is True:
-            self._tab_menu_button.show()
-            self._tab_menu_button.setGeometry(
-                w-btn_f_w+(btn_f_w-btn_w)/2, c_y+(btn_f_h-btn_h)/2, btn_w, btn_h
-            )
-        #
+        scroll_abs_w = 0
         for i_index, i_virtual_item in enumerate(self._virtual_item_stack.get_items()):
-            i_rect = i_virtual_item.rect
             i_name_text = i_virtual_item.name_text
             if i_name_text is not None:
                 i_text_width = self._get_text_draw_width_(
@@ -243,14 +265,42 @@ class QtTabView(
                 i_text_width = t_w
             #
             i_t_w = i_text_width+t_h*2
-            #
-            i_rect.setRect(
-                c_x, y, i_t_w, t_h
+            scroll_abs_w += i_t_w
+        #
+        self._scroll_model.set_w(scroll_w)
+        self._scroll_model.set_abs_w(scroll_abs_w)
+        self._scroll_model.update()
+        #
+        # if self._tab_menu_is_enable is True:
+        #     self._tab_menu_button.show()
+        #     self._tab_menu_button.setGeometry(
+        #         w-btn_f_w+(btn_f_w-btn_w)/2, c_y+(btn_f_h-btn_h)/2, btn_w, btn_h
+        #     )
+        if self._scroll_model.get_is_valid():
+            self._tab_right_tool_box_rect.setRect(
+                w-btn_f_w, y, btn_f_w, t_h
             )
-            c_x += i_t_w
-        # widget
+            self._tab_right_tool_box_draw_rect.setRect(
+                w-btn_f_w, y, btn_f_w, t_h-1
+            )
+            # self._tab_choose_button.show()
+            self._tab_choose_button.setGeometry(
+                w-btn_f_w+(btn_f_w-btn_w)/2, c_y+(btn_f_h-btn_h)/2, btn_w, btn_h
+            )
+        else:
+            self._tab_choose_button.hide()
+
         for i_index, i_virtual_item in enumerate(self._virtual_item_stack.get_items()):
             i_widget = i_virtual_item.widget
+            i_rect = i_virtual_item.rect
+            i_name_text = i_virtual_item.name_text
+            if i_name_text is not None:
+                i_text_width = self._get_text_draw_width_(
+                    i_name_text
+                )
+            else:
+                i_text_width = t_w
+            #
             if i_index == self._item_index_current:
                 i_widget.show()
                 i_widget.setGeometry(
@@ -258,6 +308,13 @@ class QtTabView(
                 )
             else:
                 i_widget.hide()
+            #
+            i_t_w = i_text_width+t_h*2
+            #
+            i_rect.setRect(
+                c_x, y, i_t_w, t_h
+            )
+            c_x += i_t_w
 
     def eventFilter(self, *args):
         widget, event = args
@@ -328,18 +385,24 @@ class QtTabView(
             index_pressed=self._item_index_pressed,
             current_index=self._item_index_current,
         )
+        #
         if self._tab_add_is_enable:
             painter._draw_tab_left_tool_box_by_rect_(
                 rect=self._tab_left_tool_box_draw_rect
             )
+        if self._scroll_model.get_is_valid():
+            pass
 
     def _delete_item_at_(self, index):
         item = self._virtual_item_stack.get_item_at(index)
         self._virtual_item_stack.delete_item(item)
         self.tab_delete_accepted.emit(item.name_text)
         count = self._virtual_item_stack.get_count()
-        if self._item_index_current > count-1:
-            self._set_item_current_at_(count-1)
+        maximum = count-1
+        if self._item_index_current > maximum:
+            index = count-1
+            index = max(min(index, maximum), 0)
+            self._set_item_current_at_(index)
         self._refresh_widget_()
 
     def _add_item_(self, widget, *args, **kwargs):
@@ -353,7 +416,6 @@ class QtTabView(
             virtual_item.set_icon_text(kwargs['name'])
         #
         widget.installEventFilter(self)
-
         self._refresh_widget_()
 
     def _set_tab_add_enable_(self, boolean):

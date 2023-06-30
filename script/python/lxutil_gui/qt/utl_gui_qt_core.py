@@ -1204,6 +1204,19 @@ class QtDccMtd(utl_abstract.AbsDccMtd):
         elif cls.get_is_houdini():
             return QtHoudiniMtd.get_qt_icon(icon_name)
     @classmethod
+    def get_qt_folder_icon(cls, use_system=False):
+        if use_system is True:
+            f_i_p = QtWidgets.QFileIconProvider()
+            return f_i_p.icon(f_i_p.Folder)
+        return QtIconMtd.create_by_icon_name('file/folder')
+    @classmethod
+    def get_qt_file_icon(cls, file_path):
+        f_i_p = QtWidgets.QFileIconProvider()
+        if bsc_core.StgPathMtd.get_is_file(file_path) is True:
+            info = QtCore.QFileInfo(file_path)
+            return f_i_p.icon(info)
+        return f_i_p.icon(f_i_p.File)
+    @classmethod
     def get_palette(cls):
         if cls.get_is_maya():
             return QtUtilMtd.get_palette()

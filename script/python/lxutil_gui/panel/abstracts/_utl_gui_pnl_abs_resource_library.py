@@ -882,7 +882,7 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
             #
             prx_item = parent_gui.add_child(
                 path_opt.name,
-                icon=utl_gui_core.RscIconFile.get('database/group'),
+                icon=utl_gui_qt_core.QtDccMtd.get_qt_folder_icon(),
             )
             self._item_dict[sub_path] = prx_item
             prx_item.set_tool_tip(sub_path)
@@ -896,6 +896,8 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
             path_opt = bsc_core.DccPathDagOpt(sub_path)
             #
             parent_gui = self.gui_get(path_opt.get_parent_path())
+            #
+            location = self.get_dtb_entity_location(dtb_directory)
             #
             prx_item = parent_gui.add_child(
                 path_opt.name,
@@ -1662,4 +1664,3 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         location = self._dtb_opt.get_property(
             dtb_storage.path, 'location'
         )
-        print location

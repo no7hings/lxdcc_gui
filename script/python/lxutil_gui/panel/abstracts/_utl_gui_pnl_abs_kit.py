@@ -51,13 +51,24 @@ class HookAddOpt(object):
         return list_
 
     def accept_create(self, mode='create'):
-        directory_path = self.CUSTOMIZE_PATH
+        group_name = self._options.get('gui.group_name')
+        if group_name in self.DEFAULT_GROUP_NAMES:
+            directory_path = '{}/hooks'.format(self.CUSTOMIZE_PATH)
+        else:
+            directory_path = '{}/hooks'.format(self.CUSTOMIZE_PATH)
         #
-        hook_key = self._options.get('name')
-
-        configure_file_path = '{}/hooks/{}.yml'.format(directory_path, hook_key)
-        python_file_path = '{}/hooks/{}.py'.format(directory_path, hook_key)
-        linux_file_path = '{}/hooks/{}.sh'.format(directory_path, hook_key)
+        name = self._options.get('name')
+        if mode == 'create':
+            if group_name in self.DEFAULT_GROUP_NAMES:
+                hook_key = '{}/{}'.format(group_name, name)
+            else:
+                hook_key = '{}/User/{}'.format(group_name, name)
+        else:
+            hook_key = name
+        #
+        configure_file_path = '{}/{}.yml'.format(directory_path, hook_key)
+        python_file_path = '{}/{}.py'.format(directory_path, hook_key)
+        linux_file_path = '{}/{}.sh'.format(directory_path, hook_key)
         windows_file_path = '{}/{}.bat'.format(directory_path, hook_key)
         configure_file_opt = bsc_core.StgFileOpt(configure_file_path)
         if mode is 'create':
