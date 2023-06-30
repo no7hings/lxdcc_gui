@@ -580,6 +580,9 @@ class PrxPortAsScript(AbsPrxTypePort):
         super(PrxPortAsScript, self).set_name(*args, **kwargs)
         self._prx_port_entry._qt_entry_widget._value_entry._set_empty_text_(args[0])
 
+    def set_external_editor_ext(self, ext):
+        self._prx_port_entry.set_external_editor_ext(ext)
+
 
 class PrxPortAsTuple(AbsPrxTypePort):
     ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
@@ -1790,6 +1793,10 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             )
             port.set(value_)
             port.set_default(value_)
+            if 'external_editor_ext' in option:
+                port.set_external_editor_ext(
+                    option['external_editor_ext']
+                )
         #
         elif widget_ in {'components', 'node_list'}:
             port = PrxNodeListViewPort(

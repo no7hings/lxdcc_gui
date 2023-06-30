@@ -374,10 +374,13 @@ class QtEntryAsTextEdit(
 
 
 class QtEntryAsContentEdit(
-    QtWidgets.QTextBrowser,
+    QtWidgets.QTextEdit,
     utl_gui_qt_abstract.AbsQtEntryBaseDef,
     utl_gui_qt_abstract.AbsQtDropBaseDef,
 ):
+    focus_in = qt_signal()
+    focus_out = qt_signal()
+    focus_changed = qt_signal()
     def __init__(self, *args, **kwargs):
         super(QtEntryAsContentEdit, self).__init__(*args, **kwargs)
         self.setWordWrapMode(QtGui.QTextOption.WrapAnywhere)
@@ -397,7 +400,7 @@ class QtEntryAsContentEdit(
         self._print_signals.print_over_accepted.connect(self._set_value_)
         #
         self.setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QTextBrowser')
+            utl_gui_core.QtStyleMtd.get('QTextEdit')
         )
         #
         self.verticalScrollBar().setStyleSheet(
@@ -420,11 +423,17 @@ class QtEntryAsContentEdit(
                 entry_frame = self._get_entry_frame_()
                 if isinstance(entry_frame, QtEntryFrame):
                     entry_frame._set_focused_(True)
+                #
+                self.focus_in.emit()
+                self.focus_changed.emit()
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 entry_frame = self._get_entry_frame_()
                 if isinstance(entry_frame, QtEntryFrame):
                     entry_frame._set_focused_(False)
+                #
+                self.focus_out.emit()
+                self.focus_changed.emit()
             elif event.type() == QtCore.QEvent.Wheel:
                 if event.modifiers() == QtCore.Qt.ControlModifier:
                     self._execute_font_scale_(event)
@@ -1011,6 +1020,7 @@ class QtEntryFrame(
     utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtStatusBaseDef,
     #
+    utl_gui_qt_abstract.AbsQtActionBaseDef,
     utl_gui_qt_abstract.AbsQtThreadBaseDef,
 ):
     geometry_changed = qt_signal(int, int, int, int)
@@ -1077,6 +1087,7 @@ class QtEntryFrame(
         self._init_name_base_def_(self)
         self._init_frame_base_def_(self)
         self._init_status_base_def_(self)
+        self._init_action_base_def_(self)
         self._init_thread_base_def_(self)
         #
         self._frame_border_color = QtBorderColors.Light

@@ -219,16 +219,16 @@ class AbsPrxWaitingDef(object):
                 utl_core.ExceptionCatcher.set_create()
                 raise
 
-        thread = self.widget._set_thread_create_()
+        t = self.widget._create_fnc_thread_()
 
-        thread.run_started.connect(self.start_waiting)
-        thread.run_finished.connect(self.stop_waiting)
+        t.run_started.connect(self.start_waiting)
+        t.run_finished.connect(self.stop_waiting)
         for i in methods:
-            thread.set_method_add(
+            t.append_method(
                 functools.partial(debug_run_fnc_, i)
             )
         #
-        thread.start()
+        t.start()
 
 
 class AbsPrxWindow(AbsPrx):

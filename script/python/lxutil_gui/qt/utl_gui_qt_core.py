@@ -1388,25 +1388,25 @@ class QtCommandSignals(QtCore.QObject):
 
 
 class QtMethodThread(QtCore.QThread):
-    stated = qt_signal()
-    running = qt_signal()
-    stopped = qt_signal()
+    run_started = qt_signal()
+    run_finished = qt_signal()
     #
     completed = qt_signal()
     failed = qt_signal(str)
     error_occurred = qt_signal()
     #
-    run_started = qt_signal()
-    run_finished = qt_signal()
+    start_accepted = qt_signal(QtCore.QObject)
+    finish_accepted = qt_signal(QtCore.QObject)
     def __init__(self, *args, **kwargs):
         super(QtMethodThread, self).__init__(*args, **kwargs)
         self._methods = []
 
-    def set_method_add(self, method):
+    def append_method(self, method):
         self._methods.append(method)
 
     def run(self):
         self.run_started.emit()
+        self.start_accepted.emit(self)
         # noinspection PyBroadException
         try:
             for i in self._methods:
@@ -1417,8 +1417,8 @@ class QtMethodThread(QtCore.QThread):
             bsc_core.ExceptionMtd.set_print()
             self.failed.emit(bsc_core.ExceptionMtd.get_stack_())
         finally:
-            #
             self.run_finished.emit()
+            self.finish_accepted.emit(self)
 
     def set_quit(self):
         self.quit()
@@ -1481,7 +1481,6 @@ class QtBuildThread(QtCore.QThread):
                 self.cache_started.emit()
                 cache = self._cache_fnc()
                 self.cache_finished.emit()
-                #
                 self.built.emit(list(cache))
             except:
                 self.run_failed.emit()
@@ -1758,8 +1757,16 @@ class QtVBoxLayout(QtWidgets.QVBoxLayout):
             QtCore.Qt.AlignTop
         )
 
-    def _set_contents_margins_clear_(self):
-        self.setContentsMargins(0, 0, 0, 0)
+    def _clear_all_widgets_(self):
+        layout = self
+        c = layout.count()
+        if c:
+            for i in range(c):
+                i_item = layout.itemAt(i)
+                if i_item:
+                    i_widget = i_item.widget()
+                    i_widget.close()
+                    i_widget.deleteLater()
 
 
 class QtGridLayout(QtWidgets.QGridLayout):
@@ -2533,14 +2540,14 @@ class QtPainter(QtGui.QPainter):
         super(QtPainter, self).__init__(*args, **kwargs)
         self.setRenderHint(self.Antialiasing)
 
-    def _draw_capsule_by_rects_(self, rects, texts, checked_indices, hovered_index, pressed_index, use_exclusive=False, is_enable=True):
+    def _draw_capsule_by_rects_(self, rects, texts, checked_indices, index_hovered, index_pressed, use_exclusive=False, is_enable=True):
         c = len(texts)
         self._set_antialiasing_()
         for i, i_text in enumerate(texts):
             i_rect = rects[i]
             i_x, i_y = i_rect.x()+1, i_rect.y()
             i_w, i_h = i_rect.width()-2, i_rect.height()
-            if i == pressed_index:
+            if i == index_pressed:
                 i_x += 2
                 i_w -= 2
                 i_y += 2
@@ -2554,7 +2561,7 @@ class QtPainter(QtGui.QPainter):
             else:
                 i_border_radius = i_h/2
 
-            i_is_hovered = i == hovered_index
+            i_is_hovered = i == index_hovered
             i_is_checked = checked_indices[i]
             if i_is_checked is True:
                 i_border_width = 2
@@ -2631,33 +2638,54 @@ class QtPainter(QtGui.QPainter):
                 i_text
             )
 
-    def _draw_tab_buttons_by_rects_(self, frame_rect, rects, name_texts, icon_name_texts, hovered_index, pressed_index, current_index):
+    def _draw_tab_left_tool_box_by_rect_(self, rect):
+        color = QtGui.QLinearGradient(
+            rect.topLeft(), rect.topRight()
+        )
+        color.setColorAt(
+            0, QtBackgroundColors.Dark
+        )
+        color.setColorAt(
+            0.75, QtBackgroundColors.Dark
+        )
+        color.setColorAt(
+            1, QtBackgroundColors.Transparent
+        )
+        self._set_border_color_(QtBorderColors.Transparent)
+        self._set_background_color_(color)
+        self.drawRect(
+            rect
+        )
+
+    def _draw_tab_buttons_by_rects_(self, frame_rect, virtual_items, index_hovered, index_pressed, current_index):
         self._draw_frame_by_rect_(
             rect=frame_rect,
             border_color=QtBorderColors.Transparent,
             background_color=QtBackgroundColors.Dark,
         )
         #
-        for i_index, i_name_text in enumerate(name_texts):
-            i_rect = rects[i_index]
-            i_icon_name_text = icon_name_texts[i_index]
-            i_is_hovered = i_index == hovered_index
-            i_is_pressed = i_index == pressed_index
+        for i_index, i_virtual_item in enumerate(virtual_items):
+            i_name_text = i_virtual_item.name_text
+            i_rect = i_virtual_item.rect
+            i_icon_text = i_virtual_item.icon_text
+            i_is_hovered = i_index == index_hovered
+            i_is_pressed = i_index == index_pressed
             i_is_current = i_index == current_index
             if i_is_current is False:
                 self._draw_tab_button_at_(
-                    frame_rect, i_rect, i_name_text, i_icon_name_text, i_is_hovered, i_is_pressed, i_is_current
+                    frame_rect, i_rect, i_name_text, i_icon_text, i_is_hovered, i_is_pressed, i_is_current
                 )
         # draw current
-        for i_index, i_name_text in enumerate(name_texts):
-            i_rect = rects[i_index]
-            i_icon_name_text = icon_name_texts[i_index]
-            i_is_hovered = i_index == hovered_index
-            i_is_pressed = i_index == pressed_index
+        for i_index, i_virtual_item in enumerate(virtual_items):
+            i_name_text = i_virtual_item.name_text
+            i_rect = i_virtual_item.rect
+            i_icon_text = i_virtual_item.icon_text
+            i_is_hovered = i_index == index_hovered
+            i_is_pressed = i_index == index_pressed
             i_is_current = i_index == current_index
             if i_is_current is True:
                 self._draw_tab_button_at_(
-                    frame_rect, i_rect, i_name_text, i_icon_name_text, i_is_hovered, i_is_pressed, i_is_current
+                    frame_rect, i_rect, i_name_text, i_icon_text, i_is_hovered, i_is_pressed, i_is_current
                 )
 
     def _draw_tab_button_at_(self, frame_rect, rect, text, icon_name_text, is_hovered, is_pressed, is_current):

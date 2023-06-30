@@ -203,13 +203,13 @@ class AbsPrxDialogWindow(
             self._set_failed_(log)
 
         if self._use_thread is True:
-            t = self.widget._set_thread_create_()
+            t = self.widget._create_fnc_thread_()
             t.run_started.connect(self.start_waiting)
             t.run_finished.connect(self.stop_waiting)
             t.completed.connect(completed_fnc_)
             t.failed.connect(failed_fnc_)
             for i in methods:
-                t.set_method_add(i)
+                t.append_method(i)
             #
             t.start()
         else:

@@ -190,7 +190,7 @@ class QtPopupForChoose(
         self._popup_item_width, self._popup_item_height = 20, 20
         self._popup_tag_filter_item_width, self._popup_tag_filter_item_height = 20, 20
         #
-        self._popup_close_button = _utl_gui_qt_wgt_utility.QtIconPressItem(self)
+        self._popup_close_button = _utl_gui_qt_wgt_utility.QtIconPressButton(self)
         self._popup_close_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('close'))
         self._popup_close_button._set_icon_hover_color_(QtBackgroundColors.DeleteHovered)
         self._popup_close_button._set_icon_frame_draw_size_(18, 18)
@@ -200,7 +200,7 @@ class QtPopupForChoose(
         )
         #
         self._popup_multiply_is_enable = False
-        self._popup_all_checked_button = _utl_gui_qt_wgt_utility.QtIconPressItem(self)
+        self._popup_all_checked_button = _utl_gui_qt_wgt_utility.QtIconPressButton(self)
         self._popup_all_checked_button.hide()
         self._popup_all_checked_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('all_checked'))
         self._popup_all_checked_button._set_icon_frame_draw_size_(18, 18)
@@ -209,7 +209,7 @@ class QtPopupForChoose(
         )
         self._popup_all_checked_button.press_clicked.connect(self._execute_popup_all_checked_)
         #
-        self._popup_all_unchecked_button = _utl_gui_qt_wgt_utility.QtIconPressItem(self)
+        self._popup_all_unchecked_button = _utl_gui_qt_wgt_utility.QtIconPressButton(self)
         self._popup_all_unchecked_button.hide()
         self._popup_all_unchecked_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('all_unchecked'))
         self._popup_all_unchecked_button._set_icon_frame_draw_size_(18, 18)
@@ -629,7 +629,7 @@ class QtPopupForCompletion(
         self._init_frame_base_def_(self)
         self._init_popup_base_def_(self)
         #
-        self._popup_close_button = _utl_gui_qt_wgt_utility.QtIconPressItem(self)
+        self._popup_close_button = _utl_gui_qt_wgt_utility.QtIconPressButton(self)
         self._popup_close_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('close'))
         self._popup_close_button._set_icon_hover_color_(QtBackgroundColors.DeleteHovered)
         self._popup_close_button.press_clicked.connect(self._close_popup_)
@@ -791,7 +791,7 @@ class QtPopupForGuideChoose(
             self._execute_popup_filter_
         )
         #
-        self._popup_close_button = _utl_gui_qt_wgt_utility.QtIconPressItem(self)
+        self._popup_close_button = _utl_gui_qt_wgt_utility.QtIconPressButton(self)
         self._popup_close_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('close'))
         self._popup_close_button._set_icon_hover_color_(QtBackgroundColors.DeleteHovered)
         self._popup_close_button.press_clicked.connect(self._close_popup_)

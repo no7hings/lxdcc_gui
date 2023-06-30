@@ -315,6 +315,7 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
             [('name', 3)],
             self.get_definition_window_size()[0] * (1.0 / 4.0) - 24
         )
+        self._resolver = rsv_commands.get_resolver()
         # self._rsv_obj_tree_view_0.set_selection_use_single()
         self._prx_dcc_obj_tree_view_add_opt = utl_prx_operators.GuiRsvObjOpt(
             self._resolver,
@@ -339,8 +340,6 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
         self.set_refresh_all()
 
     def set_refresh_all(self):
-        self._resolver = rsv_commands.get_resolver()
-
         self._project = self._options_prx_node.get('project')
         self._rsv_project = self._resolver.get_rsv_project(project=self._project)
         self._rsv_filter = self._hook_resolver_configure.get('filter')
@@ -590,7 +589,7 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
     @classmethod
     def _get_rsv_unit_action_hook_args_(cls, session_dict, key, *args, **kwargs):
         def execute_fnc():
-            session.execute_python_file_fnc(python_file_path, session=session)
+            session.execute_python_file(python_file_path, session=session)
         #
         rsv_task = args[0]
         session_path = '{}/{}'.format(rsv_task.path, key)

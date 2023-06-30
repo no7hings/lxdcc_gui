@@ -1,4 +1,6 @@
 # coding:utf-8
+import six
+
 import fnmatch
 
 import collections
@@ -43,7 +45,7 @@ class PrxListView(
         self._prx_check_tool_box.set_expanded(True)
         self._prx_check_tool_box.set_visible(False)
         #
-        self._check_all_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+        self._check_all_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
         self._check_all_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('all_checked'))
         self._prx_check_tool_box.add_widget(self._check_all_button)
         self._check_all_button.clicked.connect(self.__check_all_items)
@@ -51,7 +53,7 @@ class PrxListView(
             '"LMB click" for checked all items'
         )
         #
-        self._uncheck_all_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+        self._uncheck_all_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
         self._uncheck_all_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('all_unchecked'))
         self._prx_check_tool_box.add_widget(self._uncheck_all_button)
         self._uncheck_all_button.clicked.connect(self.__uncheck_all_items)
@@ -63,7 +65,7 @@ class PrxListView(
         self._prx_top_tool_bar.add_widget(self._prx_mode_switch_tool_box)
         self._prx_mode_switch_tool_box.set_expanded(True)
         #
-        self._view_mode_swap_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+        self._view_mode_swap_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
         self._prx_mode_switch_tool_box.add_widget(self._view_mode_swap_button)
         self._view_mode_swap_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('grid_mode'))
         self._view_mode_swap_button.clicked.connect(self.__swap_view_mode)
@@ -145,7 +147,7 @@ class PrxListView(
 
             #
             _ = fnmatch.filter(
-                self._filter_completion_cache, '*{}*'.format(keyword)
+                self._filter_completion_cache, six.u('*{}*').format(keyword)
             )
             return bsc_core.RawTextsMtd.sort_by_initial(_)[:self.FILTER_MAXIMUM]
         return []

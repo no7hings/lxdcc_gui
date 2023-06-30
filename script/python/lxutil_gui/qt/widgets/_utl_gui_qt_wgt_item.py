@@ -805,7 +805,7 @@ class _QtWindowHead(
         self._frame_background_color = 71, 71, 71, 255
         self._frame_border_color = 95, 95, 95, 255
         #
-        self._close_button = _utl_gui_qt_wgt_utility.QtIconPressItem(self)
+        self._close_button = _utl_gui_qt_wgt_utility.QtIconPressButton(self)
         self._close_button._set_icon_file_path_(
             utl_gui_core.RscIconFile.get('close')
         )

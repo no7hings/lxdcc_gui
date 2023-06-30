@@ -947,7 +947,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
     @classmethod
     def _get_rsv_unit_action_hook_args_(cls, session_dict, key, *args, **kwargs):
         def execute_fnc():
-            session.execute_python_file_fnc(python_file_path, session=session)
+            session.execute_python_file(python_file_path, session=session)
         #
         rsv_task = args[0]
         session_path = '{}/{}'.format(rsv_task.path, key)

@@ -78,6 +78,21 @@ class PrxTabView(utl_gui_prx_abstract.AbsPrxWidget):
     def set_current_by_name(self, name):
         self._qt_widget._set_item_current_by_name_text_(name)
 
+    def set_add_enable(self, boolean):
+        self._qt_widget._set_tab_add_enable_(boolean)
+
+    def set_add_menu_data_gain_fnc(self, fnc):
+        self._qt_widget._set_tab_add_menu_gain_fnc_(fnc)
+
+    def set_menu_enable(self, boolean):
+        self._qt_widget._set_tab_menu_enable_(boolean)
+
+    def set_menu_data_gain_fnc(self, fnc):
+        self._qt_widget._set_tab_menu_data_gain_fnc_(fnc)
+
+    def connect_delete_accepted_to(self, fnc):
+        self._qt_widget.tab_delete_accepted.connect(fnc)
+
 
 class PrxLayoutView(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_view.QtLayoutView

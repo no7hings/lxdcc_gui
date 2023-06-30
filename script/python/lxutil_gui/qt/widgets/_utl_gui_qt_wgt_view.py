@@ -12,24 +12,117 @@ import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 from lxutil_gui import utl_gui_core
 
 
+class VirtualItem(object):
+    def __init__(self, widget):
+        self._widget = widget
+        self._name_text = None
+        self._icon_text = None
+        self._rect = QtCore.QRect()
+
+    def get_widget(self):
+        return self._widget
+    widget = property(get_widget)
+
+    def set_name_text(self, text):
+        self._name_text = text
+
+    def get_name_text(self):
+        return self._name_text
+    name_text = property(get_name_text)
+
+    def set_icon_text(self, text):
+        self._icon_text = text
+
+    def get_icon_text(self):
+        return self._icon_text
+    icon_text = property(get_icon_text)
+
+    def get_rect(self):
+        return self._rect
+    rect = property(get_rect)
+
+    def delete(self):
+        self._widget.close()
+        self._widget.deleteLater()
+
+
+class VirtualItemStack(object):
+    def __init__(self):
+        self._count = 0
+        self._item_list = []
+
+    def create_item(self, widget):
+        item = VirtualItem(widget)
+        self._item_list.append(item)
+        #
+        self._count += 1
+        return item
+
+    def get_item_at(self, index):
+        return self._item_list[index]
+
+    def delete_item_at(self, index):
+        item = self._item_list[index]
+        item.delete()
+        self._item_list.pop(index)
+        self._count -= 1
+
+    def delete_item(self, item):
+        index = self._item_list.index(item)
+        item.delete()
+        self._item_list.pop(index)
+        self._count -= 1
+
+    def set_current_index(self, index):
+        pass
+
+    def get_index_by_name_text(self, text):
+        for i_index, i_item in enumerate(self._item_list):
+            if i_item.name_text == text:
+                return i_index
+
+    def get_name_text_at(self, index):
+        return self.get_item_at(index).name_text
+
+    def get_count(self):
+        return self._count
+
+    def get_items(self):
+        return self._item_list
+
+
+class ScrollMode(object):
+    def __init__(self):
+        self._w = 0
+        self._abs_w = 0
+        self._offset = 0
+        #
+        self._is_scroll_enable = False
+
+    def set_w(self, v):
+        self._w = v
+
+    def set_abs_w(self, v):
+        self._abs_w = v
+
+
 class AbsQtItemsDef(object):
     def _refresh_widget_draw_(self):
         raise NotImplementedError()
 
-    def _set_items_def_init_(self, widget):
+    def _init_items_base_def_(self, widget):
         self._widget = widget
 
-        self._items = []
+        self._virtual_items = []
+        self._virtual_item_stack = VirtualItemStack()
+        #
         self._item_count = 0
         self._item_index_current = 0
+        self._item_index_temp = None
         self._item_index_hovered = None
         self._item_index_pressed = None
 
-        self._item_rects = []
-        self._item_name_texts = []
-        self._item_icon_name_texts = []
-
-    def _set_item_current_by_index_(self, index):
+    def _set_item_current_at_(self, index):
         pass
 
 
@@ -38,8 +131,14 @@ class QtTabView(
     AbsQtItemsDef,
     utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtWidgetBaseDef,
+    #
+    utl_gui_qt_abstract.AbsQtMenuBaseDef,
 ):
     current_changed = qt_signal()
+
+    tab_delete_accepted = qt_signal(str)
+
+    QT_MENU_CLS = _utl_gui_qt_wgt_utility.QtMenu
     def __init__(self, *args, **kwargs):
         super(QtTabView, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -50,40 +149,43 @@ class QtTabView(
         )
         self.setFocusPolicy(QtCore.Qt.NoFocus)
 
-        self._set_items_def_init_(self)
+        self._init_items_base_def_(self)
         self._init_frame_base_def_(self)
         self._init_widget_base_def_(self)
+        self._init_menu_base_def_(self)
 
         self._tab_bar_rect = QtCore.QRect()
         self._tab_bar_draw_rect = QtCore.QRect()
+        self._tab_left_tool_box_rect = QtCore.QRect()
+        self._tab_left_tool_box_draw_rect = QtCore.QRect()
 
-        self._margins = 2, 2, 2, 2
+        self._tab_add_is_enable = False
+        self._tab_add_button = _utl_gui_qt_wgt_utility.QtIconMenuButton(self)
+        self._tab_add_button.hide()
+        self._tab_add_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get('tab-add')
+        )
+
+        self._tab_menu_is_enable = False
+        self._tab_menu_button = _utl_gui_qt_wgt_utility.QtIconMenuButton(self)
+        self._tab_menu_button.hide()
+        self._tab_menu_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get('tab-menu-v')
+        )
+
+        self._tab_view_margins = 2, 2, 2, 2
 
         self._tab_w, self._tab_h = 48, 24
+
+        self._tab_offset = 0
 
         self.setFont(
             get_font(size=10)
         )
 
-    def _add_item_(self, widget, *args, **kwargs):
-        widget.setParent(self)
-        #
-        self._items.append(widget)
-        self._item_count += 1
-        self._item_rects.append(QtCore.QRect())
-        if 'name' in kwargs:
-            self._item_name_texts.append(kwargs['name'])
-        else:
-            self._item_name_texts.append(None)
-        #
-        if 'icon_name_text' in kwargs:
-            self._item_icon_name_texts.append(kwargs['icon_name_text'])
-        else:
-            self._item_icon_name_texts.append(None)
-        #
-        widget.installEventFilter(self)
-
-        self._refresh_widget_()
+        self._set_menu_data_gain_fnc_(
+            self._tab_item_menu_gain_fnc_
+        )
 
     def _refresh_widget_draw_(self):
         self.update()
@@ -99,8 +201,8 @@ class QtTabView(
         self._frame_draw_rect.setRect(
             x, y, w, h
         )
-        m_l, m_t, m_r, m_b = self._margins
-        spacing = 4
+        side = 2
+        m_l, m_t, m_r, m_b = self._tab_view_margins
         t_w, t_h = self._tab_w, self._tab_h
         self._tab_bar_rect.setRect(
             x, y, w, t_h
@@ -108,11 +210,31 @@ class QtTabView(
         self._tab_bar_draw_rect.setRect(
             x, y, w, t_h-1
         )
+        c_x, c_y = x, y
+        btn_f_w, btn_f_h = t_h, t_h
+        btn_w, btn_h = 20, 20
+        if self._tab_add_is_enable is True:
+            self._tab_left_tool_box_rect.setRect(
+                x, y, btn_f_w, t_h
+            )
+            self._tab_left_tool_box_draw_rect.setRect(
+                x, y, btn_f_w, t_h-1
+            )
+            self._tab_add_button.show()
+            self._tab_add_button.setGeometry(
+                x+(btn_f_w-btn_w)/2, y+(btn_f_h-btn_h)/2, btn_w, btn_h
+            )
+            c_x += t_h+self._tab_offset
         #
-        c_x = x
+        if self._tab_menu_is_enable is True:
+            self._tab_menu_button.show()
+            self._tab_menu_button.setGeometry(
+                w-btn_f_w+(btn_f_w-btn_w)/2, c_y+(btn_f_h-btn_h)/2, btn_w, btn_h
+            )
         #
-        for i_index, i_item_rect in enumerate(self._item_rects):
-            i_name_text = self._item_name_texts[i_index]
+        for i_index, i_virtual_item in enumerate(self._virtual_item_stack.get_items()):
+            i_rect = i_virtual_item.rect
+            i_name_text = i_virtual_item.name_text
             if i_name_text is not None:
                 i_text_width = self._get_text_draw_width_(
                     i_name_text
@@ -122,20 +244,20 @@ class QtTabView(
             #
             i_t_w = i_text_width+t_h*2
             #
-            i_item_rect.setRect(
+            i_rect.setRect(
                 c_x, y, i_t_w, t_h
             )
             c_x += i_t_w
         # widget
-        for i_index, i_item in enumerate(self._items):
+        for i_index, i_virtual_item in enumerate(self._virtual_item_stack.get_items()):
+            i_widget = i_virtual_item.widget
             if i_index == self._item_index_current:
-                if i_item is not None:
-                    i_item.show()
-                    i_item.setGeometry(
-                        x+m_l, y+t_h+m_t, w-m_l-m_r, h-t_h-m_t-m_b
-                    )
+                i_widget.show()
+                i_widget.setGeometry(
+                    x+m_l, y+t_h+m_t, w-m_l-m_r, h-t_h-m_t-m_b
+                )
             else:
-                i_item.hide()
+                i_widget.hide()
 
     def eventFilter(self, *args):
         widget, event = args
@@ -147,19 +269,27 @@ class QtTabView(
             elif event.type() == QtCore.QEvent.Resize:
                 self._refresh_widget_()
             elif event.type() == QtCore.QEvent.MouseButtonPress:
+                self._item_index_temp = self._get_current_item_loc_(
+                    event.pos()
+                )
                 if event.button() == QtCore.Qt.LeftButton:
-                    if self._item_index_hovered is not None:
-                        self._set_item_index_pressed_(self._item_index_hovered)
+                    if self._item_index_temp is not None:
+                        self._set_item_pressed_at_(self._item_index_temp)
                 #
                 elif event.button() == QtCore.Qt.RightButton:
-                    pass
+                    if self._item_index_temp is not None:
+                        self._popup_menu_()
                 elif event.button() == QtCore.Qt.MidButton:
                     pass
                 else:
                     event.ignore()
             elif event.type() == QtCore.QEvent.MouseMove:
                 if event.buttons() == QtCore.Qt.LeftButton:
-                    pass
+                    self._item_index_temp = self._get_current_item_loc_(
+                        event.pos()
+                    )
+                    if self._item_index_temp is not None:
+                        self._set_item_pressed_at_(self._item_index_temp)
                 elif event.buttons() == QtCore.Qt.RightButton:
                     pass
                 elif event.buttons() == QtCore.Qt.MidButton:
@@ -170,9 +300,9 @@ class QtTabView(
                     event.ignore()
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 if event.button() == QtCore.Qt.LeftButton:
-                    if self._item_index_hovered is not None:
-                        self._set_item_current_by_index_(
-                            self._item_index_hovered
+                    if self._item_index_temp is not None:
+                        self._set_item_current_at_(
+                            self._item_index_temp
                         )
                 elif event.button() == QtCore.Qt.RightButton:
                     pass
@@ -191,28 +321,72 @@ class QtTabView(
 
     def paintEvent(self, event):
         painter = QtPainter(self)
-
         painter._draw_tab_buttons_by_rects_(
             self._tab_bar_draw_rect,
-            self._item_rects,
-            self._item_name_texts,
-            self._item_icon_name_texts,
-            self._item_index_hovered,
-            self._item_index_pressed,
-            self._item_index_current,
+            virtual_items=self._virtual_item_stack.get_items(),
+            index_hovered=self._item_index_hovered,
+            index_pressed=self._item_index_pressed,
+            current_index=self._item_index_current,
         )
+        if self._tab_add_is_enable:
+            painter._draw_tab_left_tool_box_by_rect_(
+                rect=self._tab_left_tool_box_draw_rect
+            )
+
+    def _delete_item_at_(self, index):
+        item = self._virtual_item_stack.get_item_at(index)
+        self._virtual_item_stack.delete_item(item)
+        self.tab_delete_accepted.emit(item.name_text)
+        count = self._virtual_item_stack.get_count()
+        if self._item_index_current > count-1:
+            self._set_item_current_at_(count-1)
+        self._refresh_widget_()
+
+    def _add_item_(self, widget, *args, **kwargs):
+        widget.setParent(self)
+        virtual_item = self._virtual_item_stack.create_item(
+            widget
+        )
+        if 'name' in kwargs:
+            virtual_item.set_name_text(kwargs['name'])
+        if 'icon_name_text' in kwargs:
+            virtual_item.set_icon_text(kwargs['name'])
+        #
+        widget.installEventFilter(self)
+
+        self._refresh_widget_()
+
+    def _set_tab_add_enable_(self, boolean):
+        self._tab_add_is_enable = boolean
+        self._refresh_widget_()
+
+    def _set_tab_add_menu_data_(self, data):
+        self._tab_add_button._set_menu_data_(data)
+
+    def _set_tab_add_menu_gain_fnc_(self, fnc):
+        self._tab_add_button._set_menu_data_gain_fnc_(fnc)
+
+    def _set_tab_menu_enable_(self, boolean):
+        self._tab_menu_is_enable = boolean
+        self._refresh_widget_()
+
+    def _set_tab_menu_data_(self, data):
+        self._tab_menu_button._set_menu_data_(data)
+
+    def _set_tab_menu_data_gain_fnc_(self, fnc):
+        self._tab_menu_button._set_menu_data_gain_fnc_(fnc)
 
     def _set_item_hovered_clear_(self):
         self._item_index_hovered = None
         self._refresh_widget_draw_()
 
-    def _set_item_index_pressed_(self, index):
+    def _set_item_pressed_at_(self, index):
         if index != self._item_index_pressed:
             self._item_index_pressed = index
-        #
-        self._refresh_widget_()
+            #
+            self._refresh_widget_()
 
-    def _set_item_current_by_index_(self, index):
+    def _set_item_current_at_(self, index):
         if index != self._item_index_current:
             self._item_index_current = index
             self.current_changed.emit()
@@ -221,9 +395,11 @@ class QtTabView(
         self._refresh_widget_()
 
     def _set_item_current_by_name_text_(self, text):
-        if text in self._item_name_texts:
-            index = self._item_name_texts.index(text)
-            self._set_item_current_by_index_(index)
+        index = self._virtual_item_stack.get_index_by_name_text(
+            text
+        )
+        if index is not None:
+            self._set_item_current_at_(index)
 
     def _set_item_current_changed_connect_to_(self, fnc):
         self.current_changed.connect(fnc)
@@ -231,30 +407,42 @@ class QtTabView(
     def _execute_action_hover_move_(self, event):
         point = event.pos()
         self._item_index_hovered = None
-
-        for i_index, i in enumerate(self._item_rects):
-            if i.contains(point):
+        for i_index, i_virtual_item in enumerate(self._virtual_item_stack.get_items()):
+            if i_virtual_item.rect.contains(point):
                 self._item_index_hovered = i_index
                 break
 
         self._refresh_widget_draw_()
 
+    def _get_current_item_loc_(self, point):
+        for i_index, i_virtual_item in enumerate(self._virtual_item_stack.get_items()):
+            if i_virtual_item.rect.contains(point):
+                return i_index
+
     def _execute_action_wheel_(self, event):
         p = event.pos()
         if self._tab_bar_rect.contains(p):
             delta = event.angleDelta().y()
-            if self._item_count > 1:
-                maximum, minimum = self._item_count-1, 0
+            item_count = self._virtual_item_stack.get_count()
+            if item_count > 1:
+                maximum, minimum = item_count-1, 0
                 index_cur = self._item_index_current
                 if delta > 0:
                     index = bsc_core.RawIndexMtd.to_previous(maximum, minimum, index_cur)
                 else:
                     index = bsc_core.RawIndexMtd.to_next(maximum, minimum, index_cur)
                 #
-                self._set_item_current_by_index_(index)
+                self._set_item_current_at_(index)
 
     def _get_current_name_text_(self):
-        return self._item_name_texts[self._item_index_current]
+        return self._virtual_item_stack.get_name_text_at(self._item_index_current)
+
+    def _tab_item_menu_gain_fnc_(self):
+        if self._item_index_temp is not None:
+            return [
+                ('close tab', 'close-hover', functools.partial(self._delete_item_at_, self._item_index_temp))
+            ]
+        return []
 
 
 class _QtMenuBar(
@@ -343,12 +531,13 @@ class GridModel(GridBase):
 
     def update(self):
         # left，top，right，bottom
-        m_l, m_t, m_r, m_b = self._item_margins
-        item_w, item_h = self._item_w+m_l+m_r, self._item_h+m_t+m_b
-        self._column_count = self._to_column_count(self._w, item_w)
-        self._column_count = min(self._column_count, self._item_count)
-        self._row_count = self._get_row_count(self._item_count, self._column_count)
-        self._abs_w, self._abs_h = self._get_abs_size(item_w, item_h, self._column_count, self._row_count)
+        if self._item_count:
+            m_l, m_t, m_r, m_b = self._item_margins
+            item_w, item_h = self._item_w+m_l+m_r, self._item_h+m_t+m_b
+            self._column_count = self._to_column_count(self._w, item_w)
+            self._column_count = min(self._column_count, self._item_count)
+            self._row_count = self._get_row_count(self._item_count, self._column_count)
+            self._abs_w, self._abs_h = self._get_abs_size(item_w, item_h, self._column_count, self._row_count)
 
     def get_geometry_at(self, index):
         x, y = self.get_pos_at(index)
@@ -377,7 +566,7 @@ class QtLayoutView(
     def _refresh_widget_draw_geometry_(self):
         x, y = 0, 0
         w, h = self.width(), self.height()
-        m_l, m_t, m_r, m_b = self._margins
+        m_l, m_t, m_r, m_b = self._layout_margins
         v_x, v_y = m_l, m_t
         v_w, v_h = w-m_l-m_r, h-m_t-m_b
         #
@@ -419,7 +608,7 @@ class QtLayoutView(
 
         self._column_count = 1
 
-        self._margins = 4, 4, 4, 4
+        self._layout_margins = 4, 4, 4, 4
 
         self._viewport_rect = QtCore.QRect()
 
@@ -459,7 +648,7 @@ class QtLayoutView(
             painter._draw_frame_by_rect_(
                 rect=self._frame_draw_rect,
                 border_color=QtBorderColors.Basic,
-                background_color=QtBackgroundColors.Dim,
+                background_color=QtBackgroundColors.Dark,
                 border_radius=4
             )
 

@@ -44,7 +44,7 @@ else:
             layout_g.setContentsMargins(2, 2, 2, 2)
             layout_g.setSpacing(2)
 
-            self._main_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+            self._main_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
             layout_g.addWidget(self._main_button, 0, 0, 1, 1)
             self._main_button._set_icon_file_path_(
                 utl_gui_core.RscIconFile.get('application/usd')
@@ -1288,7 +1288,7 @@ else:
                     ('renderer', self._usd_get_renderer_menu_data_),
                 ]
             ):
-                i_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+                i_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_('"LMB click" to toggle "{0}", "RMB click" to switch "{0}"'.format(i_key))
                 i_button._set_icon_file_path_(
@@ -1311,7 +1311,7 @@ else:
                     ('environment', self._usd_get_environment_menu_data_),
                 ]
             ):
-                i_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+                i_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_('"LMB click" to toggle "{0}", "RMB click" to switch "{0}"'.format(i_key))
                 i_button._set_icon_file_path_(

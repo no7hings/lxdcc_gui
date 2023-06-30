@@ -445,7 +445,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
             button.set_initialization(c, bsc_configure.Status.Started)
 
             t = utl_gui_qt_core.QtMethodThread(self.widget)
-            t.set_method_add(
+            t.append_method(
                 run_fnc_
             )
             t.start()
@@ -915,7 +915,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             button.set_initialization(c, bsc_configure.Status.Started)
 
             t = utl_gui_qt_core.QtMethodThread(self.widget)
-            t.set_method_add(
+            t.append_method(
                 run_fnc_
             )
             t.start()

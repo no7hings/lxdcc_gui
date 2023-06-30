@@ -91,4 +91,3 @@ class AbsPnlRenderSubmitter(prx_widgets.PrxSessionWindow):
 
     def submit_to_farm(self):
         raise NotImplementedError()
-

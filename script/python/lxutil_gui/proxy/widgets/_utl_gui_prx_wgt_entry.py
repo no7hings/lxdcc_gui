@@ -35,7 +35,7 @@ class AttrConfig(object):
 
 
 class _PrxPortInfo(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtIconPressItem
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtIconPressButton
 
     def __init__(self, *args, **kwargs):
         super(_PrxPortInfo, self).__init__(*args, **kwargs)
@@ -690,7 +690,7 @@ class PrxMediasOpenEntry(PrxEntryAsFilesOpen):
     @staticmethod
     def _get_tmp_screenshot_file_path_():
         d = bsc_core.SystemMtd.get_home_directory()
-        return u'{}/screenshot/scp_{}.jpg'.format(d, bsc_core.TimeExtraMtd.get_time_tag_36())
+        return six.u('{}/screenshot/untitled-{}.jpg').format(d, bsc_core.TimeExtraMtd.get_time_tag_36())
 
     def _set_save_(self, g):
         f = self._get_tmp_screenshot_file_path_()
@@ -955,7 +955,7 @@ class _PrxEntryAsShotgunEntityByChoose(
             self._qt_entry_widget._set_choose_keyword_filter_dict_(keyword_filter_dict)
             self._qt_entry_widget._set_choose_tag_filter_dict_(tag_filter_dict)
 
-        self._qt_entry_widget._run_as_thread_(
+        self._qt_entry_widget._run_build_use_thread_(
             cache_fnc_, build_fnc_, post_fnc_
         )
 
@@ -981,7 +981,7 @@ class _PrxEntryAsShotgunEntityByChoose(
         self._qt_entry_widget._set_value_entry_focus_in_()
 
     def run_as_thread(self, cache_fnc, build_fnc, post_fnc):
-        self._qt_entry_widget._run_as_thread_(
+        self._qt_entry_widget._run_build_use_thread_(
             cache_fnc, build_fnc, post_fnc
         )
 
@@ -1066,12 +1066,12 @@ class _PrxEntryAsShotgunEntitiesWithChoose(
             self._qt_entry_widget._set_choose_keyword_filter_dict_(keyword_filter_dict)
             self._qt_entry_widget._set_choose_tag_filter_dict_(tag_filter_dict)
 
-        self._qt_entry_widget._run_as_thread_(
+        self._qt_entry_widget._run_build_use_thread_(
             cache_fnc_, build_fnc_, post_fnc_
         )
 
     def run_as_thread(self, cache_fnc, build_fnc, post_fnc):
-        self._qt_entry_widget._run_as_thread_(
+        self._qt_entry_widget._run_build_use_thread_(
             cache_fnc, build_fnc, post_fnc
         )
 
@@ -1501,6 +1501,9 @@ class _PrxEntryAsScript(AbsPrxTypeQtEntry):
 
     def set(self, raw=None, **kwargs):
         self._qt_entry_widget._set_value_(raw)
+
+    def set_external_editor_ext(self, ext):
+        self._qt_entry_widget._set_external_editor_ext_(ext)
 
     def set_default(self, raw, **kwargs):
         self._qt_entry_widget._set_value_default_(raw)

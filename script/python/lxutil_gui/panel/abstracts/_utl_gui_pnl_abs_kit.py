@@ -1,4 +1,6 @@
 # coding:utf-8
+import copy
+
 import six
 
 import os
@@ -21,9 +23,11 @@ import lxsession.commands as ssn_commands
 
 
 class HookAddOpt(object):
-    CUSTOMIZE_PATH = '/l/resource/td/customize-resource'
-    SHARE_GROUP_PATH = '/Share/Tool'
-    USER_GROUP_PATH = '/User/Tool'
+    CUSTOMIZE_PATH = '/l/resource/td/user-resources'
+    DEFAULT_GROUP_NAMES = [
+        'Studio',
+        'Share',
+    ]
     def __init__(self, window, session, options):
         self._window = window
         self._session = session
@@ -47,13 +51,7 @@ class HookAddOpt(object):
         return list_
 
     def accept_create(self, mode='create'):
-        space = self._options.get('space')
-        if space == 'share':
-            directory_path = self.get_share_directory()
-        elif space == 'user':
-            directory_path = self.get_user_directory()
-        else:
-            raise RuntimeError()
+        directory_path = self.CUSTOMIZE_PATH
         #
         hook_key = self._options.get('name')
 
@@ -80,22 +78,27 @@ class HookAddOpt(object):
 
         type_ = self._options.get('type')
         c.set('option.type', type_)
-        if type_ == 'python-command':
-            icon_sub_name = 'application/python'
-        elif type_ == 'shell-command':
-            icon_sub_name = 'application/shell'
-        else:
-            raise RuntimeError()
 
         gui_name = self._options.get('gui.name')
         if not gui_name:
             gui_name = bsc_core.RawTextMtd.to_prettify(hook_key)
         #
         c.set('option.gui.name', gui_name)
-
-        c.set('option.gui.tool_tip', self._options.get('gui.tool_tip'))
-        gui_icon_name = self._options.get('gui.icon_name')
+        group_sub_name = self._options.get('gui.group_sub_name')
+        if group_sub_name != 'None':
+            c.set('option.gui.group_sub_name', group_sub_name)
+        #
+        icon_name = self._options.get('gui.icon_name')
+        if icon_name != 'None':
+            c.set('option.gui.icon_name', icon_name)
+        if type_ == 'python-command':
+            icon_sub_name = 'application/python'
+        elif type_ == 'shell-command':
+            icon_sub_name = 'application/shell'
+        else:
+            raise RuntimeError()
         c.set('option.gui.icon_sub_name', icon_sub_name)
+        c.set('option.gui.tool_tip', self._options.get('gui.tool_tip'))
         #
         python_script = self._options.get('script.python')
         windows_shell_script = self._options.get('script.windows')
@@ -142,14 +145,8 @@ class HookAddOpt(object):
 
         c.set_save_to(configure_file_path)
 
-        if space == 'share':
-            self._window.add_for_share(
-                hook_key
-            )
-        elif space == 'user':
-            self._window.add_for_user(
-                hook_key
-            )
+        self._window.gui_refresh_group(self._options.get('gui.group_name'))
+
         self._window.show_main_layer()
 
     def accept_modify(self):
@@ -195,17 +192,36 @@ class AbsPnlAppKit(prx_widgets.PrxSessionWindow):
         current_name = self._tab_view.get_current_name()
         utl_core.History.set_one('app-kit.tab', current_name)
 
+    def restore_variants(self):
+        self._group_names_all = HookAddOpt.DEFAULT_GROUP_NAMES
+        self._group_names_current = copy.copy(
+            HookAddOpt.DEFAULT_GROUP_NAMES
+        )
+        self._user_group_names_all = self.get_all_user_group_names()
+        self._user_group_names_current = [
+            bsc_core.SystemMtd.get_user_name()
+        ]
+        self._user_name_current = bsc_core.SystemMtd.get_user_name()
+        self._hook_dict = {}
+        self._option_hook_dict = {}
+        #
+        self._tool_group_layout_dict = {}
+        self._tool_group_dict = {}
+        self._tool_dict = {}
+
     def set_all_setup(self):
         self.set_main_style_mode(1)
         self._tab_view = prx_widgets.PrxTabView()
         self.add_widget(self._tab_view)
-        self._tab_view.set_current_changed_connect_to(
-            self.save_tab_history
-        )
-
-        self.build_apps()
+        self._tab_view.set_add_enable(True)
+        self._tab_view.set_add_menu_data_gain_fnc(self.tab_add_menu_gain_fnc)
+        self._tab_view.set_current_changed_connect_to(self.save_tab_history)
+        self._tab_view.connect_delete_accepted_to(self.gui_tab_delete_group_fnc)
+        #
         self.build_create_layer()
         self.build_modify_layer()
+        #
+        self.gui_refresh_all()
         #
         menu = self.create_menu('debug')
         menu.set_menu_data(
@@ -218,6 +234,47 @@ class AbsPnlAppKit(prx_widgets.PrxSessionWindow):
         self._tab_view.set_current_by_name(
             utl_core.History.get_one('app-kit.tab')
         )
+
+        self.connect_refresh_action_to(
+            self.refresh_current_group
+        )
+
+    def gui_tab_add_group_fnc(self, group_name):
+        if group_name in self._group_names_all:
+            self._group_names_current.append(group_name)
+            self.gui_add_group_for(group_name)
+        elif group_name in self._user_group_names_all:
+            self._user_group_names_current.append(group_name)
+            self.gui_add_group_for(group_name)
+
+    def gui_tab_delete_group_fnc(self, group_name):
+        if group_name in self._group_names_current:
+            self._group_names_current.remove(group_name)
+            self.gui_delete_group_for(group_name)
+        elif group_name in self._user_group_names_current:
+            self._user_group_names_current.remove(group_name)
+            self.gui_delete_group_for(group_name)
+
+    def tab_add_menu_gain_fnc(self):
+        list_ = []
+        for i_group_name in self._group_names_all:
+            if i_group_name not in self._group_names_current:
+                list_.append(
+                    (
+                        i_group_name, 'user', functools.partial(self.gui_tab_add_group_fnc, i_group_name)
+                    )
+                )
+        if list_:
+            list_.append(())
+        user_group_names = self._user_group_names_all
+        for i_user_group_name in user_group_names:
+            if i_user_group_name not in self._user_group_names_current:
+                list_.append(
+                    (
+                        i_user_group_name, 'user', functools.partial(self.gui_tab_add_group_fnc, i_user_group_name)
+                    )
+                )
+        return list_
 
     def build_create_layer(self):
         layer_widget = self.create_layer_widget('create_layer', 'Create')
@@ -288,20 +345,31 @@ class AbsPnlAppKit(prx_widgets.PrxSessionWindow):
             self._session,
             options
         ).accept_create(mode='modify')
+    @classmethod
+    def get_all_user_group_names(cls):
+        list_ = []
+        directory_path = HookAddOpt.CUSTOMIZE_PATH
+        user_directory_path = '{}/hooks/User'.format(directory_path)
+        user_directory_opt = bsc_core.StgDirectoryOpt(user_directory_path)
+        s = user_directory_opt.get_directory_paths()
+        for i in s:
+            list_.append(bsc_core.StgDirectoryOpt(i).get_name())
+        return list_
 
-    def build_apps(self):
-        self._scroll_area_dict = {}
+    def gui_refresh_all(self):
+        self._hook_dict = {}
+        self._option_hook_dict = {}
+        #
+        self._tool_group_layout_dict = {}
         self._tool_group_dict = {}
-        self._view_dict = {}
-        self._app_dict = {}
+        self._tool_dict = {}
         c = self._session.get_configure()
         ms = [
-            (self.build_app_hook_data, (c.get('app.hooks') or [], )),
-            (self.build_by_option_hook_data, (c.get('app.option-hooks') or [], )),
-            (self.build_for_share, ()),
-            (self.build_for_user, ()),
+            (self.gui_build_for_customize, ()),
+            #
+            (self.gui_build_for_hook, (c.get('app.hooks') or [], )),
+            (self.gui_build_for_option_hook, (c.get('app.option-hooks') or [], )),
         ]
-
         with utl_core.GuiProgressesRunner.create(maximum=len(ms), label='script gui-build method') as g_p:
             for i_m, i_as in ms:
                 g_p.set_update()
@@ -310,20 +378,84 @@ class AbsPnlAppKit(prx_widgets.PrxSessionWindow):
                 else:
                     i_m()
 
-        # self.show_option_unit()
+    def gui_build_for_hook(self, data):
+        with self.gui_progressing(maximum=len(data), label='gui-add for hook') as g_p:
+            for i_args in data:
+                g_p.set_update()
+                if isinstance(i_args, six.string_types):
+                    i_key = i_args
+                    i_extend_kwargs = {}
+                    i_hook_args = ssn_commands.get_hook_args(
+                        i_key
+                    )
+                elif isinstance(i_args, dict):
+                    i_key = i_args.keys()[0]
+                    i_extend_kwargs = i_args.values()[0]
+                    i_hook_args = ssn_commands.get_hook_args(
+                        i_key
+                    )
+                else:
+                    raise RuntimeError()
+                #
+                if i_hook_args is not None:
+                    self.gui_add_hook(i_hook_args, **i_extend_kwargs)
 
-    def get_view_args(self, group_path, tool_data=None, tab_name=None):
-        group_opts = bsc_core.DccPathDagOpt(group_path).get_components()
-        group_main_opt = group_opts[1]
-        group_main_path = group_main_opt.get_path()
-        if group_main_path in self._scroll_area_dict:
-            layout = self._scroll_area_dict[group_main_path]
+    def gui_build_for_option_hook(self, data):
+        with self.gui_progressing(maximum=len(data), label='gui-add for option-hook') as g_p:
+            for i_args in data:
+                g_p.set_update()
+                if isinstance(i_args, six.string_types):
+                    i_key = i_args
+                    i_extend_kwargs = {}
+                    i_hook_option = 'option_hook_key={}'.format(i_key)
+                    i_hook_args = ssn_commands.get_option_hook_args(
+                        i_hook_option
+                    )
+                elif isinstance(i_args, dict):
+                    i_key = i_args.keys()[0]
+                    i_extend_kwargs = i_args.values()[0]
+                    i_hook_option = 'option_hook_key={}'.format(i_key)
+                    i_hook_args = ssn_commands.get_option_hook_args(
+                        i_hook_option
+                    )
+                else:
+                    raise RuntimeError()
+                #
+                if i_hook_args is not None:
+                    self.gui_add_option_hook(i_hook_args, **i_extend_kwargs)
+    @classmethod
+    def get_group_args(cls, session, **kwargs):
+        gui_configure = session.gui_configure
+        group_name = gui_configure.get('group_name')
+        group_sub_name = gui_configure.get('group_sub_name') or 'Tool'
+        if 'gui_parent' in kwargs:
+            group_path = kwargs.get('gui_parent')
+            group_opts = bsc_core.DccPathDagOpt(group_path).get_components()
+            group_opt = group_opts[1]
+            group_name = group_opt.get_name()
+            group_sub_opt = group_opts[0]
+            group_sub_name = group_sub_opt.get_name()
+        #
+        if 'group_name' in kwargs:
+            group_name = kwargs['group_name']
+        #
+        if 'group_sub_name' in kwargs:
+            group_sub_name = kwargs['group_sub_name']
+        #
+        gui_configure.set('group_name', group_name)
+        gui_configure.set('group_sub_name', group_sub_name)
+        return group_name, group_sub_name
+
+    def gui_get_group_args(self, group_name, tool_data=None):
+        group_path = '/{}'.format(group_name)
+        if group_path in self._tool_group_layout_dict:
+            layout = self._tool_group_layout_dict[group_path]
         else:
             scroll_area = prx_widgets.PrxVScrollArea()
             self._tab_view.create_item(
                 scroll_area,
-                name=tab_name or group_main_opt.get_name(),
-                icon_name_text=group_main_opt.get_path(),
+                name=group_name,
+                icon_name_text=group_name,
             )
             #
             w_0 = qt_widgets.QtWidget()
@@ -337,6 +469,8 @@ class AbsPnlAppKit(prx_widgets.PrxSessionWindow):
             top_tool_bar.set_left_alignment_mode()
             #
             if tool_data:
+                # for i_data in tool_data:
+                #     i_tool_box_name, i_tool_data = i_data
                 tool_box = prx_widgets.PrxHToolBox_()
                 top_tool_bar.add_widget(tool_box)
                 tool_box.set_expanded(True)
@@ -350,197 +484,275 @@ class AbsPnlAppKit(prx_widgets.PrxSessionWindow):
             #
             w_1 = qt_widgets.QtWidget()
             l_0.addWidget(w_1)
+            #
             layout = qt_widgets.QtVBoxLayout(w_1)
             layout.setContentsMargins(0, 0, 0, 0)
-            self._scroll_area_dict[group_main_path] = layout
+            self._tool_group_layout_dict[group_path] = layout
+        return layout
+
+    def gui_get_view_args(self, group_name=None, group_sub_name=None, tool_data=None, group_name_over=None):
+        group_path = '/{}'.format(group_name)
+        if group_path in self._tool_group_layout_dict:
+            layout = self._tool_group_layout_dict[group_path]
+        else:
+            scroll_area = prx_widgets.PrxVScrollArea()
+            self._tab_view.create_item(
+                scroll_area,
+                name=group_name_over or group_name,
+                icon_name_text=group_name_over or group_name,
+            )
+            #
+            w_0 = qt_widgets.QtWidget()
+            scroll_area.add_widget(w_0)
+            l_0 = qt_widgets.QtVBoxLayout(w_0)
+            l_0.setContentsMargins(0, 0, 0, 0)
+            #
+            top_tool_bar = prx_widgets.PrxHToolBar()
+            l_0.addWidget(top_tool_bar._qt_widget)
+            top_tool_bar.set_expanded(True)
+            top_tool_bar.set_left_alignment_mode()
+            #
+            if tool_data:
+                # for i_data in tool_data:
+                #     i_tool_box_name, i_tool_data = i_data
+                tool_box = prx_widgets.PrxHToolBox_()
+                top_tool_bar.add_widget(tool_box)
+                tool_box.set_expanded(True)
+                for i_data in tool_data:
+                    i_name, i_icon_name, i_fnc = i_data
+                    i_tool = prx_widgets.PrxIconPressItem()
+                    tool_box.add_widget(i_tool)
+                    i_tool.set_name(i_name)
+                    i_tool.set_icon_name(i_icon_name)
+                    i_tool.connect_press_clicked_to(i_fnc)
+            #
+            w_1 = qt_widgets.QtWidget()
+            l_0.addWidget(w_1)
+            #
+            layout = qt_widgets.QtVBoxLayout(w_1)
+            layout.setContentsMargins(0, 0, 0, 0)
+            self._tool_group_layout_dict[group_path] = layout
         #
-        group_sub_opt = group_opts[0]
-        group_sub_path = group_sub_opt.get_path()
-        if group_sub_path in self._view_dict:
-            tool_group = self._tool_group_dict[group_main_path]
-            layout_view = self._view_dict[group_sub_path]
+        group_sub_path = '/{}/{}'.format(group_name, group_sub_name)
+        if group_sub_path in self._tool_group_dict:
+            tool_group, layout_view = self._tool_group_dict[group_sub_path]
         else:
             tool_group = prx_widgets.PrxHToolGroup_()
-            self._tool_group_dict[group_main_path] = tool_group
             layout.addWidget(tool_group._qt_widget)
 
             tool_group.set_size_mode(1)
-            tool_group.set_name(group_sub_opt.get_name())
+            tool_group.set_name(group_sub_name)
             tool_group.set_expanded(True)
             #
             layout_view = prx_widgets.PrxLayoutView()
-            self._view_dict[group_sub_path] = layout_view
+            self._tool_group_dict[group_sub_path] = tool_group, layout_view
             tool_group.add_widget(layout_view)
             layout_view.set_item_size(*self.session.gui_configure.get('item_frame_size'))
-
         return layout_view
 
-    def build_app_hook_data(self, data):
-        with utl_core.GuiProgressesRunner.create(maximum=len(data), label='gui-add for hook') as g_p:
-            for i_args in data:
-                g_p.set_update()
-                if isinstance(i_args, six.string_types):
-                    i_key = i_args
-                    i_extend_kwargs = {}
-                    i_hook_args = ssn_commands.get_hook_args(
-                        i_key
-                    )
-                elif isinstance(i_args, dict):
-                    i_key = i_args.keys()[0]
-                    i_extend_kwargs = i_args.values()[0]
-                    i_hook_args = ssn_commands.get_hook_args(
-                        i_key
-                    )
-                else:
-                    raise RuntimeError()
-                #
-                if i_hook_args is not None:
-                    self.add_one(i_hook_args, i_extend_kwargs)
-
-    def build_by_option_hook_data(self, data):
-        with utl_core.GuiProgressesRunner.create(maximum=len(data), label='gui-add for option-hook') as g_p:
-            for i_args in data:
-                g_p.set_update()
-                if isinstance(i_args, six.string_types):
-                    i_key = i_args
-                    i_extend_kwargs = {}
-                    i_hook_option = 'option_hook_key={}'.format(i_key)
-                    i_hook_args = ssn_commands.get_option_hook_args(
-                        i_hook_option
-                    )
-                elif isinstance(i_args, dict):
-                    i_key = i_args.keys()[0]
-                    i_extend_kwargs = i_args.values()[0]
-                    i_hook_option = 'option_hook_key={}'.format(i_key)
-                    i_hook_args = ssn_commands.get_option_hook_args(
-                        i_hook_option
-                    )
-                else:
-                    raise RuntimeError()
-                #
-                if i_hook_args is not None:
-                    self.add_option_one(i_hook_args, i_extend_kwargs)
-
-    def build_for_share(self):
-        group_path = HookAddOpt.SHARE_GROUP_PATH
-        self.get_view_args(
-            group_path,
-            tool_data=[
-                ('create new for share', 'file/add-file', functools.partial(self.show_create_fnc, 'share')),
-            ]
-        )
-        directory_path = HookAddOpt.get_share_directory()
-        hook_keys = HookAddOpt.get_all_hook_keys_from_fnc(directory_path)
-        for i_hook_key in hook_keys:
-            self.add_for_share(i_hook_key)
-
-    def add_for_share(self, hook_key):
-        group_path = HookAddOpt.SHARE_GROUP_PATH
-        extend_kwargs = dict(gui_parent=group_path)
-        directory_path = HookAddOpt.get_share_directory()
-        hook_args = ssn_commands.get_hook_args(
-            hook_key, search_paths=[directory_path]
-        )
-        session = hook_args[0]
-        self.add_one(
-            hook_args, extend_kwargs,
-            menu_data=[
-                ('modify', 'file/file', functools.partial(self.show_modify_fnc, session, 'share')),
-                (),
-                ('open folder', 'file/folder', session.open_configure_directory),
-                (),
-            ]
-        )
-
-    def build_for_user(self):
-        group_path = HookAddOpt.USER_GROUP_PATH
-        self.get_view_args(
-            group_path,
-            tool_data=[
-                ('create new for user', 'file/add-file', functools.partial(self.show_create_fnc, 'user')),
-            ],
-            tab_name=bsc_core.SystemMtd.get_user_name()
-        )
+    def gui_build_for_customize(self):
+        for i_group_name in HookAddOpt.DEFAULT_GROUP_NAMES:
+            self.gui_add_customize_by_group_name(i_group_name)
         #
-        directory_path = HookAddOpt.get_user_directory()
-        hook_keys = HookAddOpt.get_all_hook_keys_from_fnc(directory_path)
-        for i_hook_key in hook_keys:
-            self.add_for_user(i_hook_key)
+        group_names = self._user_group_names_current
+        for i_group_name in group_names:
+            self.gui_add_customize_by_group_name(i_group_name)
 
-    def add_for_user(self, hook_key):
-        group_path = HookAddOpt.USER_GROUP_PATH
-        extend_kwargs = dict(gui_parent=group_path)
-        directory_path = HookAddOpt.get_user_directory()
+    def gui_add_hook(self, hook_args, **kwargs):
+        session, _ = hook_args
+        group_name, group_sub_name = self.get_group_args(
+            session, **kwargs
+        )
+        self._hook_dict.setdefault(
+            group_name, []
+        ).append(
+            (hook_args, group_name, group_sub_name)
+        )
+        self.add_tool(
+            hook_args, group_name, group_sub_name
+        )
+
+    def gui_add_option_hook(self, hook_args, **kwargs):
+        session, _ = hook_args
+        group_name, group_sub_name = self.get_group_args(
+            session, **kwargs
+        )
+        self._option_hook_dict.setdefault(
+            group_name, []
+        ).append(
+            (hook_args, group_name, group_sub_name)
+        )
+        self.add_option_tool(
+            hook_args, group_name, group_sub_name
+        )
+
+    def gui_add_by_group_name_from_cache(self, group_name):
+        if group_name in self._hook_dict:
+            hook_data = self._hook_dict[group_name]
+            for i_hook_args, i_group_name, i_grou_sub_name in hook_data:
+                self.add_tool(
+                    i_hook_args, i_group_name, i_grou_sub_name
+                )
+        if group_name in self._option_hook_dict:
+            option_hook_data = self._option_hook_dict[group_name]
+            for i_hook_args, i_group_name, i_grou_sub_name in option_hook_data:
+                self.add_option_tool(
+                    i_hook_args, i_group_name, i_grou_sub_name
+                )
+
+    def gui_add_customize_by_group_name(self, group_name):
+        self.gui_get_group_args(
+            group_name,
+            tool_data=[
+                ('create new for share', 'file/add-file', functools.partial(self.show_create_fnc, group_name)),
+            ]
+        )
+        directory_path = HookAddOpt.CUSTOMIZE_PATH
+        hook_keys = HookAddOpt.get_all_hook_keys_from_fnc(directory_path)
+        hook_keys_matched = bsc_core.PtnFnmatch.filter(
+            hook_keys, '*{}/*'.format(group_name)
+        )
+        if hook_keys_matched:
+            with self.gui_progressing(maximum=len(hook_keys_matched), label='build for'.format(group_name)) as g_p:
+                for i_hook_key in hook_keys_matched:
+                    g_p.set_update()
+                    self.add_customize_by_hook_key(i_hook_key, group_name)
+
+    def add_customize_by_hook_key(self, hook_key, group_name):
+        directory_path = HookAddOpt.CUSTOMIZE_PATH
         hook_args = ssn_commands.get_hook_args(
             hook_key, search_paths=[directory_path]
         )
-        session = hook_args[0]
-        self.add_one(
-            hook_args, extend_kwargs,
+        session, _ = hook_args
+        group_name, group_sub_name = self.get_group_args(
+            session, group_name=group_name
+        )
+        self.add_tool(
+            hook_args,
+            group_name, group_sub_name,
             menu_data=[
-                ('modify', 'file/file', functools.partial(self.show_modify_fnc, session, 'user')),
+                ('modify', 'file/file', functools.partial(self.show_modify_fnc, session)),
                 (),
                 ('open folder', 'file/folder', session.open_configure_directory),
                 (),
             ]
         )
 
-    def show_create_fnc(self, space):
+    def show_create_fnc(self, group_name):
         self.show_layer('create_layer')
-        self._create_option_prx_node.set('space', space)
-        if space == 'share':
-            self._create_option_prx_node.set('gui.group_name', HookAddOpt.SHARE_GROUP_PATH)
-        elif space == 'user':
-            self._create_option_prx_node.set('gui.group_name', HookAddOpt.USER_GROUP_PATH)
+        self._create_option_prx_node.set('gui.group_name', group_name)
 
-    def show_modify_fnc(self, session, space):
+    def show_modify_fnc(self, session):
         self.show_layer('modify_layer')
         gui_configure = session.get_gui_configure()
         type_ = session.get_type()
         configure_file_path = session.get_configure_yaml_file()
         configure_file_opt = bsc_core.StgFileOpt(configure_file_path)
-        self._modify_option_prx_node.set('space', space)
         self._modify_option_prx_node.set('type', session.get_type())
         self._modify_option_prx_node.set('name', session.get_name())
         self._modify_option_prx_node.set('gui.name', gui_configure.get('name'))
         self._modify_option_prx_node.set('gui.group_name', gui_configure.get('group_name'))
+        self._modify_option_prx_node.set('gui.group_sub_name', gui_configure.get('group_sub_name'))
+        self._modify_option_prx_node.set('gui.icon_name', gui_configure.get('icon_name'))
+        self._modify_option_prx_node.set('gui.icon_sub_name', gui_configure.get('icon_sub_name'))
         self._modify_option_prx_node.set('gui.tool_tip', gui_configure.get('tool_tip'))
-        if type_ == 'python-command':
-            python_file_path = '{}.py'.format(configure_file_opt.path_base)
-            if bsc_core.StgPathMtd.get_is_file(python_file_path):
-                self._modify_option_prx_node.set(
-                    'script.python', bsc_core.StgFileOpt(python_file_path).set_read()
-                )
-        elif type_ == 'shell-command':
-            windows_shell_file_path = '{}.bat'.format(configure_file_opt.path_base)
-            if bsc_core.StgPathMtd.get_is_file(windows_shell_file_path):
-                self._modify_option_prx_node.set(
-                    'windows.linux', bsc_core.StgFileOpt(windows_shell_file_path).set_read()
-                )
-            linux_shell_file_path = '{}.sh'.format(configure_file_opt.path_base)
-            if bsc_core.StgPathMtd.get_is_file(linux_shell_file_path):
-                self._modify_option_prx_node.set(
-                    'script.linux', bsc_core.StgFileOpt(linux_shell_file_path).set_read()
-                )
+        python_file_path = '{}.py'.format(configure_file_opt.path_base)
+        if bsc_core.StgPathMtd.get_is_file(python_file_path):
+            self._modify_option_prx_node.set(
+                'script.python', bsc_core.StgFileOpt(python_file_path).set_read()
+            )
+        else:
+            self._modify_option_prx_node.set(
+                'script.python', ''
+            )
+        windows_shell_file_path = '{}.bat'.format(configure_file_opt.path_base)
+        if bsc_core.StgPathMtd.get_is_file(windows_shell_file_path):
+            self._modify_option_prx_node.set(
+                'script.windows', bsc_core.StgFileOpt(windows_shell_file_path).set_read()
+            )
+        else:
+            self._modify_option_prx_node.set(
+                'script.windows', ''
+            )
+        linux_shell_file_path = '{}.sh'.format(configure_file_opt.path_base)
+        if bsc_core.StgPathMtd.get_is_file(linux_shell_file_path):
+            self._modify_option_prx_node.set(
+                'script.linux', bsc_core.StgFileOpt(linux_shell_file_path).set_read()
+            )
+        else:
+            self._modify_option_prx_node.set(
+                'script.linux', ''
+            )
 
-    def add_one(self, hook_args, extend_kwargs, menu_data=None):
+    def gui_delete_group_for(self, group_name):
+        self.gui_delete_tool_groups_for(group_name)
+        group_path = '/{}'.format(group_name)
+        self._tool_group_layout_dict.pop(group_path)
+
+    def gui_add_group_for(self, group_name):
+        self.gui_add_customize_by_group_name(group_name)
+        self.gui_add_by_group_name_from_cache(group_name)
+
+    def gui_delete_tool_groups_for(self, group_name):
+        tool_group_keys = self._tool_group_dict.keys()
+        tool_group_keys_matched = bsc_core.PtnFnmatch.filter(
+            tool_group_keys, '/{}/*'.format(group_name)
+        )
+        if tool_group_keys_matched:
+            [self._tool_group_dict.pop(i) for i in tool_group_keys_matched]
+
+        #
+        tool_keys = self._tool_dict.keys()
+        tool_keys_matched = bsc_core.PtnFnmatch.filter(
+            tool_keys, '/{}/*'.format(group_name)
+        )
+        if tool_keys_matched:
+            [self._tool_dict.pop(i) for i in tool_keys_matched]
+        #
+        group_path = '/{}'.format(group_name)
+        if group_path in self._tool_group_layout_dict:
+            layout = self._tool_group_layout_dict[group_path]
+            layout._clear_all_widgets_()
+
+    def gui_refresh_group(self, group_name):
+        self.gui_delete_tool_groups_for(group_name)
+        self.gui_add_customize_by_group_name(group_name)
+        self.gui_add_by_group_name_from_cache(group_name)
+
+    def refresh_current_group(self):
+        name = self._tab_view.get_current_name()
+        if name in HookAddOpt.DEFAULT_GROUP_NAMES:
+            self.gui_refresh_group(
+                self._tab_view.get_current_name()
+            )
+        elif name in [
+            self._user_name_current
+        ]:
+            self.gui_refresh_group(
+                self._tab_view.get_current_name()
+            )
+
+    def _execute_fnc_as_bustling_(self, fnc):
+        with self.gui_bustling():
+            fnc()
+
+    def add_tool(self, hook_args, group_name, group_sub_name, menu_data=None):
         session, execute_fnc = hook_args
         if session.get_is_loadable() is True:
             key = session.get_name()
             gui_configure = session.gui_configure
-            if 'gui_parent' in extend_kwargs:
-                gui_configure.set('group_name', extend_kwargs.get('gui_parent'))
-            #
-            group_path = gui_configure.get('group_name')
-            layout_view = self.get_view_args(group_path)
-            #
-            app_path = '{}/{}'.format(group_path, key)
-            if app_path in self._app_dict:
-                prx_item = self._app_dict[app_path]
+            layout_view = self.gui_get_view_args(
+                group_name, group_sub_name
+            )
+            app_path = '/{}/{}/{}'.format(group_name, group_sub_name, key)
+            if app_path in self._tool_dict:
+                prx_item = self._tool_dict[app_path]
             else:
                 prx_item = prx_widgets.PrxIconPressItem()
-                self._app_dict[app_path] = prx_item
+                self._tool_dict[app_path] = prx_item
                 layout_view.add_item(prx_item)
+                session.set_gui(prx_item._qt_widget)
+                prx_item.connect_press_db_clicked_to(execute_fnc)
             #
             name = gui_configure.get('name')
             icon_name = gui_configure.get('icon_name')
@@ -557,22 +769,16 @@ class AbsPnlAppKit(prx_widgets.PrxSessionWindow):
             #
             if menu_data is not None:
                 prx_item.set_menu_data(menu_data)
-            #
-            prx_item.connect_press_db_clicked_to(
-                execute_fnc
-            )
             prx_item.set_tool_tip(tool_tip)
             return prx_item
 
-    def add_option_one(self, hook_args, extend_kwargs):
+    def add_option_tool(self, hook_args, group_name, group_sub_name, menu_data=None):
         session, execute_fnc = hook_args
         if session.get_is_loadable() is True:
             gui_configure = session.gui_configure
-            if 'gui_parent' in extend_kwargs:
-                gui_configure.set('group_name', extend_kwargs.get('gui_parent'))
-            #
-            group_path = gui_configure.get('group_name')
-            layout_view = self.get_view_args(group_path)
+            layout_view = self.gui_get_view_args(
+                group_name, group_sub_name
+            )
             #
             prx_item = prx_widgets.PrxIconPressItem()
             layout_view.add_item(prx_item)
@@ -686,7 +892,7 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
         self.build_tool_by_hook_data(c.get('hooks') or [])
         self.build_tool_by_option_hook_data(c.get('option-hooks') or [])
 
-    def get_view_args(self, group_path):
+    def gui_get_view_args(self, group_path):
         if group_path not in self._view_dict:
             tool_group = prx_widgets.PrxHToolGroup_()
             self._scroll_bar.add_widget(tool_group)
@@ -745,18 +951,18 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
                 if i_hook_args is not None:
                     self.add_tool(i_hook_args, i_extend_kwargs)
 
-    def add_tool(self, hook_args, extend_kwargs):
+    def add_tool(self, hook_args, kwargs_extend):
         session, execute_fnc = hook_args
         if session.get_is_loadable() is True:
             if session.get_is_match_condition(
                 self._match_dict
             ) is True:
                 gui_configure = session.gui_configure
-                if 'gui_parent' in extend_kwargs:
-                    gui_configure.set('group_name', extend_kwargs.get('gui_parent'))
+                if 'gui_parent' in kwargs_extend:
+                    gui_configure.set('group_name', kwargs_extend.get('gui_parent'))
                 #
                 group_path = gui_configure.get('group_name')
-                layout_view = self.get_view_args(group_path)
+                layout_view = self.gui_get_view_args(group_path)
                 #
                 name = gui_configure.get('name')
                 icon_name = gui_configure.get('icon_name')

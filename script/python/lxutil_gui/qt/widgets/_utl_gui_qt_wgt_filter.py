@@ -80,7 +80,7 @@ class QtFilterBar(
         #
         self._build_value_entry_(str)
         #
-        self._match_case_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+        self._match_case_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
         self._match_case_button.hide()
         qt_layout_0.addWidget(self._match_case_button)
         self._match_case_button.setFocusProxy(self._value_entry)
@@ -88,7 +88,7 @@ class QtFilterBar(
         self._match_case_icon_names = 'match_case_off', 'match_case_on'
         self._is_match_case = False
         #
-        self._match_word_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+        self._match_word_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
         self._match_word_button.hide()
         qt_layout_0.addWidget(self._match_word_button)
         self._match_word_button.setFocusProxy(self._value_entry)
@@ -96,7 +96,7 @@ class QtFilterBar(
         self._match_word_icon_names = 'match_word_off', 'match_word_on'
         self._is_match_word = False
         #
-        self._pre_occurrence_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+        self._pre_occurrence_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
         qt_layout_0.addWidget(self._pre_occurrence_button)
         self._pre_occurrence_button._set_icon_file_path_(
             utl_gui_core.RscIconFile.get(
@@ -107,7 +107,7 @@ class QtFilterBar(
             self._send_pre_occurrence_emit_
         )
         #
-        self._next_occurrence_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+        self._next_occurrence_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
         qt_layout_0.addWidget(self._next_occurrence_button)
         self._next_occurrence_button._set_icon_file_path_(
             utl_gui_core.RscIconFile.get(
@@ -132,7 +132,7 @@ class QtFilterBar(
         self._value_entry_layout.setContentsMargins(2, 0, 2, 0)
         self._value_entry_layout.setSpacing(0)
         #
-        self._header_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+        self._header_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
         self._header_button._set_icon_frame_draw_size_(18, 18)
         self._value_entry_layout.addWidget(self._header_button)
         self._header_button._set_icon_file_path_(
@@ -154,7 +154,7 @@ class QtFilterBar(
             self._send_user_enter_changed_emit_
         )
         #
-        self._entry_clear_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+        self._entry_clear_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
         self._value_entry_layout.addWidget(self._entry_clear_button)
         self._entry_clear_button.hide()
         self._entry_clear_button._set_icon_file_path_(
@@ -165,7 +165,7 @@ class QtFilterBar(
         self._entry_clear_button._icon_draw_percent = .6
         self._entry_clear_button.clicked.connect(self._execute_user_entry_clear_)
         #
-        self._value_history_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+        self._value_history_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
         self._value_entry_layout.addWidget(self._value_history_button)
         self._value_history_button._set_icon_frame_draw_size_(18, 18)
         #

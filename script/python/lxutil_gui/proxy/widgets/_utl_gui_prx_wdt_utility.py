@@ -868,7 +868,7 @@ class PrxMenu(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtIconPressItem
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtIconPressButton
     def __init__(self, *args, **kwargs):
         super(PrxIconPressItem, self).__init__(*args, **kwargs)
         self.widget.setFixedSize(20, 20)

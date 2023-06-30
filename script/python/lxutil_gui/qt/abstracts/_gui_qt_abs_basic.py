@@ -1779,6 +1779,18 @@ class AbsQtActionBaseDef(object):
         self._action_state = self.ActionState.Normal
         self._action_state_rect = QtCore.QRect()
 
+        self._action_is_busied = False
+
+    def _get_action_is_busied_(self):
+        return self._action_is_busied
+
+    def _set_action_busied_(self, boolean):
+        self._action_is_busied = boolean
+        if boolean is True:
+            self._widget.setCursor(QtCore.Qt.BusyCursor)
+        else:
+            self._widget.unsetCursor()
+
     def _set_action_enable_(self, boolean):
         self._action_is_enable = boolean
         if boolean is False:
@@ -1810,138 +1822,139 @@ class AbsQtActionBaseDef(object):
         self._widget.update()
 
     def _update_action_cursor_(self):
-        if self._action_flag is not None:
-            if self._action_flag in {
-                self.ActionFlag.PressClick,
-                self.ActionFlag.PressDbClick,
+        if self._action_is_busied is False:
+            if self._action_flag is not None:
+                if self._action_flag in {
+                    self.ActionFlag.PressClick,
+                    self.ActionFlag.PressDbClick,
+                    #
+                    self.ActionFlag.TrackClick,
+                    #
+                    self.ActionFlag.CheckClick,
+                    self.ActionFlag.ExpandClick,
+                    self.ActionFlag.OptionClick,
+                    self.ActionFlag.ChooseClick,
+                }:
+                    self._widget.setCursor(
+                        QtGui.QCursor(
+                            QtCore.Qt.PointingHandCursor
+                        )
+                    )
+                elif self._action_flag in {
+                    self.ActionFlag.PressMove,
+                }:
+                    self._widget.setCursor(
+                        QtCore.Qt.OpenHandCursor
+                    )
+                elif self._action_flag in {
+                    self.ActionFlag.TrackMove,
+                    self.ActionFlag.ZoomMove,
+                    self.ActionFlag.NGNodePressMove
+                }:
+                    p = QtGui.QPixmap(20, 20)
+                    p.load(utl_gui_core.RscIconFile.get('system/track-move'))
+                    self._widget.setCursor(
+                        QtGui.QCursor(
+                            p,
+                            10, 10
+                        )
+                    )
+                elif self._action_flag in [
+                    self.ActionFlag.TrackCircle,
+                ]:
+                    p = QtGui.QPixmap(20, 20)
+                    p.load(utl_gui_core.RscIconFile.get('system/track-circle'))
+                    self._widget.setCursor(
+                        QtGui.QCursor(
+                            p,
+                            10, 10
+                        )
+                    )
+                # split
+                elif self._action_flag in {
+                    self.ActionFlag.SplitHHover,
+                    self.ActionFlag.SplitHPress,
+                    self.ActionFlag.SplitHMove,
+                }:
+                    self._widget.setCursor(
+                        QtGui.QCursor(
+                            QtGui.QPixmap(utl_gui_core.RscIconFile.get('system/resize-h'))
+                        )
+                    )
+                elif self._action_flag in {
+                    self.ActionFlag.SplitVHover,
+                    self.ActionFlag.SplitVPress,
+                    self.ActionFlag.SplitVMove
+                }:
+                    self._widget.setCursor(
+                        QtGui.QCursor(
+                            QtGui.QPixmap(utl_gui_core.RscIconFile.get('system/resize-v'))
+                        )
+                    )
+                # resize
+                elif self._action_flag in {
+                    self.ActionFlag.ResizeLeft,
+                }:
+                    self._widget.setCursor(
+                        QtGui.QCursor(
+                            QtGui.QPixmap(utl_gui_core.RscIconFile.get('system/resize-left'))
+                        )
+                    )
+                elif self._action_flag in {
+                    self.ActionFlag.ResizeRight,
+                }:
+                    self._widget.setCursor(
+                        QtGui.QCursor(
+                            QtGui.QPixmap(utl_gui_core.RscIconFile.get('system/resize-right'))
+                        )
+                    )
+                elif self._action_flag in {
+                    self.ActionFlag.ResizeUp,
+                }:
+                    self._widget.setCursor(
+                        QtGui.QCursor(
+                            QtGui.QPixmap(utl_gui_core.RscIconFile.get('system/resize-up'))
+                        )
+                    )
+                elif self._action_flag in {
+                    self.ActionFlag.ResizeDown,
+                }:
+                    self._widget.setCursor(
+                        QtGui.QCursor(
+                            QtGui.QPixmap(utl_gui_core.RscIconFile.get('system/resize-down'))
+                        )
+                    )
+                # swap
+                elif self._action_flag in {
+                    self.ActionFlag.SwapH,
+                }:
+                    self._widget.setCursor(
+                        QtGui.QCursor(
+                            QtGui.QPixmap(utl_gui_core.RscIconFile.get('system/swap-h'))
+                        )
+                    )
+                elif self._action_flag in {
+                    self.ActionFlag.SwapV,
+                }:
+                    self._widget.setCursor(
+                        QtGui.QCursor(
+                            QtGui.QPixmap(utl_gui_core.RscIconFile.get('system/swap-v'))
+                        )
+                    )
                 #
-                self.ActionFlag.TrackClick,
-                #
-                self.ActionFlag.CheckClick,
-                self.ActionFlag.ExpandClick,
-                self.ActionFlag.OptionClick,
-                self.ActionFlag.ChooseClick,
-            }:
-                self._widget.setCursor(
-                    QtGui.QCursor(
-                        QtCore.Qt.PointingHandCursor
+                elif self._action_flag in {
+                    self.ActionFlag.RectSelectMove,
+                }:
+                    p = QtGui.QPixmap(20, 20)
+                    p.load(utl_gui_core.RscIconFile.get('system/rect-select'))
+                    self._widget.setCursor(
+                        QtGui.QCursor(
+                            p,
+                            10, 10
+                        )
                     )
-                )
-            elif self._action_flag in {
-                self.ActionFlag.PressMove,
-            }:
-                self._widget.setCursor(
-                    QtCore.Qt.OpenHandCursor
-                )
-            elif self._action_flag in {
-                self.ActionFlag.TrackMove,
-                self.ActionFlag.ZoomMove,
-                self.ActionFlag.NGNodePressMove
-            }:
-                p = QtGui.QPixmap(20, 20)
-                p.load(utl_gui_core.RscIconFile.get('system/track-move'))
-                self._widget.setCursor(
-                    QtGui.QCursor(
-                        p,
-                        10, 10
-                    )
-                )
-            elif self._action_flag in [
-                self.ActionFlag.TrackCircle,
-            ]:
-                p = QtGui.QPixmap(20, 20)
-                p.load(utl_gui_core.RscIconFile.get('system/track-circle'))
-                self._widget.setCursor(
-                    QtGui.QCursor(
-                        p,
-                        10, 10
-                    )
-                )
-            # split
-            elif self._action_flag in {
-                self.ActionFlag.SplitHHover,
-                self.ActionFlag.SplitHPress,
-                self.ActionFlag.SplitHMove,
-            }:
-                self._widget.setCursor(
-                    QtGui.QCursor(
-                        QtGui.QPixmap(utl_gui_core.RscIconFile.get('system/resize-h'))
-                    )
-                )
-            elif self._action_flag in {
-                self.ActionFlag.SplitVHover,
-                self.ActionFlag.SplitVPress,
-                self.ActionFlag.SplitVMove
-            }:
-                self._widget.setCursor(
-                    QtGui.QCursor(
-                        QtGui.QPixmap(utl_gui_core.RscIconFile.get('system/resize-v'))
-                    )
-                )
-            # resize
-            elif self._action_flag in {
-                self.ActionFlag.ResizeLeft,
-            }:
-                self._widget.setCursor(
-                    QtGui.QCursor(
-                        QtGui.QPixmap(utl_gui_core.RscIconFile.get('system/resize-left'))
-                    )
-                )
-            elif self._action_flag in {
-                self.ActionFlag.ResizeRight,
-            }:
-                self._widget.setCursor(
-                    QtGui.QCursor(
-                        QtGui.QPixmap(utl_gui_core.RscIconFile.get('system/resize-right'))
-                    )
-                )
-            elif self._action_flag in {
-                self.ActionFlag.ResizeUp,
-            }:
-                self._widget.setCursor(
-                    QtGui.QCursor(
-                        QtGui.QPixmap(utl_gui_core.RscIconFile.get('system/resize-up'))
-                    )
-                )
-            elif self._action_flag in {
-                self.ActionFlag.ResizeDown,
-            }:
-                self._widget.setCursor(
-                    QtGui.QCursor(
-                        QtGui.QPixmap(utl_gui_core.RscIconFile.get('system/resize-down'))
-                    )
-                )
-            # swap
-            elif self._action_flag in {
-                self.ActionFlag.SwapH,
-            }:
-                self._widget.setCursor(
-                    QtGui.QCursor(
-                        QtGui.QPixmap(utl_gui_core.RscIconFile.get('system/swap-h'))
-                    )
-                )
-            elif self._action_flag in {
-                self.ActionFlag.SwapV,
-            }:
-                self._widget.setCursor(
-                    QtGui.QCursor(
-                        QtGui.QPixmap(utl_gui_core.RscIconFile.get('system/swap-v'))
-                    )
-                )
-            #
-            elif self._action_flag in {
-                self.ActionFlag.RectSelectMove,
-            }:
-                p = QtGui.QPixmap(20, 20)
-                p.load(utl_gui_core.RscIconFile.get('system/rect-select'))
-                self._widget.setCursor(
-                    QtGui.QCursor(
-                        p,
-                        10, 10
-                    )
-                )
-        else:
-            self._widget.unsetCursor()
+            else:
+                self._widget.unsetCursor()
 
     def _get_action_flag_(self):
         return self._action_flag
@@ -2181,8 +2194,8 @@ class AbsQtCheckBaseDef(object):
     def _send_check_emit_(self):
         self._execute_check_swap_()
         #
-        self.check_clicked.emit()
-        self.check_toggled.emit(self._is_checked)
+        self.user_check_clicked.emit()
+        self.user_check_toggled.emit(self._is_checked)
 
     def _set_item_check_changed_connect_to_(self, fnc):
         self.check_clicked.connect(fnc)
@@ -2299,12 +2312,17 @@ class AbsQtThreadBaseDef(object):
 
         self._threads = []
 
+    def _set_action_busied_(self, *args, **kwargs):
+        raise NotImplementedError()
+
     def _start_thread_draw_(self):
+        self._set_action_busied_(True)
         self._thread_draw_is_enable = True
         self._thread_timer.start(100)
         self._refresh_thread_draw_()
 
     def _stop_thread_draw_(self):
+        self._set_action_busied_(False)
         self._thread_draw_is_enable = False
         self._thread_timer.stop()
         self._refresh_thread_draw_()
@@ -2322,7 +2340,7 @@ class AbsQtThreadBaseDef(object):
     def _refresh_thread_draw_(self):
         self._widget.update()
 
-    def _run_as_thread_(self, cache_fnc, build_fnc, post_fnc):
+    def _run_build_use_thread_(self, cache_fnc, build_fnc, post_fnc):
         if self._qt_thread_enable is True:
             t = QtBuildThread(self._widget)
             t.set_cache_fnc(
@@ -2336,6 +2354,14 @@ class AbsQtThreadBaseDef(object):
         else:
             build_fnc(cache_fnc())
             post_fnc()
+
+    def _run_fnc_use_thread_(self, fnc):
+        if self._qt_thread_enable is True:
+            t = QtMethodThread(self._widget)
+            t.append_method(fnc)
+            t.start_accepted.connect(self._thread_start_accept_fnc_)
+            t.finish_accepted.connect(self._thread_finish_accept_fnc_)
+            t.start()
 
 
 class AbsQtChooseBaseDef(object):

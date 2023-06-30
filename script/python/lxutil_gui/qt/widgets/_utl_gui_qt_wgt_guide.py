@@ -456,7 +456,7 @@ class QtGuideBar(
         self._value_entry_layout.setContentsMargins(2, 0, 2, 0)
         self._value_entry_layout.setSpacing(2)
 
-        self._guide_tree_button = _utl_gui_qt_wgt_utility.QtIconPressItem()
+        self._guide_tree_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
         self._value_entry_layout.addWidget(self._guide_tree_button)
         self._guide_tree_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('tree'))
 

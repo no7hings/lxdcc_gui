@@ -1,4 +1,6 @@
 # coding:utf-8
+import six
+
 import collections
 
 from lxbasic import bsc_core
@@ -255,7 +257,7 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
         if bsc_core.StgPathMtd.get_is_exists(render_file_path) is True:
             w = utl_core.DialogWindow.set_create(
                 label=self._session.gui_name,
-                content=u'Scene is non changed for submit, render file for this scene is exists:\n"{}"'.format(
+                content=six.u('Scene is non changed for submit, render file for this scene is exists:\n"{}"').format(
                     render_file_path
                 ),
                 status=utl_core.DialogWindow.ValidatorStatus.Warning,
@@ -264,6 +266,8 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
                 #
                 yes_label='Ignore',
                 parent=self.widget,
+                #
+                use_thread=False,
             )
             if w.get_result() is not True:
                 return

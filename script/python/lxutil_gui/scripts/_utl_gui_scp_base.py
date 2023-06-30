@@ -54,11 +54,10 @@ class AbsScpGuiCmdBase(object):
             button.set_initialization(c, bsc_core.TrdCmdProcess.Status.Started)
 
             q_t = utl_gui_qt_core.QtMethodThread(self._window.widget)
-            q_t.set_method_add(
+            q_t.append_method(
                 run_fnc_
             )
             q_t.start()
-
             self._window.set_window_close_connect_to(quit_fnc_)
         else:
             button.restore_all()

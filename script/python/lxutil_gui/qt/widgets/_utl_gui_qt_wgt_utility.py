@@ -781,7 +781,7 @@ class QtThreadDef(object):
     def _set_thread_def_init_(self):
         pass
 
-    def _set_thread_create_(self):
+    def _create_fnc_thread_(self):
         return QtMethodThread(self)
 
 
@@ -863,7 +863,88 @@ class QtTextItem(
             )
 
 
-class QtIconPressItem(
+class QtIconMenuButton(
+    QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtIconBaseDef,
+    utl_gui_qt_abstract.AbsQtNameBaseDef,
+    utl_gui_qt_abstract.AbsQtMenuBaseDef,
+    #
+    utl_gui_qt_abstract.AbsQtActionBaseDef,
+    utl_gui_qt_abstract.AbsQtActionForHoverDef,
+    utl_gui_qt_abstract.AbsQtActionForPressDef,
+):
+    QT_MENU_CLS = QtMenu
+    def _refresh_widget_(self):
+        self._refresh_widget_draw_geometry_()
+        self._refresh_widget_draw_()
+
+    def _refresh_widget_draw_(self):
+        self.update()
+
+    def _refresh_widget_draw_geometry_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        #
+        icn_frm_w = icn_frm_h = w
+        #
+        icn_w, icn_h = int(icn_frm_w*self._icon_draw_percent), int(icn_frm_h*self._icon_draw_percent)
+        icn_x, icn_y = x+(icn_frm_w-icn_w)/2, y+(icn_frm_h-icn_h)/2
+        #
+        if self._icon_is_enable is True:
+            self._icon_draw_rect.setRect(
+                icn_x, icn_y, icn_w, icn_h
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(QtIconMenuButton, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setFont(Font.NAME)
+        self.setFixedSize(20, 20)
+        self.installEventFilter(self)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        #
+        self._init_name_base_def_(self)
+        self._init_icon_base_def_(self)
+        self._init_menu_base_def_(self)
+        #
+        self._init_action_base_def_(self)
+        self._init_action_for_hover_def_(self)
+        self._init_action_for_press_def_(self)
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if self._get_action_is_enable_() is True:
+                self._execute_action_hover_by_filter_(event)
+                #
+                if event.type() == QtCore.QEvent.Resize:
+                    self._refresh_widget_draw_geometry_()
+                elif event.type() in {QtCore.QEvent.MouseButtonPress, QtCore.QEvent.MouseButtonDblClick}:
+                    self._set_action_flag_(self.ActionFlag.PressClick)
+                    self._refresh_widget_()
+                elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                    if self._get_action_flag_is_match_(self.ActionFlag.PressClick):
+                        self._popup_menu_()
+                    self._clear_all_action_flags_()
+                    self._refresh_widget_()
+        return False
+
+    def paintEvent(self, event):
+        painter = QtPainter(self)
+        offset = self._get_action_offset_()
+        # icon
+        if self._icon_is_enable is True:
+            if self._icon_file_path is not None:
+                painter._draw_icon_file_by_rect_(
+                    rect=self._icon_draw_rect,
+                    file_path=self._icon_file_path,
+                    offset=offset,
+                    is_hovered=self._is_hovered,
+                    is_pressed=self._is_pressed
+                )
+
+
+class QtIconPressButton(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtIconBaseDef,
     utl_gui_qt_abstract.AbsQtNameBaseDef,
@@ -875,12 +956,13 @@ class QtIconPressItem(
     utl_gui_qt_abstract.AbsQtActionBaseDef,
     utl_gui_qt_abstract.AbsQtActionForHoverDef,
     utl_gui_qt_abstract.AbsQtActionForPressDef,
+    #
+    utl_gui_qt_abstract.AbsQtThreadBaseDef,
 ):
     clicked = qt_signal()
     press_db_clicked = qt_signal()
     #
     QT_MENU_CLS = QtMenu
-
     def _refresh_widget_(self):
         self._refresh_widget_draw_geometry_()
         self._refresh_widget_draw_()
@@ -946,7 +1028,7 @@ class QtIconPressItem(
         )
 
     def __init__(self, *args, **kwargs):
-        super(QtIconPressItem, self).__init__(*args, **kwargs)
+        super(QtIconPressButton, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setFont(Font.NAME)
         self.setFixedSize(20, 20)
@@ -962,7 +1044,8 @@ class QtIconPressItem(
         self._init_action_base_def_(self)
         self._init_action_for_hover_def_(self)
         self._init_action_for_press_def_(self)
-
+        self._init_thread_base_def_(self)
+        #
         self._choose_enable = False
         self._choose_args = []
 
@@ -1065,7 +1148,7 @@ class QtIconPressItem(
                 rect=self._name_draw_rect,
                 text=self._name_text,
                 font=get_font(),
-                text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop,
+                text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop,
                 word_warp=self._name_word_warp,
                 offset=offset,
                 # is_hovered=self._is_hovered,
@@ -1078,7 +1161,7 @@ class QtIconPressItem(
         pass
 
     def _set_menu_data_(self, data):
-        super(QtIconPressItem, self)._set_menu_data_(data)
+        super(QtIconPressButton, self)._set_menu_data_(data)
         #
         self._icon_state_draw_is_enable = True
         self._icon_state_file_path = utl_gui_core.RscIconFile.get(
@@ -1086,7 +1169,7 @@ class QtIconPressItem(
         )
 
     def _set_menu_data_gain_fnc_(self, fnc):
-        super(QtIconPressItem, self)._set_menu_data_gain_fnc_(fnc)
+        super(QtIconPressButton, self)._set_menu_data_gain_fnc_(fnc)
         #
         self._icon_state_draw_is_enable = True
         self._icon_state_file_path = utl_gui_core.RscIconFile.get(
@@ -1290,6 +1373,8 @@ class QtMainWindow(
     #
     utl_gui_qt_abstract.AbsQtIconBaseDef,
     utl_gui_qt_abstract.AbsQtBusyBaseDef,
+    utl_gui_qt_abstract.AbsQtActionBaseDef,
+    #
     utl_gui_qt_abstract.AbsQtThreadBaseDef,
     #
     QtThreadDef
@@ -1304,6 +1389,7 @@ class QtMainWindow(
         self.installEventFilter(self)
         self.setWindowFlags(QtCore.Qt.Window)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        # todo: do not use WA_TranslucentBackground mode, GL bug
         # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
         self.setPalette(QtDccMtd.get_palette())
@@ -1317,7 +1403,9 @@ class QtMainWindow(
         self._init_icon_base_def_(self)
         self._window_system_tray_icon = None
         self._init_busy_base_def_(self)
+        self._init_action_base_def_(self)
         self._init_thread_base_def_(self)
+        #
         self.setStyleSheet(
             utl_gui_core.QtStyleMtd.get('QMainWindow')
         )
