@@ -1245,7 +1245,8 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         extra_v_s.set_fixed_size_at(0, 320)
         self._main_h_s.set_fixed_size_at(0, 320)
         self._main_h_s.set_fixed_size_at(2, 320)
-        # self._main_h_s.set_contract_right_or_bottom_at(2)
+        if bsc_core.ApplicationMtd.get_is_dcc():
+            self._main_h_s.set_contract_right_or_bottom_at(2)
         #
         self._type_guide_bar.connect_user_text_choose_accepted_to(self.gui_guide_choose_cbk)
         self._type_guide_bar.connect_user_text_press_accepted_to(self.gui_guide_press_cbk)
