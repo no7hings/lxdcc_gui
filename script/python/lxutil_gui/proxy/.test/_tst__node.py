@@ -6,18 +6,18 @@ from lxbasic import bsc_core
 
 import fnmatch
 
-import lxutil_gui.proxy.widgets as utl_prx_widgets
+import lxutil_gui.proxy.widgets as prx_widgets
 
 y_f = '{}.yml'.format(os.path.splitext(__file__)[0])
 
 c = bsc_core.StgFileOpt(y_f).set_read()
 
 
-class TestWindow(utl_prx_widgets.PrxBaseWindow):
+class TestWindow(prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(TestWindow, self).__init__(*args, **kwargs)
-        self.set_definition_window_size([720, 960])
-        f = utl_prx_widgets.PrxFilterBar()
+        self.set_definition_window_size([480, 960])
+        f = prx_widgets.PrxFilterBar()
         f.set_history_key('filter.test')
         self.add_widget(f)
         f.set_completion_gain_fnc(self._value_completion_gain_fnc_)
@@ -32,8 +32,10 @@ class TestWindow(utl_prx_widgets.PrxBaseWindow):
         )
 
     def _test_(self):
-        n = utl_prx_widgets.PrxNode_('root')
-        self.add_widget(n)
+        s = prx_widgets.PrxVScrollArea()
+        self.add_widget(s)
+        n = prx_widgets.PrxNode_('root')
+        s.add_widget(n)
         n.create_ports_by_configure(
             c
         )

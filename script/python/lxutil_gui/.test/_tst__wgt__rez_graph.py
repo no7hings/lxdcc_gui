@@ -29,11 +29,11 @@ class W(prx_widgets.PrxBaseWindow):
         self.add_widget(self._g)
         u = unr_objects.ObjUniverse()
 
-        r_s_t = u.get_or_create_obj_type('rez', 'system')
-        r_p_t = u.get_or_create_obj_type('rez', 'package')
-        r_v_t = u.get_or_create_obj_type('rez', 'v')
+        r_s_t = u.generate_obj_type('rez', 'system')
+        r_p_t = u.generate_obj_type('rez', 'package')
+        r_v_t = u.generate_obj_type('rez', 'v')
 
-        t = u._get_type_force_(u.Category.CONSTANT, u.Type.NODE)
+        t = u.generate_type(u.Category.CONSTANT, u.Type.NODE)
 
         ps = utl_core.MayaLauncher(
             project='cgm'
@@ -52,10 +52,10 @@ class W(prx_widgets.PrxBaseWindow):
         )
 
         root = u.get_root()
-        root.set_input_port_create(
+        root.generate_input_port(
             t, 'input'
         )
-        root.set_output_port_create(
+        root.generate_output_port(
             t, 'output'
         )
 
@@ -65,10 +65,10 @@ class W(prx_widgets.PrxBaseWindow):
             i_p_n = r_p_t.set_obj_create(
                 i_path
             )
-            i_p_n.set_input_port_create(
+            i_p_n.generate_input_port(
                 t, 'input'
             )
-            i_p_n.set_output_port_create(
+            i_p_n.generate_output_port(
                 t, 'output'
             )
             root.get_input_port(
@@ -116,10 +116,10 @@ class W(prx_widgets.PrxBaseWindow):
             i_n = i_type.set_obj_create(
                 i_path
             )
-            i_n.set_input_port_create(
+            i_n.generate_input_port(
                 t, 'input'
             )
-            i_n.set_output_port_create(
+            i_n.generate_output_port(
                 t, 'output'
             )
             path_dict[i] = i_path

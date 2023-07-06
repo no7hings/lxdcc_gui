@@ -56,10 +56,10 @@ class W(prx_widgets.PrxBaseWindow):
         # )
         # v.refresh_usd_view_draw()
 
-        # v.refresh_usd_stage_for_texture_preview(
-        #     # use_acescg=True
-        # )
-        # v.refresh_usd_view_draw()
+        v.refresh_usd_stage_for_texture_preview(
+            # use_acescg=True
+        )
+        v.refresh_usd_view_draw()
 
         # v.refresh_usd_stage_for_asset_preview(
         #     '/production/library/resource/all/3d_plant/rhazya_xdjmfeqqx/v0001/geometry/usd/rhazya_xdjmfeqqx.usd',
@@ -109,17 +109,17 @@ class W(prx_widgets.PrxBaseWindow):
         # )
         # v.refresh_usd_view_draw()
 
-        v.refresh_usd_stage_for_asset_render(
-            '/production/library/resource/all/3d_asset/thai_beach_rocks_ueopcguga/v0001/geometry/usd/thai_beach_rocks_ueopcguga.usd',
-            dict(
-                albedo='/production/library/resource/all/3d_asset/thai_beach_rocks_ueopcguga/v0001/texture/acescg/tx/thai_beach_rocks_ueopcguga.albedo.tx',
-                roughness='/production/library/resource/all/3d_asset/thai_beach_rocks_ueopcguga/v0001/texture/acescg/tx/thai_beach_rocks_ueopcguga.roughness.tx',
-                normal='/production/library/resource/all/3d_asset/thai_beach_rocks_ueopcguga/v0001/texture/acescg/tx/thai_beach_rocks_ueopcguga.normal.tx',
-                displacement='/production/library/resource/all/3d_asset/thai_beach_rocks_ueopcguga/v0001/texture/acescg/tx/thai_beach_rocks_ueopcguga.displacement.tx'
-            ),
-            use_acescg=True
-        )
-        v.refresh_usd_view_draw()
+        # v.refresh_usd_stage_for_asset_render(
+        #     '/production/library/resource/all/3d_asset/thai_beach_rocks_ueopcguga/v0001/geometry/usd/thai_beach_rocks_ueopcguga.usd',
+        #     dict(
+        #         albedo='/production/library/resource/all/3d_asset/thai_beach_rocks_ueopcguga/v0001/texture/acescg/tx/thai_beach_rocks_ueopcguga.albedo.tx',
+        #         roughness='/production/library/resource/all/3d_asset/thai_beach_rocks_ueopcguga/v0001/texture/acescg/tx/thai_beach_rocks_ueopcguga.roughness.tx',
+        #         normal='/production/library/resource/all/3d_asset/thai_beach_rocks_ueopcguga/v0001/texture/acescg/tx/thai_beach_rocks_ueopcguga.normal.tx',
+        #         displacement='/production/library/resource/all/3d_asset/thai_beach_rocks_ueopcguga/v0001/texture/acescg/tx/thai_beach_rocks_ueopcguga.displacement.tx'
+        #     ),
+        #     use_acescg=True
+        # )
+        # v.refresh_usd_view_draw()
 
 
 if __name__ == '__main__':

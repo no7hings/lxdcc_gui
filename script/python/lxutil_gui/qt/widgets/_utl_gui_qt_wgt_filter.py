@@ -167,10 +167,9 @@ class QtFilterBar(
         #
         self._value_history_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
         self._value_entry_layout.addWidget(self._value_history_button)
-        self._value_history_button._set_icon_frame_draw_size_(18, 18)
-        #
         self._value_history_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('history'))
-        self._value_history_button._set_icon_sub_file_path_(utl_gui_core.RscIconFile.get('down'))
+        self._value_history_button._set_icon_state_name_('state/popup')
+        self._value_history_button._set_icon_frame_draw_size_(18, 18)
         self._value_history_button.press_clicked.connect(
             self._start_choose_extra_fnc_
         )

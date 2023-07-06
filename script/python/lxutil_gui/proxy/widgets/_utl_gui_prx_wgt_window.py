@@ -126,14 +126,14 @@ class AbsPrxDialogWindow(
         self._bottom_toolbar.set_expanded(True)
         qt_widget_2 = _utl_gui_qt_wgt_utility.QtWidget()
         self._bottom_toolbar.add_widget(qt_widget_2)
-        self._entry_button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_2)
+        self._button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_2)
         #
         qt_spacer_0 = _utl_gui_qt_wgt_utility._QtSpacer()
-        self._entry_button_layout.addWidget(qt_spacer_0)
+        self._button_layout.addWidget(qt_spacer_0)
         #
         self._yes_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         # self._yes_button.set_visible(False)
-        self._entry_button_layout.addWidget(self._yes_button.widget)
+        self._button_layout.addWidget(self._yes_button.widget)
         self._yes_button.set_name('Yes')
         self._yes_button.set_icon_name('adopt')
         self._yes_button.set_width(self.BUTTON_WIDTH)
@@ -141,7 +141,7 @@ class AbsPrxDialogWindow(
         #
         self._no_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         # self._no_button.set_visible(False)
-        self._entry_button_layout.addWidget(self._no_button.widget)
+        self._button_layout.addWidget(self._no_button.widget)
         self._no_button.set_name('No')
         self._no_button.set_icon_name('warning')
         self._no_button.set_width(self.BUTTON_WIDTH)
@@ -149,7 +149,7 @@ class AbsPrxDialogWindow(
         #
         self._cancel_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         # self._cancel_button.set_visible(False)
-        self._entry_button_layout.addWidget(self._cancel_button.widget)
+        self._button_layout.addWidget(self._cancel_button.widget)
         self._cancel_button.set_name('Cancel')
         self._cancel_button.set_icon_name('cancel')
         self._cancel_button.set_width(self.BUTTON_WIDTH)
@@ -157,7 +157,7 @@ class AbsPrxDialogWindow(
         #
         # self._close_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         # self._close_button.set_visible(False)
-        # self._entry_button_layout.addWidget(self._close_button.widget)
+        # self._button_layout.addWidget(self._close_button.widget)
         # self._close_button.set_name('Close')
         # self._close_button.set_icon_by_text('close')
         # self._close_button.set_width(self.BUTTON_WIDTH)
@@ -463,13 +463,13 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
         qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
         self._central_layout.addWidget(qt_widget_1)
         #
-        self._entry_button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
+        self._button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
         #
         qt_spacer_0 = _utl_gui_qt_wgt_utility._QtSpacer()
-        self._entry_button_layout.addWidget(qt_spacer_0)
+        self._button_layout.addWidget(qt_spacer_0)
         #
         self._stop_button = _utl_gui_prx_wdt_utility.PrxPressItem()
-        self._entry_button_layout.addWidget(self._stop_button.widget)
+        self._button_layout.addWidget(self._stop_button.widget)
         self._stop_button.set_name('Stop')
         self._stop_button.set_icon_by_text('Stop')
         self._stop_button.set_width(80)
@@ -619,10 +619,10 @@ class PrxMonitorWindow(
         qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
         self._central_layout.addWidget(qt_widget_1)
         #
-        self._entry_button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
+        self._button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
         #
         self._status_button = _utl_gui_prx_wdt_utility.PrxPressItem()
-        self._entry_button_layout.addWidget(self._status_button.widget)
+        self._button_layout.addWidget(self._status_button.widget)
         self._status_button.set_name('process')
         self._status_button.set_icon_by_text('process')
 

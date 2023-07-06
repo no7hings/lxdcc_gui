@@ -1336,7 +1336,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             if output_component_usd_file_path:
                 paths = self._rsv_entity_set_usd_creator.get_effect_component_paths(output_component_usd_file_path)
                 u = unr_objects.ObjUniverse()
-                o_t = u.get_or_create_obj_type('usd', 'effect')
+                o_t = u.generate_obj_type('usd', 'effect')
                 for i_path in paths:
                     o_t.set_obj_create(i_path)
                 #

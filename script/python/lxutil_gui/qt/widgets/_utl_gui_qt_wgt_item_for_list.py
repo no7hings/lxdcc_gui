@@ -126,7 +126,7 @@ class _QtListItemWidget(
             frm_r = min(w, h)
             i_w_0, i_h_0 = self._get_image_size_()
             if (i_w_0, i_h_0) != (0, 0):
-                i_x, i_y, img_w, img_h = bsc_core.RawSizeMtd.set_fit_to(
+                i_x, i_y, img_w, img_h = bsc_core.RawSizeMtd.fit_to(
                     (i_w_0, i_h_0), (w, h)
                 )
                 if self._get_play_draw_is_enable_() is True:
@@ -141,11 +141,9 @@ class _QtListItemWidget(
                         x+i_x+2, y+i_y+2, img_w-4, img_h-4
                     )
                 else:
-                    image_name_text = self._image_text
-                    if image_name_text is not None:
-                        self._image_draw_rect.setRect(
-                            x+i_x, y+i_y, img_w, img_h
-                        )
+                    self._image_draw_rect.setRect(
+                        x+i_x, y+i_y, img_w, img_h
+                    )
                 #
                 if self._image_sub_file_path:
                     img_s_w, img_s_h = 24, 24
@@ -603,24 +601,29 @@ class _QtListItemWidget(
                             )
             # image
             if self._get_has_image_() is True:
+                if self._image_pixmap:
+                    painter._draw_pixmap_by_rect_(
+                        rect=self._image_draw_rect,
+                        pixmap=self._image_pixmap,
+                        offset=offset,
+                    )
                 # draw by image file
-                if self._image_file_path:
+                elif self._image_file_path:
                     painter._draw_image_use_file_path_by_rect_(
                         rect=self._image_draw_rect,
                         file_path=self._image_file_path,
                         offset=offset
                     )
-                else:
-                    # draw image by text
-                    if self._image_text:
-                        painter._draw_image_use_text_by_rect_(
-                            rect=self._image_draw_rect,
-                            text=self._image_text,
-                            border_radius=4,
-                            offset=offset,
-                            border_color=QtBorderColors.Icon,
-                            border_width=2
-                        )
+                # draw image by text
+                elif self._image_text:
+                    painter._draw_image_use_text_by_rect_(
+                        rect=self._image_draw_rect,
+                        text=self._image_text,
+                        border_radius=4,
+                        offset=offset,
+                        border_color=QtBorderColors.Icon,
+                        border_width=2
+                    )
                 #
                 if self._image_sub_file_path:
                     painter._draw_image_use_file_path_by_rect_(
@@ -653,8 +656,8 @@ class _QtListItemWidget(
             #
             if item._item_show_image_status in [item.ShowStatus.Loading, item.ShowStatus.Waiting]:
                 painter._set_loading_draw_by_rect_(
-                    self._image_frame_rect,
-                    item._item_show_image_loading_index
+                    rect=self._image_frame_rect,
+                    loading_index=item._item_show_image_loading_index
                 )
 
     def _execute_action_hover_move_(self, event):

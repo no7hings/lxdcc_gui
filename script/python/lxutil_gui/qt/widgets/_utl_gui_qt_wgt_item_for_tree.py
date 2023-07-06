@@ -519,44 +519,48 @@ class QtTreeWidgetItem(
 
     def _set_tool_tip_(self, raw, column=0):
         if raw is not None:
-            if isinstance(raw, (tuple, list)):
-                _ = u'\n'.join(raw)
-            elif isinstance(raw, six.string_types):
-                _ = raw
+            if isinstance(raw, six.string_types):
+                text = raw
+            elif isinstance(raw, dict):
+                text = six.u('\n').join([six.u('{}: {}').format(k, v) for k, v in raw.items()])
+            elif isinstance(raw, (tuple, list)):
+                text = six.u('\n').join(raw)
             else:
                 raise TypeError()
             #
             self._set_tool_tip_text_(
-                _,
+                text,
                 column,
             )
 
     def _set_tool_tip_text_(self, text, column=0):
         if hasattr(self, 'setToolTip'):
+            text = bsc_core.auto_encode(text)
+            #
             text = text.replace(' ', '&nbsp;')
             text = text.replace('<', '&lt;')
             text = text.replace('>', '&gt;')
             #
-            css = u'<html>\n<body>\n<style>.no_wrap{white-space:nowrap;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
+            css = '<html>\n<body>\n<style>.no_wrap{white-space:nowrap;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
             name_text_orig = self._get_name_text_orig_()
             if name_text_orig is not None:
                 title_text = name_text_orig
             else:
                 title_text = self._get_name_text_(column)
             #
-            title_text = title_text.replace(u'<', u'&lt;').replace(u'>', u'&gt;')
-            css += u'<h3><p class="no_warp_and_center">{}</p></h3>\n'.format(title_text)
+            title_text = title_text.replace('<', '&lt;').replace('>', '&gt;')
+            css += '<h3><p class="no_warp_and_center">{}</p></h3>\n'.format(title_text)
             #
-            css += u'<p><hr></p>\n'
+            css += '<p><hr></p>\n'
             if isinstance(text, six.string_types):
                 texts = text.split('\n')
             else:
                 texts = text
             #
             for i in texts:
-                css += u'<p class="no_wrap">{}</p>\n'.format(i)
+                css += '<p class="no_wrap">{}</p>\n'.format(i)
 
-            css += u'</body>\n</html>'
+            css += '</body>\n</html>'
             # noinspection PyCallingNonCallable
             self.setToolTip(column, css)
 

@@ -56,6 +56,6 @@ class PnlAssetDccGeometryComparer(utl_gui_pnl_abstracts.AbsPnlAssetGeometryCompa
         super(PnlAssetDccGeometryComparer, self).__init__(session, *args, **kwargs)
 
 
-class PnlAssetLookLib(utl_gui_pnl_abstracts.AbsPnlAbsResourceLibrary):
+class PnlResourceLibrary(utl_gui_pnl_abstracts.AbsPnlAbsResourceLibrary):
     def __init__(self, session, *args, **kwargs):
-        super(PnlAssetLookLib, self).__init__(session, *args, **kwargs)
+        super(PnlResourceLibrary, self).__init__(session, *args, **kwargs)

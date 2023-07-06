@@ -62,7 +62,7 @@ class HookAddOpt(object):
             if group_name in self.DEFAULT_GROUP_NAMES:
                 hook_key = '{}/{}'.format(group_name, name)
             else:
-                hook_key = '{}/User/{}'.format(group_name, name)
+                hook_key = 'User/{}/{}'.format(group_name, name)
         else:
             hook_key = name
         #

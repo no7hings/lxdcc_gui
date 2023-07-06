@@ -7,8 +7,10 @@ import lxutil_gui.proxy.widgets as prx_widgets
 class W(prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(W, self).__init__(*args, **kwargs)
+        s = prx_widgets.PrxVScrollArea()
+        self.add_widget(s)
         h_s = prx_widgets.PrxHSplitter()
-        self.add_widget(h_s)
+        s.add_widget(h_s)
 
         v_s_0 = prx_widgets.PrxVSplitter()
         h_s.add_widget(v_s_0)

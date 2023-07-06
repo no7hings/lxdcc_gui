@@ -136,11 +136,10 @@ class QtVResizeHandle(QtHResizeHandle):
         if self._resize_target is not None:
             p = event.pos() - self._resize_point_start
             d_h = p.y()
-            h_0 = self._resize_target.minimumHeight()
+            h_0 = self._resize_target.height()
             h_1 = h_0+d_h
             if self._resize_minimum+10 <= h_1 <= self._resize_maximum+10:
-                self._resize_target.setMinimumHeight(h_1)
-                self._resize_target.setMaximumHeight(h_1)
+                self._resize_target.setFixedHeight(h_1)
                 self.size_changed.emit(h_1)
 
 

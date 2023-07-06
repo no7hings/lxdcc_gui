@@ -27,7 +27,7 @@ class QtValueEntryAsTextEdit(
         self._value_type = value_type
         #
         entry_layout = QtHBoxLayout(self)
-        entry_layout.setContentsMargins(2, 0, 2, 0)
+        entry_layout.setContentsMargins(2, 2, 2, 2)
         entry_layout.setSpacing(4)
         #
         self._value_entry = self.QT_VALUE_ENTRY_CLS()
@@ -97,15 +97,14 @@ class QtValueEntryAsContentEdit(
             [self._button_widget.Style.Null, self._button_widget.Style.Null, self._button_widget.Style.Solid, self._button_widget.Style.Null]
         )
         entry_layout.addWidget(self._button_widget)
-        self._entry_button_layout = QtVBoxLayout(self._button_widget)
-        self._entry_button_layout._set_align_top_()
-        self._entry_button_layout.setContentsMargins(2, 0, 0, 0)
-        self._entry_button_layout.setSpacing(2)
+        self._button_layout = QtVBoxLayout(self._button_widget)
+        self._button_layout._set_align_top_()
+        self._button_layout.setContentsMargins(2, 0, 0, 0)
+        self._button_layout.setSpacing(2)
         #
         self._open_in_external_editor_button = _utl_gui_qt_wgt_utility.QtIconEnableItem()
-        self._entry_button_layout.addWidget(self._open_in_external_editor_button)
-        self._open_in_external_editor_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('tool/edit'))
-        self._open_in_external_editor_button._set_icon_frame_draw_size_(18, 18)
+        self._button_layout.addWidget(self._open_in_external_editor_button)
+        self._open_in_external_editor_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('application/sublime-text'))
         self._open_in_external_editor_button._set_name_text_('open in external editor')
         self._open_in_external_editor_button._set_tool_tip_('"LMB-click" to open in external editor')
         self._open_in_external_editor_button.check_toggled.connect(self._start_open_in_external_editor_fnc_)
@@ -312,6 +311,7 @@ class QtValueEntryAsTextEditByChoose(
     QT_POPUP_CHOOSE_CLS = _utl_gui_qt_wgt_popup.QtPopupForChoose
     QT_POPUP_COMPLETION_CLS = _utl_gui_qt_wgt_popup.QtPopupForCompletion
     def _refresh_widget_(self):
+        self._refresh_widget_draw_geometry_()
         self._refresh_choose_index_()
         self._refresh_widget_draw_()
 
@@ -386,8 +386,8 @@ class QtValueEntryAsTextEditByChoose(
         main_layout.addWidget(entry_widget)
         #
         entry_layout = QtHBoxLayout(entry_widget)
-        entry_layout.setContentsMargins(2, 0, 2, 0)
-        entry_layout.setSpacing(2)
+        entry_layout.setContentsMargins(2, 2, 2, 2)
+        entry_layout.setSpacing(0)
         # entry
         self._value_entry = self.QT_VALUE_ENTRY_CLS()
         entry_layout.addWidget(self._value_entry)
@@ -405,20 +405,23 @@ class QtValueEntryAsTextEditByChoose(
         self._value_index_label._set_name_color_(QtFontColors.Disable)
         self._value_index_label.hide()
         #
-        self._button_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+        self._button_widget = _utl_gui_qt_wgt_utility.QtLineWidget()
+        self._button_widget._set_line_styles_(
+            [self._button_widget.Style.Null, self._button_widget.Style.Null, self._button_widget.Style.Solid, self._button_widget.Style.Null]
+        )
         entry_layout.addWidget(self._button_widget)
-        self._entry_button_layout = QtHBoxLayout(self._button_widget)
-        self._entry_button_layout.setContentsMargins(0, 0, 0, 0)
-        self._entry_button_layout.setSpacing(2)
+        self._button_layout = QtHBoxLayout(self._button_widget)
+        self._button_layout.setContentsMargins(2, 0, 0, 0)
+        self._button_layout.setSpacing(2)
         #
         self._value_add_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
         self._value_add_button.hide()
-        self._entry_button_layout.addWidget(self._value_add_button)
+        self._button_layout.addWidget(self._value_add_button)
         self._value_add_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('file/file'))
         self._value_add_button._set_icon_frame_draw_size_(18, 18)
         #
         self._value_choose_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
-        self._entry_button_layout.addWidget(self._value_choose_button)
+        self._button_layout.addWidget(self._value_choose_button)
         self._value_choose_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('down'))
         self._value_choose_button._set_icon_frame_draw_size_(18, 18)
         self._value_choose_button._set_name_text_('choose value')
@@ -470,8 +473,7 @@ class QtValueEntryAsTextEditByChoose(
         self._value_choose_button._set_name_text_(text)
 
     def _set_choose_button_state_icon_file_path_(self, file_path):
-        self._value_choose_button._set_icon_state_draw_enable_(True)
-        self._value_choose_button._set_state_icon_file_path_(file_path)
+        self._value_choose_button._set_icon_state_file_path_(file_path)
 
     def _get_value_choose_button_(self):
         return self._value_choose_button
@@ -480,11 +482,11 @@ class QtValueEntryAsTextEditByChoose(
         return self._value_add_button
 
     def _set_value_entry_button_add_(self, widget):
-        self._entry_button_layout.addWidget(widget)
+        self._button_layout.addWidget(widget)
 
     def _create_entry_icon_button_(self, name_text, icon_name=None, sub_icon_name=None, tool_tip=None):
         button = _utl_gui_qt_wgt_utility.QtIconPressButton()
-        self._entry_button_layout.addWidget(button)
+        self._button_layout.addWidget(button)
         button._set_name_text_(name_text)
         if icon_name is not None:
             button._set_icon_file_path_(utl_gui_core.RscIconFile.get(icon_name))
@@ -789,18 +791,17 @@ class QtValueEntryAsTextEdits(
         super(QtValueEntryAsTextEdits, self).__init__(*args, **kwargs)
         #
         self._init_value_entry_as_tuple_def_()
-        #
+        # create entry layout first
+        self._entry_layout = QtHBoxLayout(self)
+        self._entry_layout.setContentsMargins(2, 2, 2, 2)
+        self._entry_layout.setSpacing(8)
         self._build_value_entry_(2, self._value_type)
 
     def _build_value_entry_(self, value_size, value_type):
         self._value_type = value_type
         #
-        entry_layout = QtHBoxLayout(self)
-        entry_layout.setContentsMargins(2, 0, 2, 0)
-        entry_layout.setSpacing(8)
-        #
         if self._value_entries:
-            set_qt_layout_clear(entry_layout)
+            set_qt_layout_clear(self._entry_layout)
         #
         self._value_entries = []
         #
@@ -809,7 +810,7 @@ class QtValueEntryAsTextEdits(
             for i in range(value_size):
                 i_widget = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit()
                 i_widget._set_value_type_(self._value_type)
-                entry_layout.addWidget(i_widget)
+                self._entry_layout.addWidget(i_widget)
                 self._value_entries.append(i_widget)
 
     def _set_value_entry_enable_(self, boolean):
@@ -865,15 +866,15 @@ class QtValueEntryAsList(
             [self._button_widget.Style.Null, self._button_widget.Style.Null, self._button_widget.Style.Solid, self._button_widget.Style.Null]
         )
         entry_layout.addWidget(self._button_widget)
-        self._entry_button_layout = QtVBoxLayout(self._button_widget)
-        self._entry_button_layout._set_align_top_()
-        self._entry_button_layout.setContentsMargins(2, 0, 0, 0)
-        self._entry_button_layout.setSpacing(2)
+        self._button_layout = QtVBoxLayout(self._button_widget)
+        self._button_layout._set_align_top_()
+        self._button_layout.setContentsMargins(2, 0, 0, 0)
+        self._button_layout.setSpacing(2)
 
         self._value_choose_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
-        self._entry_button_layout.addWidget(self._value_choose_button)
+        self._button_layout.addWidget(self._value_choose_button)
         self._value_choose_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('file/file'))
-        self._value_choose_button._set_state_icon_file_path_(utl_gui_core.RscIconFile.get('state/popup'))
+        self._value_choose_button._set_icon_state_name_('state/popup')
         self._value_choose_button._set_icon_frame_draw_size_(18, 18)
         self._value_choose_button._set_name_text_('choose value')
         self._value_choose_button._set_tool_tip_('"LMB-click" to popup choose view')
@@ -930,11 +931,11 @@ class QtValueEntryAsList(
         self._value_entry._set_item_icon_file_path_(file_path)
 
     def _set_value_entry_button_add_(self, widget):
-        self._entry_button_layout.addWidget(widget)
+        self._button_layout.addWidget(widget)
 
     def _create_entry_icon_button_(self, name_text, icon_name=None, sub_icon_name=None):
         button = _utl_gui_qt_wgt_utility.QtIconPressButton()
-        self._entry_button_layout.addWidget(button)
+        self._button_layout.addWidget(button)
         button._set_name_text_(name_text)
         if icon_name is not None:
             button._set_icon_file_path_(utl_gui_core.RscIconFile.get(icon_name))
@@ -953,8 +954,7 @@ class QtValueEntryAsList(
         self._value_choose_button._set_name_text_(text)
 
     def _set_choose_button_state_icon_file_path_(self, file_path):
-        self._value_choose_button._set_icon_state_draw_enable_(True)
-        self._value_choose_button._set_state_icon_file_path_(file_path)
+        self._value_choose_button._set_icon_state_file_path_(file_path)
     # choose
     def _extend_choose_current_values_(self, values):
         self._extend_values_(values)
@@ -1017,15 +1017,15 @@ class QtValueEntryAsListWithChoose(
             [self._button_widget.Style.Null, self._button_widget.Style.Null, self._button_widget.Style.Solid, self._button_widget.Style.Null]
         )
         entry_layout.addWidget(self._button_widget)
-        self._entry_button_layout = QtVBoxLayout(self._button_widget)
-        self._entry_button_layout._set_align_top_()
-        self._entry_button_layout.setContentsMargins(2, 0, 0, 0)
-        self._entry_button_layout.setSpacing(2)
+        self._button_layout = QtVBoxLayout(self._button_widget)
+        self._button_layout._set_align_top_()
+        self._button_layout.setContentsMargins(2, 0, 0, 0)
+        self._button_layout.setSpacing(2)
 
         self._value_choose_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
-        self._entry_button_layout.addWidget(self._value_choose_button)
+        self._button_layout.addWidget(self._value_choose_button)
         self._value_choose_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('file/file'))
-        self._value_choose_button._set_state_icon_file_path_(utl_gui_core.RscIconFile.get('state/popup'))
+        self._value_choose_button._set_icon_state_name_('state/popup')
         self._value_choose_button._set_icon_frame_draw_size_(18, 18)
         self._value_choose_button._set_name_text_('choose value')
         self._value_choose_button._set_tool_tip_('"LMB-click" to popup choose view')
@@ -1079,11 +1079,11 @@ class QtValueEntryAsListWithChoose(
         self._value_entry._set_item_icon_file_path_(file_path)
 
     def _set_value_entry_button_add_(self, widget):
-        self._entry_button_layout.addWidget(widget)
+        self._button_layout.addWidget(widget)
 
     def _create_entry_icon_button_(self, name_text, icon_name=None, sub_icon_name=None):
         button = _utl_gui_qt_wgt_utility.QtIconPressButton()
-        self._entry_button_layout.addWidget(button)
+        self._button_layout.addWidget(button)
         button._set_name_text_(name_text)
         if icon_name is not None:
             button._set_icon_file_path_(utl_gui_core.RscIconFile.get(icon_name))
@@ -1102,8 +1102,7 @@ class QtValueEntryAsListWithChoose(
         self._value_choose_button._set_name_text_(text)
 
     def _set_choose_button_state_icon_file_path_(self, file_path):
-        self._value_choose_button._set_icon_state_draw_enable_(True)
-        self._value_choose_button._set_state_icon_file_path_(file_path)
+        self._value_choose_button._set_icon_state_file_path_(file_path)
     # choose
     def _extend_choose_current_values_(self, values):
         self._extend_values_(values)

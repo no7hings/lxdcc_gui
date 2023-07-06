@@ -946,6 +946,7 @@ class QtIconMenuButton(
 
 class QtIconPressButton(
     QtWidgets.QWidget,
+    utl_gui_qt_abstract.AbsQtFrameBaseDef,
     utl_gui_qt_abstract.AbsQtIconBaseDef,
     utl_gui_qt_abstract.AbsQtNameBaseDef,
     utl_gui_qt_abstract.AbsQtMenuBaseDef,
@@ -975,6 +976,9 @@ class QtIconPressButton(
         w, h = self.width(), self.height()
         #
         icn_frm_w = icn_frm_h = w
+        self._frame_draw_rect.setRect(
+            x+1, y+1, icn_frm_w-2, icn_frm_h-2
+        )
         #
         icn_w, icn_h = int(icn_frm_w*self._icon_draw_percent), int(icn_frm_h*self._icon_draw_percent)
         icn_x, icn_y = x+(icn_frm_w-icn_w)/2, y+(icn_frm_h-icn_h)/2
@@ -1035,6 +1039,7 @@ class QtIconPressButton(
         self.installEventFilter(self)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         #
+        self._init_frame_base_def_(self)
         self._init_name_base_def_(self)
         self._init_icon_base_def_(self)
         self._init_menu_base_def_(self)
@@ -1095,6 +1100,13 @@ class QtIconPressButton(
         painter = QtPainter(self)
         self._refresh_widget_draw_geometry_()
         offset = self._get_action_offset_()
+        if self._thread_draw_is_enable is True:
+            painter._draw_alternating_colors_by_rect_(
+                rect=self._frame_draw_rect,
+                colors=((0, 0, 0, 63), (0, 0, 0, 0)),
+                # border_radius=4,
+                running=True
+            )
         # icon
         if self._icon_is_enable is True:
             if self._icon_file_path is not None:

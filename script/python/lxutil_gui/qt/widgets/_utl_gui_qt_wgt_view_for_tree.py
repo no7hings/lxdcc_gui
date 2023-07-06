@@ -528,7 +528,7 @@ class QtTreeWidget(
         #
         if self._is_expand_descendants:
             self._is_expand_descendants = False
-            self._set_item_extend_expanded_at__(index, True)
+            self._set_item_extend_expanded_at_(index, True)
         #
         item = self.itemFromIndex(index)
         if item in self._item_expand_method_dic:
@@ -545,21 +545,17 @@ class QtTreeWidget(
     def _set_item_action_collapse_execute_at_(self, index):
         if self._is_expand_descendants:
             self._is_expand_descendants = False
-            self._set_item_extend_expanded_at__(index, False)
+            self._set_item_extend_expanded_at_(index, False)
 
         self._set_item_collapse_at_(index)
 
         self._set_item_expanded_update_at_(index)
 
-    def _set_item_extend_expanded_at__(self, index, boolean):
+    def _set_item_extend_expanded_at_(self, index, boolean):
         for i in range(0, index.model().rowCount(index)):
             i_child_index = index.child(i, 0)
             self.setExpanded(i_child_index, boolean)
-            self._set_item_extend_expanded_at__(i_child_index, boolean)
-
-    def _set_item_extend_expanded_at_(self, index, boolean):
-        indices = self._get_descendant_indices_at_(index)
-        [self.setExpanded(i, boolean) for i in indices]
+            self._set_item_extend_expanded_at_(i_child_index, boolean)
     @classmethod
     def _get_descendant_indices_at_(cls, index):
         def rcs_fnc_(list__, index_):
@@ -675,3 +671,8 @@ class QtTreeWidget(
 
     def _refresh_view_items_viewport_showable_by_sort_(self, *args, **kwargs):
         self._refresh_view_all_items_viewport_showable_()
+
+    def _expand_items_by_depth_(self, depth):
+        items = self._get_items_by_depth_(depth)
+        for i_item in items:
+            i_item.setExpanded(True)

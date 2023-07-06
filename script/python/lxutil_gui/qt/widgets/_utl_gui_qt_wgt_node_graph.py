@@ -1573,7 +1573,7 @@ class _QtNGGraph(
         o_w, o_h = self.width(), self.height()
         x_0, y_0, x_1, y_1, w_0, h_0 = self._get_ng_graph_frame_args_(ng_nodes)
         #
-        i_x, i_y, i_w, i_h = bsc_core.RawSizeMtd.set_fit_to(
+        i_x, i_y, i_w, i_h = bsc_core.RawSizeMtd.fit_to(
             (w_0, h_0), (o_w, o_h)
         )
         o_r = (i_w*.75)
@@ -1934,6 +1934,12 @@ class _QtNGTreeNode(
 
         self._ng_node_obj = None
 
+    def _get_node_(self):
+        return self._ng_node_obj
+
+    def __str__(self):
+        return str(self._ng_node_obj)
+
 
 class _QtNGTree(
     _utl_gui_qt_wgt_view_for_tree.QtTreeWidget,
@@ -1941,9 +1947,10 @@ class _QtNGTree(
 ):
     QT_MENU_CLS = _utl_gui_qt_wgt_utility.QtMenu
     def _set_ng_universe_(self, universe):
+        self.clear()
         self._ng_node_universe = universe
-        obj = self._ng_node_universe.get_objs()
-        for i_obj in obj:
+        objs = self._ng_node_universe.get_objs()
+        for i_obj in objs:
             self._set_ng_universe_node_add_(i_obj)
 
     def _set_ng_show_by_universe_(self, *args, **kwargs):
@@ -1965,10 +1972,24 @@ class _QtNGTree(
         else:
             self.addTopLevelItem(item)
 
-        item._set_name_text_(obj.name)
-        item._set_icon_text_(obj.type_name)
+        name_text = obj.properties.get('gui.name')
+        if name_text:
+            item._set_name_text_(name_text)
+        else:
+            item._set_name_text_(obj.name)
+        icon_file_path = obj.properties.get('gui.icon_file')
+        if icon_file_path:
+            item._set_icon_file_path_(icon_file_path)
+        else:
+            item._set_icon_file_path_(
+                utl_gui_core.RscIconFile.get('obj/group')
+            )
 
-        item._set_check_state_(True)
+        tool_tip = obj.properties.get('gui.tool_tip')
+        if tool_tip:
+            item._set_tool_tip_(tool_tip)
+
+        item._set_check_state_(False)
         item._ng_node_obj = obj
 
     def _set_ng_universe_node_add_(self, obj):

@@ -54,7 +54,7 @@ constant/float:
 
 constant/float2:
     widget: float2
-    value: [1, 2]
+    value: [1.0, 2.0]
     tool_tip: '...'
     enable: True
 
@@ -81,12 +81,13 @@ array/shotgun_entities_choose:
     tool_tip: '...'
     enable: True
 
-array/files:
+array/json_files:
     widget: files
     value: ''
     tool_tip: '...'
     ext_includes: ['.exr', '.jpg']
     enable: True
+    height: 240
 
 array/directories:
     widget: directories

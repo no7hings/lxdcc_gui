@@ -73,8 +73,8 @@ class PrxNGTree(
     def set_universe(self, universe):
         self._qt_view._set_ng_universe_(universe)
 
-    def _set_items_hidden_by_keyword_filter_(self):
-        pass
+    def expand_items_by_depth(self, depth):
+        self._qt_view._expand_items_by_depth_(depth)
 
 
 class PrxNGImageGraph(

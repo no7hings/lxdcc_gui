@@ -12,16 +12,16 @@ class W(prx_widgets.PrxBaseWindow):
         self.add_widget(c)
         u = unr_objects.ObjUniverse()
 
-        o_t = u.get_or_create_obj_type('lynxi', 'shader')
+        o_t = u.generate_obj_type('lynxi', 'shader')
 
-        t = u._get_type_force_(u.Category.CONSTANT, u.Type.NODE)
+        t = u.generate_type(u.Category.CONSTANT, u.Type.NODE)
 
         r = u.get_root()
 
-        r.set_input_port_create(
+        r.generate_input_port(
             t, 'input'
         )
-        r.set_output_port_create(
+        r.generate_output_port(
             t, 'output'
         )
 
@@ -30,10 +30,10 @@ class W(prx_widgets.PrxBaseWindow):
             i_n = o_t.set_obj_create(
                 '/test_{}'.format(i)
             )
-            i_n.set_input_port_create(
+            i_n.generate_input_port(
                 t, 'input'
             )
-            i_n.set_output_port_create(
+            i_n.generate_output_port(
                 t, 'output'
             )
             if p_n is not None:

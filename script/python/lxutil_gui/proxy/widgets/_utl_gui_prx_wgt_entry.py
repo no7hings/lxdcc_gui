@@ -174,6 +174,9 @@ class AbsPrxTypeQtEntry(utl_gui_prx_abstract.AbsPrxWidget):
         if hasattr(self._qt_entry_widget, '_set_tool_tip_'):
             self._qt_entry_widget._set_tool_tip_(args[0], **kwargs)
 
+    def set_height(self, h):
+        self._qt_widget.setFixedHeight(h)
+
 
 class _PrxStgObjEntry(AbsPrxTypeQtEntry):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
@@ -331,7 +334,7 @@ class PrxFileSaveEntry(_PrxStgObjEntry):
         super(PrxFileSaveEntry, self).__init__(*args, **kwargs)
         self._qt_open_or_save_button._set_name_text_('save file')
         self._qt_open_or_save_button._set_icon_name_('file/file')
-        self._qt_open_or_save_button._set_sub_icon_name_('action/save')
+        self._qt_open_or_save_button._set_icon_sub_name_('action/save')
         self._qt_open_or_save_button._set_tool_tip_(
             [
                 '"LMB-click" to save file by "dialog"'
@@ -413,7 +416,7 @@ class PrxDirectorySaveEntry(_PrxStgObjEntry):
         super(PrxDirectorySaveEntry, self).__init__(*args, **kwargs)
         self._qt_open_or_save_button._set_name_text_('save directory')
         self._qt_open_or_save_button._set_icon_name_('file/folder')
-        self._qt_open_or_save_button._set_sub_icon_name_('action/save')
+        self._qt_open_or_save_button._set_icon_sub_name_('action/save')
         self._qt_open_or_save_button._set_tool_tip_(
             [
                 '"LMB-click" to save directory by "dialog"'
@@ -462,7 +465,7 @@ class _PrxStgObjsEntry(AbsPrxTypeQtEntry):
         self._qt_entry_widget._set_value_entry_drop_enable_(True)
         # entry
         self._qt_entry_widget._set_value_entry_enable_(True)
-        self._qt_entry_widget._get_resize_handle_()._set_resize_target_(self.widget)
+        self._qt_entry_widget._get_resize_handle_()._set_resize_target_(self._qt_widget)
         self._qt_entry_widget._set_resize_enable_(True)
         self._qt_entry_widget._get_resize_handle_()._set_resize_minimum_(42)
         self._qt_entry_widget._set_size_policy_height_fixed_mode_()
@@ -1617,7 +1620,6 @@ class PrxValidatorEntry(AbsPrxTypeQtEntry):
 
 class _AbsPrxTypeEntry(utl_gui_prx_abstract.AbsPrxWidget):
     PRX_ENTRY_CLS = None
-
     def __init__(self, *args, **kwargs):
         super(_AbsPrxTypeEntry, self).__init__(*args, **kwargs)
 

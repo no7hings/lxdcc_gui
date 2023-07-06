@@ -686,8 +686,6 @@ class PrxStgObjTreeViewAddOpt(object):
             prx_item.set_expanded(True)
 
         prx_item.set_tool_tips(descriptions)
-        #
-        # self._prx_tree_view.set_loading_update()
 
     def get_files(self):
         list_ = []

@@ -38,7 +38,6 @@ class PnlDccWorkspaceLoader(prx_widgets.PrxSessionToolWindow):
                 task=self._rsv_project.properties.get('project_tasks.template')
             )
             if self._rsv_task:
-                print self._rsv_task
                 o = self._options_prx_node
                 o.get_port('area').connect_value_changed_to(
                     self.refresh_auto_fnc

@@ -967,12 +967,18 @@ class AbsQtIconBaseDef(object):
         self._icon_sub_text = text
         self._widget.update()
 
-    def _set_sub_icon_name_(self, name):
+    def _set_icon_sub_name_(self, name):
         self._set_icon_sub_file_path_(
             utl_gui_core.RscIconFile.get(name)
         )
 
-    def _set_state_icon_file_path_(self, file_path):
+    def _set_icon_state_name_(self, name):
+        self._set_icon_state_file_path_(
+            utl_gui_core.RscIconFile.get(name)
+        )
+
+    def _set_icon_state_file_path_(self, file_path):
+        self._set_icon_state_draw_enable_(True)
         self._icon_state_file_path = file_path
 
     def _set_hover_icon_file_path_(self, file_path):
@@ -1612,6 +1618,7 @@ class AbsQtImageBaseDef(object):
         self._image_sub_file_path = None
         self._image_text = None
         self._image_data = None
+        self._image_pixmap = None
         #
         self._image_frame_size = 32, 32
         self._image_draw_size = 30, 30
@@ -1625,10 +1632,13 @@ class AbsQtImageBaseDef(object):
     def _refresh_widget_draw_(self):
         raise NotImplementedError()
 
-    def _set_image_file_path_(self, file_path):
+    def _set_image_file_path_(self, arg):
         self._image_enable = True
         self._image_draw_is_enable = True
-        self._image_file_path = file_path
+        if isinstance(arg, six.string_types):
+            self._image_file_path = arg
+        elif isinstance(arg, QtGui.QPixmap):
+            self._image_pixmap = arg
         self._refresh_widget_draw_()
 
     def _set_image_sub_file_path_(self, file_path):
@@ -1692,7 +1702,8 @@ class AbsQtImageBaseDef(object):
         return (
                 self._image_file_path is not None or
                 self._image_sub_file_path is not None or
-                self._image_text is not None
+                self._image_text is not None or
+                self._image_pixmap is not None
         )
 
     def _set_image_frame_draw_enable_(self, boolean):
@@ -3607,9 +3618,6 @@ class AbsQtShowBaseForItemDef(
     # image fnc
     def _set_item_show_image_cmd_(self, image_file_path, cmd):
         def cache_fnc_():
-            return []
-
-        def build_fnc_(data):
             # noinspection PyBroadException
             try:
                 bsc_core.SubProcessMtd.execute_with_result(
@@ -3617,6 +3625,10 @@ class AbsQtShowBaseForItemDef(
                 )
             except:
                 pass
+            return []
+
+        def build_fnc_(data):
+            pass
 
         if cmd is not None:
             self._item_show_image_file_path = image_file_path

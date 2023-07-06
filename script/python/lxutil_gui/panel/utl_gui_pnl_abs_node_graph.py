@@ -90,11 +90,11 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
 
         u = unr_objects.ObjUniverse()
 
-        r_s_t = u.get_or_create_obj_type('rez', 'system')
-        r_p_t = u.get_or_create_obj_type('rez', 'package')
-        r_v_t = u.get_or_create_obj_type('rez', 'v')
+        r_s_t = u.generate_obj_type('rez', 'system')
+        r_p_t = u.generate_obj_type('rez', 'package')
+        r_v_t = u.generate_obj_type('rez', 'v')
 
-        t = u._get_type_force_(u.Category.CONSTANT, u.Type.NODE)
+        t = u.generate_type(u.Category.CONSTANT, u.Type.NODE)
 
         # ps = utl_core.MayaLauncher(
         #     project='cgm'
@@ -115,10 +115,10 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
         )
 
         root = u.get_root()
-        root.set_input_port_create(
+        root.generate_input_port(
             t, 'input'
         )
-        root.set_output_port_create(
+        root.generate_output_port(
             t, 'output'
         )
 
@@ -131,10 +131,10 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
                 i_n = i_type.set_obj_create(
                     i_path
                 )
-                i_n.set_input_port_create(
+                i_n.generate_input_port(
                     t, 'input'
                 )
-                i_n.set_output_port_create(
+                i_n.generate_output_port(
                     t, 'output'
                 )
                 root.get_input_port(
@@ -152,10 +152,10 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
                 i_p_n = i_type.set_obj_create(
                     i_path
                 )
-                i_p_n.set_input_port_create(
+                i_p_n.generate_input_port(
                     t, 'input'
                 )
-                i_p_n.set_output_port_create(
+                i_p_n.generate_output_port(
                     t, 'output'
                 )
                 root.get_input_port(
@@ -195,10 +195,10 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
             i_n = i_type.set_obj_create(
                 i_path
             )
-            i_n.set_input_port_create(
+            i_n.generate_input_port(
                 t, 'input'
             )
-            i_n.set_output_port_create(
+            i_n.generate_output_port(
                 t, 'output'
             )
             path_dict[i] = i_path
@@ -485,9 +485,9 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
     def _set_graph_reload_(self):
         self._universe = unr_objects.ObjUniverse()
 
-        self._u_asset_type = self._universe.get_or_create_obj_type('lynxi', 'asset')
+        self._u_asset_type = self._universe.generate_obj_type('lynxi', 'asset')
 
-        self._u_image_type = self._universe._get_type_force_(
+        self._u_image_type = self._universe.generate_type(
             self._universe.Category.CONSTANT, self._universe.Type.STRING
         )
 
@@ -501,7 +501,7 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
                             i_rsv_entity.name
                         )
                     )
-                    p = i_n.set_variant_port_create(
+                    p = i_n.generate_variant_port(
                         self._u_image_type, 'image'
                     )
                     p.set(v)

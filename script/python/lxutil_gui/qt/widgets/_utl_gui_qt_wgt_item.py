@@ -495,7 +495,7 @@ class QtCheckItem(
         if widget == self:
             self._execute_action_hover_by_filter_(event)
             #
-            if event.type() == QtCore.QEvent.MouseButtonPress:
+            if event.type() in {QtCore.QEvent.MouseButtonPress, QtCore.QEvent.MouseButtonDblClick}:
                 if event.button() == QtCore.Qt.LeftButton:
                     self._set_action_flag_(self.ActionFlag.CheckClick)
             elif event.type() == QtCore.QEvent.MouseButtonRelease:

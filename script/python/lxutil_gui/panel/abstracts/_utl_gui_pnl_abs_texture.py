@@ -929,7 +929,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             button.restore_all()
 
             contents = [
-                'non-texture(s) to create, you can click refresh and try again'
+                'non-texture(s) to create, you can click refresh and try again or turn on "create force enable"'
             ]
 
         if contents:

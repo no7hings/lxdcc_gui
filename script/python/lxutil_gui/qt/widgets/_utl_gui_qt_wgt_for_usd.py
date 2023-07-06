@@ -2,6 +2,8 @@
 # noinspection PyUnresolvedReferences
 from pxr import Usd, Sdf, Tf, Vt, Gf, Glf, UsdGeom, UsdLux
 
+from lxutil import utl_configure
+
 from lxusd import usd_core
 
 from lxutil_gui.qt.utl_gui_qt_core import *
@@ -64,7 +66,7 @@ else:
                 ('Export to', 'file/file', self._usd_export_to_file_),
             ]
 
-        def _refresh_usd_stage_for_texture_preview_(self, texture_dict=None, use_acescg=False):
+        def _refresh_usd_stage_for_texture_preview_(self, texture_dict=None, use_acescg=False, use_as_imperfection=False):
             self._usd_stage.Reload()
             root_layer = self._usd_stage.GetRootLayer()
             root_layer.subLayerPaths.append(
@@ -85,10 +87,6 @@ else:
                     bsc_core.RscFileMtd.get('asset/library/preview-light.usda')
                 )
             #
-            # light_prim = self._usd_stage.GetPrimAtPath('/lights/lgt_preview/lgt_key/lgt_key_shape')
-            # light_opt = usd_core.UsdLightOpt(light_prim)
-            # light_opt.set_shadow_enable(True)
-            #
             for i_usd_prim in usd_core.UsdStageOpt(self._usd_stage).get_all_mesh_prims():
                 usd_core.UsdMaterialAssignOpt(
                     i_usd_prim
@@ -97,26 +95,16 @@ else:
                 )
             #
             if texture_dict:
-                for i_key in ['albedo', 'ao', 'roughness', 'normal', 'displacement', 'opacity']:
-                    if i_key in texture_dict:
-                        i_file_path = texture_dict[i_key]
-                        i_file_opt = bsc_core.StgFileOpt(i_file_path)
-                        if i_file_opt.get_is_file() is True:
-                            usd_core.UsdShaderOpt(self._usd_stage.GetPrimAtPath(
-                                '/mtl_preview/txr_{}'.format(i_key))
-                            ).set_file(
-                                i_file_opt.get_path()
-                            )
-                    else:
-                        usd_core.UsdShaderOpt(
-                            self._usd_stage.GetPrimAtPath(
-                                '/mtl_preview/txr_{}'.format(i_key)
-                            )
-                        ).set_file('')
-
-            # usd_core.UsdStageOpt(self._usd_stage).set_export_to(
-            #     '/data/e/myworkspace/td/lynxi/script/python/lxusd/.etc/usd_preview_surface_test.usda'
-            # )
+                for i_key in utl_configure.TextureTypes.UsdPreviews:
+                    i_usd_prim = self._usd_stage.GetPrimAtPath('/mtl_preview/txr_{}'.format(i_key))
+                    if i_usd_prim.IsValid() is True:
+                        if i_key in texture_dict:
+                            i_file_path = texture_dict[i_key]
+                            i_file_opt = bsc_core.StgFileOpt(i_file_path)
+                            if i_file_opt.get_is_file() is True:
+                                usd_core.UsdShaderOpt(i_usd_prim).set_file(i_file_opt.get_path())
+                        else:
+                            usd_core.UsdShaderOpt(i_usd_prim).set_file('')
 
         def _refresh_usd_stage_for_texture_render_(self, texture_dict=None, use_acescg=False):
             self._usd_stage.Reload()
@@ -174,8 +162,10 @@ else:
             #     '/data/e/myworkspace/td/lynxi/script/python/lxusd/.etc/usd_arnold_surface_test.usda'
             # )
 
-        def _refresh_usd_stage_for_asset_preview_(self, usd_file_path, texture_dict=None):
+        def _refresh_usd_stage_for_asset_preview_(self, usd_file_path, texture_dict=None, use_as_imperfection=False):
             self._usd_stage.Reload()
+            session_layer = self._usd_stage.GetSessionLayer()
+            session_layer.Clear()
             root_layer = self._usd_stage.GetRootLayer()
             root_layer.subLayerPaths.append(usd_file_path)
             root_layer.subLayerPaths.append(
@@ -194,13 +184,13 @@ else:
             usd_core.UsdXformOpt(
                 self._usd_stage.GetPrimAtPath('/lights/lgt_preview/lgt_key')
             ).set_matrix(
-                ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (w+100, w+100, w+50, 1))
+                ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (w+25, h+25, d+25, 1))
             )
 
             usd_core.UsdXformOpt(
                 self._usd_stage.GetPrimAtPath('/lights/lgt_preview/lgt_fill')
             ).set_matrix(
-                ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (-w-50, -0, 0, 1))
+                ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (-w-50, h/2, -d-25, 1))
             )
 
             # light_prim = self._usd_stage.GetPrimAtPath('/lights/lgt_preview/lgt_key/lgt_key_shape')
@@ -215,26 +205,48 @@ else:
                 )
             #
             if texture_dict:
-                for i_key in ['albedo', 'ao', 'roughness', 'normal', 'displacement', 'opacity']:
-                    if i_key in texture_dict:
-                        i_file_path = texture_dict[i_key]
-                        i_file_opt = bsc_core.StgFileOpt(i_file_path)
-                        if i_file_opt.get_is_file() is True:
-                            usd_core.UsdShaderOpt(self._usd_stage.GetPrimAtPath(
-                                '/mtl_preview/txr_{}'.format(i_key))
-                            ).set_file(
-                                i_file_opt.get_path()
-                            )
-                    else:
-                        usd_core.UsdShaderOpt(
-                            self._usd_stage.GetPrimAtPath(
-                                '/mtl_preview/txr_{}'.format(i_key)
-                            )
-                        ).set_file('')
-
-            # usd_core.UsdStageOpt(self._usd_stage).set_export_to(
-            #     '/data/e/myworkspace/td/lynxi/script/python/lxusd/.etc/usd_preview.usda'
-            # )
+                for i_key in utl_configure.TextureTypes.UsdPreviews:
+                    i_usd_prim = self._usd_stage.GetPrimAtPath('/mtl_preview/txr_{}'.format(i_key))
+                    if i_usd_prim.IsValid() is True:
+                        if i_key in texture_dict:
+                            i_file_path = texture_dict[i_key]
+                            i_file_opt = bsc_core.StgFileOpt(i_file_path)
+                            if i_file_opt.get_is_file() is True:
+                                usd_core.UsdShaderOpt(i_usd_prim).set_file(i_file_opt.get_path())
+                        else:
+                            usd_core.UsdShaderOpt(i_usd_prim).set_file('')
+            #
+            if use_as_imperfection is True:
+                shader_opt = usd_core.UsdShaderOpt(
+                    self._usd_stage.GetPrimAtPath('/mtl_preview/mtl_shader')
+                )
+                shader_opt.set_as_float('ior', .470)
+                shader_opt.set_as_float('metallic', 1.0)
+                # no diffuse
+                if 'diffuse' not in texture_dict:
+                    diffuse_opt = usd_core.UsdShaderOpt(
+                        self._usd_stage.GetPrimAtPath('/mtl_preview/txr_diffuse')
+                    )
+                    if 'roughness' in texture_dict:
+                        diffuse_opt.set_file(texture_dict['roughness'])
+                    elif 'glossiness' in texture_dict:
+                        # todo: diffuse value error
+                        diffuse_opt.set_as_float4('scale', (-1.0, -1.0, -1.0, 1.0))
+                        diffuse_opt.set_as_float4('bias', (1.0, 1.0, 1.0, 1.0))
+                        diffuse_opt.set_file(texture_dict['glossiness'])
+                # no roughness but hs glossiness
+                if 'roughness' not in texture_dict and 'glossiness' in texture_dict:
+                    roughness_opt = usd_core.UsdShaderOpt(
+                        self._usd_stage.GetPrimAtPath('/mtl_preview/txr_roughness')
+                    )
+                    roughness_opt.set_as_float4('scale', (-1.0, -1.0, -1.0, 1.0))
+                    roughness_opt.set_as_float4('bias', (1.0, 1.0, 1.0, 1.0))
+                    roughness_opt.set_file(
+                        texture_dict['glossiness']
+                    )
+                # has coat_roughness
+                if 'coat_roughness' in texture_dict:
+                    shader_opt.set_as_float('clearcoat', 1.0)
 
         def _refresh_usd_stage_for_asset_render_(self, usd_file_path, texture_dict=None, use_acescg=False):
             self._usd_stage.Reload()

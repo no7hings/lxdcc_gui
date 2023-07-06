@@ -34,7 +34,7 @@ class AbsPrxPortDef(object):
         if label is not None:
             self._label = label
         else:
-            self._label = bsc_core.RawStringUnderlineOpt(self._name).to_prettify(capitalize=False)
+            self._label = bsc_core.RawStrUnderlineOpt(self._name).to_prettify(capitalize=False)
 
     def set_node(self, obj):
         self._prx_node = obj
@@ -113,7 +113,7 @@ class AbsPrxPortDef(object):
                 self.set_visible(_value_cdt == _value)
 
         if condition:
-            p = self.get_node().get_port(condition.get('port'))
+            p = self.get_node().get_port(condition.get('port').replace('/', '.'))
             if p is not None:
                 p.connect_value_changed_to(visible_fnc_)
                 visible_fnc_()
@@ -1337,8 +1337,10 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
     def __init__(self, path, *args, **kwargs):
         super(PrxNode_, self).__init__(*args, **kwargs)
         self._path_dag_opt = bsc_core.DccPathDagOpt(path)
+        # debug: do not set minimum height
+        # self._qt_widget.setMinimumHeight(24)
         #
-        qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
+        qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(0)
 
@@ -1346,7 +1348,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         self._port_switch_stack = self.PORT_STACK_CLS()
         #
         self._prx_port_root = self.create_root_port()
-        qt_layout_0.addWidget(self._prx_port_root._prx_widget.widget)
+        qt_layout_0.addWidget(self._prx_port_root._prx_widget._qt_widget)
 
     def get_path(self):
         return self._path_dag_opt.get_path()
@@ -1540,7 +1542,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             port.set(value_)
             #
             current_ = option.get('current') or option.get('default')
-            current_index_ = option.get('current_index')
+            current_index_ = option.get('current_index') or option.get('default_index')
             if current_ is not None:
                 port.set(current_)
                 port.set_default(current_)
@@ -1549,8 +1551,10 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
                 port.set_default(current_index_)
             else:
                 if value_:
-                    port.set(value_[-1])
-                    port.set_default(value_[-1])
+                    port.set(value_[0])
+                    port.set_default(value_[0])
+                    # port.set(value_[-1])
+                    # port.set_default(value_[-1])
         #
         elif widget_ in {'capsule_string'}:
             port = PrxPortAsCapsuleString(
@@ -1835,7 +1839,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         port.set_key(key_)
         port.set_label(label_)
         port.set_use_enable(enable_)
-        port.set_tool_tip(tool_tip_)
+        port.set_tool_tip(tool_tip_ or '...')
         port.set_join_to_next(join_to_next_)
         port.set_locked(lock_)
         #

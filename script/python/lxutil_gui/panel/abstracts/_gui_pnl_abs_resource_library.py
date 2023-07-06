@@ -11,7 +11,7 @@ from lxbasic import bsc_core
 
 import lxbasic.objects as bsc_objects
 
-from lxutil import utl_core
+from lxutil import utl_configure, utl_core
 
 import lxdatabase.objects as dtb_objects
 
@@ -24,8 +24,6 @@ import lxutil_gui.qt.widgets as qt_widgets
 import lxutil_gui.proxy.widgets as prx_widgets
 
 import lxsession.commands as ssn_commands
-
-from lxusd import usd_core
 
 LOAD_INDEX = utl_gui_qt_core.LOAD_INDEX
 
@@ -510,7 +508,7 @@ class _GuiTagOpt(_GuiBaseOpt):
             parent_gui.set_status(parent_gui.ValidatorStatus.Normal)
             parent_gui.set_enable(True)
             #
-            gui_name = bsc_core.RawStringUnderlineOpt(path_opt.name).to_prettify()
+            gui_name = bsc_core.RawStrUnderlineOpt(path_opt.name).to_prettify()
             prx_item = parent_gui.add_child(
                 gui_name,
                 icon=utl_gui_core.RscIconFile.get('database/tag'),
@@ -614,10 +612,10 @@ class _GuiResourceOpt(_GuiBaseOpt):
             if preview_image_dtb_port:
                 image_path_src = preview_image_dtb_port.value
                 if bsc_core.StgFileOpt(image_path_src).get_is_exists() is True:
-                    image_file_path, image_sub_process_cmd = bsc_core.ImgFileOpt(image_path_src).get_thumbnail_create_args(
+                    image_file_path, image_sp_cmd = bsc_core.ImgFileOpt(image_path_src).get_thumbnail_create_args(
                         width=256, ext='.png'
                     )
-                    image_args = image_file_path, image_sub_process_cmd
+                    image_args = image_file_path, image_sp_cmd
             #
             drag_data = None
             if self._session.get_application() == 'katana':
@@ -699,10 +697,10 @@ class _GuiResourceOpt(_GuiBaseOpt):
         prx_item.set_icons_by_pixmap(pixmaps)
         # image
         if image_args:
-            image_file_path, image_sub_process_cmd = image_args
+            image_file_path, image_sp_cmd = image_args
             prx_item.set_image(image_file_path)
-            if image_sub_process_cmd is not None:
-                prx_item.set_image_show_args(image_file_path, image_sub_process_cmd)
+            if image_sp_cmd is not None:
+                prx_item.set_image_show_args(image_file_path, image_sp_cmd)
         else:
             prx_item.set_image(
                 utl_gui_core.RscIconFile.get('image_loading_failed_error')
@@ -793,7 +791,7 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
     def gui_get(self, path):
         return self._item_dict[path]
 
-    def gui_add_all_use_thread(self, dtb_version):
+    def gui_add_all_use_thread(self, dtb_version, path_cur=None):
         def cache_fnc_():
             return self.__thread_stack_index, self._dtb_opt.get_entities(
                 entity_type=self._dtb_opt.EntityTypes.Storage,
@@ -811,7 +809,7 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
                 _i_storage_stg_location = self._dtb_opt.get_property(_i_storage_dtb_path, 'location')
                 _i_sub_path = _i_storage_stg_location[len(_version_stg_location):]
                 if _thread_stack_index == self.__thread_stack_index:
-                    self.gui_add_one(_i_sub_path, _i_dtb_storage)
+                    self.gui_add_one(_i_sub_path, _i_dtb_storage, is_current=_i_sub_path == path_cur)
 
         def post_fnc_():
             pass
@@ -829,7 +827,7 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
         #
         t.start()
 
-    def gui_add_all(self, dtb_version):
+    def gui_add_all(self, dtb_version, path_cur=None):
         version_dtb_path = dtb_version.path
         version_path_opt = bsc_core.DccPathDagOpt(version_dtb_path)
         #
@@ -849,7 +847,7 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
             #
             self.gui_add_one(i_sub_path, i_dtb_storage)
 
-    def gui_add_one(self, sub_path, dtb_directory):
+    def gui_add_one(self, sub_path, dtb_directory, is_current=False):
         path_opt = bsc_core.DccPathDagOpt(sub_path)
         ancestors = path_opt.get_ancestors()
         if ancestors:
@@ -859,7 +857,7 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
                 i_ancestor_path = i_ancestor.get_path()
                 self.gui_add_group(i_ancestor_path)
         #
-        self.gui_add(sub_path, dtb_directory)
+        self.gui_add(sub_path, dtb_directory, is_current)
 
     def gui_add_root(self, name):
         path = '/'
@@ -891,7 +889,7 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
             return prx_item
         return self.gui_get(sub_path)
 
-    def gui_add(self, sub_path, dtb_directory):
+    def gui_add(self, sub_path, dtb_directory, is_current=False):
         if self.gui_get_is_exists(sub_path) is False:
             path_opt = bsc_core.DccPathDagOpt(sub_path)
             #
@@ -925,6 +923,9 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
             #
             prx_item.set_expanded(True)
             prx_item.set_checked(False)
+            prx_item._path = sub_path
+            if is_current is True:
+                prx_item.set_selected(True)
             return prx_item
         return self.gui_get(sub_path)
 
@@ -955,6 +956,51 @@ class _GuiFileOpt(_GuiBaseOpt):
 
     def gui_get(self, path):
         return self._item_dict[path]
+
+    def gui_add(self, file_path):
+        def cache_fnc_():
+            return []
+
+        def build_fnc_(*args):
+            if file_opt.get_ext() in ['.jpg', '.png']:
+                image_file_path, image_sp_cmd = bsc_core.ImgFileOpt(file_path).get_thumbnail_create_args(
+                    width=128, ext='.png'
+                )
+                prx_item.set_image(image_file_path)
+                if image_sp_cmd is not None:
+                    prx_item.set_image_show_args(image_file_path, image_sp_cmd)
+            else:
+                file_icon = utl_gui_qt_core.QtDccMtd.get_qt_file_icon(file_path)
+                if file_icon:
+                    pixmap = file_icon.pixmap(80, 80)
+                    prx_item.set_image(
+                        pixmap
+                    )
+
+        def copy_fnc_():
+            _xml_File = bsc_core.RscFileMtd.get('asset/library/katana/image.xml')
+            if _xml_File:
+                _xml_data = bsc_core.StgFileOpt(_xml_File).set_read()
+                _xml_data = _xml_data.replace(
+                    'TEXTURE_FILE', file_opt.get_path()
+                )
+                utl_gui_qt_core.QtUtilMtd.set_text_to_clipboard(
+                    _xml_data
+                )
+        #
+        if self.gui_get_is_exists(file_path) is False:
+            file_opt = bsc_core.StgFileOpt(file_path)
+            prx_item = self._list_view.create_item()
+            self._item_dict[file_path] = prx_item
+            prx_item.set_name(file_opt.get_name())
+            prx_item.set_drag_enable(True)
+            prx_item.set_drag_urls([file_opt.get_path()])
+            prx_item.set_show_fnc(
+                cache_fnc_, build_fnc_
+            )
+            prx_item.connect_press_clicked_to(copy_fnc_)
+            return prx_item
+        return self.gui_get(file_path)
 
 
 class _GuiGuideOpt(_GuiBaseOpt):
@@ -1003,7 +1049,7 @@ class _GuiUsdStageViewOpt(_GuiBaseOpt):
 
     def get_texture_dict(self, dtb_version):
         dict_ = {}
-        for i_key in ['albedo', 'ao', 'roughness', 'normal', 'displacement', 'opacity']:
+        for i_key in utl_configure.TextureTypes.All:
             i_dtb_path = '{}/texture_{}_file'.format(dtb_version.path, i_key)
             i_file_path = self._dtb_opt.get_property(
                 i_dtb_path, 'location'
@@ -1014,6 +1060,10 @@ class _GuiUsdStageViewOpt(_GuiBaseOpt):
                     i_file_opt = i_file_opt.set_ext_repath_to('.jpg')
                 #
                 if i_file_opt.get_is_file() is True:
+                    # map to usd key
+                    if i_key in utl_configure.TextureTypes.UsdPreviewMapper:
+                        i_key = utl_configure.TextureTypes.UsdPreviewMapper[i_key]
+                    #
                     dict_[i_key] = i_file_opt.get_path()
         return dict_
 
@@ -1026,11 +1076,12 @@ class _GuiUsdStageViewOpt(_GuiBaseOpt):
             return usd_file_path
         return bsc_core.RscFileMtd.get('asset/library/geo/sphere.usda')
 
-    def refresh_textures_use_thread(self, dtb_resource, dtb_version):
+    def refresh_textures_use_thread(self, dtb_resource, dtb_version, use_as_imperfection=False):
         def cache_fnc_():
             self._usd_stage_view.refresh_usd_stage_for_asset_preview(
                 self.get_usd_file(dtb_resource, dtb_version),
-                self.get_texture_dict(dtb_version)
+                self.get_texture_dict(dtb_version),
+                use_as_imperfection=use_as_imperfection
             )
             return [self.__thread_stack_index, None]
 
@@ -1051,7 +1102,7 @@ class _GuiUsdStageViewOpt(_GuiBaseOpt):
         #
         t.start()
 
-    def refresh_textures(self, dtb_resource, dtb_version):
+    def refresh_textures(self, dtb_resource, dtb_version, use_as_imperfection=False):
         self._usd_stage_view.refresh_usd_stage_for_texture_preview(
             self.get_texture_dict(dtb_version)
         )
@@ -1182,18 +1233,19 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         #
         self._file_prx_view = prx_widgets.PrxListView()
         extra_v_s.add_widget(self._file_prx_view)
-        self._file_prx_view.set_item_frame_size_basic(*self._item_frame_size)
-        self._file_prx_view.set_item_icon_frame_size(*self._item_icon_frame_size)
-        self._file_prx_view.set_item_icon_size(*self._item_icon_size)
-        self._file_prx_view.set_item_icon_frame_draw_enable(True)
-        self._file_prx_view.set_item_name_frame_draw_enable(True)
+        self._file_frame_size = 80, 124
+        self._item_name_frame_size = 80, 44
+        self._file_prx_view.set_item_frame_size_basic(*self._file_frame_size)
+        self._file_prx_view.set_item_name_frame_size(*self._item_name_frame_size)
+        self._file_prx_view.set_item_icon_frame_draw_enable(False)
+        self._file_prx_view.set_item_name_frame_draw_enable(False)
         self._file_prx_view.set_item_names_draw_range([None, 1])
-        self._file_prx_view.set_item_image_frame_draw_enable(True)
+        self._file_prx_view.set_item_image_frame_draw_enable(False)
         #
         extra_v_s.set_fixed_size_at(0, 320)
         self._main_h_s.set_fixed_size_at(0, 320)
         self._main_h_s.set_fixed_size_at(2, 320)
-        self._main_h_s.set_contract_right_or_bottom_at(2)
+        # self._main_h_s.set_contract_right_or_bottom_at(2)
         #
         self._type_guide_bar.connect_user_text_choose_accepted_to(self.gui_guide_choose_cbk)
         self._type_guide_bar.connect_user_text_press_accepted_to(self.gui_guide_press_cbk)
@@ -1208,6 +1260,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             self._dtb_superclass_path_cur = self._dtb_superclass_name_history
         else:
             self._dtb_superclass_path_cur = self._dtb_superclass_paths[0]
+        self._dtb_superclass_name_cur = bsc_core.DccPathDagOpt(self._dtb_superclass_path_cur).get_name()
 
         self.refresh_all()
 
@@ -1257,6 +1310,8 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
 
         self.__attribute_count_dict = {}
 
+        self._directory_path_cur = None
+
     def __init__(self, session, *args, **kwargs):
         super(AbsPnlAbsResourceLibrary, self).__init__(session, *args, **kwargs)
 
@@ -1266,10 +1321,9 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                 self.HISTORY_KEY, self._dtb_superclass_path_cur
             )
 
+        self._dtb_superclass_name_cur = bsc_core.DccPathDagOpt(self._dtb_superclass_path_cur).get_name()
         self._dtb_cfg_file_path_extend = bsc_core.CfgFileMtd.get_yaml(
-            'database/library/resource-{}'.format(
-                bsc_core.DccPathDagOpt(self._dtb_superclass_path_cur).get_name()
-            )
+            'database/library/resource-{}'.format(self._dtb_superclass_name_cur)
         )
         #
         self._dtb_opt = dtb_objects.DtbResourceLibraryOpt(
@@ -1636,10 +1690,11 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                 ('path', 'is', self._dtb_opt.get_property(dtb_resource.path, 'version')),
             ],
         )
+        use_as_imperfection = self._dtb_superclass_name_cur in {'imperfection', 'texture'}
         if self._qt_thread_enable is True:
-            self._gui_usd_stage_view_opt.refresh_textures_use_thread(dtb_resource, dtb_version)
+            self._gui_usd_stage_view_opt.refresh_textures_use_thread(dtb_resource, dtb_version, use_as_imperfection)
         else:
-            self._gui_usd_stage_view_opt.refresh_textures(dtb_resource, dtb_version)
+            self._gui_usd_stage_view_opt.refresh_textures(dtb_resource, dtb_version, use_as_imperfection)
 
     def __gui_add_directories_(self, dtb_resource):
         dtb_version = self._dtb_opt.get_entity(
@@ -1649,12 +1704,16 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             ],
         )
         if self._qt_thread_enable is True:
-            self._gui_directory_opt.gui_add_all_use_thread(dtb_version)
+            self._gui_directory_opt.gui_add_all_use_thread(dtb_version, self._directory_path_cur)
         else:
-            self._gui_directory_opt.gui_add_all(dtb_version)
+            self._gui_directory_opt.gui_add_all(dtb_version, self._directory_path_cur)
 
     def __execute_gui_refresh_for_storage_files_(self):
         self._gui_file_opt.restore()
+        current_item = self._directory_prx_view.get_current_item()
+        if current_item:
+            self._directory_path_cur = current_item._path
+        #
         if self._main_h_s.get_is_contracted_at(2) is False:
             dtb_entity = self._gui_directory_opt.get_current_dtb_entity()
             if dtb_entity is not None:
@@ -1664,3 +1723,8 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         location = self._dtb_opt.get_property(
             dtb_storage.path, 'location'
         )
+        if location:
+            location_opt = bsc_core.StgDirectoryOpt(location)
+            all_file_paths = location_opt.get_all_file_paths()
+            for i in all_file_paths:
+                self._gui_file_opt.gui_add(i)

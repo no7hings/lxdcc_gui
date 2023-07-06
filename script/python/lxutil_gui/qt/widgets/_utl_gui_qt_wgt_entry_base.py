@@ -446,6 +446,7 @@ class QtEntryAsContentEdit(
                 painter._draw_empty_text_by_rect_(
                     rect=self.rect(),
                     text=self._empty_text,
+                    draw_drop_icon=True,
                 )
             else:
                 painter._draw_empty_image_by_rect_(
@@ -728,7 +729,8 @@ class QtEntryAsList(
                 painter._draw_empty_text_by_rect_(
                     rect=self.rect(),
                     text=self._empty_text,
-                    sub_text=self._empty_sub_text
+                    text_sub=self._empty_sub_text,
+                    draw_drop_icon=self._action_drop_is_enable
                 )
             else:
                 painter._draw_empty_image_by_rect_(
@@ -1027,6 +1029,10 @@ class QtEntryFrame(
     entry_focus_in = qt_signal()
     entry_focus_out = qt_signal()
     entry_focus_changed = qt_signal()
+    def _refresh_widget_(self):
+        self._refresh_widget_draw_geometry_()
+        self._refresh_widget_draw_()
+
     def _refresh_widget_draw_(self):
         self.update()
 
@@ -1035,12 +1041,12 @@ class QtEntryFrame(
         w, h = self.width(), self.height()
         # int left， int top， int right， int bottom
         m_l, m_t, m_r, m_b = self._frame_draw_margins
-
+        #
         c = self._entry_count
-
+        #
         frm_x, frm_y = x+m_l+1, y+m_t+1
         frm_w, frm_h = w-m_l-m_r-2, h-m_t-m_b-2
-
+        #
         self._frame_draw_rect.setRect(
             frm_x, frm_y, frm_w, frm_h
         )
@@ -1063,7 +1069,7 @@ class QtEntryFrame(
             self._tip_draw_rect.setRect(
                 x, y, w, h
             )
-
+        #
         if self._resize_handle is not None:
             frm_w, frm_h = 24, 24
             r_x, r_y = x+(w-frm_w), y+(h-frm_h)
@@ -1107,8 +1113,7 @@ class QtEntryFrame(
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Resize:
-                self._refresh_widget_draw_geometry_()
-                self._refresh_widget_draw_()
+                self._refresh_widget_()
                 self.geometry_changed.emit(
                     self.x(), self.y(), self.width(), self.height()
                 )

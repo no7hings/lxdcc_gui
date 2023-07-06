@@ -283,7 +283,7 @@ class QtTabView(
             self._tab_right_tool_box_draw_rect.setRect(
                 w-btn_f_w, y, btn_f_w, t_h-1
             )
-            # self._tab_choose_button.show()
+            self._tab_choose_button.show()
             self._tab_choose_button.setGeometry(
                 w-btn_f_w+(btn_f_w-btn_w)/2, c_y+(btn_f_h-btn_h)/2, btn_w, btn_h
             )
@@ -391,7 +391,9 @@ class QtTabView(
                 rect=self._tab_left_tool_box_draw_rect
             )
         if self._scroll_model.get_is_valid():
-            pass
+            painter._draw_tab_right_tool_box_by_rect_(
+                rect=self._tab_right_tool_box_draw_rect
+            )
 
     def _delete_item_at_(self, index):
         item = self._virtual_item_stack.get_item_at(index)
@@ -530,25 +532,25 @@ class GridBase(object):
         return 1
     @staticmethod
     def _get_row_count(item_count, column_count):
-        return int((item_count + column_count - 1)/column_count)
+        return int((item_count+column_count-1)/column_count)
     @staticmethod
     def _get_index_between(column, row, column_count):
-        return column + row*column_count
+        return int(column+row*column_count)
     @staticmethod
     def _get_column_loc(x, item_w):
         return int(x/item_w)
     @staticmethod
     def _get_column_at(index, column_count):
-        return int(index) % column_count
+        return int(index % column_count)
     @staticmethod
     def _get_row_loc(y, item_h):
         return int(y/item_h)
     @staticmethod
     def _get_row_at(index, column_count):
-        return int(index)/column_count
+        return int(index/column_count)
     @staticmethod
-    def _map_to_item_pos(x, y, item_w, item_h, xValue, yValue, column, row):
-        return x + xValue - column*item_w, y + yValue - row*item_h
+    def _map_to_item_pos(x, y, item_w, item_h, offset_x, offset_y, column, row):
+        return int(x+offset_x-column*item_w), int(y+offset_y-row*item_h)
     @classmethod
     def _get_abs_size(cls, item_w, item_h, column_count, row_count):
         return column_count*item_w, row_count*item_h
@@ -650,7 +652,7 @@ class QtLayoutView(
         abs_w, abs_h = self._grid_model.get_abs_size()
         frm_w, frm_h = abs_w+m_l+m_r, abs_h+m_t+m_b
         self.setMinimumHeight(frm_h)
-
+        #
         self._viewport_rect.setRect(
             v_x, v_y, abs_w, abs_h
         )

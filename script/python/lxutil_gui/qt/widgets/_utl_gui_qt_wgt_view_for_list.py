@@ -161,7 +161,8 @@ class QtListWidget(
         if not self.count():
             painter = QtPainter(self.viewport())
             painter._draw_empty_image_by_rect_(
-                self.rect(), self._empty_icon_name
+                self.rect(),
+                self._empty_icon_name
             )
         # super(QtListWidget, self).paintEvent(event)
 

@@ -351,3 +351,8 @@ class PrxTreeView(
 
     def gui_bustling(self):
         return self._qt_view._gui_bustling_()
+
+
+class PrxFileView(PrxTreeView):
+    def __init__(self, *args, **kwargs):
+        super(PrxFileView, self).__init__(*args, **kwargs)

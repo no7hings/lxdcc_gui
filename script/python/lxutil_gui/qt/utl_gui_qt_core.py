@@ -125,13 +125,13 @@ def DpiScale(*args):
     return args[0]
 
 
-def get_font(size=8, weight=50, italic=False, underline=False, strike_out=False, family='Arial'):
+def get_font(size=None, weight=None, italic=False, underline=False, strike_out=False, family='Arial'):
     font = QtGui.QFont()
     # print font.family()
-    font.setPointSize(size)
+    font.setPointSize(size or 8)
     font.setFamily(family)
     # print font.family()
-    font.setWeight(weight)
+    font.setWeight(weight or 50)
     font.setItalic(italic)
     font.setUnderline(underline)
     font.setWordSpacing(1)
@@ -766,6 +766,9 @@ class QtUtilMtd(object):
             QtGui.QIcon.On
         )
         return icon
+    @classmethod
+    def set_text_to_clipboard(cls, text):
+        QtWidgets.QApplication.clipboard().setText(text)
 
 
 class QtIconMtd(object):
@@ -1767,7 +1770,7 @@ class QtVBoxLayout(QtWidgets.QVBoxLayout):
 
     def _set_align_top_(self):
         self.setAlignment(
-            QtCore.Qt.AlignTop
+            QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
         )
 
     def _clear_all_widgets_(self):
@@ -2670,6 +2673,25 @@ class QtPainter(QtGui.QPainter):
             rect
         )
 
+    def _draw_tab_right_tool_box_by_rect_(self, rect):
+        color = QtGui.QLinearGradient(
+            rect.topLeft(), rect.topRight()
+        )
+        color.setColorAt(
+            0, QtBackgroundColors.Transparent
+        )
+        color.setColorAt(
+            0.25, QtBackgroundColors.Dark
+        )
+        color.setColorAt(
+            1, QtBackgroundColors.Dark
+        )
+        self._set_border_color_(QtBorderColors.Transparent)
+        self._set_background_color_(color)
+        self.drawRect(
+            rect
+        )
+
     def _draw_tab_buttons_by_rects_(self, frame_rect, virtual_items, index_hovered, index_pressed, current_index):
         self._draw_frame_by_rect_(
             rect=frame_rect,
@@ -2999,36 +3021,64 @@ class QtPainter(QtGui.QPainter):
         self._draw_icon_file_by_rect_(
             rect=rect, file_path=utl_gui_core.RscIconFile.get(icon_name)
         )
+    @classmethod
+    def _get_font_test_size_(cls, font, text):
+        fmt = QtGui.QFontMetrics(font)
+        f_w, f_h = fmt.width(text), fmt.height()
+        return f_w, f_h
 
-    def _draw_empty_text_by_rect_(self, rect, text, sub_text=None):
+    def _draw_empty_text_by_rect_(self, rect, text, text_sub=None, draw_drop_icon=False):
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
-        r = min(w, h)
-        r = max(min(r*.5, 128), 32)
-        font = get_font(size=r*.5, weight=75, italic=True)
-        self._set_font_(font)
-        self._set_border_color_((31, 31, 31, 255))
-        f_h = self.fontMetrics().height()
-        f_w = self.fontMetrics().width(text)+f_h
+        frm_w, frm_h = max(min(w, 200), 100), max(min(h, 40), 20)
+        frm_x, frm_y = x + (w - frm_w)/2, y + (h-frm_h) / 2
         #
-        f_x, f_y = x+(w-f_w)/2, y+(h-f_h)/2
-        text_rect = QtCore.QRect(
-            f_x, f_y, f_w, f_h
+        f_w_t, f_h_t = self._get_font_test_size_(get_font(size=12, weight=75), text)
+        txt_x, txt_y, txt_w, txt_h = bsc_core.RawSizeMtd.fit_to(
+            (f_w_t, f_h_t), (frm_w, frm_h)
         )
+        text_size = txt_h/2
+        text_font = get_font(size=text_size, weight=75)
+        text_sub_font = get_font(size=10, weight=50, italic=True)
+        t_w_n, t_h_n = self._get_font_test_size_(text_font, text)
+        self._set_border_color_((31, 31, 31, 255))
+        if text_sub:
+            txt_s_w, txt_s_h = self._get_font_test_size_(text_sub_font, text)
+        else:
+            txt_s_w, txt_s_h = 0, 0
+        #
+        if draw_drop_icon is True:
+            icon_rect = QtCore.QRect(
+                x+(w-t_w_n)/2-txt_h/2, frm_y+txt_y-txt_s_h, txt_h, txt_h
+            )
+            self._draw_icon_file_by_rect_(
+                rect=icon_rect, file_path=utl_gui_core.RscIconFile.get(
+                    'drag-and-drop'
+                )
+            )
+            text_rect = QtCore.QRect(
+                x+txt_h/2, frm_y+txt_y-txt_s_h, w, txt_h
+            )
+        else:
+            text_rect = QtCore.QRect(
+                x, frm_y+txt_y, w, txt_h
+            )
+        #
+        self._set_font_(text_font)
         self.drawText(
             text_rect,
             QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
             text
         )
-        if sub_text:
-            self._set_font_(get_font(size=10, weight=75, italic=True))
+        if text_sub:
             sub_text_rect = QtCore.QRect(
-                x, y+(h-f_h)/2+f_h, w, 20
+                x, frm_y+txt_y+txt_h-txt_s_h, w, txt_s_h
             )
+            self._set_font_(text_sub_font)
             self.drawText(
                 sub_text_rect,
                 QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
-                sub_text
+                text_sub
             )
 
     def _draw_icon_file_by_rect_(self, rect, file_path, offset=0, frame_rect=None, is_hovered=False, hover_color=None, is_pressed=False):
@@ -3091,6 +3141,18 @@ class QtPainter(QtGui.QPainter):
                         is_hovered=is_hovered
                     )
 
+    def _draw_pixmap_by_rect_(self, rect, pixmap, offset=0):
+        rect_ = QtCore.QRect(
+            rect.x()+offset, rect.y()+offset,
+            rect.width()-offset, rect.height()-offset
+        )
+        self.drawPixmap(
+            rect_,
+            pixmap
+        )
+        #
+        self.device()
+
     def _draw_svg_by_rect_(self, rect, file_path, offset=0, is_hovered=False, hover_color=None, is_pressed=False):
         rect_ = QtCore.QRect(
             rect.x()+offset, rect.y()+offset,
@@ -3102,71 +3164,80 @@ class QtPainter(QtGui.QPainter):
         )
         svg_render = QtSvg.QSvgRenderer(file_path)
         svg_render.render(self, rectF)
-        if is_hovered is True:
-            m_w, m_h = rect_.width()*2, rect_.height()*2
-            mask_image = QtGui.QImage(
-                m_w, m_h, QtGui.QImage.Format_ARGB32
-            )
-            mask_image.fill(QtCore.Qt.black)
-            painter = QtGui.QPainter(mask_image)
-            svg_render.render(painter, QtCore.QRectF(0, 0, m_w, m_h))
-            painter.end()
-            #
-            hover_pixmap = QtGui.QPixmap(mask_image)
-            mask_pixmap = QtGui.QPixmap(mask_image)
-            mask = mask_pixmap.createMaskFromColor(QtCore.Qt.black)
-            mask.scaled(
-                rect_.size(),
-                QtCore.Qt.IgnoreAspectRatio,
-                QtCore.Qt.SmoothTransformation
-            )
-            c = hover_color or QtGui.QColor(255, 179, 47, 127)
-            hover_pixmap.fill(QtGui.QColor(c.red(), c.green(), c.blue(), 127))
-            hover_pixmap.setMask(mask)
-
-            rect__ = QtCore.QRect(
-                rect_.x(), rect_.y(),
-                rect_.width(), rect_.height()
-            )
+        if is_pressed is True:
+            p_over = self._get_svg_rgb_over_(rect_, svg_render, (47, 179, 255))
             self.drawPixmap(
-                rect__,
-                hover_pixmap
+                rect_,
+                p_over
+            )
+        elif is_hovered is True:
+            p_over = self._get_svg_rgb_over_(rect_, svg_render, (255, 179, 47))
+            self.drawPixmap(
+                rect_,
+                p_over
             )
         #
         self.device()
     @classmethod
-    def _to_pixmap_with_rgb_over_(cls, pixmap, is_hovered=False, is_pressed=False):
-        if is_pressed is True:
-            w, h = pixmap.width(), pixmap.height()
-            image_over = QtGui.QImage(w, h, QtGui.QImage.Format_RGB32)
-            image = pixmap.toImage()
-            image_alpha = image.alphaChannel()
-            r, g, b = 47, 179, 255
-            for i_x in range(w):
-                for i_y in range(h):
-                    i_c = image.pixelColor(i_x, i_y)
-                    i_r, i_g, i_b = i_c.red(), i_c.green(), i_c.blue()
-                    i_g_c = QtGui.QColor(i_r/2+r/2, i_g/2+g/2, i_b/2+b/2)
-                    image_over.setPixel(i_x, i_y, i_g_c.rgb())
-            #
-            image_over.setAlphaChannel(image_alpha)
-            return pixmap.fromImage(image_over)
-        elif is_hovered is True:
-            w, h = pixmap.width(), pixmap.height()
-            image_over = QtGui.QImage(w, h, QtGui.QImage.Format_RGB32)
-            image = pixmap.toImage()
-            image_alpha = image.alphaChannel()
-            r, g, b = 255, 179, 47
-            for i_x in range(w):
-                for i_y in range(h):
-                    i_c = image.pixelColor(i_x, i_y)
-                    i_r, i_g, i_b = i_c.red(), i_c.green(), i_c.blue()
-                    i_g_c = QtGui.QColor(i_r/2+r/2, i_g/2+g/2, i_b/2+b/2)
-                    image_over.setPixel(i_x, i_y, i_g_c.rgb())
-            #
-            image_over.setAlphaChannel(image_alpha)
-            return pixmap.fromImage(image_over)
-        return pixmap
+    def _get_svg_rgb_over_(cls, rect, svg_render, rgb):
+        w, h = rect.width(), rect.height()
+        i_new = QtGui.QImage(
+            w, h, QtGui.QImage.Format_ARGB32
+        )
+        i_new.fill(QtCore.Qt.black)
+        painter = QtGui.QPainter(i_new)
+        svg_render.render(painter, QtCore.QRectF(0, 0, w, h))
+        painter.end()
+        #
+        p_mask = QtGui.QPixmap(i_new).createMaskFromColor(QtCore.Qt.black)
+        r, g, b = rgb
+        c = QtGui.QColor(r, g, b, 127)
+        #
+        p_over = QtGui.QPixmap(i_new)
+        p_over.fill(QtGui.QColor(c.red(), c.green(), c.blue(), 127))
+        p_over.setMask(p_mask)
+        return p_over
+    @classmethod
+    def _get_pixmap_with_rgb_over_(cls, pixmap, rgb):
+        w, h = pixmap.width(), pixmap.height()
+        image_new = QtGui.QImage(w, h, QtGui.QImage.Format_RGB32)
+        image = pixmap.toImage()
+        r, g, b = rgb
+        for i_x in range(w):
+            for i_y in range(h):
+                i_c = image.pixelColor(i_x, i_y)
+                i_r, i_g, i_b, i_a = i_c.red(), i_c.green(), i_c.blue(), i_c.alpha()
+                i_g_c = QtGui.QColor(i_r/2+r/2, i_g/2+g/2, i_b/2+b/2, i_a)
+                image_new.setPixel(i_x, i_y, i_g_c.rgba())
+        #
+        if LOAD_INDEX == 0:
+            pixmap_new = pixmap.fromImage(image_new)
+            p_mask = cls._get_pixmap_mask_(pixmap)
+            pixmap_new.setMask(p_mask)
+        else:
+            i_alpha = image.alphaChannel()
+            image_new.setAlphaChannel(i_alpha)
+            pixmap_new = pixmap.fromImage(image_new)
+        return pixmap_new
+    @classmethod
+    def _get_pixmap_mask_(cls, pixmap):
+        w, h = pixmap.width(), pixmap.height()
+        image_new = QtGui.QImage(
+            w*4, h*4, QtGui.QImage.Format_ARGB32
+        )
+        image_new.fill(QtCore.Qt.black)
+        painter = QtGui.QPainter(image_new)
+        painter.drawPixmap(QtCore.QRect(0, 0, w*4, h*4), pixmap)
+        painter.end()
+        image_new = image_new.scaled(
+            pixmap.size(),
+            QtCore.Qt.KeepAspectRatio,
+            QtCore.Qt.SmoothTransformation
+        )
+        p = QtGui.QPixmap(image_new)
+        # bug: in PyQt5 mask not be a QPixmap, mask a QBitmap
+        pixmap_mask = p.createMaskFromColor(QtCore.Qt.black)
+        return pixmap_mask
 
     def _draw_image_by_rect_(self, rect, file_path, offset=0, is_hovered=False, hover_color=None, is_pressed=False, cache_resize=False):
         rect_ = QtCore.QRect(
@@ -3192,10 +3263,14 @@ class QtPainter(QtGui.QPainter):
                 img_scaled = QtGui.QImage(tmp_path)
         #
         pixmap = QtGui.QPixmap(img_scaled)
-        pxm_over = self._to_pixmap_with_rgb_over_(pixmap, is_hovered=is_hovered, is_pressed=is_pressed)
+        if is_pressed is True:
+            pixmap = self._get_pixmap_with_rgb_over_(pixmap, (47, 179, 255))
+        elif is_hovered is True:
+            pixmap = self._get_pixmap_with_rgb_over_(pixmap, (255, 179, 47))
+        #
         self.drawPixmap(
             rect_,
-            pxm_over
+            pixmap
         )
         #
         self.device()
@@ -3224,7 +3299,7 @@ class QtPainter(QtGui.QPainter):
                 frm_w, frm_h = rect_offset.width(), rect_offset.height()
                 img_w, img_h = image.width(), image.height()
 
-                img_rect_x, img_rect_y, img_rect_w, img_rect_h = bsc_core.RawRectMtd.set_fit_to(
+                img_rect_x, img_rect_y, img_rect_w, img_rect_h = bsc_core.RawRectMtd.fit_to(
                     (frm_x, frm_y), (img_w, img_h), (frm_w, frm_h)
                 )
 
@@ -3298,7 +3373,7 @@ class QtPainter(QtGui.QPainter):
         self.drawText(
             rect,
             QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
-            'loading .{}'.format('.'*(loading_index % 3))
+            'loading .{}'.format('.'*((loading_index/10) % 3))
         )
 
     def _set_exr_image_draw_by_rect_(self, rect, file_path, offset=0, is_hovered=False):
@@ -3689,6 +3764,7 @@ class QtPainter(QtGui.QPainter):
         background_color = self._get_alternating_color_(
             rect, colors, 20
         )
+        self._set_border_color_(colors[0])
         self._set_background_color_(background_color)
         if border_radius > 0:
             self._set_antialiasing_()
@@ -3718,6 +3794,7 @@ class QtPainter(QtGui.QPainter):
         else:
             rect_offset = rect
         #
+        self._set_border_color_(colors[0])
         background_color = self._get_alternating_color_(
             rect_offset, colors, 20, int(time.time()*10), running
         )
@@ -3804,14 +3881,14 @@ class QtPainter(QtGui.QPainter):
         ss = [self.fontMetrics().width(i) for i in text_dict.keys()]
         text_height = int(text_size*1.5)
         text_spacing = int(text_size*.2)
-        t_w = max(ss)+text_size/2
+        txt_w = max(ss)+text_size/2
         for seq, (k, v) in enumerate(text_dict.items()):
             i_rect = QtCore.QRect(x, y+seq*(text_height+text_spacing), w, text_height)
             self._set_text_draw_by_rect_use_key_value_(
                 rect=i_rect,
                 key_text=k,
                 value_text=v,
-                key_text_width=t_w,
+                key_text_width=txt_w,
                 key_text_size=text_size, value_text_size=text_size,
                 key_text_weight=text_weight, value_text_weight=text_weight,
                 key_text_color=font_color, value_text_color=font_color,

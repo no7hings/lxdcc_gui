@@ -452,6 +452,8 @@ class PrxSessionToolWindow(PrxSessionWindow):
         super(PrxSessionToolWindow, self).__init__(session, *args, **kwargs)
 
     def _setup_fnc_(self):
+        # if self._qt_widget.parent():
+        #     self._qt_widget.setWindowFlags(utl_gui_qt_core.QtCore.Qt.Tool)
         self.restore_variants()
         #
         self._setup_ssn_tool_()
