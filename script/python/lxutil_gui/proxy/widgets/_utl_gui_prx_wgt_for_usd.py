@@ -31,6 +31,9 @@ class PrxUsdStageViewProxy(
     def refresh_usd_stage_for_asset_render(self, *args, **kwargs):
         pass
 
+    def run_as_thread(self, cache_fnc, build_fnc, post_fnc):
+        pass
+
 
 class PrxUsdStageView(
     utl_gui_prx_abstract.AbsPrxWidget,
@@ -68,3 +71,11 @@ class PrxUsdStageView(
         self._qt_widget._refresh_usd_stage_for_asset_render_(
             *args, **kwargs
         )
+
+    def run_as_thread(self, cache_fnc, build_fnc, post_fnc):
+        self._qt_widget._run_build_use_thread_(
+            cache_fnc, build_fnc, post_fnc
+        )
+
+
+

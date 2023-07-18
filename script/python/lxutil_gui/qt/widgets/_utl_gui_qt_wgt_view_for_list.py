@@ -171,7 +171,7 @@ class QtListWidget(
             w, h = self.viewport().width(), self.viewport().height()
             # self.adjustSize()
             h_add = self.verticalScrollBar().maximum()
-            print h+h_add
+            # print h+h_add
             # self.adjustSize()
 
     def _refresh_info_(self, *args, **kwargs):

@@ -90,7 +90,7 @@ class AbsScenePackagerPanel(
         #
         self._refresh_button_0 = prx_widgets.PrxPressItem()
         self._refresh_button_0.set_name('Refresh')
-        self.set_button_add(self._refresh_button_0)
+        self.add_button(self._refresh_button_0)
         self._refresh_button_0.connect_press_clicked_to(self.refresh_all_fnc)
 
     def _set_filter_tree_view_build_(self):

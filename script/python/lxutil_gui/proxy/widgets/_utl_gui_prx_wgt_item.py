@@ -506,7 +506,6 @@ class PrxTreeItem(
     def set_visible_connect_to(self, key, prx_item_tgt):
         self.set_visible_src_key(key)
         self.set_visible_tgt_view(prx_item_tgt.get_view())
-        # print self, self.get_visible_src_key(), "AAA"
         prx_item_tgt.set_visible_tgt_key(key)
         prx_item_tgt.set_hidden(self.get_is_hidden())
 

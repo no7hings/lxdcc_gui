@@ -17,7 +17,7 @@ from ._utl_gui_qt_wgt_item import *
 
 from ._utl_gui_qt_wgt_container import *
 
-from ._utl_gui_qt_wgt_item_for_entry import *
+from ._utl_gui_qt_wgt_entry import *
 
 from ._utl_gui_qt_wgt_item_for_list import *
 
@@ -34,5 +34,3 @@ from ._utl_gui_qt_wgt_for_usd import *
 from ._utl_gui_qt_wgt_chart import *
 
 from ._utl_gui_qt_wgt_node_graph import *
-
-

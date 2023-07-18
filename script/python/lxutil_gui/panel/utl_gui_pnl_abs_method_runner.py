@@ -202,19 +202,19 @@ class AbsSceneMethodRunnerPanel(
         self._check_button = prx_widgets.PrxPressItem()
         self._check_button.set_icon_by_text('Check')
         self._check_button.set_name('Check')
-        self.set_button_add(self._check_button)
+        self.add_button(self._check_button)
         self._check_button.connect_press_clicked_to(self._set_checked_methods_check_run_)
         #
         self._repair_button = prx_widgets.PrxPressItem()
         self._repair_button.set_icon_by_text('Repair')
         self._repair_button.set_name('Repair')
-        self.set_button_add(self._repair_button)
+        self.add_button(self._repair_button)
         self._repair_button.connect_press_clicked_to(self._set_checked_methods_repair_run_)
         #
         self._export_button = prx_widgets.PrxPressItem()
         self._export_button.set_icon_by_text('Export')
         self._export_button.set_name('Export')
-        self.set_button_add(self._export_button)
+        self.add_button(self._export_button)
         self._export_button.connect_press_clicked_to(self._set_checked_methods_export_run_)
 
     def _set_viewer_groups_build_(self):

@@ -60,19 +60,19 @@ class AbsSceneCheckerToolPanel(
         self._check_and_repair_button = prx_widgets.PrxPressItem()
         self._check_and_repair_button.set_icon_name('python')
         self._check_and_repair_button.set_name('Check and Repair')
-        self.set_button_add(self._check_and_repair_button)
+        self.add_button(self._check_and_repair_button)
         self._check_and_repair_button.connect_press_clicked_to(self.set_repair_run)
         #
         self._check_button = prx_widgets.PrxPressItem()
         self._check_button.set_icon_name('python')
         self._check_button.set_name('Check')
-        self.set_button_add(self._check_button)
+        self.add_button(self._check_button)
         self._check_button.connect_press_clicked_to(self.set_check_run)
         #
         self._repair_button = prx_widgets.PrxPressItem()
         self._repair_button.set_icon_name('python')
         self._repair_button.set_name('Repair')
-        self.set_button_add(self._repair_button)
+        self.add_button(self._repair_button)
         self._repair_button.connect_press_clicked_to(self.set_repair_run)
 
     def _set_viewer_groups_build_(self):

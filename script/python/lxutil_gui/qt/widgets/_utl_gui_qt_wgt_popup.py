@@ -191,11 +191,12 @@ class QtPopupForChoose(
         self._popup_tag_filter_item_width, self._popup_tag_filter_item_height = 20, 20
         #
         self._popup_close_button = _utl_gui_qt_wgt_utility.QtIconPressButton(self)
+        self._popup_close_button._set_name_text_('close popup')
         self._popup_close_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('close'))
         self._popup_close_button._set_icon_hover_color_(QtBackgroundColors.DeleteHovered)
         self._popup_close_button._set_icon_frame_draw_size_(18, 18)
         self._popup_close_button.press_clicked.connect(self._close_popup_)
-        self._popup_close_button.setToolTip(
+        self._popup_close_button._set_tool_tip_text_(
             '"LMB-click" to close'
         )
         #
@@ -630,10 +631,11 @@ class QtPopupForCompletion(
         self._init_popup_base_def_(self)
         #
         self._popup_close_button = _utl_gui_qt_wgt_utility.QtIconPressButton(self)
+        self._popup_close_button._set_name_text_('close popup')
         self._popup_close_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('close'))
         self._popup_close_button._set_icon_hover_color_(QtBackgroundColors.DeleteHovered)
         self._popup_close_button.press_clicked.connect(self._close_popup_)
-        self._popup_close_button.setToolTip(
+        self._popup_close_button._set_tool_tip_text_(
             '"LMB-click" to close'
         )
         #
@@ -792,10 +794,11 @@ class QtPopupForGuideChoose(
         )
         #
         self._popup_close_button = _utl_gui_qt_wgt_utility.QtIconPressButton(self)
+        self._popup_close_button._set_name_text_('close popup')
         self._popup_close_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('close'))
         self._popup_close_button._set_icon_hover_color_(QtBackgroundColors.DeleteHovered)
         self._popup_close_button.press_clicked.connect(self._close_popup_)
-        self._popup_close_button.setToolTip(
+        self._popup_close_button._set_tool_tip_text_(
             '"LMB-click" to close'
         )
         #

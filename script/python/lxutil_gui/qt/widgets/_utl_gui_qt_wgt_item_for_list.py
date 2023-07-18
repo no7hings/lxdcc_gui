@@ -367,7 +367,7 @@ class _QtListItemWidget(
         self._drag = None
 
     def dragMoveEvent(self, event):
-        print event
+        pass
 
     def eventFilter(self, *args):
         widget, event = args
@@ -436,7 +436,7 @@ class _QtListItemWidget(
             elif event.type() == QtCore.QEvent.ChildRemoved:
                 pass
         else:
-            print event.type()
+            pass
         return False
 
     def paintEvent(self, event):

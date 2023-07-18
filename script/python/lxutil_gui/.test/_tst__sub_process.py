@@ -13,7 +13,7 @@ class W(_utl_gui_prx_wdt_utility.PrxBaseWindow):
         super(W, self).__init__(*args, **kwargs)
 
         b = _utl_gui_prx_wdt_utility.PrxPressItem()
-        self.set_button_add(b)
+        self.add_button(b)
         b.set_name('Test')
 
         f = '/l/prod/cjd/publish/assets/chr/nn_gongshifu/srf/surfacing/nn_gongshifu.srf.surfacing.v019/review/nn_gongshifu.srf.surfacing.v019.mov'

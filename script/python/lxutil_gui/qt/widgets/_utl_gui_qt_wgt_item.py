@@ -549,6 +549,7 @@ class QtCheckItem(
 class _QtStatusItem(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameBaseDef,
+    utl_gui_qt_abstract.AbsQtNameBaseDef,
     utl_gui_qt_abstract.AbsQtIconBaseDef,
     #
     utl_gui_qt_abstract.AbsQtActionBaseDef,
@@ -567,6 +568,8 @@ class _QtStatusItem(
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         #
         self._init_frame_base_def_(self)
+        self._init_name_base_def_(self)
+        self._set_name_text_('status button')
         self._init_icon_base_def_(self)
         #
         self._init_action_for_hover_def_(self)

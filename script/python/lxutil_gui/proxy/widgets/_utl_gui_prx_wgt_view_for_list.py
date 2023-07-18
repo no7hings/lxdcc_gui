@@ -40,53 +40,43 @@ class PrxListView(
         self._qt_layout_0.addWidget(self._prx_top_tool_bar.widget)
         self._prx_top_tool_bar.set_border_radius(1)
         # check
-        self._prx_check_tool_box = _utl_gui_prx_wdt_utility.PrxHToolBox()
-        self._prx_top_tool_bar.add_widget(self._prx_check_tool_box)
-        self._prx_check_tool_box.set_expanded(True)
-        self._prx_check_tool_box.set_visible(False)
+        self._prx_check_tool_box = self.create_top_tool_box('check', True, False, 0)
         #
         self._check_all_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
+        self._check_all_button._set_name_text_('check all')
         self._check_all_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('all_checked'))
         self._prx_check_tool_box.add_widget(self._check_all_button)
         self._check_all_button.clicked.connect(self.__check_all_items)
         self._check_all_button._set_tool_tip_text_(
-            '"LMB click" for checked all items'
+            '"LMB-click" for checked all items'
         )
         #
         self._uncheck_all_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
         self._uncheck_all_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('all_unchecked'))
+        self._uncheck_all_button._set_name_text_('uncheck all')
         self._prx_check_tool_box.add_widget(self._uncheck_all_button)
         self._uncheck_all_button.clicked.connect(self.__uncheck_all_items)
         self._uncheck_all_button._set_tool_tip_text_(
-            '"LMB click" for unchecked all items'
+            '"LMB-click" for unchecked all items'
         )
         # mode switch
-        self._prx_mode_switch_tool_box = _utl_gui_prx_wdt_utility.PrxHToolBox()
-        self._prx_top_tool_bar.add_widget(self._prx_mode_switch_tool_box)
-        self._prx_mode_switch_tool_box.set_expanded(True)
+        self._prx_mode_switch_tool_box = self.create_top_tool_box('mode', True, True, 0)
         #
         self._view_mode_swap_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
         self._prx_mode_switch_tool_box.add_widget(self._view_mode_swap_button)
-        self._view_mode_swap_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('grid_mode'))
+        self._view_mode_swap_button._set_name_text_('icon mode')
+        self._view_mode_swap_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('tool/icon-mode'))
         self._view_mode_swap_button.clicked.connect(self.__swap_view_mode)
         self._view_mode_swap_button._set_tool_tip_text_(
-            '"LMB click" for switch view mode to "icon" / "list"'
+            '"LMB-click" for switch view mode to "icon" / "list"'
         )
         # scale switch
-        self._prx_scale_switch_tool_box = _utl_gui_prx_wdt_utility.PrxHToolBox()
-        self._prx_top_tool_bar.add_widget(self._prx_scale_switch_tool_box)
-        self._prx_scale_switch_tool_box.set_expanded(True)
-        self._prx_scale_switch_tool_box.set_visible(False)
+
+        self._prx_scale_switch_tool_box = self.create_top_tool_box('scale', True, False, 0)
         # sort
-        self._prx_sort_switch_tool_box = _utl_gui_prx_wdt_utility.PrxHToolBox()
-        self._prx_top_tool_bar.add_widget(self._prx_sort_switch_tool_box)
-        self._prx_sort_switch_tool_box.set_expanded(True)
-        self._prx_sort_switch_tool_box.set_visible(False)
+        self._prx_sort_switch_tool_box = self.create_top_tool_box('sort', True, False, 0)
         # filter
-        self._prx_filter_tool_box = _utl_gui_prx_wdt_utility.PrxHToolBox()
-        self._prx_top_tool_bar.add_widget(self._prx_filter_tool_box)
-        self._prx_filter_tool_box.set_expanded(True)
-        self._prx_filter_tool_box.set_size_mode(1)
+        self._prx_filter_tool_box = self.create_top_tool_box('filter', True, True, 1)
         #
         self._prx_filer_bar_0 = _utl_gui_prx_wdt_utility.PrxFilterBar()
         self._prx_filter_tool_box.add_widget(self._prx_filer_bar_0)
@@ -128,6 +118,18 @@ class PrxListView(
 
     def hide_top_tool_bar(self):
         self._prx_top_tool_bar.set_visible(False)
+
+    def create_top_tool_box(self, name, expanded=True, visible=True, size_mode=0, insert_args=None):
+        tool_box = _utl_gui_prx_wdt_utility.PrxHToolBox()
+        if isinstance(insert_args, int):
+            self._prx_top_tool_bar.insert_widget_at(insert_args, tool_box)
+        else:
+            self._prx_top_tool_bar.add_widget(tool_box)
+        tool_box.set_name(name)
+        tool_box.set_expanded(expanded)
+        tool_box.set_visible(visible)
+        tool_box.set_size_mode(size_mode)
+        return tool_box
 
     def __keyword_filter_completion_gain_fnc(self, *args, **kwargs):
         keyword = args[0]
@@ -178,13 +180,13 @@ class PrxListView(
         ]:
             i_tool = _utl_gui_prx_wdt_utility.PrxEnableItem()
             self._prx_scale_switch_tool_box.add_widget(i_tool)
-            i_tool._qt_widget._set_size_(24, 24)
-            i_tool._qt_widget._set_icon_frame_draw_size_(24, 24)
-            i_tool._qt_widget._set_icon_file_draw_size_(20, 20)
+            # i_tool._qt_widget._set_size_(24, 24)
+            # i_tool._qt_widget._set_icon_frame_draw_size_(24, 24)
+            # i_tool._qt_widget._set_icon_file_draw_size_(20, 20)
             i_tool._qt_widget._set_exclusive_widgets_(self._scale_switch_tools)
             i_tool.set_name(i_key)
             i_tool.set_icon_name('tool/icon-{}'.format(i_key))
-            i_tool.set_tool_tip('"LMB click" for switch to scale to "{}"'.format(i_key))
+            i_tool.set_tool_tip('"LMB-click" for switch to scale to "{}"'.format(i_key))
             self._scale_switch_tools.append(i_tool._qt_widget)
             i_tool.connect_check_changed_as_exclusive_to(
                 functools.partial(self.__switch_view_scale, i_scale)
@@ -202,13 +204,13 @@ class PrxListView(
         ]:
             i_tool = _utl_gui_prx_wdt_utility.PrxEnableItem()
             self._prx_sort_switch_tool_box.add_widget(i_tool)
-            i_tool._qt_widget._set_size_(24, 24)
-            i_tool._qt_widget._set_icon_frame_draw_size_(24, 24)
-            i_tool._qt_widget._set_icon_file_draw_size_(20, 20)
+            # i_tool._qt_widget._set_size_(24, 24)
+            # i_tool._qt_widget._set_icon_frame_draw_size_(24, 24)
+            # i_tool._qt_widget._set_icon_file_draw_size_(20, 20)
             i_tool._qt_widget._set_exclusive_widgets_(self._sort_mode_switch_tools)
             i_tool.set_name(i_key)
             i_tool.set_icon_name('tool/sort-by-{}-ascend'.format(i_key))
-            i_tool.set_tool_tip('"LMB click" for switch to sort mode to "{}"'.format(i_key))
+            i_tool.set_tool_tip('"LMB-click" for switch to sort mode to "{}"'.format(i_key))
             self._sort_mode_switch_tools.append(i_tool._qt_widget)
             #
             i_tool.connect_check_changed_as_exclusive_to(
@@ -235,8 +237,11 @@ class PrxListView(
 
     def __swap_view_mode(self):
         self._qt_view._swap_view_mode_()
+        self._view_mode_swap_button._set_name_text_(
+            ['list mode', 'icon mode'][self.view._get_is_grid_mode_()]
+        )
         self._view_mode_swap_button._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get(['list_mode', 'grid_mode'][self.view._get_is_grid_mode_()])
+            utl_gui_core.RscIconFile.get(['tool/list-mode', 'tool/icon-mode'][self.view._get_is_grid_mode_()])
         )
 
     def __check_all_items(self):
@@ -319,7 +324,7 @@ class PrxListView(
     def set_clear(self):
         self._item_dict.clear()
         self._filter_completion_cache = None
-        self.view._set_clear_()
+        self._qt_view._set_clear_()
 
     def _get_all_items_(self):
         return self.view._get_all_items_()
@@ -362,6 +367,11 @@ class PrxListView(
 
     def set_scroll_enable(self, boolean):
         self._qt_view._set_scroll_enable_(boolean)
+
+    def get_current_item(self):
+        _ = self._qt_view.currentItem()
+        if _:
+            return _.gui_proxy
 
 
 class PrxImageView(PrxListView):

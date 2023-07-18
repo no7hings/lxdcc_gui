@@ -1488,19 +1488,21 @@ class QtBuildThread(QtCore.QThread):
 
     def run(self):
         if self._status == self.Status.Waiting:
-            self._status = self.Status.Running
             self.run_started.emit()
             self.start_accepted.emit(self)
-            self.set_status(self.Status.Started)
+            self.set_status(self.Status.Running)
             # noinspection PyBroadException
             try:
                 self.cache_started.emit()
                 cache = self._cache_fnc()
                 self.cache_finished.emit()
-                self.built.emit(list(cache))
+                # ignore when status is killed or other (not running)
+                if self._status == self.Status.Running:
+                    self.built.emit(list(cache))
             except:
                 self.run_failed.emit()
                 self.set_status(self.Status.Failed)
+                print 'thread failed'
                 print bsc_core.ExceptionMtd.get_stack_()
             #
             finally:
@@ -1632,18 +1634,19 @@ class QtBuildRunnable(QtCore.QRunnable):
     def run(self):
         if self._status == self.Status.Waiting:
             self._build_signals.run_started.emit()
-            self.set_status(self.Status.Started)
+            self.set_status(self.Status.Running)
             # noinspection PyBroadException
             try:
-                #
                 self._build_signals.cache_started.emit()
                 cache = self._cache_fnc()
                 self._build_signals.cache_finished.emit()
-                #
-                self._build_signals.built.emit(cache)
+                # ignore when status is killed or other (not running)
+                if self._status == self.Status.Running:
+                    self._build_signals.built.emit(list(cache))
             except:
                 self._build_signals.run_failed.emit()
                 self.set_status(self.Status.Failed)
+                print 'runnable failed'
                 print bsc_core.ExceptionMtd.get_stack_()
             #
             finally:
@@ -3373,7 +3376,7 @@ class QtPainter(QtGui.QPainter):
         self.drawText(
             rect,
             QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
-            'loading .{}'.format('.'*((loading_index/10) % 3))
+            'loading .{}'.format('.'*int((loading_index/50) % 3))
         )
 
     def _set_exr_image_draw_by_rect_(self, rect, file_path, offset=0, is_hovered=False):

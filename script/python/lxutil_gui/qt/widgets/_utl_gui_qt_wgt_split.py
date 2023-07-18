@@ -13,6 +13,7 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
 class _AbsQtSplitterHandle(
     QtWidgets.QWidget,
     utl_gui_qt_abstract.AbsQtFrameBaseDef,
+    utl_gui_qt_abstract.AbsQtNameBaseDef,
     #
     utl_gui_qt_abstract.AbsQtActionBaseDef,
     utl_gui_qt_abstract.AbsQtActionForHoverDef,
@@ -149,6 +150,8 @@ class _AbsQtSplitterHandle(
         self._is_hovered = False
         #
         self._init_frame_base_def_(self)
+        self._init_name_base_def_(self)
+        self._set_name_text_('splitter handle')
         self._init_action_for_hover_def_(self)
         self._init_action_base_def_(self)
         self._init_action_for_press_def_(self)
@@ -238,36 +241,60 @@ class _AbsQtSplitterHandle(
                             self._set_action_flag_(
                                 [self.ActionFlag.ResizeLeft, self.ActionFlag.ResizeRight][self._is_contract_l]
                             )
+                            self._set_tool_tip_text_(
+                                '"LMB-click" to contract widget to {}'.format(['left', 'right'][self._is_contract_l])
+                            )
                         elif self._get_orientation_() == QtCore.Qt.Vertical:
                             self._set_action_flag_(
                                 [self.ActionFlag.ResizeUp, self.ActionFlag.ResizeDown][self._is_contract_l]
+                            )
+                            self._set_tool_tip_text_(
+                                '"LMB-click" to contract widget to {}'.format(['up', 'down'][self._is_contract_l])
                             )
                     elif self._contract_r_rect.contains(p):
                         if self._get_orientation_() == QtCore.Qt.Horizontal:
                             self._set_action_flag_(
                                 [self.ActionFlag.ResizeRight, self.ActionFlag.ResizeLeft][self._is_contract_r]
                             )
+                            self._set_tool_tip_text_(
+                                '"LMB-click" to contract widget to {}'.format(['right', 'left'][self._is_contract_l])
+                            )
                         elif self._get_orientation_() == QtCore.Qt.Vertical:
                             self._set_action_flag_(
                                 [self.ActionFlag.ResizeDown, self.ActionFlag.ResizeUp][self._is_contract_r]
+                            )
+                            self._set_tool_tip_text_(
+                                '"LMB-click" to contract widget to {}'.format(['down', 'up'][self._is_contract_l])
                             )
                     elif self._swap_rect.contains(p):
                         if self._get_orientation_() == QtCore.Qt.Horizontal:
                             self._set_action_flag_(
                                 self.ActionFlag.SwapH
                             )
+                            self._set_tool_tip_text_(
+                                '"LMB-click" to swap widgets left to right'
+                            )
                         elif self._get_orientation_() == QtCore.Qt.Vertical:
                             self._set_action_flag_(
                                 self.ActionFlag.SwapV
+                            )
+                            self._set_tool_tip_text_(
+                                '"LMB-click" to swap widgets up to down'
                             )
                     else:
                         if self._get_orientation_() == QtCore.Qt.Horizontal:
                             self._set_action_flag_(
                                 self.ActionFlag.SplitHHover
                             )
+                            self._set_tool_tip_text_(
+                                '"LMB-click" to adjust widgets size between left and right'
+                            )
                         elif self._get_orientation_() == QtCore.Qt.Vertical:
                             self._set_action_flag_(
                                 self.ActionFlag.SplitVHover
+                            )
+                            self._set_tool_tip_text_(
+                                '"LMB-click" to adjust widgets size between up and down'
                             )
                 # press move
                 elif event.buttons() == QtCore.Qt.LeftButton:

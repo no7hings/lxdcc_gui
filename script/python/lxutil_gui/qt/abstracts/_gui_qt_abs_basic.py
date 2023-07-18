@@ -872,7 +872,9 @@ class AbsQtActionDragDef(object):
     def _update_mime_data_(self):
         self._drag_mime_data = QtCore.QMimeData()
         for k, v in self._drag_data.items():
-            self._drag_mime_data.setData(k, v)
+            self._drag_mime_data.setData(
+                bsc_core.auto_encode(k), bsc_core.auto_encode(v)
+            )
         #
         if self._drag_urls:
             self._drag_mime_data.setUrls(
@@ -1336,7 +1338,7 @@ class AbsQtNameBaseDef(object):
                 #
                 name_text = name_text.replace('<', '&lt;').replace('>', '&gt;')
                 css += '<h3><p class="no_warp_and_center">{}</p></h3>\n'.format(name_text)
-            #
+            # add split line
             css += '<p><hr></p>\n'
             if isinstance(text, six.string_types):
                 texts = text.split('\n')
@@ -1344,7 +1346,27 @@ class AbsQtNameBaseDef(object):
                 texts = text
             #
             for i_text in texts:
-                #
+                if '"LMB-click"' in i_text:
+                    i_text = i_text.replace(
+                        '"LMB-click"',
+                        '<img src="{}">\n"LMB-click"'.format(
+                            utl_gui_core.RscIconFile.get('mouse/LMB-click')
+                        )
+                    )
+                if '"RMB-click"' in i_text:
+                    i_text = i_text.replace(
+                        '"RMB-click"',
+                        '<img src="{}">\n"RMB-click"'.format(
+                            utl_gui_core.RscIconFile.get('mouse/RMB-click')
+                        )
+                    )
+                if '"MMB-wheel"' in i_text:
+                    i_text = i_text.replace(
+                        '"MMB-wheel"',
+                        '<img src="{}">\n"MMB-wheel"'.format(
+                            utl_gui_core.RscIconFile.get('mouse/MMB-wheel')
+                        )
+                    )
                 css += '<p class="no_wrap">{}</p>\n'.format(i_text)
             #
             css += '</body>\n</html>'
@@ -2315,6 +2337,7 @@ class AbsQtThreadBaseDef(object):
         self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
 
         self._thread_draw_is_enable = False
+        self._thread_load_index = 0
 
         self._thread_timer = QtCore.QTimer()
         self._thread_timer.timeout.connect(
@@ -2329,6 +2352,7 @@ class AbsQtThreadBaseDef(object):
     def _start_thread_draw_(self):
         self._set_action_busied_(True)
         self._thread_draw_is_enable = True
+        self._thread_load_index = 0
         self._thread_timer.start(100)
         self._refresh_thread_draw_()
 
@@ -2336,6 +2360,7 @@ class AbsQtThreadBaseDef(object):
         self._set_action_busied_(False)
         self._thread_draw_is_enable = False
         self._thread_timer.stop()
+        self._thread_load_index = 0
         self._refresh_thread_draw_()
 
     def _thread_start_accept_fnc_(self, thread):
@@ -2349,14 +2374,13 @@ class AbsQtThreadBaseDef(object):
             self._stop_thread_draw_()
 
     def _refresh_thread_draw_(self):
+        self._thread_load_index += 1
         self._widget.update()
 
     def _run_build_use_thread_(self, cache_fnc, build_fnc, post_fnc):
         if self._qt_thread_enable is True:
             t = QtBuildThread(self._widget)
-            t.set_cache_fnc(
-                cache_fnc
-            )
+            t.set_cache_fnc(cache_fnc)
             t.built.connect(build_fnc)
             t.run_finished.connect(post_fnc)
             t.start_accepted.connect(self._thread_start_accept_fnc_)

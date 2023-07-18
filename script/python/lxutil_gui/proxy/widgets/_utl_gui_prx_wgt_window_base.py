@@ -197,7 +197,7 @@ class PrxBaseWindow(
     def set_qt_widget_add(self, qt_widget):
         self._qt_main_layout.addWidget(qt_widget)
 
-    def set_button_add(self, widget):
+    def add_button(self, widget):
         self._window_bottom_tool_bar.add_widget(widget)
         self._window_bottom_tool_bar.set_show()
 
@@ -471,21 +471,21 @@ class PrxSessionToolWindow(PrxSessionWindow):
 
     def _setup_ssn_tool_(self):
         self._ssn_tool_apply_and_close_button = _utl_gui_prx_wdt_utility.PrxPressItem()
-        self.set_button_add(self._ssn_tool_apply_and_close_button)
+        self.add_button(self._ssn_tool_apply_and_close_button)
         self._ssn_tool_apply_and_close_button.set_name('Apply and Close')
         self._ssn_tool_apply_and_close_button.connect_press_clicked_to(
             self.apply_and_close_fnc
         )
 
         self._ssn_tool_apply_button = _utl_gui_prx_wdt_utility.PrxPressItem()
-        self.set_button_add(self._ssn_tool_apply_button)
+        self.add_button(self._ssn_tool_apply_button)
         self._ssn_tool_apply_button.set_name('Apply')
         self._ssn_tool_apply_button.connect_press_clicked_to(
             self.apply_fnc
         )
 
         self._ssn_tool_close_button = _utl_gui_prx_wdt_utility.PrxPressItem()
-        self.set_button_add(self._ssn_tool_close_button)
+        self.add_button(self._ssn_tool_close_button)
         self._ssn_tool_close_button.set_name('Close')
         self._ssn_tool_close_button.connect_press_clicked_to(
             self.close_fnc

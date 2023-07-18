@@ -65,7 +65,7 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
         #
         self._next_button = prx_widgets.PrxPressItem()
         self._next_button.set_name('next')
-        self.set_button_add(
+        self.add_button(
             self._next_button
         )
         self._next_button.connect_press_clicked_to(self.execute_show_next)
@@ -844,14 +844,14 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
 
         self._validation_button = prx_widgets.PrxPressItem()
         self._validation_button.set_name('validation')
-        self.set_button_add(
+        self.add_button(
             self._validation_button
         )
         self._validation_button.connect_press_clicked_to(self.execute_validation)
 
         self._next_button = prx_widgets.PrxPressItem()
         self._next_button.set_name('next')
-        self.set_button_add(
+        self.add_button(
             self._next_button
         )
         self._next_button.connect_press_clicked_to(self.execute_show_next)

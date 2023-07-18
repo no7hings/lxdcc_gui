@@ -482,7 +482,7 @@ class AbsQtListWidget(
             item_widget.deleteLater()
 
     def _set_item_delete_(self, item):
-        print item.index()
+        pass
 
     def _set_focused_(self, boolean):
         if boolean is True:

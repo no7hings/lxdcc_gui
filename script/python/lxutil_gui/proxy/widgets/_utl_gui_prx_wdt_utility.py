@@ -9,7 +9,7 @@ from lxutil import utl_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize, _utl_gui_qt_wgt_filter, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_container, _utl_gui_qt_wgt_item_for_entry, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_window
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize, _utl_gui_qt_wgt_filter, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_container, _utl_gui_qt_wgt_entry, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_window
 
 from lxutil_gui.proxy import utl_gui_prx_configure, utl_gui_prx_core, utl_gui_prx_abstract
 
@@ -263,7 +263,7 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_head = _utl_gui_qt_wgt_container.QtHExpandHead1()
         qt_layout_0.addWidget(self._qt_head)
         self._qt_head.expand_toggled.connect(self.set_expanded)
-        self._qt_head.setToolTip('"LMB-click" to expand "on" / "off"')
+        self._qt_head._set_tool_tip_text_('"LMB-click" to expand "on" / "off"')
         #
         qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
         qt_layout_0.addWidget(qt_widget_1)
@@ -314,6 +314,12 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
         else:
             self._qt_layout_0.addWidget(widget.widget)
 
+    def insert_widget_at(self, index, widget):
+        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+            self._qt_layout_0.insertWidget(index, widget)
+        else:
+            self._qt_layout_0.insertWidget(index, widget.widget)
+
     def set_width(self, w):
         self._wgt_w = w
         self._refresh_expand_()
@@ -363,7 +369,7 @@ class PrxVToolBar(PrxHToolBar):
         self._qt_head = _utl_gui_qt_wgt_container.QtVExpandHead1()
         qt_layout_0.addWidget(self._qt_head)
         self._qt_head.expand_toggled.connect(self.set_expanded)
-        self._qt_head.setToolTip('"LMB-click" to expand "on" / "off"')
+        self._qt_head._set_tool_tip_text_('"LMB-click" to expand "on" / "off"')
         #
         qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
         qt_layout_0.addWidget(qt_widget_1)
@@ -436,7 +442,7 @@ class PrxLeftExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_head = _utl_gui_qt_wgt_item._QtHContractItem()
         qt_layout_0.addWidget(self._qt_head)
         self._qt_head.expand_toggled.connect(self.set_expanded)
-        self._qt_head.setToolTip('"LMB-click" to expand "on" / "off"')
+        self._qt_head._set_tool_tip_text_('"LMB-click" to expand "on" / "off"')
         #
         self._refresh_expand_()
         #
@@ -530,7 +536,7 @@ class PrxRightExpandedGroup(PrxLeftExpandedGroup):
         qt_layout_0.addWidget(self._qt_head)
         self._qt_head.expand_toggled.connect(self.set_expanded)
         self._qt_head._set_expand_direction_(self._qt_head.CollapseDirection.LeftToRight)
-        self._qt_head.setToolTip('"LMB-click" to expand "on" / "off"')
+        self._qt_head._set_tool_tip_text_('"LMB-click" to expand "on" / "off"')
         #
         qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
         qt_layout_0.addWidget(qt_widget_1)
@@ -569,7 +575,7 @@ class PrxHToolBox(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_head = _utl_gui_qt_wgt_container.QtHExpandHead2()
         qt_layout_0.addWidget(self._qt_head)
         self._qt_head.expand_toggled.connect(self.set_expanded)
-        self._qt_head.setToolTip('"LMB-click" to expand "on" / "off"')
+        self._qt_head._set_tool_tip_text_('"LMB-click" to expand "on" / "off"')
         #
         qt_widget_1 = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
         qt_layout_0.addWidget(qt_widget_1)
@@ -597,7 +603,7 @@ class PrxHToolBox(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_head._refresh_expand_()
 
     def set_name(self, name):
-        self._qt_head.set_name(name)
+        self._qt_head._set_name_text_(name)
 
     def set_expanded(self, boolean):
         self._qt_head._set_expanded_(boolean)
@@ -776,7 +782,7 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
 
     def _set_build_(self):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
-        widget = _utl_gui_qt_wgt_item_for_entry.QtValueEntryAsContentEdit()
+        widget = _utl_gui_qt_wgt_entry.QtValueEntryAsContentEdit()
         widget._set_value_entry_enable_(False)
         qt_layout_0.addWidget(widget)
         self._qt_text_browser_0 = widget._value_entry

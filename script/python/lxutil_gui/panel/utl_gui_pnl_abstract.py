@@ -183,12 +183,12 @@ class AbsSceneComposeToolPanel(
 
         self._refresh_button_0 = qt_widgets.QtPressButton()
         self._refresh_button_0.setText('Refresh')
-        self.set_button_add(self._refresh_button_0)
+        self.add_button(self._refresh_button_0)
         self._refresh_button_0.clicked.connect(self.set_refresh)
 
         self._repair_button = qt_widgets.QtPressButton()
         self._repair_button.setText('Repair')
-        self.set_button_add(self._repair_button)
+        self.add_button(self._repair_button)
         self._repair_button.clicked.connect(self.set_repair_run)
 
     def _set_dcc_obj_select_(self):

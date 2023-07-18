@@ -71,7 +71,7 @@ class AbsPnlAssetDccGeometryComparer(
                 'press to update geometry(s) form model task'
             ]
         )
-        self.set_button_add(self._update_geometry_from_model_item)
+        self.add_button(self._update_geometry_from_model_item)
         self._update_geometry_from_model_item.connect_press_clicked_to(self.import_fnc)
 
     def _set_viewer_groups_build_(self):

@@ -1,4 +1,6 @@
 # coding:utf-8
+import time
+
 import six
 
 import fnmatch
@@ -14,6 +16,8 @@ import lxbasic.objects as bsc_objects
 from lxutil import utl_configure, utl_core
 
 import lxdatabase.objects as dtb_objects
+
+import lxdatabase.scripts as dtb_scripts
 
 from lxutil_gui import utl_gui_configure, utl_gui_core
 
@@ -573,6 +577,41 @@ class _GuiResourceOpt(_GuiBaseOpt):
     def gui_register(self, path, prx_item):
         self._item_dict[path] = prx_item
 
+    def get_texture_data(self, dtb_resource):
+        dtb_opt = self._dtb_opt
+        dtb_resource_opt = dtb_objects.DtbNodeOpt(dtb_opt, dtb_resource)
+        dtb_version = dtb_resource_opt.get_as_node('version')
+        #
+        storage_dtb_path = '{}/{}'.format(dtb_version.path, 'texture_acescg_tx_directory')
+        dtb_storage = dtb_opt.get_entity(
+            entity_type=dtb_opt.EntityTypes.Storage,
+            filters=[
+                ('path', 'is', storage_dtb_path)
+            ]
+        )
+        dtb_storage_opt = dtb_objects.DtbNodeOpt(dtb_opt, dtb_storage)
+        directory_stg_path = dtb_storage_opt.get('location')
+        return dtb_scripts.ScpTextureResourceData(directory_stg_path).get_data()
+
+    def copy_to_clipboard_from(self, dtb_resource):
+        xml_file_path = bsc_core.RscFileMtd.get('asset/library/katana/{}.xml'.format(self._window._copy_mode))
+        if xml_file_path:
+            xml_data = bsc_core.StgFileOpt(xml_file_path).set_read()
+            texture_data = self.get_texture_data(dtb_resource)
+            if texture_data:
+                replace_data = {}
+                for i_key in utl_configure.TextureTypes.Arnold.All:
+                    replace_data[i_key] = texture_data.get(i_key, '')
+                #
+                replace_data['resource_name'] = '_'.join(dtb_resource.gui_name.split(' ')).lower()
+                replace_data['time_tag'] = bsc_core.TimeExtraMtd.get_time_tag_36_(multiply=100)
+                for i_k, i_v in replace_data.items():
+                    xml_data = xml_data.replace('{{{}}}'.format(i_k), i_v)
+            #
+            utl_gui_qt_core.QtUtilMtd.set_text_to_clipboard(
+                xml_data
+            )
+
     def gui_add(self, dtb_type, dtb_resource, semantic_tag_filter_data):
         def cache_fnc_():
             name_dict = collections.OrderedDict()
@@ -612,8 +651,8 @@ class _GuiResourceOpt(_GuiBaseOpt):
             if preview_image_dtb_port:
                 image_path_src = preview_image_dtb_port.value
                 if bsc_core.StgFileOpt(image_path_src).get_is_exists() is True:
-                    image_file_path, image_sp_cmd = bsc_core.ImgFileOpt(image_path_src).get_thumbnail_create_args(
-                        width=256, ext='.png'
+                    image_file_path, image_sp_cmd = bsc_core.ImgFileOpt(image_path_src).get_thumbnail_jpg_create_args_with_background_over(
+                        width=256, background_rgba=(71, 71, 71, 255)
                     )
                     image_args = image_file_path, image_sp_cmd
             #
@@ -674,7 +713,8 @@ class _GuiResourceOpt(_GuiBaseOpt):
             keys.add(str(dtb_resource.gui_name).lower())
             keys.add(str(dtb_resource.name).lower())
             prx_item.set_keyword_filter_keys_tgt(keys)
-
+            #
+            prx_item.connect_press_clicked_to(functools.partial(self.copy_to_clipboard_from, dtb_resource))
             return prx_item
         return self.gui_get(path)
 
@@ -962,9 +1002,9 @@ class _GuiFileOpt(_GuiBaseOpt):
             return []
 
         def build_fnc_(*args):
-            if file_opt.get_ext() in ['.jpg', '.png']:
+            if file_opt.get_ext() in ['.jpg', '.png', '.exr', '.tx']:
                 image_file_path, image_sp_cmd = bsc_core.ImgFileOpt(file_path).get_thumbnail_create_args(
-                    width=128, ext='.png'
+                    width=128, ext='.jpg'
                 )
                 prx_item.set_image(image_file_path)
                 if image_sp_cmd is not None:
@@ -978,11 +1018,11 @@ class _GuiFileOpt(_GuiBaseOpt):
                     )
 
         def copy_fnc_():
-            _xml_File = bsc_core.RscFileMtd.get('asset/library/katana/image.xml')
-            if _xml_File:
-                _xml_data = bsc_core.StgFileOpt(_xml_File).set_read()
+            _xml_file_path = bsc_core.RscFileMtd.get('asset/library/katana/texture-node.xml')
+            if _xml_file_path:
+                _xml_data = bsc_core.StgFileOpt(_xml_file_path).set_read()
                 _xml_data = _xml_data.replace(
-                    'TEXTURE_FILE', file_opt.get_path()
+                    '{texture}', file_opt.get_path()
                 )
                 utl_gui_qt_core.QtUtilMtd.set_text_to_clipboard(
                     _xml_data
@@ -1095,12 +1135,9 @@ class _GuiUsdStageViewOpt(_GuiBaseOpt):
 
         self.__thread_stack_index += 1
 
-        t = utl_gui_qt_core.QtBuildThread(self._window.widget)
-        t.set_cache_fnc(cache_fnc_)
-        t.built.connect(build_fnc_)
-        t.run_finished.connect(post_fnc_)
-        #
-        t.start()
+        self._usd_stage_view.run_as_thread(
+            cache_fnc_, build_fnc_, post_fnc_
+        )
 
     def refresh_textures(self, dtb_resource, dtb_version, use_as_imperfection=False):
         self._usd_stage_view.refresh_usd_stage_for_texture_preview(
@@ -1261,9 +1298,12 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             self._dtb_superclass_path_cur = self._dtb_superclass_name_history
         else:
             self._dtb_superclass_path_cur = self._dtb_superclass_paths[0]
+        #
         self._dtb_superclass_name_cur = bsc_core.DccPathDagOpt(self._dtb_superclass_path_cur).get_name()
 
         self.refresh_all()
+
+        self.__gui_add_resource_copy_tools()
 
         self.setup_menu()
 
@@ -1312,6 +1352,8 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self.__attribute_count_dict = {}
 
         self._directory_path_cur = None
+
+        self._copy_mode = 'material-node-graph'
 
     def __init__(self, session, *args, **kwargs):
         super(AbsPnlAbsResourceLibrary, self).__init__(session, *args, **kwargs)
@@ -1386,6 +1428,40 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             self._type_prx_view.select_item_by_key(
                 text,
                 exclusive=True
+            )
+
+    def __gui_set_copy_mode(self, mode):
+        self._copy_mode = mode
+        current_item = self._resource_prx_view.get_current_item()
+        if current_item:
+            dtb_resource = current_item.get_gui_dcc_obj(
+                namespace=_GuiResourceOpt.DCC_NAMESPACE
+            )
+            if dtb_resource:
+                self._gui_resource_opt.copy_to_clipboard_from(dtb_resource)
+
+    def __gui_add_resource_copy_tools(self):
+        self._copy_tool_box = self._resource_prx_view.create_top_tool_box(
+            'copy action', insert_args=4
+        )
+        tools = []
+        for i_key, i_enable, i_mode in [
+            ('texture', False, 'texture-node-graph'),
+            ('shader', False, 'shader-node-graph'),
+            ('material', True, 'material-node-graph')
+        ]:
+            i_tool = prx_widgets.PrxEnableItem()
+            tools.append(i_tool.widget)
+            self._copy_tool_box.add_widget(i_tool)
+            i_tool._qt_widget._set_exclusive_widgets_(tools)
+            i_tool.set_name(i_key)
+            i_tool.set_icon_name('tool/{}'.format(i_key))
+            i_tool.set_tool_tip('"LMB-click" for switch to copy mode to "{}"'.format(i_key))
+            if i_enable is True:
+                i_tool.set_checked(True)
+            #
+            i_tool.connect_check_changed_as_exclusive_to(
+                functools.partial(self.__gui_set_copy_mode, i_mode)
             )
 
     def __gui_resource_completion_gain_fnc(self, *args, **kwargs):
@@ -1713,7 +1789,8 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._gui_file_opt.restore()
         current_item = self._directory_prx_view.get_current_item()
         if current_item:
-            self._directory_path_cur = current_item._path
+            if hasattr(current_item, '_path'):
+                self._directory_path_cur = current_item._path
         #
         if self._main_h_s.get_is_contracted_at(2) is False:
             dtb_entity = self._gui_directory_opt.get_current_dtb_entity()

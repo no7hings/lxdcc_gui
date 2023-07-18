@@ -323,11 +323,12 @@ class QtValueEntryAsTextEditByChoose(
                 if values:
                     self._value_index_label.show()
                     maximum = len(values)
-                    text = str(maximum)
                     value_cur = self._get_value_()
                     if value_cur in values:
                         index_cur = values.index(value_cur) + 1
                         text = '{}/{}'.format(index_cur, maximum)
+                    else:
+                        text = str(maximum)
                     #
                     self._value_index_label._set_name_text_(text)
                     width = self._value_index_label._get_name_text_draw_width_(text)
@@ -370,10 +371,12 @@ class QtValueEntryAsTextEditByChoose(
                 cur_index = pre_index-1
             else:
                 cur_index = pre_index+1
+            #
             cur_index = max(min(cur_index, maximum), 0)
             if cur_index != pre_index:
                 self._set_value_(values[cur_index])
                 # set value before
+                self.choose_changed.emit()
                 self.user_choose_changed.emit()
 
     def _build_value_entry_(self, value_type):
@@ -425,7 +428,7 @@ class QtValueEntryAsTextEditByChoose(
         self._value_choose_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('down'))
         self._value_choose_button._set_icon_frame_draw_size_(18, 18)
         self._value_choose_button._set_name_text_('choose value')
-        self._value_choose_button._set_tool_tip_('"LMB-click" to popup choose view')
+        self._value_choose_button._set_tool_tip_('"LMB-click" to choose value from popup view')
         self._value_choose_button.press_clicked.connect(self._start_choose_extra_fnc_)
         #
         self._build_choose_extra_(self._value_entry, self)
@@ -658,7 +661,7 @@ class QtValueEntryAsCapsule(
         if self._capsule_texts:
             c_h = self._capsule_height
             w = int(max([self.fontMetrics().width(i) for i in self._capsule_texts]))
-            self._capsule_per_width = w+(w % 2)+20
+            self._capsule_per_width = w+(w % 2)+4
             for i, i_text in enumerate(self._capsule_texts):
                 i_x, i_y = x+i*self._capsule_per_width, y
                 i_w, i_h = self._capsule_per_width, h
@@ -877,7 +880,7 @@ class QtValueEntryAsList(
         self._value_choose_button._set_icon_state_name_('state/popup')
         self._value_choose_button._set_icon_frame_draw_size_(18, 18)
         self._value_choose_button._set_name_text_('choose value')
-        self._value_choose_button._set_tool_tip_('"LMB-click" to popup choose view')
+        self._value_choose_button._set_tool_tip_('"LMB-click" to choose value from popup view')
         self._value_choose_button.press_clicked.connect(self._start_choose_extra_fnc_)
         # choose
         self._build_choose_extra_(self._value_entry, self)
@@ -1028,7 +1031,7 @@ class QtValueEntryAsListWithChoose(
         self._value_choose_button._set_icon_state_name_('state/popup')
         self._value_choose_button._set_icon_frame_draw_size_(18, 18)
         self._value_choose_button._set_name_text_('choose value')
-        self._value_choose_button._set_tool_tip_('"LMB-click" to popup choose view')
+        self._value_choose_button._set_tool_tip_('"LMB-click" to choose value from popup view')
         self._value_choose_button.press_clicked.connect(self._start_choose_extra_fnc_)
         # choose
         self._build_choose_extra_(self._value_entry, self)

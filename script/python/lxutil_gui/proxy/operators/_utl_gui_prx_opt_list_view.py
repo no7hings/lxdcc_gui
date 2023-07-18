@@ -29,5 +29,5 @@ class PrxRsvTaskListViewAddOpt(object):
         return True, prx_item
 
     def _set_show_deferred_(self, data):
-        prx_item, rsv_task = data
-        print prx_item, rsv_task
+        pass
+        # prx_item, rsv_task = data

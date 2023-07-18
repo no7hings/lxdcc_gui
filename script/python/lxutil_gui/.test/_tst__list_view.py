@@ -5,19 +5,20 @@ from lxbasic import bsc_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wgt_view_for_list
+import lxutil_gui.proxy.widgets as prx_widgets
 
 
-class TestWindow(_utl_gui_prx_wdt_utility.PrxBaseWindow):
+class TestWindow(prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(TestWindow, self).__init__(*args, **kwargs)
 
     def _test_(self):
         def add_fnc_(i_):
             def show_fnc_():
-                thumbnail_file_path = bsc_core.ImgFileOpt(
-                    '/l/temp/td/dongchangbao/Arnold_Shader_Suite_for_MAYA_v2.0/09-ADVANCED/Del_Cracks_11_1_1_1.jpg'
-                ).get_thumbnail()
+                # thumbnail_file_path = bsc_core.ImgFileOpt(
+                #     '/l/temp/td/dongchangbao/Arnold_Shader_Suite_for_MAYA_v2.0/09-ADVANCED/Del_Cracks_11_1_1_1.jpg'
+                # ).get_thumbnail()
+                thumbnail_file_path = '/production/library/resource/all/surface/fort_damaged_floor_te3maaeg/v0001/image/preview_test.jpg'
                 # wdt.set_loading_update()
                 item_prx.set_image(thumbnail_file_path)
                 if i_ % 2 == 0:
@@ -82,7 +83,7 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxBaseWindow):
                 self._drag_released_fnc_
             )
         #
-        wdt = _utl_gui_prx_wgt_view_for_list.PrxListView()
+        wdt = prx_widgets.PrxListView()
         wdt.get_top_tool_bar().set_expanded(True)
         # wdt.set_draw_enable(True)
         wdt.set_item_icon_frame_draw_enable(True)

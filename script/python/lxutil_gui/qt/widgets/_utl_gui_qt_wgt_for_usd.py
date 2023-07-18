@@ -1,4 +1,5 @@
 # coding=utf-8
+import functools
 # noinspection PyUnresolvedReferences
 from pxr import Usd, Sdf, Tf, Vt, Gf, Glf, UsdGeom, UsdLux
 
@@ -8,7 +9,7 @@ from lxusd import usd_core
 
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-import functools
+import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_container
 
@@ -19,8 +20,12 @@ if LOAD_INDEX == 0:
 else:
     from pxr import Usdviewq, UsdAppUtils
     #
-    class QtUsdStageWidget(QtWidgets.QWidget):
+    class QtUsdStageWidget(
+        QtWidgets.QWidget,
         #
+        utl_gui_qt_abstract.AbsQtActionBaseDef,
+        utl_gui_qt_abstract.AbsQtThreadBaseDef
+    ):
         UsdQUtils = Usdviewq._usdviewq.Utils
         #
         RefinementComplexities = UsdAppUtils.complexityArgs.RefinementComplexities
@@ -29,22 +34,33 @@ else:
         DumpMallocTags = Usdviewq.common.DumpMallocTags
         PickModes = Usdviewq.common.PickModes
         CameraMaskModes = Usdviewq.common.CameraMaskModes
+
+        def _start_thread_draw_(self):
+            self._stageView.hide()
+            self._stageView.setUpdatesEnabled(False)
+            super(QtUsdStageWidget, self)._start_thread_draw_()
+
+        def _stop_thread_draw_(self):
+            self._stageView.show()
+            self._stageView.setUpdatesEnabled(True)
+            super(QtUsdStageWidget, self)._stop_thread_draw_()
+
         def __init__(self, *args, **kwargs):
             super(QtUsdStageWidget, self).__init__(*args, **kwargs)
             self.installEventFilter(self)
             self.setMaximumSize(166667, 166667)
-
             self._is_focused = False
 
             self._frame_draw_margins = 0, 0, 0, 0
             self._frame_draw_rect = QtCore.QRect()
+            self._stage_view_draw_rect = QtCore.QRect()
             self._frame_border_color = QtBorderColors.Light
             self._hovered_frame_border_color = QtBorderColors.Hovered
             self._selected_frame_border_color = QtBorderColors.Selected
             self._frame_background_color = QtBackgroundColors.Dim
             layout_g = _utl_gui_qt_wgt_utility.QtGridLayout(self)
             layout_g.setContentsMargins(2, 2, 2, 2)
-            layout_g.setSpacing(2)
+            layout_g.setSpacing(0)
 
             self._main_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
             layout_g.addWidget(self._main_button, 0, 0, 1, 1)
@@ -60,6 +76,9 @@ else:
             self.__build_top_tools_(layout_g)
             self.__build_left_tools_(layout_g)
             self.__build_usd_stage_view_(layout_g)
+
+            self._init_action_base_def_(self)
+            self._init_thread_base_def_(self)
 
         def _get_main_menu_data_(self):
             return [
@@ -1114,6 +1133,10 @@ else:
             self._frame_draw_rect.setRect(
                 frm_x, frm_y, frm_w, frm_h
             )
+            self._stage_view_draw_rect.setRect(
+                self._stageView.x(), self._stageView.y(),
+                self._stageView.width(), self._stageView.height()
+            )
 
         def eventFilter(self, *args):
             widget, event = args
@@ -1136,18 +1159,23 @@ else:
         def paintEvent(self, event):
             painter = QtPainter(self)
             #
-            # is_hovered = self._is_hovered
             is_selected = self._is_focused
-            background_color = self._frame_background_color
+            bcg_color = QtBackgroundColors.Basic
+            # swap border color on focus change
             bdr_color = [QtBorderColors.Basic, QtBorderColors.HighLight][is_selected]
             bdr_w = [1, 2][is_selected]
             painter._draw_frame_by_rect_(
                 rect=self._frame_draw_rect,
                 border_color=bdr_color,
-                background_color=QtBackgroundColors.Basic,
+                background_color=bcg_color,
                 # border_radius=1,
                 border_width=bdr_w,
             )
+            if self._thread_draw_is_enable is True:
+                painter._set_loading_draw_by_rect_(
+                    rect=self._stage_view_draw_rect,
+                    loading_index=self._thread_load_index
+                )
 
         def __build_usd_var_(self):
             self._mallocTags = 'none'
@@ -1221,7 +1249,7 @@ else:
             ):
                 i_button = _utl_gui_qt_wgt_utility.QtIconEnableItem()
                 i_button._set_name_text_(i_key)
-                i_button._set_tool_tip_text_('"LMB click" to toggle "{0}", "RMB click" for show more action'.format(i_key))
+                i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n, "RMB-click" for show more action'.format(i_key))
                 i_button._set_icon_file_path_(
                     utl_gui_core.RscIconFile.get('tool/{}'.format(i_key))
                 )
@@ -1248,7 +1276,7 @@ else:
             ):
                 i_button = _utl_gui_qt_wgt_utility.QtIconEnableItem()
                 i_button._set_name_text_(i_key)
-                i_button._set_tool_tip_text_('"LMB click" to toggle "{0}", "RMB click" for show more action'.format(i_key))
+                i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n"RMB-click" for show more action'.format(i_key))
                 i_button._set_icon_file_path_(
                     utl_gui_core.RscIconFile.get('tool/{}'.format(i_key))
                 )
@@ -1271,7 +1299,7 @@ else:
             ):
                 i_button = _utl_gui_qt_wgt_utility.QtIconEnableItem()
                 i_button._set_name_text_(i_key)
-                i_button._set_tool_tip_text_('"LMB click" to toggle "{0}", "RMB click" to switch "{0}"'.format(i_key))
+                i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n"RMB-click" to switch "{0}"'.format(i_key))
                 i_button._set_icon_file_path_(
                     utl_gui_core.RscIconFile.get('tool/{}'.format(i_key))
                 )
@@ -1302,7 +1330,7 @@ else:
             ):
                 i_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
                 i_button._set_name_text_(i_key)
-                i_button._set_tool_tip_text_('"LMB click" to toggle "{0}", "RMB click" to switch "{0}"'.format(i_key))
+                i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n"RMB-click" to switch "{0}"'.format(i_key))
                 i_button._set_icon_file_path_(
                     utl_gui_core.RscIconFile.get('tool/{}'.format(i_key))
                 )
@@ -1325,7 +1353,7 @@ else:
             ):
                 i_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
                 i_button._set_name_text_(i_key)
-                i_button._set_tool_tip_text_('"LMB click" to toggle "{0}", "RMB click" to switch "{0}"'.format(i_key))
+                i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n"RMB-click" to switch "{0}"'.format(i_key))
                 i_button._set_icon_file_path_(
                     utl_gui_core.RscIconFile.get('tool/{}'.format(i_key))
                 )
@@ -1369,7 +1397,7 @@ else:
             ):
                 i_button = _utl_gui_qt_wgt_utility.QtIconEnableItem()
                 i_button._set_name_text_(i_key)
-                i_button._set_tool_tip_text_('"LMB click" to "{}"'.format(i_key))
+                i_button._set_tool_tip_text_('"LMB-click" to "{}"'.format(i_key))
                 i_button._set_icon_file_path_(
                     utl_gui_core.RscIconFile.get('tool/{}'.format(i_key))
                 )
@@ -1399,7 +1427,7 @@ else:
             ]:
                 i_button = _utl_gui_qt_wgt_utility.QtIconEnableItem()
                 i_button._set_name_text_(i_key)
-                i_button._set_tool_tip_text_('"LMB click" for switch render mode to "{}"'.format(i_key))
+                i_button._set_tool_tip_text_('"LMB-click" for switch render mode to "{}"'.format(i_key))
                 i_button._set_icon_file_path_(
                     utl_gui_core.RscIconFile.get('tool/{}'.format(i_key))
                 )
@@ -1427,7 +1455,7 @@ else:
             ):
                 i_button = _utl_gui_qt_wgt_utility.QtIconEnableItem()
                 i_button._set_name_text_(i_key)
-                i_button._set_tool_tip_text_('"LMB click" to toggle "{0}", "RMB click" to switch "{0}" level'.format(i_key))
+                i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n"RMB-click" to switch "{0}" level'.format(i_key))
                 i_button._set_icon_file_path_(
                     utl_gui_core.RscIconFile.get('tool/{}'.format(i_key))
                 )

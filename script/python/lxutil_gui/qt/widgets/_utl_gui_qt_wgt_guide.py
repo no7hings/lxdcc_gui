@@ -352,13 +352,13 @@ class QtGuideEntry(
             #
             if self._guide_choose_index_current is not None:
                 self._set_tool_tip_text_(
-                    'LMB-click to popup a choose frame'
+                    '"LMB-click" to popup a choose frame'
                 )
             elif self._guide_index_current is not None:
                 self._set_tool_tip_text_(
                     (
-                        '1, "LMB-click" to jump to current\n'
-                        '2, "MMB-wheel" to jump to previous or next'
+                        '"LMB-click" to jump to current\n'
+                        '"MMB-wheel" to jump to previous or next'
                     )
                 )
             else:
