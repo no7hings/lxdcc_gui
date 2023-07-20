@@ -1,7 +1,7 @@
 # coding=utf-8
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
 
@@ -10,27 +10,30 @@ from lxutil_gui.qt import utl_gui_qt_core
 
 class QtTreeWidgetItem(
     QtWidgets.QTreeWidgetItem,
-    utl_gui_qt_abstract.AbsQtItemDagLoading,
+    gui_qt_abstract.AbsQtItemDagLoading,
     #
-    utl_gui_qt_abstract.AbsQtTypeDef,
-    utl_gui_qt_abstract.AbsQtPathBaseDef,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtTypeDef,
+    gui_qt_abstract.AbsQtPathBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtIconBaseDef,
-    utl_gui_qt_abstract.AbsQtShowBaseForItemDef,
-    utl_gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstract.AbsQtShowBaseForItemDef,
+    gui_qt_abstract.AbsQtMenuBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtItemFilterDef,
+    gui_qt_abstract.AbsQtItemFilterDef,
     #
-    utl_gui_qt_abstract.AbsQtStateDef,
+    gui_qt_abstract.AbsQtStateDef,
     #
-    utl_gui_qt_abstract.AbsQtDagDef,
-    utl_gui_qt_abstract.AbsQtVisibleDef,
+    gui_qt_abstract.AbsQtDagDef,
+    gui_qt_abstract.AbsQtVisibleDef,
     #
-    utl_gui_qt_abstract.AbsQtItemVisibleConnectionDef,
+    gui_qt_abstract.AbsQtItemVisibleConnectionDef,
     #
-    utl_gui_qt_abstract.AbsQtActionDragDef,
+    gui_qt_abstract.AbsQtActionDragDef,
 ):
+    def update(self):
+        pass
+
     def _refresh_widget_(self):
         pass
 
@@ -38,9 +41,6 @@ class QtTreeWidgetItem(
         self._get_view_().update()
 
     ValidatorStatus = bsc_configure.ValidatorStatus
-    def update(self):
-        pass
-
     def __init__(self, *args, **kwargs):
         super(QtTreeWidgetItem, self).__init__(*args, **kwargs)
         self.setFlags(
@@ -84,7 +84,7 @@ class QtTreeWidgetItem(
             self._drag = _utl_gui_qt_wgt_utility.QtTreeItemDrag(self.treeWidget())
             self._drag.set_item(*data)
             self._drag.setMimeData(self._drag_mime_data)
-            self._drag._execute_start_(self._drag_point_offset)
+            self._drag._do_move_(self._drag_point_offset)
 
     def setCheckState(self, column, state):
         self.setData(column, QtCore.Qt.CheckStateRole, state, emit_send_enable=False)

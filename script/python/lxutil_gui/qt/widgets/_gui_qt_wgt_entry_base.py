@@ -6,15 +6,15 @@ from lxutil_gui.qt.utl_gui_qt_core import *
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize
 
-import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 
 class QtEntryAsTextEdit(
     QtWidgets.QLineEdit,
-    utl_gui_qt_abstract.AbsQtValueDef,
+    gui_qt_abstract.AbsQtValueDef,
     #
-    utl_gui_qt_abstract.AbsQtEntryBaseDef,
-    utl_gui_qt_abstract.AbsQtDropBaseDef,
+    gui_qt_abstract.AbsQtEntryBaseDef,
+    gui_qt_abstract.AbsQtDropBaseDef,
 ):
     entry_changed = qt_signal()
     entry_cleared = qt_signal()
@@ -76,7 +76,7 @@ class QtEntryAsTextEdit(
     def _set_entry_tip_(self, text):
         self.setPlaceholderText(text)
 
-    def _execute_action_wheel_(self, event):
+    def _do_wheel_(self, event):
         if self._value_type in [int, float]:
             delta = event.angleDelta().y()
             pre_value = self._get_value_()
@@ -117,7 +117,7 @@ class QtEntryAsTextEdit(
                 #
                 self._set_value_completion_()
             elif event.type() == QtCore.QEvent.Wheel:
-                self._execute_action_wheel_(event)
+                self._do_wheel_(event)
             elif event.type() == QtCore.QEvent.KeyPress:
                 if event.key() == QtCore.Qt.Key_Up:
                     self.key_up_pressed.emit()
@@ -375,8 +375,8 @@ class QtEntryAsTextEdit(
 
 class QtEntryAsContentEdit(
     QtWidgets.QTextEdit,
-    utl_gui_qt_abstract.AbsQtEntryBaseDef,
-    utl_gui_qt_abstract.AbsQtDropBaseDef,
+    gui_qt_abstract.AbsQtEntryBaseDef,
+    gui_qt_abstract.AbsQtDropBaseDef,
 ):
     focus_in = qt_signal()
     focus_out = qt_signal()
@@ -576,7 +576,7 @@ class QtEntryAsContentEdit(
             self.insertPlainText(data.text())
 
 
-class QtEntryAsListForPopup(utl_gui_qt_abstract.AbsQtListWidget):
+class QtEntryAsListForPopup(gui_qt_abstract.AbsQtListWidget):
     def __init__(self, *args, **kwargs):
         super(QtEntryAsListForPopup, self).__init__(*args, **kwargs)
         self.setDragDropMode(self.DragOnly)
@@ -601,15 +601,15 @@ class QtEntryAsListForPopup(utl_gui_qt_abstract.AbsQtListWidget):
 
 
 class QtEntryAsList(
-    utl_gui_qt_abstract.AbsQtListWidget,
-    utl_gui_qt_abstract.AbsQtHelpDef,
+    gui_qt_abstract.AbsQtListWidget,
+    gui_qt_abstract.AbsQtHelpDef,
     #
-    utl_gui_qt_abstract.AbsQtValueDef,
-    utl_gui_qt_abstract.AbsQtValuesDef,
+    gui_qt_abstract.AbsQtValueDef,
+    gui_qt_abstract.AbsQtValuesDef,
     #
-    utl_gui_qt_abstract.AbsQtEntryBaseDef,
+    gui_qt_abstract.AbsQtEntryBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtDropBaseDef,
+    gui_qt_abstract.AbsQtDropBaseDef,
 ):
     entry_changed = qt_signal()
     entry_added = qt_signal()
@@ -962,7 +962,7 @@ class QtEntryAsList(
 
 class QtEntryAsBubbles(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtWidgetBaseDef
+    gui_qt_abstract.AbsQtWidgetBaseDef
 ):
     bubble_text_change_accepted = qt_signal(str)
     bubble_text_changed = qt_signal()
@@ -1018,12 +1018,12 @@ class QtEntryAsBubbles(
 class QtEntryFrame(
     QtWidgets.QWidget,
     #
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtStatusBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtStatusBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtThreadBaseDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtThreadBaseDef,
 ):
     geometry_changed = qt_signal(int, int, int, int)
     entry_focus_in = qt_signal()

@@ -5,21 +5,21 @@ from lxutil_gui.qt.utl_gui_qt_core import *
 
 from lxutil_gui import utl_gui_core
 
-import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
 
 
 class _AbsQtSplitterHandle(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
     #
-    utl_gui_qt_abstract.AbsQtStateDef,
+    gui_qt_abstract.AbsQtStateDef,
 ):
     QT_ORIENTATION = None
     def _refresh_widget_draw_(self):
@@ -287,14 +287,14 @@ class _AbsQtSplitterHandle(
                                 self.ActionFlag.SplitHHover
                             )
                             self._set_tool_tip_text_(
-                                '"LMB-click" to adjust widgets size between left and right'
+                                '"LMB-move" to adjust widgets size between left and right'
                             )
                         elif self._get_orientation_() == QtCore.Qt.Vertical:
                             self._set_action_flag_(
                                 self.ActionFlag.SplitVHover
                             )
                             self._set_tool_tip_text_(
-                                '"LMB-click" to adjust widgets size between up and down'
+                                '"LMB-move" to adjust widgets size between up and down'
                             )
                 # press move
                 elif event.buttons() == QtCore.Qt.LeftButton:

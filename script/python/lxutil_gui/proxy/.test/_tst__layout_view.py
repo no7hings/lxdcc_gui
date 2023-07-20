@@ -17,7 +17,7 @@ class W(prx_widgets.PrxBaseWindow):
         s.add_widget(tool_group)
         tool_group.set_expanded(True)
         tool_group.set_name('Test')
-        g = prx_widgets.PrxLayoutView()
+        g = prx_widgets.PrxGridLayoutView()
         tool_group.add_widget(g)
         g.set_item_size(96, 20)
 
@@ -29,7 +29,7 @@ class W(prx_widgets.PrxBaseWindow):
         tool_group = prx_widgets.PrxHToolGroup_()
         s.add_widget(tool_group)
         tool_group.set_expanded(True)
-        g = prx_widgets.PrxLayoutView()
+        g = prx_widgets.PrxGridLayoutView()
         tool_group.add_widget(g)
         g.set_item_size(200, 20)
 

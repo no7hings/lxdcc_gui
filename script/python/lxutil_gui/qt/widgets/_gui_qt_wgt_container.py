@@ -1,21 +1,21 @@
 # coding=utf-8
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry_base, _utl_gui_qt_wgt_popup, _utl_gui_qt_wgt_chart
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_entry_base, _utl_gui_qt_wgt_popup, _gui_qt_wgt_chart
 
-import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 
 class AbsQtHeadFrame(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtIconBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
-    utl_gui_qt_abstract.AbsQtActionForExpandDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtActionForExpandDef,
 ):
     def __init__(self, *args, **kwargs):
         super(AbsQtHeadFrame, self).__init__(*args, **kwargs)
@@ -309,14 +309,14 @@ class QtHHeadFrame_(AbsQtHeadFrame):
 
 class AbsQtExpandHead1(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtIconBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
-    utl_gui_qt_abstract.AbsQtActionForExpandDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtActionForExpandDef,
 ):
     toggled = qt_signal(bool)
     def __init__(self, *args, **kwargs):
@@ -472,13 +472,13 @@ class QtVExpandHead1(AbsQtExpandHead1):
 
 class AbsQtExpandHead2(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtIconBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
-    utl_gui_qt_abstract.AbsQtActionForExpandDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtActionForExpandDef,
 ):
     def __init__(self, *args, **kwargs):
         super(AbsQtExpandHead2, self).__init__(*args, **kwargs)

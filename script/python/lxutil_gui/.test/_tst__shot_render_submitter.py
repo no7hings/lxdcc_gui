@@ -11,6 +11,6 @@ bsc_core.EnvExtraMtd.set_td_enable(True)
 hook_option = 'file={}'.format('/l/prod/xkt/work/shots/z88/z88010/efx/effects/houdini/z88010.efx.effects.v032.hip')
 # hook_option = 'file={}'.format('/l/prod/xkt/work/shots/z88/z88100/cfx/hair/houdini/z88100.cfx.hair.v010.hip')
 
-utl_gui_qt_core.set_window_show_standalone(
+utl_gui_qt_core.show_prx_window_auto(
     utl_pnl_widgets.ShotRenderSubmitter, hook_option=hook_option
 )

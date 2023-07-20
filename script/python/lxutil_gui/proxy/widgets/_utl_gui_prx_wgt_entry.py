@@ -21,7 +21,7 @@ from lxutil_gui import utl_gui_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_entry
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item, _gui_qt_wgt_entry
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
@@ -180,7 +180,7 @@ class AbsPrxTypeQtEntry(utl_gui_prx_abstract.AbsPrxWidget):
 
 class _PrxStgObjEntry(AbsPrxTypeQtEntry):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLS = _utl_gui_qt_wgt_entry.QtValueEntryAsTextEditByChoose
+    QT_ENTRY_CLS = _gui_qt_wgt_entry.QtValueEntryAsTextEditByChoose
 
     def __init__(self, *args, **kwargs):
         super(_PrxStgObjEntry, self).__init__(*args, **kwargs)
@@ -457,7 +457,7 @@ class PrxDirectorySaveEntry(_PrxStgObjEntry):
 # storage array open
 class _PrxStgObjsEntry(AbsPrxTypeQtEntry):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLS = _utl_gui_qt_wgt_entry.QtValueEntryAsList
+    QT_ENTRY_CLS = _gui_qt_wgt_entry.QtValueEntryAsList
     def __init__(self, *args, **kwargs):
         super(_PrxStgObjsEntry, self).__init__(*args, **kwargs)
         self._history_key = None
@@ -714,7 +714,7 @@ class PrxMediasOpenEntry(PrxEntryAsFilesOpen):
 
 class _PrxEntryForValueArray(AbsPrxTypeQtEntry):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLS = _utl_gui_qt_wgt_entry.QtValueEntryAsList
+    QT_ENTRY_CLS = _gui_qt_wgt_entry.QtValueEntryAsList
 
     def __init__(self, *args, **kwargs):
         super(_PrxEntryForValueArray, self).__init__(*args, **kwargs)
@@ -761,7 +761,7 @@ class _PrxEntryForValueArray(AbsPrxTypeQtEntry):
 
 class _PrxEntryAsArrayWithChoose(AbsPrxTypeQtEntry):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLS = _utl_gui_qt_wgt_entry.QtValueEntryAsListWithChoose
+    QT_ENTRY_CLS = _gui_qt_wgt_entry.QtValueEntryAsListWithChoose
 
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsArrayWithChoose, self).__init__(*args, **kwargs)
@@ -892,7 +892,7 @@ class _PrxEntryAsShotgunEntityByChoose(
     _AbsShotgunDef
 ):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLS = _utl_gui_qt_wgt_entry.QtValueEntryAsTextEditByChoose
+    QT_ENTRY_CLS = _gui_qt_wgt_entry.QtValueEntryAsTextEditByChoose
 
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsShotgunEntityByChoose, self).__init__(*args, **kwargs)
@@ -994,7 +994,7 @@ class _PrxEntryAsShotgunEntitiesWithChoose(
     _AbsShotgunDef
 ):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLS = _utl_gui_qt_wgt_entry.QtValueEntryAsList
+    QT_ENTRY_CLS = _gui_qt_wgt_entry.QtValueEntryAsList
 
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsShotgunEntitiesWithChoose, self).__init__(*args, **kwargs)
@@ -1081,7 +1081,7 @@ class _PrxEntryAsShotgunEntitiesWithChoose(
 
 class _PrxEntryAsRsvProject(AbsPrxTypeQtEntry):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLS = _utl_gui_qt_wgt_entry.QtValueEntryAsTextEditByChoose
+    QT_ENTRY_CLS = _gui_qt_wgt_entry.QtValueEntryAsTextEditByChoose
     #
     HISTORY_KEY = 'gui.projects'
 
@@ -1151,7 +1151,7 @@ class _PrxEntryAsRsvProject(AbsPrxTypeQtEntry):
 
 class PrxEntryForSchemeAsChoose(AbsPrxTypeQtEntry):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLS = _utl_gui_qt_wgt_entry.QtValueEntryAsTextEditByChoose
+    QT_ENTRY_CLS = _gui_qt_wgt_entry.QtValueEntryAsTextEditByChoose
     #
     HISTORY_KEY = 'gui.schemes'
 
@@ -1233,7 +1233,7 @@ class PrxEntryForSchemeAsChoose(AbsPrxTypeQtEntry):
 
 class _PrxEntryAsConstant(AbsPrxTypeQtEntry):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLS = _utl_gui_qt_wgt_entry.QtValueEntryAsTextEdit
+    QT_ENTRY_CLS = _gui_qt_wgt_entry.QtValueEntryAsTextEdit
 
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsConstant, self).__init__(*args, **kwargs)
@@ -1292,7 +1292,7 @@ class _PrxEntryAsConstant(AbsPrxTypeQtEntry):
 
 class _PrxEntryAsEnumerate(AbsPrxTypeQtEntry):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLS = _utl_gui_qt_wgt_entry.QtValueEntryAsTextEditByChoose
+    QT_ENTRY_CLS = _gui_qt_wgt_entry.QtValueEntryAsTextEditByChoose
 
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsEnumerate, self).__init__(*args, **kwargs)
@@ -1349,7 +1349,7 @@ class _PrxEntryAsEnumerate(AbsPrxTypeQtEntry):
 # capsule
 class _PrxEntryAsCapsule(AbsPrxTypeQtEntry):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLS = _utl_gui_qt_wgt_entry.QtValueEntryAsCapsule
+    QT_ENTRY_CLS = _gui_qt_wgt_entry.QtValueEntryAsCapsule
 
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsCapsule, self).__init__(*args, **kwargs)
@@ -1411,7 +1411,7 @@ class _PrxEntryAsFloat(_PrxEntryAsConstant):
 
 class _PrxEntryAsTuple(AbsPrxTypeQtEntry):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLS = _utl_gui_qt_wgt_entry.QtValueEntryAsTextEdits
+    QT_ENTRY_CLS = _gui_qt_wgt_entry.QtValueEntryAsTextEdits
 
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsTuple, self).__init__(*args, **kwargs)
@@ -1453,7 +1453,7 @@ class _PrxEntryAsFloatTuple(_PrxEntryAsTuple):
 
 
 class _PrxEntryAsRgba(_PrxEntryAsConstant):
-    QT_ENTRY_CLS = _utl_gui_qt_wgt_entry.QtValueEntryAsTupleByChoose
+    QT_ENTRY_CLS = _gui_qt_wgt_entry.QtValueEntryAsTupleByChoose
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsRgba, self).__init__(*args, **kwargs)
 
@@ -1486,7 +1486,7 @@ class _PrxEntryAsBoolean(AbsPrxTypeQtEntry):
 
 class _PrxEntryAsScript(AbsPrxTypeQtEntry):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    QT_ENTRY_CLS = _utl_gui_qt_wgt_entry.QtValueEntryAsContentEdit
+    QT_ENTRY_CLS = _gui_qt_wgt_entry.QtValueEntryAsContentEdit
 
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsScript, self).__init__(*args, **kwargs)

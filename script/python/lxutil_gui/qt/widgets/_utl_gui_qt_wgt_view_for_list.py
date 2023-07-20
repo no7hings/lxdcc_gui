@@ -1,14 +1,14 @@
 # coding=utf-8
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry_base
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_entry_base
 
-import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 
 class QtListWidget(
-    utl_gui_qt_abstract.AbsQtListWidget,
-    utl_gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstract.AbsQtListWidget,
+    gui_qt_abstract.AbsQtMenuBaseDef,
 ):
     ctrl_f_key_pressed = qt_signal()
     f5_key_pressed = qt_signal()
@@ -67,7 +67,7 @@ class QtListWidget(
 
         self._info = ''
 
-    def _execute_action_wheel_(self, event):
+    def _do_wheel_(self, event):
         if self._action_control_flag is True:
             delta = event.angleDelta().y()
             step = 4
@@ -137,22 +137,29 @@ class QtListWidget(
                 if event.key() == QtCore.Qt.Key_Control:
                     self._action_control_flag = False
             elif event.type() == QtCore.QEvent.Wheel:
-                self._execute_action_wheel_(event)
+                self._do_wheel_(event)
             elif event.type() == QtCore.QEvent.Resize:
                 self._refresh_size_()
                 self._refresh_view_all_items_viewport_showable_()
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_entry_base.QtEntryFrame):
+                if isinstance(parent, _gui_qt_wgt_entry_base.QtEntryFrame):
                     parent._set_focused_(True)
                 self.focus_changed.emit()
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_entry_base.QtEntryFrame):
+                if isinstance(parent, _gui_qt_wgt_entry_base.QtEntryFrame):
                     parent._set_focused_(False)
                 self.focus_changed.emit()
+        elif widget == self.viewport():
+            if event.type() == QtCore.QEvent.MouseButtonPress:
+                if event.buttons() == QtCore.Qt.LeftButton:
+                    self.pressed.emit()
+            elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                if event.button() == QtCore.Qt.LeftButton:
+                    self.press_released.emit()
         if widget == self.verticalScrollBar():
             pass
         return False
@@ -202,7 +209,6 @@ class QtListWidget(
     def _set_item_frame_size_(self, w, h):
         self._item_frame_size = w, h
         _w, _h = w+self._item_side*2, h+self._item_side*2
-        #
         self._set_grid_size_(_w, _h)
 
     def _set_item_size_basic_(self, w, h):

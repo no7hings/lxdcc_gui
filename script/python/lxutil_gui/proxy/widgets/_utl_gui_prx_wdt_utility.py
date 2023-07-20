@@ -1,169 +1,17 @@
 # coding:utf-8
 import six
 
-import uuid
-
 from lxbasic import bsc_core
-
-from lxutil import utl_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize, _utl_gui_qt_wgt_filter, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_container, _utl_gui_qt_wgt_entry, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_window
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize, _utl_gui_qt_wgt_filter, _utl_gui_qt_wgt_item, _gui_qt_wgt_container, _gui_qt_wgt_entry, _gui_qt_wgt_chart, _utl_gui_qt_wgt_window
 
-from lxutil_gui.proxy import utl_gui_prx_configure, utl_gui_prx_core, utl_gui_prx_abstract
+from lxutil_gui.proxy import utl_gui_prx_configure, utl_gui_prx_abstract
 
 from lxutil_gui import utl_gui_core
 
 from lxbasic import bsc_configure
-
-import lxutil.dcc.dcc_objects as utl_dcc_objects
-
-
-class AbsPrxToolGroup(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtLine
-    QT_HEAD_CLS = None
-    QT_HEAD_SIZE = 22
-    def __init__(self, *args, **kwargs):
-        super(AbsPrxToolGroup, self).__init__(*args, **kwargs)
-
-    def _set_build_(self):
-        qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
-        qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignTop)
-        qt_layout_0.setContentsMargins(0, 0, 0, 0)
-        qt_layout_0.setSpacing(2)
-        # header
-        self._qt_head = self.QT_HEAD_CLS()
-        qt_layout_0.addWidget(self._qt_head)
-        self._qt_head.setFixedHeight(self.QT_HEAD_SIZE)
-        self._qt_head.expand_toggled.connect(self.set_expanded)
-        self._qt_head._set_tool_tip_text_('"LMB-click" to expand "on" / "off"')
-        self._qt_head.press_toggled.connect(self._qt_widget._set_pressed_)
-        #
-        qt_widget_1 = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
-        qt_layout_0.addWidget(qt_widget_1)
-        qt_layout_1 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_1)
-        qt_layout_1.setContentsMargins(2, 0, 0, 0)
-        qt_layout_1.setSpacing(2)
-        #
-        self._layout = qt_layout_1
-        #
-        self._qt_view = qt_widget_1
-        #
-        self._refresh_expand_()
-
-    def _refresh_expand_(self):
-        self._qt_view.setVisible(
-            self.get_is_expanded()
-        )
-
-    def set_name(self, name):
-        self._qt_head._set_name_text_(name)
-
-    def set_icon_by_text(self, name):
-        self._qt_head._set_icon_text_(name)
-
-    def set_name_icon_enable(self, boolean):
-        self._qt_head._set_icon_name_enable_(boolean)
-
-    def set_expand_icon_file(self, icon_file_path_0, icon_file_path_1):
-        self._qt_head._set_expand_icon_file_path_(
-            icon_file_path_0, icon_file_path_1
-        )
-
-    def set_expand_icon_names(self, icon_name_0, icon_name_1):
-        self._qt_head._set_expand_icon_names_(
-            icon_name_0, icon_name_1
-        )
-
-    def set_expand_sub_icon_names(self, icon_name_0, icon_name_1):
-        self._qt_head._set_expand_sub_icon_names_(
-            icon_name_0, icon_name_1
-        )
-
-    def set_name_font_size(self, size):
-        self._qt_head._set_name_font_size_(size)
-
-    def set_expanded(self, boolean):
-        self._qt_head._set_expanded_(boolean)
-        self._refresh_expand_()
-
-    def set_head_visible(self, boolean):
-        self._qt_head.setHidden(not boolean)
-
-    def get_is_expanded(self):
-        return self._qt_head._get_is_expanded_()
-
-    def add_widget(self, widget):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
-            qt_widget = widget
-            self._layout.addWidget(widget)
-        else:
-            qt_widget = widget.widget
-        #
-        if qt_widget != self.widget:
-            #
-            self._layout.addWidget(qt_widget)
-
-    def set_layout_alignment_to_top(self):
-        self._layout.setAlignment(
-            utl_gui_qt_core.QtCore.Qt.AlignTop
-        )
-
-    def set_size_mode(self, mode):
-        if mode == 0:
-            self._qt_view.setSizePolicy(
-                utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
-                utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding
-            )
-        elif mode == 1:
-            self._qt_view.setSizePolicy(
-                utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
-                utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum
-            )
-
-    def set_height_match_to_minimum(self):
-        self._qt_view.setSizePolicy(
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum
-        )
-
-    def connect_expand_changed_to(self, fnc):
-        self._qt_head.expand_clicked.connect(fnc)
-
-    def set_clear(self):
-        def rcs_fnc_(layout_):
-            c = layout_.count()
-            for i in range(c):
-                i_item = self._layout.takeAt(0)
-                if i_item is not None:
-                    i_widget = i_item.widget()
-                    if i_widget:
-                        i_widget.deleteLater()
-                    else:
-                        _i_layout = i_item.layout()
-                        if _i_layout:
-                            rcs_fnc_(_i_layout)
-                        else:
-                            spacer = i_item.spacerItem()
-                            if spacer:
-                                spacer.deleteLater()
-        #
-        rcs_fnc_(self._layout)
-
-
-class PrxHToolGroup(AbsPrxToolGroup):
-    QT_HEAD_CLS = _utl_gui_qt_wgt_container.QtHHeadFrame
-    QT_HEAD_SIZE = 22
-    def __init__(self, *args, **kwargs):
-        super(PrxHToolGroup, self).__init__(*args, **kwargs)
-
-
-class PrxHToolGroup_(AbsPrxToolGroup):
-    QT_HEAD_SIZE = 20
-    QT_HEAD_CLS = _utl_gui_qt_wgt_container.QtHHeadFrame_
-    def __init__(self, *args, **kwargs):
-        super(PrxHToolGroup_, self).__init__(*args, **kwargs)
 
 
 class PrxHScrollArea(utl_gui_prx_abstract.AbsPrxWidget):
@@ -239,170 +87,6 @@ class PrxVScrollArea(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_margins(self, m_l, m_t, m_r, m_b):
         self._qt_layout.setContentsMargins(m_l, m_t, m_r, m_b)
-
-
-class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtWidget
-    def __init__(self, *args, **kwargs):
-        super(PrxHToolBar, self).__init__(*args, **kwargs)
-        #
-        self.widget.setSizePolicy(
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum
-        )
-
-    def _set_build_(self):
-        self._wgt_w, self._wgt_h = 28, 28
-        self._wgt_w_min, self._wgt_h_min = 12, 12
-        #
-        qt_layout_0 = _utl_gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
-        qt_layout_0.setContentsMargins(*[0]*4)
-        qt_layout_0.setSpacing(2)
-        # qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
-        # header
-        self._qt_head = _utl_gui_qt_wgt_container.QtHExpandHead1()
-        qt_layout_0.addWidget(self._qt_head)
-        self._qt_head.expand_toggled.connect(self.set_expanded)
-        self._qt_head._set_tool_tip_text_('"LMB-click" to expand "on" / "off"')
-        #
-        qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
-        qt_layout_0.addWidget(qt_widget_1)
-        qt_layout_1 = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
-        qt_layout_1.setContentsMargins(*[0]*4)
-        # qt_layout_1.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
-        self._qt_layout_0 = qt_layout_1
-        #
-        self._qt_view = qt_widget_1
-        #
-        self._refresh_expand_()
-        #
-        self._qt_view.setSizePolicy(
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum
-        )
-
-    def _refresh_expand_(self):
-        if self.get_is_expanded() is True:
-            self._qt_head.setMaximumSize(self._wgt_w_min, self._wgt_h)
-            self._qt_head.setMinimumSize(self._wgt_w_min, self._wgt_h)
-            #
-            self.widget.setMaximumHeight(self._wgt_h)
-            self.widget.setMinimumHeight(self._wgt_h)
-        else:
-            self._qt_head.setMaximumSize(166667, self._wgt_h_min)
-            self._qt_head.setMinimumSize(self._wgt_w_min, self._wgt_h_min)
-            #
-            self.widget.setMaximumHeight(self._wgt_h_min)
-            self.widget.setMinimumHeight(self._wgt_h_min)
-        #
-        self._qt_view.setVisible(self.get_is_expanded())
-        self._qt_head._refresh_expand_()
-
-    def set_name(self, name):
-        self._qt_head.set_name(name)
-
-    def set_expanded(self, boolean):
-        self._qt_head._set_expanded_(boolean)
-        self._refresh_expand_()
-
-    def get_is_expanded(self):
-        return self._qt_head._get_is_expanded_()
-
-    def add_widget(self, widget):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
-            self._qt_layout_0.addWidget(widget)
-        else:
-            self._qt_layout_0.addWidget(widget.widget)
-
-    def insert_widget_at(self, index, widget):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
-            self._qt_layout_0.insertWidget(index, widget)
-        else:
-            self._qt_layout_0.insertWidget(index, widget.widget)
-
-    def set_width(self, w):
-        self._wgt_w = w
-        self._refresh_expand_()
-
-    def set_height(self, h):
-        self._wgt_h = h
-        self._refresh_expand_()
-
-    def get_qt_layout(self):
-        return self._qt_layout_0
-
-    def set_top_direction(self):
-        self._qt_head._set_expand_direction_(self._qt_head.ExpandDirection.TopToBottom)
-
-    def set_bottom_direction(self):
-        self._qt_head._set_expand_direction_(self._qt_head.ExpandDirection.BottomToTop)
-
-    def set_alignment_center(self):
-        self._qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignHCenter)
-
-    def set_left_alignment_mode(self):
-        self._qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
-
-    def set_border_radius(self, radius):
-        self._qt_head._set_frame_border_radius_(radius)
-
-
-class PrxVToolBar(PrxHToolBar):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtWidget
-    def __init__(self, *args, **kwargs):
-        super(PrxVToolBar, self).__init__(*args, **kwargs)
-        #
-        self.widget.setSizePolicy(
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum,
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding
-        )
-
-    def _set_build_(self):
-        self._wgt_w, self._wgt_h = 28, 28
-        self._wgt_w_min, self._wgt_h_min = 12, 12
-        #
-        qt_layout_0 = _utl_gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
-        qt_layout_0.setContentsMargins(*[0]*4)
-        qt_layout_0.setSpacing(2)
-        qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
-        # header
-        self._qt_head = _utl_gui_qt_wgt_container.QtVExpandHead1()
-        qt_layout_0.addWidget(self._qt_head)
-        self._qt_head.expand_toggled.connect(self.set_expanded)
-        self._qt_head._set_tool_tip_text_('"LMB-click" to expand "on" / "off"')
-        #
-        qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
-        qt_layout_0.addWidget(qt_widget_1)
-        qt_layout_1 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_1)
-        qt_layout_1.setContentsMargins(0, 0, 0, 0)
-        qt_layout_1.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
-        self._qt_layout_0 = qt_layout_1
-        #
-        self._qt_view = qt_widget_1
-        #
-        self._refresh_expand_()
-        #
-        self._qt_view.setSizePolicy(
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum,
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding
-        )
-
-    def _refresh_expand_(self):
-        if self.get_is_expanded() is True:
-            self._qt_head.setMaximumSize(self._wgt_w_min, 166667)
-            self._qt_head.setMinimumSize(self._wgt_w_min, self._wgt_h_min)
-            #
-            self.widget.setMaximumWidth(self._wgt_w)
-            self.widget.setMinimumWidth(self._wgt_w)
-        else:
-            self._qt_head.setMaximumSize(self._wgt_w_min, 166667)
-            self._qt_head.setMinimumSize(self._wgt_w_min, self._wgt_h_min)
-            #
-            self.widget.setMaximumWidth(self._wgt_w_min)
-            self.widget.setMinimumWidth(self._wgt_w_min)
-        #
-        self._qt_view.setVisible(self.get_is_expanded())
-        self._qt_head._refresh_expand_()
 
 
 class PrxLeftExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
@@ -572,7 +256,7 @@ class PrxHToolBox(utl_gui_prx_abstract.AbsPrxWidget):
         qt_layout_0.setSpacing(2)
         qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
         # header
-        self._qt_head = _utl_gui_qt_wgt_container.QtHExpandHead2()
+        self._qt_head = _gui_qt_wgt_container.QtHExpandHead2()
         qt_layout_0.addWidget(self._qt_head)
         self._qt_head.expand_toggled.connect(self.set_expanded)
         self._qt_head._set_tool_tip_text_('"LMB-click" to expand "on" / "off"')
@@ -603,7 +287,9 @@ class PrxHToolBox(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_head._refresh_expand_()
 
     def set_name(self, name):
-        self._qt_head._set_name_text_(name)
+        self._qt_head._set_name_text_(
+            'tool box for "{}"'.format(name)
+        )
 
     def set_expanded(self, boolean):
         self._qt_head._set_expanded_(boolean)
@@ -649,7 +335,7 @@ class PrxHToolBox(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxHToolBox_(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_container.QtHToolBox
+    QT_WIDGET_CLS = _gui_qt_wgt_container.QtHToolBox
     def __init__(self, *args, **kwargs):
         super(PrxHToolBox_, self).__init__(*args, **kwargs)
 
@@ -661,7 +347,7 @@ class PrxHToolBox_(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxVToolBox_(PrxHToolBox_):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_container.QtVToolBox
+    QT_WIDGET_CLS = _gui_qt_wgt_container.QtVToolBox
     def __init__(self, *args, **kwargs):
         super(PrxVToolBox_, self).__init__(*args, **kwargs)
 
@@ -782,7 +468,7 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
 
     def _set_build_(self):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
-        widget = _utl_gui_qt_wgt_entry.QtValueEntryAsContentEdit()
+        widget = _gui_qt_wgt_entry.QtValueEntryAsContentEdit()
         widget._set_value_entry_enable_(False)
         qt_layout_0.addWidget(widget)
         self._qt_text_browser_0 = widget._value_entry

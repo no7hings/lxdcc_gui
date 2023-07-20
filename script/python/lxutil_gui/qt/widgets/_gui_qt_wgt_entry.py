@@ -1,18 +1,18 @@
 # coding=utf-8
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry_base, _utl_gui_qt_wgt_popup
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_entry_base, _utl_gui_qt_wgt_popup
 
-import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 
 class QtValueEntryAsTextEdit(
-    _utl_gui_qt_wgt_entry_base.QtEntryFrame,
+    _gui_qt_wgt_entry_base.QtEntryFrame,
     #
-    utl_gui_qt_abstract.AbsQtValueEntryExtraDef,
-    utl_gui_qt_abstract.AbsQtValueDefaultDef,
+    gui_qt_abstract.AbsQtValueEntryExtraDef,
+    gui_qt_abstract.AbsQtValueDefaultDef,
 ):
-    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
+    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsTextEdit
     #
     entry_changed = qt_signal()
     def __init__(self, *args, **kwargs):
@@ -49,12 +49,12 @@ class QtValueEntryAsTextEdit(
 
 
 class QtValueEntryAsContentEdit(
-    _utl_gui_qt_wgt_entry_base.QtEntryFrame,
+    _gui_qt_wgt_entry_base.QtEntryFrame,
     #
-    utl_gui_qt_abstract.AbsQtValueEntryExtraDef,
-    utl_gui_qt_abstract.AbsQtValueDefaultDef,
+    gui_qt_abstract.AbsQtValueEntryExtraDef,
+    gui_qt_abstract.AbsQtValueDefaultDef,
 ):
-    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsContentEdit
+    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsContentEdit
     #
     entry_changed = qt_signal()
     def __init__(self, *args, **kwargs):
@@ -174,18 +174,18 @@ class QtValueEntryAsContentEdit(
 
 
 class QtValueEntryAsTupleByChoose(
-    _utl_gui_qt_wgt_entry_base.QtEntryFrame,
+    _gui_qt_wgt_entry_base.QtEntryFrame,
     #
-    utl_gui_qt_abstract.AbsQtRgbaDef,
+    gui_qt_abstract.AbsQtRgbaDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
     #
-    utl_gui_qt_abstract.AbsQtValueEntryExtraDef,
-    utl_gui_qt_abstract.AbsQtValueDefaultDef,
+    gui_qt_abstract.AbsQtValueEntryExtraDef,
+    gui_qt_abstract.AbsQtValueDefaultDef,
 ):
-    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
+    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsTextEdit
     #
     QT_POPUP_CHOOSE_CLS = _utl_gui_qt_wgt_popup.QtPopupForRgbaChoose
     def _refresh_widget_draw_(self):
@@ -295,18 +295,18 @@ class QtValueEntryAsTupleByChoose(
 
 
 class QtValueEntryAsTextEditByChoose(
-    _utl_gui_qt_wgt_entry_base.QtEntryFrame,
+    _gui_qt_wgt_entry_base.QtEntryFrame,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtValueEntryAsPopupChooseExtraDef,
-    utl_gui_qt_abstract.AbsQtValueDefaultDef,
+    gui_qt_abstract.AbsQtValueEntryAsPopupChooseExtraDef,
+    gui_qt_abstract.AbsQtValueDefaultDef,
     #
-    utl_gui_qt_abstract.AbsQtChooseBaseDef,
-    utl_gui_qt_abstract.AbsQtChooseExtraDef,
-    utl_gui_qt_abstract.AbsQtCompletionExtraDef,
+    gui_qt_abstract.AbsQtChooseBaseDef,
+    gui_qt_abstract.AbsQtChooseExtraDef,
+    gui_qt_abstract.AbsQtCompletionExtraDef,
 ):
-    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
+    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsTextEdit
     #
     QT_POPUP_CHOOSE_CLS = _utl_gui_qt_wgt_popup.QtPopupForChoose
     QT_POPUP_COMPLETION_CLS = _utl_gui_qt_wgt_popup.QtPopupForCompletion
@@ -357,10 +357,10 @@ class QtValueEntryAsTextEditByChoose(
             if hasattr(self, '_action_is_enable') is True:
                 if self._action_is_enable is True:
                     if event.type() == QtCore.QEvent.Wheel:
-                        self._execute_action_wheel_(event)
+                        self._do_wheel_(event)
         return False
 
-    def _execute_action_wheel_(self, event):
+    def _do_wheel_(self, event):
         delta = event.angleDelta().y()
         values = self._get_choose_values_()
         pre_value = self._get_value_()
@@ -546,15 +546,15 @@ class QtValueEntryAsTextEditByChoose(
 class QtValueEntryAsCapsule(
     QtWidgets.QWidget,
     #
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
     #
-    utl_gui_qt_abstract.AbsQtValueDef,
-    utl_gui_qt_abstract.AbsQtValueDefaultDef,
+    gui_qt_abstract.AbsQtValueDef,
+    gui_qt_abstract.AbsQtValueDefaultDef,
 ):
     value_changed = qt_signal()
     user_value_changed = qt_signal()
@@ -780,14 +780,14 @@ class QtValueEntryAsCapsule(
 
 
 class QtValueEntryAsTextEdits(
-    _utl_gui_qt_wgt_entry_base.QtEntryFrame,
+    _gui_qt_wgt_entry_base.QtEntryFrame,
     #
-    utl_gui_qt_abstract.AbsQtValueEntryAsTupleExtraDef,
+    gui_qt_abstract.AbsQtValueEntryAsTupleExtraDef,
 ):
     """
     use for multiply texts (str, int, float) entry, etc. float3, integer3
     """
-    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
+    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsTextEdit
     #
     entry_changed = qt_signal()
     def __init__(self, *args, **kwargs):
@@ -811,7 +811,7 @@ class QtValueEntryAsTextEdits(
         self._set_entry_count_(value_size)
         if value_size:
             for i in range(value_size):
-                i_widget = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit()
+                i_widget = _gui_qt_wgt_entry_base.QtEntryAsTextEdit()
                 i_widget._set_value_type_(self._value_type)
                 self._entry_layout.addWidget(i_widget)
                 self._value_entries.append(i_widget)
@@ -821,15 +821,15 @@ class QtValueEntryAsTextEdits(
 
 
 class QtValueEntryAsList(
-    _utl_gui_qt_wgt_entry_base.QtEntryFrame,
+    _gui_qt_wgt_entry_base.QtEntryFrame,
     #
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtValueEntryExtraDef,
-    utl_gui_qt_abstract.AbsQtChooseBaseDef,
-    utl_gui_qt_abstract.AbsQtChooseExtraDef,
+    gui_qt_abstract.AbsQtValueEntryExtraDef,
+    gui_qt_abstract.AbsQtChooseBaseDef,
+    gui_qt_abstract.AbsQtChooseExtraDef,
 ):
-    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsList
+    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsList
     #
     QT_POPUP_CHOOSE_CLS = _utl_gui_qt_wgt_popup.QtPopupForChoose
     #
@@ -973,15 +973,15 @@ class QtValueEntryAsList(
 
 
 class QtValueEntryAsListWithChoose(
-    _utl_gui_qt_wgt_entry_base.QtEntryFrame,
+    _gui_qt_wgt_entry_base.QtEntryFrame,
     #
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtValueEntryExtraDef,
-    utl_gui_qt_abstract.AbsQtChooseBaseDef,
-    utl_gui_qt_abstract.AbsQtChooseExtraDef,
+    gui_qt_abstract.AbsQtValueEntryExtraDef,
+    gui_qt_abstract.AbsQtChooseBaseDef,
+    gui_qt_abstract.AbsQtChooseExtraDef,
 ):
-    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsList
+    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsList
     QT_POPUP_CHOOSE_CLS = _utl_gui_qt_wgt_popup.QtPopupForChoose
     #
     add_press_clicked = qt_signal()
@@ -1115,13 +1115,13 @@ class QtValueEntryAsListWithChoose(
 
 
 class QtValueEntryAsBubblesByChoose(
-    _utl_gui_qt_wgt_entry_base.QtEntryFrame,
+    _gui_qt_wgt_entry_base.QtEntryFrame,
     #
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtValueEntryExtraDef,
-    utl_gui_qt_abstract.AbsQtChooseBaseDef,
-    utl_gui_qt_abstract.AbsQtChooseExtraDef,
+    gui_qt_abstract.AbsQtValueEntryExtraDef,
+    gui_qt_abstract.AbsQtChooseBaseDef,
+    gui_qt_abstract.AbsQtChooseExtraDef,
 ):
     def __init__(self, *args, **kwargs):
         #

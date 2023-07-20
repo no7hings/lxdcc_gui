@@ -1,5 +1,5 @@
 # coding=utf-8
-import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 from lxutil_gui.qt.utl_gui_qt_core import *
 
@@ -11,13 +11,13 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
 class QtHResizeHandle(
     QtWidgets.QWidget,
     #
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtResizeBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtResizeBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
 ):
     press_clicked = qt_signal()
     size_changed = qt_signal(int)

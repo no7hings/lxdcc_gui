@@ -1,11 +1,11 @@
 # coding:utf-8
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_chart
+from lxutil_gui.qt.widgets import _gui_qt_wgt_chart
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
 
 class PrxSectorChart(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_chart.QtSectorChart
+    QT_WIDGET_CLS = _gui_qt_wgt_chart.QtSectorChart
     def __init__(self, *args, **kwargs):
         super(PrxSectorChart, self).__init__(*args, **kwargs)
 
@@ -14,7 +14,7 @@ class PrxSectorChart(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxRadarChart(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_chart.QtRadarChart
+    QT_WIDGET_CLS = _gui_qt_wgt_chart.QtRadarChart
     def __init__(self, *args, **kwargs):
         super(PrxRadarChart, self).__init__(*args, **kwargs)
 
@@ -23,7 +23,7 @@ class PrxRadarChart(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxPieChart(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_chart.QtPieChart
+    QT_WIDGET_CLS = _gui_qt_wgt_chart.QtPieChart
     def __init__(self, *args, **kwargs):
         super(PrxPieChart, self).__init__(*args, **kwargs)
 
@@ -32,7 +32,7 @@ class PrxPieChart(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxHistogramChart(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_chart.QtHistogramChart
+    QT_WIDGET_CLS = _gui_qt_wgt_chart.QtHistogramChart
     def __init__(self, *args, **kwargs):
         super(PrxHistogramChart, self).__init__(*args, **kwargs)
 
@@ -44,7 +44,7 @@ class PrxHistogramChart(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxSequenceChart(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_chart.QtSequenceChart
+    QT_WIDGET_CLS = _gui_qt_wgt_chart.QtSequenceChart
     def __init__(self, *args, **kwargs):
         super(PrxSequenceChart, self).__init__(*args, **kwargs)
 

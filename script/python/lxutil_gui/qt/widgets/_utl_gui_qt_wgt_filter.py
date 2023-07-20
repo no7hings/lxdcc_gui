@@ -3,27 +3,27 @@ import copy
 
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize, _utl_gui_qt_wgt_entry_base, _utl_gui_qt_wgt_popup
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize, _gui_qt_wgt_entry_base, _utl_gui_qt_wgt_popup
 
-import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 
 class QtFilterBar(
     QtWidgets.QWidget,
     #
-    utl_gui_qt_abstract.AbsQtValueEntryExtraDef,
+    gui_qt_abstract.AbsQtValueEntryExtraDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForEntryDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForEntryDef,
     #
-    utl_gui_qt_abstract.AbsQtChooseBaseDef,
-    utl_gui_qt_abstract.AbsQtHistoryExtraDef,
-    utl_gui_qt_abstract.AbsQtCompletionExtraDef,
+    gui_qt_abstract.AbsQtChooseBaseDef,
+    gui_qt_abstract.AbsQtHistoryExtraDef,
+    gui_qt_abstract.AbsQtCompletionExtraDef,
 ):
     occurrence_previous_press_clicked = qt_signal()
     occurrence_next_press_clicked = qt_signal()
     #
-    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
+    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsTextEdit
     #
     QT_POPUP_HISTORY_CLS = _utl_gui_qt_wgt_popup.QtPopupForHistory
     QT_POPUP_COMPLETION_CLS = _utl_gui_qt_wgt_popup.QtPopupForCompletion
@@ -72,7 +72,7 @@ class QtFilterBar(
         qt_layout_0.addWidget(self._resize_handle)
         self._resize_handle.setFixedWidth(8)
         #
-        self._value_entry_frame = _utl_gui_qt_wgt_entry_base.QtEntryFrame()
+        self._value_entry_frame = _gui_qt_wgt_entry_base.QtEntryFrame()
         self._value_entry_frame.setFixedWidth(200)
         self._value_entry_frame.setFixedHeight(24)
         self._resize_handle._set_resize_target_(self._value_entry_frame)
@@ -84,7 +84,7 @@ class QtFilterBar(
         self._match_case_button.hide()
         qt_layout_0.addWidget(self._match_case_button)
         self._match_case_button.setFocusProxy(self._value_entry)
-        self._match_case_button.clicked.connect(self._execute_filter_match_case_swap_)
+        self._match_case_button.clicked.connect(self._do_match_case_swap_)
         self._match_case_icon_names = 'match_case_off', 'match_case_on'
         self._is_match_case = False
         #
@@ -92,30 +92,30 @@ class QtFilterBar(
         self._match_word_button.hide()
         qt_layout_0.addWidget(self._match_word_button)
         self._match_word_button.setFocusProxy(self._value_entry)
-        self._match_word_button.clicked.connect(self._execute_filter_match_word_swap_)
+        self._match_word_button.clicked.connect(self._do_match_word_swap_)
         self._match_word_icon_names = 'match_word_off', 'match_word_on'
         self._is_match_word = False
+        # occurrence
+        self._occurrence_previous_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
+        qt_layout_0.addWidget(self._occurrence_previous_button)
+        self._occurrence_previous_button._set_name_text_('occurrence previous')
+        self._occurrence_previous_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get('occurrence-previous-disable')
+        )
+        self._occurrence_previous_button._set_tool_tip_text_('"LMB-click" to occurrence previous result')
+        self._occurrence_previous_button.clicked.connect(
+            self.occurrence_previous_press_clicked.emit
+        )
         #
-        self._pre_occurrence_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
-        qt_layout_0.addWidget(self._pre_occurrence_button)
-        self._pre_occurrence_button._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get(
-                'pre_occurrence'
-            )
+        self._occurrence_next_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
+        qt_layout_0.addWidget(self._occurrence_next_button)
+        self._occurrence_next_button._set_name_text_('occurrence next')
+        self._occurrence_next_button._set_icon_file_path_(
+            utl_gui_core.RscIconFile.get('occurrence-next-disable')
         )
-        self._pre_occurrence_button.clicked.connect(
-            self._send_pre_occurrence_emit_
-        )
-        #
-        self._next_occurrence_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
-        qt_layout_0.addWidget(self._next_occurrence_button)
-        self._next_occurrence_button._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get(
-                'next_occurrence'
-            )
-        )
-        self._next_occurrence_button.clicked.connect(
-            self._send_next_occurrence_emit_
+        self._occurrence_next_button._set_tool_tip_text_('"LMB-click" to occurrence next result')
+        self._occurrence_next_button.clicked.connect(
+            self.occurrence_next_press_clicked.emit
         )
         #
         self._init_history_as_extra_def_(self)
@@ -141,7 +141,7 @@ class QtFilterBar(
             )
         )
         #
-        self._bubble_entry = _utl_gui_qt_wgt_entry_base.QtEntryAsBubbles()
+        self._bubble_entry = _gui_qt_wgt_entry_base.QtEntryAsBubbles()
         self._value_entry_layout.addWidget(self._bubble_entry)
         #
         self._value_entry = self.QT_VALUE_ENTRY_CLS()
@@ -216,13 +216,13 @@ class QtFilterBar(
             utl_gui_core.RscIconFile.get(self._match_word_icon_names[self._is_match_word])
         )
 
-    def _execute_filter_match_case_swap_(self):
+    def _do_match_case_swap_(self):
         self._is_match_case = not self._is_match_case
         self.__refresh_filter_()
         #
         self._send_enter_changed_emit_()
 
-    def _execute_filter_match_word_swap_(self):
+    def _do_match_word_swap_(self):
         self._is_match_word = not self._is_match_word
         self.__refresh_filter_()
         self._send_enter_changed_emit_()
@@ -236,6 +236,22 @@ class QtFilterBar(
         self._value_entry._set_clear_()
         self._value_entry.user_entry_cleared.emit()
         self._send_user_enter_changed_emit_()
+    
+    def _set_occurrence_buttons_enable_(self, boolean):
+        if boolean is True:
+            self._occurrence_previous_button._set_icon_file_path_(
+                utl_gui_core.RscIconFile.get('occurrence-previous')
+            )
+            self._occurrence_next_button._set_icon_file_path_(
+                utl_gui_core.RscIconFile.get('occurrence-next')
+            )
+        else:
+            self._occurrence_previous_button._set_icon_file_path_(
+                utl_gui_core.RscIconFile.get('occurrence-previous-disable')
+            )
+            self._occurrence_next_button._set_icon_file_path_(
+                utl_gui_core.RscIconFile.get('occurrence-next-disable')
+            )
     #
     def _set_filter_tip_(self, text):
         self._value_entry_frame._set_tip_text_(text)
@@ -255,14 +271,6 @@ class QtFilterBar(
     def _send_user_enter_changed_emit_(self):
         self.user_entry_changed.emit()
         self._refresh_entry_clear_button_visible_()
-
-    def _send_pre_occurrence_emit_(self):
-        # noinspection PyUnresolvedReferences
-        self.occurrence_previous_press_clicked.emit()
-
-    def _send_next_occurrence_emit_(self):
-        # noinspection PyUnresolvedReferences
-        self.occurrence_next_press_clicked.emit()
 
     def _refresh_entry_clear_button_visible_(self):
         self._entry_clear_button.setVisible(

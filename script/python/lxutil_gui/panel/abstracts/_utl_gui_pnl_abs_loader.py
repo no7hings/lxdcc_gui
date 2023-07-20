@@ -462,7 +462,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             rsv_resource
         )
         if is_create is True:
-            prx_item.set_loading_start()
+            prx_item.start_loading()
             #
             branch = rsv_resource.properties.get('branch')
             if branch == 'asset':

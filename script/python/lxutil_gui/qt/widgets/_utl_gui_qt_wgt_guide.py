@@ -3,19 +3,19 @@ import fnmatch
 
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry_base, _utl_gui_qt_wgt_popup
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_entry_base, _utl_gui_qt_wgt_popup
 
-import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 
 class QtGuideRect(
-    utl_gui_qt_abstract.AbsQtIconBaseDef,
-    utl_gui_qt_abstract.AbsQtTypeDef,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtPathBaseDef,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstract.AbsQtTypeDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtPathBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtChooseBaseDef,
+    gui_qt_abstract.AbsQtChooseBaseDef,
 ):
     def _refresh_widget_draw_(self):
         pass
@@ -45,19 +45,19 @@ class QtGuideRect(
 class QtGuideEntry(
     QtWidgets.QWidget,
     #
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtMenuBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
     #
-    utl_gui_qt_abstract.AbsQtDeleteBaseDef,
+    gui_qt_abstract.AbsQtDeleteBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtFocusDef,
-    utl_gui_qt_abstract.AbsQtEntryBaseDef,
+    gui_qt_abstract.AbsQtFocusDef,
+    gui_qt_abstract.AbsQtEntryBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtGuideEntryDef,
+    gui_qt_abstract.AbsQtGuideEntryDef,
 ):
     def _refresh_focus_draw_geometry_(self):
         pass
@@ -66,7 +66,7 @@ class QtGuideEntry(
     #
     QT_POPUP_GUIDE_CHOOSE_CLS = _utl_gui_qt_wgt_popup.QtPopupForGuideChoose
     #
-    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
+    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsTextEdit
     #
     TYPE_FONT_SIZE = 10
     NAME_FONT_SIZE = 12
@@ -239,12 +239,12 @@ class QtGuideEntry(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 entry_frame = self._get_entry_frame_()
-                if isinstance(entry_frame, _utl_gui_qt_wgt_entry_base.QtEntryFrame):
+                if isinstance(entry_frame, _gui_qt_wgt_entry_base.QtEntryFrame):
                     entry_frame._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 entry_frame = self._get_entry_frame_()
-                if isinstance(entry_frame, _utl_gui_qt_wgt_entry_base.QtEntryFrame):
+                if isinstance(entry_frame, _gui_qt_wgt_entry_base.QtEntryFrame):
                     entry_frame._set_focused_(False)
             #
             elif event.type() == QtCore.QEvent.KeyPress:
@@ -419,10 +419,10 @@ class QtGuideEntry(
 
 class QtGuideBar(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtValueEntryExtraDef,
-    utl_gui_qt_abstract.AbsQtCompletionExtraDef,
+    gui_qt_abstract.AbsQtValueEntryExtraDef,
+    gui_qt_abstract.AbsQtCompletionExtraDef,
 ):
-    QT_VALUE_ENTRY_CLS = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit
+    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsTextEdit
     QT_POPUP_COMPLETION_CLS = _utl_gui_qt_wgt_popup.QtPopupForCompletion
 
     QT_POPUP_PROXY_CLS = _utl_gui_qt_wgt_popup.QtPopupProxy
@@ -446,7 +446,7 @@ class QtGuideBar(
         qt_layout_0.setSpacing(0)
         qt_layout_0.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter)
 
-        self._value_entry_frame = _utl_gui_qt_wgt_entry_base.QtEntryFrame()
+        self._value_entry_frame = _gui_qt_wgt_entry_base.QtEntryFrame()
         qt_layout_0.addWidget(self._value_entry_frame)
         #
         self._value_entry_frame.setMinimumHeight(24)
@@ -539,7 +539,7 @@ class QtTagEntry(object):
 
 class QtTagBar(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtValueEntryExtraDef,
+    gui_qt_abstract.AbsQtValueEntryExtraDef,
 ):
     def __init__(self, *args, **kwargs):
         super(QtTagBar, self).__init__(*args, **kwargs)

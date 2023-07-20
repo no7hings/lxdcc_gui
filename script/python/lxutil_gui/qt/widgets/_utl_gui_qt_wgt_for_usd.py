@@ -9,9 +9,9 @@ from lxusd import usd_core
 
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as gui_qt_abstract
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_container
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_container
 
 if LOAD_INDEX == 0:
     class QtUsdStageWidgetProxy(QtWidgets.QWidget):
@@ -23,8 +23,8 @@ else:
     class QtUsdStageWidget(
         QtWidgets.QWidget,
         #
-        utl_gui_qt_abstract.AbsQtActionBaseDef,
-        utl_gui_qt_abstract.AbsQtThreadBaseDef
+        gui_qt_abstract.AbsQtActionBaseDef,
+        gui_qt_abstract.AbsQtThreadBaseDef
     ):
         UsdQUtils = Usdviewq._usdviewq.Utils
         #
@@ -1172,7 +1172,7 @@ else:
                 border_width=bdr_w,
             )
             if self._thread_draw_is_enable is True:
-                painter._set_loading_draw_by_rect_(
+                painter._draw_loading_by_rect_(
                     rect=self._stage_view_draw_rect,
                     loading_index=self._thread_load_index
                 )
@@ -1236,7 +1236,7 @@ else:
             def fnc_(boolean):
                 self._dataModel.viewSettings.showHUD = boolean
             #
-            tool_box = _utl_gui_qt_wgt_container.QtHToolBox()
+            tool_box = _gui_qt_wgt_container.QtHToolBox()
             self._top_tool_layout.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('hud-display and camera-mask')
@@ -1263,7 +1263,7 @@ else:
                 tool_box._add_widget_(i_button)
 
         def __add_material_and_light_switch_tools_(self):
-            tool_box = _utl_gui_qt_wgt_container.QtHToolBox()
+            tool_box = _gui_qt_wgt_container.QtHToolBox()
             self._top_tool_layout.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('material and light')
@@ -1287,7 +1287,7 @@ else:
                 tool_box._add_widget_(i_button)
 
         def __add_color_space_switch_tools_(self):
-            tool_box = _utl_gui_qt_wgt_container.QtHToolBox()
+            tool_box = _gui_qt_wgt_container.QtHToolBox()
             self._top_tool_layout.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('color space')
@@ -1310,7 +1310,7 @@ else:
                 tool_box._add_widget_(i_button)
 
         def __add_camera_and_renderer_switch_tools_(self):
-            tool_box = _utl_gui_qt_wgt_container.QtHToolBox()
+            tool_box = _gui_qt_wgt_container.QtHToolBox()
             self._top_tool_layout.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('camera and renderer')
@@ -1340,7 +1340,7 @@ else:
                 tool_box._add_widget_(i_button)
 
         def __add_environment_switch_tools_(self):
-            tool_box = _utl_gui_qt_wgt_container.QtHToolBox()
+            tool_box = _gui_qt_wgt_container.QtHToolBox()
             self._top_tool_layout.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('display-purpose and environment')
@@ -1385,7 +1385,7 @@ else:
                 else:
                     self._usd_do_clear_isolate_selected_()
             #
-            tool_box = _utl_gui_qt_wgt_container.QtVToolBox()
+            tool_box = _gui_qt_wgt_container.QtVToolBox()
             self._left_tool_layout.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('isolate select')
@@ -1412,7 +1412,7 @@ else:
             def fnc_(value_):
                 self._dataModel.viewSettings.renderMode = value_
             #
-            tool_box = _utl_gui_qt_wgt_container.QtVToolBox()
+            tool_box = _gui_qt_wgt_container.QtVToolBox()
             self._left_tool_layout.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('render mode')
@@ -1442,7 +1442,7 @@ else:
                 tool_box._add_widget_(i_button)
 
         def __add_other_switch_tools_(self):
-            tool_box = _utl_gui_qt_wgt_container.QtVToolBox()
+            tool_box = _gui_qt_wgt_container.QtVToolBox()
             self._left_tool_layout.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('extend')

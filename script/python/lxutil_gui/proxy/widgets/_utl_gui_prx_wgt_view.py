@@ -1,7 +1,7 @@
 # coding:utf-8
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_split, _utl_gui_qt_wgt_view
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_split, _utl_gui_qt_wgt_view, _gui_qt_wgt_view_for_tab
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
@@ -57,7 +57,7 @@ class PrxVSplitter(PrxHSplitter):
 
 
 class PrxTabView(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_view.QtTabView
+    QT_WIDGET_CLS = _gui_qt_wgt_view_for_tab.QtTabView
     def __init__(self, *args, **kwargs):
         super(PrxTabView, self).__init__(*args, **kwargs)
 
@@ -94,10 +94,10 @@ class PrxTabView(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_widget.tab_delete_accepted.connect(fnc)
 
 
-class PrxLayoutView(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_view.QtLayoutView
+class PrxGridLayoutView(utl_gui_prx_abstract.AbsPrxWidget):
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_view.QtGridLayoutView
     def __init__(self, *args, **kwargs):
-        super(PrxLayoutView, self).__init__(*args, **kwargs)
+        super(PrxGridLayoutView, self).__init__(*args, **kwargs)
 
     def add_item(self, widget):
         if isinstance(widget, utl_gui_qt_core.QtCore.QObject):

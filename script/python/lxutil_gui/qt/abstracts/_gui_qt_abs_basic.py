@@ -865,6 +865,9 @@ class AbsQtActionDragDef(object):
     def _set_drag_urls_(self, urls):
         self._drag_urls = urls
 
+    def _get_drag_urls_(self):
+        return self._drag_urls
+
     def _set_drag_data_(self, data):
         if isinstance(data, dict):
             self._drag_data = data
@@ -889,8 +892,14 @@ class AbsQtActionDragDef(object):
 
 
 class AbsQtIconBaseDef(object):
+    class IconGeometryMode(object):
+        Square = 0
+        Auto = 1
+    #
     def _init_icon_base_def_(self, widget):
         self._widget = widget
+        #
+        self._icon_geometry_mode = self.IconGeometryMode.Square
         #
         self._icon_is_enable = False
         #
@@ -932,6 +941,9 @@ class AbsQtIconBaseDef(object):
         self._icon_state_file_path = None
         self._icon_state_draw_percent = .25
         self._icon_state_draw_rgb = 72, 72, 72
+
+    def _set_icon_geometry_mode_(self, mode):
+        self._icon_geometry_mode = mode
 
     def _set_icon_enable_(self, boolean):
         self._icon_is_enable = boolean
@@ -1282,6 +1294,10 @@ class AbsQtNameBaseDef(object):
         #
         self._widget.update()
 
+    def _get_name_text_(self):
+        if self._name_enable is True:
+            return self._name_text
+
     def _get_name_text_option_(self):
         return self._name_text_option
 
@@ -1290,10 +1306,6 @@ class AbsQtNameBaseDef(object):
 
     def _set_name_width_(self, w):
         self._name_width = w
-
-    def _get_name_text_(self):
-        if self._name_enable is True:
-            return self._name_text
 
     def _set_name_frame_rect_(self, x, y, w, h):
         self._name_frame_draw_rect.setRect(
@@ -1353,6 +1365,13 @@ class AbsQtNameBaseDef(object):
                             utl_gui_core.RscIconFile.get('mouse/LMB-click')
                         )
                     )
+                if '"LMB-move"' in i_text:
+                    i_text = i_text.replace(
+                        '"LMB-move"',
+                        '<img src="{}">\n"LMB-move"'.format(
+                            utl_gui_core.RscIconFile.get('mouse/LMB-click')
+                        )
+                    )
                 if '"RMB-click"' in i_text:
                     i_text = i_text.replace(
                         '"RMB-click"',
@@ -1391,11 +1410,12 @@ class AbsQtNameBaseDef(object):
         return self._name_text_orig
 
 
-class AbsQtNamesBaseDef(object):
-    def _refresh_widget_draw_(self):
-        raise NotImplementedError()
-
-    def _init_names_def_(self):
+class AbsQtNamesBaseDef(AbsQtNameBaseDef):
+    def _init_names_base_def_(self, widget):
+        self._init_name_base_def_(widget)
+        #
+        self._widget = widget
+        #
         self._names_enable = False
         self._name_texts = []
         self._name_indices = []
@@ -1432,10 +1452,12 @@ class AbsQtNamesBaseDef(object):
 
     def _set_name_text_(self, text):
         self._set_name_texts_([text])
+        self._name_text = text
 
     def _get_name_text_(self):
         if self._name_texts:
-            return u'+'.join(self._name_texts)
+            return self._name_texts[0]
+        return self._name_text
 
     def _set_name_texts_(self, texts):
         self._name_texts = texts
@@ -1446,7 +1468,7 @@ class AbsQtNamesBaseDef(object):
                 QtCore.QRect()
             )
         #
-        self._refresh_widget_draw_()
+        self._widget.update()
 
     def _get_name_texts_(self):
         return self._name_texts
@@ -1459,7 +1481,7 @@ class AbsQtNamesBaseDef(object):
 
     def _get_show_name_texts_(self):
         if self._name_text_dict:
-            return [v if seq == 0 else '{}: {}'.format(k, v) for seq, (k, v) in enumerate(self._name_text_dict.items())]
+            return ['{}: {}'.format(k, v) for seq, (k, v) in enumerate(self._name_text_dict.items())]
         return self._get_name_texts_()
 
     def _get_name_text_dict_(self):
@@ -1512,17 +1534,18 @@ class AbsQtNamesBaseDef(object):
     def _set_tool_tip_text_(self, text, **kwargs):
         if hasattr(self, 'setToolTip'):
             css = u'<html>\n<body>\n<style>.no_wrap{white-space:nowrap;float:right;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align:center;}</style>\n'
+            #
+            name_text = self._name_text
+            if name_text:
+                css += u'<h2><p class="no_warp_and_center">{}</p></h2>\n'.format(name_text)
+                css += u'<p><hr></p>\n'
+            #
             texts = self._get_show_name_texts_()
             if texts:
                 for seq, i_text in enumerate(texts):
                     i_text = i_text.replace(' ', '&nbsp;').replace('<', '&lt;').replace('>', '&gt;')
-                    if seq == 0:
-                        css += u'<h2><p class="no_warp_and_center">{}</p></h2>\n'.format(i_text)
-                        css += u'<p><hr></p>\n'
-                    else:
-                        css += u'<p class="no_wrap">{}</p>\n'.format(i_text)
+                    css += u'<p class="no_wrap">{}</p>\n'.format(i_text)
             #
-            text = text.replace(' ', '&nbsp;').replace('<', '&lt;').replace('>', '&gt;')
             css += u'<p><hr></p>\n'
             if isinstance(text, six.string_types):
                 texts_extend = text.split('\n')
@@ -1530,6 +1553,7 @@ class AbsQtNamesBaseDef(object):
                 texts_extend = text
             #
             for i_text in texts_extend:
+                i_text = i_text.replace(' ', '&nbsp;').replace('<', '&lt;').replace('>', '&gt;')
                 css += u'<p class="no_wrap">{}</p>\n'.format(i_text)
             css += u'</body>\n</html>'
             self.setToolTip(css)
@@ -1738,7 +1762,6 @@ class AbsQtImageBaseDef(object):
 class AbsQtMovieDef(object):
     def _refresh_widget_draw_(self):
         raise NotImplementedError()
-
     #
     def _set_movie_def_init_(self):
         self._play_draw_enable = False
@@ -2050,11 +2073,12 @@ class AbsQtActionForHoverDef(object):
         elif event.type() == QtCore.QEvent.Leave:
             self._set_action_hovered_(False)
 
-    def _execute_action_hover_move_(self, event):
+    def _do_hover_move_(self, event):
         pass
 
 
 class AbsQtActionForPressDef(object):
+    pressed = qt_signal()
     press_clicked = qt_signal()
     press_db_clicked = qt_signal()
     press_toggled = qt_signal(bool)
@@ -2339,10 +2363,8 @@ class AbsQtThreadBaseDef(object):
         self._thread_draw_is_enable = False
         self._thread_load_index = 0
 
-        self._thread_timer = QtCore.QTimer()
-        self._thread_timer.timeout.connect(
-            self._refresh_thread_draw_
-        )
+        self._thread_running_timer = QtCore.QTimer()
+        self._thread_running_timer.timeout.connect(self._refresh_thread_draw_)
 
         self._threads = []
 
@@ -2353,13 +2375,13 @@ class AbsQtThreadBaseDef(object):
         self._set_action_busied_(True)
         self._thread_draw_is_enable = True
         self._thread_load_index = 0
-        self._thread_timer.start(100)
+        self._thread_running_timer.start(100)
         self._refresh_thread_draw_()
 
     def _stop_thread_draw_(self):
         self._set_action_busied_(False)
         self._thread_draw_is_enable = False
-        self._thread_timer.stop()
+        self._thread_running_timer.stop()
         self._thread_load_index = 0
         self._refresh_thread_draw_()
 
@@ -2913,6 +2935,18 @@ class AbsQtItemMovieActionDef(object):
         self.movie_play_press_clicked.emit()
 
 
+class AbsQtItemWidgetExtra(object):
+    def _init_item_widget_extra_(self, widget):
+        self._widget = widget
+        self._item = None
+
+    def _set_item_(self, item):
+        self._item = item
+
+    def _get_item_(self):
+        return self._item
+
+
 class AbsQtBuildViewDef(object):
     def _set_build_view_def_init_(self):
         pass
@@ -2941,6 +2975,18 @@ class AbsQtViewSelectActionDef(object):
 
     def _view_item_select_cbk(self):
         raise NotImplementedError()
+
+    def _set_selection_use_multiply_(self):
+        pass
+
+    def _set_selection_use_single_(self):
+        pass
+
+    def _get_is_multiply_selection_(self):
+        pass
+
+    def _clear_selection_(self):
+        pass
 
 
 class AbsQtViewScrollActionDef(object):
@@ -3015,7 +3061,7 @@ class AbsQtItemFilterDef(object):
             if hasattr(self, '_get_name_texts_'):
                 if self._get_name_texts_():
                     return [i for i in self._get_name_texts_() if i]
-            elif hasattr(self, '_get_name_text_'):
+            if hasattr(self, '_get_name_text_'):
                 return [self._get_name_text_()]
         return []
 
@@ -3026,7 +3072,7 @@ class AbsQtItemFilterDef(object):
         return self._item_keyword_filter_keys_tgt_cache
 
     def _get_keyword_filter_keys_auto_as_split_(self):
-        return [j for i in self._get_keyword_filter_keys_auto_use_cache_() for j in bsc_core.RawTextMtd.split_to(i)]
+        return [j for i in self._get_keyword_filter_keys_auto_use_cache_() for j in bsc_core.RawTextMtd.split_any_to(i)]
 
     def _get_item_keyword_filter_context_(self):
         return '+'.join(self._get_keyword_filter_keys_auto_use_cache_())
@@ -3240,6 +3286,9 @@ class AbsQtViewFilterExtraDef(object):
                     )
                 else:
                     self._view_keyword_filter_bar._set_filter_result_count_(None)
+
+    def _has_keyword_filter_results_(self):
+        return self._view_keyword_filter_match_items != []
     # keyword filter action
     def _execute_view_keyword_filter_occurrence_to_current_(self):
         items = self._view_keyword_filter_match_items
@@ -3544,10 +3593,12 @@ class AbsQtShowBaseForItemDef(
         self._item_show_timer = QtCore.QTimer(view)
         self._item_show_loading_index = 0
         self._item_show_loading_timer = QtCore.QTimer(view)
+        self._item_show_loading_timer.timeout.connect(self._update_item_show_loading_)
         #
         self._item_show_image_timer = QtCore.QTimer(view)
         self._item_show_image_loading_index = 0
         self._item_show_image_loading_timer = QtCore.QTimer(view)
+        self._item_show_image_loading_timer.timeout.connect(self._update_item_show_image_loading_)
         #
         self._item_show_image_sub_process = None
         self._item_show_image_cmd = None
@@ -3580,16 +3631,11 @@ class AbsQtShowBaseForItemDef(
         #
         if self._item_show_status == self.ShowStatus.Waiting or force is True:
             self._checkout_item_show_loading_()
-            #
-            self._item_show_timer.timeout.connect(run_fnc_)
-            self._item_show_timer.start(delay_time)
+            self._item_show_timer.singleShot(delay_time, run_fnc_)
     #
     def _checkout_item_show_loading_(self):
         if self._item_show_status == self.ShowStatus.Waiting:
-            self._item_show_loading_timer.timeout.connect(
-                self._update_item_show_loading_
-            )
-            self._item_show_loading_timer.start(10)
+            self._item_show_loading_timer.start(100)
 
     def _start_item_show_(self):
         if self._item_show_status == self.ShowStatus.Waiting:
@@ -3616,7 +3662,6 @@ class AbsQtShowBaseForItemDef(
 
     def _set_item_show_stop_(self, status):
         self._item_show_status = status
-        self._item_show_timer.stop()
         self._finish_item_show_loading_()
 
     def _get_item_show_is_finished_(self):
@@ -3676,15 +3721,10 @@ class AbsQtShowBaseForItemDef(
         if self._item_show_image_status == self.ShowStatus.Waiting or force is True:
             self._checkout_item_show_image_loading_()
             #
-            self._item_show_image_timer.timeout.connect(run_fnc)
-            self._item_show_image_timer.start(delay_time)
+            self._item_show_image_timer.singleShot(delay_time, run_fnc)
 
     def _checkout_item_show_image_loading_(self):
         if self._item_show_image_status == self.ShowStatus.Waiting:
-            self._update_item_show_image_loading_()
-            self._item_show_image_loading_timer.timeout.connect(
-                self._update_item_show_image_loading_
-            )
             self._item_show_image_loading_timer.start(100)
 
     def _start_item_show_image_(self):
@@ -3720,7 +3760,6 @@ class AbsQtShowBaseForItemDef(
                     utl_gui_core.RscIconFile.get('image_loading_failed_error')
                 )
         #
-        self._item_show_image_timer.stop()
         self._finish_item_show_image_loading_()
 
     def _get_item_is_viewport_showable_(self, *args, **kwargs):
@@ -4312,7 +4351,6 @@ class AbsQtScreenshotDef(object):
 
     def _set_screenshot_accept_(self):
         def fnc_():
-            self._timer.stop()
             x, y, w, h = self._get_screenshot_accept_geometry_()
             self.screenshot_finished.emit()
             self.screenshot_accepted.emit([x, y, w, h])
@@ -4325,11 +4363,7 @@ class AbsQtScreenshotDef(object):
         AbsQtScreenshotDef.CACHE = self._get_screenshot_accept_geometry_()
 
         self._timer = QtCore.QTimer(self._widget)
-        self._timer.timeout.connect(
-            fnc_
-        )
-
-        self._timer.start(100)
+        self._timer.singleShot(100, fnc_)
 
     def _set_screenshot_start_(self):
         self.screenshot_started.emit()

@@ -1289,7 +1289,7 @@ def set_qt_window_show(qt_window, pos=None, size=None, use_exec=False):
         qt_window.raise_()
 
 
-def set_window_show_standalone(prx_window_class, show_kwargs=None, **kwargs):
+def show_prx_window_auto(prx_window_class, show_kwargs=None, **kwargs):
     exists_app = QtWidgets.QApplication.instance()
     if exists_app is None:
         app = QtWidgets.QApplication(sys.argv)
@@ -2533,6 +2533,11 @@ class QtRawColorMtd(object):
         return (b_r, b_g, b_b, b_a), (t_l, t_l, t_l, 255)
 
 
+class QtTabColors(object):
+    LineCurrent = QtGui.QColor(95, 95, 95, 255)
+    Line = QtGui.QColor(63, 63, 63, 255)
+
+
 class QtPainter(QtGui.QPainter):
     @classmethod
     def _get_qt_color_(cls, *args):
@@ -2665,16 +2670,14 @@ class QtPainter(QtGui.QPainter):
             0, QtBackgroundColors.Dark
         )
         color.setColorAt(
-            0.75, QtBackgroundColors.Dark
+            0.95, QtBackgroundColors.Dark
         )
         color.setColorAt(
             1, QtBackgroundColors.Transparent
         )
         self._set_border_color_(QtBorderColors.Transparent)
         self._set_background_color_(color)
-        self.drawRect(
-            rect
-        )
+        self.drawRect(rect)
 
     def _draw_tab_right_tool_box_by_rect_(self, rect):
         color = QtGui.QLinearGradient(
@@ -2684,16 +2687,14 @@ class QtPainter(QtGui.QPainter):
             0, QtBackgroundColors.Transparent
         )
         color.setColorAt(
-            0.25, QtBackgroundColors.Dark
+            0.05, QtBackgroundColors.Dark
         )
         color.setColorAt(
             1, QtBackgroundColors.Dark
         )
         self._set_border_color_(QtBorderColors.Transparent)
         self._set_background_color_(color)
-        self.drawRect(
-            rect
-        )
+        self.drawRect(rect)
 
     def _draw_tab_buttons_by_rects_(self, frame_rect, virtual_items, index_hovered, index_pressed, current_index):
         self._draw_frame_by_rect_(
@@ -2701,40 +2702,47 @@ class QtPainter(QtGui.QPainter):
             border_color=QtBorderColors.Transparent,
             background_color=QtBackgroundColors.Dark,
         )
-        #
-        for i_index, i_virtual_item in enumerate(virtual_items):
-            i_name_text = i_virtual_item.name_text
-            i_rect = i_virtual_item.rect
-            i_icon_text = i_virtual_item.icon_text
-            i_is_hovered = i_index == index_hovered
-            i_is_pressed = i_index == index_pressed
-            i_is_current = i_index == current_index
-            if i_is_current is False:
-                self._draw_tab_button_at_(
-                    frame_rect, i_rect, i_name_text, i_icon_text, i_is_hovered, i_is_pressed, i_is_current
-                )
-        # draw current
-        for i_index, i_virtual_item in enumerate(virtual_items):
-            i_name_text = i_virtual_item.name_text
-            i_rect = i_virtual_item.rect
-            i_icon_text = i_virtual_item.icon_text
-            i_is_hovered = i_index == index_hovered
-            i_is_pressed = i_index == index_pressed
-            i_is_current = i_index == current_index
-            if i_is_current is True:
-                self._draw_tab_button_at_(
-                    frame_rect, i_rect, i_name_text, i_icon_text, i_is_hovered, i_is_pressed, i_is_current
-                )
+        if virtual_items:
+            for i_index, i_virtual_item in enumerate(virtual_items):
+                i_name_text = i_virtual_item.name_text
+                i_rect = i_virtual_item.rect
+                i_icon_text = i_virtual_item.icon_text
+                i_is_hovered = i_index == index_hovered
+                i_is_pressed = i_index == index_pressed
+                i_is_current = i_index == current_index
+                if i_is_current is False:
+                    self._draw_tab_button_at_(
+                        frame_rect, i_rect, i_name_text, i_icon_text, i_is_hovered, i_is_pressed, i_is_current
+                    )
+            # draw current
+            for i_index, i_virtual_item in enumerate(virtual_items):
+                i_name_text = i_virtual_item.name_text
+                i_rect = i_virtual_item.rect
+                i_icon_text = i_virtual_item.icon_text
+                i_is_hovered = i_index == index_hovered
+                i_is_pressed = i_index == index_pressed
+                i_is_current = i_index == current_index
+                if i_is_current is True:
+                    self._draw_tab_button_at_(
+                        frame_rect, i_rect, i_name_text, i_icon_text, i_is_hovered, i_is_pressed, i_is_current
+                    )
+        else:
+            f_x, f_y = frame_rect.x(), frame_rect.y()
+            f_w, f_h = frame_rect.width(), frame_rect.height()
+            self._set_border_color_(QtTabColors.LineCurrent)
+            self._set_border_width_(1)
+            frame_coords = [(f_x, f_y+f_h), (f_w, f_y+f_h)]
+            self._draw_path_by_coords_(frame_coords, antialiasing=False)
 
     def _draw_tab_button_at_(self, frame_rect, rect, text, icon_name_text, is_hovered, is_pressed, is_current):
         f_x, f_y = frame_rect.x(), frame_rect.y()
         f_w, f_h = frame_rect.width(), frame_rect.height()
         a = 255
         if is_current:
-            border_color = QtGui.QColor(95, 95, 95, 255)
+            border_color = QtTabColors.LineCurrent
             background_color = QtGui.QColor(63, 63, 63, a)
         else:
-            border_color = QtGui.QColor(63, 63, 63, a)
+            border_color = QtTabColors.Line
             background_color = QtGui.QColor(55, 55, 55, a)
         #
         if is_hovered is True:
@@ -3363,7 +3371,7 @@ class QtPainter(QtGui.QPainter):
     def _set_antialiasing_(self, boolean=True):
         self.setRenderHint(self.Antialiasing, boolean)
 
-    def _set_loading_draw_by_rect_(self, rect, loading_index):
+    def _draw_loading_by_rect_(self, rect, loading_index):
         self._set_border_color_(QtBorderColors.Basic)
         self._draw_alternating_colors_by_rect_(
             rect=rect,
@@ -3376,7 +3384,7 @@ class QtPainter(QtGui.QPainter):
         self.drawText(
             rect,
             QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
-            'loading .{}'.format('.'*int((loading_index/50) % 3))
+            'loading .{}'.format('.'*int((loading_index/10) % 3))
         )
 
     def _set_exr_image_draw_by_rect_(self, rect, file_path, offset=0, is_hovered=False):

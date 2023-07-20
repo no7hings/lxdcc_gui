@@ -5,9 +5,9 @@ from lxbasic import bsc_configure, bsc_core
 
 from lxutil import utl_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_chart
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_container, _gui_qt_wgt_chart
 
-from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wdt_node
+from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _gui_prx_wdt_node, _gui_prx_wgt_contianer
 
 from lxutil_gui.qt import utl_gui_qt_core
 
@@ -26,8 +26,8 @@ class AbsPrxDialogWindow(
     #
     PROGRESS_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtProgressBar
     #
-    QT_WAITING_CHART_CLS = _utl_gui_qt_wgt_chart.QtWaitingChart
-    QT_PROGRESSING_CHART_CLS = _utl_gui_qt_wgt_chart.QtProgressingChart
+    QT_WAITING_CHART_CLS = _gui_qt_wgt_chart.QtWaitingChart
+    QT_PROGRESSING_CHART_CLS = _gui_qt_wgt_chart.QtProgressingChart
     #
     ValidatorStatus = bsc_configure.ValidatorStatus
     def __init__(self, *args, **kwargs):
@@ -81,7 +81,7 @@ class AbsPrxDialogWindow(
         #
         self._set_progressing_def_init_()
         #
-        self._top_toolbar = _utl_gui_prx_wdt_utility.PrxHToolBar()
+        self._top_toolbar = _gui_prx_wgt_contianer.PrxHToolBar()
         self._top_toolbar.set_hide()
         self._central_layout.addWidget(self._top_toolbar.widget)
         self._top_toolbar.set_expanded(True)
@@ -110,18 +110,18 @@ class AbsPrxDialogWindow(
         self._customize_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._customize_widget)
         self._customize_layout.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignTop)
         # option
-        self._options_prx_node = _utl_gui_prx_wdt_node.PrxNode_('options')
+        self._options_prx_node = _gui_prx_wdt_node.PrxNode_('options')
         self._customize_layout.addWidget(self._options_prx_node.widget)
         self._options_prx_node.set_hide()
         # tip
-        self._tip_group = _utl_gui_prx_wdt_utility.PrxHToolGroup()
+        self._tip_group = _gui_qt_wgt_container.PrxHToolGroup()
         self._customize_layout.addWidget(self._tip_group.widget)
         self._tip_group.set_visible(False)
         self._tip_group.set_name('tips')
         self._tip_text_browser = _utl_gui_prx_wdt_utility.PrxTextBrowser()
         self._tip_group.add_widget(self._tip_text_browser)
         #
-        self._bottom_toolbar = _utl_gui_prx_wdt_utility.PrxHToolBar()
+        self._bottom_toolbar = _gui_prx_wgt_contianer.PrxHToolBar()
         self._central_layout.addWidget(self._bottom_toolbar.widget)
         self._bottom_toolbar.set_expanded(True)
         qt_widget_2 = _utl_gui_qt_wgt_utility.QtWidget()
@@ -592,8 +592,8 @@ class PrxMonitorWindow(
     #
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtMainWindow
     #
-    QT_WAITING_CHART_CLS = _utl_gui_qt_wgt_chart.QtWaitingChart
-    QT_PROGRESSING_CHART_CLS = _utl_gui_qt_wgt_chart.QtProgressingChart
+    QT_WAITING_CHART_CLS = _gui_qt_wgt_chart.QtWaitingChart
+    QT_PROGRESSING_CHART_CLS = _gui_qt_wgt_chart.QtProgressingChart
     def __init__(self, *args, **kwargs):
         super(PrxMonitorWindow, self).__init__(*args, **kwargs)
         if kwargs.get('parent'):

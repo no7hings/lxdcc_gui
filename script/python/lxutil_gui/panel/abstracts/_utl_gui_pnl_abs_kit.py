@@ -195,7 +195,7 @@ class AbsPnlAppKit(prx_widgets.PrxSessionWindow):
                 )
             )
 
-            utl_gui_qt_core.set_window_show_standalone(
+            utl_gui_qt_core.show_prx_window_auto(
                 utl_pnl_widgets.RezGraph, hook_option=_option_opt.to_string()
             )
 
@@ -555,7 +555,7 @@ class AbsPnlAppKit(prx_widgets.PrxSessionWindow):
             tool_group.set_name(group_sub_name)
             tool_group.set_expanded(True)
             #
-            layout_view = prx_widgets.PrxLayoutView()
+            layout_view = prx_widgets.PrxGridLayoutView()
             self._tool_group_dict[group_sub_path] = tool_group, layout_view
             tool_group.add_widget(layout_view)
             layout_view.set_item_size(*self.session.gui_configure.get('item_frame_size'))
@@ -910,7 +910,7 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
             tool_group.set_expanded(True)
             tool_group.set_name(group_path)
             #
-            layout_view = prx_widgets.PrxLayoutView()
+            layout_view = prx_widgets.PrxGridLayoutView()
             self._view_dict[group_path] = layout_view
             tool_group.add_widget(layout_view)
             layout_view.set_item_size(self._w*self._w_p, self._h*self._h_p)

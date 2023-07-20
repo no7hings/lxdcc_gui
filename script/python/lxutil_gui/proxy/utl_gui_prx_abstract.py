@@ -149,6 +149,9 @@ class AbsPrxViewDef(object):
     def get_selected_items(self):
         return [i.gui_proxy for i in self._get_selected_items_()]
 
+    def get_selected_item_widgets(self):
+        pass
+
     def get_current_item(self):
         pass
 
@@ -254,7 +257,7 @@ class AbsPrxWindow(AbsPrx):
         #
         self._definition_window_size = 480, 320
         #
-        self.widget.setBaseSize(
+        self._qt_widget.setBaseSize(
             utl_gui_qt_core.QtCore.QSize(*self._definition_window_size)
         )
         #
@@ -282,7 +285,7 @@ class AbsPrxWindow(AbsPrx):
     def set_definition_window_size(self, size):
         if size is not None:
             self._definition_window_size = size
-            self.widget.setBaseSize(
+            self._qt_widget.setBaseSize(
                 utl_gui_qt_core.QtCore.QSize(*self._definition_window_size)
             )
 
@@ -300,7 +303,7 @@ class AbsPrxWindow(AbsPrx):
                         )
                         i.set_window_close()
         #
-        utl_gui_qt_core.set_qt_window_show(self.widget, pos, size)
+        utl_gui_qt_core.set_qt_window_show(self._qt_widget, pos, size)
 
     def set_close_method(self, method):
         self._close_methods.append(method)

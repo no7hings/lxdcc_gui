@@ -1,5 +1,5 @@
 # coding=utf-8
-import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 from lxutil_gui.qt.utl_gui_qt_core import *
 
@@ -8,7 +8,7 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item,
 
 class _QtWindow(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()

@@ -11,11 +11,11 @@ from lxbasic import bsc_core
 
 from lxutil_gui import utl_gui_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry_base, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_view_for_list
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_entry_base, _gui_qt_wgt_chart, _utl_gui_qt_wgt_view_for_list
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
-from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wgt_item
+from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wgt_item, _gui_prx_wgt_contianer
 
 
 class PrxListView(
@@ -26,7 +26,7 @@ class PrxListView(
     #
     utl_gui_prx_abstract.AbsPrxViewVisibleConnectionDef,
 ):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_entry_base.QtEntryFrame
+    QT_WIDGET_CLS = _gui_qt_wgt_entry_base.QtEntryFrame
     QT_VIEW_CLS = _utl_gui_qt_wgt_view_for_list.QtListWidget
     #
     FILTER_MAXIMUM = 50
@@ -35,7 +35,9 @@ class PrxListView(
         self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
         self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
-        self._prx_top_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
+        #
+        self._prx_top_tool_bar = _gui_prx_wgt_contianer.PrxHToolBar()
+        self._prx_top_tool_bar.set_name('top')
         self._prx_top_tool_bar.set_left_alignment_mode()
         self._qt_layout_0.addWidget(self._prx_top_tool_bar.widget)
         self._prx_top_tool_bar.set_border_radius(1)
@@ -86,7 +88,7 @@ class PrxListView(
         self._set_prx_view_def_init_(self._qt_view)
         self._qt_view._set_sort_enable_(True)
         #
-        self._qt_info_chart = _utl_gui_qt_wgt_chart.QtInfoChart()
+        self._qt_info_chart = _gui_qt_wgt_chart.QtInfoChart()
         self._qt_info_chart.hide()
         self._qt_layout_0.addWidget(self._qt_info_chart)
         self._qt_view.info_text_accepted.connect(
@@ -107,8 +109,12 @@ class PrxListView(
         self._qt_view._set_view_keyword_filter_bar_(self._prx_filter_bar._qt_widget)
         self._prx_filter_bar._qt_widget._set_completion_extra_gain_fnc_(self.__keyword_filter_completion_gain_fnc)
         self._prx_filter_bar._qt_widget.user_choose_changed.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_current_)
-        self._prx_filter_bar._qt_widget.occurrence_previous_press_clicked.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_previous_)
-        self._prx_filter_bar._qt_widget.occurrence_next_press_clicked.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_next_)
+        self._prx_filter_bar._qt_widget.occurrence_previous_press_clicked.connect(
+            self._qt_view._execute_view_keyword_filter_occurrence_to_previous_
+        )
+        self._prx_filter_bar._qt_widget.occurrence_next_press_clicked.connect(
+            self._qt_view._execute_view_keyword_filter_occurrence_to_next_
+        )
     @property
     def view(self):
         return self._qt_view
@@ -146,7 +152,6 @@ class PrxListView(
                         )
                     )
                 )
-
             #
             _ = fnmatch.filter(
                 self._filter_completion_cache, six.u('*{}*').format(keyword)
@@ -159,6 +164,7 @@ class PrxListView(
             self._prx_filter_bar.get_keywords()
         )
         self._qt_view._refresh_view_items_visible_by_any_filter_()
+        self._prx_filter_bar._qt_widget._set_occurrence_buttons_enable_(self._qt_view._has_keyword_filter_results_())
         self._qt_view._refresh_viewport_showable_auto_()
 
     def get_check_tool_box(self):
@@ -174,25 +180,26 @@ class PrxListView(
         return self._prx_filter_tool_box
 
     def __add_scale_switch_tools(self):
-        self._scale_switch_tools = []
-        for i_key, i_scale in [
-            ('small', .5), ('medium', 0.75), ('large', 1.0), ('super', 1.25)
+        tools = []
+        for i_key, i_enable, i_scale in [
+            ('small', False, .75), ('medium', True, 1.0), ('large', False, 1.25), ('super', False, 1.5)
         ]:
             i_tool = _utl_gui_prx_wdt_utility.PrxEnableItem()
             self._prx_scale_switch_tool_box.add_widget(i_tool)
             # i_tool._qt_widget._set_size_(24, 24)
             # i_tool._qt_widget._set_icon_frame_draw_size_(24, 24)
             # i_tool._qt_widget._set_icon_file_draw_size_(20, 20)
-            i_tool._qt_widget._set_exclusive_widgets_(self._scale_switch_tools)
+            i_tool._qt_widget._set_exclusive_widgets_(tools)
             i_tool.set_name(i_key)
             i_tool.set_icon_name('tool/icon-{}'.format(i_key))
             i_tool.set_tool_tip('"LMB-click" for switch to scale to "{}"'.format(i_key))
-            self._scale_switch_tools.append(i_tool._qt_widget)
+            if i_enable is True:
+                i_tool.set_checked(True)
+            #
+            tools.append(i_tool._qt_widget)
             i_tool.connect_check_changed_as_exclusive_to(
                 functools.partial(self.__switch_view_scale, i_scale)
             )
-        #
-        self._scale_switch_tools[-2]._set_checked_(True)
 
     def __switch_view_scale(self, scale):
         self._qt_view._set_item_scale_percent_(scale)
@@ -292,7 +299,7 @@ class PrxListView(
         self.view._set_item_image_frame_draw_enable_(boolean)
     #
     def create_item(self, *args, **kwargs):
-        prx_item_widget = _utl_gui_prx_wgt_item.PrxListItem()
+        prx_item_widget = _utl_gui_prx_wgt_item.PrxListItemWidget()
         prx_item_widget.set_view(self)
         self.view._add_item_widget_(prx_item_widget.widget, **kwargs)
         return prx_item_widget
@@ -372,6 +379,18 @@ class PrxListView(
         _ = self._qt_view.currentItem()
         if _:
             return _.gui_proxy
+
+    def set_selection_use_multiply(self):
+        self._qt_view._set_selection_use_multiply_()
+
+    def set_selection_use_single(self):
+        self._qt_view._set_selection_use_single_()
+
+    def get_selected_item_widgets(self):
+        return [self._qt_view._get_item_widget_(i).gui_proxy for i in self.view.selectedItems()]
+
+    def connect_press_released_to(self, fnc):
+        self._qt_view.press_released.connect(fnc)
 
 
 class PrxImageView(PrxListView):

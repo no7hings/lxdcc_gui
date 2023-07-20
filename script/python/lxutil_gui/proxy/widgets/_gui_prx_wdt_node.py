@@ -17,7 +17,7 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_split
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
-from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wgt_entry
+from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wgt_entry, _gui_prx_wgt_contianer
 
 
 # port =============================================================================================================== #
@@ -1103,7 +1103,7 @@ class PrxGroupPort_(
     def __init__(self, path):
         self._set_prx_port_def_init_('group', path)
         #
-        self._prx_widget = _utl_gui_prx_wdt_utility.PrxHToolGroup()
+        self._prx_widget = _gui_prx_wgt_contianer.PrxHToolGroup()
         self._prx_widget.set_height_match_to_minimum()
         self._qt_widget = self._prx_widget.widget
         self._prx_widget.set_name(self._label)

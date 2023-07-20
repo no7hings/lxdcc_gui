@@ -9,11 +9,11 @@ from lxutil import utl_core
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_chart
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_chart
 
 from lxutil_gui.proxy import utl_gui_prx_configure, utl_gui_prx_core, utl_gui_prx_abstract
 
-from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility
+from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _gui_prx_wgt_contianer
 
 from lxutil_gui import utl_gui_core
 
@@ -38,8 +38,8 @@ class PrxBaseWindow(
     PRX_LAYER_CLS = _utl_gui_prx_wdt_utility.PrxLayer
     PROGRESS_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtProgressBar
     #
-    QT_WAITING_CHART_CLS = _utl_gui_qt_wgt_chart.QtWaitingChart
-    QT_PROGRESSING_CHART_CLS = _utl_gui_qt_wgt_chart.QtProgressingChart
+    QT_WAITING_CHART_CLS = _gui_qt_wgt_chart.QtWaitingChart
+    QT_PROGRESSING_CHART_CLS = _gui_qt_wgt_chart.QtProgressingChart
     #
     HELP_FILE_PATH = None
     def __init__(self, *args, **kwargs):
@@ -137,13 +137,13 @@ class PrxBaseWindow(
         self._qt_main_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_main_widget)
         self._qt_main_layout.setContentsMargins(2, 2, 2, 2)
         # bottom toolbar
-        self._window_bottom_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
+        self._window_bottom_tool_bar = _gui_prx_wgt_contianer.PrxHToolBar()
         qt_layout_0.addWidget(self._window_bottom_tool_bar.widget)
         self._window_bottom_tool_bar.set_expanded(True)
         self._window_bottom_tool_bar.set_hide()
         self._window_bottom_tool_bar.set_bottom_direction()
         #
-        self._log_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
+        self._log_tool_bar = _gui_prx_wgt_contianer.PrxHToolBar()
         qt_layout_0.addWidget(self._log_tool_bar.widget)
         self._log_tool_bar.set_hide()
         self._log_tool_bar.set_height(120)
@@ -227,7 +227,7 @@ class PrxBaseWindow(
             size=self.get_definition_window_size()
         )
 
-    def set_loading_start(self, time, method):
+    def start_loading(self, time, method):
         def method_fnc_():
             self.set_window_loading_end()
             method()
@@ -347,7 +347,7 @@ class PrxBaseWindow(
         #
         if self._is_loading is True:
             utl_gui_qt_core.set_qt_window_show(
-                self.widget, pos, size=(480, 160)
+                self.widget, pos, size=(480, 320)
             )
         else:
             utl_gui_qt_core.set_qt_window_show(
@@ -427,7 +427,7 @@ class PrxSessionWindow(PrxBaseWindow):
         self.set_definition_window_size(self._session.gui_configure.get('size'))
         self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
         #
-        self.set_loading_start(time=self.DEFERRED_TIME, method=self._setup_fnc_)
+        self.start_loading(time=self.DEFERRED_TIME, method=self._setup_fnc_)
 
     def _setup_fnc_(self):
         self.restore_variants()

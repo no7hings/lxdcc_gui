@@ -133,5 +133,5 @@ if __name__ == '__main__':
         )
     ).set_run()
 
-    utl_gui_qt_core.set_window_show_standalone(W)
+    utl_gui_qt_core.show_prx_window_auto(W)
 

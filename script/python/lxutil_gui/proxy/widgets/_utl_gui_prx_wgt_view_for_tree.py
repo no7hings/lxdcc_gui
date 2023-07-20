@@ -8,11 +8,11 @@ from lxutil_gui import utl_gui_configure
 
 from lxutil_gui.qt import utl_gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry_base, _utl_gui_qt_wgt_view_for_tree
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_entry_base, _utl_gui_qt_wgt_view_for_tree
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
-from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wgt_item
+from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wgt_item, _gui_prx_wgt_contianer
 
 import fnmatch
 
@@ -26,7 +26,7 @@ class PrxTreeView(
     #
     utl_gui_prx_abstract.AbsPrxViewVisibleConnectionDef,
 ):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_entry_base.QtEntryFrame
+    QT_WIDGET_CLS = _gui_qt_wgt_entry_base.QtEntryFrame
     QT_VIEW_CLS = _utl_gui_qt_wgt_view_for_tree.QtTreeWidget
     #
     FILTER_MAXIMUM = 50
@@ -35,7 +35,9 @@ class PrxTreeView(
         self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
         self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
-        self._prx_top_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
+        #
+        self._prx_top_tool_bar = _gui_prx_wgt_contianer.PrxHToolBar()
+        self._prx_top_tool_bar.set_name('top')
         self._prx_top_tool_bar.set_left_alignment_mode()
         self._qt_layout_0.addWidget(self._prx_top_tool_bar.widget)
         self._prx_top_tool_bar.set_border_radius(1)
@@ -78,14 +80,19 @@ class PrxTreeView(
         self._prx_filter_bar._qt_widget.user_entry_changed.connect(self.__keyword_filter_cbk)
         self._prx_filter_bar._qt_widget.user_choose_changed.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_current_)
         #
-        self._prx_filter_bar._qt_widget.occurrence_previous_press_clicked.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_previous_)
-        self._prx_filter_bar._qt_widget.occurrence_next_press_clicked.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_next_)
+        self._prx_filter_bar._qt_widget.occurrence_previous_press_clicked.connect(
+            self._qt_view._execute_view_keyword_filter_occurrence_to_previous_
+        )
+        self._prx_filter_bar._qt_widget.occurrence_next_press_clicked.connect(
+            self._qt_view._execute_view_keyword_filter_occurrence_to_next_
+        )
 
     def __keyword_filter_cbk(self):
         self._qt_view._set_view_keyword_filter_data_src_(
             self._prx_filter_bar.get_keywords()
         )
         self._qt_view._refresh_view_items_visible_by_any_filter_()
+        self._prx_filter_bar._qt_widget._set_occurrence_buttons_enable_(self._qt_view._has_keyword_filter_results_())
         self._qt_view._refresh_viewport_showable_auto_()
 
     def set_resize_enable(self, boolean):
@@ -178,6 +185,9 @@ class PrxTreeView(
 
     def get_selected_items(self):
         return [i.gui_proxy for i in self._get_selected_items_()]
+
+    def get_selected_item_widgets(self):
+        return [self._qt_view._get_item_widget_(i).gui_proxy for i in self.view.selectedItems()]
 
     def get_current_item(self):
         _ = self._qt_view.currentItem()

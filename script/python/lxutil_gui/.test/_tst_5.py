@@ -1,8 +1,8 @@
 # coding:utf-8
 
-from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wdt_node, _utl_gui_prx_wgt_view
+from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _gui_prx_wdt_node, _utl_gui_prx_wgt_view
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_view
+from lxutil_gui.qt.widgets import _gui_qt_wgt_chart, _utl_gui_qt_wgt_view
 
 
 class TestWindow(_utl_gui_prx_wdt_utility.PrxBaseWindow):

@@ -679,43 +679,44 @@ class _GuiResourceOpt(_GuiBaseOpt):
 
         def build_fnc_(data_):
             self.gui_show_deferred_fnc(
-                dtb_type, dtb_resource, prx_item, data_
+                dtb_type, dtb_resource, prx_item_widget, data_
             )
 
         path = dtb_resource.path
         if self.gui_get_is_exists(path) is False:
             self._keys.add(dtb_resource.gui_name)
             #
-            prx_item = self._list_view.create_item()
-            self.gui_register(path, prx_item)
-            prx_item.get_item()._update_item_semantic_tag_filter_keys_tgt_(
+            prx_item_widget = self._list_view.create_item()
+            self.gui_register(path, prx_item_widget)
+            #
+            prx_item_widget.get_item()._update_item_semantic_tag_filter_keys_tgt_(
                 semantic_tag_filter_data
             )
-            prx_item.get_item()._update_item_keyword_filter_keys_tgt_(
+            prx_item_widget.get_item()._update_item_keyword_filter_keys_tgt_(
                 [dtb_resource.name, dtb_resource.gui_name]
             )
-            prx_item.set_gui_dcc_obj(
+            prx_item_widget.set_gui_dcc_obj(
                 dtb_resource, namespace=self.DCC_NAMESPACE
             )
-            prx_item.set_name(
+            prx_item_widget.set_name(
                 dtb_resource.gui_name
             )
-            prx_item.set_sort_name_key(
+            prx_item_widget.set_sort_name_key(
                 dtb_resource.gui_name
             )
-            prx_item.set_gui_attribute(
+            prx_item_widget.set_gui_attribute(
                 'path', dtb_type.path
             )
-            prx_item.set_show_fnc(
+            prx_item_widget.set_show_fnc(
                 cache_fnc_, build_fnc_
             )
             keys = {bsc_core.DccPathDagOpt(j).get_name() for i_k, i_v in semantic_tag_filter_data.items() for j in i_v}
             keys.add(str(dtb_resource.gui_name).lower())
             keys.add(str(dtb_resource.name).lower())
-            prx_item.set_keyword_filter_keys_tgt(keys)
+            prx_item_widget.set_keyword_filter_keys_tgt(keys)
             #
-            prx_item.connect_press_clicked_to(functools.partial(self.copy_to_clipboard_from, dtb_resource))
-            return prx_item
+            prx_item_widget.connect_press_clicked_to(functools.partial(self.copy_to_clipboard_from, dtb_resource))
+            return prx_item_widget
         return self.gui_get(path)
 
     def get_checked_dtb_resources(self):
@@ -726,45 +727,45 @@ class _GuiResourceOpt(_GuiBaseOpt):
             list_.append(i_dtb_resource)
         return list_
 
-    def gui_show_deferred_fnc(self, dtb_type, dtb_resource, prx_item, data):
-        prx_item.set_check_enable(True)
+    def gui_show_deferred_fnc(self, dtb_type, dtb_resource, prx_item_widget, data):
+        prx_item_widget.set_check_enable(True)
         name_dict, pixmaps, image_args, drag_data, menu_content = data
 
-        prx_item.set_image(
+        prx_item_widget.set_image(
             utl_gui_core.RscIconFile.get('image_loading_failed_error')
         )
 
-        prx_item.set_icons_by_pixmap(pixmaps)
+        prx_item_widget.set_icons_by_pixmap(pixmaps)
         # image
         if image_args:
             image_file_path, image_sp_cmd = image_args
-            prx_item.set_image(image_file_path)
+            prx_item_widget.set_image(image_file_path)
             if image_sp_cmd is not None:
-                prx_item.set_image_show_args(image_file_path, image_sp_cmd)
+                prx_item_widget.set_image_show_args(image_file_path, image_sp_cmd)
         else:
-            prx_item.set_image(
+            prx_item_widget.set_image(
                 utl_gui_core.RscIconFile.get('image_loading_failed_error')
             )
         # drag action
         if drag_data:
-            prx_item.set_drag_enable(True)
-            prx_item.set_drag_data(drag_data)
-            prx_item.connect_drag_pressed_to(
+            prx_item_widget.set_drag_enable(True)
+            prx_item_widget.set_drag_data(drag_data)
+            prx_item_widget.connect_drag_pressed_to(
                 self.drag_pressed_fnc
             )
-            prx_item.connect_drag_released_to(
+            prx_item_widget.connect_drag_released_to(
                 self.drag_release_fnc
             )
         # menu
         if menu_content:
-            prx_item.set_menu_content(menu_content)
+            prx_item_widget.set_menu_content(menu_content)
         #
-        prx_item.set_index_draw_enable(True)
-        prx_item.set_icon_by_text(dtb_type.name)
-        prx_item.set_name_dict(
+        prx_item_widget.set_index_draw_enable(True)
+        prx_item_widget.set_icon_by_text(dtb_type.name)
+        prx_item_widget.set_name_dict(
             name_dict
         )
-        prx_item.set_tool_tip(
+        prx_item_widget.set_tool_tip(
             dtb_resource.to_string()
         )
 
@@ -984,6 +985,7 @@ class _GuiFileOpt(_GuiBaseOpt):
         super(_GuiFileOpt, self).__init__(window, session, database_opt)
         #
         self._list_view = list_view
+        self._list_view.connect_press_released_to(self.do_copy_to_clipboard_by_selection)
         self._item_dict = self._list_view._item_dict
         self._keys = set()
 
@@ -997,6 +999,38 @@ class _GuiFileOpt(_GuiBaseOpt):
     def gui_get(self, path):
         return self._item_dict[path]
 
+    def do_copy_to_clipboard_by_selection(self):
+        selected_item_widgets = self._list_view.get_selected_item_widgets()
+        images = []
+        for seq, i_prx_item_widget in enumerate(selected_item_widgets):
+            i_file_opt = i_prx_item_widget.get_gui_dcc_obj(
+                self.DCC_NAMESPACE
+            )
+            if i_file_opt is not None:
+                i_name_base = i_file_opt.get_name_base()
+                i_r, i_g, i_b = bsc_core.RawTextOpt(i_name_base).to_rgb_0(maximum=1.0, s_p=50, v_p=50)
+                images.append(
+                    dict(
+                        name=bsc_core.RawTextMtd.clear_up_to(i_name_base),
+                        file=i_file_opt.get_path(),
+                        color_r=i_r,
+                        color_g=i_g,
+                        color_b=i_b,
+                        position_x=0,
+                        position_y=seq*220
+                    )
+                )
+        #
+        if images:
+            utl_gui_qt_core.QtUtilMtd.set_text_to_clipboard(
+                utl_core.Jinja.get_result(
+                    'katana/images',
+                    dict(
+                        images=images
+                    )
+                )
+            )
+
     def gui_add(self, file_path):
         def cache_fnc_():
             return []
@@ -1006,40 +1040,35 @@ class _GuiFileOpt(_GuiBaseOpt):
                 image_file_path, image_sp_cmd = bsc_core.ImgFileOpt(file_path).get_thumbnail_create_args(
                     width=128, ext='.jpg'
                 )
-                prx_item.set_image(image_file_path)
+                prx_item_widget.set_image(image_file_path)
                 if image_sp_cmd is not None:
-                    prx_item.set_image_show_args(image_file_path, image_sp_cmd)
+                    prx_item_widget.set_image_show_args(image_file_path, image_sp_cmd)
             else:
                 file_icon = utl_gui_qt_core.QtDccMtd.get_qt_file_icon(file_path)
                 if file_icon:
                     pixmap = file_icon.pixmap(80, 80)
-                    prx_item.set_image(
+                    prx_item_widget.set_image(
                         pixmap
                     )
-
-        def copy_fnc_():
-            _xml_file_path = bsc_core.RscFileMtd.get('asset/library/katana/texture-node.xml')
-            if _xml_file_path:
-                _xml_data = bsc_core.StgFileOpt(_xml_file_path).set_read()
-                _xml_data = _xml_data.replace(
-                    '{texture}', file_opt.get_path()
-                )
-                utl_gui_qt_core.QtUtilMtd.set_text_to_clipboard(
-                    _xml_data
-                )
+            #
+            prx_item_widget.set_tool_tip(
+                file_opt.get_path()
+            )
         #
         if self.gui_get_is_exists(file_path) is False:
             file_opt = bsc_core.StgFileOpt(file_path)
-            prx_item = self._list_view.create_item()
-            self._item_dict[file_path] = prx_item
-            prx_item.set_name(file_opt.get_name())
-            prx_item.set_drag_enable(True)
-            prx_item.set_drag_urls([file_opt.get_path()])
-            prx_item.set_show_fnc(
+            prx_item_widget = self._list_view.create_item()
+            self._item_dict[file_path] = prx_item_widget
+            prx_item_widget.set_name(file_opt.get_name())
+            prx_item_widget.set_drag_enable(True)
+            prx_item_widget.set_drag_urls([file_opt.get_path()])
+            prx_item_widget.set_show_fnc(
                 cache_fnc_, build_fnc_
             )
-            prx_item.connect_press_clicked_to(copy_fnc_)
-            return prx_item
+            prx_item_widget.set_gui_dcc_obj(
+                file_opt, namespace=self.DCC_NAMESPACE
+            )
+            return prx_item_widget
         return self.gui_get(file_path)
 
 
@@ -1164,6 +1193,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         # top
         self._top_tool_bar = prx_widgets.PrxHToolBar()
         v_qt_layout.addWidget(self._top_tool_bar._qt_widget)
+        self._top_tool_bar.set_name('guide')
         self._top_tool_bar.set_expanded(True)
         self._top_tool_bar.set_left_alignment_mode()
         #   guide
@@ -1278,6 +1308,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._file_prx_view.set_item_name_frame_draw_enable(False)
         self._file_prx_view.set_item_names_draw_range([None, 1])
         self._file_prx_view.set_item_image_frame_draw_enable(False)
+        self._file_prx_view.set_selection_use_multiply()
         #
         extra_v_s.set_fixed_size_at(0, 320)
         self._main_h_s.set_fixed_size_at(0, 320)

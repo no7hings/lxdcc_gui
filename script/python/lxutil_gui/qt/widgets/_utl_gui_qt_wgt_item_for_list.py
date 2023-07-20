@@ -1,39 +1,39 @@
 # coding=utf-8
-from lxutil_gui import utl_gui_configure
-
 from lxutil_gui.qt.utl_gui_qt_core import *
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
 
-import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 
-class _QtListItemWidget(
+class QtListItemWidget(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtWidgetBaseDef,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtTypeDef,
-    utl_gui_qt_abstract.AbsQtIndexDef,
-    utl_gui_qt_abstract.AbsQtImageBaseDef,
-    utl_gui_qt_abstract.AbsQtMovieDef,
+    gui_qt_abstract.AbsQtWidgetBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtTypeDef,
+    gui_qt_abstract.AbsQtIndexDef,
+    gui_qt_abstract.AbsQtImageBaseDef,
+    gui_qt_abstract.AbsQtMovieDef,
     #
-    utl_gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstract.AbsQtMenuBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtIconBaseDef,
-    utl_gui_qt_abstract.AbsQtIconsDef,
-    utl_gui_qt_abstract.AbsQtNamesBaseDef,
+    gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstract.AbsQtIconsDef,
+    gui_qt_abstract.AbsQtNamesBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtCheckBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
-    utl_gui_qt_abstract.AbsQtPressSelectExtraDef,
-    utl_gui_qt_abstract.AbsQtActionDragDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtCheckBaseDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtPressSelectExtraDef,
+    gui_qt_abstract.AbsQtActionDragDef,
     #
-    utl_gui_qt_abstract.AbsQtStateDef,
-    utl_gui_qt_abstract.AbsQtStatusBaseDef,
+    gui_qt_abstract.AbsQtStateDef,
+    gui_qt_abstract.AbsQtStatusBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtItemMovieActionDef,
+    gui_qt_abstract.AbsQtItemMovieActionDef,
+    #
+    gui_qt_abstract.AbsQtItemWidgetExtra,
 ):
     viewport_show = qt_signal()
     viewport_hide = qt_signal()
@@ -310,8 +310,9 @@ class _QtListItemWidget(
             )
 
     def __init__(self, *args, **kwargs):
-        super(_QtListItemWidget, self).__init__(*args, **kwargs)
+        super(QtListItemWidget, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
+        #
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setMouseTracking(True)
         #
@@ -322,7 +323,7 @@ class _QtListItemWidget(
         self._init_icon_base_def_(self)
         self._init_icons_def_(self)
         self._init_image_base_def_()
-        self._init_names_def_()
+        self._init_names_base_def_(self)
         self._init_menu_base_def_(self)
         self._set_movie_def_init_()
         #
@@ -335,6 +336,7 @@ class _QtListItemWidget(
         self._init_action_for_press_def_(self)
         self._init_press_select_extra_def_(self)
         self._init_action_drag_def_(self)
+        self._init_item_widget_extra_(self)
         #
         self._set_item_movie_action_def_init_()
         #
@@ -344,7 +346,6 @@ class _QtListItemWidget(
         self._file_type_icon = None
         #
         self._list_widget = None
-        self._list_widget_item = None
         #
         self._frame_icon_width, self._frame_icon_height = 40, 128
         self._frame_image_width, self._frame_image_height = 128, 128
@@ -379,16 +380,28 @@ class _QtListItemWidget(
             #
             elif event.type() == QtCore.QEvent.Resize:
                 self._refresh_widget_draw_()
+            # drag
             elif event.type() == QtCore.QEvent.MouseMove:
                 if self._get_action_flag_is_match_(self.ActionFlag.PressClick):
                     if self._drag_is_enable is True:
-                        self._update_mime_data_()
-                        self._drag = _utl_gui_qt_wgt_utility.QtDrag(self)
-                        self._drag.setMimeData(self._drag_mime_data)
-                        self._drag._execute_start_(self._drag_point_offset)
-                        self._drag.released.connect(self._execute_drag_released_)
+                        self._set_action_flag_(self.ActionFlag.DragMove)
+                        #
+                        self._drag = _utl_gui_qt_wgt_utility.QtItemWidgetDrag(self)
+                        view = self._get_view_()
+                        if view._get_is_multiply_selection_() is True:
+                            selected_item_widgets = view._get_selected_item_widgets_()
+                            urls = [j for i in selected_item_widgets for j in i._get_drag_urls_()]
+                            mine_data = self._create_mine_data_(urls)
+                            self._drag.setMimeData(mine_data)
+                            self._drag._set_drag_count_(len(selected_item_widgets))
+                        else:
+                            self._update_mime_data_()
+                            self._drag.setMimeData(self._drag_mime_data)
+                        #
+                        self._drag._do_move_(self._drag_point_offset)
+                        self._drag.released.connect(self._do_drag_released_)
                 else:
-                    self._execute_action_hover_move_(event)
+                    self._do_hover_move_(event)
             #
             elif event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.RightButton:
@@ -429,8 +442,7 @@ class _QtListItemWidget(
                 self._clear_all_action_flags_()
             #
             elif event.type() == QtCore.QEvent.ChildAdded:
-                self._execute_drag_pressed_((self._drag_mime_data, ))
-                #
+                self._do_drag_pressed_((self._drag_mime_data, ))
                 self._set_pressed_(False)
                 self._clear_all_action_flags_()
             elif event.type() == QtCore.QEvent.ChildRemoved:
@@ -473,7 +485,7 @@ class _QtListItemWidget(
         #
         item = self._get_item_()
         if item._item_show_status in {item.ShowStatus.Loading, item.ShowStatus.Waiting}:
-            painter._set_loading_draw_by_rect_(
+            painter._draw_loading_by_rect_(
                 self._frame_draw_rect,
                 item._item_show_loading_index
             )
@@ -655,12 +667,19 @@ class _QtListItemWidget(
                 )
             #
             if item._item_show_image_status in [item.ShowStatus.Loading, item.ShowStatus.Waiting]:
-                painter._set_loading_draw_by_rect_(
+                painter._draw_loading_by_rect_(
                     rect=self._image_frame_rect,
                     loading_index=item._item_show_image_loading_index
                 )
+    @classmethod
+    def _create_mine_data_(cls, urls):
+        mime_data = QtCore.QMimeData()
+        mime_data.setUrls(
+            [QtCore.QUrl.fromLocalFile(i) for i in urls]
+        )
+        return mime_data
 
-    def _execute_action_hover_move_(self, event):
+    def _do_hover_move_(self, event):
         p = event.pos()
         self._check_is_hovered = False
         self._press_is_hovered = False
@@ -681,15 +700,17 @@ class _QtListItemWidget(
         return False
 
     def _set_drag_enable_(self, boolean):
-        super(_QtListItemWidget, self)._set_drag_enable_(boolean)
+        super(QtListItemWidget, self)._set_drag_enable_(boolean)
         self.setAcceptDrops(True)
 
-    def _execute_drag_pressed_(self, *args, **kwargs):
+    def _do_drag_pressed_(self, *args, **kwargs):
         self.drag_pressed.emit(
             args[0]
         )
 
-    def _execute_drag_released_(self, *args, **kwargs):
+    def _do_drag_released_(self, *args, **kwargs):
+        self._get_view_()._clear_selection_()
+        self._get_view_()._set_current_item_(self._get_item_())
         self.drag_released.emit(
             args[0]
         )
@@ -711,12 +732,6 @@ class _QtListItemWidget(
 
     def _set_frame_name_size_(self, w, h):
         self._frame_name_width, self._frame_name_height = w, h
-
-    def _get_item_(self):
-        return self._list_widget_item
-
-    def _set_item_(self, item):
-        self._list_widget_item = item
 
     def _set_view_(self, widget):
         self._list_widget = widget

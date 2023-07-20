@@ -193,7 +193,8 @@ class AbsQtListWidget(
     SortOrder = utl_gui_configure.SortOrder
 
     item_show_changed = qt_signal()
-
+    press_released = qt_signal()
+    pressed = qt_signal()
     def _refresh_widget_draw_(self):
         self.update()
         self.viewport().update()
@@ -201,6 +202,7 @@ class AbsQtListWidget(
     def __init__(self, *args, **kwargs):
         super(AbsQtListWidget, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
+        self.viewport().installEventFilter(self)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         self.setResizeMode(self.Adjust)
         #
@@ -247,6 +249,18 @@ class AbsQtListWidget(
         self._sort_order = self.SortOrder.Ascend
 
         self._grid_size = 128, 128
+
+    def _set_selection_use_multiply_(self):
+        self.setSelectionMode(self.ExtendedSelection)
+
+    def _set_selection_use_single_(self):
+        self.setSelectionMode(self.SingleSelection)
+
+    def _get_is_multiply_selection_(self):
+        return self.selectionMode() == self.ExtendedSelection
+
+    def _clear_selection_(self):
+        self.clearSelection()
 
     def _set_sort_enable_(self, boolean):
         self.setSortingEnabled(boolean)
@@ -348,7 +362,7 @@ class AbsQtListWidget(
         if selected_items:
             item = selected_items[-1]
             self._scroll_view_to_item_top_(item)
-    # item mode
+    # show mode
     def _set_grid_mode_(self):
         self.setViewMode(self.IconMode)
         self._update_by_item_mode_change_()
@@ -364,6 +378,9 @@ class AbsQtListWidget(
 
     def _get_grid_size_(self):
         return self._grid_size
+
+    def _general_grid_size_(self):
+        pass
 
     def _update_by_grid_size_change_(self):
         w, h = self._get_grid_size_()
@@ -519,3 +536,9 @@ class AbsQtListWidget(
             self.setVerticalScrollBarPolicy(
                 QtCore.Qt.ScrollBarAsNeeded
             )
+
+    def _set_current_item_(self, item):
+        self.setCurrentItem(item)
+
+    def _get_item_widget_(self, item):
+        return self.itemWidget(item)

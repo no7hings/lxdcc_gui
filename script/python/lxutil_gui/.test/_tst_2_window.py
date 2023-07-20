@@ -1,9 +1,9 @@
 # coding:utf-8
 
-from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wdt_node
+import lxutil_gui.proxy.widgets as prx_widgets
 
 
-class TestWindow(_utl_gui_prx_wdt_utility.PrxBaseWindow):
+class TestWindow(prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(TestWindow, self).__init__(*args, **kwargs)
 

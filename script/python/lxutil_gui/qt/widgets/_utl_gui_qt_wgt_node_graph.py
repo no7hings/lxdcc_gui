@@ -8,9 +8,9 @@ import collections
 
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as gui_qt_abstract
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry_base, _utl_gui_qt_wgt_item_for_tree, _utl_gui_qt_wgt_view_for_tree
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_entry_base, _utl_gui_qt_wgt_item_for_tree, _utl_gui_qt_wgt_view_for_tree
 
 
 class _NGLayoutFlag(enum.IntEnum):
@@ -516,11 +516,11 @@ class _QtNGConnection(
     QtWidgets.QWidget,
     AbsQtNGConnectionDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
     #
-    utl_gui_qt_abstract.AbsQtPressSelectExtraDef,
+    gui_qt_abstract.AbsQtPressSelectExtraDef,
 ):
     def _refresh_widget_(self):
         self._set_wgt_update_shape_()
@@ -644,7 +644,7 @@ class _QtNGConnection(
                 elif event.buttons() == QtCore.Qt.MidButton:
                     pass
                 elif event.buttons() == QtCore.Qt.NoButton:
-                    self._execute_action_hover_move_(event)
+                    self._do_hover_move_(event)
                 else:
                     event.ignore()
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
@@ -680,7 +680,7 @@ class _QtNGConnection(
             self._ng_draw_connection_coord_arrow
         )
 
-    def _execute_action_hover_move_(self, event):
+    def _do_hover_move_(self, event):
         point = event.pos()
 
 
@@ -862,20 +862,20 @@ class AbsQtNGDrawNodeDef(object):
 class _QtNGNode(
     QtWidgets.QWidget,
     #
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtTypeDef,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtIconBaseDef,
-    utl_gui_qt_abstract.AbsQtImageBaseDef,
-    utl_gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtTypeDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstract.AbsQtImageBaseDef,
+    gui_qt_abstract.AbsQtMenuBaseDef,
     #
     AbsQtBypassDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
     #
-    utl_gui_qt_abstract.AbsQtPressSelectExtraDef,
+    gui_qt_abstract.AbsQtPressSelectExtraDef,
     #
     AbsQtNGNodeDef,
     AbsQtNGDrawNodeDef,
@@ -1012,7 +1012,7 @@ class _QtNGNode(
         self._ng_sbj_graph._set_ng_action_graph_node_press_end_(self)
         self._refresh_widget_draw_()
 
-    def _execute_action_hover_move_(self, event):
+    def _do_hover_move_(self, event):
         point = event.pos()
         if self._ng_node_rect_select.contains(point):
             self._set_action_hovered_(True)
@@ -1064,7 +1064,7 @@ class _QtNGNode(
                 elif event.buttons() == QtCore.Qt.MidButton:
                     pass
                 elif event.button() == QtCore.Qt.NoButton:
-                    self._execute_action_hover_move_(event)
+                    self._do_hover_move_(event)
                 else:
                     event.ignore()
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
@@ -1174,10 +1174,10 @@ class NGCmdNodesMove(QtWidgets.QUndoCommand):
 class _QtNGGraph(
     QtWidgets.QWidget,
     #
-    utl_gui_qt_abstract.AbsQtDrawGridDef,
+    gui_qt_abstract.AbsQtDrawGridDef,
     AbsQtNGGraphSbjDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
     AbsQtActionRectSelectDef,
     AbsQtActionFrameDef,
     #
@@ -1371,12 +1371,12 @@ class _QtNGGraph(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_entry_base.QtEntryFrame):
+                if isinstance(parent, _gui_qt_wgt_entry_base.QtEntryFrame):
                     parent._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
-                if isinstance(parent, _utl_gui_qt_wgt_entry_base.QtEntryFrame):
+                if isinstance(parent, _gui_qt_wgt_entry_base.QtEntryFrame):
                     parent._set_focused_(False)
         return False
 

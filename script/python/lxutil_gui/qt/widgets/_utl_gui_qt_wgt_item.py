@@ -1,29 +1,29 @@
 # coding=utf-8
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry_base, _utl_gui_qt_wgt_popup, _utl_gui_qt_wgt_chart
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_entry_base, _utl_gui_qt_wgt_popup, _gui_qt_wgt_chart
 
-import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 
 class QtPressItem(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtStatusBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtStatusBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtSubProcessDef,
-    utl_gui_qt_abstract.AbsQtValidatorDef,
+    gui_qt_abstract.AbsQtSubProcessDef,
+    gui_qt_abstract.AbsQtValidatorDef,
     #
-    utl_gui_qt_abstract.AbsQtIconBaseDef,
-    utl_gui_qt_abstract.AbsQtMenuBaseDef,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtProgressDef,
+    gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtProgressDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
-    utl_gui_qt_abstract.AbsQtCheckBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForOptionPressDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtCheckBaseDef,
+    gui_qt_abstract.AbsQtActionForOptionPressDef,
 ):
     clicked = qt_signal()
     checked = qt_signal()
@@ -423,15 +423,15 @@ class QtPressItem(
 
 class QtCheckItem(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtIconBaseDef,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtCheckBaseDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtCheckBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtValueDefaultDef,
+    gui_qt_abstract.AbsQtValueDefaultDef,
 ):
     def __init__(self, *args, **kwargs):
         super(QtCheckItem, self).__init__(*args, **kwargs)
@@ -548,13 +548,13 @@ class QtCheckItem(
 
 class _QtStatusItem(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtIconBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtCheckBaseDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtCheckBaseDef,
 ):
     def __init__(self, *args, **kwargs):
         super(_QtStatusItem, self).__init__(*args, **kwargs)
@@ -637,12 +637,12 @@ class _QtStatusItem(
 
 class _QtHContractItem(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstract.AbsQtIconBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
-    utl_gui_qt_abstract.AbsQtActionForExpandDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtActionForExpandDef,
 ):
     def __init__(self, *args, **kwargs):
         super(_QtHContractItem, self).__init__(*args, **kwargs)
@@ -792,7 +792,7 @@ class _QtHContractItem(
 
 class _QtWindowHead(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()

@@ -1,17 +1,17 @@
 # coding=utf-8
-import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 from lxutil_gui.qt.utl_gui_qt_core import *
 
 from lxutil_gui import utl_gui_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_chart, _utl_gui_qt_wgt_entry_base
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_chart, _gui_qt_wgt_entry_base
 
 
 class QtPopupForRgbaChoose(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtPopupBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtPopupBaseDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -33,7 +33,7 @@ class QtPopupForRgbaChoose(
         self._selected_frame_border_color = QtBackgroundColors.Selected
         self._frame_background_color = QtBackgroundColors.Dark
 
-        self._chart = _utl_gui_qt_wgt_chart.QtColorChooseChart(self)
+        self._chart = _gui_qt_wgt_chart.QtColorChooseChart(self)
 
     def eventFilter(self, *args):
         widget, event = args
@@ -106,8 +106,8 @@ class QtPopupForRgbaChoose(
 
 class QtPopupForChoose(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtPopupBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtPopupBaseDef,
 ):
     HEIGHT_MAX = 480
     TAG_ALL = 'All'
@@ -220,7 +220,7 @@ class QtPopupForChoose(
         self._popup_all_unchecked_button.press_clicked.connect(self._execute_popup_all_unchecked_)
         # keyword filter
         self._keyword_filter_is_enable = False
-        self._popup_text_entry = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit(self)
+        self._popup_text_entry = _gui_qt_wgt_entry_base.QtEntryAsTextEdit(self)
         self._popup_text_entry.hide()
         self._popup_text_entry._set_entry_enable_(True)
         self._popup_text_entry.setAlignment(
@@ -231,7 +231,7 @@ class QtPopupForChoose(
         self._tag_filter_is_enable = False
         self._tag_filter_width_percent = 0.375
         self._tag_filter_draw_rect = QtCore.QRect()
-        self._tag_filter_list_widget = _utl_gui_qt_wgt_entry_base.QtEntryAsListForPopup(self)
+        self._tag_filter_list_widget = _gui_qt_wgt_entry_base.QtEntryAsListForPopup(self)
         self._tag_filter_list_widget.hide()
         self._tag_filter_list_widget.setGridSize(
             QtCore.QSize(self._popup_item_width, self._popup_item_height)
@@ -239,7 +239,7 @@ class QtPopupForChoose(
         self._tag_filter_list_widget.setSpacing(2)
         self._tag_filter_list_widget.setUniformItemSizes(True)
         #
-        self._popup_view = _utl_gui_qt_wgt_entry_base.QtEntryAsListForPopup(self)
+        self._popup_view = _gui_qt_wgt_entry_base.QtEntryAsListForPopup(self)
         #
         self._item_count_maximum = 10
         self._popup_view.setGridSize(
@@ -576,8 +576,8 @@ class QtPopupForHistory(
 
 class QtPopupForCompletion(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtPopupBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtPopupBaseDef,
 ):
     def _refresh_widget_draw_geometry_(self):
         x, y = 0, 0
@@ -639,7 +639,7 @@ class QtPopupForCompletion(
             '"LMB-click" to close'
         )
         #
-        self._popup_view = _utl_gui_qt_wgt_entry_base.QtEntryAsListForPopup(self)
+        self._popup_view = _gui_qt_wgt_entry_base.QtEntryAsListForPopup(self)
         #
         self._item_count_maximum = 10
         self._popup_item_width, self._popup_item_height = 20, 20
@@ -769,8 +769,8 @@ class QtPopupForCompletion(
 
 class QtPopupForGuideChoose(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtPopupBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtPopupBaseDef,
 ):
     def __init__(self, *args, **kwargs):
         super(QtPopupForGuideChoose, self).__init__(*args, **kwargs)
@@ -783,7 +783,7 @@ class QtPopupForGuideChoose(
         self._init_frame_base_def_(self)
         self._init_popup_base_def_(self)
         #
-        self._popup_text_entry = _utl_gui_qt_wgt_entry_base.QtEntryAsTextEdit(self)
+        self._popup_text_entry = _gui_qt_wgt_entry_base.QtEntryAsTextEdit(self)
         self._popup_text_entry.hide()
         self._popup_text_entry._set_entry_enable_(True)
         self._popup_text_entry.setAlignment(
@@ -802,7 +802,7 @@ class QtPopupForGuideChoose(
             '"LMB-click" to close'
         )
         #
-        self._popup_view = _utl_gui_qt_wgt_entry_base.QtEntryAsListForPopup(self)
+        self._popup_view = _gui_qt_wgt_entry_base.QtEntryAsListForPopup(self)
         #
         self._item_count_maximum = 10
         self._popup_item_width, self._popup_item_height = 20, 20
@@ -1038,7 +1038,7 @@ class QtPopupForGuideChoose(
 
 class QtPopupProxy(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef
+    gui_qt_abstract.AbsQtFrameBaseDef
 ):
     def _refresh_widget_draw_(self):
         pass

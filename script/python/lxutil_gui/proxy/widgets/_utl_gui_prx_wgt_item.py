@@ -535,7 +535,7 @@ class PrxTreeItem(
                             i_prx_item_tgt.set_hidden(self.get_is_hidden())
                             i_prx_item_tgt.widget._get_item_()._set_item_show_start_auto_()
 
-    def set_loading_start(self):
+    def start_loading(self):
         # view = self.get_view()
         # item_prx = self.add_child(
         #     'loading',
@@ -700,16 +700,16 @@ class PrxStgObjTreeItem(PrxObjTreeItem):
         # self._qt_widget.setForeground(0, utl_gui_qt_core.Brush.default_text)
 
 
-class PrxListItem(
+class PrxListItemWidget(
     utl_gui_prx_abstract.AbsPrxWidget,
     utl_gui_prx_abstract.AbsPrxMenuDef,
     #
     utl_gui_prx_abstract.AbsPrxItemFilterTgtDef,
     utl_gui_prx_abstract.AbsPrxItemVisibleConnectionDef
 ):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_item_for_list._QtListItemWidget
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_item_for_list.QtListItemWidget
     def __init__(self, *args, **kwargs):
-        super(PrxListItem, self).__init__(*args, **kwargs)
+        super(PrxListItemWidget, self).__init__(*args, **kwargs)
         self._visible_tgt_key = None
 
     def get_item(self):
@@ -774,12 +774,14 @@ class PrxListItem(
 
     def set_sort_name_key(self, text):
         self._qt_widget._set_sort_name_key_(text)
+    # name
+    def set_name(self, text):
+        self._qt_widget._set_name_text_(text)
+        self._qt_widget._get_item_()._set_name_text_(text)
 
-    def set_name(self, name_text):
-        self._qt_widget._set_name_text_(name_text)
-
-    def set_names(self, name_texts):
-        self._qt_widget._set_name_texts_(name_texts)
+    def set_names(self, texts):
+        self._qt_widget._set_name_texts_(texts)
+        self._qt_widget._get_item_()._set_name_texts_(texts)
 
     def set_name_dict(self, name_dict):
         self._qt_widget._set_name_text_dict_(name_dict)

@@ -1,7 +1,7 @@
 # coding=utf-8
 from lxutil_gui.qt.utl_gui_qt_core import *
 
-import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 from lxbasic import bsc_configure, bsc_core
 
@@ -10,9 +10,9 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
 
 class QtColorChooseChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtWidgetBaseDef,
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtChartBaseDef,
+    gui_qt_abstract.AbsQtWidgetBaseDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtChartBaseDef,
 ):
     def _refresh_widget_draw_(self):
         pass
@@ -432,7 +432,7 @@ class QtColorChooseChart(
 
 class QtProgressingChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtProgressDef
+    gui_qt_abstract.AbsQtProgressDef
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -573,7 +573,7 @@ class QtInfoChart(
 
 class QtWaitingChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtChartBaseDef,
+    gui_qt_abstract.AbsQtChartBaseDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -690,7 +690,7 @@ class QtWaitingChart(
 
 class QtSectorChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtChartBaseDef
+    gui_qt_abstract.AbsQtChartBaseDef
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -754,7 +754,7 @@ class QtSectorChart(
 
 class QtRadarChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtChartBaseDef
+    gui_qt_abstract.AbsQtChartBaseDef
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -868,7 +868,7 @@ class QtRadarChart(
 
 class QtPieChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtChartBaseDef
+    gui_qt_abstract.AbsQtChartBaseDef
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -1015,12 +1015,12 @@ class QtPieChart(
 
 class QtHistogramChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtDrawGridDef,
+    gui_qt_abstract.AbsQtDrawGridDef,
     #
-    utl_gui_qt_abstract.AbsQtTrackActionDef,
-    utl_gui_qt_abstract.AbsQtZoomActionDef,
+    gui_qt_abstract.AbsQtTrackActionDef,
+    gui_qt_abstract.AbsQtZoomActionDef,
     #
-    utl_gui_qt_abstract.AbsQtChartBaseDef,
+    gui_qt_abstract.AbsQtChartBaseDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -1216,11 +1216,11 @@ class QtHistogramChart(
 
 class QtSequenceChart(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtChartBaseDef,
-    utl_gui_qt_abstract.AbsQtStatusBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtChartBaseDef,
+    gui_qt_abstract.AbsQtStatusBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstract.AbsQtMenuBaseDef,
 ):
     QT_MENU_CLS = _utl_gui_qt_wgt_utility.QtMenu
     def _refresh_chart_data_(self):

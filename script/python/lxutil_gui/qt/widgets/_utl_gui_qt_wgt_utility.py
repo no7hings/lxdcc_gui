@@ -1,5 +1,5 @@
 # coding=utf-8
-import lxutil_gui.qt.abstracts as utl_gui_qt_abstract
+import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 from lxutil_gui.qt.utl_gui_qt_core import *
 
@@ -16,7 +16,7 @@ class QtItemDelegate(QtWidgets.QItemDelegate):
 class QtWidget(
     QtWidgets.QWidget,
     #
-    utl_gui_qt_abstract.AbsQtStatusBaseDef
+    gui_qt_abstract.AbsQtStatusBaseDef
 ):
     def __init__(self, *args, **kwargs):
         super(QtWidget, self).__init__(*args, **kwargs)
@@ -52,11 +52,52 @@ class QtWidget(
             )
 
 
+class QtButtonFrame(
+    QtWidgets.QWidget,
+    gui_qt_abstract.AbsQtFrameBaseDef
+):
+    def _refresh_widget_(self):
+        self._refresh_widget_draw_geometry_()
+        self._refresh_widget_draw_()
+
+    def _refresh_widget_draw_(self):
+        self.update()
+
+    def _refresh_widget_draw_geometry_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        self._frame_draw_rect.setRect(
+            x, y, w, h
+        )
+
+    def __init__(self, *args, **kwargs):
+        super(QtButtonFrame, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self._init_frame_base_def_(self)
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.Resize:
+                self._refresh_widget_()
+        return False
+
+    def paintEvent(self, event):
+        painter = QtPainter(self)
+
+        painter._draw_frame_by_rect_(
+            rect=self._frame_draw_rect,
+            border_color=QtBorderColors.Transparent,
+            background_color=QtBackgroundColors.Basic,
+        )
+
+
 class QtLine(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
 ):
     def __init__(self, *args, **kwargs):
         super(QtLine, self).__init__(*args, **kwargs)
@@ -545,8 +586,8 @@ class QtInfoBubble(QtWidgets.QWidget):
 
 class QtTextBubble(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
 ):
     delete_text_accepted = qt_signal(str)
     def _refresh_widget_draw_(self):
@@ -787,20 +828,20 @@ class QtThreadDef(object):
 
 class QtTextLabel(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
 ):
     pass
 
 
 class QtTextItem(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
     #
-    utl_gui_qt_abstract.AbsQtStatusBaseDef,
+    gui_qt_abstract.AbsQtStatusBaseDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -865,13 +906,13 @@ class QtTextItem(
 
 class QtIconMenuButton(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtIconBaseDef,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtMenuBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
 ):
     QT_MENU_CLS = QtMenu
     def _refresh_widget_(self):
@@ -885,10 +926,10 @@ class QtIconMenuButton(
         x, y = 0, 0
         w, h = self.width(), self.height()
         #
-        icn_frm_w = icn_frm_h = w
+        icn_frm_w, icn_frm_h = w, h
         #
         icn_w, icn_h = int(icn_frm_w*self._icon_draw_percent), int(icn_frm_h*self._icon_draw_percent)
-        icn_x, icn_y = x+(icn_frm_w-icn_w)/2, y+(icn_frm_h-icn_h)/2
+        icn_x, icn_y = x+(w-icn_w)/2, y+(h-icn_h)/2
         #
         if self._icon_is_enable is True:
             self._icon_draw_rect.setRect(
@@ -946,19 +987,19 @@ class QtIconMenuButton(
 
 class QtIconPressButton(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtIconBaseDef,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtMenuBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtStatusBaseDef,
-    utl_gui_qt_abstract.AbsQtStateDef,
+    gui_qt_abstract.AbsQtStatusBaseDef,
+    gui_qt_abstract.AbsQtStateDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
     #
-    utl_gui_qt_abstract.AbsQtThreadBaseDef,
+    gui_qt_abstract.AbsQtThreadBaseDef,
 ):
     clicked = qt_signal()
     press_db_clicked = qt_signal()
@@ -975,7 +1016,13 @@ class QtIconPressButton(
         x, y = 0, 0
         w, h = self.width(), self.height()
         #
-        icn_frm_w = icn_frm_h = w
+        if self._icon_geometry_mode == self.IconGeometryMode.Square:
+            icn_frm_w = icn_frm_h = w
+        elif self._icon_geometry_mode == self.IconGeometryMode.Auto:
+            icn_frm_w,  icn_frm_h = w, h
+        else:
+            raise RuntimeError()
+        #
         self._frame_draw_rect.setRect(
             x+1, y+1, icn_frm_w-2, icn_frm_h-2
         )
@@ -1065,6 +1112,7 @@ class QtIconPressButton(
                         self._set_pressed_(True)
                         if self._choose_enable is True:
                             pass
+                        self.pressed.emit()
                         self._set_action_flag_(self.ActionFlag.PressClick)
                     elif event.button() == QtCore.Qt.RightButton:
                         self._popup_menu_()
@@ -1191,17 +1239,17 @@ class QtIconPressButton(
 
 class QtIconEnableItem(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtWidgetBaseDef,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtIconBaseDef,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstract.AbsQtWidgetBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstract.AbsQtMenuBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtCheckBaseDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtCheckBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtValueDefaultDef,
+    gui_qt_abstract.AbsQtValueDefaultDef,
 ):
     QT_MENU_CLS = QtMenu
     def __init__(self, *args, **kwargs):
@@ -1383,11 +1431,11 @@ class QtIconEnableItem(
 class QtMainWindow(
     QtWidgets.QMainWindow,
     #
-    utl_gui_qt_abstract.AbsQtIconBaseDef,
-    utl_gui_qt_abstract.AbsQtBusyBaseDef,
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstract.AbsQtBusyBaseDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtThreadBaseDef,
+    gui_qt_abstract.AbsQtThreadBaseDef,
     #
     QtThreadDef
 ):
@@ -1513,7 +1561,7 @@ class QtMainWindow(
 
 class QtDialog(
     QtWidgets.QDialog,
-    utl_gui_qt_abstract.AbsQtStatusBaseDef,
+    gui_qt_abstract.AbsQtStatusBaseDef,
     QtThreadDef
 ):
     size_changed = qt_signal()
@@ -1698,7 +1746,7 @@ class QtListWidgetStyledItemDelegate(QtWidgets.QStyledItemDelegate):
 
 class QtProgressBar(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtProgressDef
+    gui_qt_abstract.AbsQtProgressDef
 ):
     def __init__(self, *args, **kwargs):
         super(QtProgressBar, self).__init__(*args, **kwargs)
@@ -1775,18 +1823,23 @@ class QtFileDialog(QtWidgets.QFileDialog):
 
 class QtListWidgetItem(
     QtWidgets.QListWidgetItem,
-    utl_gui_qt_abstract.AbsQtShowBaseForItemDef,
-    utl_gui_qt_abstract.AbsQtMenuBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtItemFilterDef,
+    gui_qt_abstract.AbsQtNamesBaseDef,
+    gui_qt_abstract.AbsQtMenuBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtStateDef,
+    gui_qt_abstract.AbsQtItemFilterDef,
     #
-    utl_gui_qt_abstract.AbsQtDagDef,
-    utl_gui_qt_abstract.AbsQtVisibleDef,
+    gui_qt_abstract.AbsQtStateDef,
     #
-    utl_gui_qt_abstract.AbsQtItemVisibleConnectionDef,
+    gui_qt_abstract.AbsQtDagDef,
+    gui_qt_abstract.AbsQtVisibleDef,
+    #
+    gui_qt_abstract.AbsQtShowBaseForItemDef,
+    gui_qt_abstract.AbsQtItemVisibleConnectionDef,
 ):
+    def update(self):
+        pass
+
     def _refresh_widget_(self, *args, **kwargs):
         item_widget = self._get_item_widget_()
         if item_widget is not None:
@@ -1802,6 +1855,7 @@ class QtListWidgetItem(
         self.setFlags(
             QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled
         )
+        self._init_names_base_def_(self)
         self._init_menu_base_def_(self)
         self._init_show_base_for_item_def_(self)
         #
@@ -1884,27 +1938,26 @@ class QtListWidgetItem(
 
 class _QtHItem(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtIndexDef,
-    utl_gui_qt_abstract.AbsQtTypeDef,
-    utl_gui_qt_abstract.AbsQtIconBaseDef,
-    utl_gui_qt_abstract.AbsQtNameBaseDef,
-    utl_gui_qt_abstract.AbsQtNamesBaseDef,
-    utl_gui_qt_abstract.AbsQtPathBaseDef,
-    utl_gui_qt_abstract.AbsQtImageBaseDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtIndexDef,
+    gui_qt_abstract.AbsQtTypeDef,
+    gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstract.AbsQtNamesBaseDef,
+    gui_qt_abstract.AbsQtPathBaseDef,
+    gui_qt_abstract.AbsQtImageBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtValueBaseDef,
+    gui_qt_abstract.AbsQtValueBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstract.AbsQtMenuBaseDef,
     # action
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
-    utl_gui_qt_abstract.AbsQtPressSelectExtraDef,
-    utl_gui_qt_abstract.AbsQtCheckBaseDef,
-    utl_gui_qt_abstract.AbsQtDeleteBaseDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtPressSelectExtraDef,
+    gui_qt_abstract.AbsQtCheckBaseDef,
+    gui_qt_abstract.AbsQtDeleteBaseDef,
     #
-    utl_gui_qt_abstract.AbsQtItemFilterDef,
+    gui_qt_abstract.AbsQtItemFilterDef,
 ):
     delete_press_clicked = qt_signal()
     def __init__(self, *args, **kwargs):
@@ -1917,8 +1970,7 @@ class _QtHItem(
         self._init_index_def_()
         self._init_type_def_(self)
         self._init_icon_base_def_(self)
-        self._init_name_base_def_(self)
-        self._init_names_def_()
+        self._init_names_base_def_(self)
         self._init_path_base_def_(self)
         self._init_image_base_def_()
         #
@@ -2047,7 +2099,7 @@ class _QtHItem(
             #
             elif event.type() == QtCore.QEvent.Enter:
                 pass
-                # self._execute_action_hover_move_(event)
+                # self._do_hover_move_(event)
             elif event.type() == QtCore.QEvent.Leave:
                 self._check_is_hovered = False
                 self._press_is_hovered = False
@@ -2083,7 +2135,7 @@ class _QtHItem(
                         self.press_clicked.emit()
                     self._clear_all_action_flags_()
             elif event.type() == QtCore.QEvent.MouseMove:
-                self._execute_action_hover_move_(event)
+                self._do_hover_move_(event)
         return False
 
     def paintEvent(self, event):
@@ -2187,7 +2239,7 @@ class _QtHItem(
     def _execute_action_hover_entry_(self, event):
         pass
 
-    def _execute_action_hover_move_(self, event):
+    def _do_hover_move_(self, event):
         p = event.pos()
         self._check_is_hovered = False
         self._press_is_hovered = False
@@ -2212,13 +2264,13 @@ class _QtHItem(
 
 class _QtScreenshotFrame(
     QtWidgets.QWidget,
-    utl_gui_qt_abstract.AbsQtFrameBaseDef,
-    utl_gui_qt_abstract.AbsQtScreenshotDef,
-    utl_gui_qt_abstract.AbsQtHelpDef,
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtScreenshotDef,
+    gui_qt_abstract.AbsQtHelpDef,
     #
-    utl_gui_qt_abstract.AbsQtActionBaseDef,
-    utl_gui_qt_abstract.AbsQtActionForHoverDef,
-    utl_gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -2310,7 +2362,7 @@ class _QtScreenshotFrame(
                 )
 
 
-class QtDrag(QtGui.QDrag):
+class QtItemWidgetDrag(QtGui.QDrag):
     released = qt_signal(tuple)
     ACTION_MAPPER = {
         QtCore.Qt.IgnoreAction: utl_gui_configure.DragFlag.Ignore,
@@ -2318,14 +2370,16 @@ class QtDrag(QtGui.QDrag):
         QtCore.Qt.MoveAction: utl_gui_configure.DragFlag.Move
     }
     def __init__(self, *args, **kwargs):
-        super(QtDrag, self).__init__(*args, **kwargs)
+        super(QtItemWidgetDrag, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
-
         self._current_action = QtCore.Qt.IgnoreAction
-
         self.actionChanged.connect(self._update_action_)
+        self._drag_count = 1
 
-    def _execute_start_(self, point_offset):
+    def _set_drag_count_(self, c):
+        self._drag_count = c
+
+    def _do_move_(self, point_offset):
         drag = self
         widget = self.parent()
 
@@ -2339,21 +2393,32 @@ class QtDrag(QtGui.QDrag):
         'python/GetRenderProducer': Nodes3DAPI.GetRenderProducer(NodegraphAPI.GetNode('ArnoldSceneBake'), useMaxSamples=True)
         """
         #
+        c = self._drag_count
+        c = min(c, 10)
         w, h = widget.width(), widget.height()
-        p = QtGui.QPixmap(w, h)
-        p.fill(QtCore.Qt.transparent)
-        widget.render(p)
+        o_x, o_y = 0, 4
+        c_w, c_h = w+(c-1)*o_x, h+(c-1)*o_y
+        p = QtGui.QPixmap(c_w, c_h)
+        rect = QtCore.QRect(0, 0, c_w, c_h)
+        painter = QtPainter(p)
+        # painter.setBackgroundMode(QtCore.Qt.BGMode.TransparentMode)
+        painter.fillRect(rect, QtGui.QColor(63, 63, 63, 255))
+        for i in range(c):
+            i_p = QtGui.QPixmap(w, h)
+            i_rect = QtCore.QRect(i*o_x, i*o_y, w, h)
+            i_p.fill(QtGui.QColor(63, 63, 63, 255))
+            widget.render(i_p)
+            painter.drawPixmap(i_rect, i_p)
+        painter.end()
+        #
         drag.setPixmap(p)
         drag.setHotSpot(point_offset)
         drag.exec_(QtCore.Qt.CopyAction)
 
-    def _release_(self):
-        pass
-
     def _update_action_(self, *args, **kwargs):
         self._current_action = args[0]
 
-    def _execute_release_(self):
+    def _do_release_(self):
         if self._current_action in self.ACTION_MAPPER:
             self.released.emit(
                 (self.ACTION_MAPPER[self._current_action], self.mimeData())
@@ -2363,7 +2428,7 @@ class QtDrag(QtGui.QDrag):
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.DeferredDelete:
-                self._execute_release_()
+                self._do_release_()
         return False
 
 
@@ -2374,20 +2439,7 @@ class QtTreeItemDrag(QtGui.QDrag):
         self._item = None
         self._index = 0
 
-    def _execute_release_(self):
-        pass
-
-    def eventFilter(self, *args):
-        widget, event = args
-        if widget == self:
-            if event.type() == QtCore.QEvent.DeferredDelete:
-                self._execute_release_()
-        return False
-
-    def set_item(self, item, point):
-        self._item = item
-
-    def _execute_start_(self, point_offset):
+    def _do_move_(self, point_offset):
         #
         drag = self
         widget = self.parent()
@@ -2401,8 +2453,8 @@ class QtTreeItemDrag(QtGui.QDrag):
         name_text = self._item._get_name_text_()
         name_w = widget.fontMetrics().width(name_text)
         w = 20+name_w+10
-        pixmap = QtGui.QPixmap(w, h)
-        painter = QtPainter(pixmap)
+        p = QtGui.QPixmap(w, h)
+        painter = QtPainter(p)
         painter.setFont(
             QtFonts.Button
         )
@@ -2427,8 +2479,21 @@ class QtTreeItemDrag(QtGui.QDrag):
         )
         #
         painter.end()
-        drag.setPixmap(pixmap)
+        drag.setPixmap(p)
         drag.setHotSpot(point_offset)
         drag.exec_(QtCore.Qt.CopyAction)
         #
         QtWidgets.QApplication.restoreOverrideCursor()
+
+    def _do_release_(self):
+        pass
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.DeferredDelete:
+                self._do_release_()
+        return False
+
+    def set_item(self, item, point):
+        self._item = item

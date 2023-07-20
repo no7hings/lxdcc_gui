@@ -67,7 +67,7 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
                 self._hook_gui_configure.get('size')
             )
 
-            self.set_loading_start(
+            self.start_loading(
                 time=1000,
                 method=self._set_tool_panel_setup_
             )
@@ -284,7 +284,7 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
 
             self._image_dict = {}
 
-            self.set_loading_start(
+            self.start_loading(
                 time=1000,
                 method=self._set_tool_panel_setup_
             )

@@ -99,7 +99,7 @@ class AbsRenderSubmitterPanel(
         self._set_panel_build_()
         # self.get_log_bar().set_expanded(True)
         #
-        self.set_loading_start(
+        self.start_loading(
             time=1000,
             method=self._set_tool_panel_setup_
         )

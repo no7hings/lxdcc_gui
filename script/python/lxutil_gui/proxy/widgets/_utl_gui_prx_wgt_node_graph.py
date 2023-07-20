@@ -1,22 +1,22 @@
 # coding:utf-8
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_entry_base, _utl_gui_qt_wgt_node_graph
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_entry_base, _utl_gui_qt_wgt_node_graph
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
-from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility
+from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _gui_prx_wgt_contianer
 
 
 class PrxNGGraph(
     utl_gui_prx_abstract.AbsPrxWidget
 ):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_entry_base.QtEntryFrame
+    QT_WIDGET_CLS = _gui_qt_wgt_entry_base.QtEntryFrame
     QT_VIEW_CLS = _utl_gui_qt_wgt_node_graph._QtNGGraph
     def __init__(self, *args, **kwargs):
         super(PrxNGGraph, self).__init__(*args, **kwargs)
         self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
         self._qt_layout_0.setContentsMargins(2, 2, 2, 2)
         self._qt_layout_0.setSpacing(2)
-        self._prx_top_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
+        self._prx_top_tool_bar = _gui_prx_wgt_contianer.PrxHToolBar()
         self._qt_layout_0.addWidget(self._prx_top_tool_bar.widget)
         self._prx_top_tool_bar.set_border_radius(1)
         #
@@ -47,14 +47,14 @@ class PrxNGGraph(
 class PrxNGTree(
     utl_gui_prx_abstract.AbsPrxWidget
 ):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_entry_base.QtEntryFrame
+    QT_WIDGET_CLS = _gui_qt_wgt_entry_base.QtEntryFrame
     QT_VIEW_CLS = _utl_gui_qt_wgt_node_graph._QtNGTree
     def __init__(self, *args, **kwargs):
         super(PrxNGTree, self).__init__(*args, **kwargs)
         self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
         self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
-        self._prx_top_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
+        self._prx_top_tool_bar = _gui_prx_wgt_contianer.PrxHToolBar()
         self._qt_layout_0.addWidget(self._prx_top_tool_bar.widget)
         self._prx_top_tool_bar.set_border_radius(1)
         #
@@ -80,14 +80,14 @@ class PrxNGTree(
 class PrxNGImageGraph(
     utl_gui_prx_abstract.AbsPrxWidget
 ):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_entry_base.QtEntryFrame
+    QT_WIDGET_CLS = _gui_qt_wgt_entry_base.QtEntryFrame
     QT_VIEW_CLS = _utl_gui_qt_wgt_node_graph._QtNGImageGraph
     def __init__(self, *args, **kwargs):
         super(PrxNGImageGraph, self).__init__(*args, **kwargs)
         self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
         self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
-        self._prx_top_tool_bar = _utl_gui_prx_wdt_utility.PrxHToolBar()
+        self._prx_top_tool_bar = _gui_prx_wgt_contianer.PrxHToolBar()
         self._qt_layout_0.addWidget(self._prx_top_tool_bar.widget)
         self._prx_top_tool_bar.set_border_radius(1)
         #

@@ -50,7 +50,7 @@ class AbsScenePackagerPanel(
         #
         self._texture_references = None
         #
-        self.set_loading_start(
+        self.start_loading(
             time=1000,
             method=self._set_tool_panel_setup_
         )
