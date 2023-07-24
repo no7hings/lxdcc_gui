@@ -62,7 +62,7 @@ else:
             layout_g.setContentsMargins(2, 2, 2, 2)
             layout_g.setSpacing(0)
 
-            self._main_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
+            self._main_button = _utl_gui_qt_wgt_utility.QtIconMenuButton()
             layout_g.addWidget(self._main_button, 0, 0, 1, 1)
             self._main_button._set_icon_file_path_(
                 utl_gui_core.RscIconFile.get('application/usd')
@@ -223,17 +223,17 @@ else:
                     self._usd_stage.GetPrimAtPath('/mtl_preview')
                 )
             #
-            if texture_dict:
-                for i_key in utl_configure.TextureTypes.UsdPreviews:
-                    i_usd_prim = self._usd_stage.GetPrimAtPath('/mtl_preview/txr_{}'.format(i_key))
-                    if i_usd_prim.IsValid() is True:
-                        if i_key in texture_dict:
-                            i_file_path = texture_dict[i_key]
-                            i_file_opt = bsc_core.StgFileOpt(i_file_path)
-                            if i_file_opt.get_is_file() is True:
-                                usd_core.UsdShaderOpt(i_usd_prim).set_file(i_file_opt.get_path())
-                        else:
-                            usd_core.UsdShaderOpt(i_usd_prim).set_file('')
+            texture_dict = texture_dict or {}
+            for i_key in utl_configure.TextureTypes.UsdPreviews:
+                i_usd_prim = self._usd_stage.GetPrimAtPath('/mtl_preview/txr_{}'.format(i_key))
+                if i_usd_prim.IsValid() is True:
+                    if i_key in texture_dict:
+                        i_file_path = texture_dict[i_key]
+                        i_file_opt = bsc_core.StgFileOpt(i_file_path)
+                        if i_file_opt.get_is_file() is True:
+                            usd_core.UsdShaderOpt(i_usd_prim).set_file(i_file_opt.get_path())
+                    else:
+                        usd_core.UsdShaderOpt(i_usd_prim).set_file('')
             #
             if use_as_imperfection is True:
                 shader_opt = usd_core.UsdShaderOpt(
@@ -1247,7 +1247,7 @@ else:
                     ('camera-mask', False, self._usd_set_camera_mask_enable_, self._usd_get_camera_mask_menu_data_)
                 ]
             ):
-                i_button = _utl_gui_qt_wgt_utility.QtIconEnableItem()
+                i_button = _utl_gui_qt_wgt_utility.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n, "RMB-click" for show more action'.format(i_key))
                 i_button._set_icon_file_path_(
@@ -1274,7 +1274,7 @@ else:
                     ('light', None, True, self._usd_set_light_enable_, self._usd_get_light_menu_data_),
                 ]
             ):
-                i_button = _utl_gui_qt_wgt_utility.QtIconEnableItem()
+                i_button = _utl_gui_qt_wgt_utility.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n"RMB-click" for show more action'.format(i_key))
                 i_button._set_icon_file_path_(
@@ -1297,7 +1297,7 @@ else:
                     ('color-manager', None, True, self._usd_set_color_space_enable_, self._usd_get_color_space_menu_data_),
                 ]
             ):
-                i_button = _utl_gui_qt_wgt_utility.QtIconEnableItem()
+                i_button = _utl_gui_qt_wgt_utility.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n"RMB-click" to switch "{0}"'.format(i_key))
                 i_button._set_icon_file_path_(
@@ -1395,7 +1395,7 @@ else:
                     ('isolate-select', None),
                 ]
             ):
-                i_button = _utl_gui_qt_wgt_utility.QtIconEnableItem()
+                i_button = _utl_gui_qt_wgt_utility.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_('"LMB-click" to "{}"'.format(i_key))
                 i_button._set_icon_file_path_(
@@ -1425,7 +1425,7 @@ else:
                 ('smooth-shaded', Usdviewq.common.RenderModes.SMOOTH_SHADED),
                 ('flat-shaded', Usdviewq.common.RenderModes.FLAT_SHADED)
             ]:
-                i_button = _utl_gui_qt_wgt_utility.QtIconEnableItem()
+                i_button = _utl_gui_qt_wgt_utility.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_('"LMB-click" for switch render mode to "{}"'.format(i_key))
                 i_button._set_icon_file_path_(
@@ -1453,7 +1453,7 @@ else:
                         ('cull-backfaces', 'enable', False, self._usd_set_cull_enable_, self._usd_get_cull_menu_data_),
                     ]
             ):
-                i_button = _utl_gui_qt_wgt_utility.QtIconEnableItem()
+                i_button = _utl_gui_qt_wgt_utility.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n"RMB-click" to switch "{0}" level'.format(i_key))
                 i_button._set_icon_file_path_(

@@ -1,5 +1,4 @@
 # coding:utf-8
-
 from lxutil_gui.qt import utl_gui_qt_core
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_container, _gui_qt_wgt_view_for_scroll

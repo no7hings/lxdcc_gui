@@ -1069,7 +1069,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                 ignore_ext_case=ignore_name_case,
                 ignore_ext=ignore_ext
             )
-            search_opt.set_search_directory_append(directory, below_enable)
+            search_opt.append_search_directory(directory, below_enable)
             with window.gui_progressing(maximum=len(textures)) as p:
                 for i_texture_any in self._texture_add_opt.get_checked_files():
                     p.set_update()

@@ -80,7 +80,7 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
 
     def gui_refresh_all_render_nodes(self):
         self._render_layer_pattern_dict = {}
-        prx_items = self._result_list_view.get_all_items()
+        prx_items = self._result_list_view.get_all_item_widgets()
         for i_prx_item in prx_items:
             self._gui_refresh_render_node_(i_prx_item)
 
@@ -200,7 +200,7 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
 
     def get_checked_render_nodes(self):
         list_ = []
-        prx_items = self._result_list_view.get_all_items()
+        prx_items = self._result_list_view.get_all_item_widgets()
         for i_prx_item in prx_items:
             if i_prx_item.get_is_checked() is True and i_prx_item.get_is_visible() is True:
                 i_render_node_opt = i_prx_item.get_gui_dcc_obj(
@@ -215,12 +215,14 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
         def yes_fnc_():
             default_render_version = self._options_prx_node.get('render.version')
             default_render_frames = self._options_prx_node.get('render.frames')
-
+            #
             j_option_opt = bsc_core.ArgDictStringOpt(
                 option=dict(
                     option_hook_key='rsv-project-methods/asset/katana/render-build',
                     #
                     file=file_path,
+                    #
+                    katana_version=ktn_core.get_katana_version(),
                     #
                     render_nodes=render_nodes,
                     default_render_version=default_render_version,

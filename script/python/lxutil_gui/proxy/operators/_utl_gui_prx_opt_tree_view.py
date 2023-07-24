@@ -646,7 +646,7 @@ class PrxStgObjTreeViewAddOpt(object):
                             )
                         )
                 #
-                name = '{} ({})'.format(name, len(file_tiles))
+                name = '{} ({})'.format(bsc_core.auto_encode(name), len(file_tiles))
                 descriptions = [tool_tip_]
         #
         menu_raw = []

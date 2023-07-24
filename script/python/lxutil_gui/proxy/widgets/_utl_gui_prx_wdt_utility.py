@@ -711,7 +711,7 @@ class PrxCheckItem(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxEnableItem(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtIconEnableItem
+    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtIconEnableButton
     def __init__(self, *args, **kwargs):
         super(PrxEnableItem, self).__init__(*args, **kwargs)
         self._qt_widget._set_size_(20, 20)

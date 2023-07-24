@@ -925,7 +925,7 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
             )
             self._item_dict[sub_path] = prx_item
             prx_item.set_tool_tip(sub_path)
-            prx_item.set_expanded(True)
+            # prx_item.set_expanded(True)
             prx_item.set_checked(False)
             return prx_item
         return self.gui_get(sub_path)
@@ -935,8 +935,6 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
             path_opt = bsc_core.DccPathDagOpt(sub_path)
             #
             parent_gui = self.gui_get(path_opt.get_parent_path())
-            #
-            location = self.get_dtb_entity_location(dtb_directory)
             #
             prx_item = parent_gui.add_child(
                 path_opt.name,
@@ -959,10 +957,11 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
             location = self.get_dtb_entity_location(dtb_directory)
             if bsc_core.StorageMtd.get_is_exists(location) is True:
                 prx_item.set_status(prx_item.ValidatorStatus.Normal)
+                prx_item.set_expanded(True, ancestors=True)
             else:
                 prx_item.set_status(prx_item.ValidatorStatus.Disable)
             #
-            prx_item.set_expanded(True)
+            # prx_item.set_expanded(True)
             prx_item.set_checked(False)
             prx_item._path = sub_path
             if is_current is True:
@@ -1257,7 +1256,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         #
         self._resource_prx_view = prx_widgets.PrxListView()
         self._main_h_s.add_widget(self._resource_prx_view._qt_widget)
-        # self._resource_prx_view.set_draw_enable(True)
+        # self._resource_prx_view.set_selection_use_multiply()
         self._resource_prx_view.get_check_tool_box().set_visible(True)
         self._resource_prx_view.get_scale_switch_tool_box().set_visible(True)
         self._resource_prx_view.get_sort_switch_tool_box().set_visible(True)

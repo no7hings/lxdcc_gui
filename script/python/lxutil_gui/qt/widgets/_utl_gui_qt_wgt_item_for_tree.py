@@ -512,7 +512,7 @@ class QtTreeWidgetItem(
                 else:
                     _ = ''
             else:
-                _ = unicode(text)
+                _ = bsc_core.auto_encode(text)
             #
             self.setText(column, _)
             self.setFont(column, utl_gui_qt_core.Font.NAME)
@@ -547,6 +547,8 @@ class QtTreeWidgetItem(
                 title_text = name_text_orig
             else:
                 title_text = self._get_name_text_(column)
+            #
+            title_text = bsc_core.auto_encode(title_text)
             #
             title_text = title_text.replace('<', '&lt;').replace('>', '&gt;')
             css += '<h3><p class="no_warp_and_center">{}</p></h3>\n'.format(title_text)

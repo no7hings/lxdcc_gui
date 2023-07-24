@@ -102,7 +102,7 @@ class QtValueEntryAsContentEdit(
         self._button_layout.setContentsMargins(2, 0, 0, 0)
         self._button_layout.setSpacing(2)
         #
-        self._open_in_external_editor_button = _utl_gui_qt_wgt_utility.QtIconEnableItem()
+        self._open_in_external_editor_button = _utl_gui_qt_wgt_utility.QtIconEnableButton()
         self._button_layout.addWidget(self._open_in_external_editor_button)
         self._open_in_external_editor_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('application/sublime-text'))
         self._open_in_external_editor_button._set_name_text_('open in external editor')

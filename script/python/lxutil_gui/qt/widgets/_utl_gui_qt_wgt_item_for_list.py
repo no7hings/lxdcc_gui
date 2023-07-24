@@ -684,7 +684,7 @@ class QtListItemWidget(
         self._check_is_hovered = False
         self._press_is_hovered = False
         if self._check_action_is_enable is True:
-            if self._check_action_rect.contains(p):
+            if self._check_rect.contains(p):
                 self._check_is_hovered = True
             else:
                 self._press_is_hovered = True
@@ -696,7 +696,7 @@ class QtListItemWidget(
     def _get_action_check_is_valid_(self, event):
         if self._check_action_is_enable is True:
             p = event.pos()
-            return self._check_action_rect.contains(p)
+            return self._check_rect.contains(p)
         return False
 
     def _set_drag_enable_(self, boolean):

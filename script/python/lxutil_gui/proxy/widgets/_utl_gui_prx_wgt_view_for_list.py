@@ -339,6 +339,9 @@ class PrxListView(
     def get_all_items(self):
         return [i._get_item_widget_().gui_proxy for i in self.view._get_all_items_()]
 
+    def get_all_item_widgets(self):
+        return [i._get_item_widget_().gui_proxy for i in self.view._get_all_items_()]
+
     def set_loading_update(self):
         self.view._set_loading_update_()
 
@@ -351,7 +354,7 @@ class PrxListView(
     def restore_all(self):
         self.set_clear()
 
-    def set_draw_enable(self, boolean):
+    def set_drag_enable(self, boolean):
         self._qt_view._set_drag_enable_(boolean)
 
     def gui_bustling(self):

@@ -129,7 +129,7 @@ class QtPressItem(
         c_icn_w, c_icn_h = w, h
         #
         if check_enable is True:
-            self._check_action_rect.setRect(
+            self._check_rect.setRect(
                 c_icn_x, c_icn_y, icn_frm_w, icn_frm_h
             )
             self._check_icon_draw_rect.setRect(
@@ -264,7 +264,7 @@ class QtPressItem(
                     self._action_flag = None
                     #
                     flag_raw = [
-                        (check_enable, self._check_action_rect, self.ActionFlag.CheckClick),
+                        (check_enable, self._check_rect, self.ActionFlag.CheckClick),
                         (click_enable, self._frame_draw_rect, self.ActionFlag.PressClick),
                         (option_click_enable, self._option_click_rect, self.ActionFlag.OptionClick),
                     ]

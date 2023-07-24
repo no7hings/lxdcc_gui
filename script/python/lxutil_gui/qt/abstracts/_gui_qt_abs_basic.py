@@ -1411,6 +1411,9 @@ class AbsQtNameBaseDef(object):
 
 
 class AbsQtNamesBaseDef(AbsQtNameBaseDef):
+    def _refresh_widget_(self):
+        pass
+
     def _init_names_base_def_(self, widget):
         self._init_name_base_def_(widget)
         #
@@ -1468,7 +1471,7 @@ class AbsQtNamesBaseDef(AbsQtNameBaseDef):
                 QtCore.QRect()
             )
         #
-        self._widget.update()
+        self._refresh_widget_()
 
     def _get_name_texts_(self):
         return self._name_texts
@@ -1478,6 +1481,7 @@ class AbsQtNamesBaseDef(AbsQtNameBaseDef):
         self._set_name_texts_(
             [v if seq == 0 else '{}: {}'.format(k, v) for seq, (k, v) in enumerate(self._name_text_dict.items())]
         )
+        self._refresh_widget_()
 
     def _get_show_name_texts_(self):
         if self._name_text_dict:
@@ -2153,7 +2157,7 @@ class AbsQtCheckBaseDef(object):
         self._check_action_is_enable = False
         #
         self._is_checked = False
-        self._check_action_rect = QtCore.QRect()
+        self._check_rect = QtCore.QRect()
         self._check_icon_frame_draw_rect = QtCore.QRect()
         self._check_icon_draw_rect = QtCore.QRect()
         self._check_is_pressed = False
@@ -2239,7 +2243,7 @@ class AbsQtCheckBaseDef(object):
         )
 
     def _set_check_action_rect_(self, x, y, w, h):
-        self._check_action_rect.setRect(
+        self._check_rect.setRect(
             x, y, w, h
         )
 
@@ -2268,7 +2272,7 @@ class AbsQtCheckBaseDef(object):
     def _get_action_check_is_valid_(self, event):
         if self._check_action_is_enable is True:
             p = event.pos()
-            return self._check_action_rect.contains(p)
+            return self._check_rect.contains(p)
         return False
 
 

@@ -1237,7 +1237,7 @@ class QtIconPressButton(
         )
 
 
-class QtIconEnableItem(
+class QtIconEnableButton(
     QtWidgets.QWidget,
     gui_qt_abstract.AbsQtWidgetBaseDef,
     gui_qt_abstract.AbsQtFrameBaseDef,
@@ -1253,7 +1253,7 @@ class QtIconEnableItem(
 ):
     QT_MENU_CLS = QtMenu
     def __init__(self, *args, **kwargs):
-        super(QtIconEnableItem, self).__init__(*args, **kwargs)
+        super(QtIconEnableButton, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         qt_palette = QtDccMtd.get_palette()
         self.setPalette(qt_palette)
@@ -1287,21 +1287,22 @@ class QtIconEnableItem(
         x, y = 0, 0
         w, h = self.width(), self.height()
         spacing = 2
-        icn_frm_w, icn_frm_h = self._icon_frame_draw_size
+        r = min(w, h)
+        icn_frm_w = icn_frm_h = min(w, h)-2
         icn_p = self._icon_draw_percent
-        icn_w, icn_h = icn_frm_w*icn_p, icn_frm_h*icn_p
+        icn_w = icn_h = r*icn_p
         #
-        self._set_frame_draw_rect_(
+        self._frame_draw_rect.setRect(
             x, y, w-1, h-1
         )
-        self._set_check_action_rect_(
-            x, y, icn_frm_w, icn_frm_h
+        self._check_rect.setRect(
+            x+(w-icn_frm_w)/2, y+(h-icn_frm_w)/2, icn_frm_w, icn_frm_h
         )
         #
         if self._icon_is_enable is True:
             if self._icon_sub_file_path or self._icon_sub_text:
-                self._set_icon_file_draw_rect_(
-                    x+1, y+1, icn_w, icn_h
+                self._icon_draw_rect.setRect(
+                    x+2, y+2, icn_w, icn_h
                 )
                 #
                 icn_s_p = self._icon_sub_draw_percent
@@ -1316,12 +1317,12 @@ class QtIconEnableItem(
                 self._icon_state_draw_rect.setRect(
                     x+w-icn_s_w-1, y+h-icn_s_h-1, icn_s_w, icn_s_h
                 )
-                self._set_icon_file_draw_rect_(
-                    x+1, y+1, w-icn_s_w, h-icn_s_h
+                self._icon_draw_rect.setRect(
+                    x+2, y+2, w-icn_s_w, h-icn_s_h
                 )
             else:
                 self._set_icon_file_draw_rect_(
-                    x+(icn_frm_w-icn_w)/2, y+(icn_frm_h-icn_h)/2, icn_w, icn_h
+                    x+(w-icn_w)/2, y+(h-icn_h)/2, icn_w, icn_h
                 )
         #
         x += icn_frm_w+spacing
@@ -1355,13 +1356,13 @@ class QtIconEnableItem(
         offset = self._get_action_offset_()
         #
         background_color = painter._get_item_background_color_by_rect_(
-            self._check_action_rect,
+            self._check_rect,
             is_hovered=self._is_hovered,
             is_selected=self._is_checked,
             is_actioned=self._get_is_actioned_()
         )
         painter._draw_frame_by_rect_(
-            self._check_action_rect,
+            self._check_rect,
             border_color=QtBorderColors.Transparent,
             background_color=background_color,
             border_radius=2,
@@ -1413,14 +1414,14 @@ class QtIconEnableItem(
         return self._get_is_checked_()
 
     def _set_menu_data_(self, data):
-        super(QtIconEnableItem, self)._set_menu_data_(data)
+        super(QtIconEnableButton, self)._set_menu_data_(data)
         self._icon_state_draw_is_enable = True
         self._icon_state_file_path = utl_gui_core.RscIconFile.get(
             'state/popup'
         )
 
     def _set_menu_data_gain_fnc_(self, fnc):
-        super(QtIconEnableItem, self)._set_menu_data_gain_fnc_(fnc)
+        super(QtIconEnableButton, self)._set_menu_data_gain_fnc_(fnc)
         #
         self._icon_state_draw_is_enable = True
         self._icon_state_file_path = utl_gui_core.RscIconFile.get(
@@ -2166,7 +2167,7 @@ class _QtHItem(
                 rect=self._check_icon_draw_rect,
                 file_path=self._check_icon_file_path_current,
                 offset=offset,
-                # frame_rect=self._check_action_rect,
+                # frame_rect=self._check_rect,
                 is_hovered=self._check_is_hovered
             )
         # icon
@@ -2246,7 +2247,7 @@ class _QtHItem(
         self._delete_is_hovered = False
 
         if self._check_action_is_enable is True:
-            if self._check_action_rect.contains(p):
+            if self._check_rect.contains(p):
                 self._check_is_hovered = True
         if self._frame_draw_rect.contains(p):
             self._press_is_hovered = True

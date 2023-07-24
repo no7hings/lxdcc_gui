@@ -1,11 +1,7 @@
 # coding:utf-8
-import functools
+from lxbasic import bsc_configure
 
-from lxbasic import bsc_configure, bsc_core
-
-from lxutil import utl_core
-
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_container, _gui_qt_wgt_chart
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_chart
 
 from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _gui_prx_wdt_node, _gui_prx_wgt_contianer
 
@@ -114,7 +110,7 @@ class AbsPrxDialogWindow(
         self._customize_layout.addWidget(self._options_prx_node.widget)
         self._options_prx_node.set_hide()
         # tip
-        self._tip_group = _gui_qt_wgt_container.PrxHToolGroup()
+        self._tip_group = _gui_prx_wgt_contianer.PrxHToolGroup()
         self._customize_layout.addWidget(self._tip_group.widget)
         self._tip_group.set_visible(False)
         self._tip_group.set_name('tips')

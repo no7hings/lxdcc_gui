@@ -89,7 +89,7 @@ class TestWindow(prx_widgets.PrxBaseWindow):
         self._prx_list_view = prx_widgets.PrxListView()
         self._prx_list_view.get_top_tool_bar().set_expanded(True)
         self._prx_list_view.set_selection_use_multiply()
-        # self._prx_list_view.set_draw_enable(True)
+        # self._prx_list_view.set_drag_enable(True)
         self._prx_list_view.set_item_icon_frame_draw_enable(True)
         self._prx_list_view.set_item_image_frame_draw_enable(True)
         self._prx_list_view.set_item_name_frame_draw_enable(True)
