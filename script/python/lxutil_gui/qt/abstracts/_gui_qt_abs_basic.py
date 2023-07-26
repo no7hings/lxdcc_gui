@@ -3682,9 +3682,9 @@ class AbsQtShowBaseForItemDef(
             pass
 
     def _finish_item_show_loading_(self):
-        self._item_show_loading_timer.stop()
         # noinspection PyBroadException
         try:
+            self._item_show_loading_timer.stop()
             self._refresh_widget_draw_()
         except:
             pass
@@ -3778,9 +3778,9 @@ class AbsQtShowBaseForItemDef(
             pass
 
     def _finish_item_show_image_loading_(self):
-        self._item_show_image_loading_timer.stop()
         # noinspection PyBroadException
         try:
+            self._item_show_image_loading_timer.stop()
             self._refresh_widget_draw_()
         except:
             pass

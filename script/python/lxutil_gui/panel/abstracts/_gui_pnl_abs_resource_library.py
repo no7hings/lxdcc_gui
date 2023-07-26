@@ -1035,6 +1035,12 @@ class _GuiFileOpt(_GuiBaseOpt):
             return []
 
         def build_fnc_(*args):
+            def copy_path_fnc_():
+                utl_gui_qt_core.set_text_copy_to_clipboard(file_path)
+
+            def open_folder_fnc():
+                bsc_core.StgFileOpt(file_path).set_open_in_system()
+            #
             if file_opt.get_ext() in ['.jpg', '.png', '.exr', '.tx']:
                 image_file_path, image_sp_cmd = bsc_core.ImgFileOpt(file_path).get_thumbnail_create_args(
                     width=128, ext='.jpg'
@@ -1050,8 +1056,16 @@ class _GuiFileOpt(_GuiBaseOpt):
                         pixmap
                     )
             #
+            menu_data = [
+                ('copy path', 'copy', copy_path_fnc_),
+                ('open folder', 'file/folder', open_folder_fnc)
+            ]
+            #
             prx_item_widget.set_tool_tip(
                 file_opt.get_path()
+            )
+            prx_item_widget.set_menu_data(
+                menu_data
             )
         #
         if self.gui_get_is_exists(file_path) is False:
