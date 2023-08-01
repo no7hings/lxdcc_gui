@@ -165,8 +165,8 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
 
         menu_raw = [
             ('basic',),
-            ('open output directory', 'file/folder', (enable_fnc_, open_fnc_, False)),
-            ('open output directory (force)', 'file/folder', (True, open_fnc_, False))
+            ('open output directory', 'file/open-folder', (enable_fnc_, open_fnc_, False)),
+            ('open output directory (force)', 'file/open-folder', (True, open_fnc_, False))
         ]
 
         prx_item.set_menu_data(

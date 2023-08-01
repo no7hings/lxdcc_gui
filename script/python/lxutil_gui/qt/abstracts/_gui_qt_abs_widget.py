@@ -151,10 +151,10 @@ class AbsQtTreeWidget(
         if indices:
             index = indices[-1]
             item = self.itemFromIndex(index)
-            menu_raw = item._get_menu_data_()
+            menu_data = item._get_menu_data_()
             menu_content = item._get_menu_content_()
         else:
-            menu_raw = self._get_menu_data_()
+            menu_data = self._get_menu_data_()
             menu_content = self._get_menu_content_()
         #
         menu = None
@@ -166,11 +166,11 @@ class AbsQtTreeWidget(
             menu._set_menu_content_(menu_content)
             menu._popup_start_()
         #
-        if menu_raw:
+        if menu_data:
             if menu is None:
                 menu = self.QT_MENU_CLS(self)
             #
-            menu._set_menu_data_(menu_raw)
+            menu._set_menu_data_(menu_data)
             menu._popup_start_()
 
 

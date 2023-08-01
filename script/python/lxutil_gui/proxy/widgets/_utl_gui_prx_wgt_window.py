@@ -30,7 +30,8 @@ class AbsPrxDialogWindow(
         super(AbsPrxDialogWindow, self).__init__(*args, **kwargs)
         if kwargs.get('parent'):
             self.widget.setWindowFlags(
-                _utl_gui_qt_wgt_utility.QtCore.Qt.Tool | _utl_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
+                _utl_gui_qt_wgt_utility.QtCore.Qt.Tool
+                # | _utl_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
             )
         else:
             self.widget.setWindowFlags(

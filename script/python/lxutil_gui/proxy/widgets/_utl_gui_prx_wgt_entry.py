@@ -248,7 +248,6 @@ class _PrxStgObjEntry(AbsPrxTypeQtEntry):
 
     def connect_value_changed_to(self, fnc):
         self._qt_entry_widget._set_value_entry_changed_connect_to_(fnc)
-
     #
     def update_history(self):
         value = self._qt_entry_widget._get_value_()

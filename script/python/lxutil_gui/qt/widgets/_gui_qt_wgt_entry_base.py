@@ -163,7 +163,7 @@ class QtEntryAsTextEdit(
             menu_raw.extend(
                 [
                     ('system',),
-                    ('open folder', 'file/folder', (True, self._execute_open_in_system_, False), QtGui.QKeySequence.Open)
+                    ('open folder', 'file/open-folder', (True, self._execute_open_in_system_, False), QtGui.QKeySequence.Open)
                 ]
             )
         #
@@ -677,7 +677,7 @@ class QtEntryAsList(
         items = self._get_selected_items_()
         if items:
             menu_raw.append(
-                ('open folder', 'file/folder', (True, self._execute_open_in_system_, False), QtGui.QKeySequence.Open)
+                ('open folder', 'file/open-folder', (True, self._execute_open_in_system_, False), QtGui.QKeySequence.Open)
             )
         #
         if menu_raw:

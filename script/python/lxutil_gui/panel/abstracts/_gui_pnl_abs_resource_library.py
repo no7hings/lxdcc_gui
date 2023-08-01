@@ -70,6 +70,41 @@ class _GuiBaseOpt(object):
                 )
             return ssn_commands.get_menu_content_by_hook_options(options)
 
+    def get_dtb_storage_menu_content(self, dtb_resource, dtb_directory, extra_key, sub_path, file_path=None):
+        options = []
+        c = self._session.configure.get(
+            'entity-actions.{}-{}.option-hooks'.format(dtb_directory.entity_type, extra_key)
+        )
+        if c:
+            for i in c:
+                if isinstance(i, dict):
+                    i_key = i.keys()[0]
+                    i_value = i.values()[0]
+                else:
+                    i_key = i
+                    i_value = {}
+                #
+                i_kwargs = dict(
+                    option_hook_key=i_key,
+                    #
+                    window_unique_id=self._window.get_window_unique_id(),
+                    database=self._dtb_opt.get_database(),
+                    database_configure=self._dtb_opt.get_database_configure(),
+                    database_configure_extend=self._dtb_opt.get_database_configure_extend(),
+                    #
+                    entity_type=dtb_directory.entity_type,
+                    entity=dtb_directory.path,
+                    #
+                    resource=dtb_resource.path,
+                    sub_path=sub_path,
+                    file=file_path
+                )
+                i_kwargs.update(**{k: v for k, v in i_value.items() if v})
+                options.append(
+                    bsc_core.ArgDictStringOpt(i_kwargs).to_string(),
+                )
+            return ssn_commands.get_menu_content_by_hook_options(options)
+
     def get_dtb_extra_menu_content(self, dtb_entity, sub_path):
         options = []
         c = self._session.configure.get(
@@ -100,16 +135,6 @@ class _GuiBaseOpt(object):
                     bsc_core.ArgDictStringOpt(i_kwargs).to_string(),
                 )
             return ssn_commands.get_menu_content_by_hook_options(options)
-
-    def get_dtb_entity_location(self, dtb_entity):
-        dtb_port = self._dtb_opt.get_entity(
-            entity_type=self._dtb_opt.EntityTypes.Attribute,
-            filters=[
-                ('node', 'is', dtb_entity.path),
-                ('port', 'is', 'location'),
-            ]
-        )
-        return dtb_port.value
 
 
 class _GuiTypeOpt(_GuiBaseOpt):
@@ -625,6 +650,7 @@ class _GuiResourceOpt(_GuiBaseOpt):
                 name_dict[bsc_core.DccPathDagOpt(i_k).get_name()] = ', '.join(
                     [bsc_core.DccPathDagOpt(j).get_name() for j in i_v]
                 )
+            name_dict['ctime'] = dtb_resource.ctime
             #
             dtb_version_port = self._dtb_opt.get_entity(
                 entity_type=self._dtb_opt.EntityTypes.Attribute,
@@ -713,6 +739,7 @@ class _GuiResourceOpt(_GuiBaseOpt):
             keys = {bsc_core.DccPathDagOpt(j).get_name() for i_k, i_v in semantic_tag_filter_data.items() for j in i_v}
             keys.add(str(dtb_resource.gui_name).lower())
             keys.add(str(dtb_resource.name).lower())
+            keys.add(str(dtb_resource.ctime).lower())
             prx_item_widget.set_keyword_filter_keys_tgt(keys)
             #
             prx_item_widget.connect_press_clicked_to(functools.partial(self.copy_to_clipboard_from, dtb_resource))
@@ -812,11 +839,11 @@ class _GuiResourceOpt(_GuiBaseOpt):
             return resource_selected_prx_items[-1].get_gui_dcc_obj(self.DCC_NAMESPACE)
 
 
-class _GuiDirectoryOpt(_GuiBaseOpt):
+class _GuiStgDirectoryOpt(_GuiBaseOpt):
     ROOT_NAME = 'All'
     DCC_NAMESPACE = 'database'
     def __init__(self, window, session, database_opt, tree_view):
-        super(_GuiDirectoryOpt, self).__init__(window, session, database_opt)
+        super(_GuiStgDirectoryOpt, self).__init__(window, session, database_opt)
         #
         self._tree_view = tree_view
         self._item_dict = self._tree_view._item_dict
@@ -832,7 +859,7 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
     def gui_get(self, path):
         return self._item_dict[path]
 
-    def gui_add_all_use_thread(self, dtb_version, path_cur=None):
+    def gui_add_all_use_thread(self, dtb_resource, dtb_version, path_cur=None):
         def cache_fnc_():
             return self.__thread_stack_index, self._dtb_opt.get_entities(
                 entity_type=self._dtb_opt.EntityTypes.Storage,
@@ -850,7 +877,7 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
                 _i_storage_stg_location = self._dtb_opt.get_property(_i_storage_dtb_path, 'location')
                 _i_sub_path = _i_storage_stg_location[len(_version_stg_location):]
                 if _thread_stack_index == self.__thread_stack_index:
-                    self.gui_add_one(_i_sub_path, _i_dtb_storage, is_current=_i_sub_path == path_cur)
+                    self.gui_add_one(dtb_resource, _i_dtb_storage, _i_sub_path, is_current=_i_sub_path == path_cur)
 
         def post_fnc_():
             pass
@@ -868,7 +895,7 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
         #
         t.start()
 
-    def gui_add_all(self, dtb_version, path_cur=None):
+    def gui_add_all(self, dtb_resource, dtb_version, path_cur=None):
         version_dtb_path = dtb_version.path
         version_path_opt = bsc_core.DccPathDagOpt(version_dtb_path)
         #
@@ -886,26 +913,25 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
             i_storage_stg_location = self._dtb_opt.get_property(i_storage_dtb_path, 'location')
             i_sub_path = i_storage_stg_location[len(version_stg_location):]
             #
-            self.gui_add_one(i_sub_path, i_dtb_storage)
+            self.gui_add_one(dtb_resource, i_dtb_storage, i_sub_path)
 
-    def gui_add_one(self, sub_path, dtb_directory, is_current=False):
+    def gui_add_one(self, dtb_resource, dtb_directory, sub_path, is_current=False):
         path_opt = bsc_core.DccPathDagOpt(sub_path)
         ancestors = path_opt.get_ancestors()
         if ancestors:
             ancestors.reverse()
-            #
             for i_ancestor in ancestors:
                 i_ancestor_path = i_ancestor.get_path()
                 self.gui_add_group(i_ancestor_path)
         #
-        self.gui_add(sub_path, dtb_directory, is_current)
+        self.gui_add(dtb_resource, dtb_directory, sub_path, is_current)
 
     def gui_add_root(self, name):
         path = '/'
         if self.gui_get_is_exists(path) is False:
             prx_item = self._tree_view.create_item(
                 name,
-                icon=utl_gui_core.RscIconFile.get('database/group'),
+                icon=utl_gui_core.RscIconFile.get('database/all'),
             )
             self._item_dict[path] = prx_item
             prx_item.set_expanded(True)
@@ -921,7 +947,7 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
             #
             prx_item = parent_gui.add_child(
                 path_opt.name,
-                icon=utl_gui_qt_core.QtDccMtd.get_qt_folder_icon(),
+                icon=utl_gui_core.RscIconFile.get('database/groups'),
             )
             self._item_dict[sub_path] = prx_item
             prx_item.set_tool_tip(sub_path)
@@ -930,47 +956,72 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
             return prx_item
         return self.gui_get(sub_path)
 
-    def gui_add(self, sub_path, dtb_directory, is_current=False):
+    def gui_add(self, dtb_resource, dtb_directory, sub_path, is_current=False):
+        def cache_fnc_():
+            def copy_path_fnc_():
+                utl_gui_qt_core.set_text_copy_to_clipboard(location)
+
+            def open_folder_fnc():
+                bsc_core.StgDirectoryOpt(location).set_open_in_system()
+
+            _location = location
+
+            _menu_content = self.get_dtb_entity_menu_content(dtb_directory)
+            _menu_content_extra = self.get_dtb_storage_menu_content(dtb_resource, dtb_directory, 'directory', sub_path)
+            if _menu_content_extra:
+                if _menu_content is not None:
+                    _menu_content.set_update(_menu_content_extra.get_value())
+                else:
+                    _menu_content = _menu_content_extra
+
+            _menu_data = [
+                (),
+                ('Copy Path', 'copy', copy_path_fnc_),
+                ('Open Folder', 'file/open-folder', open_folder_fnc)
+            ]
+            return [
+                prx_item_widget, _location, _menu_content, _menu_data
+            ]
+
+        def build_fnc_(*args):
+            _prx_item_widget, _location, _menu_content, _menu_data = args[0]
+            if _menu_content:
+                _prx_item_widget.set_menu_content(_menu_content)
+            #
+            if _menu_data:
+                _prx_item_widget.set_menu_data(_menu_data)
+            #
+            prx_item_widget.set_tool_tip(_location)
+
         if self.gui_get_is_exists(sub_path) is False:
             path_opt = bsc_core.DccPathDagOpt(sub_path)
             #
             parent_gui = self.gui_get(path_opt.get_parent_path())
             #
-            prx_item = parent_gui.add_child(
+            prx_item_widget = parent_gui.add_child(
                 path_opt.name,
                 icon=utl_gui_core.RscIconFile.get('database/group'),
             )
-            self._item_dict[sub_path] = prx_item
-            prx_item.set_gui_dcc_obj(
+            self._item_dict[sub_path] = prx_item_widget
+            prx_item_widget.set_gui_dcc_obj(
                 dtb_directory, namespace=self.DCC_NAMESPACE
             )
-            prx_item.set_tool_tip(sub_path)
-            #
-            dtb_entity_menu_content = self.get_dtb_entity_menu_content(dtb_directory)
-            dtb_extra_menu_content = self.get_dtb_extra_menu_content(dtb_directory, sub_path)
-            if dtb_extra_menu_content:
-                dtb_entity_menu_content.set_update(dtb_extra_menu_content)
-            #
-            if dtb_entity_menu_content:
-                prx_item.set_menu_content(dtb_entity_menu_content)
-            #
-            location = self.get_dtb_entity_location(dtb_directory)
+            prx_item_widget.set_checked(False)
+            location = self._dtb_opt.get_property(dtb_directory.path, 'location')
             if bsc_core.StorageMtd.get_is_exists(location) is True:
-                prx_item.set_status(prx_item.ValidatorStatus.Normal)
-                prx_item.set_expanded(True, ancestors=True)
+                prx_item_widget.set_status(prx_item_widget.ValidatorStatus.Normal)
+                prx_item_widget.set_expanded(True, ancestors=True)
             else:
-                prx_item.set_status(prx_item.ValidatorStatus.Disable)
+                prx_item_widget.set_status(prx_item_widget.ValidatorStatus.Disable)
             #
-            # prx_item.set_expanded(True)
-            prx_item.set_checked(False)
-            prx_item._path = sub_path
+            prx_item_widget.set_show_fnc(
+                cache_fnc_, build_fnc_
+            )
+            prx_item_widget._sub_path = sub_path
             if is_current is True:
-                prx_item.set_selected(True)
-            return prx_item
+                prx_item_widget.set_selected(True)
+            return prx_item_widget
         return self.gui_get(sub_path)
-
-    def gui_show_deferred_fnc(self, dtb_directory, prx_item):
-        pass
 
     def get_current_dtb_entity(self):
         resource_selected_prx_items = self._tree_view.get_selected_items()
@@ -978,10 +1029,10 @@ class _GuiDirectoryOpt(_GuiBaseOpt):
             return resource_selected_prx_items[-1].get_gui_dcc_obj(self.DCC_NAMESPACE)
 
 
-class _GuiFileOpt(_GuiBaseOpt):
+class _GuiStgFileOpt(_GuiBaseOpt):
     DCC_NAMESPACE = 'database'
     def __init__(self, window, session, database_opt, list_view):
-        super(_GuiFileOpt, self).__init__(window, session, database_opt)
+        super(_GuiStgFileOpt, self).__init__(window, session, database_opt)
         #
         self._list_view = list_view
         self._list_view.connect_press_released_to(self.do_copy_to_clipboard_by_selection)
@@ -1030,17 +1081,35 @@ class _GuiFileOpt(_GuiBaseOpt):
                 )
             )
 
-    def gui_add(self, file_path):
+    def gui_add(self, dtb_resource, dtb_directory, sub_path, file_path):
         def cache_fnc_():
-            return []
-
-        def build_fnc_(*args):
             def copy_path_fnc_():
                 utl_gui_qt_core.set_text_copy_to_clipboard(file_path)
 
             def open_folder_fnc():
                 bsc_core.StgFileOpt(file_path).set_open_in_system()
-            #
+
+            _location = file_opt.get_path()
+
+            _menu_content = self.get_dtb_entity_menu_content(dtb_directory)
+            _menu_content_extra = self.get_dtb_storage_menu_content(dtb_resource, dtb_directory, 'file', sub_path, file_path)
+            if _menu_content_extra:
+                if _menu_content is not None:
+                    _menu_content.set_update(_menu_content_extra.get_value())
+                else:
+                    _menu_content = _menu_content_extra
+
+            _menu_data = [
+                (),
+                ('Copy Path', 'copy', copy_path_fnc_),
+                ('Open Folder', 'file/open-folder', open_folder_fnc)
+            ]
+            return [
+                prx_item_widget, _location, _menu_content, _menu_data
+            ]
+
+        def build_fnc_(*args):
+            _prx_item_widget, _location, _menu_content, _menu_data = args[0]
             if file_opt.get_ext() in ['.jpg', '.png', '.exr', '.tx']:
                 image_file_path, image_sp_cmd = bsc_core.ImgFileOpt(file_path).get_thumbnail_create_args(
                     width=128, ext='.jpg'
@@ -1056,16 +1125,17 @@ class _GuiFileOpt(_GuiBaseOpt):
                         pixmap
                     )
             #
-            menu_data = [
-                ('copy path', 'copy', copy_path_fnc_),
-                ('open folder', 'file/folder', open_folder_fnc)
-            ]
+            if _menu_content:
+                _prx_item_widget.set_menu_content(
+                    _menu_content
+                )
             #
-            prx_item_widget.set_tool_tip(
-                file_opt.get_path()
-            )
-            prx_item_widget.set_menu_data(
-                menu_data
+            if _menu_data:
+                _prx_item_widget.set_menu_data(
+                    _menu_data
+                )
+            _prx_item_widget.set_tool_tip(
+                _location
             )
         #
         if self.gui_get_is_exists(file_path) is False:
@@ -1395,7 +1465,8 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
 
         self.__attribute_count_dict = {}
 
-        self._directory_path_cur = None
+        self._dtb_directory_sub_path_cur = None
+        self._dtb_resource_cur = None
 
         self._copy_mode = 'material-node-graph'
 
@@ -1439,10 +1510,10 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             self, self._session, self._dtb_opt, self._resource_prx_view
         )
         #
-        self._gui_directory_opt = _GuiDirectoryOpt(
+        self._gui_stg_directory_opt = _GuiStgDirectoryOpt(
             self, self._session, self._dtb_opt, self._directory_prx_view
         )
-        self._gui_file_opt = _GuiFileOpt(
+        self._gui_stg_file_opt = _GuiStgFileOpt(
             self, self._session, self._dtb_opt, self._file_prx_view
         )
 
@@ -1793,16 +1864,6 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                         )
                 #
                 self._resource_prx_view.refresh_viewport_showable_auto()
-    # build for textures
-    def __execute_gui_refresh_for_storage_directories_(self):
-        self._gui_directory_opt.restore()
-        self._gui_file_opt.restore()
-        #
-        if self._main_h_s.get_is_contracted_at(2) is False:
-            dtb_entity = self._gui_resource_opt.get_current_dtb_entity()
-            if dtb_entity is not None:
-                self.__gui_refresh_usd_stage_(dtb_entity)
-                self.__gui_add_directories_(dtb_entity)
 
     def __gui_refresh_usd_stage_(self, dtb_resource):
         dtb_version = self._dtb_opt.get_entity(
@@ -1816,6 +1877,17 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             self._gui_usd_stage_view_opt.refresh_textures_use_thread(dtb_resource, dtb_version, use_as_imperfection)
         else:
             self._gui_usd_stage_view_opt.refresh_textures(dtb_resource, dtb_version, use_as_imperfection)
+    # build for storage
+    def __execute_gui_refresh_for_storage_directories_(self):
+        self._gui_stg_directory_opt.restore()
+        self._gui_stg_file_opt.restore()
+        #
+        if self._main_h_s.get_is_contracted_at(2) is False:
+            dtb_resource = self._gui_resource_opt.get_current_dtb_entity()
+            if dtb_resource is not None:
+                self._dtb_resource_cur = dtb_resource
+                self.__gui_refresh_usd_stage_(dtb_resource)
+                self.__gui_add_directories_(dtb_resource)
 
     def __gui_add_directories_(self, dtb_resource):
         dtb_version = self._dtb_opt.get_entity(
@@ -1825,23 +1897,23 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             ],
         )
         if self._qt_thread_enable is True:
-            self._gui_directory_opt.gui_add_all_use_thread(dtb_version, self._directory_path_cur)
+            self._gui_stg_directory_opt.gui_add_all_use_thread(dtb_resource, dtb_version, self._dtb_directory_sub_path_cur)
         else:
-            self._gui_directory_opt.gui_add_all(dtb_version, self._directory_path_cur)
+            self._gui_stg_directory_opt.gui_add_all(dtb_resource, dtb_version, self._dtb_directory_sub_path_cur)
 
     def __execute_gui_refresh_for_storage_files_(self):
-        self._gui_file_opt.restore()
+        self._gui_stg_file_opt.restore()
         current_item = self._directory_prx_view.get_current_item()
         if current_item:
-            if hasattr(current_item, '_path'):
-                self._directory_path_cur = current_item._path
+            if hasattr(current_item, '_sub_path'):
+                self._dtb_directory_sub_path_cur = current_item._sub_path
         #
         if self._main_h_s.get_is_contracted_at(2) is False:
-            dtb_entity = self._gui_directory_opt.get_current_dtb_entity()
-            if dtb_entity is not None:
-                self.__gui_add_files_(dtb_entity)
+            dtb_storage = self._gui_stg_directory_opt.get_current_dtb_entity()
+            if dtb_storage is not None:
+                self.__gui_add_files_(dtb_storage, self._dtb_directory_sub_path_cur)
 
-    def __gui_add_files_(self, dtb_storage):
+    def __gui_add_files_(self, dtb_storage, sub_path):
         location = self._dtb_opt.get_property(
             dtb_storage.path, 'location'
         )
@@ -1849,4 +1921,4 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             location_opt = bsc_core.StgDirectoryOpt(location)
             all_file_paths = location_opt.get_all_file_paths()
             for i in all_file_paths:
-                self._gui_file_opt.gui_add(i)
+                self._gui_stg_file_opt.gui_add(self._dtb_resource_cur, dtb_storage, sub_path, i)

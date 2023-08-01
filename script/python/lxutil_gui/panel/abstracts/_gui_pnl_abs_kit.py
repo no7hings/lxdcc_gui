@@ -644,7 +644,7 @@ class AbsPnlAppKit(prx_widgets.PrxSessionWindow):
             menu_data=[
                 ('modify', 'file/file', functools.partial(self.show_modify_fnc, session)),
                 (),
-                ('open folder', 'file/folder', session.open_configure_directory),
+                ('open folder', 'file/open-folder', session.open_configure_directory),
                 (),
             ]
         )

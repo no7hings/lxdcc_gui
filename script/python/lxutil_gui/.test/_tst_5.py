@@ -21,7 +21,7 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxBaseWindow):
             # item_prx.set_icon_by_text('asset')
             item_prx.set_gui_menu_raw(
                 [
-                    ('Open folder', None, None),
+                    ('Open folder', 'file/open-folder', None),
                 ]
             )
 
