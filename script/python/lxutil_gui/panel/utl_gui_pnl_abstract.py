@@ -307,7 +307,7 @@ class AbsSceneComposeToolPanel(
                     dcc_path = obj_opt.dcc_path
                     if not exists_path == dcc_path:
                         parent_path = self.DCC_NODE_CLS(dcc_path).get_parent_path()
-                        exists_dcc_obj.set_parent_path(parent_path)
+                        exists_dcc_obj.parent_to_path(parent_path)
 
         self.set_refresh()
 

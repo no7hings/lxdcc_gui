@@ -650,7 +650,14 @@ class _GuiResourceOpt(_GuiBaseOpt):
                 name_dict[bsc_core.DccPathDagOpt(i_k).get_name()] = ', '.join(
                     [bsc_core.DccPathDagOpt(j).get_name() for j in i_v]
                 )
-            name_dict['ctime'] = dtb_resource.ctime
+            name_dict['ctime'] = bsc_core.TimePrettifyMtd.to_prettify_by_timetuple(
+                bsc_core.TimePrettifyMtd.to_timetuple(
+                    dtb_resource.ctime, '%Y-%m-%d %H:%M:%S'
+                ),
+                language=1
+            )
+
+            # bsc_core.TimePrettifyMtd.to_prettify_by_time_tag()
             #
             dtb_version_port = self._dtb_opt.get_entity(
                 entity_type=self._dtb_opt.EntityTypes.Attribute,
@@ -1199,7 +1206,15 @@ class _GuiUsdStageViewOpt(_GuiBaseOpt):
         self._usd_stage_view = usd_stage_view
         self.__thread_stack_index = 1
 
-    def get_texture_dict(self, dtb_version):
+    def get_variants(self, dtb_version):
+        p = self._dtb_opt.get_pattern(keyword='version-dir')
+        p_o = bsc_core.PtnParseOpt(p)
+        version_stg_path = self._dtb_opt.get_property(
+            dtb_version.path, 'location'
+        )
+        return p_o.get_variants(version_stg_path)
+
+    def get_texture_preview_assigns(self, dtb_version):
         dict_ = {}
         for i_key in utl_configure.TextureTypes.All:
             i_dtb_path = '{}/texture_{}_file'.format(dtb_version.path, i_key)
@@ -1219,20 +1234,29 @@ class _GuiUsdStageViewOpt(_GuiBaseOpt):
                     dict_[i_key] = i_file_opt.get_path()
         return dict_
 
-    def get_usd_file(self, dtb_resource, dtb_version):
-        version_stg_path = self._dtb_opt.get_property(
-            dtb_version.path, 'location'
-        )
-        usd_file_path = '{}/geometry/usd/{}.usd'.format(version_stg_path, dtb_resource.name)
-        if bsc_core.StgPathMtd.get_is_exists(usd_file_path):
-            return usd_file_path
+    def get_look_preview_usd_file(self, variants):
+        p = self._dtb_opt.get_pattern(keyword='look-preview-usd-file')
+        p_o = bsc_core.PtnParseOpt(p)
+        path = p_o.set_update_to(**variants).get_value()
+        if bsc_core.StgPathMtd.get_is_exists(path):
+            return path
+        return bsc_core.RscFileMtd.get('asset/library/preview-material.usda')
+
+    def get_usd_file(self, variants):
+        p = self._dtb_opt.get_pattern(keyword='geometry-usd-file')
+        p_o = bsc_core.PtnParseOpt(p)
+        path = p_o.set_update_to(**variants).get_value()
+        if bsc_core.StgPathMtd.get_is_exists(path):
+            return path
         return bsc_core.RscFileMtd.get('asset/library/geo/sphere.usda')
 
     def refresh_textures_use_thread(self, dtb_resource, dtb_version, use_as_imperfection=False):
         def cache_fnc_():
+            _variants = self.get_variants(dtb_version)
             self._usd_stage_view.refresh_usd_stage_for_asset_preview(
-                self.get_usd_file(dtb_resource, dtb_version),
-                self.get_texture_dict(dtb_version),
+                usd_file=self.get_usd_file(_variants),
+                look_preview_usd_file=self.get_look_preview_usd_file(_variants),
+                texture_preview_assigns=self.get_texture_preview_assigns(dtb_version),
                 use_as_imperfection=use_as_imperfection
             )
             return [self.__thread_stack_index, None]
@@ -1253,7 +1277,7 @@ class _GuiUsdStageViewOpt(_GuiBaseOpt):
 
     def refresh_textures(self, dtb_resource, dtb_version, use_as_imperfection=False):
         self._usd_stage_view.refresh_usd_stage_for_texture_preview(
-            self.get_texture_dict(dtb_version)
+            self.get_texture_preview_assigns(dtb_version)
         )
         self._usd_stage_view.refresh_usd_view_draw()
 
