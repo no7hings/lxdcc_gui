@@ -3,7 +3,7 @@ import collections
 
 from lxbasic import bsc_core
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
@@ -24,27 +24,27 @@ class TestWindow(prx_widgets.PrxBaseWindow):
                 if i_ % 2 == 0:
                     prx_item_widget.set_icons_by_pixmap(
                         [
-                            utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
+                            gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
                                 '.ma',
                                 tag='work',
                                 frame_size=(24, 24)
                             ),
-                            utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
+                            gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
                                 '.ma',
                                 tag='work',
                                 frame_size=(24, 24)
                             ),
-                            utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
+                            gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
                                 '.ma',
                                 tag='work',
                                 frame_size=(24, 24)
                             ),
-                            utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
+                            gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
                                 '.ma',
                                 tag='work',
                                 frame_size=(24, 24)
                             ),
-                            utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
+                            gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
                                 '.ma',
                                 tag='work',
                                 frame_size=(24, 24)

@@ -2,7 +2,7 @@
 import functools
 
 import six
-from lxutil_gui.qt.utl_gui_qt_core import *
+from lxutil_gui.qt.gui_qt_core import *
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize
 

@@ -9,7 +9,7 @@ import lxutil_gui.proxy.widgets as prx_widgets
 
 from lxutil_gui import utl_gui_core
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 import lxutil_gui.proxy.operators as utl_prx_operators
 
@@ -555,7 +555,7 @@ class AbsSceneTextureManagerPanel(
             _set_texture_tx_repath(self._texture_references, includes)
             self.refresh_all_fnc()
 
-        method_signals = utl_gui_qt_core.QtMethodSignals(self.widget)
+        method_signals = gui_qt_core.QtMethodSignals(self.widget)
         method_signals.stated.connect(complete_fnc)
 
         if self._texture_references is not None:
@@ -586,7 +586,7 @@ class AbsSceneTextureManagerPanel(
             _set_texture_jpg_repath(self._texture_references, includes)
             self.refresh_all_fnc()
 
-        method_signals = utl_gui_qt_core.QtMethodSignals(self.widget)
+        method_signals = gui_qt_core.QtMethodSignals(self.widget)
         method_signals.stated.connect(complete_fnc)
 
         if self._texture_references is not None:

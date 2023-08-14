@@ -5,7 +5,7 @@ from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_chart
 
 from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _gui_prx_wdt_node, _gui_prx_wgt_contianer
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
@@ -71,9 +71,9 @@ class AbsPrxDialogWindow(
         self._sub_label.setVisible(False)
         self._sub_label.setMaximumHeight(20)
         self._sub_label.setMinimumHeight(20)
-        self._sub_label._set_name_draw_font_(utl_gui_qt_core.get_font(size=11, italic=True))
+        self._sub_label._set_name_draw_font_(gui_qt_core.get_font(size=11, italic=True))
         self._sub_label._set_name_text_option_(
-            utl_gui_qt_core.QtCore.Qt.AlignHCenter | utl_gui_qt_core.QtCore.Qt.AlignVCenter
+            gui_qt_core.QtCore.Qt.AlignHCenter | gui_qt_core.QtCore.Qt.AlignVCenter
         )
         #
         self._set_progressing_def_init_()
@@ -100,12 +100,12 @@ class AbsPrxDialogWindow(
         self._customize_widget = _utl_gui_qt_wgt_utility.QtWidget()
         s.add_widget(self._customize_widget)
         self._customize_widget.setSizePolicy(
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding
+            gui_qt_core.QtWidgets.QSizePolicy.Expanding,
+            gui_qt_core.QtWidgets.QSizePolicy.Expanding
         )
         #
         self._customize_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._customize_widget)
-        self._customize_layout.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignTop)
+        self._customize_layout.setAlignment(gui_qt_core.QtCore.Qt.AlignTop)
         # option
         self._options_prx_node = _gui_prx_wdt_node.PrxNode_('options')
         self._customize_layout.addWidget(self._options_prx_node.widget)
@@ -277,7 +277,7 @@ class AbsPrxDialogWindow(
         self._sub_label._set_status_(status)
 
     def set_customize_widget_add(self, widget):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+        if isinstance(widget, gui_qt_core.QtCore.QObject):
             qt_widget = widget
         else:
             qt_widget = widget.widget
@@ -338,7 +338,7 @@ class PrxDialogWindow0(AbsPrxDialogWindow):
 
     def set_window_show(self, pos=None, size=None, exclusive=True):
         # do not show unique
-        utl_gui_qt_core.set_qt_window_show(
+        gui_qt_core.set_qt_window_show(
             self.widget,
             pos,
             size
@@ -410,7 +410,7 @@ class PrxDialogWindow1(AbsPrxDialogWindow):
 
     def set_window_show(self, pos=None, size=None, exclusive=True):
         # do not show unique
-        utl_gui_qt_core.set_qt_window_show(
+        gui_qt_core.set_qt_window_show(
             self.widget,
             pos,
             size,
@@ -472,20 +472,20 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self._stop_button.set_width(80)
         self._stop_button.connect_press_clicked_to(self.set_process_stop)
         #
-        self._process = utl_gui_qt_core.QtCore.QProcess(self.widget)
+        self._process = gui_qt_core.QtCore.QProcess(self.widget)
         self._process_name = None
         self._process_cmd = None
         #
         self._process_running_index = 0
         #
-        self._process_running_timer = utl_gui_qt_core.QtCore.QTimer(self.widget)
+        self._process_running_timer = gui_qt_core.QtCore.QTimer(self.widget)
         #
         self.widget.close_clicked.connect(self.set_process_stop)
 
     def set_content(self, text):
         self._tip_text_browser.set_content(text)
-        utl_gui_qt_core.QtWidgets.QApplication.instance().processEvents(
-            utl_gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
+        gui_qt_core.QtWidgets.QApplication.instance().processEvents(
+            gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
         )
 
     def add_content(self, text):
@@ -518,8 +518,8 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
             self.set_window_title(
                 '{} [ {} ]'.format(self._process_name, 'running {}'.format('.' * (self._process_running_index % 5)))
             )
-            utl_gui_qt_core.QtWidgets.QApplication.instance().processEvents(
-                utl_gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
+            gui_qt_core.QtWidgets.QApplication.instance().processEvents(
+                gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
             )
 
     def _set_process_output_result_update_(self):
@@ -528,8 +528,8 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
                 self._process.readAllStandardOutput().data().decode('utf-8')
             ).rstrip()
         )
-        utl_gui_qt_core.QtWidgets.QApplication.instance().processEvents(
-            utl_gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
+        gui_qt_core.QtWidgets.QApplication.instance().processEvents(
+            gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
         )
 
     def _set_process_state_update_(self, process_state):
@@ -542,8 +542,8 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
             '{} [ {} ]'.format(self._process_name, _[process_state])
         )
         #
-        utl_gui_qt_core.QtWidgets.QApplication.instance().processEvents(
-            utl_gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
+        gui_qt_core.QtWidgets.QApplication.instance().processEvents(
+            gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
         )
 
     def _set_process_exists_update_(self, process_exist_status):
@@ -562,8 +562,8 @@ class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
         self.set_window_title(
             '{} [ {} ]'.format(self._process_name, str(process_error))
         )
-        utl_gui_qt_core.QtWidgets.QApplication.instance().processEvents(
-            utl_gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
+        gui_qt_core.QtWidgets.QApplication.instance().processEvents(
+            gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
         )
 
     def set_process_stop(self):

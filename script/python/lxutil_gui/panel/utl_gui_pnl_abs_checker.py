@@ -1,7 +1,7 @@
 # coding:utf-8
 import six
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 import lxutil_gui.qt.widgets as qt_widgets
 
@@ -147,7 +147,7 @@ class AbsSceneCheckerToolPanel(
                         name=(inspection.loader.label,),
                         item_class=prx_widgets.PrxLabelTreeItem,
                         tool_tip=(inspection.loader.get_gui_descriptions(),),
-                        icon=utl_gui_qt_core.QtUtilMtd.get_qt_icon('inspection')
+                        icon=gui_qt_core.QtUtilMtd.get_qt_icon('inspection')
                     )
                     inspection_gui.set_gui_menu_raw(
                         [

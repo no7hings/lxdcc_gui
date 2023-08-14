@@ -6,7 +6,7 @@ from lxbasic import bsc_core
 
 from lxutil_gui import utl_gui_configure
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_entry_base, _utl_gui_qt_wgt_view_for_tree
 
@@ -130,8 +130,8 @@ class PrxTreeView(
                     'loading {}'.format('.'*(self._loading_show_index % 5))
                 )
             #
-            utl_gui_qt_core.QtWidgets.QApplication.instance().processEvents(
-                utl_gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
+            gui_qt_core.QtWidgets.QApplication.instance().processEvents(
+                gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
             )
 
     def set_filter_start(self):
@@ -147,10 +147,10 @@ class PrxTreeView(
             self.view._scroll_view_to_item_top_(selection_items[-1])
 
     def set_selection_use_single(self):
-        self._qt_view.setSelectionMode(utl_gui_qt_core.QtWidgets.QAbstractItemView.SingleSelection)
+        self._qt_view.setSelectionMode(gui_qt_core.QtWidgets.QAbstractItemView.SingleSelection)
 
     def set_selection_disable(self):
-        self._qt_view.setSelectionMode(utl_gui_qt_core.QtWidgets.QAbstractItemView.NoSelection)
+        self._qt_view.setSelectionMode(gui_qt_core.QtWidgets.QAbstractItemView.NoSelection)
 
     def set_size_policy_height_fixed_mode(self):
         self._qt_view._set_size_policy_height_fixed_mode_()

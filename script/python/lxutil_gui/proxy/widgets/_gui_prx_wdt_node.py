@@ -11,7 +11,7 @@ from lxbasic import bsc_configure
 
 from lxutil_gui import utl_gui_core
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_split
 
@@ -1005,13 +1005,13 @@ class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_label_widget.setFixedWidth(self._name_width)
         qt_splitter_0.addWidget(self._qt_label_widget)
         self._qt_label_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_label_widget)
-        self._qt_label_layout.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignTop)
+        self._qt_label_layout.setAlignment(gui_qt_core.QtCore.Qt.AlignTop)
         self._qt_label_layout.setContentsMargins(2, 0, 2, 0)
         #
         qt_entry_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
         qt_splitter_0.addWidget(qt_entry_widget)
         self._qt_entry_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_entry_widget)
-        self._qt_entry_layout.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignTop)
+        self._qt_entry_layout.setAlignment(gui_qt_core.QtCore.Qt.AlignTop)
         self._qt_entry_layout.setContentsMargins(2, 0, 2, 0)
 
         self._port_stack = self.PORT_STACK_CLS()

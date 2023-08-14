@@ -2,7 +2,7 @@
 # noinspection PyUnresolvedReferences
 from maya import cmds
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 from lxutil_gui.panel import utl_gui_pnl_abs_builder
 
@@ -11,7 +11,7 @@ class AssetBuilderPanel(utl_gui_pnl_abs_builder.AbsAssetBuilderPanel):
     def __init__(self, *args, **kwargs):
         super(AssetBuilderPanel, self).__init__(*args, **kwargs)
 
-    @utl_gui_qt_core.set_prx_window_waiting
+    @gui_qt_core.set_prx_window_waiting
     def _set_build_run_(self):
         import lxmaya.fnc.builders as mya_fnc_builders
         #

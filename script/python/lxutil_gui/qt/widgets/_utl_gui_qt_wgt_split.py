@@ -1,7 +1,7 @@
 # coding=utf-8
 import collections
 
-from lxutil_gui.qt.utl_gui_qt_core import *
+from lxutil_gui.qt.gui_qt_core import *
 
 from lxutil_gui import utl_gui_core
 

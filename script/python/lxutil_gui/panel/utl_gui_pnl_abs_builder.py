@@ -1,7 +1,7 @@
 # coding:utf-8
 from lxbasic import bsc_core
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 from lxutil import utl_configure
 
@@ -107,10 +107,10 @@ class AbsAssetBuilderPanel(
         for i in self._options_prx_node.get_port('build_options').get_children():
             i.set(False)
 
-    @utl_gui_qt_core.set_prx_window_waiting
+    @gui_qt_core.set_prx_window_waiting
     def refresh_all_fnc(self):
         self._set_assets_()
 
-    @utl_gui_qt_core.set_prx_window_waiting
+    @gui_qt_core.set_prx_window_waiting
     def _set_build_run_(self):
         pass

@@ -5,7 +5,7 @@ from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility
 
 import lxbasic.objects as bsc_objects
 
-from lxutil_gui.qt.utl_gui_qt_core import *
+from lxutil_gui.qt.gui_qt_core import *
 
 
 class W(_utl_gui_prx_wdt_utility.PrxBaseWindow):

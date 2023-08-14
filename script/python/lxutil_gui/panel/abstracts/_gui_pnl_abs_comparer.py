@@ -7,7 +7,7 @@ from lxutil import utl_configure, utl_core
 
 from lxutil_gui import utl_gui_configure, utl_gui_core
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 import lxutil_gui.qt.widgets as qt_widgets
 

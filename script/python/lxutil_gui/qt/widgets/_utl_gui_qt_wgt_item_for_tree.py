@@ -1,11 +1,11 @@
 # coding=utf-8
-from lxutil_gui.qt.utl_gui_qt_core import *
+from lxutil_gui.qt.gui_qt_core import *
 
 import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 
 class QtTreeWidgetItem(
@@ -146,7 +146,7 @@ class QtTreeWidgetItem(
     def _set_color_icon_rgb_(self, rgb, column=0):
         self.setIcon(
             column,
-            utl_gui_qt_core.QtUtilMtd.get_color_icon(rgb)
+            gui_qt_core.QtUtilMtd.get_color_icon(rgb)
         )
 
     def _set_icon_text_(self, text, column=0):
@@ -414,7 +414,7 @@ class QtTreeWidgetItem(
 
     def _set_check_state_(self, boolean, column=0):
         self.setCheckState(
-            column, [utl_gui_qt_core.QtCore.Qt.Unchecked, utl_gui_qt_core.QtCore.Qt.Checked][boolean]
+            column, [gui_qt_core.QtCore.Qt.Unchecked, gui_qt_core.QtCore.Qt.Checked][boolean]
         )
 
     def _set_check_state_extra_(self, column=0):
@@ -515,7 +515,7 @@ class QtTreeWidgetItem(
                 _ = bsc_core.auto_encode(text)
             #
             self.setText(column, _)
-            self.setFont(column, utl_gui_qt_core.Font.NAME)
+            self.setFont(column, gui_qt_core.Font.NAME)
 
     def _set_tool_tip_(self, raw, column=0):
         if raw is not None:

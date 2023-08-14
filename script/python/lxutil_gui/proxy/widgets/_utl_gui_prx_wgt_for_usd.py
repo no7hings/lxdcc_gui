@@ -1,7 +1,7 @@
 # coding:utf-8
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_for_usd
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_for_usd
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
@@ -38,10 +38,10 @@ class PrxUsdStageViewProxy(
 class PrxUsdStageView(
     utl_gui_prx_abstract.AbsPrxWidget,
 ):
-    if utl_gui_qt_core.LOAD_INDEX == 0:
-        QT_WIDGET_CLS = _utl_gui_qt_wgt_for_usd.QtUsdStageWidgetProxy
+    if gui_qt_core.LOAD_INDEX == 0:
+        QT_WIDGET_CLS = _gui_qt_wgt_for_usd.QtUsdStageWidgetProxy
     else:
-        QT_WIDGET_CLS = _utl_gui_qt_wgt_for_usd.QtUsdStageWidget
+        QT_WIDGET_CLS = _gui_qt_wgt_for_usd.QtUsdStageWidget
     #
     def __init__(self, *args, **kwargs):
         super(PrxUsdStageView, self).__init__(*args, **kwargs)

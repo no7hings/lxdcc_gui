@@ -1,11 +1,11 @@
 # coding:utf-8
-from ..qt import utl_gui_qt_core
+from ..qt import gui_qt_core
 
 
 def get_gui_proxy_by_class(gui_class):
     lis = []
     # noinspection PyArgumentList
-    widgets = utl_gui_qt_core.QtWidgets.QApplication.topLevelWidgets()
+    widgets = gui_qt_core.QtWidgets.QApplication.topLevelWidgets()
     if widgets:
         for w in widgets:
             if hasattr(w, 'gui_proxy'):

@@ -1302,7 +1302,7 @@ def show_prx_window_auto(prx_window_class, show_kwargs=None, **kwargs):
         prx_window.set_main_window_geometry(QtDccMtd.get_main_window_geometry())
         window = prx_window.widget
         system_tray_icon = QtSystemTrayIcon(window)
-        # a = utl_gui_qt_core.QtWidgets.QAction('show', triggered=window.widget.show)
+        # a = gui_qt_core.QtWidgets.QAction('show', triggered=window.widget.show)
         system_tray_icon.setIcon(window.windowIcon())
         system_tray_icon.show()
         window._set_window_system_tray_icon_(system_tray_icon)

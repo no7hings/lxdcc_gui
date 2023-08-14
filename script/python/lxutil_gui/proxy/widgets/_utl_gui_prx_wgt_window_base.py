@@ -7,7 +7,7 @@ from lxbasic import bsc_core
 
 from lxutil import utl_core
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_chart
 
@@ -49,11 +49,11 @@ class PrxBaseWindow(
         #
         self._log_file_path = None
         #
-        utl_gui_qt_core.set_qt_log_connect_create()
+        gui_qt_core.set_qt_log_connect_create()
         #
-        utl_gui_qt_core.set_qt_progress_connect_create()
+        gui_qt_core.set_qt_progress_connect_create()
         #
-        utl_gui_qt_core.set_log_writer_connect()
+        gui_qt_core.set_log_writer_connect()
 
         self._qt_widget._create_window_shortcut_action_(
             self.show_help, 'F1'
@@ -189,7 +189,7 @@ class PrxBaseWindow(
         return self._qt_central_widget
 
     def add_widget(self, widget):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+        if isinstance(widget, gui_qt_core.QtCore.QObject):
             self._qt_main_layout.addWidget(widget)
         else:
             self._qt_main_layout.addWidget(widget.widget)
@@ -222,7 +222,7 @@ class PrxBaseWindow(
         self.get_layer_widget('window_option_0').clear()
     # loading
     def set_window_loading_show(self):
-        utl_gui_qt_core.set_qt_window_show(
+        gui_qt_core.set_qt_window_show(
             self.widget,
             size=self.get_definition_window_size()
         )
@@ -238,14 +238,14 @@ class PrxBaseWindow(
         #
         self.start_waiting(auto_stop_time=time)
         #
-        self._loading_timer_start = utl_gui_qt_core.QtCore.QTimer(self.widget)
+        self._loading_timer_start = gui_qt_core.QtCore.QTimer(self.widget)
         self._loading_timer_start.singleShot(time, method_fnc_)
 
-        self._loading_show_timer = utl_gui_qt_core.QtCore.QTimer(self.widget)
+        self._loading_show_timer = gui_qt_core.QtCore.QTimer(self.widget)
         self._loading_show_timer.singleShot(int(time*.8), self.set_window_loading_show)
 
     def set_window_loading_end(self):
-        utl_gui_qt_core.set_qt_window_show(
+        gui_qt_core.set_qt_window_show(
             self.widget, size=self.get_definition_window_size()
         )
         #
@@ -346,11 +346,11 @@ class PrxBaseWindow(
                         i.set_window_close()
         #
         if self._is_loading is True:
-            utl_gui_qt_core.set_qt_window_show(
+            gui_qt_core.set_qt_window_show(
                 self.widget, pos, size=(480, 320)
             )
         else:
-            utl_gui_qt_core.set_qt_window_show(
+            gui_qt_core.set_qt_window_show(
                 self.widget, pos, size=self.get_definition_window_size()
             )
 
@@ -453,7 +453,7 @@ class PrxSessionToolWindow(PrxSessionWindow):
 
     def _setup_fnc_(self):
         # if self._qt_widget.parent():
-        #     self._qt_widget.setWindowFlags(utl_gui_qt_core.QtCore.Qt.Tool)
+        #     self._qt_widget.setWindowFlags(gui_qt_core.QtCore.Qt.Tool)
         self.restore_variants()
         #
         self._setup_ssn_tool_()

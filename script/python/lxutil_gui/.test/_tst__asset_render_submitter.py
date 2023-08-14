@@ -1,7 +1,7 @@
 # coding:utf-8
 from lxbasic import bsc_core
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 import lxutil_gui.panel.utl_pnl_widgets as utl_pnl_widgets
 
@@ -16,6 +16,6 @@ hook_option = 'file={}'.format('/l/prod/cgm/work/assets/chr/nn_4y_test/srf/surfa
 # hook_option = 'file={}'.format('/l/prod/cgm/work/assets/chr/nn_4y_test/rig/rigging/maya/scenes/nn_4y_test.rig.rigging.v111.ma')
 # hook_option = 'file={}'.format('/l/prod/cgm/work/assets/chr/nn_4y_test/grm/groom/maya/scenes/nn_4y_test.grm.groom.v103.ma')
 
-utl_gui_qt_core.show_prx_window_auto(
+gui_qt_core.show_prx_window_auto(
     utl_pnl_widgets.AssetRenderSubmitter, hook_option=hook_option
 )

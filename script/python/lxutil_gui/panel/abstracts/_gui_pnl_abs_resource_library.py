@@ -21,7 +21,7 @@ import lxdatabase.scripts as dtb_scripts
 
 from lxutil_gui import utl_gui_configure, utl_gui_core
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 import lxutil_gui.qt.widgets as qt_widgets
 
@@ -29,7 +29,7 @@ import lxutil_gui.proxy.widgets as prx_widgets
 
 import lxsession.commands as ssn_commands
 
-LOAD_INDEX = utl_gui_qt_core.LOAD_INDEX
+LOAD_INDEX = gui_qt_core.LOAD_INDEX
 
 
 class _GuiBaseOpt(object):
@@ -467,7 +467,7 @@ class _GuiTagOpt(_GuiBaseOpt):
 
         self.__thread_stack_index += 1
 
-        t = utl_gui_qt_core.QtBuildThread(self._window.widget)
+        t = gui_qt_core.QtBuildThread(self._window.widget)
         t.set_cache_fnc(cache_fnc_)
         t.built.connect(build_fnc_)
         t.run_finished.connect(post_fnc_)
@@ -633,7 +633,7 @@ class _GuiResourceOpt(_GuiBaseOpt):
                 for i_k, i_v in replace_data.items():
                     xml_data = xml_data.replace('{{{}}}'.format(i_k), i_v)
             #
-            utl_gui_qt_core.QtUtilMtd.set_text_to_clipboard(
+            gui_qt_core.QtUtilMtd.set_text_to_clipboard(
                 xml_data
             )
 
@@ -644,7 +644,7 @@ class _GuiResourceOpt(_GuiBaseOpt):
             name_dict['resource'] = dtb_resource.gui_name
             for i_k, i_v in semantic_tag_filter_data.items():
                 if '/geometry/fbx' in i_v:
-                    i_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_file_ext('.fbx')
+                    i_pixmap = gui_qt_core.QtPixmapMtd.get_by_file_ext('.fbx')
                     pixmaps.append(i_pixmap)
                 #
                 name_dict[bsc_core.DccPathDagOpt(i_k).get_name()] = ', '.join(
@@ -656,8 +656,6 @@ class _GuiResourceOpt(_GuiBaseOpt):
                 ),
                 language=1
             )
-
-            # bsc_core.TimePrettifyMtd.to_prettify_by_time_tag()
             #
             dtb_version_port = self._dtb_opt.get_entity(
                 entity_type=self._dtb_opt.EntityTypes.Attribute,
@@ -895,7 +893,7 @@ class _GuiStgDirectoryOpt(_GuiBaseOpt):
 
         self.__thread_stack_index += 1
 
-        t = utl_gui_qt_core.QtBuildThread(self._window.widget)
+        t = gui_qt_core.QtBuildThread(self._window.widget)
         t.set_cache_fnc(cache_fnc_)
         t.built.connect(build_fnc_)
         t.run_finished.connect(post_fnc_)
@@ -966,7 +964,7 @@ class _GuiStgDirectoryOpt(_GuiBaseOpt):
     def gui_add(self, dtb_resource, dtb_directory, file_type, is_current=False):
         def cache_fnc_():
             def copy_path_fnc_():
-                utl_gui_qt_core.set_text_copy_to_clipboard(location)
+                gui_qt_core.set_text_copy_to_clipboard(location)
 
             def open_folder_fnc():
                 bsc_core.StgDirectoryOpt(location).set_open_in_system()
@@ -1079,7 +1077,7 @@ class _GuiStgFileOpt(_GuiBaseOpt):
                 )
         #
         if images:
-            utl_gui_qt_core.QtUtilMtd.set_text_to_clipboard(
+            gui_qt_core.QtUtilMtd.set_text_to_clipboard(
                 utl_core.Jinja.get_result(
                     'katana/images',
                     dict(
@@ -1091,7 +1089,7 @@ class _GuiStgFileOpt(_GuiBaseOpt):
     def gui_add(self, dtb_resource, dtb_directory, file_type, file_name, file_path):
         def cache_fnc_():
             def copy_path_fnc_():
-                utl_gui_qt_core.set_text_copy_to_clipboard(file_path)
+                gui_qt_core.set_text_copy_to_clipboard(file_path)
 
             def open_folder_fnc():
                 bsc_core.StgFileOpt(file_path).set_open_in_system()
@@ -1125,7 +1123,7 @@ class _GuiStgFileOpt(_GuiBaseOpt):
                 if image_sp_cmd is not None:
                     prx_item_widget.set_image_show_args(image_file_path, image_sp_cmd)
             else:
-                file_icon = utl_gui_qt_core.QtDccMtd.get_qt_file_icon(file_path)
+                file_icon = gui_qt_core.QtDccMtd.get_qt_file_icon(file_path)
                 if file_icon:
                     pixmap = file_icon.pixmap(80, 80)
                     prx_item_widget.set_image(
@@ -1664,7 +1662,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         )
         # use thread
         if self._qt_thread_enable is True:
-            ts = utl_gui_qt_core.QtBuildThreadStack(self.widget)
+            ts = gui_qt_core.QtBuildThreadStack(self.widget)
             ts.run_finished.connect(post_fnc_)
             with self.gui_bustling():
                 for i_dtb_categories in dtb_categories_map:
@@ -1739,7 +1737,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             dtb_types, self.THREAD_STEP
         )
         if self._qt_thread_enable is True:
-            ts = utl_gui_qt_core.QtBuildThreadStack(self.widget)
+            ts = gui_qt_core.QtBuildThreadStack(self.widget)
             self.__running_threads_stacks.append(ts)
             ts.run_finished.connect(post_fnc_)
             with self.gui_bustling():
@@ -1791,7 +1789,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                 dtb_assigns, self.THREAD_STEP
             )
             if self._qt_thread_enable is True:
-                ts = utl_gui_qt_core.QtBuildThreadStack(self.widget)
+                ts = gui_qt_core.QtBuildThreadStack(self.widget)
                 self.__running_threads_stacks.append(ts)
                 ts.run_finished.connect(post_fnc_)
                 for i_dtb_type_assigns in dtb_type_assigns_map:

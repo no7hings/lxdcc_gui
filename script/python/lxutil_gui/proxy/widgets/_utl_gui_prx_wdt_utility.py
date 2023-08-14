@@ -3,7 +3,7 @@ import six
 
 from lxbasic import bsc_core
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize, _utl_gui_qt_wgt_filter, _utl_gui_qt_wgt_item, _gui_qt_wgt_container, _gui_qt_wgt_entry, _gui_qt_wgt_chart, _utl_gui_qt_wgt_window
 
@@ -21,7 +21,7 @@ class PrxHScrollArea(utl_gui_prx_abstract.AbsPrxWidget):
         self._layout = self.widget._layout
 
     def add_widget(self, widget):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+        if isinstance(widget, gui_qt_core.QtCore.QObject):
             self._layout.addWidget(widget)
         else:
             self._layout.addWidget(widget.widget)
@@ -57,7 +57,7 @@ class PrxVScrollArea(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_layout = self._qt_widget._layout
 
     def add_widget(self, widget):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+        if isinstance(widget, gui_qt_core.QtCore.QObject):
             self._qt_layout.addWidget(widget)
         else:
             self._qt_layout.addWidget(widget.widget)
@@ -95,8 +95,8 @@ class PrxLeftExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         super(PrxLeftExpandedGroup, self).__init__(*args, **kwargs)
         #
         self.widget.setSizePolicy(
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum
+            gui_qt_core.QtWidgets.QSizePolicy.Expanding,
+            gui_qt_core.QtWidgets.QSizePolicy.Minimum
         )
 
     def _set_build_(self):
@@ -112,14 +112,14 @@ class PrxLeftExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(0)
-        qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
+        qt_layout_0.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         #
         qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
         qt_layout_0.addWidget(qt_widget_1)
         qt_layout_1 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_1)
         qt_layout_1.setContentsMargins(*[0]*4)
         qt_layout_1.setSpacing(2)
-        qt_layout_1.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
+        qt_layout_1.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         self._qt_view = qt_widget_1
         self._qt_layout_0 = qt_layout_1
         # header
@@ -131,8 +131,8 @@ class PrxLeftExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         self._refresh_expand_()
         #
         self._qt_view.setSizePolicy(
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum,
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding
+            gui_qt_core.QtWidgets.QSizePolicy.Minimum,
+            gui_qt_core.QtWidgets.QSizePolicy.Expanding
         )
 
     def _refresh_expand_(self):
@@ -165,7 +165,7 @@ class PrxLeftExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         return self._qt_head._get_is_expanded_()
 
     def add_widget(self, widget):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+        if isinstance(widget, gui_qt_core.QtCore.QObject):
             self._qt_layout_0.addWidget(widget)
         else:
             self._qt_layout_0.addWidget(widget.widget)
@@ -214,7 +214,7 @@ class PrxRightExpandedGroup(PrxLeftExpandedGroup):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(0)
-        qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
+        qt_layout_0.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         # handle
         self._qt_head = _utl_gui_qt_wgt_item._QtHContractItem()
         qt_layout_0.addWidget(self._qt_head)
@@ -227,15 +227,15 @@ class PrxRightExpandedGroup(PrxLeftExpandedGroup):
         qt_layout_1 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_1)
         qt_layout_1.setContentsMargins(*[0]*4)
         qt_layout_1.setSpacing(2)
-        qt_layout_1.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
+        qt_layout_1.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         self._qt_view = qt_widget_1
         self._qt_layout_0 = qt_layout_1
         #
         self._refresh_expand_()
         #
         self._qt_view.setSizePolicy(
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum,
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding
+            gui_qt_core.QtWidgets.QSizePolicy.Minimum,
+            gui_qt_core.QtWidgets.QSizePolicy.Expanding
         )
 
     def __set_width(self, w):
@@ -254,7 +254,7 @@ class PrxHToolBox(utl_gui_prx_abstract.AbsPrxWidget):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(2)
-        qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
+        qt_layout_0.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         # header
         self._qt_head = _gui_qt_wgt_container.QtHExpandHead2()
         qt_layout_0.addWidget(self._qt_head)
@@ -265,7 +265,7 @@ class PrxHToolBox(utl_gui_prx_abstract.AbsPrxWidget):
         qt_layout_0.addWidget(qt_widget_1)
         qt_layout_1 = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
         qt_layout_1.setContentsMargins(*[0]*4)
-        qt_layout_1.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
+        qt_layout_1.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         #
         self._qt_view = qt_widget_1
         self._qt_layout_0 = qt_layout_1
@@ -299,7 +299,7 @@ class PrxHToolBox(utl_gui_prx_abstract.AbsPrxWidget):
         return self._qt_head._get_is_expanded_()
 
     def add_widget(self, widget):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+        if isinstance(widget, gui_qt_core.QtCore.QObject):
             self._qt_layout_0.addWidget(widget)
         else:
             self._qt_layout_0.addWidget(widget._qt_widget)
@@ -324,13 +324,13 @@ class PrxHToolBox(utl_gui_prx_abstract.AbsPrxWidget):
         # todo: fix size bug
         if mode == 0:
             self._qt_view.setSizePolicy(
-                utl_gui_qt_core.QtWidgets.QSizePolicy.Fixed,
-                utl_gui_qt_core.QtWidgets.QSizePolicy.Fixed
+                gui_qt_core.QtWidgets.QSizePolicy.Fixed,
+                gui_qt_core.QtWidgets.QSizePolicy.Fixed
             )
         elif mode == 1:
             self._qt_view.setSizePolicy(
-                utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
-                utl_gui_qt_core.QtWidgets.QSizePolicy.Fixed
+                gui_qt_core.QtWidgets.QSizePolicy.Expanding,
+                gui_qt_core.QtWidgets.QSizePolicy.Fixed
             )
 
 
@@ -389,7 +389,7 @@ class PrxLayerWidget(utl_gui_prx_abstract.AbsPrxWidget):
         qt_top_layout_1.setSpacing(0)
         self._qt_label_0 = _utl_gui_qt_wgt_utility.QtTextItem()
         self._qt_label_0._set_name_text_option_(
-            utl_gui_qt_core.QtCore.Qt.AlignHCenter | utl_gui_qt_core.QtCore.Qt.AlignVCenter
+            gui_qt_core.QtCore.Qt.AlignHCenter | gui_qt_core.QtCore.Qt.AlignVCenter
         )
         self._qt_label_0._set_name_font_size_(12)
         qt_top_layout_1.addWidget(self._qt_label_0)
@@ -401,7 +401,7 @@ class PrxLayerWidget(utl_gui_prx_abstract.AbsPrxWidget):
         qt_layout_0.addWidget(self._qt_line)
         self._qt_central_widget_0 = _utl_gui_qt_wgt_utility.QtWidget()
         self._qt_central_widget_0.setSizePolicy(
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding, utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding
+            gui_qt_core.QtWidgets.QSizePolicy.Expanding, gui_qt_core.QtWidgets.QSizePolicy.Expanding
         )
         qt_layout_0.addWidget(self._qt_central_widget_0)
         self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_central_widget_0)
@@ -414,7 +414,7 @@ class PrxLayerWidget(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_label_0._set_status_(status)
 
     def add_widget(self, widget):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+        if isinstance(widget, gui_qt_core.QtCore.QObject):
             self._qt_layout_0.addWidget(widget)
         else:
             self._qt_layout_0.addWidget(widget._qt_widget)
@@ -555,7 +555,7 @@ class PrxMenu(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_show(self, boolean=True):
         self.widget.popup(
-            utl_gui_qt_core.QtGui.QCursor().pos()
+            gui_qt_core.QtGui.QCursor().pos()
         )
 
 
@@ -815,7 +815,7 @@ class PrxButtonGroup(utl_gui_prx_abstract.AbsPrxWidget):
         self._layout.setSpacing(4)
 
     def add_widget(self, widget, d=2):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+        if isinstance(widget, gui_qt_core.QtCore.QObject):
             self._layout._add_widget_(widget, d)
         else:
             self._layout._add_widget_(widget.widget, d)
@@ -827,7 +827,7 @@ class PrxFramelessWindow(
     QT_WIDGET_CLS = _utl_gui_qt_wgt_window._QtFramelessWindow
     def __init__(self, *args, **kwargs):
         super(PrxFramelessWindow, self).__init__(*args, **kwargs)
-        self.widget.setWindowFlags(utl_gui_qt_core.QtCore.Qt.Window | utl_gui_qt_core.QtCore.Qt.FramelessWindowHint)
+        self.widget.setWindowFlags(gui_qt_core.QtCore.Qt.Window | gui_qt_core.QtCore.Qt.FramelessWindowHint)
 
 
 class PrxWindow(
@@ -851,7 +851,7 @@ class PrxScreenshotFrame(
 ):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtScreenshotFrame
     def __init__(self, *args, **kwargs):
-        main_window = utl_gui_qt_core.QtDccMtd.get_active_window()
+        main_window = gui_qt_core.QtDccMtd.get_active_window()
         super(PrxScreenshotFrame, self).__init__(main_window, *args, **kwargs)
 
     def set_start(self):

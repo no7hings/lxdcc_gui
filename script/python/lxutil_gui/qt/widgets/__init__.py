@@ -33,8 +33,11 @@ from ._gui_qt_wgt_view_for_tab import *
 
 from ._gui_qt_wgt_view_for_scroll import *
 
-from ._utl_gui_qt_wgt_for_usd import *
+from ._gui_qt_wgt_for_usd import *
 
 from ._gui_qt_wgt_chart import *
 
 from ._utl_gui_qt_wgt_node_graph import *
+
+from ._gui_qt_wgt_for_open_gl import *
+

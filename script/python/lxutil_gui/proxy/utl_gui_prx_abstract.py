@@ -13,7 +13,7 @@ from lxutil import utl_core
 
 from lxutil_gui import utl_gui_configure
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 from lxutil_gui.proxy import utl_gui_prx_core
 
@@ -183,14 +183,14 @@ class AbsPrxWaitingDef(object):
         self._qt_waiting_char = self.QT_WAITING_CHART_CLS(self.widget)
         self._qt_waiting_char.hide()
         #
-        self._auto_stop_timer = utl_gui_qt_core.QtCore.QTimer(self.widget)
+        self._auto_stop_timer = gui_qt_core.QtCore.QTimer(self.widget)
         #
         self.widget._set_size_changed_connect_to_(self._refresh_waiting_draw_)
 
     def start_waiting(self, auto_stop_time=None):
-        self.widget.setCursor(utl_gui_qt_core.QtCore.Qt.BusyCursor)
+        self.widget.setCursor(gui_qt_core.QtCore.Qt.BusyCursor)
         self._qt_waiting_char.show()
-        utl_gui_qt_core.ApplicationOpt().set_process_run_0()
+        gui_qt_core.ApplicationOpt().set_process_run_0()
         self._qt_waiting_char._start_waiting_()
         if isinstance(auto_stop_time, (int, float)):
             self._auto_stop_timer.singleShot(
@@ -199,12 +199,12 @@ class AbsPrxWaitingDef(object):
 
     def update_waiting(self):
         self._qt_waiting_char.update()
-        utl_gui_qt_core.ApplicationOpt().set_process_run_0()
+        gui_qt_core.ApplicationOpt().set_process_run_0()
 
     def stop_waiting(self):
         self.widget.unsetCursor()
         self._qt_waiting_char.hide()
-        utl_gui_qt_core.ApplicationOpt().set_process_run_0()
+        gui_qt_core.ApplicationOpt().set_process_run_0()
         self._qt_waiting_char._stop_waiting_()
 
     def _refresh_waiting_draw_(self):
@@ -246,11 +246,11 @@ class AbsPrxWindow(AbsPrx):
             pass
             # print kwargs['parent']
         else:
-            main_window = utl_gui_qt_core.QtDccMtd.get_qt_main_window()
+            main_window = gui_qt_core.QtDccMtd.get_qt_main_window()
             # print main_window.font()
             if main_window != self.widget:
                 self.widget.setParent(
-                    main_window, utl_gui_qt_core.QtCore.Qt.Window
+                    main_window, gui_qt_core.QtCore.Qt.Window
                 )
         #
         self._main_window_geometry = None
@@ -258,7 +258,7 @@ class AbsPrxWindow(AbsPrx):
         self._definition_window_size = 480, 320
         #
         self._qt_widget.setBaseSize(
-            utl_gui_qt_core.QtCore.QSize(*self._definition_window_size)
+            gui_qt_core.QtCore.QSize(*self._definition_window_size)
         )
         #
         self._window_title = None
@@ -286,7 +286,7 @@ class AbsPrxWindow(AbsPrx):
         if size is not None:
             self._definition_window_size = size
             self._qt_widget.setBaseSize(
-                utl_gui_qt_core.QtCore.QSize(*self._definition_window_size)
+                gui_qt_core.QtCore.QSize(*self._definition_window_size)
             )
 
     def set_window_show(self, pos=None, size=None, exclusive=True):
@@ -303,7 +303,7 @@ class AbsPrxWindow(AbsPrx):
                         )
                         i.set_window_close()
         #
-        utl_gui_qt_core.set_qt_window_show(self._qt_widget, pos, size)
+        gui_qt_core.set_qt_window_show(self._qt_widget, pos, size)
 
     def set_close_method(self, method):
         self._close_methods.append(method)

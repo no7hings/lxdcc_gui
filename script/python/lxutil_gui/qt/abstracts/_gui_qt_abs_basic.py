@@ -10,7 +10,7 @@ import urllib
 from contextlib import contextmanager
 
 import six
-from lxutil_gui.qt.utl_gui_qt_core import *
+from lxutil_gui.qt.gui_qt_core import *
 
 
 class AbsQtWidgetBaseDef(object):

@@ -7,7 +7,7 @@ import lxutil_gui.proxy.widgets as prx_widgets
 
 from lxutil import utl_core
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
@@ -444,7 +444,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
             button.set_status(bsc_configure.Status.Started)
             button.set_initialization(c, bsc_configure.Status.Started)
 
-            t = utl_gui_qt_core.QtMethodThread(self.widget)
+            t = gui_qt_core.QtMethodThread(self.widget)
             t.append_method(
                 run_fnc_
             )
@@ -914,7 +914,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             button.set_status(bsc_configure.Status.Started)
             button.set_initialization(c, bsc_configure.Status.Started)
 
-            t = utl_gui_qt_core.QtMethodThread(self.widget)
+            t = gui_qt_core.QtMethodThread(self.widget)
             t.append_method(
                 run_fnc_
             )

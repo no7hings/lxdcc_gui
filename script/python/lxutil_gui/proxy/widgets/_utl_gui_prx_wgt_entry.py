@@ -19,7 +19,7 @@ import lxutil.dcc.dcc_objects as utl_dcc_objects
 
 from lxutil_gui import utl_gui_core
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_item, _gui_qt_wgt_entry
 
@@ -39,7 +39,7 @@ class _PrxPortInfo(utl_gui_prx_abstract.AbsPrxWidget):
 
     def __init__(self, *args, **kwargs):
         super(_PrxPortInfo, self).__init__(*args, **kwargs)
-        # self.widget.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignRight | utl_gui_qt_core.QtCore.Qt.AlignVCenter)
+        # self.widget.setAlignment(gui_qt_core.QtCore.Qt.AlignRight | gui_qt_core.QtCore.Qt.AlignVCenter)
         self.widget.setMaximumHeight(AttrConfig.PRX_PORT_HEIGHT)
         self.widget.setMinimumHeight(AttrConfig.PRX_PORT_HEIGHT)
         self.widget.setMaximumWidth(AttrConfig.PRX_PORT_HEIGHT)
@@ -57,7 +57,7 @@ class _PrxPortStatus(utl_gui_prx_abstract.AbsPrxWidget):
 
     def __init__(self, *args, **kwargs):
         super(_PrxPortStatus, self).__init__(*args, **kwargs)
-        # self.widget.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignRight | utl_gui_qt_core.QtCore.Qt.AlignVCenter)
+        # self.widget.setAlignment(gui_qt_core.QtCore.Qt.AlignRight | gui_qt_core.QtCore.Qt.AlignVCenter)
         self.widget.setMaximumHeight(AttrConfig.PRX_PORT_HEIGHT)
         self.widget.setMinimumHeight(AttrConfig.PRX_PORT_HEIGHT)
         self.widget.setMaximumWidth(AttrConfig.PRX_PORT_HEIGHT)
@@ -76,7 +76,7 @@ class _PrxPortLabel(utl_gui_prx_abstract.AbsPrxWidget):
 
     def __init__(self, *args, **kwargs):
         super(_PrxPortLabel, self).__init__(*args, **kwargs)
-        # self.widget.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignRight | utl_gui_qt_core.QtCore.Qt.AlignVCenter)
+        # self.widget.setAlignment(gui_qt_core.QtCore.Qt.AlignRight | gui_qt_core.QtCore.Qt.AlignVCenter)
         self.widget.setMaximumHeight(AttrConfig.PRX_PORT_HEIGHT)
         self.widget.setMinimumHeight(AttrConfig.PRX_PORT_HEIGHT)
         # self._qt_widget._set_name_align_(utl_gui_configure.AlignRegion.Top)
@@ -119,7 +119,7 @@ class AbsPrxTypeQtEntry(utl_gui_prx_abstract.AbsPrxWidget):
         self._use_as_storage = False
 
     def add_button(self, widget):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+        if isinstance(widget, gui_qt_core.QtCore.QObject):
             self._qt_layout.addWidget(widget)
         else:
             self._qt_layout.addWidget(widget.widget)
@@ -307,7 +307,7 @@ class PrxFileOpenEntry(_PrxStgObjEntry):
         )
 
     def _set_open_or_save_(self):
-        f = utl_gui_qt_core.QtWidgets.QFileDialog()
+        f = gui_qt_core.QtWidgets.QFileDialog()
         options = f.Options()
         # options |= f.DontUseNativeDialog
         s = f.getOpenFileName(
@@ -346,7 +346,7 @@ class PrxFileSaveEntry(_PrxStgObjEntry):
         )
 
     def _set_open_or_save_(self):
-        f = utl_gui_qt_core.QtWidgets.QFileDialog()
+        f = gui_qt_core.QtWidgets.QFileDialog()
         options = f.Options()
         # options |= f.DontUseNativeDialog
         s = f.getSaveFileName(
@@ -385,7 +385,7 @@ class PrxDirectoryOpenEntry(_PrxStgObjEntry):
         )
 
     def _set_open_or_save_(self):
-        f = utl_gui_qt_core.QtWidgets.QFileDialog()
+        f = gui_qt_core.QtWidgets.QFileDialog()
         options = f.Options()
         # options |= f.DontUseNativeDialog
         s = f.getExistingDirectory(
@@ -428,7 +428,7 @@ class PrxDirectorySaveEntry(_PrxStgObjEntry):
         )
 
     def _set_open_or_save_(self):
-        f = utl_gui_qt_core.QtWidgets.QFileDialog()
+        f = gui_qt_core.QtWidgets.QFileDialog()
         options = f.Options()
         # options |= f.DontUseNativeDialog
         s = f.getExistingDirectory(
@@ -600,7 +600,7 @@ class PrxEntryAsDirectoriesOpen(_PrxStgObjsEntry):
         self._qt_entry_widget._set_value_entry_choose_visible_(boolean)
 
     def open_with_dialog_fnc(self):
-        f = utl_gui_qt_core.QtWidgets.QFileDialog()
+        f = gui_qt_core.QtWidgets.QFileDialog()
         options = f.Options()
         # options |= f.DontUseNativeDialog
         s = f.getExistingDirectory(
@@ -645,7 +645,7 @@ class PrxEntryAsFilesOpen(_PrxStgObjsEntry):
         self._qt_entry_widget._value_entry._set_use_as_file_multiply_(True)
 
     def open_with_dialog_fnc(self):
-        f = utl_gui_qt_core.QtWidgets.QFileDialog()
+        f = gui_qt_core.QtWidgets.QFileDialog()
         # options |= f.DontUseNativeDialog
         s = f.getOpenFileNames(
             self.widget,
@@ -703,7 +703,7 @@ class PrxMediasOpenEntry(PrxEntryAsFilesOpen):
         self.update_history()
 
     def _set_create_(self):
-        active_window = utl_gui_qt_core.get_active_window()
+        active_window = gui_qt_core.get_active_window()
         w = _utl_gui_prx_wdt_utility.PrxScreenshotFrame()
         w.set_started_connect_to(active_window.hide)
         w.set_start()
@@ -1236,7 +1236,7 @@ class _PrxEntryAsConstant(AbsPrxTypeQtEntry):
 
     def __init__(self, *args, **kwargs):
         super(_PrxEntryAsConstant, self).__init__(*args, **kwargs)
-        # self._qt_entry_widget.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft | utl_gui_qt_core.QtCore.Qt.AlignVCenter)
+        # self._qt_entry_widget.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft | gui_qt_core.QtCore.Qt.AlignVCenter)
         #
         self.widget.setFocusProxy(self._qt_entry_widget)
 

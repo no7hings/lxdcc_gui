@@ -185,7 +185,7 @@ class AbsPnlAppKit(prx_widgets.PrxSessionWindow):
         if _:
             packages = _.split(' ')
 
-            from lxutil_gui.qt import utl_gui_qt_core
+            from lxutil_gui.qt import gui_qt_core
 
             import lxutil_gui.panel.utl_pnl_widgets as utl_pnl_widgets
 
@@ -195,7 +195,7 @@ class AbsPnlAppKit(prx_widgets.PrxSessionWindow):
                 )
             )
 
-            utl_gui_qt_core.show_prx_window_auto(
+            gui_qt_core.show_prx_window_auto(
                 utl_pnl_widgets.RezGraph, hook_option=_option_opt.to_string()
             )
 

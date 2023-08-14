@@ -1,7 +1,7 @@
 # coding:utf-8
 from lxbasic import bsc_core
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 
 class AbsScpGuiCmdBase(object):
@@ -53,7 +53,7 @@ class AbsScpGuiCmdBase(object):
             button.set_status(bsc_core.TrdCmdProcess.Status.Started)
             button.set_initialization(c, bsc_core.TrdCmdProcess.Status.Started)
 
-            q_t = utl_gui_qt_core.QtMethodThread(self._window.widget)
+            q_t = gui_qt_core.QtMethodThread(self._window.widget)
             q_t.append_method(
                 run_fnc_
             )

@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_container, _gui_qt_wgt_view_for_scroll
 
@@ -15,7 +15,7 @@ class AbsPrxToolGroup(utl_gui_prx_abstract.AbsPrxWidget):
 
     def _set_build_(self):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
-        qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignTop)
+        qt_layout_0.setAlignment(gui_qt_core.QtCore.Qt.AlignTop)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
         qt_layout_0.setSpacing(2)
         # header
@@ -81,7 +81,7 @@ class AbsPrxToolGroup(utl_gui_prx_abstract.AbsPrxWidget):
         return self._qt_head._get_is_expanded_()
 
     def add_widget(self, widget):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+        if isinstance(widget, gui_qt_core.QtCore.QObject):
             qt_widget = widget
             self._layout.addWidget(widget)
         else:
@@ -93,25 +93,25 @@ class AbsPrxToolGroup(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_layout_alignment_to_top(self):
         self._layout.setAlignment(
-            utl_gui_qt_core.QtCore.Qt.AlignTop
+            gui_qt_core.QtCore.Qt.AlignTop
         )
 
     def set_size_mode(self, mode):
         if mode == 0:
             self._qt_view.setSizePolicy(
-                utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
-                utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding
+                gui_qt_core.QtWidgets.QSizePolicy.Expanding,
+                gui_qt_core.QtWidgets.QSizePolicy.Expanding
             )
         elif mode == 1:
             self._qt_view.setSizePolicy(
-                utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
-                utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum
+                gui_qt_core.QtWidgets.QSizePolicy.Expanding,
+                gui_qt_core.QtWidgets.QSizePolicy.Minimum
             )
 
     def set_height_match_to_minimum(self):
         self._qt_view.setSizePolicy(
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum
+            gui_qt_core.QtWidgets.QSizePolicy.Expanding,
+            gui_qt_core.QtWidgets.QSizePolicy.Minimum
         )
 
     def connect_expand_changed_to(self, fnc):
@@ -158,8 +158,8 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
         super(PrxHToolBar, self).__init__(*args, **kwargs)
         #
         self.widget.setSizePolicy(
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum
+            gui_qt_core.QtWidgets.QSizePolicy.Expanding,
+            gui_qt_core.QtWidgets.QSizePolicy.Minimum
         )
 
     def _set_build_(self):
@@ -177,15 +177,15 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
         #
         qt_widget_1 = _gui_qt_wgt_view_for_scroll.QtHScrollView()
         qt_layout_0.addWidget(qt_widget_1)
-        # qt_layout_1.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
+        # qt_layout_1.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         self._qt_view = qt_widget_1
         self._qt_layout_0 = qt_widget_1._get_layout_()
         #
         self._refresh_expand_()
         #
         self._qt_view.setSizePolicy(
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding,
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum
+            gui_qt_core.QtWidgets.QSizePolicy.Expanding,
+            gui_qt_core.QtWidgets.QSizePolicy.Minimum
         )
 
     def _refresh_expand_(self):
@@ -218,13 +218,13 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
         return self._qt_head._get_is_expanded_()
 
     def add_widget(self, widget):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+        if isinstance(widget, gui_qt_core.QtCore.QObject):
             self._qt_layout_0.addWidget(widget)
         else:
             self._qt_layout_0.addWidget(widget.widget)
 
     def insert_widget_at(self, index, widget):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+        if isinstance(widget, gui_qt_core.QtCore.QObject):
             self._qt_layout_0.insertWidget(index, widget)
         else:
             self._qt_layout_0.insertWidget(index, widget.widget)
@@ -247,10 +247,10 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_head._set_expand_direction_(self._qt_head.ExpandDirection.BottomToTop)
 
     def set_alignment_center(self):
-        self._qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignHCenter)
+        self._qt_layout_0.setAlignment(gui_qt_core.QtCore.Qt.AlignHCenter)
 
     def set_left_alignment_mode(self):
-        self._qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
+        self._qt_layout_0.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
 
     def set_border_radius(self, radius):
         self._qt_head._set_frame_border_radius_(radius)
@@ -262,8 +262,8 @@ class PrxVToolBar(PrxHToolBar):
         super(PrxVToolBar, self).__init__(*args, **kwargs)
         #
         self.widget.setSizePolicy(
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum,
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding
+            gui_qt_core.QtWidgets.QSizePolicy.Minimum,
+            gui_qt_core.QtWidgets.QSizePolicy.Expanding
         )
 
     def _set_build_(self):
@@ -273,7 +273,7 @@ class PrxVToolBar(PrxHToolBar):
         qt_layout_0 = _utl_gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(2)
-        qt_layout_0.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
+        qt_layout_0.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         # header
         self._qt_head = _gui_qt_wgt_container.QtVExpandHead1()
         qt_layout_0.addWidget(self._qt_head)
@@ -284,7 +284,7 @@ class PrxVToolBar(PrxHToolBar):
         qt_layout_0.addWidget(qt_widget_1)
         qt_layout_1 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_1)
         qt_layout_1.setContentsMargins(0, 0, 0, 0)
-        qt_layout_1.setAlignment(utl_gui_qt_core.QtCore.Qt.AlignLeft)
+        qt_layout_1.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         self._qt_layout_0 = qt_layout_1
         #
         self._qt_view = qt_widget_1
@@ -292,8 +292,8 @@ class PrxVToolBar(PrxHToolBar):
         self._refresh_expand_()
         #
         self._qt_view.setSizePolicy(
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Minimum,
-            utl_gui_qt_core.QtWidgets.QSizePolicy.Expanding
+            gui_qt_core.QtWidgets.QSizePolicy.Minimum,
+            gui_qt_core.QtWidgets.QSizePolicy.Expanding
         )
 
     def _refresh_expand_(self):

@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_split, _utl_gui_qt_wgt_view, _gui_qt_wgt_view_for_tab
 
@@ -12,7 +12,7 @@ class PrxHSplitter(utl_gui_prx_abstract.AbsPrxWidget):
         super(PrxHSplitter, self).__init__(*args, **kwargs)
 
     def add_widget(self, widget):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+        if isinstance(widget, gui_qt_core.QtCore.QObject):
             qt_widget = widget
         else:
             qt_widget = widget.widget
@@ -62,7 +62,7 @@ class PrxTabView(utl_gui_prx_abstract.AbsPrxWidget):
         super(PrxTabView, self).__init__(*args, **kwargs)
 
     def create_item(self, widget, *args, **kwargs):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+        if isinstance(widget, gui_qt_core.QtCore.QObject):
             qt_widget = widget
         else:
             qt_widget = widget.widget
@@ -100,7 +100,7 @@ class PrxGridLayoutView(utl_gui_prx_abstract.AbsPrxWidget):
         super(PrxGridLayoutView, self).__init__(*args, **kwargs)
 
     def add_item(self, widget):
-        if isinstance(widget, utl_gui_qt_core.QtCore.QObject):
+        if isinstance(widget, gui_qt_core.QtCore.QObject):
             self._qt_widget._add_item_(widget)
         else:
             self._qt_widget._add_item_(widget.widget)

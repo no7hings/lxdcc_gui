@@ -23,7 +23,7 @@ import lxresolver.commands as rsv_commands
 
 from lxutil_gui import utl_gui_core
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 import lxutil_gui.qt.widgets as qt_widgets
 
@@ -427,7 +427,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         rsv_resource_groups = rsv_project.get_rsv_resource_groups(**self._rsv_filter_opt.value)
         #
         if self._qt_thread_enable is True:
-            ts = utl_gui_qt_core.QtBuildThreadStack(self.widget)
+            ts = gui_qt_core.QtBuildThreadStack(self.widget)
             ts.run_finished.connect(post_fnc_)
             for i_rsv_resource_group in rsv_resource_groups:
                 ts.register(
@@ -486,7 +486,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         def quit_fnc_():
             t.set_quit()
         #
-        t = utl_gui_qt_core.QtBuildThread(self.widget)
+        t = gui_qt_core.QtBuildThread(self.widget)
         t.set_cache_fnc(
             functools.partial(self.__gui_cache_fnc_for_tasks_by_resource_, rsv_resource)
         )
@@ -565,7 +565,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         )
         #
         if self._qt_thread_enable is True:
-            ts = utl_gui_qt_core.QtBuildThreadStack(self.widget)
+            ts = gui_qt_core.QtBuildThreadStack(self.widget)
             self.__running_threads_stacks.append(ts)
             ts.run_finished.connect(post_fnc_)
             for i_rsv_entities in rsv_entities_map:
@@ -613,7 +613,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         )
 
         if self._qt_thread_enable is True:
-            ts = utl_gui_qt_core.QtBuildThreadStack(self.widget)
+            ts = gui_qt_core.QtBuildThreadStack(self.widget)
             self.__running_threads_stacks.append(ts)
             ts.run_finished.connect(post_fnc_)
             for i_rsv_entities in rsv_entities_map:
@@ -758,7 +758,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             i_file_path = i_rsv_unit.get_result()
             i_rsv_properties = i_rsv_unit.get_properties_by_result(i_file_path)
             i_rsv_unit_file = utl_dcc_objects.OsFile(i_file_path)
-            i_pixmap = utl_gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
+            i_pixmap = gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
                 i_rsv_unit_file.ext,
                 tag=i_rsv_properties.get('workspace_key'),
                 frame_size=self.ITEM_ICON_SIZE

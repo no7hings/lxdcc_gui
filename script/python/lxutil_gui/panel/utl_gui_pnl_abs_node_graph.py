@@ -9,7 +9,7 @@ import lxutil_gui.proxy.widgets as prx_widgets
 
 from lxutil import utl_core
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
@@ -228,8 +228,8 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
 
     def _set_graph_save_(self):
         size = self._node_graph.widget.size()
-        p = utl_gui_qt_core.QtGui.QPixmap(size)
-        p.fill(utl_gui_qt_core.QtCore.Qt.transparent)
+        p = gui_qt_core.QtGui.QPixmap(size)
+        p.fill(gui_qt_core.QtCore.Qt.transparent)
         self._node_graph.widget.render(
             p
         )
@@ -387,7 +387,7 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
         rsv_tags = rsv_project.get_rsv_resource_groups(**self._rsv_filter_opt.value)
         #
         if self._qt_thread_enable is True:
-            ts = utl_gui_qt_core.QtBuildThreadStack(self.widget)
+            ts = gui_qt_core.QtBuildThreadStack(self.widget)
             ts.run_finished.connect(post_fnc_)
             for i_rsv_tag in rsv_tags:
                 ts.register(

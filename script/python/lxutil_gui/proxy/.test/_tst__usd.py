@@ -9,7 +9,7 @@ import os
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 
 class W(prx_widgets.PrxBaseWindow):
@@ -133,5 +133,5 @@ if __name__ == '__main__':
         )
     ).set_run()
 
-    utl_gui_qt_core.show_prx_window_auto(W)
+    gui_qt_core.show_prx_window_auto(W)
 

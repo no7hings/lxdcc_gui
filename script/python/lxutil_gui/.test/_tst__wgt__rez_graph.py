@@ -7,7 +7,7 @@ import lxutil_gui.proxy.widgets as prx_widgets
 
 from lxutil import utl_core
 
-from lxutil_gui.qt import utl_gui_qt_core
+from lxutil_gui.qt import gui_qt_core
 
 import lxuniverse.objects as unr_objects
 
@@ -147,8 +147,8 @@ class W(prx_widgets.PrxBaseWindow):
 
     def _set_graph_save_(self):
         size = self._g.widget.size()
-        p = utl_gui_qt_core.QtGui.QPixmap(size)
-        p.fill(utl_gui_qt_core.QtCore.Qt.transparent)
+        p = gui_qt_core.QtGui.QPixmap(size)
+        p.fill(gui_qt_core.QtCore.Qt.transparent)
         self._g.widget.render(
             p
         )

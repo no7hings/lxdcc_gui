@@ -7,7 +7,7 @@ from lxutil import utl_configure
 
 from lxusd import usd_core
 
-from lxutil_gui.qt.utl_gui_qt_core import *
+from lxutil_gui.qt.gui_qt_core import *
 
 import lxutil_gui.qt.abstracts as gui_qt_abstract
 
