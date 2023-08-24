@@ -292,7 +292,7 @@ class AbsPnlAppKit(prx_widgets.PrxSessionWindow):
         sa_2 = prx_widgets.PrxVScrollArea()
         layer_widget.add_widget(sa_2)
         self._create_option_prx_node = prx_widgets.PrxNode_('options')
-        self._create_option_prx_node.create_ports_by_configure(
+        self._create_option_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.create_options'),
         )
         sa_2.add_widget(self._create_option_prx_node.widget)
@@ -319,7 +319,7 @@ class AbsPnlAppKit(prx_widgets.PrxSessionWindow):
         sa_2 = prx_widgets.PrxVScrollArea()
         layer_widget.add_widget(sa_2)
         self._modify_option_prx_node = prx_widgets.PrxNode_('options')
-        self._modify_option_prx_node.create_ports_by_configure(
+        self._modify_option_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.modify_options'),
         )
         sa_2.add_widget(self._modify_option_prx_node.widget)

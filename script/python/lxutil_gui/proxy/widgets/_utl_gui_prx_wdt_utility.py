@@ -5,7 +5,8 @@ from lxbasic import bsc_core
 
 from lxutil_gui.qt import gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize, _utl_gui_qt_wgt_filter, _utl_gui_qt_wgt_item, _gui_qt_wgt_container, _gui_qt_wgt_entry, _gui_qt_wgt_chart, _utl_gui_qt_wgt_window
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize, _utl_gui_qt_wgt_filter, \
+    _utl_gui_qt_wgt_item, _gui_qt_wgt_container, _gui_qt_wgt_entry, _gui_qt_wgt_chart, _utl_gui_qt_wgt_window
 
 from lxutil_gui.proxy import utl_gui_prx_configure, utl_gui_prx_abstract
 
@@ -16,6 +17,7 @@ from lxbasic import bsc_configure
 
 class PrxHScrollArea(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtHScrollArea
+
     def __init__(self, *args, **kwargs):
         super(PrxHScrollArea, self).__init__(*args, **kwargs)
         self._layout = self.widget._layout
@@ -43,6 +45,7 @@ class PrxHScrollArea(utl_gui_prx_abstract.AbsPrxWidget):
                             spacer = i_item.spacerItem()
                             if spacer:
                                 spacer.deleteLater()
+
         #
         rcs_fnc_(self._layout)
 
@@ -52,6 +55,7 @@ class PrxHScrollArea(utl_gui_prx_abstract.AbsPrxWidget):
 
 class PrxVScrollArea(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtVScrollArea
+
     def __init__(self, *args, **kwargs):
         super(PrxVScrollArea, self).__init__(*args, **kwargs)
         self._qt_layout = self._qt_widget._layout
@@ -79,6 +83,7 @@ class PrxVScrollArea(utl_gui_prx_abstract.AbsPrxWidget):
                             spacer = i_item.spacerItem()
                             if spacer:
                                 spacer.deleteLater()
+
         #
         rcs_fnc_(self._qt_layout)
 
@@ -91,6 +96,7 @@ class PrxVScrollArea(utl_gui_prx_abstract.AbsPrxWidget):
 
 class PrxLeftExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_resize.QtHResizeFrame
+
     def __init__(self, *args, **kwargs):
         super(PrxLeftExpandedGroup, self).__init__(*args, **kwargs)
         #
@@ -244,6 +250,7 @@ class PrxRightExpandedGroup(PrxLeftExpandedGroup):
 
 class PrxHToolBox(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtWidget
+
     def __init__(self, *args, **kwargs):
         super(PrxHToolBox, self).__init__(*args, **kwargs)
 
@@ -336,6 +343,7 @@ class PrxHToolBox(utl_gui_prx_abstract.AbsPrxWidget):
 
 class PrxHToolBox_(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _gui_qt_wgt_container.QtHToolBox
+
     def __init__(self, *args, **kwargs):
         super(PrxHToolBox_, self).__init__(*args, **kwargs)
 
@@ -348,12 +356,14 @@ class PrxHToolBox_(utl_gui_prx_abstract.AbsPrxWidget):
 
 class PrxVToolBox_(PrxHToolBox_):
     QT_WIDGET_CLS = _gui_qt_wgt_container.QtVToolBox
+
     def __init__(self, *args, **kwargs):
         super(PrxVToolBox_, self).__init__(*args, **kwargs)
 
 
 class Window(utl_gui_prx_abstract.AbsPrxWindow):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtMainWindow
+
     def __init__(self, *args, **kwargs):
         super(Window, self).__init__(*args, **kwargs)
 
@@ -371,6 +381,7 @@ class Window(utl_gui_prx_abstract.AbsPrxWindow):
 
 class PrxLayerWidget(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+
     def __init__(self, *args, **kwargs):
         super(PrxLayerWidget, self).__init__(*args, **kwargs)
 
@@ -389,7 +400,7 @@ class PrxLayerWidget(utl_gui_prx_abstract.AbsPrxWidget):
         qt_top_layout_1.setSpacing(0)
         self._qt_label_0 = _utl_gui_qt_wgt_utility.QtTextItem()
         self._qt_label_0._set_name_text_option_(
-            gui_qt_core.QtCore.Qt.AlignHCenter | gui_qt_core.QtCore.Qt.AlignVCenter
+            gui_qt_core.QtCore.Qt.AlignHCenter|gui_qt_core.QtCore.Qt.AlignVCenter
         )
         self._qt_label_0._set_name_font_size_(12)
         qt_top_layout_1.addWidget(self._qt_label_0)
@@ -421,6 +432,7 @@ class PrxLayerWidget(utl_gui_prx_abstract.AbsPrxWidget):
 
     def connect_close_to(self, method):
         self._button_0.widget.clicked.connect(method)
+
     @property
     def central_layout(self):
         return self._qt_layout_0
@@ -443,6 +455,7 @@ class PrxLayer(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
     #
     PRX_LAYER_WIDGET_CLS = PrxLayerWidget
+
     def __init__(self, *args, **kwargs):
         super(PrxLayer, self).__init__(*args, **kwargs)
         self._layer_widget = None
@@ -463,6 +476,7 @@ class PrxLayer(utl_gui_prx_abstract.AbsPrxWidget):
 
 class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtWidget
+
     def __init__(self, *args, **kwargs):
         super(PrxTextBrowser, self).__init__(*args, **kwargs)
 
@@ -476,6 +490,7 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
     def set_markdown_file_open(self, file_path):
         if file_path:
             import markdown
+
             with open(file_path) as f:
                 raw = f.read()
                 raw = raw.decode('utf-8')
@@ -538,6 +553,7 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
 
 class PrxMenu(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtMenu
+
     def __init__(self, *args, **kwargs):
         super(PrxMenu, self).__init__(*args, **kwargs)
 
@@ -561,6 +577,7 @@ class PrxMenu(utl_gui_prx_abstract.AbsPrxWidget):
 
 class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtIconPressButton
+
     def __init__(self, *args, **kwargs):
         super(PrxIconPressItem, self).__init__(*args, **kwargs)
         self.widget.setFixedSize(20, 20)
@@ -611,6 +628,7 @@ class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
 
 class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_item.QtPressItem
+
     def __init__(self, *args, **kwargs):
         super(PrxPressItem, self).__init__(*args, **kwargs)
         self.widget.setFixedHeight(20)
@@ -698,6 +716,7 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
 
 class PrxCheckItem(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_item.QtCheckItem
+
     def __init__(self, *args, **kwargs):
         super(PrxCheckItem, self).__init__(*args, **kwargs)
         self.widget.setMaximumHeight(20)
@@ -712,6 +731,7 @@ class PrxCheckItem(utl_gui_prx_abstract.AbsPrxWidget):
 
 class PrxEnableItem(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtIconEnableButton
+
     def __init__(self, *args, **kwargs):
         super(PrxEnableItem, self).__init__(*args, **kwargs)
         self._qt_widget._set_size_(20, 20)
@@ -754,6 +774,7 @@ class PrxEnableItem(utl_gui_prx_abstract.AbsPrxWidget):
 
 class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_filter.QtFilterBar
+
     def __init__(self, *args, **kwargs):
         super(PrxFilterBar, self).__init__(*args, **kwargs)
 
@@ -805,6 +826,7 @@ class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):
 
 class PrxButtonGroup(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtLine
+
     def __init__(self, *args, **kwargs):
         super(PrxButtonGroup, self).__init__(*args, **kwargs)
         # self._qt_widget._set_line_draw_enable_(True)
@@ -825,15 +847,17 @@ class PrxFramelessWindow(
     utl_gui_prx_abstract.AbsPrxWindow,
 ):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_window._QtFramelessWindow
+
     def __init__(self, *args, **kwargs):
         super(PrxFramelessWindow, self).__init__(*args, **kwargs)
-        self.widget.setWindowFlags(gui_qt_core.QtCore.Qt.Window | gui_qt_core.QtCore.Qt.FramelessWindowHint)
+        self.widget.setWindowFlags(gui_qt_core.QtCore.Qt.Window|gui_qt_core.QtCore.Qt.FramelessWindowHint)
 
 
 class PrxWindow(
     utl_gui_prx_abstract.AbsPrxWindow,
 ):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_window._QtWindow
+
     def __init__(self, *args, **kwargs):
         super(PrxWindow, self).__init__(*args, **kwargs)
 
@@ -842,6 +866,7 @@ class PrxWindow_(
     utl_gui_prx_abstract.AbsPrxWindow,
 ):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtMainWindow
+
     def __init__(self, *args, **kwargs):
         super(PrxWindow_, self).__init__(*args, **kwargs)
 
@@ -850,6 +875,7 @@ class PrxScreenshotFrame(
     utl_gui_prx_abstract.AbsPrxWidget
 ):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtScreenshotFrame
+
     def __init__(self, *args, **kwargs):
         main_window = gui_qt_core.QtDccMtd.get_active_window()
         super(PrxScreenshotFrame, self).__init__(main_window, *args, **kwargs)
@@ -865,6 +891,7 @@ class PrxScreenshotFrame(
 
     def set_accepted_connect_to(self, fnc):
         self._qt_widget.screenshot_accepted.connect(fnc)
+
     @classmethod
     def set_save_to(cls, geometry, file_path):
         cls.QT_WIDGET_CLS._set_screenshot_save_to_(geometry, file_path)

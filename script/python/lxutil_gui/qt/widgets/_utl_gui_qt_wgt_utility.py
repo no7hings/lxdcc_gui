@@ -303,14 +303,17 @@ class QtMenu(QtWidgets.QMenu):
         self.setStyleSheet(
             utl_gui_core.QtStyleMtd.get('QMenu')
         )
+
     @classmethod
     def _set_cmd_run_(cls, cmd_str):
         exec cmd_str
+
     @classmethod
     def _create_action_(cls, qt_menu, action_args):
         def set_disable_fnc_(qt_widget_action_):
             qt_widget_action_.setFont(Font.disable)
             qt_widget_action_.setDisabled(True)
+
         #
         if action_args:
             if len(action_args) == 1:
@@ -318,7 +321,7 @@ class QtMenu(QtWidgets.QMenu):
                 s.setFont(Font.SEPARATOR)
                 s.setText(action_args[0])
             elif len(action_args) >= 3:
-                name, icon_name, method_args = action_args[:3]
+                name, icon_name, args_extend = action_args[:3]
                 item = QtWidgetAction(qt_menu)
                 item.setFont(Font.NAME)
                 qt_menu.addAction(item)
@@ -327,45 +330,60 @@ class QtMenu(QtWidgets.QMenu):
                 #
                 is_checked = False
                 #
-                if method_args is None:
+                if args_extend is None:
                     set_disable_fnc_(item)
                 else:
-                    if isinstance(method_args, (types.FunctionType, types.MethodType, functools.partial, types.LambdaType)):
-                        fnc = method_args
+                    if isinstance(
+                            args_extend,
+                            (types.FunctionType, types.MethodType, functools.partial, types.LambdaType)
+                    ):
+                        fnc = args_extend
                         item.triggered.connect(fnc)
-                    elif isinstance(method_args, six.string_types):
-                        cmd_str = method_args
+                    elif isinstance(args_extend, six.string_types):
+                        cmd_str = args_extend
                         item.triggered.connect(lambda *args, **kwargs: cls._set_cmd_run_(cmd_str))
-                    elif isinstance(method_args, (tuple, list)):
+                    elif isinstance(args_extend, (tuple, list)):
                         # check
-                        if len(method_args) == 2:
-                            check_fnc, fnc = method_args
-                            if isinstance(check_fnc, (types.FunctionType, types.MethodType, functools.partial, types.LambdaType)):
+                        if len(args_extend) == 2:
+                            check_fnc, fnc = args_extend
+                            if isinstance(
+                                    check_fnc,
+                                    (types.FunctionType, types.MethodType, functools.partial, types.LambdaType)
+                            ):
                                 is_checked = check_fnc()
                             else:
                                 is_checked = check_fnc
                             #
                             if isinstance(is_checked, bool):
-                                if isinstance(fnc, (types.FunctionType, types.MethodType, functools.partial, types.LambdaType)):
+                                if isinstance(
+                                        fnc,
+                                        (types.FunctionType, types.MethodType, functools.partial, types.LambdaType)
+                                ):
                                     item.triggered.connect(fnc)
                             else:
                                 set_disable_fnc_(item)
-                        elif len(method_args) == 3:
-                            check_fnc, fnc, _ = method_args
-                            if isinstance(check_fnc, (types.FunctionType, types.MethodType, functools.partial, types.LambdaType)):
+                        elif len(args_extend) == 3:
+                            check_fnc, fnc, enable_fnc = args_extend
+                            if isinstance(
+                                    check_fnc,
+                                    (types.FunctionType, types.MethodType, functools.partial, types.LambdaType)
+                            ):
                                 is_checked = check_fnc()
                             else:
                                 is_checked = check_fnc
                             #
-                            if isinstance(is_checked, bool):
-                                if is_checked is False:
-                                    item.setDisabled(True)
+                            item.triggered.connect(fnc)
+                            if isinstance(
+                                    enable_fnc,
+                                    (types.FunctionType, types.MethodType, functools.partial, types.LambdaType)
+                            ):
+                                is_enable = enable_fnc()
+                                item.setEnabled(is_enable)
+                                if is_enable is False:
                                     item.setFont(Font.disable)
                                 else:
                                     item.setDisabled(False)
                                     item.setFont(Font.NAME)
-                            #
-                            item.triggered.connect(fnc)
                 if icon_name is not None:
                     if isinstance(icon_name, six.string_types):
                         if icon_name:
@@ -398,6 +416,7 @@ class QtMenu(QtWidgets.QMenu):
                     item.setShortcutContext(QtCore.Qt.WidgetShortcut)
         else:
             qt_menu.addSeparator()
+
     @classmethod
     def _set_color_icon_rgb_(cls, qt_widget, color):
         icon = QtGui.QIcon()
@@ -475,20 +494,24 @@ class QtMenu(QtWidgets.QMenu):
 
     def _set_menu_content_(self, content):
         QtMenuOpt(self).set_create_by_content(content)
+
     @classmethod
     def _set_action_create_by_menu_content_(cls, menu):
         menu.clear()
+
     @classmethod
     def _add_menu_separator_(cls, menu, content):
         name = content.get('name')
         separator = menu.addSeparator()
         separator.setFont(Font.SEPARATOR)
         separator.setText(name)
+
     @classmethod
     def _add_menu_action_(cls, menu, content):
         def set_disable_fnc_(widget_action_):
             widget_action_.setFont(Font.disable)
             widget_action_.setDisabled(True)
+
         #
         name = content.get('name')
         icon_name = content.get('icon_name')
@@ -580,7 +603,7 @@ class QtInfoBubble(QtWidgets.QWidget):
                 text=self._info_text,
                 font=self.font(),
                 font_color=QtFontColors.Bubble,
-                text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+                text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
             )
 
 
@@ -590,6 +613,7 @@ class QtTextBubble(
     gui_qt_abstract.AbsQtActionForPressDef,
 ):
     delete_text_accepted = qt_signal(str)
+
     def _refresh_widget_draw_(self):
         self.update()
 
@@ -678,13 +702,14 @@ class QtTextBubble(
                 text=self._bubble_text,
                 font_color=QtFontColors.Bubble,
                 font=self.font(),
-                text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+                text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
                 offset=offset
             )
 
             painter._draw_icon_file_by_rect_(
                 rect=self._bubble_delete_icon_draw_rect,
-                file_path=[self._bubble_delete_icon_file_path_0, self._bubble_delete_icon_file_path_1][self._bubble_delete_is_hovered],
+                file_path=[self._bubble_delete_icon_file_path_0, self._bubble_delete_icon_file_path_1][
+                    self._bubble_delete_is_hovered],
                 offset=offset
             )
 
@@ -865,7 +890,7 @@ class QtTextItem(
         self._init_status_base_def_(self)
 
         self._set_name_draw_font_(QtFonts.Label)
-        self._name_text_option = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+        self._name_text_option = QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter
 
     def _refresh_widget_draw_geometry_(self):
         x, y = 0, 0
@@ -915,6 +940,7 @@ class QtIconMenuButton(
     gui_qt_abstract.AbsQtActionForPressDef,
 ):
     QT_MENU_CLS = QtMenu
+
     def _refresh_widget_(self):
         self._refresh_widget_draw_geometry_()
         self._refresh_widget_draw_()
@@ -1005,6 +1031,7 @@ class QtIconPressButton(
     press_db_clicked = qt_signal()
     #
     QT_MENU_CLS = QtMenu
+
     def _refresh_widget_(self):
         self._refresh_widget_draw_geometry_()
         self._refresh_widget_draw_()
@@ -1019,7 +1046,7 @@ class QtIconPressButton(
         if self._icon_geometry_mode == self.IconGeometryMode.Square:
             icn_frm_w = icn_frm_h = w
         elif self._icon_geometry_mode == self.IconGeometryMode.Auto:
-            icn_frm_w,  icn_frm_h = w, h
+            icn_frm_w, icn_frm_h = w, h
         else:
             raise RuntimeError()
         #
@@ -1208,7 +1235,7 @@ class QtIconPressButton(
                 rect=self._name_draw_rect,
                 text=self._name_text,
                 font=get_font(),
-                text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop,
+                text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop,
                 word_warp=self._name_word_warp,
                 offset=offset,
                 # is_hovered=self._is_hovered,
@@ -1252,6 +1279,7 @@ class QtIconEnableButton(
     gui_qt_abstract.AbsQtValueDefaultDef,
 ):
     QT_MENU_CLS = QtMenu
+
     def __init__(self, *args, **kwargs):
         super(QtIconEnableButton, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -1406,7 +1434,7 @@ class QtIconEnableButton(
                 self._name_text,
                 font=Font.NAME,
                 font_color=QtFontColors.Basic,
-                text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
+                text_option=QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter,
                 offset=offset
             )
 
@@ -1445,6 +1473,7 @@ class QtMainWindow(
     key_help_pressed = qt_signal()
     size_changed = qt_signal()
     window_activate_changed = qt_signal()
+
     def __init__(self, *args, **kwargs):
         super(QtMainWindow, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -1475,6 +1504,7 @@ class QtMainWindow(
         )
         self._frame_draw_rect = QtCore.QRect()
         self._menu_frame_draw_rect = QtCore.QRect()
+
     #
     def _refresh_widget_draw_(self):
         self.update()
@@ -1489,6 +1519,7 @@ class QtMainWindow(
         self._menu_frame_draw_rect.setRect(
             x, y, w, m_h
         )
+
     #
     def _set_icon_text_(self, text):
         self.setWindowIcon(QtUtilMtd.get_name_text_icon_(text))
@@ -1498,6 +1529,7 @@ class QtMainWindow(
 
     def _set_window_system_tray_icon_(self, widget):
         self._window_system_tray_icon = widget
+
     @property
     def lynxi_window(self):
         return True
@@ -1566,11 +1598,12 @@ class QtDialog(
     QtThreadDef
 ):
     size_changed = qt_signal()
+
     def __init__(self, *args, **kwargs):
         super(QtDialog, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
         self.setWindowFlags(
-            QtCore.Qt.Window | QtCore.Qt.WindowStaysOnTopHint
+            QtCore.Qt.Window|QtCore.Qt.WindowStaysOnTopHint
         )
         self.setWindowModality(
             QtCore.Qt.ApplicationModal
@@ -1588,9 +1621,11 @@ class QtDialog(
         self.installEventFilter(self)
         #
         self._init_status_base_def_(self)
+
     #
     def _refresh_widget_draw_(self):
         self.update()
+
     #
     def _set_icon_text_(self, text):
         self.setWindowIcon(
@@ -1671,7 +1706,7 @@ class QtStyledItemDelegate(QtWidgets.QStyledItemDelegate):
         self._icon_draw_size = QtCore.QSize(20, 20)
 
     def _draw_for_hover_(self, painter, option, index):
-        if option.state & QtWidgets.QStyle.State_MouseOver:
+        if option.state&QtWidgets.QStyle.State_MouseOver:
             if index.column() == 0:
                 rect = option.rect
                 x, y = rect.x(), rect.y()
@@ -1682,7 +1717,7 @@ class QtStyledItemDelegate(QtWidgets.QStyledItemDelegate):
                 painter.fillRect(
                     hover_rect, QtBackgroundColors.Hovered
                 )
-        elif option.state & QtWidgets.QStyle.State_Selected:
+        elif option.state&QtWidgets.QStyle.State_Selected:
             if index.column() == 0:
                 rect = option.rect
                 x, y = rect.x(), rect.y()
@@ -1854,7 +1889,7 @@ class QtListWidgetItem(
     def __init__(self, *args, **kwargs):
         super(QtListWidgetItem, self).__init__(*args, **kwargs)
         self.setFlags(
-            QtCore.Qt.ItemIsSelectable | QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled
+            QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled
         )
         self._init_names_base_def_(self)
         self._init_menu_base_def_(self)
@@ -1912,6 +1947,7 @@ class QtListWidgetItem(
 
     def _set_item_show_connect_(self):
         self._setup_item_show_(self.listWidget())
+
     # def _get_keyword_filter_keys_tgt_(self):
     #     item_widget = self._get_item_widget_()
     #     if item_widget is not None:
@@ -1961,6 +1997,7 @@ class _QtHItem(
     gui_qt_abstract.AbsQtItemFilterDef,
 ):
     delete_press_clicked = qt_signal()
+
     def __init__(self, *args, **kwargs):
         super(_QtHItem, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -2009,7 +2046,7 @@ class _QtHItem(
         #
         frm_w = frm_h = h
         icn_frm_w, icn_frm_h = self._icon_frame_draw_size
-        icn_frm_m_w, icn_frm_m_h = (frm_w - icn_frm_w)/2, (frm_h - icn_frm_h)/2
+        icn_frm_m_w, icn_frm_m_h = (frm_w-icn_frm_w)/2, (frm_h-icn_frm_h)/2
         icn_w, icn_h = int(icn_frm_w*self._icon_draw_percent), int(icn_frm_h*self._icon_draw_percent)
         #
         c_x, c_y = x, y
@@ -2293,8 +2330,8 @@ class _QtScreenshotFrame(
         self.setMouseTracking(True)
         self.setWindowFlags(
             QtCore.Qt.Popup
-            | QtCore.Qt.FramelessWindowHint
-            | QtCore.Qt.WindowStaysOnTopHint
+            |QtCore.Qt.FramelessWindowHint
+            |QtCore.Qt.WindowStaysOnTopHint
         )
 
         self._init_frame_base_def_(self)
@@ -2358,7 +2395,7 @@ class _QtScreenshotFrame(
                     rect=self._help_draw_rect,
                     text=self._help_text,
                     font=get_font(12),
-                    text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop,
+                    text_option=QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop,
                     word_warp=True
                 )
 
@@ -2370,6 +2407,7 @@ class QtItemWidgetDrag(QtGui.QDrag):
         QtCore.Qt.CopyAction: utl_gui_configure.DragFlag.Copy,
         QtCore.Qt.MoveAction: utl_gui_configure.DragFlag.Move
     }
+
     def __init__(self, *args, **kwargs):
         super(QtItemWidgetDrag, self).__init__(*args, **kwargs)
         self.installEventFilter(self)

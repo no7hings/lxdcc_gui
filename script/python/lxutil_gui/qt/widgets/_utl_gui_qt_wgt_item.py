@@ -1,7 +1,8 @@
 # coding=utf-8
 from lxutil_gui.qt.gui_qt_core import *
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_entry_base, _utl_gui_qt_wgt_popup, _gui_qt_wgt_chart
+from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_entry_base, _utl_gui_qt_wgt_popup, \
+    _gui_qt_wgt_chart
 
 import lxutil_gui.qt.abstracts as gui_qt_abstract
 
@@ -37,6 +38,7 @@ class QtPressItem(
     rate_finished = qt_signal()
     #
     QT_MENU_CLS = _utl_gui_qt_wgt_utility.QtMenu
+
     def __init__(self, *args, **kwargs):
         super(QtPressItem, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
@@ -176,7 +178,7 @@ class QtPressItem(
         if progress_enable is True:
             progress_percent = self._get_progress_percent_()
             self._progress_rect.setRect(
-                c_x, c_y, c_w * progress_percent, 4
+                c_x, c_y, c_w*progress_percent, 4
             )
         #
         if status_is_enable is True:
@@ -327,7 +329,8 @@ class QtPressItem(
         # sub process
         if self._get_sub_process_is_enable_() is True:
             status_rgba = [self._status_color, self._hover_status_color][self._is_hovered]
-            status_rgba_array = [self._sub_process_status_colors, self._hover_sub_process_status_colors][self._is_hovered]
+            status_rgba_array = [self._sub_process_status_colors, self._hover_sub_process_status_colors][
+                self._is_hovered]
             #
             r, g, b, a = status_rgba
             painter._draw_alternating_colors_by_rect_(
@@ -541,7 +544,7 @@ class QtCheckItem(
                 text=name_text,
                 font=self._name_draw_font,
                 font_color=text_color,
-                text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter,
+                text_option=QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter,
                 offset=offset
             )
 
@@ -639,6 +642,7 @@ class _QtHContractItem(
     QtWidgets.QWidget,
     gui_qt_abstract.AbsQtIconBaseDef,
     #
+    gui_qt_abstract.AbsQtNameBaseDef,
     gui_qt_abstract.AbsQtActionBaseDef,
     gui_qt_abstract.AbsQtActionForHoverDef,
     gui_qt_abstract.AbsQtActionForPressDef,
@@ -656,6 +660,7 @@ class _QtHContractItem(
         self._name_draw_font = Font.GROUP
         #
         self._init_icon_base_def_(self)
+        self._init_name_base_def_(self)
         self._icon_name_is_enable = True
         #
         self._init_action_for_hover_def_(self)

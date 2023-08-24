@@ -138,7 +138,7 @@ class AbsPnlAssetDccGeometryComparer(
         self.add_widget(self._options_prx_node)
         self._options_prx_node.set_expanded(False)
         #
-        self._options_prx_node.create_ports_by_configure(
+        self._options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.options'),
         )
         self._options_prx_node.set(
@@ -473,7 +473,7 @@ class AbsPnlAssetGeometryComparer(prx_widgets.PrxSessionWindow):
         #
         self._options_prx_node = prx_widgets.PrxNode_('options')
         s.add_widget(self._options_prx_node)
-        self._options_prx_node.create_ports_by_configure(
+        self._options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.options'),
         )
 

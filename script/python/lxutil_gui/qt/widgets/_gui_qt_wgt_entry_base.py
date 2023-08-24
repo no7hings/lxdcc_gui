@@ -36,6 +36,7 @@ class QtEntryAsTextEdit(
     #
     focus_in = qt_signal()
     focus_out = qt_signal()
+
     def __init__(self, *args, **kwargs):
         super(QtEntryAsTextEdit, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
@@ -141,11 +142,11 @@ class QtEntryAsTextEdit(
 
     def contextMenuEvent(self, event):
         menu_raw = [
-            ('basic', ),
+            ('basic',),
             ('copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
             ('paste', None, (True, self.paste, False), QtGui.QKeySequence.Paste),
             ('cut', None, (True, self.cut, False), QtGui.QKeySequence.Cut),
-            ('extend', ),
+            ('extend',),
             ('undo', None, (True, self.undo, False), QtGui.QKeySequence.Undo),
             ('redo', None, (True, self.redo, False), QtGui.QKeySequence.Redo),
             ('select all', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll),
@@ -155,7 +156,7 @@ class QtEntryAsTextEdit(
             menu_raw = [
                 ('basic',),
                 ('copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
-                ('extend', ),
+                ('extend',),
                 ('select all', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll)
             ]
         #
@@ -163,7 +164,8 @@ class QtEntryAsTextEdit(
             menu_raw.extend(
                 [
                     ('system',),
-                    ('open folder', 'file/open-folder', (True, self._execute_open_in_system_, False), QtGui.QKeySequence.Open)
+                    ('open folder', 'file/open-folder', (True, self._execute_open_in_system_, False),
+                     QtGui.QKeySequence.Open)
                 ]
             )
         #
@@ -339,6 +341,7 @@ class QtEntryAsTextEdit(
 
     def _connect_focused_to_(self, widget):
         pass
+
     #
     def _get_is_selected_(self):
         boolean = False
@@ -381,6 +384,7 @@ class QtEntryAsContentEdit(
     focus_in = qt_signal()
     focus_out = qt_signal()
     focus_changed = qt_signal()
+
     def __init__(self, *args, **kwargs):
         super(QtEntryAsContentEdit, self).__init__(*args, **kwargs)
         self.setWordWrapMode(QtGui.QTextOption.WrapAnywhere)
@@ -458,11 +462,11 @@ class QtEntryAsContentEdit(
 
     def contextMenuEvent(self, event):
         menu_raw = [
-            ('basic', ),
+            ('basic',),
             ('copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
             ('paste', None, (True, self.paste, False), QtGui.QKeySequence.Paste),
             ('cut', None, (True, self.cut, False), QtGui.QKeySequence.Cut),
-            ('extend', ),
+            ('extend',),
             ('undo', None, (True, self.undo, False), QtGui.QKeySequence.Undo),
             ('redo', None, (True, self.redo, False), QtGui.QKeySequence.Redo),
             ('select all', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll),
@@ -471,7 +475,7 @@ class QtEntryAsContentEdit(
             menu_raw = [
                 ('basic',),
                 ('copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
-                ('extend', ),
+                ('extend',),
                 ('select all', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll)
             ]
         #
@@ -485,9 +489,9 @@ class QtEntryAsContentEdit(
         font = self.font()
         size_pre = font.pointSize()
         if delta > 0:
-            size_cur = size_pre + 1
+            size_cur = size_pre+1
         else:
-            size_cur = size_pre - 1
+            size_cur = size_pre-1
         #
         size_cur = max(min(size_cur, 64), 6)
         font.setPointSize(size_cur)
@@ -498,6 +502,7 @@ class QtEntryAsContentEdit(
         def add_fnc_(text_):
             self.moveCursor(QtGui.QTextCursor.End)
             self.insertPlainText(text_+'\n')
+
         #
         if isinstance(text, (tuple, list)):
             [add_fnc_(i) for i in text]
@@ -525,6 +530,7 @@ class QtEntryAsContentEdit(
             #
             self.moveCursor(QtGui.QTextCursor.End)
             self.insertPlainText(value_+'\n')
+
         #
         if isinstance(value, (tuple, list)):
             [add_fnc_(i) for i in value]
@@ -624,6 +630,7 @@ class QtEntryAsList(
     key_enter_pressed = qt_signal()
     #
     user_input_method_event_changed = qt_signal(object)
+
     #
     def _get_value_(self):
         pass
@@ -677,7 +684,8 @@ class QtEntryAsList(
         items = self._get_selected_items_()
         if items:
             menu_raw.append(
-                ('open folder', 'file/open-folder', (True, self._execute_open_in_system_, False), QtGui.QKeySequence.Open)
+                ('open folder', 'file/open-folder', (True, self._execute_open_in_system_, False),
+                 QtGui.QKeySequence.Open)
             )
         #
         if menu_raw:
@@ -848,6 +856,7 @@ class QtEntryAsList(
                     event.accept()
         else:
             event.ignore()
+
     # noinspection PyUnusedLocal
     def _execute_action_delete_(self, event):
         item_widgets_selected = self._get_selected_item_widgets_()
@@ -966,6 +975,7 @@ class QtEntryAsBubbles(
 ):
     bubble_text_change_accepted = qt_signal(str)
     bubble_text_changed = qt_signal()
+
     def __init__(self, *args, **kwargs):
         super(QtEntryAsBubbles, self).__init__(*args, **kwargs)
         self._bubble_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(self)
@@ -1029,6 +1039,7 @@ class QtEntryFrame(
     entry_focus_in = qt_signal()
     entry_focus_out = qt_signal()
     entry_focus_changed = qt_signal()
+
     def _refresh_widget_(self):
         self._refresh_widget_draw_geometry_()
         self._refresh_widget_draw_()
@@ -1143,7 +1154,7 @@ class QtEntryFrame(
                     text=self._tip_text,
                     font_color=QtFontColors.Disable,
                     font=get_font(size=8, italic=True),
-                    text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+                    text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
                 )
         #
         if self._thread_draw_is_enable is True:
@@ -1153,6 +1164,7 @@ class QtEntryFrame(
                 # border_radius=4,
                 running=True
             )
+
     # resize
     def _get_resize_handle_(self):
         return self._resize_handle

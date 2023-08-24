@@ -10,6 +10,7 @@ class AbsPrxToolGroup(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtLine
     QT_HEAD_CLS = None
     QT_HEAD_SIZE = 22
+
     def __init__(self, *args, **kwargs):
         super(AbsPrxToolGroup, self).__init__(*args, **kwargs)
 
@@ -134,6 +135,7 @@ class AbsPrxToolGroup(utl_gui_prx_abstract.AbsPrxWidget):
                             spacer = i_item.spacerItem()
                             if spacer:
                                 spacer.deleteLater()
+
         #
         rcs_fnc_(self._layout)
 
@@ -141,6 +143,7 @@ class AbsPrxToolGroup(utl_gui_prx_abstract.AbsPrxWidget):
 class PrxHToolGroup(AbsPrxToolGroup):
     QT_HEAD_CLS = _gui_qt_wgt_container.QtHHeadFrame
     QT_HEAD_SIZE = 22
+
     def __init__(self, *args, **kwargs):
         super(PrxHToolGroup, self).__init__(*args, **kwargs)
 
@@ -148,12 +151,14 @@ class PrxHToolGroup(AbsPrxToolGroup):
 class PrxHToolGroup_(AbsPrxToolGroup):
     QT_HEAD_SIZE = 20
     QT_HEAD_CLS = _gui_qt_wgt_container.QtHHeadFrame_
+
     def __init__(self, *args, **kwargs):
         super(PrxHToolGroup_, self).__init__(*args, **kwargs)
 
 
 class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtWidget
+
     def __init__(self, *args, **kwargs):
         super(PrxHToolBar, self).__init__(*args, **kwargs)
         #
@@ -258,6 +263,7 @@ class PrxHToolBar(utl_gui_prx_abstract.AbsPrxWidget):
 
 class PrxVToolBar(PrxHToolBar):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtWidget
+
     def __init__(self, *args, **kwargs):
         super(PrxVToolBar, self).__init__(*args, **kwargs)
         #

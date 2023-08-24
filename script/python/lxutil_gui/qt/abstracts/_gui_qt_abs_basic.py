@@ -29,6 +29,7 @@ class AbsQtWidgetBaseDef(object):
 class AbsQtBusyBaseDef(object):
     def _init_busy_base_def_(self, widget):
         self._widget = widget
+
     @contextmanager
     def _gui_bustling_(self):
         self._widget.setCursor(QtCore.Qt.BusyCursor)
@@ -96,6 +97,7 @@ class AbsQtEmptyBaseDef(object):
 
 class AbsQtMenuBaseDef(object):
     QT_MENU_CLS = None
+
     def _init_menu_base_def_(self, widget):
         self._widget = widget
         self._menu_title_text = None
@@ -187,12 +189,14 @@ class AbsQtStatusBaseDef(object):
     ShowStatus = bsc_configure.ShowStatus
     ValidationStatus = bsc_configure.ValidatorStatus
     StatusRgba = bsc_configure.StatusRgba
+
     #
     @classmethod
     def _get_rgb_args_(cls, r, g, b, a):
         h, s, v = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
         r_, g_, b_ = bsc_core.RawColorMtd.hsv2rgb(h, s*.75, v*.75)
         return (r_, g_, b_, a), (r, g, b, a)
+
     @classmethod
     def _get_sub_process_status_rgba_args_(cls, status):
         if status in {bsc_configure.Status.Started}:
@@ -208,6 +212,7 @@ class AbsQtStatusBaseDef(object):
         elif status in {bsc_configure.Status.Completed}:
             return cls._get_rgb_args_(*cls.StatusRgba.Green)
         return cls._get_rgb_args_(*cls.StatusRgba.Opacity)
+
     @classmethod
     def _get_text_color_by_validator_status_rgba_args_(cls, status):
         if status in {bsc_configure.ValidatorStatus.Warning}:
@@ -221,6 +226,7 @@ class AbsQtStatusBaseDef(object):
         elif status in {bsc_configure.ValidatorStatus.Active}:
             return cls._get_rgb_args_(*cls.StatusRgba.Blue)
         return cls._get_rgb_args_(*cls.StatusRgba.White)
+
     @classmethod
     def _get_border_color_by_validator_status_rgba_args_(cls, status):
         if status in [bsc_configure.ValidatorStatus.Warning]:
@@ -234,6 +240,7 @@ class AbsQtStatusBaseDef(object):
         elif status in [bsc_configure.ValidatorStatus.Active]:
             return cls._get_rgb_args_(*cls.StatusRgba.Blue)
         return cls._get_rgb_args_(*cls.StatusRgba.Opacity)
+
     @classmethod
     def _get_background_color_by_validator_status_rgba_args_(cls, status):
         if status in [bsc_configure.ValidatorStatus.Warning]:
@@ -382,7 +389,8 @@ class AbsQtSubProcessDef(object):
         #
         self._sub_process_timestamp_costed = bsc_core.TimeMtd.get_timestamp()-self._sub_process_timestamp_started
         if self._sub_process_finished_value > 1:
-            self._sub_process_finished_timestamp_estimated = (self._sub_process_timestamp_costed/self._sub_process_finished_value)*self._sub_process_finished_maximum
+            self._sub_process_finished_timestamp_estimated = (
+                                                                         self._sub_process_timestamp_costed/self._sub_process_finished_value)*self._sub_process_finished_maximum
         else:
             self._sub_process_finished_timestamp_estimated = 0
 
@@ -463,7 +471,9 @@ class AbsQtValidatorDef(object):
             self._validator_status_colors = []
             self._hover_validator_status_colors = []
             for i_status in statuses:
-                i_color, i_hover_color = AbsQtStatusBaseDef._get_background_color_by_validator_status_rgba_args_(i_status)
+                i_color, i_hover_color = AbsQtStatusBaseDef._get_background_color_by_validator_status_rgba_args_(
+                    i_status
+                    )
                 self._validator_status_colors.append(i_color)
                 self._hover_validator_status_colors.append(i_hover_color)
         else:
@@ -538,6 +548,7 @@ class AbsQtFrameBaseDef(object):
 class AbsQtResizeBaseDef(object):
     ResizeOrientation = utl_gui_configure.Orientation
     ResizeAlignment = utl_gui_configure.Alignment
+
     def _init_resize_base_def_(self, widget):
         self._widget = widget
 
@@ -594,6 +605,7 @@ class AbsQtPopupBaseDef(object):
     #
     user_popup_choose_text_accepted = qt_signal(str)
     user_popup_choose_texts_accepted = qt_signal(list)
+
     def _init_popup_base_def_(self, widget):
         self._widget = widget
         self._popup_region = 0
@@ -614,6 +626,7 @@ class AbsQtPopupBaseDef(object):
         self._popup_toolbar_draw_tool_tip_rect = QtCore.QRect()
 
         self._popup_auto_resize_is_enable = False
+
     @classmethod
     def _get_popup_press_point_(cls, widget, rect=None):
         if rect is None:
@@ -626,13 +639,15 @@ class AbsQtPopupBaseDef(object):
         # p = QtCore.QPoint(rect.right(), rect.center().y())
         p = widget.mapToGlobal(rect.topLeft())
         o_x, o_y = self._popup_offset
-        return p.x() + o_x, p.y() + o_y
+        return p.x()+o_x, p.y()+o_y
+
     @classmethod
     def _get_popup_pos_0_(cls, widget):
         rect = widget.rect()
         # p = QtCore.QPoint(rect.right(), rect.center().y())
         p = widget.mapToGlobal(rect.bottomLeft())
-        return p.x(), p.y() + 1
+        return p.x(), p.y()+1
+
     @classmethod
     def _get_popup_size_(cls, widget):
         rect = widget.rect()
@@ -675,8 +690,8 @@ class AbsQtPopupBaseDef(object):
         o_x = 0
         o_y = 0
         #
-        width_ = view_width + margin*2 + side*2 + shadow_radius
-        height_ = view_height + margin*2 + side*2 + shadow_radius
+        width_ = view_width+margin*2+side*2+shadow_radius
+        height_ = view_height+margin*2+side*2+shadow_radius
         #
         r_x, r_y, region = bsc_core.RawCoordMtd.set_region_to(
             position=(press_x, press_y),
@@ -687,14 +702,14 @@ class AbsQtPopupBaseDef(object):
         self._popup_region = region
         #
         if region in [0, 1]:
-            y_ = r_y - side + press_h / 2
+            y_ = r_y-side+press_h/2
         else:
-            y_ = r_y + side + shadow_radius - press_h / 2
+            y_ = r_y+side+shadow_radius-press_h/2
         #
         if region in [0, 2]:
-            x_ = r_x - margin*3
+            x_ = r_x-margin*3
         else:
-            x_ = r_x + margin*3 + side + shadow_radius
+            x_ = r_x+margin*3+side+shadow_radius
         #
         self._widget.setGeometry(
             x_, y_,
@@ -895,6 +910,7 @@ class AbsQtIconBaseDef(object):
     class IconGeometryMode(object):
         Square = 0
         Auto = 1
+
     #
     def _init_icon_base_def_(self, widget):
         self._widget = widget
@@ -1165,7 +1181,7 @@ class AbsQtIndexDef(object):
         self._index_text = None
         self._index_text_color = QtFontColors.Dark
         self._index_text_font = Font.INDEX
-        self._index_text_option = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+        self._index_text_option = QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter
         #
         self._index_frame_rect = QtCore.QRect()
         self._index_rect = QtCore.QRect()
@@ -1178,7 +1194,7 @@ class AbsQtIndexDef(object):
 
     def _set_index_(self, index):
         self._index = index
-        self._index_text = str(index + 1)
+        self._index_text = str(index+1)
 
     def _get_index_(self):
         return self._index
@@ -1248,6 +1264,7 @@ class AbsQtValueBaseDef(object):
 
 class AbsQtNameBaseDef(object):
     AlignRegion = utl_gui_configure.AlignRegion
+
     def _init_name_base_def_(self, widget):
         self._widget = widget
         #
@@ -1260,7 +1277,7 @@ class AbsQtNameBaseDef(object):
         #
         self._name_color = QtFontColors.Basic
         self._hover_name_color = QtFontColors.Light
-        self._name_text_option = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+        self._name_text_option = QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter
         #
         self._name_word_warp = True
         #
@@ -1333,31 +1350,33 @@ class AbsQtNameBaseDef(object):
     def _set_tool_tip_text_(self, text, **kwargs):
         self._tool_tip_text = text
         if hasattr(self, 'setToolTip'):
-            if isinstance(text, six.text_type):
-                text = text.encode('utf-8')
-            text = text.replace(' ', '&nbsp;')
-            text = text.replace('<', '&lt;')
-            text = text.replace('>', '&gt;')
-            #
-            css = '<html>\n<body>\n<style>.no_wrap{white-space:nowrap;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
+            css = (
+                '<html>\n'
+                '<body>\n'
+                '<style>.no_wrap{white-space:nowrap;}</style>\n'
+                '<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
+            )
             name_text = self._name_text
             if 'name' in kwargs:
                 name_text = kwargs['name']
             #
             if name_text:
-                if isinstance(name_text, six.text_type):
-                    name_text = name_text.encode('utf-8')
-                #
-                name_text = name_text.replace('<', '&lt;').replace('>', '&gt;')
+                name_text = bsc_core.auto_encode(name_text)
+                name_text = name_text.replace(' ', '&nbsp;').replace('<', '&lt;').replace('>', '&gt;')
                 css += '<h3><p class="no_warp_and_center">{}</p></h3>\n'.format(name_text)
             # add split line
             css += '<p><hr></p>\n'
+            text = bsc_core.auto_encode(text)
             if isinstance(text, six.string_types):
-                texts = text.split('\n')
-            else:
+                texts = text.split(r'\n')
+            elif isinstance(text, (tuple, list)):
                 texts = text
+            else:
+                raise RuntimeError()
             #
             for i_text in texts:
+                i_text = bsc_core.auto_encode(i_text)
+                i_text = i_text.replace(' ', '&nbsp;').replace('<', '&lt;').replace('>', '&gt;')
                 if '"LMB-click"' in i_text:
                     i_text = i_text.replace(
                         '"LMB-click"',
@@ -1537,29 +1556,41 @@ class AbsQtNamesBaseDef(AbsQtNameBaseDef):
 
     def _set_tool_tip_text_(self, text, **kwargs):
         if hasattr(self, 'setToolTip'):
-            css = u'<html>\n<body>\n<style>.no_wrap{white-space:nowrap;float:right;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align:center;}</style>\n'
+            css = (
+                '<html>\n'
+                '<body>\n'
+                '<style>.no_wrap{white-space:nowrap;float:right;}</style>\n'
+                '<style>.no_warp_and_center{white-space:nowrap;text-align:center;}</style>\n'
+            )
             #
             name_text = self._name_text
             if name_text:
-                css += u'<h2><p class="no_warp_and_center">{}</p></h2>\n'.format(name_text)
-                css += u'<p><hr></p>\n'
+                name_text = bsc_core.auto_encode(name_text)
+                name_text = name_text.replace(' ', '&nbsp;').replace('<', '&lt;').replace('>', '&gt;')
+                css += '<h2><p class="no_warp_and_center">{}</p></h2>\n'.format(name_text)
+                css += '<p><hr></p>\n'
             #
-            texts = self._get_show_name_texts_()
-            if texts:
-                for seq, i_text in enumerate(texts):
+            name_texts = self._get_show_name_texts_()
+            if name_texts:
+                for i_text in name_texts:
+                    i_text = bsc_core.auto_encode(i_text)
                     i_text = i_text.replace(' ', '&nbsp;').replace('<', '&lt;').replace('>', '&gt;')
-                    css += u'<p class="no_wrap">{}</p>\n'.format(i_text)
+                    css += '<p class="no_wrap">{}</p>\n'.format(i_text)
             #
-            css += u'<p><hr></p>\n'
+            text = bsc_core.auto_encode(text)
+            css += '<p><hr></p>\n'
             if isinstance(text, six.string_types):
-                texts_extend = text.split('\n')
-            else:
+                texts_extend = text.split(r'\n')
+            elif isinstance(text, (tuple, list)):
                 texts_extend = text
+            else:
+                raise RuntimeError()
             #
             for i_text in texts_extend:
+                i_text = bsc_core.auto_encode(i_text)
                 i_text = i_text.replace(' ', '&nbsp;').replace('<', '&lt;').replace('>', '&gt;')
-                css += u'<p class="no_wrap">{}</p>\n'.format(i_text)
-            css += u'</body>\n</html>'
+                css += '<p class="no_wrap">{}</p>\n'.format(i_text)
+            css += '</body>\n</html>'
             self.setToolTip(css)
 
 
@@ -1641,7 +1672,7 @@ class AbsQtProgressDef(object):
             self._set_progress_run_()
 
     def _set_progress_update_(self):
-        self._set_progress_value_(self._progress_value + 1)
+        self._set_progress_value_(self._progress_value+1)
 
     def _stop_progress_(self):
         self._set_progress_value_(0)
@@ -1650,7 +1681,7 @@ class AbsQtProgressDef(object):
         self._refresh_widget_draw_()
 
     def _get_progress_percent_(self):
-        return float(self._progress_map_value) / float(self._progress_map_maximum)
+        return float(self._progress_map_value)/float(self._progress_map_maximum)
 
     def _set_progress_raw_(self, raw):
         self._progress_raw = raw
@@ -1766,6 +1797,7 @@ class AbsQtImageBaseDef(object):
 class AbsQtMovieDef(object):
     def _refresh_widget_draw_(self):
         raise NotImplementedError()
+
     #
     def _set_movie_def_init_(self):
         self._play_draw_enable = False
@@ -1828,6 +1860,7 @@ class AbsQtChartBaseDef(object):
 class AbsQtActionBaseDef(object):
     ActionFlag = utl_gui_configure.ActionFlag
     ActionState = bsc_configure.ActionState
+
     def _init_action_base_def_(self, widget):
         self._widget = widget
         self._action_flag = None
@@ -2151,6 +2184,7 @@ class AbsQtCheckBaseDef(object):
     check_swapped_as_exclusive = qt_signal()
     #
     ActionFlag = utl_gui_configure.ActionFlag
+
     def _init_check_base_def_(self, widget):
         self._widget = widget
         #
@@ -2284,6 +2318,7 @@ class AbsQtActionForExpandDef(object):
     class CollapseDirection(enum.IntEnum):
         RightToLeft = 0
         LeftToRight = 1
+
     #
     expand_clicked = qt_signal()
     expand_toggled = qt_signal(bool)
@@ -2335,6 +2370,7 @@ class AbsQtActionForExpandDef(object):
 
 class AbsQtActionForOptionPressDef(object):
     checked = qt_signal()
+
     def _get_action_is_enable_(self):
         raise NotImplementedError()
 
@@ -2428,6 +2464,7 @@ class AbsQtThreadBaseDef(object):
 class AbsQtChooseBaseDef(object):
     choose_changed = qt_signal()
     user_choose_changed = qt_signal()
+
     def _refresh_widget_draw_(self):
         raise NotImplementedError()
 
@@ -2532,6 +2569,7 @@ class AbsQtChooseExtraDef(object):
     #
     user_choose_text_accepted = qt_signal(str)
     user_choose_texts_accepted = qt_signal(list)
+
     def _init_choose_extra_def_(self, widget):
         self._widget = widget
 
@@ -2599,6 +2637,7 @@ class AbsQtCompletionExtraDef(object):
     #
     user_completion_finished = qt_signal()
     user_completion_text_accepted = qt_signal(str)
+
     def _init_completion_extra_def_(self, widget):
         self._widget = widget
         self._completion_extra_gain_fnc = None
@@ -2644,6 +2683,7 @@ class AbsQtCompletionExtraDef(object):
             keyword = self._completion_value_entry._get_value_()
             return self._completion_extra_gain_fnc(keyword) or []
         return []
+
     #
     def _start_completion_extra_fnc_(self):
         self._completion_extra_widget._execute_popup_start_()
@@ -2655,6 +2695,7 @@ class AbsQtCompletionExtraDef(object):
 class AbsQtHistoryExtraDef(object):
     QT_POPUP_HISTORY_CLS = None
     user_history_text_accepted = qt_signal(str)
+
     def _init_history_as_extra_def_(self, widget):
         self._widget = widget
         self._history_extra_is_enable = False
@@ -2716,6 +2757,7 @@ class AbsQtActionForEntryDef(object):
     user_entry_changed = qt_signal()
     # clear
     user_entry_cleared = qt_signal()
+
     def _init_set_action_for_entry_def_(self, widget):
         pass
 
@@ -2729,6 +2771,7 @@ class AbsQtGuideBaseDef(object):
     guide_text_press_accepted = qt_signal(str)
     #
     QT_GUIDE_RECT_CLS = None
+
     def _init_guide_base_def_(self, widget):
         self._widget = widget
         #
@@ -2795,6 +2838,7 @@ class AbsQtGuideBaseDef(object):
 
 class AbsQtGuideEntryDef(AbsQtGuideBaseDef):
     QT_POPUP_GUIDE_CHOOSE_CLS = None
+
     def _init_guide_entry_def_(self, widget):
         self._init_guide_base_def_(widget)
         #
@@ -2827,11 +2871,13 @@ class AbsQtGuideEntryDef(AbsQtGuideBaseDef):
         item = self._get_guide_item_at_(index)
         if item is not None:
             return item._name_text
+
     #
     def _set_guide_choose_item_content_at_(self, raw, index=0):
         item = self._get_guide_item_at_(index)
         if item is not None:
             item._set_item_choose_content_raw_(raw)
+
     #
     def _get_guide_child_name_texts_at_(self, index=0):
         item = self._get_guide_item_at_(index)
@@ -2904,8 +2950,10 @@ class AbsQtGuideEntryDef(AbsQtGuideBaseDef):
 
 class AbsQtPressSelectExtraDef(object):
     user_press_select_accepted = qt_signal(bool)
+
     def _refresh_widget_draw_(self):
         raise NotImplementedError()
+
     #
     def _init_press_select_extra_def_(self, widget):
         self._widget = widget
@@ -3019,12 +3067,13 @@ class AbsQtViewScrollActionDef(object):
         v = self._get_view_v_scroll_value_()
         v_min, v_max = self._get_v_minimum_scroll_value_(), self._get_v_maximum_scroll_value_()
         if v_max > 0:
-            return float(v) / float(v_max)
+            return float(v)/float(v_max)
         return 0
 
 
 class AbsQtItemFilterDef(object):
     TagFilterMode = utl_gui_configure.TagFilterMode
+
     def _init_item_filter_extra_def_(self, widget):
         self._widget = widget
         self._item_keyword_filter_mode = self.TagFilterMode.MatchAll
@@ -3104,6 +3153,7 @@ class AbsQtItemFilterDef(object):
 
     def _get_item_tag_filter_mode_(self):
         return self._item_tag_filter_mode
+
     # tag filter source
     def _set_item_tag_filter_keys_src_add_(self, key):
         self._item_tag_filter_keys_src.add(key)
@@ -3113,6 +3163,7 @@ class AbsQtItemFilterDef(object):
 
     def _get_item_tag_filter_keys_src_(self):
         return list(self._item_tag_filter_keys_src)
+
     # tag filter target
     def _set_item_tag_filter_keys_tgt_add_(self, key, ancestors=False):
         self._item_tag_filter_keys_tgt.add(key)
@@ -3151,6 +3202,7 @@ class AbsQtItemFilterDef(object):
                 return True, True
             return True, False
         return False, False
+
     # semantic tag filter
     def _set_item_semantic_tag_filter_key_add_(self, key, value):
         self._item_semantic_tag_filter_keys_tgt.setdefault(
@@ -3183,6 +3235,7 @@ class AbsQtItemFilterDef(object):
                 return True, True
             return True, False
         return False, False
+
     # todo: filter highlight for draw
     def _set_item_filter_occurrence_(self, boolean, column=0):
         pass
@@ -3261,7 +3314,9 @@ class AbsQtViewFilterExtraDef(object):
                     i_tag_filter_hidden_ = i_is_hidden
             # semantic tag filter
             if semantic_tag_filter_data_src:
-                i_is_enable, i_is_hidden = i_item._get_item_semantic_tag_filter_tgt_match_args_(semantic_tag_filter_data_src)
+                i_is_enable, i_is_hidden = i_item._get_item_semantic_tag_filter_tgt_match_args_(
+                    semantic_tag_filter_data_src
+                    )
                 if i_is_enable is True:
                     i_semantic_filter_hidden_ = i_is_hidden
             # keyword filter
@@ -3293,6 +3348,7 @@ class AbsQtViewFilterExtraDef(object):
 
     def _has_keyword_filter_results_(self):
         return self._view_keyword_filter_match_items != []
+
     # keyword filter action
     def _execute_view_keyword_filter_occurrence_to_current_(self):
         items = self._view_keyword_filter_match_items
@@ -3408,6 +3464,7 @@ class AbsQtVisibleDef(object):
     # noinspection PyUnresolvedReferences
     def _set_visible_(self, boolean):
         self.setHidden(not boolean)
+
     # noinspection PyUnresolvedReferences
     def _get_is_visible_(self):
         return not self.isHidden()
@@ -3617,6 +3674,7 @@ class AbsQtShowBaseForItemDef(
 
         if method is not None:
             self._set_item_show_fnc_(cache_fnc_, build_fnc_)
+
     # fnc
     def _set_item_show_fnc_(self, cache_fnc, build_fnc):
         if cache_fnc is not None and build_fnc is not None:
@@ -3632,10 +3690,12 @@ class AbsQtShowBaseForItemDef(
         def run_fnc_():
             if self._item_show_cache_fnc is not None:
                 self._start_item_show_()
+
         #
         if self._item_show_status == self.ShowStatus.Waiting or force is True:
             self._checkout_item_show_loading_()
             self._item_show_timer.singleShot(delay_time, run_fnc_)
+
     #
     def _checkout_item_show_loading_(self):
         if self._item_show_status == self.ShowStatus.Waiting:
@@ -3672,6 +3732,7 @@ class AbsQtShowBaseForItemDef(
         return self._item_show_status in {
             self.ShowStatus.Completed, self.ShowStatus.Failed
         }
+
     # loading
     def _update_item_show_loading_(self):
         self._item_show_loading_index += 1
@@ -3688,6 +3749,7 @@ class AbsQtShowBaseForItemDef(
             self._refresh_widget_draw_()
         except:
             pass
+
     # image fnc
     def _set_item_show_image_cmd_(self, image_file_path, cmd):
         def cache_fnc_():
@@ -3721,6 +3783,7 @@ class AbsQtShowBaseForItemDef(
         def run_fnc():
             if self._item_show_cache_fnc is not None:
                 self._start_item_show_image_()
+
         #
         if self._item_show_image_status == self.ShowStatus.Waiting or force is True:
             self._checkout_item_show_image_loading_()
@@ -3873,6 +3936,7 @@ class AbsQtValueEntryExtraDef(object):
     user_value_entry_changed = qt_signal()
     # clear
     user_value_entry_cleared = qt_signal()
+
     def _init_value_entry_extra_def_(self, widget):
         self._widget = widget
         #
@@ -3993,6 +4057,7 @@ class AbsQtValueEntryAsTupleExtraDef(object):
 
 class AbsQtValueEntryAsPopupChooseExtraDef(AbsQtValueEntryExtraDef):
     QT_VALUE_ENTRY_CLS = None
+
     def _init_value_entry_as_popup_choose_extra_def_(self, widget):
         self._init_value_entry_extra_def_(widget)
         #
@@ -4071,7 +4136,7 @@ class AbsQtTrackActionDef(object):
         self._track_offset_start_point = event.globalPos()
 
     def _execute_action_track_offset_(self, event):
-        track_point = event.globalPos() - self._track_offset_start_point
+        track_point = event.globalPos()-self._track_offset_start_point
         track_offset_x, track_offset_y = self._tmp_track_offset_x, self._tmp_track_offset_y
         track_d_offset_x, track_d_offset_y = track_point.x(), track_point.y()
         #
@@ -4136,6 +4201,7 @@ class AbsQtZoomActionDef(object):
 # delete
 class AbsQtDeleteBaseDef(object):
     delete_text_accepted = qt_signal(str)
+
     def _init_delete_base_def_(self, widget):
         self._widget = widget
         #
@@ -4254,35 +4320,35 @@ class AbsQtScreenshotDef(object):
             self._screenshot_rect_point_start.setY(self._screenshot_point_start.y())
             self._screenshot_rect_point_end = event.pos()
         elif self._screenshot_mode == self.Mode.Edit:
-            d_p = p - self._screenshot_point_start
+            d_p = p-self._screenshot_point_start
             d_p_x, d_p_y = d_p.x(), d_p.y()
             o_x_0, o_y_0 = self._screenshot_rect_point_start_offset_temp
             o_x_1, o_y_1 = self._screenshot_rect_point_end_offset_temp
             if self._screenshot_rect_region_edit == self.RectRegion.Inside:
-                self._screenshot_rect_point_start_offset[0] = o_x_0 + d_p_x
-                self._screenshot_rect_point_start_offset[1] = o_y_0 + d_p_y
-                self._screenshot_rect_point_end_offset[0] = o_x_1 + d_p_x
-                self._screenshot_rect_point_end_offset[1] = o_y_1 + d_p_y
+                self._screenshot_rect_point_start_offset[0] = o_x_0+d_p_x
+                self._screenshot_rect_point_start_offset[1] = o_y_0+d_p_y
+                self._screenshot_rect_point_end_offset[0] = o_x_1+d_p_x
+                self._screenshot_rect_point_end_offset[1] = o_y_1+d_p_y
             elif self._screenshot_rect_region_edit == self.RectRegion.Top:
-                self._screenshot_rect_point_start_offset[1] = o_y_0 + d_p_y
+                self._screenshot_rect_point_start_offset[1] = o_y_0+d_p_y
             elif self._screenshot_rect_region_edit == self.RectRegion.Bottom:
-                self._screenshot_rect_point_end_offset[1] = o_y_1 + d_p_y
+                self._screenshot_rect_point_end_offset[1] = o_y_1+d_p_y
             elif self._screenshot_rect_region_edit == self.RectRegion.Left:
-                self._screenshot_rect_point_start_offset[0] = o_x_0 + d_p_x
+                self._screenshot_rect_point_start_offset[0] = o_x_0+d_p_x
             elif self._screenshot_rect_region_edit == self.RectRegion.Right:
-                self._screenshot_rect_point_end_offset[0] = o_x_1 + d_p_x
+                self._screenshot_rect_point_end_offset[0] = o_x_1+d_p_x
             elif self._screenshot_rect_region_edit == self.RectRegion.TopLeft:
-                self._screenshot_rect_point_start_offset[0] = o_x_0 + d_p_x
-                self._screenshot_rect_point_start_offset[1] = o_y_0 + d_p_y
+                self._screenshot_rect_point_start_offset[0] = o_x_0+d_p_x
+                self._screenshot_rect_point_start_offset[1] = o_y_0+d_p_y
             elif self._screenshot_rect_region_edit == self.RectRegion.TopRight:
-                self._screenshot_rect_point_start_offset[1] = o_y_0 + d_p_y
-                self._screenshot_rect_point_end_offset[0] = o_x_1 + d_p_x
+                self._screenshot_rect_point_start_offset[1] = o_y_0+d_p_y
+                self._screenshot_rect_point_end_offset[0] = o_x_1+d_p_x
             elif self._screenshot_rect_region_edit == self.RectRegion.BottomLeft:
-                self._screenshot_rect_point_start_offset[0] = o_x_0 + d_p_x
-                self._screenshot_rect_point_end_offset[1] = o_y_1 + d_p_y
+                self._screenshot_rect_point_start_offset[0] = o_x_0+d_p_x
+                self._screenshot_rect_point_end_offset[1] = o_y_1+d_p_y
             elif self._screenshot_rect_region_edit == self.RectRegion.BottomRight:
-                self._screenshot_rect_point_end_offset[0] = o_x_1 + d_p_x
-                self._screenshot_rect_point_end_offset[1] = o_y_1 + d_p_y
+                self._screenshot_rect_point_end_offset[0] = o_x_1+d_p_x
+                self._screenshot_rect_point_end_offset[1] = o_y_1+d_p_y
 
         self._set_screenshot_update_geometry_()
         self._widget.update()
@@ -4331,7 +4397,7 @@ class AbsQtScreenshotDef(object):
         y_1 += o_y_1
 
         s_x, s_y = min(x_0, x_1), min(y_0, y_1)
-        s_w, s_h = abs(x_1 - x_0), abs(y_1 - y_0)
+        s_w, s_h = abs(x_1-x_0), abs(y_1-y_0)
 
         self._screenshot_rect.setRect(
             s_x, s_y, s_w, s_h
@@ -4339,13 +4405,13 @@ class AbsQtScreenshotDef(object):
 
         t_w, t_h = self._help_text_draw_size
 
-        t_t_w, t_t_h = t_w - 48, t_h - 48
+        t_t_w, t_t_h = t_w-48, t_h-48
 
         self._help_frame_draw_rect.setRect(
-            x + (w - t_w) / 2, y + (h - t_h) / 2, t_w, t_h
+            x+(w-t_w)/2, y+(h-t_h)/2, t_w, t_h
         )
         self._help_draw_rect.setRect(
-            x + (w - t_t_w) / 2, y + (h - t_t_h) / 2, t_t_w, t_t_h
+            x+(w-t_t_w)/2, y+(h-t_t_h)/2, t_t_w, t_t_h
         )
 
     def _set_screenshot_cancel_(self):
@@ -4378,34 +4444,35 @@ class AbsQtScreenshotDef(object):
         self._widget.setCursor(
             QtGui.QCursor(QtCore.Qt.CrossCursor)
         )
+
     @classmethod
     def _get_rect_region_(cls, m_x, m_y, x, y, w, h, gap):
         # top
-        if x + gap < m_x < x + w - gap and y - gap < m_y < y + gap:
+        if x+gap < m_x < x+w-gap and y-gap < m_y < y+gap:
             return cls.RectRegion.Top
         # bottom
-        elif x + gap < m_x < x + w - gap and y + h - gap < m_y < y + h + gap:
+        elif x+gap < m_x < x+w-gap and y+h-gap < m_y < y+h+gap:
             return cls.RectRegion.Bottom
         # left
-        elif x - gap < m_x < x + gap and y + gap < m_y < y + h - gap:
+        elif x-gap < m_x < x+gap and y+gap < m_y < y+h-gap:
             return cls.RectRegion.Left
         # right
-        elif x + w - gap < m_x < x + w + gap and y + gap < m_y < y + h - gap:
+        elif x+w-gap < m_x < x+w+gap and y+gap < m_y < y+h-gap:
             return cls.RectRegion.Right
         # top left
-        elif x - gap < m_x < x + gap and y - gap < m_y < y + gap:
+        elif x-gap < m_x < x+gap and y-gap < m_y < y+gap:
             return cls.RectRegion.TopLeft
         # top right
-        elif x + w - gap <= m_x <= x + w + gap and y - gap <= m_y <= y + gap:
+        elif x+w-gap <= m_x <= x+w+gap and y-gap <= m_y <= y+gap:
             return cls.RectRegion.TopRight
         # bottom left
-        elif x - gap < m_x < x + gap and y + h - gap < m_y < y + h + gap:
+        elif x-gap < m_x < x+gap and y+h-gap < m_y < y+h+gap:
             return cls.RectRegion.BottomLeft
         # bottom right
-        elif x + w - gap < m_x < x + w + gap and y + h - gap < m_y < y + h + gap:
+        elif x+w-gap < m_x < x+w+gap and y+h-gap < m_y < y+h+gap:
             return cls.RectRegion.BottomRight
         # inside
-        elif x + gap < m_x < x + w - gap and y + gap < m_y < y + h - gap:
+        elif x+gap < m_x < x+w-gap and y+gap < m_y < y+h-gap:
             return cls.RectRegion.Inside
         else:
             return cls.RectRegion.Unknown
@@ -4415,7 +4482,8 @@ class AbsQtScreenshotDef(object):
 
         rect_0 = self._screenshot_rect
         x_0, y_0, w_0, h_0 = rect_0.x(), rect_0.y(), rect_0.width(), rect_0.height()
-        return x + x_0, y + y_0, w_0, h_0
+        return x+x_0, y+y_0, w_0, h_0
+
     @classmethod
     def _set_screenshot_save_to_(cls, geometry, file_path):
         bsc_core.StgFileOpt(file_path).create_directory()

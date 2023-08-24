@@ -13,19 +13,123 @@ import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_container
 
+from lxutil_gui.opengl import gui_ogl_core
+
+
 if LOAD_INDEX == 0:
     class QtUsdStageWidgetProxy(QtWidgets.QWidget):
         def __init__(self, *args, **kwargs):
             super(QtUsdStageWidgetProxy, self).__init__(*args, **kwargs)
 else:
     from pxr import Usdviewq, UsdAppUtils
-    #
+
+    class UsdModel(object):
+        RefinementComplexities = UsdAppUtils.complexityArgs.RefinementComplexities
+        ColorCorrectionModes = Usdviewq.common.ColorCorrectionModes
+        BusyContext = Usdviewq.common.BusyContext
+        DumpMallocTags = Usdviewq.common.DumpMallocTags
+        PickModes = Usdviewq.common.PickModes
+        CameraMaskModes = Usdviewq.common.CameraMaskModes
+
+        def __init__(self, data_model, stage_view):
+            self._dataModel = data_model
+            self._stageView = stage_view
+
+            self._usd_color_space_enable = True
+            self._usd_color_space_mode = self.ColorCorrectionModes.SRGB
+            #
+            self._usd_complexity_enable = False
+            self._usd_complexity_mode = self.RefinementComplexities.MEDIUM
+            #
+            self._usd_cull_enable = False
+            self._usd_cull_mode = None
+            #
+            self._usd_camera_mask_enable = False
+            self._usd_camera_mask_mode = self.CameraMaskModes.PARTIAL
+            #
+            self._usd_camera_cur = None
+
+            self._usd_environment_cur = 'stinson-beach'
+
+        def set_scene_materials_enable(self, boolean):
+            self._dataModel.viewSettings.enableSceneMaterials = boolean
+
+        # light
+        def set_lights_enable(self, boolean):
+            self._stageView._renderParams.enableLighting = boolean
+            self._stageView.update()
+
+        def get_scene_lights_is_enable(self):
+            return self._dataModel.viewSettings.enableSceneLights is True
+
+        def set_scene_lights_enable(self, boolean):
+            self._dataModel.viewSettings.enableSceneLights = boolean
+
+        def swap_scene_lights_enable(self):
+            self._dataModel.viewSettings.enableSceneLights = not self._dataModel.viewSettings.enableSceneLights
+
+        def get_camera_light_is_enable(self):
+            return self._dataModel.viewSettings.ambientLightOnly is True
+
+        def set_camera_light_enable(self, boolean):
+            self._dataModel.viewSettings.ambientLightOnly = boolean
+
+        def swap_camera_light_enable(self):
+            self._dataModel.viewSettings.ambientLightOnly = not self._dataModel.viewSettings.ambientLightOnly
+
+        def get_dome_light_is_enable(self):
+            return self._dataModel.viewSettings.domeLightEnabled is True
+
+        def set_dome_light_enable(self, boolean):
+            self._dataModel.viewSettings.domeLightEnabled = boolean
+
+        def swap_dome_light_enable(self):
+            self._dataModel.viewSettings.domeLightEnabled = not self._dataModel.viewSettings.domeLightEnabled
+
+        # color space
+        def get_color_space_mode(self):
+            return self._usd_color_space_mode
+
+        def set_color_space_enable(self, boolean):
+            self._usd_color_space_enable = boolean
+            self.set_color_space_mode(
+                self._usd_color_space_mode
+            )
+
+        def set_color_space_mode(self, value):
+            self._usd_color_space_mode = value
+            if self._usd_color_space_enable is True:
+                self._dataModel.viewSettings.colorCorrectionMode = self._usd_color_space_mode
+            else:
+                self._dataModel.viewSettings.colorCorrectionMode = self.ColorCorrectionModes.DISABLED
+
+            self.update_background_color()
+
+        def update_background_color(self):
+            if self._usd_color_space_enable:
+                if self._usd_color_space_mode == self.ColorCorrectionModes.SRGB:
+                    self._dataModel.viewSettings.__dict__['clearColor'] = (0.0275, 0.0275, 0.0275, 1)
+                elif self._usd_color_space_mode == self.ColorCorrectionModes.OPENCOLORIO:
+                    self._dataModel.viewSettings.__dict__['clearColor'] = (0.077, 0.077, 0.077, 1)
+            else:
+                self._dataModel.viewSettings.__dict__['clearColor'] = (0.184, 0.184, 0.184, 1)
+            #
+            self._stageView.update()
+
+        # color
+        def set_background_color(self):
+            pass
+
+        def set_override_color(self):
+            pass
+
     class QtUsdStageWidget(
         QtWidgets.QWidget,
         #
         gui_qt_abstract.AbsQtActionBaseDef,
         gui_qt_abstract.AbsQtThreadBaseDef
     ):
+        # noinspection PyUnresolvedReferences
         UsdQUtils = Usdviewq._usdviewq.Utils
         #
         RefinementComplexities = UsdAppUtils.complexityArgs.RefinementComplexities
@@ -34,6 +138,10 @@ else:
         DumpMallocTags = Usdviewq.common.DumpMallocTags
         PickModes = Usdviewq.common.PickModes
         CameraMaskModes = Usdviewq.common.CameraMaskModes
+
+        snapshot_finished = qt_signal()
+
+        pre_geometry_snapshot_finished = qt_signal()
 
         def _start_thread_draw_(self):
             self._stageView.hide()
@@ -73,9 +181,12 @@ else:
             self._main_button.setFixedSize(28, 28)
             #
             self.__build_usd_var_()
-            self.__build_top_tools_(layout_g)
-            self.__build_left_tools_(layout_g)
+            self.__build_top_tool_bar_(layout_g)
+            self.__build_left_tool_bar_(layout_g)
             self.__build_usd_stage_view_(layout_g)
+            #
+            self.__build_top_tools_()
+            self.__build_left_tools_()
 
             self._init_action_base_def_(self)
             self._init_thread_base_def_(self)
@@ -85,7 +196,9 @@ else:
                 ('Export to', 'file/file', self._usd_export_to_file_),
             ]
 
-        def _refresh_usd_stage_for_texture_preview_(self, texture_preview_assigns=None, use_acescg=False, use_as_imperfection=False):
+        def _refresh_usd_stage_for_texture_preview_(
+            self, texture_preview_assigns=None, use_acescg=False, use_as_imperfection=False
+        ):
             self._usd_stage.Reload()
             root_layer = self._usd_stage.GetRootLayer()
             root_layer.subLayerPaths.append(
@@ -125,7 +238,9 @@ else:
                         else:
                             usd_core.UsdShaderOpt(i_usd_prim).set_file('')
 
-        def _refresh_usd_stage_for_texture_render_(self, texture_preview_assigns=None, use_acescg=False):
+        def _refresh_usd_stage_for_texture_render_(
+            self, texture_preview_assigns=None, use_acescg=False
+        ):
             self._usd_stage.Reload()
             root_layer = self._usd_stage.GetRootLayer()
             root_layer.subLayerPaths.append(
@@ -181,7 +296,9 @@ else:
             #     '/data/e/myworkspace/td/lynxi/script/python/lxusd/.etc/usd_arnold_surface_test.usda'
             # )
 
-        def _refresh_usd_stage_for_asset_preview_(self, usd_file, look_preview_usd_file=None, texture_preview_assigns=None, use_as_imperfection=False):
+        def _refresh_usd_stage_for_asset_preview_(
+            self, usd_file, look_preview_usd_file=None, texture_preview_assigns=None, use_as_imperfection=False
+        ):
             self._usd_stage.Reload()
             session_layer = self._usd_stage.GetSessionLayer()
             session_layer.Clear()
@@ -192,8 +309,9 @@ else:
             )
             self._usd_update_camera_()
 
-            # print look_preview_usd_file
-            root_layer.subLayerPaths.append(look_preview_usd_file)
+            if look_preview_usd_file is not None:
+                root_layer.subLayerPaths.append(look_preview_usd_file)
+            #
             root_layer.subLayerPaths.append(
                 bsc_core.RscFileMtd.get('asset/library/preview-light.usda')
             )
@@ -269,7 +387,9 @@ else:
                 if 'coat_roughness' in texture_preview_assigns:
                     shader_opt.set_as_float('clearcoat', 1.0)
 
-        def _refresh_usd_stage_for_asset_render_(self, usd_file, texture_preview_assigns=None, use_acescg=False):
+        def _refresh_usd_stage_for_asset_render_(
+            self, usd_file, texture_preview_assigns=None, use_acescg=False
+        ):
             self._usd_stage.Reload()
             root_layer = self._usd_stage.GetRootLayer()
             root_layer.subLayerPaths.append(usd_file)
@@ -350,38 +470,37 @@ else:
 
         def _usd_update_camera_(self):
             (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).get_geometry_args('/')
-            # top
+            # side-x
             (t_x, t_y, t_z), (r_x, r_y, r_z), (s_x, s_y, s_z) = bsc_core.CameraMtd.get_front_transformation(
-                geometry_args=((x, y, z), (c_x, c_y, c_z), (w, d, h)),
+                geometry_args=((z, y, x), (c_z, c_y, c_x), (d, h, w)),
                 angle=1,
-                mode=1
-            )
-            usd_core.UsdXformOpt(
-                self._usd_stage.GetPrimAtPath('/cameras/cam_top/cam_top_shape')
-            ).set_matrix(
-                ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (t_x-c_x, t_y-c_y, t_z-c_z, 1))
-            )
-            # front
-            (t_x, t_y, t_z), (r_x, r_y, r_z), (s_x, s_y, s_z) = bsc_core.CameraMtd.get_front_transformation(
-                geometry_args=((x, y, z), (c_x, c_y, c_z), (w, h, d)),
-                angle=1,
-                mode=1
-            )
-            usd_core.UsdXformOpt(
-                self._usd_stage.GetPrimAtPath('/cameras/cam_front/cam_front_shape')
-            ).set_matrix(
-                ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (t_x-c_x, t_y, t_z-c_z, 1))
-            )
-            # side
-            (t_x, t_y, t_z), (r_x, r_y, r_z), (s_x, s_y, s_z) = bsc_core.CameraMtd.get_front_transformation(
-                geometry_args=((x, y, z), (c_x, c_y, c_z), (d, h, w)),
-                angle=1,
-                mode=1
+                bottom=True
             )
             usd_core.UsdXformOpt(
                 self._usd_stage.GetPrimAtPath('/cameras/cam_side/cam_side_shape')
             ).set_matrix(
-                ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (t_x-c_x, t_y, t_z-c_z, 1))
+                ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (t_x, t_y, t_z, 1))
+            )
+            # top-y
+            (t_x, t_y, t_z), (r_x, r_y, r_z), (s_x, s_y, s_z) = bsc_core.CameraMtd.get_front_transformation(
+                geometry_args=((x, -z, y), (c_x, -c_z, c_y), (w, d, h)),
+                angle=1,
+            )
+            usd_core.UsdXformOpt(
+                self._usd_stage.GetPrimAtPath('/cameras/cam_top/cam_top_shape')
+            ).set_matrix(
+                ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (t_x, t_y, t_z, 1))
+            )
+            # front-z
+            (t_x, t_y, t_z), (r_x, r_y, r_z), (s_x, s_y, s_z) = bsc_core.CameraMtd.get_front_transformation(
+                geometry_args=((x, y, z), (c_x, c_y, c_z), (w, h, d)),
+                angle=1,
+                bottom=True
+            )
+            usd_core.UsdXformOpt(
+                self._usd_stage.GetPrimAtPath('/cameras/cam_front/cam_front_shape')
+            ).set_matrix(
+                ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (t_x, t_y, t_z, 1))
             )
 
         def _update_usd_stage_(self):
@@ -391,7 +510,8 @@ else:
             self._resetView()
             self._stageView.setUpdatesEnabled(True)
             # self._frameSelection()
-        # ================================================================================================================ #
+
+        # ============================================================================================================ #
         def __open_usd_stage_(self, usd_stage):
             self._stageView.setUpdatesEnabled(False)
             self._usd_stage = usd_stage
@@ -413,6 +533,7 @@ else:
             #
             self._stageView.updateView(forceComputeBBox=True)
             self._frameSelection()
+
         # usd fnc
         def onPrimSelected(self, path, instanceIndex, topLevelPath, topLevelInstanceIndex, point, button, modifiers):
             # Ignoring middle button until we have something
@@ -428,14 +549,14 @@ else:
                     for selPrim in self._dataModel.selection.getPrims():
                         selPath = selPrim.GetPath()
                         if (selPath != Sdf.Path.absoluteRootPath and
-                            path.HasPrefix(selPath)):
+                                path.HasPrefix(selPath)):
                             doSelection = False
                             break
                 if doSelection:
                     self._dataModel.selection.setPoint(point)
 
-                    shiftPressed = modifiers & QtCore.Qt.ShiftModifier
-                    ctrlPressed = modifiers & QtCore.Qt.ControlModifier
+                    shiftPressed = modifiers&QtCore.Qt.ShiftModifier
+                    ctrlPressed = modifiers&QtCore.Qt.ControlModifier
 
                     if path != Sdf.Path.emptyPath:
                         prim = self._dataModel.stage.GetPrimAtPath(path)
@@ -485,7 +606,7 @@ else:
                         # drawn instance, rather than all sub-instances of a top-level
                         # instance (for nested point instancers).
                         # elif self._dataModel.viewSettings.pickMode == PickModes.PROTOTYPES:
-                            # Just pass the selection info through!
+                        # Just pass the selection info through!
 
                         if shiftPressed:
                             # Clicking prim while holding shift adds it to the
@@ -499,7 +620,8 @@ else:
                             # Clicking prim with no modifiers sets it as the
                             # selection.
                             self._dataModel.selection.switchToPrimPath(
-                                prim.GetPath(), instanceIndex)
+                                prim.GetPath(), instanceIndex
+                            )
 
                     elif not shiftPressed and not ctrlPressed:
                         # Clicking the background with no modifiers clears the
@@ -515,11 +637,13 @@ else:
                     # context menu steals mouse release event from the StageView.
                     # We need to give it one so it can track its interaction
                     # mode properly
-                    mrEvent = QtGui.QMouseEvent(QtCore.QEvent.MouseButtonRelease,
-                                                QtGui.QCursor.pos(),
-                                                QtCore.Qt.RightButton,
-                                                QtCore.Qt.MouseButtons(QtCore.Qt.RightButton),
-                                                QtCore.Qt.KeyboardModifiers())
+                    mrEvent = QtGui.QMouseEvent(
+                        QtCore.QEvent.MouseButtonRelease,
+                        QtGui.QCursor.pos(),
+                        QtCore.Qt.RightButton,
+                        QtCore.Qt.MouseButtons(QtCore.Qt.RightButton),
+                        QtCore.Qt.KeyboardModifiers()
+                    )
                     QtWidgets.QApplication.sendEvent(self._stageView, mrEvent)
 
         def _getItemAtPath(self, path, ensureExpanded=False):
@@ -529,14 +653,14 @@ else:
             path = path if isinstance(path, Sdf.Path) else Sdf.Path(str(path))
             parent = self._dataModel.stage.GetPrimAtPath(path)
             if not parent:
-                raise RuntimeError("Prim not found at path in stage: %s" % str(path))
+                raise RuntimeError("Prim not found at path in stage: %s"%str(path))
             pseudoRoot = self._dataModel.stage.GetPseudoRoot()
             if parent not in self._primToItemMap:
                 # find the first loaded parent
                 childList = []
 
                 while parent != pseudoRoot \
-                            and not parent in self._primToItemMap:
+                        and not parent in self._primToItemMap:
                     childList.append(parent)
                     parent = parent.GetParent()
 
@@ -641,6 +765,7 @@ else:
                 # self._configureRendererSettings()
                 # self._configurePauseAction()
                 # self._configureStopAction()
+
         # ================================================================================================================ #
         def __build_usd_stage_view_(self, layout):
             self._stageView = Usdviewq.stageView.StageView(
@@ -650,6 +775,7 @@ else:
             )
             layout.addWidget(self._stageView, 1, 1, 1, 1)
             # self._stageView.setUpdatesEnabled(False)
+            self._usd_model = UsdModel(self._dataModel, self._stageView)
 
             self._stageView.fpsHUDInfo = self._fpsHUDInfo
             self._stageView.fpsHUDKeys = self._fpsHUDKeys
@@ -664,6 +790,8 @@ else:
             self._stageView.setFocus(QtCore.Qt.TabFocusReason)
             self._stageView.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
+            # self._stageView._renderParams.overrideColor = Gf.Vec4f(1.0, 1.0, 1.0, 1.0)
+
             self._usd_stage = Usd.Stage.CreateInMemory()
 
             self._usd_lights = []
@@ -671,7 +799,7 @@ else:
             self._usd_stage.SetEditTarget(self._usd_stage.GetSessionLayer())
             self._dataModel.stage = self._usd_stage
 
-            self._dataModel.viewSettings.__dict__['clearColor'] = (.0275, .0275, .0275, 1)
+            self._dataModel.viewSettings.__dict__['clearColor'] = (0.0275, 0.0275, 0.0275, 1)
             self._dataModel.viewSettings.showBBoxes = False
 
             self._dataModel.viewSettings.autoComputeClippingPlanes = True
@@ -708,14 +836,19 @@ else:
             # self._freeCamera.rotPhi = 45
 
             # self._refresh_usd_stage_for_texture_preview_()
+
         # ================================================================================================================ #
         def _usd_complete_menu_data_by_prim_visibility_(self, menu_data, prims):
-            def get_is_visible_fnc_(opt_):
+            def check_fnc_(opt_):
                 return opt_.get_is_visible()
 
-            def swap_visible_fnc_(opt_):
+            def toggle_fnc_(opt_):
                 opt_.swap_visibility()
                 self._stageView.update()
+
+            def enable_fnc_():
+                return self._usd_model.get_scene_lights_is_enable()
+
             #
             for i_prim in prims:
                 i_opt = usd_core.UsdStapeOpt(i_prim)
@@ -724,8 +857,12 @@ else:
                     (
                         i_name, 'box-check',
                         (
-                            functools.partial(get_is_visible_fnc_, i_opt),
-                            functools.partial(swap_visible_fnc_, i_opt)
+                            # check
+                            functools.partial(check_fnc_, i_opt),
+                            # toggle
+                            functools.partial(toggle_fnc_, i_opt),
+                            # enable
+                            enable_fnc_
                         )
                     )
                 )
@@ -733,6 +870,11 @@ else:
         def _usd_get_all_geometry_prims_(self):
             return self.UsdQUtils._GetAllPrimsOfType(
                 self._dataModel.stage, Tf.Type.Find(UsdGeom.PointBased)
+            )
+
+        def _usd_get_all_mesh_prims_(self):
+            return self.UsdQUtils._GetAllPrimsOfType(
+                self._dataModel.stage, Tf.Type.Find(UsdGeom.Mesh)
             )
 
         def _usd_get_all_camera_prims_(self):
@@ -744,6 +886,7 @@ else:
             return self.UsdQUtils._GetAllPrimsOfType(
                 self._dataModel.stage, Tf.Type.Find(UsdLux.Light)
             )
+
         @classmethod
         def _usd_reset_session_visible_(cls, stage):
             def rcs_fnc_(p_):
@@ -763,21 +906,21 @@ else:
             for i_p in prims:
                 UsdGeom.Imageable(i_p).MakeInvisible()
 
-        def _usd_do_isolate_selected_geometry_(self):
+        def _usd_do_geometry_isolate_selection_(self):
             with self.BusyContext():
-                self._usd_reset_session_visible_(self._usd_stage)
+                self._usd_clear_session_visible_()
                 self._usd_hide_all_geometry_()
                 #
-                for p in self._dataModel.selection.getPrims():
-                    imgbl = UsdGeom.Imageable(p)
-                    if imgbl:
-                        imgbl.MakeVisible()
+                for i_prim in self._dataModel.selection.getPrims():
+                    fnc = UsdGeom.Imageable(i_prim)
+                    if fnc:
+                        fnc.MakeVisible()
 
                 self._refresh_usd_view_()
 
-        def _usd_do_clear_isolate_selected_(self):
+        def _usd_do_clear_geometry_isolate_selection_(self):
             with self.BusyContext():
-                self._usd_reset_session_visible_(self._usd_stage)
+                self._usd_clear_session_visible_()
                 self._refresh_usd_view_()
 
         def _usd_toggle_visible_texture_(self, boolean):
@@ -816,6 +959,7 @@ else:
                     )
                 )
             return list_
+
         # environment
         def _usd_set_environment_current_(self, key):
             self._usd_environment_cur = key
@@ -848,26 +992,26 @@ else:
                     )
                 )
             return list_
+
         # light
-        def _usd_set_light_enable_(self, boolean):
-            self._dataModel.viewSettings.enableSceneLights = boolean
-
-        def _usd_get_camera_light_is_enable_(self):
-            return self._dataModel.viewSettings.ambientLightOnly is True
-
-        def _usd_set_camera_light_enable_(self, boolean):
-            self._dataModel.viewSettings.ambientLightOnly = boolean
-
-        def _usd_swap_camera_light_enable_(self):
-            self._dataModel.viewSettings.ambientLightOnly = not self._dataModel.viewSettings.ambientLightOnly
-        #
         def _usd_get_light_menu_data_(self):
             list_ = [
                 (
                     'Camera', 'box-check',
                     (
-                        self._usd_get_camera_light_is_enable_,
-                        self._usd_swap_camera_light_enable_
+                        self._usd_model.get_camera_light_is_enable, self._usd_model.swap_camera_light_enable
+                    ),
+                ),
+                (
+                    'Dome', 'box-check',
+                    (
+                        self._usd_model.get_dome_light_is_enable, self._usd_model.swap_dome_light_enable
+                    )
+                ),
+                (
+                    'Scene', 'box-check',
+                    (
+                        self._usd_model.get_scene_lights_is_enable, self._usd_model.swap_scene_lights_enable
                     )
                 ),
                 (),
@@ -875,46 +1019,58 @@ else:
             prims = self._usd_get_all_light_prims_()
             self._usd_complete_menu_data_by_prim_visibility_(list_, prims)
             return list_
+
         # color space
-        def _usd_get_color_space_mode_(self):
-            return self._usd_color_space_mode
-
-        def _usd_set_color_space_enable_(self, boolean):
-            self._usd_color_space_enable = boolean
-            self._usd_update_color_space_mode_(
-                self._usd_color_space_mode
-            )
-
-        def _usd_update_color_space_mode_(self, value):
-            self._usd_color_space_mode = value
-            if self._usd_color_space_enable is True:
-                self._dataModel.viewSettings.colorCorrectionMode = self._usd_color_space_mode
-            else:
-                self._dataModel.viewSettings.colorCorrectionMode = self.ColorCorrectionModes.DISABLED
-
         def _usd_get_color_space_menu_data_(self):
             return [
                 (
                     'sRGB', 'radio-check',
                     (
-                        lambda: self._usd_color_space_mode == self.ColorCorrectionModes.SRGB,
-                        functools.partial(self._usd_update_color_space_mode_, self.ColorCorrectionModes.SRGB)
+                        lambda: self._usd_model.get_color_space_mode() == self.ColorCorrectionModes.SRGB,
+                        functools.partial(self._usd_model.set_color_space_mode, self.ColorCorrectionModes.SRGB)
                     )
                 ),
                 (
                     'openColorIO', 'radio-check',
                     (
-                        lambda: self._usd_color_space_mode == self.ColorCorrectionModes.OPENCOLORIO,
-                        functools.partial(self._usd_update_color_space_mode_, self.ColorCorrectionModes.OPENCOLORIO)
+                        lambda: self._usd_model.get_color_space_mode() == self.ColorCorrectionModes.OPENCOLORIO,
+                        functools.partial(self._usd_model.set_color_space_mode, self.ColorCorrectionModes.OPENCOLORIO)
                     )
                 ),
             ]
+
         # camera
         def _usd_set_camera_current_(self, prim):
             if prim is None:
                 self._dataModel.viewSettings.freeCamera = self._freeCamera
             self._usd_camera_cur = prim
             self._dataModel.viewSettings.cameraPrim = prim
+
+        def _usd_switch_camera_to_(self, *args):
+            _ = args[0]
+            if isinstance(_, six.string_types):
+                prim = self._usd_stage.GetPrimAtPath(_)
+            else:
+                prim = _
+            if prim.IsValid():
+                self._usd_set_camera_current_(prim)
+
+        def _usd_isolate_select_geometry_to_(self, *args):
+            _ = args[0]
+            if isinstance(_, six.string_types):
+                prim = self._usd_stage.GetPrimAtPath(_)
+            else:
+                prim = _
+
+            if prim.IsValid():
+                fnc = UsdGeom.Imageable(prim)
+                if fnc:
+                    self._usd_clear_session_visible_()
+                    self._usd_hide_all_geometry_()
+                    fnc.MakeVisible()
+
+        def _usd_clear_session_visible_(self):
+            self._usd_reset_session_visible_(self._usd_stage)
 
         def _usd_get_camera_current_is_(self, prim):
             return self._usd_camera_cur == prim
@@ -947,6 +1103,7 @@ else:
                     )
                 )
             return list_
+
         # renderer
         def _usd_get_renderer_menu_data_(self):
             list_ = []
@@ -956,13 +1113,16 @@ else:
                 i_name = self._stageView.GetRendererDisplayName(i_renderer_plugin)
                 if i_renderer_plugin == renderer_plugin_cur:
                     list_.append(
-                        (i_name, 'radio-check', (True, functools.partial(self._rendererPluginChanged, i_renderer_plugin)))
+                        (i_name, 'radio-check',
+                         (True, functools.partial(self._rendererPluginChanged, i_renderer_plugin)))
                     )
                 else:
                     list_.append(
-                        (i_name, 'radio-check', (False, functools.partial(self._rendererPluginChanged, i_renderer_plugin)))
+                        (i_name, 'radio-check',
+                         (False, functools.partial(self._rendererPluginChanged, i_renderer_plugin)))
                     )
             return list_
+
         # complexity
         def _usd_update_complexity_mode_(self, value):
             self._usd_complexity_mode = value
@@ -1001,6 +1161,7 @@ else:
                     )
                 ),
             ]
+
         # cull
         def _usd_update_cull_mode_(self, value):
             self._usd_cull_mode = value
@@ -1027,6 +1188,7 @@ else:
                     (True, None)
                 )
             ]
+
         # camera mask
         def _usd_set_camera_mask_enable_(self, boolean):
             self._usd_camera_mask_enable = boolean
@@ -1058,6 +1220,7 @@ else:
                     ),
                 ),
             ]
+
         # hud
         def _usd_swap_hud_info_display_(self):
             self._dataModel.viewSettings.showHUD_Info = not self._dataModel.viewSettings.showHUD_Info
@@ -1105,6 +1268,7 @@ else:
                     )
                 ),
             ]
+
         # ================================================================================================================ #
         def _refresh_usd_view_(self):
             self._stageView.updateView(resetCam=False, forceComputeBBox=True)
@@ -1114,15 +1278,19 @@ else:
 
         def _refresh_usd_view_draw_(self):
             # update bbox
+            self._stageView.closeRenderer()
+            # self._stageView.SetRendererStopped(True)
             self._dataModel._bboxCache = UsdGeom.BBoxCache(
                 Usd.TimeCode.Default(),
                 [Usdviewq.common.IncludedPurposes.DEFAULT, Usdviewq.common.IncludedPurposes.PROXY],
                 True
             )
+            # clear selection
             self._dataModel.selection.clear()
             #
             self._stageView.updateView(resetCam=True, forceComputeBBox=True, frameFit=1.25)
             self._stageView.update()
+            # self._stageView.SetRendererStopped(False)
 
         def _refresh_widget_draw_geometry_(self):
             x, y = 0, 0
@@ -1191,16 +1359,13 @@ else:
                 zip(
                     self._fpsHUDKeys,
                     ["N/A", "N/A"]
-                    )
                 )
+            )
             self._upperHUDInfo = dict()
 
             self._settings2 = Usdviewq.settings2.Settings('1')
 
             self._dataModel = Usdviewq.appController.UsdviewDataModel(self._printTiming, self._settings2)
-            #
-            self._usd_color_space_enable = True
-            self._usd_color_space_mode = self.ColorCorrectionModes.SRGB
             #
             self._usd_complexity_enable = False
             self._usd_complexity_mode = self.RefinementComplexities.MEDIUM
@@ -1214,13 +1379,14 @@ else:
             self._usd_camera_cur = None
 
             self._usd_environment_cur = 'stinson-beach'
-        #
-        def __build_top_tools_(self, layout):
+
+        def __build_top_tool_bar_(self, layout):
             self._top_tool_widget = _utl_gui_qt_wgt_utility.QtLineWidget(self)
             layout.addWidget(self._top_tool_widget, 0, 1, 1, 1)
             self._top_tool_widget.setFixedHeight(28)
             self._top_tool_widget._set_line_styles_(
-                [self._top_tool_widget.Style.Null, self._top_tool_widget.Style.Solid, self._top_tool_widget.Style.Null, self._top_tool_widget.Style.Null]
+                [self._top_tool_widget.Style.Null, self._top_tool_widget.Style.Solid, self._top_tool_widget.Style.Null,
+                 self._top_tool_widget.Style.Null]
             )
 
             self._top_tool_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(self._top_tool_widget)
@@ -1228,15 +1394,19 @@ else:
             self._top_tool_layout.setSpacing(0)
             self._top_tool_layout._set_align_left_()
 
+        def __build_top_tools_(self):
+
             self.__add_hud_and_camera_mask_display_tools_()
             self.__add_material_and_light_switch_tools_()
             self.__add_color_space_switch_tools_()
             self.__add_camera_and_renderer_switch_tools_()
             self.__add_environment_switch_tools_()
+            self.__add_other_tools_()
 
         def __add_hud_and_camera_mask_display_tools_(self):
             def fnc_(boolean):
                 self._dataModel.viewSettings.showHUD = boolean
+
             #
             tool_box = _gui_qt_wgt_container.QtHToolBox()
             self._top_tool_layout.addWidget(tool_box)
@@ -1244,14 +1414,16 @@ else:
             tool_box._set_name_text_('hud-display and camera-mask')
             #
             for i_index, (i_key, i_value, i_enable_fnc, i_menu_data_gain_fnc) in enumerate(
-                [
-                    ('hud-display', False, self._usd_set_hud_enable_, self._usd_get_hud_menu_data_),
-                    ('camera-mask', False, self._usd_set_camera_mask_enable_, self._usd_get_camera_mask_menu_data_)
-                ]
+                    [
+                        ('hud-display', False, self._usd_set_hud_enable_, self._usd_get_hud_menu_data_),
+                        ('camera-mask', False, self._usd_set_camera_mask_enable_, self._usd_get_camera_mask_menu_data_)
+                    ]
             ):
                 i_button = _utl_gui_qt_wgt_utility.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
-                i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n"RMB-click" for show more action'.format(i_key))
+                i_button._set_tool_tip_text_(
+                    '"LMB-click" to toggle "{0}"\n"RMB-click" for show more action'.format(i_key)
+                )
                 i_button._set_icon_file_path_(
                     utl_gui_core.RscIconFile.get('tool/{}'.format(i_key))
                 )
@@ -1272,13 +1444,15 @@ else:
             #
             for i_index, (i_key, i_mode, i_value, i_enable_fnc, i_menu_data_gain_fnc) in enumerate(
                 [
-                    ('material', None, True, self._usd_set_material_enable_, self._usd_get_material_menu_data_),
-                    ('light', None, True, self._usd_set_light_enable_, self._usd_get_light_menu_data_),
+                    ('material', None, True, self._usd_model.set_scene_materials_enable, self._usd_get_material_menu_data_),
+                    ('light', None, True, self._usd_model.set_lights_enable, self._usd_get_light_menu_data_),
                 ]
             ):
                 i_button = _utl_gui_qt_wgt_utility.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
-                i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n"RMB-click" for show more action'.format(i_key))
+                i_button._set_tool_tip_text_(
+                    '"LMB-click" to toggle "{0}"\n"RMB-click" for show more action'.format(i_key)
+                )
                 i_button._set_icon_file_path_(
                     utl_gui_core.RscIconFile.get('tool/{}'.format(i_key))
                 )
@@ -1295,9 +1469,10 @@ else:
             tool_box._set_name_text_('color space')
             #
             for i_index, (i_key, i_mode, i_value, i_enable_fnc, i_menu_data_gain_fnc) in enumerate(
-                [
-                    ('color-manager', None, True, self._usd_set_color_space_enable_, self._usd_get_color_space_menu_data_),
-                ]
+                    [
+                        ('color-manager', None, True, self._usd_model.set_color_space_enable,
+                         self._usd_get_color_space_menu_data_),
+                    ]
             ):
                 i_button = _utl_gui_qt_wgt_utility.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
@@ -1325,10 +1500,11 @@ else:
             ]
             #
             for i_index, (i_key, i_menu_data_gain_fnc) in enumerate(
-                [
-                    ('camera', self._usd_get_camera_menu_data_),
-                    ('renderer', self._usd_get_renderer_menu_data_),
-                ]
+                    [
+                        ('camera', self._usd_get_camera_menu_data_),
+                        ('renderer', self._usd_get_renderer_menu_data_),
+                        ('display-purpose', self._usd_get_display_purpose_menu_data_),
+                    ]
             ):
                 i_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
                 i_button._set_name_text_(i_key)
@@ -1348,10 +1524,9 @@ else:
             tool_box._set_name_text_('display-purpose and environment')
             #
             for i_index, (i_key, i_menu_data_gain_fnc) in enumerate(
-                [
-                    ('display-purpose', self._usd_get_display_purpose_menu_data_),
-                    ('environment', self._usd_get_environment_menu_data_),
-                ]
+                    [
+                        ('environment', self._usd_get_environment_menu_data_),
+                    ]
             ):
                 i_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
                 i_button._set_name_text_(i_key)
@@ -1362,20 +1537,98 @@ else:
                 i_button._set_menu_data_gain_fnc_(i_menu_data_gain_fnc)
                 #
                 tool_box._add_widget_(i_button)
-        #
-        def __build_left_tools_(self, layout):
+
+        def __add_other_tools_(self):
+            tool_box = _gui_qt_wgt_container.QtHToolBox()
+            self._top_tool_layout.addWidget(tool_box)
+            tool_box._set_expanded_(True)
+            tool_box._set_name_text_('display-purpose and environment')
+            #
+            for i_index, (i_key, i_menu_data_gain_fnc, i_fnc) in enumerate(
+                [
+                    ('snapshot', self._usd_get_snapshot_menu_data_, self._usd_do_snapshot_),
+                ]
+            ):
+                i_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
+                i_button._set_name_text_(i_key)
+                i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n"RMB-click" to switch "{0}"'.format(i_key))
+                i_button._set_icon_file_path_(
+                    utl_gui_core.RscIconFile.get('tool/{}'.format(i_key))
+                )
+                i_button._set_menu_data_gain_fnc_(i_menu_data_gain_fnc)
+                i_button.press_clicked.connect(i_fnc)
+                #
+                tool_box._add_widget_(i_button)
+
+        def _usd_get_snapshot_menu_data_(self):
+            return []
+
+        def _usd_do_snapshot_(self):
+            d = bsc_core.SystemMtd.get_home_directory()
+            file_path = six.u('{}/snapshot/untitled-{}.png').format(d, bsc_core.TimeExtraMtd.get_time_tag_36())
+            bsc_core.StgFileOpt(file_path).create_directory()
+            self._usd_save_snapshot_to_(file_path)
+
+        def _usd_wait_for_painting_(self):
+            while self._stageView.IsRendererConverged() is False:
+                pass
+
+        def _usd_save_snapshot_fnc(self, file_path):
+            bsc_core.StgFileOpt(file_path).create_directory()
+            img = self._stageView.grabFrameBuffer(withAlpha=True)
+            img.save(file_path, 'PNG')
+            self.snapshot_finished.emit()
+            bsc_core.LogMtd.trace_result('usd snapshot finish: {}'.format(file_path))
+
+        def _usd_save_snapshot_to_(self, file_path):
+            bsc_core.LogMtd.trace_result('usd snapshot start')
+            t = QtMethodThread(self)
+            # wait when render is stopped
+            if self._stageView.IsRendererConverged() is False:
+                t.append_method(self._usd_wait_for_painting_)
+                t.run_finished.connect(functools.partial(self._usd_save_snapshot_fnc, file_path))
+                t.start()
+            else:
+                self._usd_save_snapshot_fnc(file_path)
+
+        def _usd_save_pre_geometry_snapshot_fnc_(self, file_p):
+            for seq, i_prim in enumerate(self._usd_get_all_mesh_prims_()):
+                self._usd_isolate_select_geometry_to_(i_prim)
+                i_file_path = file_p.format(index=seq)
+                # update GL before save fnc
+                self._stageView.updateView()
+                self._usd_save_snapshot_fnc(i_file_path)
+            #
+            self._usd_clear_session_visible_()
+            self._stageView.updateView()
+            self.pre_geometry_snapshot_finished.emit()
+
+        def _usd_save_per_geometry_snapshot_to_(self, file_p):
+            bsc_core.LogMtd.trace_result('usd snapshot start')
+            t = QtMethodThread(self)
+            # wait when render is stopped
+            if self._stageView.IsRendererConverged() is False:
+                t.append_method(self._usd_wait_for_painting_)
+                t.run_finished.connect(functools.partial(self._usd_save_pre_geometry_snapshot_fnc_, file_p))
+                t.start()
+            else:
+                self._usd_save_pre_geometry_snapshot_fnc_(file_p)
+
+        def __build_left_tool_bar_(self, layout):
             self._left_tool_widget = _utl_gui_qt_wgt_utility.QtLineWidget(self)
             layout.addWidget(self._left_tool_widget, 1, 0, 1, 1)
             self._left_tool_widget.setFixedWidth(28)
             self._left_tool_widget._set_line_styles_(
-                [self._left_tool_widget.Style.Null, self._left_tool_widget.Style.Null, self._left_tool_widget.Style.Null, self._left_tool_widget.Style.Solid]
+                [self._left_tool_widget.Style.Null, self._left_tool_widget.Style.Null,
+                 self._left_tool_widget.Style.Null, self._left_tool_widget.Style.Solid]
             )
 
             self._left_tool_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._left_tool_widget)
             self._left_tool_layout.setContentsMargins(*[0]*4)
             self._left_tool_layout.setSpacing(0)
             self._left_tool_layout._set_align_top_()
-            #
+
+        def __build_left_tools_(self):
             self.__add_isolate_select_switch_tools_()
             self.__add_draw_mode_switch_tools_()
             self.__add_other_switch_tools_()
@@ -1383,9 +1636,10 @@ else:
         def __add_isolate_select_switch_tools_(self):
             def fnc_(boolean):
                 if boolean is True:
-                    self._usd_do_isolate_selected_geometry_()
+                    self._usd_do_geometry_isolate_selection_()
                 else:
-                    self._usd_do_clear_isolate_selected_()
+                    self._usd_do_clear_geometry_isolate_selection_()
+
             #
             tool_box = _gui_qt_wgt_container.QtVToolBox()
             self._left_tool_layout.addWidget(tool_box)
@@ -1393,9 +1647,9 @@ else:
             tool_box._set_name_text_('isolate select')
             #
             for i_index, (i_key, i_mode) in enumerate(
-                [
-                    ('isolate-select', None),
-                ]
+                    [
+                        ('isolate-select', None),
+                    ]
             ):
                 i_button = _utl_gui_qt_wgt_utility.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
@@ -1413,6 +1667,7 @@ else:
         def __add_draw_mode_switch_tools_(self):
             def fnc_(value_):
                 self._dataModel.viewSettings.renderMode = value_
+
             #
             tool_box = _gui_qt_wgt_container.QtVToolBox()
             self._left_tool_layout.addWidget(tool_box)
@@ -1451,13 +1706,16 @@ else:
             #
             for i_index, (i_key, i_mode, i_value, i_enable_fnc, i_menu_data_gain_fnc) in enumerate(
                     [
-                        ('complexity', 'enable', False, self._usd_set_complexity_enable_, self._usd_get_complexity_menu_data_),
+                        ('complexity', 'enable', False, self._usd_set_complexity_enable_,
+                         self._usd_get_complexity_menu_data_),
                         ('cull-backfaces', 'enable', False, self._usd_set_cull_enable_, self._usd_get_cull_menu_data_),
                     ]
             ):
                 i_button = _utl_gui_qt_wgt_utility.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
-                i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n"RMB-click" to switch "{0}" level'.format(i_key))
+                i_button._set_tool_tip_text_(
+                    '"LMB-click" to toggle "{0}"\n"RMB-click" to switch "{0}" level'.format(i_key)
+                )
                 i_button._set_icon_file_path_(
                     utl_gui_core.RscIconFile.get('tool/{}'.format(i_key))
                 )
@@ -1488,3 +1746,6 @@ else:
                     usd_core.UsdStageOpt(self._usd_stage).set_export_to(
                         _
                     )
+
+        def _get_stage_view_(self):
+            return self._stageView

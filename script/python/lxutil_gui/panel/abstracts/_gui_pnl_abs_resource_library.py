@@ -34,6 +34,7 @@ LOAD_INDEX = gui_qt_core.LOAD_INDEX
 
 class _GuiBaseOpt(object):
     DCC_NAMESPACE = 'database'
+
     def __init__(self, window, session, database_opt):
         self._window = window
         self._session = session
@@ -140,6 +141,7 @@ class _GuiBaseOpt(object):
 class _GuiTypeOpt(_GuiBaseOpt):
     ROOT_NAME = 'All'
     DCC_NAMESPACE = 'database'
+
     def __init__(self, window, session, database_opt, prx_view):
         super(_GuiTypeOpt, self).__init__(window, session, database_opt)
         #
@@ -239,6 +241,7 @@ class _GuiTypeOpt(_GuiBaseOpt):
                 prx_item.set_status(
                     prx_item.ValidatorStatus.Disable
                 )
+
         #
         path = dtb_entity.path
         if self.gui_get_is_exists(path) is False:
@@ -342,6 +345,7 @@ class _GuiTypeOpt(_GuiBaseOpt):
             prx_item.set_checked(False)
             return prx_item
         return self.gui_get(path)
+
     # for type
     def gui_cache_fnc_for_types_by_categories(self, dtb_categories):
         dtb_types = self._dtb_opt.get_entities(
@@ -370,6 +374,7 @@ class _GuiTypeOpt(_GuiBaseOpt):
 class _GuiTagOpt(_GuiBaseOpt):
     ROOT_NAME = 'All'
     DCC_NAMESPACE = 'database'
+
     def __init__(self, window, session, database_opt, tree_view):
         super(_GuiTagOpt, self).__init__(window, session, database_opt)
         #
@@ -569,7 +574,10 @@ class _GuiTagOpt(_GuiBaseOpt):
             raise TypeError()
 
         if tag_path in self._count_dict:
-            prx_item.set_name(str(len(self._count_dict[tag_path])), 1)
+            prx_item.set_name(
+                str(len(self._count_dict[tag_path])),
+                1
+            )
 
     def get_filter_data(self):
         dict_ = {}
@@ -582,6 +590,7 @@ class _GuiTagOpt(_GuiBaseOpt):
 
 class _GuiResourceOpt(_GuiBaseOpt):
     DCC_NAMESPACE = 'database'
+
     def __init__(self, window, session, database_opt, list_view):
         super(_GuiResourceOpt, self).__init__(window, session, database_opt)
         #
@@ -682,7 +691,9 @@ class _GuiResourceOpt(_GuiBaseOpt):
             if preview_image_dtb_port:
                 image_path_src = preview_image_dtb_port.value
                 if bsc_core.StgFileOpt(image_path_src).get_is_exists() is True:
-                    image_file_path, image_sp_cmd = bsc_core.ImgFileOpt(image_path_src).get_thumbnail_jpg_create_args_with_background_over(
+                    image_file_path, image_sp_cmd = bsc_core.ImgFileOpt(
+                        image_path_src
+                        ).get_thumbnail_jpg_create_args_with_background_over(
                         width=256, background_rgba=(71, 71, 71, 255)
                     )
                     image_args = image_file_path, image_sp_cmd
@@ -815,6 +826,7 @@ class _GuiResourceOpt(_GuiBaseOpt):
                 entity=dtb_entity.path,
             )
         ).to_string()
+
     @classmethod
     def drag_pressed_fnc(cls, *args, **kwargs):
         mime_data, = args[0]
@@ -824,6 +836,7 @@ class _GuiResourceOpt(_GuiBaseOpt):
             ssn_commands.set_option_hook_execute(
                 hook_option
             )
+
     @classmethod
     def drag_release_fnc(cls, *args, **kwargs):
         flag, mime_data = args[0]
@@ -847,6 +860,7 @@ class _GuiResourceOpt(_GuiBaseOpt):
 class _GuiStgDirectoryOpt(_GuiBaseOpt):
     ROOT_NAME = 'All'
     DCC_NAMESPACE = 'database'
+
     def __init__(self, window, session, database_opt, tree_view):
         super(_GuiStgDirectoryOpt, self).__init__(window, session, database_opt)
         #
@@ -1036,6 +1050,7 @@ class _GuiStgDirectoryOpt(_GuiBaseOpt):
 
 class _GuiStgFileOpt(_GuiBaseOpt):
     DCC_NAMESPACE = 'database'
+
     def __init__(self, window, session, database_opt, list_view):
         super(_GuiStgFileOpt, self).__init__(window, session, database_opt)
         #
@@ -1097,7 +1112,9 @@ class _GuiStgFileOpt(_GuiBaseOpt):
             _location = file_opt.get_path()
 
             _menu_content = self.get_dtb_entity_menu_content(dtb_directory)
-            _menu_content_extra = self.get_dtb_storage_menu_content(dtb_resource, dtb_directory, 'file', file_type, file_path)
+            _menu_content_extra = self.get_dtb_storage_menu_content(
+                dtb_resource, dtb_directory, 'file', file_type, file_path
+                )
             if _menu_content_extra:
                 if _menu_content is not None:
                     _menu_content.set_update(_menu_content_extra.get_value())
@@ -1142,6 +1159,7 @@ class _GuiStgFileOpt(_GuiBaseOpt):
             _prx_item_widget.set_tool_tip(
                 _location
             )
+
         #
         if self.gui_get_is_exists(file_path) is False:
             file_opt = bsc_core.StgFileOpt(file_path)
@@ -1240,7 +1258,7 @@ class _GuiUsdStageViewOpt(_GuiBaseOpt):
             return path
         return bsc_core.RscFileMtd.get('asset/library/preview-material.usda')
 
-    def get_usd_file(self, variants):
+    def get_geometry_usd_file(self, variants):
         p = self._dtb_opt.get_pattern(keyword='geometry-usd-file')
         p_o = bsc_core.PtnParseOpt(p)
         path = p_o.set_update_to(**variants).get_value()
@@ -1252,7 +1270,7 @@ class _GuiUsdStageViewOpt(_GuiBaseOpt):
         def cache_fnc_():
             _variants = self.get_variants(dtb_version)
             self._usd_stage_view.refresh_usd_stage_for_asset_preview(
-                usd_file=self.get_usd_file(_variants),
+                usd_file=self.get_geometry_usd_file(_variants),
                 look_preview_usd_file=self.get_look_preview_usd_file(_variants),
                 texture_preview_assigns=self.get_texture_preview_assigns(dtb_version),
                 use_as_imperfection=use_as_imperfection
@@ -1285,6 +1303,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
     THREAD_STEP = 8
     FILTER_MAXIMUM = 50
     HISTORY_KEY = 'gui.resource-library'
+
     def set_all_setup(self):
         #
         self._item_frame_size = self._session.gui_configure.get('item_frame_size')
@@ -1340,7 +1359,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._type_prx_view.set_selection_use_single()
         self._type_prx_view.set_header_view_create(
             [('type', 3), ('count', 1)],
-            self.get_definition_window_size()[0] * (1.0 / 4.0) - 48
+            self.get_definition_window_size()[0]*(1.0/4.0)-48
         )
         self._type_prx_view.connect_item_select_changed_to(
             self.__execute_gui_refresh_for_resources_by_type_selection_
@@ -1352,7 +1371,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
         self._tag_prx_view.set_selection_disable()
         self._tag_prx_view.set_header_view_create(
             [('tag', 3), ('count', 1)],
-            self.get_definition_window_size()[0] * (1.0 / 4.0) - 48
+            self.get_definition_window_size()[0]*(1.0/4.0)-48
         )
         self._tag_prx_view.connect_item_check_changed_to(
             self.__execute_gui_refresh_for_resources_by_property_check_
@@ -1441,9 +1460,9 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
 
         self.__gui_add_resource_copy_tools()
 
-        self.setup_menu()
+        self.setup_qt_menu()
 
-    def setup_menu(self):
+    def setup_qt_menu(self):
         menu = self.create_menu('tool')
         menu_content = self.get_tool_menu_content()
         menu.set_menu_content(menu_content)
@@ -1633,6 +1652,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                 self._gui_tag_opt.gui_add_all_groups_use_thread()
             else:
                 self._gui_tag_opt.gui_add_all_groups()
+
     # build for types
     def __gui_add_for_all_types_(self):
         def post_fnc_():
@@ -1642,12 +1662,13 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                 'load all types',
                 'count={}, cost-time="{}"'.format(
                     len(self._gui_type_opt._keys),
-                    bsc_core.RawIntegerMtd.second_to_time_prettify(self._end_timestamp - self.__start_timestamp)
+                    bsc_core.RawIntegerMtd.second_to_time_prettify(self._end_timestamp-self.__start_timestamp)
                 )
             )
 
         def quit_fnc_():
             ts.set_quit()
+
         #
         self.__start_timestamp = bsc_core.TimeMtd.get_timestamp()
         #
@@ -1668,7 +1689,9 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                 for i_dtb_categories in dtb_categories_map:
                     [self._gui_type_opt.gui_add_category(i) for i in i_dtb_categories]
                     ts.register(
-                        cache_fnc=functools.partial(self._gui_type_opt.gui_cache_fnc_for_types_by_categories, i_dtb_categories),
+                        cache_fnc=functools.partial(
+                            self._gui_type_opt.gui_cache_fnc_for_types_by_categories, i_dtb_categories
+                            ),
                         build_fnc=self._gui_type_opt.gui_build_fnc_for_types
                     )
             #
@@ -1684,6 +1707,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
                     self._gui_type_opt.gui_build_fnc_for_types(
                         self._gui_type_opt.gui_cache_fnc_for_types_by_categories(i_dtb_categories)
                     )
+
     # build for resources
     def __execute_gui_refresh_for_resources_by_property_check_(self):
         filter_data_src = self._gui_tag_opt.get_filter_data()
@@ -1714,7 +1738,8 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             if dtb_entity is not None:
                 dtb_types = []
                 if dtb_entity.entity_category == self._dtb_opt.EntityCategories.Type:
-                    if dtb_entity.entity_type in [self._dtb_opt.EntityTypes.CategoryGroup, self._dtb_opt.EntityTypes.Category]:
+                    if dtb_entity.entity_type in [self._dtb_opt.EntityTypes.CategoryGroup,
+                                                  self._dtb_opt.EntityTypes.Category]:
                         dtb_types = self._dtb_opt.get_entities(
                             entity_type=self._dtb_opt.EntityTypes.Type,
                             filters=[
@@ -1732,6 +1757,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
 
         def quit_fnc_():
             ts.set_quit()
+
         #
         dtb_types_map = bsc_core.RawListMtd.set_grid_to(
             dtb_types, self.THREAD_STEP
@@ -1899,6 +1925,7 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             self._gui_usd_stage_view_opt.refresh_textures_use_thread(dtb_resource, dtb_version, use_as_imperfection)
         else:
             self._gui_usd_stage_view_opt.refresh_textures(dtb_resource, dtb_version, use_as_imperfection)
+
     # build for storage
     def __execute_gui_refresh_for_storage_directories_(self):
         self._gui_stg_directory_opt.restore()
@@ -1919,7 +1946,9 @@ class AbsPnlAbsResourceLibrary(prx_widgets.PrxSessionWindow):
             ],
         )
         if self._qt_thread_enable is True:
-            self._gui_stg_directory_opt.gui_add_all_use_thread(dtb_resource, dtb_version, self._dtb_directory_sub_path_cur)
+            self._gui_stg_directory_opt.gui_add_all_use_thread(
+                dtb_resource, dtb_version, self._dtb_directory_sub_path_cur
+                )
         else:
             self._gui_stg_directory_opt.gui_add_all(dtb_resource, dtb_version, self._dtb_directory_sub_path_cur)
 

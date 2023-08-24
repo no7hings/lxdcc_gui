@@ -7,11 +7,15 @@ from lxusd import usd_setup
 
 import os
 
+from lxbasic import bsc_core
+
 import lxutil_gui.qt.widgets as qt_widgets
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
 from lxutil_gui.qt import gui_qt_core
+
+bsc_core.LogMtd.TEST = True
 
 
 class W(prx_widgets.PrxBaseWindow):
@@ -21,8 +25,6 @@ class W(prx_widgets.PrxBaseWindow):
         self.set_definition_window_size([512+4, 512+22])
 
         v = qt_widgets.QtGLWidget()
-
-        v._save_image_('/data/f/image_render/test_1.jpg')
 
         self.add_widget(v)
 

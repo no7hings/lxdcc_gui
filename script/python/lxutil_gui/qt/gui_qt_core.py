@@ -1248,19 +1248,19 @@ class QtDccMtd(utl_abstract.AbsDccMtd):
             return QtClarisseMtd.get_qt_main_window_geometry()
 
 
-def set_qt_window_show(qt_window, pos=None, size=None, use_exec=False):
+def set_qt_window_show(widget, pos=None, size=None, use_exec=False):
     if size is not None:
         w_0, h_0 = size
     else:
-        q_size = qt_window.baseSize()
+        q_size = widget.baseSize()
         w_0, h_0 = q_size.width(), q_size.height()
     #
-    q_margin = qt_window.contentsMargins()
+    q_margin = widget.contentsMargins()
     wl, wt, wr, wb = q_margin.left(), q_margin.top(), q_margin.right(), q_margin.bottom()
     vl, vt, vr, vb = 0, 0, 0, 0
     w_1, h_1 = w_0 + sum([wl, vl, wr, vr]), h_0 + sum([wt, vt, wb, vb])
 
-    p = qt_window.parent()
+    p = widget.parent()
     if p:
         p_w, p_h = p.width(), p.height()
         o_x, o_y = p.pos().x(), p.pos().y()
@@ -1269,24 +1269,24 @@ def set_qt_window_show(qt_window, pos=None, size=None, use_exec=False):
         p_w, p_h = desktop_rect.width(), desktop_rect.height()
         o_x, o_y = 0, 0
 
-    if hasattr(qt_window, '_main_window_geometry'):
-        if qt_window._main_window_geometry is not None:
-            o_x, o_y, p_w, p_h = qt_window._main_window_geometry
+    if hasattr(widget, '_main_window_geometry'):
+        if widget._main_window_geometry is not None:
+            o_x, o_y, p_w, p_h = widget._main_window_geometry
 
     if pos is not None:
         x, y = pos[0] + o_x, pos[1] + o_y
     else:
         x, y = (p_w - w_1) / 2 + o_x, (p_h - h_1) / 2 + o_y
     #
-    qt_window.setGeometry(
+    widget.setGeometry(
         max(x, 0), max(y, 0), w_1, h_1
     )
     #
     if use_exec is True:
-        qt_window.exec_()
+        widget.exec_()
     else:
-        qt_window.show()
-        qt_window.raise_()
+        widget.show()
+        widget.raise_()
 
 
 def show_prx_window_auto(prx_window_class, show_kwargs=None, **kwargs):

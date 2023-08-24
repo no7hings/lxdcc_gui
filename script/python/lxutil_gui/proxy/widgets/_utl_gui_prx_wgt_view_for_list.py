@@ -297,7 +297,7 @@ class PrxListView(
 
     def set_item_image_frame_draw_enable(self, boolean):
         self.view._set_item_image_frame_draw_enable_(boolean)
-    #
+
     def create_item(self, *args, **kwargs):
         prx_item_widget = _utl_gui_prx_wgt_item.PrxListItemWidget()
         prx_item_widget.set_view(self)

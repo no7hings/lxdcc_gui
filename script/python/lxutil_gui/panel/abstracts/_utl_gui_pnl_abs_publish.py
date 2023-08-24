@@ -43,7 +43,7 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
         #
         self._options_prx_node = prx_widgets.PrxNode_('options')
         sa_1.add_widget(self._options_prx_node)
-        self._options_prx_node.create_ports_by_configure(
+        self._options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.options')
         )
 
@@ -79,7 +79,7 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
         layer_widget.add_widget(sa_2)
         self._publish_options_prx_node = prx_widgets.PrxNode_('options')
         sa_2.add_widget(self._publish_options_prx_node)
-        self._publish_options_prx_node.create_ports_by_configure(
+        self._publish_options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.publish_options')
         )
 
@@ -828,7 +828,7 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
 
         self._cfg_options_prx_node = prx_widgets.PrxNode_('options')
         sa_1.add_widget(self._cfg_options_prx_node)
-        self._cfg_options_prx_node.create_ports_by_configure(
+        self._cfg_options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.validation_options'),
         )
 
@@ -885,7 +885,7 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
         layer_widget.add_widget(sa_2)
         self._publish_options_prx_node = prx_widgets.PrxNode_('options')
         sa_2.add_widget(self._publish_options_prx_node)
-        self._publish_options_prx_node.create_ports_by_configure(
+        self._publish_options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.publish_options')
         )
 

@@ -1,4 +1,6 @@
 # coding:utf-8
+from lxbasic import bsc_core
+
 from lxutil_gui.qt import gui_qt_core
 
 from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_for_usd
@@ -10,6 +12,7 @@ class PrxUsdStageViewProxy(
     utl_gui_prx_abstract.AbsPrxWidget
 ):
     QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+
     def __init__(self, *args, **kwargs):
         super(PrxUsdStageViewProxy, self).__init__(*args, **kwargs)
 
@@ -42,7 +45,7 @@ class PrxUsdStageView(
         QT_WIDGET_CLS = _gui_qt_wgt_for_usd.QtUsdStageWidgetProxy
     else:
         QT_WIDGET_CLS = _gui_qt_wgt_for_usd.QtUsdStageWidget
-    #
+
     def __init__(self, *args, **kwargs):
         super(PrxUsdStageView, self).__init__(*args, **kwargs)
 
@@ -76,6 +79,3 @@ class PrxUsdStageView(
         self._qt_widget._run_build_use_thread_(
             cache_fnc, build_fnc, post_fnc
         )
-
-
-

@@ -57,7 +57,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
 
         self._options_prx_node = prx_widgets.PrxNode_('options')
         s_0.add_widget(self._options_prx_node)
-        self._options_prx_node.create_ports_by_configure(
+        self._options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.options'),
         )
 
@@ -631,7 +631,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         #
         self._options_prx_node = prx_widgets.PrxNode_('options')
         s_a_0.add_widget(self._options_prx_node)
-        self._options_prx_node.create_ports_by_configure(
+        self._options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.options'),
         )
 

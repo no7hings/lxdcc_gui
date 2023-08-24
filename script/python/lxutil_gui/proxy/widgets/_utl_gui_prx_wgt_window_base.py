@@ -45,7 +45,7 @@ class PrxBaseWindow(
     def __init__(self, *args, **kwargs):
         super(PrxBaseWindow, self).__init__(*args, **kwargs)
         #
-        self.set_log_file_path(bsc_core.StgUserMtd.get_log_directory())
+        self.set_log_file_path(bsc_core.StgUserMtd.get_user_log_directory())
         #
         self._log_file_path = None
         #

@@ -184,23 +184,23 @@ class AbsRenderSubmitterPanel(
         self.set_all_refresh()
 
     def _set_prx_node_build_(self):
-        self._schemes_prx_node.create_ports_by_configure(
+        self._schemes_prx_node.create_ports_by_data(
             self._hook_build_configure.get('node.schemes')
         )
         #
-        self._options_prx_node.create_ports_by_configure(
+        self._options_prx_node.create_ports_by_data(
             self._hook_build_configure.get('node.options')
         )
         # usd
-        self._usd_prx_node.create_ports_by_configure(
+        self._usd_prx_node.create_ports_by_data(
             self._hook_build_configure.get('node.usd')
         )
 
-        self._variables_prx_node.create_ports_by_configure(
+        self._variables_prx_node.create_ports_by_data(
             self._hook_build_configure.get('node.variables')
         )
 
-        self._settings_prx_node.create_ports_by_configure(
+        self._settings_prx_node.create_ports_by_data(
             self._hook_build_configure.get('node.settings')
         )
 

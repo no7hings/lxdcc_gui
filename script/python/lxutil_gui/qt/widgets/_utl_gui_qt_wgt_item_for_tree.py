@@ -541,7 +541,12 @@ class QtTreeWidgetItem(
             text = text.replace('<', '&lt;')
             text = text.replace('>', '&gt;')
             #
-            css = '<html>\n<body>\n<style>.no_wrap{white-space:nowrap;}</style>\n<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
+            css = (
+                '<html>\n'
+                '<body>\n'
+                '<style>.no_wrap{white-space:nowrap;}</style>\n'
+                '<style>.no_warp_and_center{white-space:nowrap;text-align: center;}</style>\n'
+            )
             name_text_orig = self._get_name_text_orig_()
             if name_text_orig is not None:
                 title_text = name_text_orig
@@ -556,8 +561,10 @@ class QtTreeWidgetItem(
             css += '<p><hr></p>\n'
             if isinstance(text, six.string_types):
                 texts = text.split('\n')
-            else:
+            elif isinstance(text, (tuple, list)):
                 texts = text
+            else:
+                raise RuntimeError()
             #
             for i in texts:
                 css += '<p class="no_wrap">{}</p>\n'.format(i)

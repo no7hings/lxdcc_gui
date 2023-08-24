@@ -5,7 +5,10 @@ from lxutil_gui.qt import gui_qt_core
 
 
 class AbsScpGuiCmdBase(object):
-    def __init__(self, window, button):
+    KEY = 'command batch'
+
+    def __init__(self, tag, window, button):
+        self._tag = tag
         self._window = window
         self._button = button
         self._cmds = []
@@ -14,13 +17,21 @@ class AbsScpGuiCmdBase(object):
         self._build_warning_texts = []
         self._execute_warning_texts = []
 
+        self._batch_exception_log_file_path = None
+
     def build_for_data(self):
         raise NotImplementedError()
 
     def execute_by_data(self, button, cmds):
         def finished_fnc_(index, status, results):
             button.set_finished_at(index, status)
-            print '\n'.join(results)
+            if status == bsc_core.TrdCmdProcess.Status.Failed:
+                if self._batch_exception_log_file_path is not None:
+                    bsc_core.StgFileOpt(self._batch_exception_log_file_path).append(
+                        '\n'.join(results)
+                    )
+            else:
+                print '\n'.join(results)
 
         def status_changed_fnc_(index, status):
             button.set_status_at(index, status)
@@ -83,12 +94,18 @@ class AbsScpGuiCmdBase(object):
         self._ts = []
 
     def append_cmd(self, cmd):
+        bsc_core.LogMtd.trace_method_result(
+            self.KEY, 'append command: `{}`'.format(cmd)
+        )
         self._cmds.append(cmd)
 
     def extend_cmds(self, cmds):
         self._cmds.extend(cmds)
 
-    def run(self):
+    def execute(self):
         self.restore()
+        directory_path = bsc_core.StgUserMtd.get_user_batch_exception_directory(self._tag, create=True)
+        self._batch_exception_log_file_path = '{}/{}.log'.format(directory_path, bsc_core.UuidMtd.get_new())
+
         self.build_for_data()
         self.execute_by_data(self._button, self._cmds)

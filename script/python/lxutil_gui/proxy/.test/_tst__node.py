@@ -36,7 +36,7 @@ class TestWindow(prx_widgets.PrxBaseWindow):
         self.add_widget(s)
         n = prx_widgets.PrxNode_('root')
         s.add_widget(n)
-        n.create_ports_by_configure(
+        n.create_ports_by_data(
             c
         )
 
