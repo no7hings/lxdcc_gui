@@ -325,9 +325,9 @@ class PrxBaseWindow(
 
     def set_exception_content_add(self, text):
         if isinstance(text, six.string_types):
-            self._exception_text_browser.set_add(text)
+            self._exception_text_browser.append(text)
         elif isinstance(text, (tuple, list)):
-            self._exception_text_browser.set_add(
+            self._exception_text_browser.append(
                 '\n'.join(text)
             )
 
@@ -464,10 +464,10 @@ class PrxSessionToolWindow(PrxSessionWindow):
 
     def apply_and_close_fnc(self):
         self.apply_fnc()
-        self.set_window_close_later()
+        self.close_window_later()
 
     def close_fnc(self):
-        self.set_window_close_later()
+        self.close_window_later()
 
     def _setup_ssn_tool_(self):
         self._ssn_tool_apply_and_close_button = _utl_gui_prx_wdt_utility.PrxPressItem()

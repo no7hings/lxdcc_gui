@@ -1368,7 +1368,7 @@ class AbsQtNameBaseDef(object):
             css += '<p><hr></p>\n'
             text = bsc_core.auto_encode(text)
             if isinstance(text, six.string_types):
-                texts = text.split(r'\n')
+                texts = text.split('\n')
             elif isinstance(text, (tuple, list)):
                 texts = text
             else:
@@ -1580,7 +1580,7 @@ class AbsQtNamesBaseDef(AbsQtNameBaseDef):
             text = bsc_core.auto_encode(text)
             css += '<p><hr></p>\n'
             if isinstance(text, six.string_types):
-                texts_extend = text.split(r'\n')
+                texts_extend = text.split('\n')
             elif isinstance(text, (tuple, list)):
                 texts_extend = text
             else:

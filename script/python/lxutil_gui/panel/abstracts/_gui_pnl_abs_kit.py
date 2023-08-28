@@ -342,7 +342,7 @@ class AbsPnlAppKit(prx_widgets.PrxSessionWindow):
         )
 
     def create_apply_fnc(self):
-        options = self._create_option_prx_node.get_as_kwargs()
+        options = self._create_option_prx_node.to_dict()
         HookAddOpt(
             self,
             self._session,
@@ -350,7 +350,7 @@ class AbsPnlAppKit(prx_widgets.PrxSessionWindow):
         ).accept_create()
 
     def modify_apply_fnc(self):
-        options = self._modify_option_prx_node.get_as_kwargs()
+        options = self._modify_option_prx_node.to_dict()
         HookAddOpt(
             self,
             self._session,

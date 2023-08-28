@@ -498,7 +498,7 @@ class QtEntryAsContentEdit(
         self.setFont(font)
         self.update()
 
-    def _add_content_(self, text):
+    def _append_content_(self, text):
         def add_fnc_(text_):
             self.moveCursor(QtGui.QTextCursor.End)
             self.insertPlainText(text_+'\n')

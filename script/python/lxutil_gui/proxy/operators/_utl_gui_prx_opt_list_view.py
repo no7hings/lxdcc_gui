@@ -12,7 +12,7 @@ class PrxRsvTaskListViewAddOpt(object):
     def restore_all(self):
         self._prx_list_view.set_clear()
 
-    def set_add(self, rsv_task):
+    def append(self, rsv_task):
         def cache_fnc_():
             return [prx_item, rsv_task]
 

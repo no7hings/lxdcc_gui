@@ -238,18 +238,18 @@ class AbsQtNGGraphDef(object):
         m = self._ng_graph_composite_matrix
         #
         m_t = bsc_core.RawMatrix33Opt.get_default()
-        m_t = bsc_core.RawMatrix33Opt.set_identity(m_t)
+        m_t = bsc_core.RawMatrix33Opt.identity_to(m_t)
         #
         m_t[0][2] = d_t_x
         m_t[1][2] = d_t_y
         #
-        self._ng_graph_composite_matrix = bsc_core.RawMatrix33Opt(m_t).set_multiply_to(m)
+        self._ng_graph_composite_matrix = bsc_core.RawMatrix33Opt(m_t).multiply_to(m)
     #
     def _set_ng_graph_scale_matrix_(self, c_x, c_y, d_s_x, d_s_y):
         m = self._ng_graph_composite_matrix
         #
         s_m = bsc_core.RawMatrix33Opt.get_default()
-        s_m = bsc_core.RawMatrix33Opt.set_identity(s_m)
+        s_m = bsc_core.RawMatrix33Opt.identity_to(s_m)
         #
         s_m[0][0] = d_s_x
         s_m[0][2] = (1-d_s_x)*c_x
@@ -257,7 +257,7 @@ class AbsQtNGGraphDef(object):
         s_m[1][1] = d_s_y
         s_m[1][2] = (1-d_s_y)*c_y
         #
-        self._ng_graph_composite_matrix = bsc_core.RawMatrix33Opt(s_m).set_multiply_to(m)
+        self._ng_graph_composite_matrix = bsc_core.RawMatrix33Opt(s_m).multiply_to(m)
     #
     def _set_ng_graph_transformation_matrix_update_(self):
         m = self._ng_graph_composite_matrix
@@ -270,7 +270,7 @@ class AbsQtNGGraphDef(object):
             self._ng_graph_point_1, m
         )
         #
-        self._ng_graph_composite_matrix = bsc_core.RawMatrix33Opt.set_identity(m)
+        self._ng_graph_composite_matrix = bsc_core.RawMatrix33Opt.identity_to(m)
     @staticmethod
     def __set_ng_graph_point_update_bt_matrix_(point, matrix):
         i_x_0, i_y_0 = point.x(), point.y()

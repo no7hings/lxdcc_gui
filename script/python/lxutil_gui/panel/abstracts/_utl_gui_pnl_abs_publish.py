@@ -154,7 +154,7 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
                 #
                 no_visible=False, cancel_visible=False
             )
-            self.set_window_close_later()
+            self.close_window_later()
             return
 
         task_id = bsc_core.EnvironMtd.get(
@@ -494,7 +494,7 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
             self._session,
             self._rsv_task,
             self._version_properties,
-            self._publish_options_prx_node.get_as_kwargs()
+            self._publish_options_prx_node.to_dict()
         )
         p.execute()
 
@@ -1179,5 +1179,5 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
             self._validation_info_file,
             self._rsv_task,
             self._rsv_scene_properties,
-            self._publish_options_prx_node.get_as_kwargs()
+            self._publish_options_prx_node.to_dict()
         ).execute()

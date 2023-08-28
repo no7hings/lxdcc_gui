@@ -497,7 +497,7 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
                 html = markdown.markdown(raw)
                 self._qt_text_browser_0.setHtml(html)
 
-    def set_add(self, text):
+    def append(self, text):
         if isinstance(text, six.string_types):
             self._qt_text_browser_0.append(
                 text

@@ -97,7 +97,7 @@ class PnlGeometryExporter(prx_widgets.PrxSessionToolWindow):
                 parent=self.widget
             )
             #
-            self.set_window_close_later()
+            self.close_window_later()
 
     def export_renderable_fnc_(self):
         file_path = self._options_prx_node.get('usd.file')
@@ -220,12 +220,12 @@ class PnlGeometryBuilder(prx_widgets.PrxSessionToolWindow):
                 parent=self.widget
             )
             #
-            self.set_window_close_later()
+            self.close_window_later()
 
     def import_geometry_fnc(self):
         import lxmaya.fnc.builders as mya_fnc_builders
         #
-        kwargs = self._options_prx_node.get_as_kwargs()
+        kwargs = self._options_prx_node.to_dict()
         #
         mya_fnc_builders.FncAssetBuilderNew(
             option=dict(
@@ -248,7 +248,7 @@ class PnlGeometryBuilder(prx_widgets.PrxSessionToolWindow):
     def import_geometry_uv_map_fnc(self):
         import lxmaya.fnc.builders as mya_fnc_builders
 
-        kwargs = self._options_prx_node.get_as_kwargs()
+        kwargs = self._options_prx_node.to_dict()
 
         mya_fnc_builders.FncAssetBuilderNew(
             option=dict(
@@ -265,7 +265,7 @@ class PnlGeometryBuilder(prx_widgets.PrxSessionToolWindow):
     def apply_fnc(self):
         import lxmaya.fnc.builders as mya_fnc_builders
         #
-        kwargs = self._options_prx_node.get_as_kwargs()
+        kwargs = self._options_prx_node.to_dict()
         #
         mya_fnc_builders.FncAssetBuilderNew(
             option=dict(
@@ -349,12 +349,12 @@ class PnlLookBuilder(prx_widgets.PrxSessionToolWindow):
                 parent=self.widget
             )
             #
-            self.set_window_close_later()
+            self.close_window_later()
 
     def import_look_render_fnc(self):
         import lxmaya.fnc.builders as mya_fnc_builders
 
-        kwargs = self._options_prx_node.get_as_kwargs()
+        kwargs = self._options_prx_node.to_dict()
 
         mya_fnc_builders.FncAssetBuilderNew(
             option=dict(
@@ -371,7 +371,7 @@ class PnlLookBuilder(prx_widgets.PrxSessionToolWindow):
     def import_look_preview_fnc(self):
         import lxmaya.fnc.builders as mya_fnc_builders
 
-        kwargs = self._options_prx_node.get_as_kwargs()
+        kwargs = self._options_prx_node.to_dict()
 
         mya_fnc_builders.FncAssetBuilderNew(
             option=dict(
@@ -388,7 +388,7 @@ class PnlLookBuilder(prx_widgets.PrxSessionToolWindow):
     def import_geometry_uv_map_fnc(self):
         import lxmaya.fnc.builders as mya_fnc_builders
 
-        kwargs = self._options_prx_node.get_as_kwargs()
+        kwargs = self._options_prx_node.to_dict()
 
         mya_fnc_builders.FncAssetBuilderNew(
             option=dict(
@@ -405,7 +405,7 @@ class PnlLookBuilder(prx_widgets.PrxSessionToolWindow):
     def apply_fnc(self):
         import lxmaya.fnc.builders as mya_fnc_builders
 
-        kwargs = self._options_prx_node.get_as_kwargs()
+        kwargs = self._options_prx_node.to_dict()
 
         mya_fnc_builders.FncAssetBuilderNew(
             option=dict(

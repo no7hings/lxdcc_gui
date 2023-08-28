@@ -65,7 +65,7 @@ class PnlDccWorkspaceLoader(prx_widgets.PrxSessionToolWindow):
                 parent=self.widget
             )
             #
-            self.set_window_close_later()
+            self.close_window_later()
 
     def refresh_artist_file_fnc(self):
         o = self._options_prx_node

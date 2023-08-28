@@ -25,7 +25,7 @@ class AbsScpGuiCmdBase(object):
     def execute_by_data(self, button, cmds):
         def finished_fnc_(index, status, results):
             button.set_finished_at(index, status)
-            if status == bsc_core.TrdCmdProcess.Status.Failed:
+            if status == bsc_core.TrdCmdPool.Status.Failed:
                 if self._batch_exception_log_file_path is not None:
                     bsc_core.StgFileOpt(self._batch_exception_log_file_path).append(
                         '\n'.join(results)
@@ -40,9 +40,9 @@ class AbsScpGuiCmdBase(object):
             self._ts = []
             #
             for _i_index, _i_cmd in enumerate(self._cmds):
-                bsc_core.TrdCmdProcess.set_wait()
+                bsc_core.TrdCmdPool.set_wait()
                 #
-                _i_t = bsc_core.TrdCmdProcess.set_start(_i_cmd, _i_index)
+                _i_t = bsc_core.TrdCmdPool.set_start(_i_cmd, _i_index)
                 self._ts.append(_i_t)
                 _i_t.status_changed.set_connect_to(status_changed_fnc_)
                 _i_t.finished.set_connect_to(finished_fnc_)
@@ -61,8 +61,8 @@ class AbsScpGuiCmdBase(object):
 
             c = len(cmds)
 
-            button.set_status(bsc_core.TrdCmdProcess.Status.Started)
-            button.set_initialization(c, bsc_core.TrdCmdProcess.Status.Started)
+            button.set_status(bsc_core.TrdCmdPool.Status.Started)
+            button.set_initialization(c, bsc_core.TrdCmdPool.Status.Started)
 
             q_t = gui_qt_core.QtMethodThread(self._window.widget)
             q_t.append_method(

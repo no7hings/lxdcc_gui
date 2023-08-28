@@ -1128,7 +1128,7 @@ class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
     def get_port(self, port_name):
         return self._port_stack.get_object(port_name)
 
-    def get_as_kwargs(self):
+    def to_dict(self):
         dic = {}
         ports = self._port_stack.get_objects()
         for port in ports:
@@ -1470,7 +1470,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
     def get_ports(self, regex=None):
         return self._port_stack.get_objects(regex)
 
-    def get_as_kwargs(self):
+    def to_dict(self):
         dic = {}
         ports = self._port_stack.get_objects()
         for i_port in ports:

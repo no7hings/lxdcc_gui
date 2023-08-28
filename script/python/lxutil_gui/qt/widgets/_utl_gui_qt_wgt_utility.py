@@ -1579,7 +1579,7 @@ class QtMainWindow(
         self.close()
         self.deleteLater()
 
-    def _set_close_later_(self, delay_time):
+    def _close_later_(self, delay_time):
         close_timer = QtCore.QTimer(self)
         close_timer.timeout.connect(self._set_close_)
         close_timer.start(delay_time)
@@ -1651,10 +1651,10 @@ class QtDialog(
         self.close()
         self.deleteLater()
 
-    def _set_close_later_(self, time):
+    def _close_later_(self, delay_time):
         close_timer = QtCore.QTimer(self)
         close_timer.timeout.connect(self._set_close_)
-        close_timer.start(time)
+        close_timer.start(delay_time)
 
     def _set_size_changed_connect_to_(self, fnc):
         self.size_changed.connect(fnc)

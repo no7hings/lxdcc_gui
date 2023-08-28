@@ -40,6 +40,7 @@ class AbsPrx(object):
     ProcessStatus = bsc_configure.Status
     ShowStatus = bsc_configure.ShowStatus
     ValidatorStatus = bsc_configure.ValidatorStatus
+
     def __init__(self, *args, **kwargs):
         self._qt_widget = self.QT_WIDGET_CLS(*args, **kwargs)
         self._qt_widget.gui_proxy = self
@@ -49,9 +50,11 @@ class AbsPrx(object):
             self._model = None
         #
         self._custom_raw = {}
+
     @property
     def widget(self):
         return self._qt_widget
+
     @property
     def model(self):
         return self._model
@@ -130,18 +133,21 @@ class AbsPrxWidget(AbsPrx):
 class AbsPrxViewDef(object):
     def _set_prx_view_def_init_(self, qt_view):
         self._qt_view = qt_view
+
     @property
     def view(self):
         return self._qt_view
 
     def create_item(self, *args, **kwargs):
         raise NotImplementedError()
+
     #
     def connect_item_select_changed_to(self, fnc):
         self._qt_view.itemSelectionChanged.connect(fnc)
 
     def connect_focus_changed_to(self, fnc):
         self._qt_view.focus_changed.connect(fnc)
+
     # select
     def _get_selected_items_(self):
         return self.view.selectedItems()
@@ -172,6 +178,7 @@ class _Loading(object):
 
 class AbsPrxWaitingDef(object):
     QT_WAITING_CHART_CLS = None
+
     @property
     def widget(self):
         raise NotImplementedError()
@@ -221,6 +228,7 @@ class AbsPrxWaitingDef(object):
                 _method = fnc_(*args, **kwargs)
             except:
                 from lxutil import utl_core
+
                 #
                 utl_core.ExceptionCatcher.set_create()
                 raise
@@ -318,9 +326,9 @@ class AbsPrxWindow(AbsPrx):
         self._qt_widget.close()
         self._qt_widget.deleteLater()
 
-    def set_window_close_later(self, time=1000):
+    def close_window_later(self, delay_time=1000):
         self._qt_widget.hide()
-        self._qt_widget._set_close_later_(time)
+        self._qt_widget._close_later_(delay_time)
 
     def set_window_title(self, *args):
         text = args[0]
@@ -357,6 +365,7 @@ class AbsPrxWindow(AbsPrx):
 
 class AbsPrxLayerBaseDef(object):
     PRX_LAYER_CLS = None
+
     def _init_layer_base_def_(self, layout):
         self._qt_layer_unit_layout = layout
         self._layer_dict = {}
@@ -394,6 +403,7 @@ class AbsPrxLayerBaseDef(object):
 class GuiProgress(object):
     FORMAT_0 = '{percent}% {costed_time}'
     FORMAT_1 = '{percent}% {costed_time} / {estimated_time}'
+
     def __init__(self, proxy, qt_progress, maximum, label=None):
         self._proxy = proxy
         self._qt_progress = qt_progress
@@ -423,15 +433,19 @@ class GuiProgress(object):
         self._depth = 0
 
         self._qt_progress.show()
+
     @property
     def label(self):
         return self._label
+
     @property
     def value(self):
         return self._value
+
     @property
     def maximum(self):
         return self._maximum
+
     @property
     def percent(self):
         return self._get_percent_()
@@ -450,9 +464,11 @@ class GuiProgress(object):
 
     def set_value(self, v):
         self._value = v
+
     #
     def get_depth(self):
         return self._depth
+
     #
     def set_start(self):
         pass
@@ -521,7 +537,7 @@ class GuiProgress(object):
 
     def get_show_percent(self):
         kwargs = dict(
-            percent=('%3d' % (int(self._get_percent_()*100))),
+            percent=('%3d'%(int(self._get_percent_()*100))),
             value=self._value,
             maximum=self._maximum,
             costed_time=bsc_core.RawIntegerMtd.second_to_time_prettify(
@@ -583,6 +599,7 @@ class GuiProgress(object):
                 return obj_
             else:
                 return rcs_fnc_(_parent)
+
         #
         return rcs_fnc_(self)
 
@@ -593,6 +610,7 @@ class GuiProgress(object):
                 for _child in _children:
                     lis_.append(_child)
                     rcs_fnc_(lis_, _child)
+
         #
         lis = []
         rcs_fnc_(lis, self)
@@ -609,6 +627,7 @@ class GuiProgress(object):
                     lis_.append((depth_, _i_child))
                     #
                     rcs_fnc_(lis_, _i_child, depth_+1)
+
         #
         lis = []
         rcs_fnc_(lis, self, 0)
@@ -636,6 +655,7 @@ class AbsPrxProgressingDef(object):
     QT_PROGRESSING_CHART_CLS = None
     PROGRESS_FNC_CLS = GuiProgress
     PROGRESS_WIDGET_CLS = None
+
     @property
     def widget(self):
         raise NotImplementedError()
@@ -671,6 +691,7 @@ class AbsPrxProgressingDef(object):
             else:
                 self._current_progress.add_child(g_p)
         return g_p
+
     @contextmanager
     def gui_progressing(self, maximum, label=None):
         g_p = self.set_progress_create(maximum, label)
@@ -745,6 +766,7 @@ class AbsPrxViewFilterTagDef(object):
     @property
     def view(self):
         raise NotImplementedError()
+
     @property
     def filter_bar(self):
         raise NotImplementedError()

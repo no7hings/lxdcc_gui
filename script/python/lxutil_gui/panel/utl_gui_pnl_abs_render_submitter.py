@@ -278,7 +278,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                         content='file="{}" camera task is non-exists, please call for TD get more help'.format(self._file_path),
                         status=utl_core.DialogWindow.ValidatorStatus.Error,
                         #
-                        yes_label='Close', yes_method=self.set_window_close_later,
+                        yes_label='Close', yes_method=self.close_window_later,
                         #
                         no_visible=False, cancel_visible=False,
                         use_exec=False,
