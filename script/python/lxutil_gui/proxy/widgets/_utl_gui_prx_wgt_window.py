@@ -250,7 +250,7 @@ class AbsPrxDialogWindow(
         self._yes_button.set_name(text)
         # self._yes_button.set_icon_by_text(text)
 
-    def connect_yes_method(self, method, args=None):
+    def connect_yes_to(self, method, args=None):
         self._yes_methods.append(method)
 
     def set_no_visible(self, boolean):
@@ -260,7 +260,7 @@ class AbsPrxDialogWindow(
         self._no_button.set_name(text)
         # self._no_button.set_icon_by_text(text)
 
-    def connect_no_method(self, method, args=None):
+    def connect_no_to(self, method, args=None):
         self._no_methods.append(method)
 
     def set_cancel_visible(self, boolean):
