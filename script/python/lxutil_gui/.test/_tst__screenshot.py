@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
+from lxutil_gui.qt.widgets import _gui_qt_wgt_utility
 
 import lxutil_gui.proxy.widgets as prx_widgets
 

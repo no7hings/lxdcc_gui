@@ -1,14 +1,12 @@
 # coding:utf-8
 import os
 
-from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility
-
-import lxbasic.objects as bsc_objects
+from lxutil_gui.proxy.widgets import _utl_gui_prx_wgt_window_base, _utl_gui_prx_wdt_utility
 
 from lxutil_gui.qt.gui_qt_core import *
 
 
-class W(_utl_gui_prx_wdt_utility.PrxBaseWindow):
+class W(_utl_gui_prx_wgt_window_base.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(W, self).__init__(*args, **kwargs)
 

@@ -11,7 +11,7 @@ import functools
 
 from lxbasic import bsc_core
 
-import lxbasic.objects as bsc_objects
+import lxcontent.objects as ctt_objects
 
 from lxutil import utl_core
 
@@ -21,7 +21,7 @@ import lxbasic.extra.methods as bsc_etr_methods
 
 import lxresolver.commands as rsv_commands
 
-from lxutil_gui import utl_gui_core
+from lxutil_gui import gui_core
 
 from lxutil_gui.qt import gui_qt_core
 
@@ -40,6 +40,7 @@ import lxsession.commands as ssn_commands
 
 class _GuiBaseOpt(object):
     DCC_NAMESPACE = 'resolver'
+
     def __init__(self, window, session, resolver):
         self._window = window
         self._session = session
@@ -54,6 +55,7 @@ class _GuiTaskOpt(_GuiBaseOpt):
 
 class _GuiGuideOpt(_GuiBaseOpt):
     DCC_NAMESPACE = 'resolver'
+
     def __init__(self, window, session, resolver, guide_bar, tree_view, list_view):
         super(_GuiGuideOpt, self).__init__(window, session, resolver)
 
@@ -113,6 +115,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
     ITEM_ICON_SIZE = 24, 24
 
     THREAD_STEP = 8
+
     def set_all_setup(self):
         v_qt_widget = qt_widgets.QtWidget()
         self.add_widget(v_qt_widget)
@@ -246,6 +249,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         if is_create is True:
             prx_item.set_selected(True)
             self.__gui_add_project_(rsv_project)
+
     #
     def __gui_add_project_(self, rsv_project):
         is_create, prx_item = self._gui_rsv_obj_opt.gui_add_as_tree(
@@ -254,6 +258,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         if is_create is True:
             prx_item.set_expanded(True)
             self.__gui_add_for_all_resources_(rsv_project)
+
     #
     def __asset_completion_gain_fnc_(self, *args, **kwargs):
         keyword = args[0]
@@ -302,13 +307,13 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         #
         self._result_tree_view.set_header_view_create(
             [('name', 3)],
-            320 - 48
+            320-48
         )
         self._result_tree_view.set_selection_use_single()
         #
         self._filter_tree_view.set_header_view_create(
             [('name', 3), ('count', 1)],
-            320 - 48
+            320-48
         )
         self._filter_tree_view.view._set_selection_disable_()
         # self._filter_tree_view.set_selection_use_single()
@@ -367,7 +372,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         self._rsv_project_names = [i.get_name() for i in self._rsv_projects]
         #
         _port = self._options_prx_node.add_port(
-            prx_widgets.PrxPortAsEnumerate('filter')
+            prx_widgets.PrxPortAsConstantChoose('filter')
         )
         self._rsv_filters_dict = self._hook_configure.get('resolver.filters')
         if self._rsv_filters_dict is not None:
@@ -403,6 +408,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             [i.set_kill() for i in self.__running_threads_stacks]
         #
         self.__running_threads_stacks = []
+
     #
     def __gui_add_for_all_resources_(self, rsv_project):
         def post_fnc_():
@@ -420,6 +426,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
 
         def quit_fnc_():
             ts.set_quit()
+
         #
         self.__resource_count = 0
         self._start_timestamp = bsc_core.TimeMtd.get_timestamp()
@@ -437,14 +444,17 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             #
             ts.set_start()
             #
-            self.set_window_close_connect_to(quit_fnc_)
+            self.connect_window_close_to(quit_fnc_)
         else:
-            with utl_core.GuiProgressesRunner.create(maximum=len(rsv_resource_groups), label='gui-add for resource') as g_p:
+            with utl_core.GuiProgressesRunner.create(
+                    maximum=len(rsv_resource_groups), label='gui-add for resource'
+                    ) as g_p:
                 for i_rsv_resource_group in rsv_resource_groups:
                     g_p.set_update()
                     self.__gui_build_fnc_for_resources_(
                         self.__gui_cache_fnc_for_resources_by_group_(i_rsv_resource_group)
                     )
+
     # refresh resources by group
     def __gui_cache_fnc_for_resources_by_group_(self, rsv_resource_group):
         rsv_objs = rsv_resource_group.get_rsv_resources(**self._rsv_filter_opt.value)
@@ -473,9 +483,11 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                     )
             #
             self._result_tree_view.connect_item_expand_to(
-                prx_item, lambda *args, **kwargs: self.__execute_gui_refresh_for_tasks_by_resource_expand_changed_(rsv_resource),
+                prx_item,
+                lambda *args, **kwargs: self.__execute_gui_refresh_for_tasks_by_resource_expand_changed_(rsv_resource),
                 time=100
             )
+
     # refresh tasks by resource
     def __execute_gui_refresh_for_tasks_by_resource_expand_changed_(self, rsv_resource):
         def post_fnc_():
@@ -485,6 +497,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
 
         def quit_fnc_():
             t.set_quit()
+
         #
         t = gui_qt_core.QtBuildThread(self.widget)
         t.set_cache_fnc(
@@ -495,8 +508,8 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         #
         t.start()
 
-        self.set_window_close_connect_to(quit_fnc_)
-    
+        self.connect_window_close_to(quit_fnc_)
+
     def __gui_cache_fnc_for_tasks_by_resource_(self, rsv_resource):
         return rsv_resource.get_rsv_tasks(**self._rsv_filter_opt.value)
 
@@ -551,6 +564,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                     'task'
                 ]:
                     self.__batch_add_tasks_and_units_by_entities_([rsv_entity], self.__thread_stack_index)
+
     # refresh task unit by any entity
     # todo: thread bug in katana
     def __batch_add_tasks_and_units_by_entities_(self, rsv_entities, thread_stack_index):
@@ -560,7 +574,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         def quit_fnc_():
             ts.set_quit()
 
-        rsv_entities_map = bsc_core.RawListMtd.set_grid_to(
+        rsv_entities_map = bsc_core.RawListMtd.grid_to(
             rsv_entities, self.THREAD_STEP
         )
         #
@@ -570,13 +584,15 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             ts.run_finished.connect(post_fnc_)
             for i_rsv_entities in rsv_entities_map:
                 ts.register(
-                    functools.partial(self.__batch_gui_cache_fnc_for_tasks_and_units_by_entities_, i_rsv_entities, thread_stack_index),
+                    functools.partial(
+                        self.__batch_gui_cache_fnc_for_tasks_and_units_by_entities_, i_rsv_entities, thread_stack_index
+                        ),
                     self.__batch_gui_build_fnc_for_tasks_and_units_
                 )
             #
             ts.set_start()
             #
-            self.set_window_close_connect_to(quit_fnc_)
+            self.connect_window_close_to(quit_fnc_)
         else:
             for i_rsv_entities in rsv_entities_map:
                 self.__batch_gui_build_fnc_for_tasks_and_units_(
@@ -608,7 +624,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             ts.set_quit()
 
         rsv_entities, thread_stack_index = args[0]
-        rsv_entities_map = bsc_core.RawListMtd.set_grid_to(
+        rsv_entities_map = bsc_core.RawListMtd.grid_to(
             rsv_entities, self.THREAD_STEP
         )
 
@@ -618,15 +634,19 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             ts.run_finished.connect(post_fnc_)
             for i_rsv_entities in rsv_entities_map:
                 ts.register(
-                    functools.partial(self.__gui_cache_fnc_for_tasks_and_units_by_entities_, i_rsv_entities, thread_stack_index),
+                    functools.partial(
+                        self.__gui_cache_fnc_for_tasks_and_units_by_entities_, i_rsv_entities, thread_stack_index
+                        ),
                     self.__gui_build_fnc_for_tasks_and_units_
                 )
             #
             ts.set_start()
             #
-            self.set_window_close_connect_to(quit_fnc_)
+            self.connect_window_close_to(quit_fnc_)
         else:
-            with utl_core.GuiProgressesRunner.create(maximum=len(rsv_entities_map), label='gui-add for task unit') as g_p:
+            with utl_core.GuiProgressesRunner.create(
+                    maximum=len(rsv_entities_map), label='gui-add for task unit'
+                    ) as g_p:
                 for i_rsv_entities in rsv_entities_map:
                     g_p.set_update()
                     self.__gui_build_fnc_for_tasks_and_units_(
@@ -659,6 +679,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                     self.__gui_add_unit_(i_rsv_task)
                     #
                     self.__task_keys.add(i_rsv_task.name)
+
     #
     def __gui_add_unit_(self, rsv_task):
         def cache_fnc_():
@@ -681,6 +702,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             self.__gui_show_deferred_fnc_for_task_unit_(
                 rsv_task, rsv_task_unit_prx_item, data
             )
+
         #
         task_prx_item = rsv_task.get_obj_gui()
         if task_prx_item is not None:
@@ -802,7 +824,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             show_info_dict['update'] = 'N/a'
             show_info_dict['user'] = 'N/a'
             prx_item.set_image(
-                utl_gui_core.RscIconFile.get('image_loading_failed')
+                gui_core.RscIconFile.get('image_loading_failed')
             )
         #
         unit_menu_content = self.get_rsv_task_unit_menu_content(rsv_task)
@@ -812,14 +834,16 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         prx_item.set_name_dict(show_info_dict)
         r, g, b = bsc_core.RawTextOpt(task).to_rgb_(s_p=25, v_p=35)
         prx_item.set_name_frame_background_color((r, g, b, 127))
-        prx_item.set_icon_by_text(step)
+        prx_item.set_icon_by_name(step)
         prx_item.set_icons_by_pixmap(pixmaps)
         prx_item.set_tool_tip(
             rsv_task.description
         )
+
     @classmethod
     def _get_current_application_(cls):
         return bsc_core.ApplicationMtd.get_current()
+
     @classmethod
     def _get_current_project_(cls):
         return bsc_etr_methods.EtrBase.get_project()
@@ -863,9 +887,10 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         return self._get_menu_content_by_hook_keys_(
             self._session_dict, hook_keys, rsv_task, view_gui=self._rsv_uint_list_view_0
         )
+
     @classmethod
     def _get_menu_content_by_hook_keys_(cls, session_dict, hooks, *args, **kwargs):
-        content = bsc_objects.Dict()
+        content = ctt_objects.Dict()
         for i_hook in hooks:
             if isinstance(i_hook, six.string_types):
                 i_hook_key = i_hook
@@ -944,10 +969,12 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                         '{}.properties.execute_fnc'.format(i_gui_path), i_execute_fnc
                     )
         return content
+
     @classmethod
     def _get_rsv_unit_action_hook_args_(cls, session_dict, key, *args, **kwargs):
         def execute_fnc():
             session.execute_python_file(python_file_path, session=session)
+
         #
         rsv_task = args[0]
         session_path = '{}/{}'.format(rsv_task.path, key)
@@ -960,7 +987,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                 python_file = utl_dcc_objects.OsPythonFile(python_file_path)
                 yaml_file = utl_dcc_objects.OsFile(yaml_file_path)
                 if python_file.get_is_exists() is True and yaml_file.get_is_exists() is True:
-                    configure = bsc_objects.Configure(value=yaml_file.path)
+                    configure = ctt_objects.Configure(value=yaml_file.path)
                     type_name = configure.get('option.type')
                     if type_name is not None:
                         kwargs['configure'] = configure

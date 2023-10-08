@@ -58,7 +58,7 @@ class S(QtWidgets.QGraphicsView):
                     pass
                     # self._ng_undo_stack.undo()
             elif event.type() == QtCore.QEvent.KeyRelease:
-                self._set_action_mdf_flag_clear_()
+                self._clear_action_modifier_flags_()
             elif event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
                     if self._get_action_flag_is_match_(

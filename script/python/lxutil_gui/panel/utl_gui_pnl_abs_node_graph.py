@@ -15,7 +15,7 @@ import lxutil.dcc.dcc_objects as utl_dcc_objects
 
 import lxuniverse.objects as unr_objects
 
-import lxbasic.objects as bsc_objects
+import lxcontent.objects as ctt_objects
 
 import lxutil_gui.proxy.operators as utl_prx_operators
 
@@ -128,7 +128,7 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
                 i_type = r_v_t
                 i_package, i_version = i_key.split('-')
                 i_path = '/{}-{}'.format(i_package, i_version)
-                i_n = i_type.set_obj_create(
+                i_n = i_type.create_obj(
                     i_path
                 )
                 i_n.generate_input_port(
@@ -149,7 +149,7 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
                 i_type = r_p_t
                 i_path = '/{}'.format(i_package)
 
-                i_p_n = i_type.set_obj_create(
+                i_p_n = i_type.create_obj(
                     i_path
                 )
                 i_p_n.generate_input_port(
@@ -192,7 +192,7 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
                     i_type = r_p_t
                     i_path = '/{}'.format(i_key)
             #
-            i_n = i_type.set_obj_create(
+            i_n = i_type.create_obj(
                 i_path
             )
             i_n.generate_input_port(
@@ -208,7 +208,7 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
             i_src_path, i_tgt_path = path_dict[i_src], path_dict[i_tgt]
             i_n_src = u.get_obj(i_src_path)
             i_n_tgt = u.get_obj(i_tgt_path)
-            i_n_src.get_output_port('output').set_connect_to(
+            i_n_src.get_output_port('output').connect_to(
                 i_n_tgt.get_input_port('input')
             )
 
@@ -496,7 +496,7 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
                 i_prx_item = self._rsv_obj_tree_view_0.get_item_by_key(k)
                 i_rsv_entity = i_prx_item.get_gui_dcc_obj(namespace=self.DCC_NAMESPACE)
                 if i_prx_item.get_is_checked() is True:
-                    i_n = self._u_asset_type.set_obj_create(
+                    i_n = self._u_asset_type.create_obj(
                         '/{}'.format(
                             i_rsv_entity.name
                         )
@@ -511,7 +511,7 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
         self._node_graph.set_node_show()
     @classmethod
     def _get_menu_content_by_hook_keys_(cls, session_dict, hooks, *args, **kwargs):
-        content = bsc_objects.Dict()
+        content = ctt_objects.Dict()
         for i_hook in hooks:
             if isinstance(i_hook, six.string_types):
                 i_hook_key = i_hook
@@ -602,7 +602,7 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
                 python_file = utl_dcc_objects.OsPythonFile(python_file_path)
                 yaml_file = utl_dcc_objects.OsFile(yaml_file_path)
                 if python_file.get_is_exists() is True and yaml_file.get_is_exists() is True:
-                    configure = bsc_objects.Configure(value=yaml_file.path)
+                    configure = ctt_objects.Configure(value=yaml_file.path)
                     type_name = configure.get('option.type')
                     if type_name is not None:
                         kwargs['configure'] = configure

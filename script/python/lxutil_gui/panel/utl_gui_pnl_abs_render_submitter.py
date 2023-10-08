@@ -7,7 +7,7 @@ from lxutil import utl_core
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
-import lxbasic.objects as bsc_objects
+import lxcontent.objects as ctt_objects
 
 import lxresolver.commands as rsv_commands
 
@@ -17,7 +17,7 @@ import lxutil_gui.proxy.operators as utl_prx_operators
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
-from lxutil_gui import utl_gui_core
+from lxutil_gui import gui_core
 
 from lxutil_gui.qt import gui_qt_core
 
@@ -31,6 +31,7 @@ import lxshotgun.rsv.scripts as stg_rsv_scripts
 class AbsRenderSubmitterDef(object):
     OPTION_HOOK_KEY = None
     TD_ENABLE = True
+
     def _set_render_submitter_def_init_(self, hook_option):
         if hook_option is not None:
             self._hook_option_opt = bsc_core.ArgDictStringOpt(hook_option)
@@ -72,6 +73,7 @@ class AbsRenderSubmitterPanel(
 ):
     ITEM_ICON_FRAME_SIZE = 26, 26
     ITEM_ICON_SIZE = 24, 24
+
     def __init__(self, hook_option=None, *args, **kwargs):
         super(AbsRenderSubmitterPanel, self).__init__(*args, **kwargs)
         self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
@@ -159,7 +161,7 @@ class AbsRenderSubmitterPanel(
     def _set_obj_viewer_build_(self):
         self._filter_tree_viewer_0.set_header_view_create(
             [('name', 3), ('count', 1)],
-            self.get_definition_window_size()[0]*(1.0/5.0) - 24
+            self.get_definition_window_size()[0]*(1.0/5.0)-24
         )
         self._filter_tree_viewer_0.set_selection_use_single()
 
@@ -275,7 +277,9 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 else:
                     utl_core.DialogWindow.set_create(
                         self._hook_gui_configure.get('name'),
-                        content='file="{}" camera task is non-exists, please call for TD get more help'.format(self._file_path),
+                        content='file="{}" camera task is non-exists, please call for TD get more help'.format(
+                            self._file_path
+                            ),
                         status=utl_core.DialogWindow.ValidatorStatus.Error,
                         #
                         yes_label='Close', yes_method=self.close_window_later,
@@ -289,7 +293,8 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
     def set_scheme_save(self):
         filter_dict = self._prx_dcc_obj_tree_view_tag_filter_opt.get_filter_dict()
         # print filter_dict
-        bsc_objects.Configure(value=filter_dict).set_print_as_yaml_style()
+        ctt_objects.Configure(value=filter_dict).set_print_as_yaml_style()
+
     # options
     def set_options_refresh(self):
         import lxusd.rsv.objects as usd_rsv_objects
@@ -566,7 +571,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
         else:
             prx_item.set_image(
-                utl_gui_core.RscIconFile.get('image_loading_failed')
+                gui_core.RscIconFile.get('image_loading_failed')
             )
         #
         for i_rsv_unit in self._check_rsv_units:
@@ -669,12 +674,14 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         else:
             build_fnc_(cache_fnc_())
             post_fnc_()
+
     # renderers
     def set_renderers_refresh(self):
         self._rsv_renderer_list_view.set_clear()
         self._prx_dcc_obj_tree_view_tag_filter_opt.restore_all()
         #
         self._set_renderers_add_rsv_units_()
+
     # combinations
     def set_combinations_refresh(self):
         # self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
@@ -690,6 +697,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_by_dict(
                 filter_dict
             )
+
     # usds
     def set_usd_refresh(self):
         if self._rsv_entity is not None:
@@ -738,6 +746,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             self._set_gui_rsv_task_unit_show_deferred_(
                 rsv_unit_prx_item, variants
             )
+
         #
         rsv_unit_prx_item = self._rsv_renderer_list_view.create_item()
         keys = []
@@ -832,7 +841,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     )
 
     def _get_usd_dict_(self):
-        c = bsc_objects.Configure(value={})
+        c = ctt_objects.Configure(value={})
         c.set('usd_reverse_face_vertex_enable', self._usd_prx_node.get('debuggers.reverse_face_vertex_enable'))
         return c.get_value()
 
@@ -874,6 +883,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 if c.get(_i_k) is True:
                     _name = bsc_core.DccPathDagOpt(_i_k).get_name()
                     dic.setdefault(_key, []).append(_name)
+
         #
         key_mapper = {
             'camera': 'cameras',
@@ -885,7 +895,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         #
         dic = {}
         filter_dic = self._prx_dcc_obj_tree_view_tag_filter_opt.get_filter_dict()
-        c = bsc_objects.Configure(value=filter_dic)
+        c = ctt_objects.Configure(value=filter_dic)
         for i in self._variable_keys:
             update_fnc(i)
         return dic
@@ -896,6 +906,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         dic['light_pass_add_1'] = self._variables_prx_node.get('light_pass.add_1')
         dic['light_pass_add_2'] = self._variables_prx_node.get('light_pass.add_2')
         return dic
+
     @classmethod
     def _get_frames_(cls, frame_range, frame_step):
         pass
@@ -965,7 +976,9 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             #
             utl_core.DialogWindow.set_create(
                 self._hook_gui_configure.get('name'),
-                content='{} publish job is send to deadline, more information you see in deadline monitor'.format(camera_work_maya_scene_scr_file_path),
+                content='{} publish job is send to deadline, more information you see in deadline monitor'.format(
+                    camera_work_maya_scene_scr_file_path
+                    ),
                 status=utl_core.DialogWindow.ValidatorStatus.Correct,
                 #
                 yes_label='Close',
@@ -991,7 +1004,9 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     )
                     utl_core.DialogWindow.set_create(
                         self._hook_gui_configure.get('name'),
-                        content='{} render job is send to deadline, more information you see in deadline monitor'.format(self._file_path),
+                        content='{} render job is send to deadline, more information you see in deadline monitor'.format(
+                            self._file_path
+                            ),
                         status=utl_core.DialogWindow.ValidatorStatus.Correct,
                         #
                         yes_label='Close',
@@ -1002,7 +1017,9 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 else:
                     utl_core.DialogWindow.set_create(
                         self._hook_gui_configure.get('name'),
-                        content='file="{}" is already submitted or scene changed is not be save'.format(self._file_path),
+                        content='file="{}" is already submitted or scene changed is not be save'.format(
+                            self._file_path
+                            ),
                         status=utl_core.DialogWindow.ValidatorStatus.Error,
                         #
                         yes_label='Close',
@@ -1013,7 +1030,9 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         else:
             utl_core.DialogWindow.set_create(
                 self._hook_gui_configure.get('name'),
-                content='file="{}" camera cache(abc) is non-exists, please call for TD get more help'.format(self._file_path),
+                content='file="{}" camera cache(abc) is non-exists, please call for TD get more help'.format(
+                    self._file_path
+                    ),
                 status=utl_core.DialogWindow.ValidatorStatus.Error,
                 #
                 yes_label='Close',
@@ -1134,7 +1153,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
         else:
             prx_item.set_image(
-                utl_gui_core.RscIconFile.get('image_loading_failed')
+                gui_core.RscIconFile.get('image_loading_failed')
             )
 
         for i_rsv_unit in self._check_rsv_units:
@@ -1225,6 +1244,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         #
         self.set_combinations_load_from_scheme()
         self.set_settings_load_from_scheme()
+
     # combinations
     def set_combinations_refresh(self):
         # self._prx_dcc_obj_tree_view_tag_filter_opt.set_src_items_refresh(expand_depth=1)
@@ -1248,10 +1268,12 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
     def get_single_frame(self):
         return self._start_frame
+
     # options
     @gui_qt_core.set_prx_window_waiting
     def set_options_refresh(self):
         import lxusd.rsv.objects as usd_rsv_objects
+
         #
         self._options_prx_node.set(
             'task', self._rsv_task.path
@@ -1338,7 +1360,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 u = unr_objects.ObjUniverse()
                 o_t = u.generate_obj_type('usd', 'effect')
                 for i_path in paths:
-                    o_t.set_obj_create(i_path)
+                    o_t.create_obj(i_path)
                 #
                 self._usd_prx_node.set(
                     'components.effect', u.get_obj_type('effect').get_objs()
@@ -1392,6 +1414,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     prx_item_, variants_
                 )
             )
+
         #
         self._rsv_renderer_list_view.set_clear()
         self._prx_dcc_obj_tree_view_tag_filter_opt.restore_all()
@@ -1413,17 +1436,17 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 )
 
         # self._prx_dcc_obj_tree_view_tag_filter_opt.set_filter_statistic()
-    
+
     def set_scheme_save(self):
         pass
 
     def _get_usd_dict_(self):
-        c = bsc_objects.Configure(value={})
+        c = ctt_objects.Configure(value={})
         c.set('usd_effect_components', [i.name for i in self._usd_prx_node.get('components.effect')])
         return c.get_value()
 
     def _get_settings_dict_(self):
-        c = bsc_objects.Configure(value={})
+        c = ctt_objects.Configure(value={})
         #
         c.set('render_look', self._settings_prx_node.get('render.look'))
         frames = self._settings_prx_node.get('render.frames')

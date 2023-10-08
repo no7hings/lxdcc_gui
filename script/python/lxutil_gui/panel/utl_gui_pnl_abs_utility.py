@@ -7,7 +7,7 @@ from lxutil import utl_configure, utl_core
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
-from lxutil_gui import utl_gui_core
+from lxutil_gui import gui_core
 
 from lxutil_gui.qt import gui_qt_core
 
@@ -37,8 +37,10 @@ def _set_texture_tx_create(window, item_prx, texture_references, includes, force
 
     def set_logging_update(text):
         pass
+
     #
     import lxbasic.objects as bsc_objects
+
     #
     textures_opt = utl_dcc_operators.DccTexturesOpt(
         texture_references,
@@ -53,14 +55,14 @@ def _set_texture_tx_create(window, item_prx, texture_references, includes, force
     #
     # create_process = result_dict['tx-create']
     p_m = bsc_objects.ProcessMonitor(create_process)
-    p_m.logging.set_connect_to(set_logging_update)
-    p_m.processing.set_connect_to(set_processing_update)
-    p_m.status_changed.set_connect_to(set_status_changed_update)
-    p_m.element_statuses_changed.set_connect_to(set_element_status_changed_update)
+    p_m.logging.connect_to(set_logging_update)
+    p_m.processing.connect_to(set_processing_update)
+    p_m.status_changed.connect_to(set_status_changed_update)
+    p_m.element_statuses_changed.connect_to(set_element_status_changed_update)
     #
-    window.set_window_close_connect_to(p_m.set_stop)
+    window.connect_window_close_to(p_m.set_stop)
     if completed_fnc is not None:
-        p_m.completed.set_connect_to(completed_fnc)
+        p_m.completed.connect_to(completed_fnc)
     #
     p_m.set_start()
     create_process.set_start()
@@ -100,6 +102,7 @@ def _set_texture_jpg_create(window, item_prx, texture_references, includes, forc
         #
 
     import lxbasic.objects as bsc_objects
+
     #
     label = 'Load Texture-jpg(s)'
     #
@@ -110,14 +113,14 @@ def _set_texture_jpg_create(window, item_prx, texture_references, includes, forc
     create_process = textures_opt.set_jpg_create(use_deferred=True, force=force)
     #
     p_m = bsc_objects.ProcessMonitor(create_process)
-    p_m.logging.set_connect_to(set_logging_update)
-    p_m.processing.set_connect_to(set_processing_update)
-    p_m.status_changed.set_connect_to(set_status_changed_update)
-    p_m.element_statuses_changed.set_connect_to(set_element_status_changed_update)
+    p_m.logging.connect_to(set_logging_update)
+    p_m.processing.connect_to(set_processing_update)
+    p_m.status_changed.connect_to(set_status_changed_update)
+    p_m.element_statuses_changed.connect_to(set_element_status_changed_update)
     #
-    window.set_window_close_connect_to(p_m.set_stop)
+    window.connect_window_close_to(p_m.set_stop)
     if completed_fnc is not None:
-        p_m.completed.set_connect_to(completed_fnc)
+        p_m.completed.connect_to(completed_fnc)
     #
     p_m.set_start()
     create_process.set_start()
@@ -145,6 +148,7 @@ class AbsSceneTextureManagerPanel(
     #
     DSC_IDX_USED_COLORS_SPACE = 1
     DSC_IDX_COLORS_SPACE = 2
+
     def __init__(self, *args, **kwargs):
         super(AbsSceneTextureManagerPanel, self).__init__(*args, **kwargs)
         self._window_configure = utl_configure.MainData.get_as_configure(
@@ -243,7 +247,9 @@ class AbsSceneTextureManagerPanel(
         _port.set(self.set_color_space_auto_switch)
         # tx-create
         _port = self._tool_node_prx.add_port(
-            prx_widgets.PrxPortAsBoolean('create_and_repath_to_tx_force', 'Create & Repath to tx(s) force', join_to_next=True)
+            prx_widgets.PrxPortAsBoolean(
+                'create_and_repath_to_tx_force', 'Create & Repath to tx(s) force', join_to_next=True
+                )
         )
         _port.set_tool_tip(
             [
@@ -272,7 +278,9 @@ class AbsSceneTextureManagerPanel(
         _port.set(self.set_tx_repath_to_orig)
         # jpg-create
         _port = self._tool_node_prx.add_port(
-            prx_widgets.PrxPortAsBoolean('create_and_repath_to_jpg_force', 'Create & Repath to jpg(s) force', join_to_next=True)
+            prx_widgets.PrxPortAsBoolean(
+                'create_and_repath_to_jpg_force', 'Create & Repath to jpg(s) force', join_to_next=True
+                )
         )
         _port.set_tool_tip(
             [
@@ -305,6 +313,7 @@ class AbsSceneTextureManagerPanel(
         _port.set(
             self.set_map_to_platform_platform
         )
+
     # search
     def _set_tool_group_1_build_(self):
         expand_box_0 = prx_widgets.PrxHToolGroup()
@@ -318,7 +327,7 @@ class AbsSceneTextureManagerPanel(
         qt_layout_0.addWidget(self._search_node_gui.widget)
         #
         _port = self._search_node_gui.add_port(
-            prx_widgets.PrxDirectoryOpenPort('target_directory', 'Target-directory')
+            prx_widgets.PrxPortAsDirectoryOpen('target_directory', 'Target-directory')
         )
         _port = self._search_node_gui.add_port(
             prx_widgets.PrxPortAsBoolean('ignore_source_resolved', 'Ignore Source-resolved')
@@ -334,6 +343,7 @@ class AbsSceneTextureManagerPanel(
             ]
         )
         _port.set(self.set_search)
+
     # copy & repath
     def _set_tool_group_2_build_(self):
         expand_box_0 = prx_widgets.PrxHToolGroup()
@@ -347,7 +357,7 @@ class AbsSceneTextureManagerPanel(
         qt_layout_0.addWidget(self._copy_and_repath_node_gui.widget)
         #
         _port = self._copy_and_repath_node_gui.add_port(
-            prx_widgets.PrxDirectoryOpenPort('target_directory', 'Target-directory')
+            prx_widgets.PrxPortAsDirectoryOpen('target_directory', 'Target-directory')
         )
         _port = self._copy_and_repath_node_gui.add_port(
             prx_widgets.PrxPortAsButton('copy_and_repath', 'Copy & Repath to target')
@@ -362,7 +372,7 @@ class AbsSceneTextureManagerPanel(
     def _set_viewer_setup_(self):
         self._filter_tree_viewer_0.set_header_view_create(
             [('Name(s)', 3), ('Count(s)', 1)],
-            self.get_definition_window_size()[0] * (1.0 / 4.0) - 20
+            self.get_definition_window_size()[0]*(1.0/4.0)-20
         )
         #
         self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.GuiTagFilterOpt(
@@ -373,7 +383,7 @@ class AbsSceneTextureManagerPanel(
         #
         self._obj_tree_viewer_0.set_header_view_create(
             [('Name(s)', 2), ('Used-Color-space(s)', 1), ('Color-space(s)', 1)],
-            self.get_definition_window_size()[0] * (3.0 / 4.0) - 40
+            self.get_definition_window_size()[0]*(3.0/4.0)-40
         )
         #
         self._obj_tree_viewer_0.set_selection_use_single()
@@ -409,7 +419,9 @@ class AbsSceneTextureManagerPanel(
                 self._dcc_objs = self._texture_references.get_objs()
             #
             if self._dcc_objs:
-                with utl_core.GuiProgressesRunner.create(maximum=len(self._dcc_objs), label='gui-add for texture') as g_p:
+                with utl_core.GuiProgressesRunner.create(
+                        maximum=len(self._dcc_objs), label='gui-add for texture'
+                        ) as g_p:
                     for i_dcc_obj in self._dcc_objs:
                         g_p.set_update()
                         i_files = i_dcc_obj.get_file_objs()
@@ -427,7 +439,7 @@ class AbsSceneTextureManagerPanel(
                                             j_file_prx_item.set_name(
                                                 texture_color_space, self.DSC_IDX_COLORS_SPACE
                                             )
-                                            j_file_prx_item.set_icon_by_text(
+                                            j_file_prx_item.set_icon_by_name(
                                                 texture_color_space, self.DSC_IDX_COLORS_SPACE
                                             )
                                             #
@@ -435,7 +447,7 @@ class AbsSceneTextureManagerPanel(
                                             j_file_prx_item.set_name(
                                                 texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
                                             )
-                                            j_file_prx_item.set_icon_by_text(
+                                            j_file_prx_item.set_icon_by_name(
                                                 texture_used_color_space, self.DSC_IDX_USED_COLORS_SPACE
                                             )
                                     #
@@ -460,7 +472,7 @@ class AbsSceneTextureManagerPanel(
                                     i_dcc_prx_item.set_name(
                                         node_color_space, self.DSC_IDX_USED_COLORS_SPACE
                                     )
-                                    i_dcc_prx_item.set_icon_by_text(
+                                    i_dcc_prx_item.set_icon_by_name(
                                         node_color_space, self.DSC_IDX_USED_COLORS_SPACE
                                     )
                 #
@@ -475,8 +487,10 @@ class AbsSceneTextureManagerPanel(
                     i_list_item_prx_.set_names(
                         [stg_file_.name]
                     )
+
             #
             i_list_item_prx_.set_show_build_fnc(show_fnc_)
+
         #
         self._obj_list_viewer_0.set_clear()
         tree_item_prxes = self._obj_tree_viewer_0.get_selected_items()
@@ -530,6 +544,7 @@ class AbsSceneTextureManagerPanel(
 
     def _set_dcc_texture_references_update_(self):
         self._texture_references = None
+
     #
     def _get_checked_dcc_objs_(self):
         lis = []
@@ -539,6 +554,7 @@ class AbsSceneTextureManagerPanel(
                 if item_prx.get_is_checked() is True:
                     lis.append(i_dcc_obj)
         return lis
+
     #
     def set_color_space_auto_switch(self):
         if self._texture_references is not None:
@@ -664,6 +680,7 @@ class AbsShotgunEntitiesCreatorPanel(
     #
     PROJECT_INCLUDES = ['lib']
     STUDIO_INCLUDES = ['CG']
+
     def __init__(self, *args, **kwargs):
         super(AbsShotgunEntitiesCreatorPanel, self).__init__(*args, **kwargs)
         self._window_configure = utl_configure.MainData.get_as_configure(
@@ -707,15 +724,15 @@ class AbsShotgunEntitiesCreatorPanel(
         qt_layout_0.addWidget(self._tool_node_prx.widget)
         #
         _port = self._tool_node_prx.add_port(
-            prx_widgets.PrxPortAsEnumerate('project', 'Project-name')
+            prx_widgets.PrxPortAsConstantChoose('project', 'Project-name')
         )
         _port = self._tool_node_prx.add_port(
-            prx_widgets.PrxPortAsEnumerate('task_template', 'Task-template')
+            prx_widgets.PrxPortAsConstantChoose('task_template', 'Task-template')
         )
         _port.set_tool_tip(self._shotgun_template_configure.get_str_as_yaml_style())
         #
         _port = self._tool_node_prx.add_port(
-            prx_widgets.PrxPortForString('entities', 'Entity-name(s)')
+            prx_widgets.PrxPortAsString('entities', 'Entity-name(s)')
         )
         _port.set_tool_tip(
             [
@@ -740,6 +757,7 @@ class AbsShotgunEntitiesCreatorPanel(
         self._set_projects_refresh_()
         self._set_task_templates_refresh_()
         # self._tool_node_prx.get_port('entities').set('asset_add_0_test, asset_add_1_test')
+
     # project
     def _set_projects_refresh_(self):
         if self.PROJECT_INCLUDES is None:
@@ -757,7 +775,7 @@ class AbsShotgunEntitiesCreatorPanel(
 
     def _get_project_(self):
         return self._tool_node_prx.get_port('project').get()
-    
+
     def _set_task_templates_refresh_(self):
         templates = self._shotgun_template_configure.get_branch_keys('task-templates')
         _port = self._tool_node_prx.get_port('task_template')
@@ -791,6 +809,7 @@ class AbsPnlHashGeometry(
     prx_widgets.PrxSessionWindow
 ):
     CONFIGURE_FILE_PATH = 'utility/panel/database-geometry-manager'
+
     def __init__(self, session, *args, **kwargs):
         super(AbsPnlHashGeometry, self).__init__(session, *args, **kwargs)
 
@@ -816,7 +835,7 @@ class AbsPnlHashGeometry(
         qt_layout_0.addWidget(self._utility_node_prx.widget)
         #
         _port = self._utility_node_prx.add_port(
-            prx_widgets.PrxFileSavePort('save_usd_file', 'Save USD-file')
+            prx_widgets.PrxPortAsFileSave('save_usd_file', 'Save USD-file')
         )
         _port.set_ext_filter('All USD File (*.usd *.usda)')
         _port.set_tool_tip(
@@ -836,7 +855,7 @@ class AbsPnlHashGeometry(
         _port.set(self._set_usd_file_export_)
         #
         _port = self._utility_node_prx.add_port(
-            prx_widgets.PrxFileOpenPort('open_usd_file', 'Open USD-file')
+            prx_widgets.PrxPortAsFileOpen('open_usd_file', 'Open USD-file')
         )
         _port.set_ext_filter('All USD File (*.usd *.usda)')
         _port.set_tool_tip(
@@ -876,7 +895,9 @@ class AbsPnlHashGeometry(
             ]
         )
         _port = self._database_export_node_prx.add_port(
-            prx_widgets.PrxPortAsButton('export_uv_map_to_database_from_select', 'Export Database UV-map(s) from Select(s)')
+            prx_widgets.PrxPortAsButton(
+                'export_uv_map_to_database_from_select', 'Export Database UV-map(s) from Select(s)'
+                )
         )
         _port.set_tool_tip(
             [
@@ -930,7 +951,7 @@ class AbsPnlHashGeometry(
         )
         #
         self._geometry_unify_ddl_job_process = None
-        self.set_window_close_connect_to(self._set_geometry_unify_ddl_job_stop_)
+        self.connect_window_close_to(self._set_geometry_unify_ddl_job_stop_)
         #
         _port = self._hash_uv_node_prx.add_port(
             prx_widgets.PrxSubProcessPort('geometry_uv_map_assign', 'Assign Geometry UV-map By Select(s)')
@@ -973,9 +994,11 @@ class AbsPnlHashGeometry(
 
     def _set_geometry_unify_ddl_job_status_changed_(self, process_status):
         raise NotImplementedError()
+
     #
     def _set_geometry_uv_map_assign_run_(self):
         raise NotImplementedError()
+
     #
     def _set_geometry_uv_map_assign_ddl_job_stop_(self):
         if self._geometry_uv_assign_ddl_job_process is not None:
@@ -992,6 +1015,7 @@ class AbsGeometryCheckerPanel(
     prx_widgets.PrxBaseWindow
 ):
     CONFIGURE_FILE_PATH = 'utility/panel/geometry-checker'
+
     def __init__(self, *args, **kwargs):
         super(AbsGeometryCheckerPanel, self).__init__(*args, **kwargs)
         self._window_configure = utl_configure.MainData.get_as_configure(

@@ -14,8 +14,10 @@ class SceneCheckerToolPanel(utl_gui_pnl_abs_checker.AbsSceneCheckerToolPanel):
     #
     STEP_LOADER_CLS = hou_fnc_core.StpLoader
     METHOD_CREATOR_CLS = hou_fnc_core.CheckerCreator
+
     def __init__(self, *args, **kwargs):
         import lxresolver.commands as rsv_commands
+
         resolver = rsv_commands.get_resolver()
         work_source_file_path = hou_dcc_objects.Scene().path
         task_properties = resolver.get_task_properties_by_work_scene_src_file_path(file_path=work_source_file_path)

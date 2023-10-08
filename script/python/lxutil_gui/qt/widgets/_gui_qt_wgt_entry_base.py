@@ -4,14 +4,15 @@ import functools
 import six
 from lxutil_gui.qt.gui_qt_core import *
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize
+from lxutil_gui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_resize
 
 import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 
+# base entry for constant
 class QtEntryAsTextEdit(
     QtWidgets.QLineEdit,
-    gui_qt_abstract.AbsQtValueDef,
+    gui_qt_abstract.AbsQtEntryExtraDef,
     #
     gui_qt_abstract.AbsQtEntryBaseDef,
     gui_qt_abstract.AbsQtDropBaseDef,
@@ -60,9 +61,9 @@ class QtEntryAsTextEdit(
         self.textEdited.connect(self._send_user_enter_changed_emit_)
         #
         self.setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QLineEdit')
+            gui_core.QtStyleMtd.get('QLineEdit')
         )
-        self._set_value_def_init_(self)
+        self._init_entry_extra_def_(self)
         self._init_entry_base_def_(self)
         self._init_drop_base_def_(self)
         self.setAcceptDrops(self._action_drop_is_enable)
@@ -87,6 +88,7 @@ class QtEntryAsTextEdit(
                 self._set_value_(pre_value-1)
             #
             self._send_enter_changed_emit_()
+            event.accept()
 
     def _execute_action_drop_(self, event):
         data = event.mimeData()
@@ -116,9 +118,11 @@ class QtEntryAsTextEdit(
                 #
                 self.focus_out.emit()
                 #
-                self._set_value_completion_()
+                self._completion_value_auto_()
             elif event.type() == QtCore.QEvent.Wheel:
                 self._do_wheel_(event)
+                # break event passthrough
+                return True
             elif event.type() == QtCore.QEvent.KeyPress:
                 if event.key() == QtCore.Qt.Key_Up:
                     self.key_up_pressed.emit()
@@ -132,6 +136,9 @@ class QtEntryAsTextEdit(
                         self.key_backspace_extra_pressed.emit()
                 elif event.key() == QtCore.Qt.Key_Tab:
                     self.user_key_tab_pressed.emit()
+                elif event.key() in {QtCore.Qt.Key_Return, QtCore.Qt.Key_Enter}:
+                    # self.self.user_entry_finished.emit()
+                    self._completion_value_auto_()
         return False
 
     def dropEvent(self, event):
@@ -170,7 +177,7 @@ class QtEntryAsTextEdit(
             )
         #
         if menu_raw:
-            self._qt_menu = _utl_gui_qt_wgt_utility.QtMenu(self)
+            self._qt_menu = _gui_qt_wgt_utility.QtMenu(self)
             self._qt_menu._set_menu_data_(menu_raw)
             self._qt_menu._set_show_()
 
@@ -192,10 +199,12 @@ class QtEntryAsTextEdit(
         if not text:
             self.user_entry_cleared.emit()
 
-    def _set_value_completion_(self):
-        if self._value_type in [int, float]:
+    def _completion_value_auto_(self):
+        if self._value_type in {int, float}:
             if not self.text():
                 self._set_value_(0)
+        elif self._entry_use_as_rgba is True:
+            self._set_value_as_rgba_255_(self._get_value_as_rgba_255_())
 
     def _set_value_type_(self, value_type):
         self._value_type = value_type
@@ -215,11 +224,7 @@ class QtEntryAsTextEdit(
     def _execute_open_in_system_(self):
         _ = self.text()
         if _:
-            _exist_comp = bsc_core.StgExtraMtd.get_exists_component(_)
-            if _exist_comp is not None:
-                bsc_core.StgExtraMtd.set_directory_open(
-                    _exist_comp
-                )
+            bsc_core.StgSystem.open(_)
 
     def _set_use_as_storage_(self, boolean=True):
         super(QtEntryAsTextEdit, self)._set_use_as_storage_(boolean)
@@ -236,50 +241,34 @@ class QtEntryAsTextEdit(
             )
             self.addAction(i_action)
 
+    def _set_use_as_rgba_255_(self, boolean=False):
+        super(QtEntryAsTextEdit, self)._set_use_as_rgba_255_(boolean)
+        if boolean is True:
+            self._set_validator_use_as_rgba_()
+
+    def _set_validator_use_as_rgba_(self):
+        reg = QtCore.QRegExp(r'^[0-9,]+$')
+        validator = QtGui.QRegExpValidator(reg, self)
+        self.setValidator(validator)
+
     def _set_validator_use_as_name_(self):
         reg = QtCore.QRegExp(r'^[a-zA-Z0-9_]+$')
         validator = QtGui.QRegExpValidator(reg, self)
         self.setValidator(validator)
-        # self.setToolTip(
-        #     (
-        #         '"LMB-click" to entry\n'
-        #     )
-        # )
 
     def _set_validator_use_as_integer_(self):
         self.setValidator(QtGui.QIntValidator())
-        self._set_value_completion_()
-        # self.setToolTip(
-        #     (
-        #         '"LMB-click" to entry\n'
-        #         '"MMB-wheel" to modify "int" value'
-        #     )
-        # )
+        self._completion_value_auto_()
 
     def _set_validator_use_as_float_(self):
         self.setValidator(QtGui.QDoubleValidator())
-        self._set_value_completion_()
-        # self.setToolTip(
-        #     (
-        #         '"LMB-click" to entry\n'
-        #         '"MMB-wheel" to modify "float" value'
-        #     )
-        # )
+        self._completion_value_auto_()
 
     def _set_value_validator_use_as_frames_(self):
         self._set_value_type_(str)
         reg = QtCore.QRegExp(r'^[0-9-,:]+$')
         validator = QtGui.QRegExpValidator(reg, self)
         self.setValidator(validator)
-        # self.setToolTip(
-        #     (
-        #         '"LMB-click" to entry\n'
-        #         'etc:\n'
-        #         '   1\n'
-        #         '   1-2\n'
-        #         '   1-5,7,50-100,101'
-        #     )
-        # )
 
     def _set_value_validator_use_as_rgba_(self):
         self._set_value_type_(str)
@@ -313,9 +302,9 @@ class QtEntryAsTextEdit(
             #     _ = _.encode('utf-8')
             return _
         elif self._value_type == int:
-            return int(_)
+            return int(_ or 0)
         elif self._value_type == float:
-            return float(_)
+            return float(_ or 0)
         return _
 
     def _set_value_(self, value):
@@ -335,6 +324,23 @@ class QtEntryAsTextEdit(
                 # self._send_enter_changed_emit_()
         else:
             self.setText('')
+
+    def _set_value_as_rgba_255_(self, rgba):
+        if isinstance(rgba, (tuple, list)):
+            text = ','.join(map(lambda x: str(int(x)), rgba))
+            self.setText(text)
+
+    def _get_value_as_rgba_255_(self):
+        text = self.text()
+        _ = map(lambda x: max(min(int(x), 255), 0) if x else 255, map(lambda x: str(x).strip(), text.split(',')))
+        c = len(_)
+        if c == 4:
+            return tuple(_)
+        elif c > 4:
+            return tuple(_[:4])
+        elif c < 4:
+            return tuple([_[i] if i < c else 255 for i in range(4)])
+        return 255, 255, 255, 255
 
     def _get_value_default_(self):
         return self._item_value_default
@@ -376,6 +382,7 @@ class QtEntryAsTextEdit(
         self.clear()
 
 
+# base entry for content
 class QtEntryAsContentEdit(
     QtWidgets.QTextEdit,
     gui_qt_abstract.AbsQtEntryBaseDef,
@@ -404,14 +411,14 @@ class QtEntryAsContentEdit(
         self._print_signals.print_over_accepted.connect(self._set_value_)
         #
         self.setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QTextEdit')
+            gui_core.QtStyleMtd.get('QTextEdit')
         )
         #
         self.verticalScrollBar().setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QScrollBar')
+            gui_core.QtStyleMtd.get('QScrollBar')
         )
         self.horizontalScrollBar().setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QScrollBar')
+            gui_core.QtStyleMtd.get('QScrollBar')
         )
         self._init_entry_base_def_(self)
         self._init_drop_base_def_(self)
@@ -441,6 +448,7 @@ class QtEntryAsContentEdit(
             elif event.type() == QtCore.QEvent.Wheel:
                 if event.modifiers() == QtCore.Qt.ControlModifier:
                     self._execute_font_scale_(event)
+                    return True
         return False
 
     def paintEvent(self, event):
@@ -480,7 +488,7 @@ class QtEntryAsContentEdit(
             ]
         #
         if menu_raw:
-            self._qt_menu = _utl_gui_qt_wgt_utility.QtMenu(self)
+            self._qt_menu = _gui_qt_wgt_utility.QtMenu(self)
             self._qt_menu._set_menu_data_(menu_raw)
             self._qt_menu._set_show_()
 
@@ -500,6 +508,9 @@ class QtEntryAsContentEdit(
 
     def _append_content_(self, text):
         def add_fnc_(text_):
+            if isinstance(text_, six.text_type):
+                text_ = text_.encode('utf-8')
+
             self.moveCursor(QtGui.QTextCursor.End)
             self.insertPlainText(text_+'\n')
 
@@ -582,9 +593,9 @@ class QtEntryAsContentEdit(
             self.insertPlainText(data.text())
 
 
-class QtEntryAsListForPopup(gui_qt_abstract.AbsQtListWidget):
+class QtEntryAsConstantChoose(gui_qt_abstract.AbsQtListWidget):
     def __init__(self, *args, **kwargs):
-        super(QtEntryAsListForPopup, self).__init__(*args, **kwargs)
+        super(QtEntryAsConstantChoose, self).__init__(*args, **kwargs)
         self.setDragDropMode(self.DragOnly)
         self.setDragEnabled(False)
         self.setSelectionMode(QtWidgets.QListWidget.SingleSelection)
@@ -595,22 +606,43 @@ class QtEntryAsListForPopup(gui_qt_abstract.AbsQtListWidget):
     def paintEvent(self, event):
         pass
 
-    def _get_maximum_height_(self, count_maximum, includes=None):
+    def _compute_height_maximum_(self, row_maximum, includes=None):
         adjust = 1+8
         if includes is not None:
-            rects = [self.visualItemRect(i) for i in includes[:count_maximum]]
+            rects = [self.visualItemRect(i) for i in includes[:row_maximum]]
         else:
-            rects = [self.visualItemRect(self.item(i)) for i in range(self.count())[:count_maximum]]
+            rects = [self.visualItemRect(self.item(i)) for i in range(self.count())[:row_maximum]]
         if rects:
             return sum([i.height() for i in rects])+adjust
         return 20+adjust
 
 
+class QtEntryAsIconChoose(gui_qt_abstract.AbsQtListWidget):
+    def __init__(self, *args, **kwargs):
+        super(QtEntryAsIconChoose, self).__init__(*args, **kwargs)
+        self.setDragDropMode(self.DragOnly)
+        self.setDragEnabled(False)
+        self.setSelectionMode(QtWidgets.QListWidget.SingleSelection)
+        self.setResizeMode(QtWidgets.QListWidget.Adjust)
+        self.setViewMode(QtWidgets.QListWidget.IconMode)
+        self.setPalette(QtDccMtd.get_palette())
+
+    def _compute_height_maximum_(self, row_maximum, includes=None):
+        # w, h = self.viewport().width(), self.viewport().height()
+        c_w, c_h = self.gridSize().width(), self.gridSize().height()
+        # print w, c_w
+        # row_count = int(w/c_w)
+        # print row_count
+        adjust = 1+5
+        return c_h*row_maximum+adjust
+
+
+# base entry for list
 class QtEntryAsList(
     gui_qt_abstract.AbsQtListWidget,
     gui_qt_abstract.AbsQtHelpDef,
     #
-    gui_qt_abstract.AbsQtValueDef,
+    gui_qt_abstract.AbsQtEntryExtraDef,
     gui_qt_abstract.AbsQtValuesDef,
     #
     gui_qt_abstract.AbsQtEntryBaseDef,
@@ -648,7 +680,7 @@ class QtEntryAsList(
 
         self._set_help_def_init_(self)
         #
-        self._set_value_def_init_(self)
+        self._init_entry_extra_def_(self)
         self._set_values_def_init_(self)
         #
         self._init_entry_base_def_(self)
@@ -689,7 +721,7 @@ class QtEntryAsList(
             )
         #
         if menu_raw:
-            self._qt_menu = _utl_gui_qt_wgt_utility.QtMenu(self)
+            self._qt_menu = _gui_qt_wgt_utility.QtMenu(self)
             self._qt_menu._set_menu_data_(menu_raw)
             self._qt_menu._set_show_()
 
@@ -915,7 +947,7 @@ class QtEntryAsList(
         if self._item_icon_file_path is not None:
             item_widget._set_icon_file_path_(self._item_icon_file_path)
         else:
-            item_widget._set_icon_text_(value)
+            item_widget._set_icon_name_text_(value)
 
     def _create_value_item_(self, value):
         def cache_fnc_():
@@ -927,20 +959,20 @@ class QtEntryAsList(
         def delete_fnc_():
             self._delete_value_(value)
 
-        item_widget = _utl_gui_qt_wgt_utility._QtHItem()
+        item_widget = _gui_qt_wgt_utility._QtHItem()
         item_widget._set_value_(value)
         item_widget._set_delete_enable_(True)
         item_widget.delete_press_clicked.connect(delete_fnc_)
-        item = _utl_gui_qt_wgt_utility.QtListWidgetItem()
+        item = _gui_qt_wgt_utility.QtListWidgetItem()
         w, h = self._grid_size
         item.setSizeHint(QtCore.QSize(w, h))
         self.addItem(item)
-        item._set_item_show_connect_()
+        item._connect_item_show_()
         self.setItemWidget(item, item_widget)
         item._set_item_show_fnc_(
             cache_fnc_, build_fnc_
         )
-        item_widget._refresh_widget_()
+        item_widget._refresh_widget_all_()
 
     def _set_clear_(self):
         super(QtEntryAsList, self)._set_clear_()
@@ -969,6 +1001,7 @@ class QtEntryAsList(
             self.addAction(i_action)
 
 
+# base entry as bubbles
 class QtEntryAsBubbles(
     QtWidgets.QWidget,
     gui_qt_abstract.AbsQtWidgetBaseDef
@@ -978,7 +1011,7 @@ class QtEntryAsBubbles(
 
     def __init__(self, *args, **kwargs):
         super(QtEntryAsBubbles, self).__init__(*args, **kwargs)
-        self._bubble_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(self)
+        self._bubble_layout = _gui_qt_wgt_utility.QtHBoxLayout(self)
         self._bubble_layout.setContentsMargins(*[0]*4)
         self._bubble_layout.setSpacing(1)
 
@@ -993,7 +1026,7 @@ class QtEntryAsBubbles(
         if text and text not in texts:
             self._append_value_(text)
             #
-            bubble = _utl_gui_qt_wgt_utility.QtTextBubble()
+            bubble = _gui_qt_wgt_utility.QtTextBubble()
             self._bubble_layout.addWidget(bubble)
             bubble._set_bubble_text_(text)
             bubble.delete_text_accepted.connect(self._delete_value_)
@@ -1025,6 +1058,247 @@ class QtEntryAsBubbles(
         self._bubble_layout._clear_all_widgets_()
 
 
+# base entry as capsule, can be select one and more
+class QtEntryAsCapsule(
+    QtWidgets.QWidget,
+
+    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstract.AbsQtNameBaseDef,
+
+    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstract.AbsQtActionForHoverDef,
+    gui_qt_abstract.AbsQtActionForPressDef,
+
+    gui_qt_abstract.AbsQtEntryExtraDef,
+    gui_qt_abstract.AbsQtValueDefaultBaseDef,
+):
+    value_changed = qt_signal()
+    user_value_changed = qt_signal()
+
+    def __init__(self, *args, **kwargs):
+        super(QtEntryAsCapsule, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setMouseTracking(True)
+
+        self.installEventFilter(self)
+        #
+        self._init_name_base_def_(self)
+        self._init_frame_base_def_(self)
+
+        self._init_action_base_def_(self)
+        self._init_action_for_hover_def_(self)
+        self._init_action_for_press_def_(self)
+
+        self._init_entry_extra_def_(self)
+        self._init_value_default_base_def_()
+
+        self._capsule_per_width = 0
+
+        self._capsule_use_exclusive = True
+
+        self._capsule_hovered_index = None
+        self._capsule_pressed_index = None
+        self._capsule_index_current = None
+
+        self._capsule_value_current = None
+
+        self._capsule_texts = []
+        self._capsule_indices = []
+        #
+        self._capsule_draw_texts = []
+        self._capsule_draw_rects = []
+        #
+        self._capsule_checked_indices = []
+
+        self._capsule_height = 18
+
+    def _set_capsule_strings_(self, texts):
+        self._capsule_texts = texts
+        c = len(texts)
+        self._capsule_indices = range(c)
+        self._capsule_draw_rects = []
+        self._capsule_draw_texts = []
+        self._capsule_checked_indices = []
+        for i_index in self._capsule_indices:
+            self._capsule_draw_rects.append(QtCore.QRect())
+            # noinspection PyArgumentEqualDefault
+            self._capsule_draw_texts.append(
+                bsc_core.RawTextMtd.to_prettify(texts[i_index], capitalize=True)
+            )
+            self._capsule_checked_indices.append(False)
+        #
+        self._refresh_widget_draw_()
+
+    def _set_value_(self, value):
+        if self._capsule_use_exclusive:
+            index = self._capsule_texts.index(value)
+            self._capsule_index_current = index
+            self._capsule_checked_indices = [True if i in [index] else False for i in self._capsule_indices]
+        else:
+            if value:
+                indices = [self._capsule_texts.index(i) for i in value if i in self._capsule_texts]
+                self._capsule_index_current = indices[0]
+                self._capsule_checked_indices = [True if i in indices else False for i in self._capsule_indices]
+
+        self._update_value_current_()
+        #
+        self._refresh_widget_draw_()
+
+    def _get_value_(self):
+        return self._capsule_value_current
+
+    def _get_value_fnc_(self):
+        _ = [self._capsule_texts[i] for i in self._capsule_indices if self._capsule_checked_indices[i] is True]
+        if self._capsule_use_exclusive:
+            if _:
+                return _[0]
+            return ''
+        return _
+
+    def _update_value_current_(self):
+        value_pre = self._capsule_value_current
+        self._capsule_value_current = self._get_value_fnc_()
+        if value_pre != self._capsule_value_current:
+            self.value_changed.emit()
+
+    def _set_capsule_use_exclusive_(self, boolean):
+        self._capsule_use_exclusive = boolean
+
+    def _refresh_widget_draw_(self):
+        self.update()
+
+    def _refresh_widget_draw_geometry_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        #
+        self._set_frame_draw_rect_(
+            x+1, y+1, w-2, h-2
+        )
+        #
+        if self._capsule_texts:
+            c_h = self._capsule_height
+            w = int(max([self.fontMetrics().width(i) for i in self._capsule_texts]))
+            self._capsule_per_width = w+(w%2)+4
+            for i, i_text in enumerate(self._capsule_texts):
+                i_x, i_y = x+i*self._capsule_per_width, y
+                i_w, i_h = self._capsule_per_width, h
+                self._capsule_draw_rects[i].setRect(
+                    x+i_x, y+(h-c_h)/2, i_w, c_h
+                )
+
+    def _do_capsule_hover_move_(self, event):
+        if self._action_is_enable is False:
+            return
+        if not self._capsule_per_width:
+            return
+        p = event.pos()
+        x, y = p.x(), p.y()
+        self._capsule_hovered_index = int(x/self._capsule_per_width)
+        self._refresh_widget_draw_()
+
+    def _do_capsule_press_start_(self, event):
+        if self._action_is_enable is False:
+            return
+        if not self._capsule_per_width:
+            return
+        p = event.pos()
+        x, y = p.x(), p.y()
+        index_pre = self._capsule_index_current
+        index = int(x/self._capsule_per_width)
+        if index in self._capsule_indices:
+            self._capsule_index_current = index
+            self._capsule_pressed_index = self._capsule_index_current
+            if self._capsule_use_exclusive is True:
+                if index_pre is not None:
+                    self._capsule_checked_indices[index_pre] = False
+                self._capsule_checked_indices[self._capsule_index_current] = True
+            else:
+                self._capsule_checked_indices[self._capsule_index_current] = not self._capsule_checked_indices[
+                    self._capsule_index_current]
+
+            self._capsule_press_state = self._capsule_checked_indices[self._capsule_index_current]
+
+            self._update_value_current_()
+
+    def _do_capsule_press_move_(self, event):
+        if self._action_is_enable is False:
+            return
+        if not self._capsule_per_width:
+            return
+        p = event.pos()
+        x, y = p.x(), p.y()
+        index_pre = self._capsule_index_current
+        index = int(x/self._capsule_per_width)
+        if index in self._capsule_indices:
+            self._capsule_index_current = index
+            self._capsule_pressed_index = self._capsule_index_current
+            if index_pre != self._capsule_index_current:
+                if self._capsule_use_exclusive is True:
+                    if index_pre is not None:
+                        self._capsule_checked_indices[index_pre] = False
+                    self._capsule_checked_indices[self._capsule_index_current] = True
+                else:
+                    self._capsule_checked_indices[self._capsule_index_current] = self._capsule_press_state
+                #
+                self._update_value_current_()
+
+    def _do_capsule_press_end_(self, event):
+        if self._action_is_enable is False:
+            return
+        self._capsule_pressed_index = None
+        event.accept()
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.Resize:
+                self._refresh_widget_draw_geometry_()
+            elif event.type() == QtCore.QEvent.Enter:
+                pass
+            elif event.type() == QtCore.QEvent.Leave:
+                self._capsule_hovered_index = None
+                self._refresh_widget_draw_()
+            # press
+            elif event.type() == QtCore.QEvent.MouseButtonPress:
+                if event.button() == QtCore.Qt.LeftButton:
+                    self._do_capsule_press_start_(event)
+                    self._set_action_flag_(
+                        self.ActionFlag.Press
+                    )
+            elif event.type() == QtCore.QEvent.MouseButtonDblClick:
+                if event.button() == QtCore.Qt.LeftButton:
+                    self._do_capsule_press_start_(event)
+                    self._set_action_flag_(
+                        self.ActionFlag.Press
+                    )
+            elif event.type() == QtCore.QEvent.MouseMove:
+                if self._get_action_flag_is_match_(self.ActionFlag.Press):
+                    self._do_capsule_press_move_(event)
+                #
+                self._do_capsule_hover_move_(event)
+            elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                self._do_capsule_press_end_(event)
+                self._clear_all_action_flags_()
+        return False
+
+    def paintEvent(self, event):
+        painter = QtPainter(self)
+        if self._capsule_texts:
+            painter._draw_capsule_by_rects_(
+                rects=self._capsule_draw_rects,
+                texts=self._capsule_draw_texts,
+                checked_indices=self._capsule_checked_indices,
+                index_hover=self._capsule_hovered_index,
+                index_press=self._capsule_pressed_index,
+                use_exclusive=self._capsule_use_exclusive,
+                is_enable=self._action_is_enable
+            )
+
+    def _set_value_entry_enable_(self, boolean):
+        self._set_action_enable_(boolean)
+
+
+# base entry frame
 class QtEntryFrame(
     QtWidgets.QWidget,
     #
@@ -1040,7 +1314,7 @@ class QtEntryFrame(
     entry_focus_out = qt_signal()
     entry_focus_changed = qt_signal()
 
-    def _refresh_widget_(self):
+    def _refresh_widget_all_(self):
         self._refresh_widget_draw_geometry_()
         self._refresh_widget_draw_()
 
@@ -1112,7 +1386,7 @@ class QtEntryFrame(
         self._selected_frame_border_color = QtBorderColors.Selected
         self._frame_background_color = QtBackgroundColors.Dim
 
-        self._resize_handle = _utl_gui_qt_wgt_resize.QtVResizeHandle(self)
+        self._resize_handle = _gui_qt_wgt_resize.QtVResizeHandle(self)
         self._resize_handle.hide()
 
         self._tip_draw_enable = False
@@ -1124,7 +1398,7 @@ class QtEntryFrame(
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Resize:
-                self._refresh_widget_()
+                self._refresh_widget_all_()
                 self.geometry_changed.emit(
                     self.x(), self.y(), self.width(), self.height()
                 )

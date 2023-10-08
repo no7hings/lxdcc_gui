@@ -9,9 +9,10 @@ import functools
 
 from lxbasic import bsc_core
 
-from lxutil_gui import utl_gui_core
+from lxutil_gui import gui_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_entry_base, _gui_qt_wgt_chart, _utl_gui_qt_wgt_view_for_list
+from lxutil_gui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_entry_base, _gui_qt_wgt_chart, \
+    _gui_qt_wgt_view_for_list
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
@@ -27,48 +28,49 @@ class PrxListView(
     utl_gui_prx_abstract.AbsPrxViewVisibleConnectionDef,
 ):
     QT_WIDGET_CLS = _gui_qt_wgt_entry_base.QtEntryFrame
-    QT_VIEW_CLS = _utl_gui_qt_wgt_view_for_list.QtListWidget
+    QT_VIEW_CLS = _gui_qt_wgt_view_for_list.QtListWidget
     #
     FILTER_MAXIMUM = 50
+
     def __init__(self, *args, **kwargs):
         super(PrxListView, self).__init__(*args, **kwargs)
-        self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
+        self._qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
         self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
         #
         self._prx_top_tool_bar = _gui_prx_wgt_contianer.PrxHToolBar()
         self._prx_top_tool_bar.set_name('top')
-        self._prx_top_tool_bar.set_left_alignment_mode()
+        self._prx_top_tool_bar.set_left_alignment()
         self._qt_layout_0.addWidget(self._prx_top_tool_bar.widget)
         self._prx_top_tool_bar.set_border_radius(1)
         # check
         self._prx_check_tool_box = self.create_top_tool_box('check', True, False, 0)
         #
-        self._check_all_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
+        self._check_all_button = _gui_qt_wgt_button.QtIconPressButton()
         self._check_all_button._set_name_text_('check all')
-        self._check_all_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('all_checked'))
+        self._check_all_button._set_icon_file_path_(gui_core.RscIconFile.get('all_checked'))
         self._prx_check_tool_box.add_widget(self._check_all_button)
-        self._check_all_button.clicked.connect(self.__check_all_items)
+        self._check_all_button.press_clicked.connect(self.__check_all_items)
         self._check_all_button._set_tool_tip_text_(
             '"LMB-click" for checked all items'
         )
         #
-        self._uncheck_all_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
-        self._uncheck_all_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('all_unchecked'))
+        self._uncheck_all_button = _gui_qt_wgt_button.QtIconPressButton()
+        self._uncheck_all_button._set_icon_file_path_(gui_core.RscIconFile.get('all_unchecked'))
         self._uncheck_all_button._set_name_text_('uncheck all')
         self._prx_check_tool_box.add_widget(self._uncheck_all_button)
-        self._uncheck_all_button.clicked.connect(self.__uncheck_all_items)
+        self._uncheck_all_button.press_clicked.connect(self.__uncheck_all_items)
         self._uncheck_all_button._set_tool_tip_text_(
             '"LMB-click" for unchecked all items'
         )
         # mode switch
         self._prx_mode_switch_tool_box = self.create_top_tool_box('mode', True, True, 0)
         #
-        self._view_mode_swap_button = _utl_gui_qt_wgt_utility.QtIconPressButton()
+        self._view_mode_swap_button = _gui_qt_wgt_button.QtIconPressButton()
         self._prx_mode_switch_tool_box.add_widget(self._view_mode_swap_button)
         self._view_mode_swap_button._set_name_text_('icon mode')
-        self._view_mode_swap_button._set_icon_file_path_(utl_gui_core.RscIconFile.get('tool/icon-mode'))
-        self._view_mode_swap_button.clicked.connect(self.__swap_view_mode)
+        self._view_mode_swap_button._set_icon_file_path_(gui_core.RscIconFile.get('tool/icon-mode'))
+        self._view_mode_swap_button.press_clicked.connect(self.__swap_view_mode)
         self._view_mode_swap_button._set_tool_tip_text_(
             '"LMB-click" for switch view mode to "icon" / "list"'
         )
@@ -107,17 +109,21 @@ class PrxListView(
             self.__keyword_filter_cbk
         )
         self._qt_view._set_view_keyword_filter_bar_(self._prx_filter_bar._qt_widget)
-        self._prx_filter_bar._qt_widget._set_completion_extra_gain_fnc_(self.__keyword_filter_completion_gain_fnc)
-        self._prx_filter_bar._qt_widget.user_choose_changed.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_current_)
+        self._prx_filter_bar._qt_widget._set_popup_completion_gain_fnc_(self.__keyword_filter_completion_gain_fnc)
+        self._prx_filter_bar._qt_widget.user_choose_changed.connect(
+            self._qt_view._execute_view_keyword_filter_occurrence_to_current_
+            )
         self._prx_filter_bar._qt_widget.occurrence_previous_press_clicked.connect(
             self._qt_view._execute_view_keyword_filter_occurrence_to_previous_
         )
         self._prx_filter_bar._qt_widget.occurrence_next_press_clicked.connect(
             self._qt_view._execute_view_keyword_filter_occurrence_to_next_
         )
+
     @property
     def view(self):
         return self._qt_view
+
     @property
     def filter_bar(self):
         return self._prx_filter_bar
@@ -147,7 +153,8 @@ class PrxListView(
                         map(
                             lambda x: x.lower(),
                             [
-                                j for i in self._qt_view._get_all_items_() for j in i._get_keyword_filter_keys_auto_as_split_()
+                                j for i in self._qt_view._get_all_items_() for j in
+                                i._get_keyword_filter_keys_auto_as_split_()
                             ]
                         )
                     )
@@ -239,7 +246,7 @@ class PrxListView(
             i_key = i._get_name_text_()
             i_icon_name = 'tool/sort-by-{}-{}'.format(i_key, order)
             i._set_icon_file_path_(
-                utl_gui_core.RscIconFile.get(i_icon_name),
+                gui_core.RscIconFile.get(i_icon_name),
             )
 
     def __swap_view_mode(self):
@@ -248,7 +255,7 @@ class PrxListView(
             ['list mode', 'icon mode'][self.view._get_is_grid_mode_()]
         )
         self._view_mode_swap_button._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get(['tool/list-mode', 'tool/icon-mode'][self.view._get_is_grid_mode_()])
+            gui_core.RscIconFile.get(['tool/list-mode', 'tool/icon-mode'][self.view._get_is_grid_mode_()])
         )
 
     def __check_all_items(self):
@@ -262,6 +269,7 @@ class PrxListView(
 
     def set_view_grid_mode(self):
         self._qt_view._set_grid_mode_()
+
     #
     def set_item_frame_size(self, w, h):
         self._qt_view._set_item_frame_size_(w, h)

@@ -1,26 +1,27 @@
 # coding:utf-8
 
-import lxutil_gui.proxy.widgets as utl_prx_widgets
+import lxutil_gui.proxy.widgets as prx_widgets
+
+import lxutil_gui.qt.widgets as qt_widgets
 
 import lxresolver.commands as rsv_commands
 
 
-class TestWindow(utl_prx_widgets.PrxBaseWindow):
+class TestWindow(prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(TestWindow, self).__init__(*args, **kwargs)
         self._test_()
 
     def _test_(self):
-        n = utl_prx_widgets.PrxTabView()
+        n = prx_widgets.PrxTabView()
+        n.set_drag_enable(True)
         self.add_widget(n)
-        v_0 = utl_prx_widgets.PrxTreeView()
-        n.create_item(
-            v_0.widget, name='test - 0', icon_name_text='test - 0'
-        )
-        v_1 = utl_prx_widgets.PrxListView()
-        n.create_item(
-            v_1.widget, name='test - aaaaaaaaaaaa'
-        )
+        for i in range(5):
+            i_w = qt_widgets.QtTextBubble()
+            i_w._set_bubble_text_(str(i))
+            n.add_widget(
+                i_w, name='a - {}'.format((i*2+1)*'0'), icon_name_text=str(i)
+            )
 
 
 if __name__ == '__main__':

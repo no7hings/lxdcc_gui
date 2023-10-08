@@ -9,13 +9,13 @@ from lxutil import utl_core
 
 from lxutil_gui.qt import gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_chart
+from lxutil_gui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_chart, _gui_qt_wgt_layer_stack
 
 from lxutil_gui.proxy import utl_gui_prx_configure, utl_gui_prx_core, utl_gui_prx_abstract
 
 from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _gui_prx_wgt_contianer
 
-from lxutil_gui import utl_gui_core
+from lxutil_gui import gui_core
 
 from lxbasic import bsc_configure
 
@@ -32,16 +32,18 @@ class PrxBaseWindow(
 ):
     PRX_CATEGORY = 'tool_window'
     PRX_TYPE = 'tool_window'
-    #
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtMainWindow
-    #
+
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtMainWindow
+
     PRX_LAYER_CLS = _utl_gui_prx_wdt_utility.PrxLayer
-    PROGRESS_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtProgressBar
-    #
+    QT_LAYER_STACK_CLS = _gui_qt_wgt_layer_stack.QtLayerStack
+    PROGRESS_WIDGET_CLS = _gui_qt_wgt_utility.QtProgressBar
+
     QT_WAITING_CHART_CLS = _gui_qt_wgt_chart.QtWaitingChart
     QT_PROGRESSING_CHART_CLS = _gui_qt_wgt_chart.QtProgressingChart
-    #
+
     HELP_FILE_PATH = None
+
     def __init__(self, *args, **kwargs):
         super(PrxBaseWindow, self).__init__(*args, **kwargs)
         #
@@ -66,21 +68,21 @@ class PrxBaseWindow(
             ]
         )
 
-    def _set_build_(self):
+    def _gui_build_(self):
         self._is_loading = False
         # menu bar
-        self._qt_menu_bar_0 = _utl_gui_qt_wgt_utility.QtMenuBar()
+        self._qt_menu_bar_0 = _gui_qt_wgt_utility.QtMenuBar()
         self._qt_widget.setMenuBar(self._qt_menu_bar_0)
         self._menu_0 = _utl_gui_prx_wdt_utility.PrxMenu(self._qt_menu_bar_0)
         self._menu_0.set_name('show')
         self._qt_menu_bar_0.addMenu(self._menu_0.widget)
         #
-        self._qt_central_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+        self._qt_central_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
         self._qt_widget.setCentralWidget(self._qt_central_widget)
         #
         self._set_progressing_def_init_()
         #
-        self._qt_central_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_central_widget)
+        self._qt_central_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_central_widget)
         self._qt_central_layout.setContentsMargins(0, 0, 0, 0)
         #
         self._init_layer_base_def_(self._qt_central_layout)
@@ -95,10 +97,10 @@ class PrxBaseWindow(
         #
         self._set_waiting_def_init_()
         #
-        self.show_layer('main_0')
+        self.set_current_layer('main_0')
 
-    def show_main_layer(self):
-        self.show_layer('main_0')
+    def switch_to_main_layer(self):
+        self.switch_current_layer_to('main_0')
 
     def create_menu(self, name):
         menu = _utl_gui_prx_wdt_utility.PrxMenu(self._qt_menu_bar_0)
@@ -116,25 +118,27 @@ class PrxBaseWindow(
 
     def create_layer_widget(self, key, label=None):
         def fnc_():
-            self.show_layer('main_0')
+            self.switch_current_layer_to('main_0')
+
         #
         layer = self.create_layer(key)
         layer_widget = layer.create_widget(key, label=label)
         layer_widget.connect_close_to(fnc_)
         return layer_widget
+
     # main
     def __build_main_layer(self):
         # content_widget_0
         layer = self.create_layer('main_0')
-        qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(layer._qt_widget)
+        qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(layer._qt_widget)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
         qt_layout_0.setSpacing(0)
-        self._qt_main_line = _utl_gui_qt_wgt_utility.QtHLine()
+        self._qt_main_line = _gui_qt_wgt_utility.QtHLine()
         qt_layout_0.addWidget(self._qt_main_line)
         # main widget
-        self._qt_main_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+        self._qt_main_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
         qt_layout_0.addWidget(self._qt_main_widget)
-        self._qt_main_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_main_widget)
+        self._qt_main_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_main_widget)
         self._qt_main_layout.setContentsMargins(2, 2, 2, 2)
         # bottom toolbar
         self._window_bottom_tool_bar = _gui_prx_wgt_contianer.PrxHToolBar()
@@ -153,28 +157,34 @@ class PrxBaseWindow(
         #
         self._progress_maximum = 10
         self._progress_value = 0
+
     # option
     def __build_option_layer(self):
         self.create_layer_widget('window_option_0', 'Option')
+
     # log
     def __build_log_layer(self):
         layer_widget = self.create_layer_widget('window_log_0', 'Log')
         self._log_text_browser = _utl_gui_prx_wdt_utility.PrxTextBrowser()
         layer_widget.add_widget(self._log_text_browser)
+
     # help
     def __build_help_layer(self):
         layer_widget = self.create_layer_widget('window_help_0', 'Help')
         self._help_text_browser = _utl_gui_prx_wdt_utility.PrxTextBrowser()
         layer_widget.add_widget(self._help_text_browser)
+
     # loading
     def __build_loading_layer(self):
         self.create_layer_widget('window_loading_0', 'Loading ...')
+
     # exception
     def __build_expression_layer(self):
         layer_widget = self.create_layer_widget('window_exception_0', 'Exception')
         self._exception_text_browser = _utl_gui_prx_wdt_utility.PrxTextBrowser()
         self._exception_text_browser.set_font_size(10)
         layer_widget.add_widget(self._exception_text_browser.widget)
+
     # message
     def __build_message_layer(self):
         layer_widget = self.create_layer_widget('window_message_0', 'Message')
@@ -213,13 +223,14 @@ class PrxBaseWindow(
         self.get_layer_widget('window_option_0').set_status(status)
 
     def show_option_unit(self):
-        self.show_layer('window_option_0')
+        self.switch_current_layer_to('window_option_0')
 
     def get_option_layer_widget(self):
         return self.get_layer_widget('window_option_0')
 
     def set_option_unit_clear(self):
         self.get_layer_widget('window_option_0').clear()
+
     # loading
     def set_window_loading_show(self):
         gui_qt_core.set_qt_window_show(
@@ -231,10 +242,11 @@ class PrxBaseWindow(
         def method_fnc_():
             self.set_window_loading_end()
             method()
+
         #
         self._is_loading = True
         self._loading_index = 0
-        self.show_layer('window_loading_0')
+        self.set_current_layer('window_loading_0')
         #
         self.start_waiting(auto_stop_time=time)
         #
@@ -249,12 +261,13 @@ class PrxBaseWindow(
             self.widget, size=self.get_definition_window_size()
         )
         #
-        self.show_layer('main_0')
+        self.set_current_layer('main_0')
         #
         self._is_loading = False
+
     # log
     def set_log_unit_show(self):
-        self.show_layer('window_log_0')
+        self.switch_current_layer_to('window_log_0')
         #
         context = self._log_text_browser_0.get_content()
         self._log_text_browser.set_content(context)
@@ -284,9 +297,10 @@ class PrxBaseWindow(
                     )
                 #
                 log.close()
+
     # help
     def show_help(self):
-        self.show_layer('window_help_0')
+        self.switch_current_layer_to('window_help_0')
         #
         if self.HELP_FILE_PATH is not None:
             self._help_text_browser.set_markdown_file_open(
@@ -303,9 +317,10 @@ class PrxBaseWindow(
 
     def set_help_file(self, file_path):
         self._help_text_browser.set_markdown_file_open(file_path)
+
     # exception
     def show_exception(self):
-        self.show_layer('window_exception_0')
+        self.switch_current_layer_to('window_exception_0')
 
     def set_exception_content(self, text):
         if isinstance(text, six.string_types):
@@ -316,7 +331,7 @@ class PrxBaseWindow(
             )
 
     def show_message(self, text=None, status=None):
-        self.show_layer('window_message_0')
+        self.switch_current_layer_to('window_message_0')
         if text:
             # unit.set_status(status)
             self._message_text_browser.set_content(
@@ -347,7 +362,7 @@ class PrxBaseWindow(
         #
         if self._is_loading is True:
             gui_qt_core.set_qt_window_show(
-                self.widget, pos, size=(480, 320)
+                self.widget, pos, size=(480, 240)
             )
         else:
             gui_qt_core.set_qt_window_show(
@@ -358,9 +373,9 @@ class PrxBaseWindow(
         text_browser = self.get_log_text_browser()
         text_browser.set_print_add(text)
 
-    def add_content_with_thread(self, text):
+    def append_content_use_thread(self, text):
         text_browser = self.get_log_text_browser()
-        text_browser.add_content_with_thread(text)
+        text_browser.append_content_use_thread(text)
 
     def gui_bustling(self):
         return self._qt_widget._gui_bustling_()
@@ -374,9 +389,11 @@ class PrxBaseWindow(
 class PrxSessionWindow(PrxBaseWindow):
     PRX_TYPE = 'session_window'
     DEFERRED_TIME = 1000
+
     def __init__(self, session, *args, **kwargs):
         super(PrxSessionWindow, self).__init__(*args, **kwargs)
         self._debug_run_(self._main_fnc_, session)
+
     @property
     def session(self):
         return self._session
@@ -393,7 +410,7 @@ class PrxSessionWindow(PrxBaseWindow):
             exc_texts = []
             exc_type, exc_value, exc_stack = sys.exc_info()
             if exc_type:
-                value = '{}: "{}"'.format(exc_type.__name__, exc_value.message)
+                value = '{}: "{}"'.format(exc_type.__name__, repr(exc_value))
                 for seq, stk in enumerate(traceback.extract_tb(exc_stack)):
                     i_file_path, i_line, i_fnc, i_fnc_line = stk
                     exc_texts.append(
@@ -417,11 +434,23 @@ class PrxSessionWindow(PrxBaseWindow):
         self._session = args[0]
         self._session.reload_configure()
         if self._session.get_is_td_enable() is True:
-            self.set_window_title('[TD] {} for {}'.format(self._session.gui_configure.get('name'), str(self._session.application).capitalize()))
+            self.set_window_title(
+                '[TD] {} - {}'.format(
+                    self._session.gui_configure.get('name'), str(self._session.application).capitalize()
+                )
+            )
         elif self._session.get_is_beta_enable() is True:
-            self.set_window_title('[BETA] {} for {}'.format(self._session.gui_configure.get('name'), str(self._session.application).capitalize()))
+            self.set_window_title(
+                '[BETA] {} - {}'.format(
+                    self._session.gui_configure.get('name'), str(self._session.application).capitalize()
+                )
+            )
         else:
-            self.set_window_title('{} for {}'.format(self._session.gui_configure.get('name'), str(self._session.application).capitalize()))
+            self.set_window_title(
+                '{} - {}'.format(
+                    self._session.gui_configure.get('name'), str(self._session.application).capitalize()
+                )
+            )
         #
         # print self._session.gui_configure.get('size')
         self.set_definition_window_size(self._session.gui_configure.get('size'))
@@ -452,8 +481,6 @@ class PrxSessionToolWindow(PrxSessionWindow):
         super(PrxSessionToolWindow, self).__init__(session, *args, **kwargs)
 
     def _setup_fnc_(self):
-        # if self._qt_widget.parent():
-        #     self._qt_widget.setWindowFlags(gui_qt_core.QtCore.Qt.Tool)
         self.restore_variants()
         #
         self._setup_ssn_tool_()

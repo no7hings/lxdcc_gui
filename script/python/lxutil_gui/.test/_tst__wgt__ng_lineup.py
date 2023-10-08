@@ -30,7 +30,7 @@ class W(prx_widgets.PrxBaseWindow):
 
         for i in d.get_all_file_paths():
             i_f = utl_dcc_objects.OsFile(i)
-            i_n = o_t.set_obj_create(
+            i_n = o_t.create_obj(
                 '/{}'.format(i_f.name_base)
             )
             i_p = i_n.generate_variant_port(

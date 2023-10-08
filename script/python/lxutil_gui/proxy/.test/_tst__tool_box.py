@@ -14,11 +14,11 @@ class TestWindow(utl_prx_widgets.PrxBaseWindow):
         self.add_widget(tool_box)
         tool_box.set_expanded(True)
 
-        tool = utl_prx_widgets.PrxIconPressItem()
+        tool = utl_prx_widgets.PrxIconPressButton()
         tool_box.add_widget(tool)
         tool.set_icon_name('application/python')
 
-        tool = utl_prx_widgets.PrxIconPressItem()
+        tool = utl_prx_widgets.PrxIconPressButton()
         tool_box.add_widget(tool)
         tool.set_icon_name('application/python')
 
@@ -26,11 +26,11 @@ class TestWindow(utl_prx_widgets.PrxBaseWindow):
         self.add_widget(tool_box)
         tool_box.set_expanded(True)
 
-        tool = utl_prx_widgets.PrxIconPressItem()
+        tool = utl_prx_widgets.PrxIconPressButton()
         tool_box.add_widget(tool)
         tool.set_icon_name('application/python')
 
-        tool = utl_prx_widgets.PrxIconPressItem()
+        tool = utl_prx_widgets.PrxIconPressButton()
         tool_box.add_widget(tool)
         tool.set_icon_name('application/python')
 

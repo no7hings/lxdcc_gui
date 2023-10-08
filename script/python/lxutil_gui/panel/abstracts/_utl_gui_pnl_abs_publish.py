@@ -18,7 +18,7 @@ import lxresolver.commands as rsv_commands
 
 import lxsession.commands as ssn_commands
 
-from lxutil_gui import utl_gui_core
+from lxutil_gui import gui_core
 
 
 class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
@@ -469,7 +469,7 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
                 str(self._stg_task['id'])
             )
             if self.validator_fnc() is True:
-                self.show_layer('publish')
+                self.switch_current_layer_to('publish')
                 self.get_layer_widget('publish').set_name(
                     'publish for [{project}.{resource}.{task}]'.format(
                         **self._task_data
@@ -675,7 +675,7 @@ class AbsValidatorOpt(object):
 
         prx_item = scene_prx_item.add_child(
             name=group_name,
-            icon=utl_gui_core.RscIconFile.get('application/python'),
+            icon=gui_core.RscIconFile.get('application/python'),
         )
         prx_item.set_checked(False)
         #
@@ -785,14 +785,14 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
         self.add_widget(self._tab_view)
 
         sa_0 = prx_widgets.PrxVScrollArea()
-        self._tab_view.create_item(
+        self._tab_view.add_widget(
             sa_0,
             name='Validation',
             icon_name_text='Validation',
         )
 
         sa_1 = prx_widgets.PrxVScrollArea()
-        self._tab_view.create_item(
+        self._tab_view.add_widget(
             sa_1,
             name='Configure',
             icon_name_text='Configure',
@@ -1162,7 +1162,7 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
     
     def execute_show_next(self):
         if self._next_button.get_is_enable() is True:
-            self.show_layer('publish')
+            self.switch_current_layer_to('publish')
             self.get_layer_widget('publish').set_name(
                 'publish for [{project}.{resource}.{task}]'.format(
                     **self._rsv_scene_properties.get_value()

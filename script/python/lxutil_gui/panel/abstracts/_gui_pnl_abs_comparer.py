@@ -1,23 +1,15 @@
 # coding:utf-8
 from lxbasic import bsc_configure, bsc_core
-
-import lxbasic.objects as bsc_objects
 #
 from lxutil import utl_configure, utl_core
 
-from lxutil_gui import utl_gui_configure, utl_gui_core
-
-from lxutil_gui.qt import gui_qt_core
-
-import lxutil_gui.qt.widgets as qt_widgets
+from lxutil_gui import gui_configure, gui_core
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
 import lxutil_gui.proxy.operators as utl_prx_operators
 
 import lxresolver.commands as rsv_commands
-
-import lxresolver.operators as rsv_operators
 
 
 class AbsPnlAssetDccGeometryComparer(
@@ -232,7 +224,7 @@ class AbsPnlAssetDccGeometryComparer(
         #
         self._sector_chart.set_chart_data(
             sector_chart_data,
-            utl_gui_configure.SectorChartMode.Error
+            gui_configure.SectorChartMode.Error
         )
 
     def refresh_all_fnc(self):
@@ -351,7 +343,7 @@ class AbsDccComparerOpt(object):
         #
         prx_item_src = transform_prx_item_src.add_child(
             name=[dcc_obj_src.name, description, dcc_path_dag_opt_tgt.name],
-            icon=utl_gui_core.RscIconFile.get('obj/mesh'),
+            icon=gui_core.RscIconFile.get('obj/mesh'),
             tool_tip=[path_src, description, path_tgt],
         )
         prx_item_src.set_status(
@@ -374,7 +366,7 @@ class AbsDccComparerOpt(object):
 
         prx_item = self._result_tree_view.create_item(
             name=path_dag_opt.name,
-            icon=utl_gui_core.RscIconFile.get('obj/transform'),
+            icon=gui_core.RscIconFile.get('obj/transform'),
             tool_tip=path,
         )
         prx_item.set_expanded(True)
@@ -390,7 +382,7 @@ class AbsDccComparerOpt(object):
 
         prx_item = parent_prx_item.add_child(
             name=path_dag_opt.name,
-            icon=utl_gui_core.RscIconFile.get('obj/transform'),
+            icon=gui_core.RscIconFile.get('obj/transform'),
             tool_tip=path,
         )
         prx_item.set_expanded(True)
@@ -408,7 +400,7 @@ class AbsDccComparerOpt(object):
 
         prx_item = parent_prx_item.add_child(
             name=name,
-            icon=utl_gui_core.RscIconFile.get('obj/transform'),
+            icon=gui_core.RscIconFile.get('obj/transform'),
             tool_tip=path,
         )
         prx_item.set_expanded(True)
@@ -602,7 +594,7 @@ class AbsPnlAssetGeometryComparer(prx_widgets.PrxSessionWindow):
         #
         self._sector_chart.set_chart_data(
             sector_chart_data,
-            utl_gui_configure.SectorChartMode.Error
+            gui_configure.SectorChartMode.Error
         )
 
         self._comparer_opt.set_accept()

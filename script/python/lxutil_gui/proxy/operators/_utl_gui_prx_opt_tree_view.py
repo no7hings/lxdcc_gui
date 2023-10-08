@@ -7,9 +7,9 @@ import functools
 
 from lxbasic import bsc_core
 
-import lxbasic.objects as bsc_objects
+import lxcontent.objects as ctt_objects
 
-from lxutil_gui import utl_gui_configure
+from lxutil_gui import gui_configure
 
 from lxutil_gui.proxy import utl_gui_prx_core
 
@@ -81,7 +81,7 @@ class GuiTagFilterOpt(object):
         #
         self._prx_tree_item_cls = prx_tree_item_cls
         #
-        self._filter_content = bsc_objects.Content(
+        self._filter_content = ctt_objects.Content(
             value=collections.OrderedDict()
         )
         #
@@ -111,7 +111,7 @@ class GuiTagFilterOpt(object):
     def restore_all(self):
         self._prx_tree_view_src.restore_all()
         #
-        self._filter_content = bsc_objects.Content(
+        self._filter_content = ctt_objects.Content(
             value=collections.OrderedDict()
         )
         self._dcc_obj_dict = {}
@@ -131,7 +131,7 @@ class GuiTagFilterOpt(object):
         name = bsc_core.SPathMtd.set_unquote_to(path_dag_opt.name)
         path = bsc_core.SPathMtd.set_unquote_to(path_dag_opt.path)
         prx_item.set_name(name)
-        prx_item.set_icon_by_text(path, 0)
+        prx_item.set_icon_by_name(path, 0)
         prx_item.set_tool_tip(path)
 
     def _add_prx_item_src_(self, path):
@@ -262,7 +262,7 @@ class GuiTagFilterOpt(object):
         for i_key in keys:
             i_path = self._to_filter_key_path_(i_key)
             #
-            prx_item_tgt.set_tag_filter_tgt_mode(utl_gui_configure.TagFilterMode.MatchAll)
+            prx_item_tgt.set_tag_filter_tgt_mode(gui_configure.TagFilterMode.MatchAll)
             prx_item_tgt.set_tag_filter_tgt_key_add(
                 i_path, ancestors=True
             )
@@ -343,7 +343,7 @@ class PrxDccObjTreeViewAddOpt(object):
             prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
             prx_item.set_expanded(True)
             prx_item.set_checked(False)
-            prx_item.set_icon_by_text(obj.type_name, 1)
+            prx_item.set_icon_by_name(obj.type_name, 1)
             self._obj_add_dict[obj_path] = prx_item
             return prx_item
 
@@ -848,7 +848,7 @@ class PrxDccObjTreeViewAddOpt1(object):
         menu_raw = obj.get_gui_menu_raw()
 
         prx_item.set_icon_by_file(icon)
-        prx_item.set_icon_by_text(obj_type_name, 1)
+        prx_item.set_icon_by_name(obj_type_name, 1)
         prx_item.set_name(obj_name)
         prx_item.set_tool_tip(obj_path)
 

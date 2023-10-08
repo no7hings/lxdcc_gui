@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxutil_gui import utl_gui_configure
+from lxutil_gui import gui_configure
 
 import lxutil_gui.qt.widgets as qt_widgets
 
@@ -17,26 +17,26 @@ class W(prx_widgets.PrxBaseWindow):
         s.add_widget(tool_group)
         tool_group.set_expanded(True)
         tool_group.set_name('Test')
-        g = prx_widgets.PrxGridLayoutView()
+        g = prx_widgets.PrxToolGridLayoutWidget()
         tool_group.add_widget(g)
         g.set_item_size(96, 20)
 
         for i in range(10):
             i_item = prx_widgets.PrxPressItem()
             i_item.set_name(str(i).zfill(4))
-            g.add_item(i_item)
+            g.add_widget(i_item)
 
         tool_group = prx_widgets.PrxHToolGroup_()
         s.add_widget(tool_group)
         tool_group.set_expanded(True)
-        g = prx_widgets.PrxGridLayoutView()
+        g = prx_widgets.PrxToolGridLayoutWidget()
         tool_group.add_widget(g)
         g.set_item_size(200, 20)
 
         for i in range(10):
             i_item = prx_widgets.PrxPressItem()
             i_item.set_name(str(i).zfill(4))
-            g.add_item(i_item)
+            g.add_widget(i_item)
 
 
 if __name__ == '__main__':

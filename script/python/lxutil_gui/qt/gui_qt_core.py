@@ -19,7 +19,7 @@ import types
 #
 from lxbasic import bsc_configure, bsc_core
 
-import lxbasic.abstracts as bsc_abstracts
+import lxcontent.abstracts as ctt_abstracts
 
 import lxbasic.objects as bsc_objects
 
@@ -27,7 +27,7 @@ from lxutil.core import _utl_cor_utility
 #
 from lxutil import utl_core, utl_abstract
 
-from lxutil_gui import utl_gui_configure, utl_gui_core
+from lxutil_gui import gui_configure, gui_core
 
 _pyqt5 = bsc_objects.PyModule('PyQt5')
 
@@ -45,7 +45,9 @@ else:
         raise ImportError()
 
 cgitb.enable(
-    logdir=(bsc_core.EnvExtraMtd.get_user_debug_directory(tag='qt', create=True) or bsc_core.StgUserMtd.get_user_debug_directory(tag='qt', create=True)),
+    logdir=(bsc_core.EnvExtraMtd.get_user_debug_directory(
+        tag='qt', create=True
+        ) or bsc_core.StgUserMtd.get_user_debug_directory(tag='qt', create=True)),
     format='text'
 )
 
@@ -177,6 +179,7 @@ def get_active_lx_window():
 
 def get_qt_widget_is_deleted(widget):
     import shiboken2
+
     return shiboken2.isValid(widget)
 
 
@@ -263,7 +266,7 @@ class Font(object):
     INDEX = get_font()
     NAME = get_font(size=8)
     SEPARATOR = get_font(italic=True)
-    CONTENT = get_font(size=8)
+    CONTENT = get_font(size=8, family='Monospace')
     LOADING = get_font(size=10, weight=75, italic=True)
     DESCRIPTION = get_font(size=10)
     #
@@ -331,6 +334,7 @@ class Color(object):
     #
     DESCRIPTION_TEXT = QtGui.QColor(0, 0, 0, 255)
     DESCRIPTION_BACKGROUND = QtGui.QColor(255, 255, 191, 255)
+
     @classmethod
     def _get_qt_color_(cls, *args):
         if len(args) == 1:
@@ -343,6 +347,7 @@ class Color(object):
                 raise TypeError()
         else:
             return cls._to_qt_color_(*args)
+
     @classmethod
     def _to_qt_color_(cls, *args):
         if len(args) == 3:
@@ -353,6 +358,7 @@ class Color(object):
         else:
             raise TypeError()
         return QtGui.QColor(r, g, b, a)
+
     @classmethod
     def _get_rgb_(cls, *args):
         if len(args) == 1:
@@ -365,6 +371,7 @@ class Color(object):
                 return 0, 0, 0
         else:
             return cls._to_rgb_(*args)
+
     @classmethod
     def _to_rgb_(cls, *args):
         if len(args) == 3:
@@ -374,6 +381,7 @@ class Color(object):
         else:
             raise TypeError()
         return r, g, b
+
     @classmethod
     def _get_rgba_(cls, *args):
         if len(args) == 1:
@@ -386,6 +394,7 @@ class Color(object):
                 return 0, 0, 0, 0
         else:
             return cls._to_rgba_(*args)
+
     @classmethod
     def _to_rgba_(cls, *args):
         if len(args) == 3:
@@ -402,50 +411,50 @@ class QtBorderColors(object):
     @staticmethod
     def get(key):
         return QtGui.QColor(
-            *utl_gui_core.QtStyleMtd.get_border(key)
+            *gui_core.QtStyleMtd.get_border(key)
         )
 
     Transparent = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_border('color-transparent')
+        *gui_core.QtStyleMtd.get_border('color-transparent')
     )
 
     Dim = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_border('color-dim')
+        *gui_core.QtStyleMtd.get_border('color-dim')
     )
     Dark = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_border('color-dark')
+        *gui_core.QtStyleMtd.get_border('color-dark')
     )
     Basic = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_border('color-basic')
+        *gui_core.QtStyleMtd.get_border('color-basic')
     )
     Light = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_border('color-light')
+        *gui_core.QtStyleMtd.get_border('color-light')
     )
     HighLight = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_border('color-high-light')
+        *gui_core.QtStyleMtd.get_border('color-high-light')
     )
     Selected = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_border('color-selected')
+        *gui_core.QtStyleMtd.get_border('color-selected')
     )
     Actioned = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_border('color-actioned')
+        *gui_core.QtStyleMtd.get_border('color-actioned')
     )
     Hovered = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_border('color-hovered')
+        *gui_core.QtStyleMtd.get_border('color-hovered')
     )
 
     Icon = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_border('color-icon')
+        *gui_core.QtStyleMtd.get_border('color-icon')
     )
 
     Button = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_border('color-button')
+        *gui_core.QtStyleMtd.get_border('color-button')
     )
     ButtonDisable = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_border('color-button-disable')
+        *gui_core.QtStyleMtd.get_border('color-button-disable')
     )
 
-    Popup = QtGui.QColor(79, 151, 95, 255)
+    Popup = QtGui.QColor(*bsc_configure.Rgba.LightOrange)
     SplitMoving = QtGui.QColor(127, 127, 127, 255)
 
 
@@ -453,38 +462,38 @@ class QtBackgroundColors(object):
     @staticmethod
     def get(key):
         return QtGui.QColor(
-            *utl_gui_core.QtStyleMtd.get_background(key)
+            *gui_core.QtStyleMtd.get_background(key)
         )
 
     Shadow = QtGui.QColor(0, 0, 0, 31)
 
     Transparent = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-transparent')
+        *gui_core.QtStyleMtd.get_background('color-transparent')
     )
     Black = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-black')
+        *gui_core.QtStyleMtd.get_background('color-black')
     )
     Dim = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-dim')
+        *gui_core.QtStyleMtd.get_background('color-dim')
     )
     Dark = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-dark')
+        *gui_core.QtStyleMtd.get_background('color-dark')
     )
     Basic = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-basic')
+        *gui_core.QtStyleMtd.get_background('color-basic')
     )
     Light = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-light')
+        *gui_core.QtStyleMtd.get_background('color-light')
     )
     White = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-white')
+        *gui_core.QtStyleMtd.get_background('color-white')
     )
 
     Hovered = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-hovered')
+        *gui_core.QtStyleMtd.get_background('color-hovered')
     )
     Selected = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-selected')
+        *gui_core.QtStyleMtd.get_background('color-selected')
     )
     #
     Checked = QtGui.QColor(127, 63, 127, 255)
@@ -496,107 +505,110 @@ class QtBackgroundColors(object):
     PressedHovered = QtGui.QColor(255, 179, 47, 255)
     #
     Actioned = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-actioned')
+        *gui_core.QtStyleMtd.get_background('color-actioned')
     )
     #
     Icon = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-icon')
+        *gui_core.QtStyleMtd.get_background('color-icon')
     )
     #
     Button = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-button')
+        *gui_core.QtStyleMtd.get_background('color-button')
     )
     ButtonHovered = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-button-hovered')
+        *gui_core.QtStyleMtd.get_background('color-button-hovered')
     )
     ButtonDisable = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-button-disable')
+        *gui_core.QtStyleMtd.get_background('color-button-disable')
     )
     ToolTip = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-tool-tip')
+        *gui_core.QtStyleMtd.get_background('color-tool-tip')
     )
     #
     ItemSelected = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-item-selected')
+        *gui_core.QtStyleMtd.get_background('color-item-selected')
     )
     ItemSelectedIndirect = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-item-selected-indirect')
+        *gui_core.QtStyleMtd.get_background('color-item-selected-indirect')
     )
     ItemHovered = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-item-hovered')
+        *gui_core.QtStyleMtd.get_background('color-item-hovered')
     )
     #
     ItemLoading = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-item-loading')
+        *gui_core.QtStyleMtd.get_background('color-item-loading')
     )
     Error = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_background('color-error')
+        *gui_core.QtStyleMtd.get_background('color-error')
     )
 
     Bubble = QtGui.QColor(191, 191, 191, 255)
-    BubbleHovered = QtGui.QColor(255, 179, 47, 255)
+    BubbleHovered = QtGui.QColor(*bsc_configure.Rgba.LightOrange)
+
+    BDragChildPolish = QtGui.QColor(*bsc_configure.Rgba.LightYellow)
+    BDragChildAdd = QtGui.QColor(*bsc_configure.Rgba.LightGreen)
 
 
 class QtFontColors(object):
     @staticmethod
     def get(key):
         return QtGui.QColor(
-            *utl_gui_core.QtStyleMtd.get_font(key)
+            *gui_core.QtStyleMtd.get_font(key)
         )
 
     Black = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_font('color-black')
+        *gui_core.QtStyleMtd.get_font('color-black')
     )
     Dark = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_font('color-dark')
+        *gui_core.QtStyleMtd.get_font('color-dark')
     )
     Basic = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_font('color-basic')
+        *gui_core.QtStyleMtd.get_font('color-basic')
     )
     Light = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_font('color-light')
+        *gui_core.QtStyleMtd.get_font('color-light')
     )
     Hovered = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_font('color-hovered')
+        *gui_core.QtStyleMtd.get_font('color-hovered')
     )
     Selected = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_font('color-selected')
+        *gui_core.QtStyleMtd.get_font('color-selected')
     )
 
     KeyBasic = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_font('color-key-basic')
+        *gui_core.QtStyleMtd.get_font('color-key-basic')
     )
     KeyHovered = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_font('color-key-hovered')
+        *gui_core.QtStyleMtd.get_font('color-key-hovered')
     )
     ValueBasic = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_font('color-value-basic')
+        *gui_core.QtStyleMtd.get_font('color-value-basic')
     )
     ValueHovered = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_font('color-value-hovered')
+        *gui_core.QtStyleMtd.get_font('color-value-hovered')
     )
 
     ToolTip = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_font('color-tool-tip')
+        *gui_core.QtStyleMtd.get_font('color-tool-tip')
     )
     #
     Normal = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_font('color-normal')
+        *gui_core.QtStyleMtd.get_font('color-normal')
     )
     Correct = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_font('color-correct')
+        *gui_core.QtStyleMtd.get_font('color-correct')
     )
     Warning = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_font('color-warning')
+        *gui_core.QtStyleMtd.get_font('color-warning')
     )
     Error = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_font('color-error')
+        *gui_core.QtStyleMtd.get_font('color-error')
     )
     Active = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_font('color-active')
+        *gui_core.QtStyleMtd.get_font('color-active')
     )
     Disable = QtGui.QColor(
-        *utl_gui_core.QtStyleMtd.get_font('color-disable')
+        *gui_core.QtStyleMtd.get_font('color-disable')
     )
 
     Bubble = QtGui.QColor(15, 15, 15, 255)
@@ -640,16 +652,19 @@ class Brush(object):
 
 class QtUtilMtd(object):
     ICON_KEY_PATTERN = r'[@](.*?)[@]'
+
     @classmethod
     def add_fonts(cls, fonts):
         for i in fonts:
             QtGui.QFontDatabase.addApplicationFont(
                 i
             )
+
     @classmethod
     def get_qt_icon(cls, icon_name):
         if QtWidgets.QApplication.instance() is not None:
             return QtIconMtd.create_by_icon_name(icon_name)
+
     @classmethod
     def _get_qt_icon_(cls, file_path):
         qt_icon = QtGui.QIcon()
@@ -659,6 +674,7 @@ class QtUtilMtd(object):
             QtGui.QIcon.On
         )
         return qt_icon
+
     @classmethod
     def get_palette(cls, tool_tip=False):
         palette = QtGui.QPalette()
@@ -690,6 +706,7 @@ class QtUtilMtd(object):
             QtWidgets.QToolTip.setFont(Font.DESCRIPTION)
         #
         return palette
+
     @classmethod
     def get_color_icon(cls, rgb):
         icon = QtGui.QIcon()
@@ -704,7 +721,7 @@ class QtUtilMtd(object):
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
         icon_rect = QtCore.QRect(
-            x + (w - c_w) / 2, y + (h - c_h) / 2,
+            x+(w-c_w)/2, y+(h-c_h)/2,
             c_w, c_h
         )
         r, g, b = rgb
@@ -720,6 +737,7 @@ class QtUtilMtd(object):
             QtGui.QIcon.On
         )
         return icon
+
     @classmethod
     def get_name_text_icon_(cls, text, background_color=None):
         icon = QtGui.QIcon()
@@ -755,7 +773,8 @@ class QtUtilMtd(object):
             painter.setPen(QtGui.QColor(*text_color_))
             painter.setFont(get_font(size=int(rd*.675), italic=True))
             painter.drawText(
-                rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(bsc_core.RawTextMtd.get_first_word(name)).capitalize()
+                rect, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
+                str(bsc_core.RawTextMtd.get_first_word(name)).capitalize()
             )
         #
         painter.end()
@@ -766,6 +785,7 @@ class QtUtilMtd(object):
             QtGui.QIcon.On
         )
         return icon
+
     @classmethod
     def set_text_to_clipboard(cls, text):
         QtWidgets.QApplication.clipboard().setText(text)
@@ -775,7 +795,7 @@ class QtIconMtd(object):
     @classmethod
     def create_by_icon_name(cls, icon_name):
         icon = QtGui.QIcon()
-        file_path = utl_gui_core.RscIconFile.get(icon_name)
+        file_path = gui_core.RscIconFile.get(icon_name)
         if file_path:
             icon.addPixmap(
                 QtGui.QPixmap(file_path),
@@ -783,6 +803,7 @@ class QtIconMtd(object):
                 QtGui.QIcon.On
             )
         return icon
+
     @classmethod
     def get_by_text(cls, text, rounded=False, background_color=None):
         icon = QtGui.QIcon()
@@ -797,7 +818,7 @@ class QtIconMtd(object):
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
         icon_rect = QtCore.QRect(
-            x + (w - c_w) / 2, y + (h - c_h) / 2,
+            x+(w-c_w)/2, y+(h-c_h)/2,
             c_w, c_h
         )
         if text is not None:
@@ -814,7 +835,7 @@ class QtIconMtd(object):
             painter.setPen(QtFontColors.Basic)
             painter.setFont(get_font(italic=True))
             painter.drawText(
-                rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(name[0]).capitalize()
+                rect, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter, str(name[0]).capitalize()
             )
         #
         painter.end()
@@ -843,9 +864,11 @@ class QtPixmapMtd(object):
         #
         image_gray.setAlphaChannel(image_alpha)
         return pixmap.fromImage(image_gray)
+
     @classmethod
     def _to_hovered_(cls, pixmap):
         pass
+
     @classmethod
     def get_by_name(cls, text, size=(20, 20), icon_percent=.75, rounded=False, background_color=None):
         x, y = 0, 0
@@ -875,12 +898,13 @@ class QtPixmapMtd(object):
             painter.setPen(QtFontColors.Basic)
             painter.setFont(get_font(size=int(rd*.6), italic=True))
             painter.drawText(
-                rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+                rect, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
                 str(name[0]).capitalize()
             )
         #
         painter.end()
         return pixmap
+
     @classmethod
     def get_by_file(cls, file_path, size=(20, 20), icon_percent=.75):
         pixmap = QtGui.QPixmap(file_path)
@@ -890,9 +914,10 @@ class QtPixmapMtd(object):
             QtCore.Qt.SmoothTransformation
         )
         return new_pixmap
+
     @classmethod
     def get_by_file_ext(cls, ext, size=(20, 20), icon_percent=.75, gray=False):
-        _ = utl_gui_core.RscIconFile.get('file/{}'.format(ext[1:]))
+        _ = gui_core.RscIconFile.get('file/{}'.format(ext[1:]))
         if _ is not None:
             pixmap = cls.get_by_file(
                 file_path=_,
@@ -906,11 +931,12 @@ class QtPixmapMtd(object):
             text=ext[1:],
             size=size
         )
+
     @classmethod
     def get_by_file_ext_with_tag(cls, ext, tag, frame_size=(20, 20), icon_percent=.75, gray=False):
         x, y = 0, 0
         frm_w, frm_h = frame_size
-        icn_w, icn_h = frm_w * icon_percent, frm_h * icon_percent
+        icn_w, icn_h = frm_w*icon_percent, frm_h*icon_percent
         base_pixmap = cls.get_by_file_ext(
             ext=ext,
             size=(icn_w, icn_h),
@@ -944,7 +970,7 @@ class QtPixmapMtd(object):
         painter.setPen(QtGui.QColor(*text_color_))
         painter.setFont(get_font(size=int(txt_w*.625)))
         painter.drawText(
-            tag_rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, str(tag[0]).capitalize()
+            tag_rect, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter, str(tag[0]).capitalize()
         )
         painter.end()
         return pixmap
@@ -954,6 +980,7 @@ class QtTextMtd(object):
     @classmethod
     def get_draw_width(cls, widget, text=None):
         return widget.fontMetrics().width(text)
+
     @classmethod
     def get_draw_width_maximum(cls, widget, texts):
         lis = []
@@ -972,7 +999,9 @@ class QtMayaMtd(object):
     @classmethod
     def get_qt_object(cls, ptr, base=QtWidgets.QWidget):
         from shiboken2 import wrapInstance
+
         return wrapInstance(long(ptr), base)
+
     @classmethod
     def get_qt_menu_bar(cls):
         qt_main_window = cls.get_qt_main_window()
@@ -982,6 +1011,7 @@ class QtMayaMtd(object):
                 if i_child:
                     if isinstance(i_child, QtWidgets.QMenuBar):
                         return i_child
+
     @classmethod
     def get_qt_menu(cls, text):
         qt_menu_bar = cls.get_qt_menu_bar()
@@ -992,10 +1022,12 @@ class QtMayaMtd(object):
                     i_name = i_child.title()
                     if i_name == text:
                         return i_child
+
     @classmethod
     def get_qt_main_window(cls):
         # noinspection PyUnresolvedReferences
         from maya import OpenMayaUI
+
         #
         main_window = OpenMayaUI.MQtUtil.mainWindow()
         if main_window:
@@ -1003,14 +1035,17 @@ class QtMayaMtd(object):
                 main_window,
                 QtWidgets.QMainWindow
             )
+
     @classmethod
     def get_qt_icon(cls, icon_name):
         # noinspection PyUnresolvedReferences
         from maya import OpenMayaUI
+
         ptr = OpenMayaUI.MQtUtil.createIcon(icon_name)
         if ptr is None:
             ptr = OpenMayaUI.MQtUtil.createIcon('default')
         return cls.get_qt_object(ptr, QtGui.QIcon)
+
     @classmethod
     def get_qt_widget_by_class(cls, widget_class):
         lis = []
@@ -1021,6 +1056,7 @@ class QtMayaMtd(object):
                 if widget_class.__name__ == w.__class__.__name__:
                     lis.append(w)
         return lis
+
     @classmethod
     def _test(cls):
         # # noinspection PyUnresolvedReferences
@@ -1059,11 +1095,14 @@ class QtHoudiniMtd(object):
     def get_qt_main_window(cls):
         # noinspection PyUnresolvedReferences
         import hou
+
         return hou.qt.mainWindow()
+
     @classmethod
     def get_qt_icon(cls, icon_name):
         # noinspection PyUnresolvedReferences
         import hou
+
         if icon_name is not None:
             return hou.qt.Icon(icon_name)
         return hou.qt.Icon('MISC_python')
@@ -1074,12 +1113,16 @@ class QtKatanaMtd(object):
     def get_qt_main_window(cls):
         # noinspection PyUnresolvedReferences
         import UI4
+
         return UI4.App.MainWindow.GetMainWindow()
+
     @classmethod
     def get_qt_icon(cls, icon_name):
         # noinspection PyUnresolvedReferences
         import UI4
+
         return UI4.Util.ScenegraphIconManager.GetIcon(icon_name, 32)
+
     @classmethod
     def get_menu_bar(cls):
         main_window = cls.get_qt_main_window()
@@ -1091,6 +1134,7 @@ class QtKatanaMtd(object):
             return
         #
         return main_window.getMenuBar()
+
     @classmethod
     def get_menu(cls, name):
         menu_bar = cls.get_menu_bar()
@@ -1116,6 +1160,7 @@ class QtWindowForClarisse(QtWidgets.QWidget):
     def pos(self):
         # noinspection PyUnresolvedReferences
         import ix
+
         x, y = ix.application.get_event_window().get_position()
         return QtCore.QPoint(
             x, y
@@ -1124,18 +1169,21 @@ class QtWindowForClarisse(QtWidgets.QWidget):
     def width(self):
         # noinspection PyUnresolvedReferences
         import ix
+
         w, h = ix.application.get_event_window().get_size()
         return w
 
     def height(self):
         # noinspection PyUnresolvedReferences
         import ix
+
         w, h = ix.application.get_event_window().get_size()
         return h
 
 
 class QtClarisseMtd(object):
     QT_MAIN_WINDOW = None
+
     @classmethod
     def get_qt_main_window_(cls):
         if cls.QT_MAIN_WINDOW is None:
@@ -1143,6 +1191,7 @@ class QtClarisseMtd(object):
             import ix
             # noinspection PyUnresolvedReferences
             import pyqt_clarisse
+
             #
             if QtWidgets.QApplication.instance() is None:
                 app = QtWidgets.QApplication(sys.argv)
@@ -1165,13 +1214,16 @@ class QtClarisseMtd(object):
             cls.QT_MAIN_WINDOW = w
             return w
         return cls.QT_MAIN_WINDOW
+
     @classmethod
     def get_qt_main_window(cls):
         return None
+
     @classmethod
     def get_qt_main_window_geometry(cls):
         # noinspection PyUnresolvedReferences
         import ix
+
         x, y = ix.application.get_event_window().get_position()
         w, h = ix.application.get_event_window().get_size()
         return x, y, w, h
@@ -1179,6 +1231,7 @@ class QtClarisseMtd(object):
 
 class QtDccMtd(utl_abstract.AbsDccMtd):
     QT_MAIN_WINDOW = None
+
     @classmethod
     def get_qt_main_window(cls):
         if cls.get_is_maya():
@@ -1197,21 +1250,25 @@ class QtDccMtd(utl_abstract.AbsDccMtd):
         if _:
             cls.QT_MAIN_WINDOW = _[0]
         return QtWidgets.QApplication.activeWindow()
+
     @classmethod
     def get_active_window(cls):
         return QtWidgets.QApplication.activeWindow()
+
     @classmethod
     def get_qt_icon(cls, icon_name):
         if cls.get_is_maya():
             return QtMayaMtd.get_qt_icon(icon_name)
         elif cls.get_is_houdini():
             return QtHoudiniMtd.get_qt_icon(icon_name)
+
     @classmethod
     def get_qt_folder_icon(cls, use_system=False):
         if use_system is True:
             f_i_p = QtWidgets.QFileIconProvider()
             return f_i_p.icon(f_i_p.Folder)
         return QtIconMtd.create_by_icon_name('file/folder')
+
     @classmethod
     def get_qt_file_icon(cls, file_path):
         f_i_p = QtWidgets.QFileIconProvider()
@@ -1219,6 +1276,7 @@ class QtDccMtd(utl_abstract.AbsDccMtd):
             info = QtCore.QFileInfo(file_path)
             return f_i_p.icon(info)
         return f_i_p.icon(f_i_p.File)
+
     @classmethod
     def get_palette(cls):
         if cls.get_is_maya():
@@ -1231,17 +1289,21 @@ class QtDccMtd(utl_abstract.AbsDccMtd):
             return QtUtilMtd.get_palette(tool_tip=True)
         else:
             return QtUtilMtd.get_palette(tool_tip=True)
+
     @classmethod
     def get_current_main_window(cls):
         return QtWidgets.QApplication.activeWindow()
+
     @classmethod
     def exit_app(cls, app):
         if cls.get_is_clarisse():
             # noinspection PyUnresolvedReferences
             import pyqt_clarisse
+
             pyqt_clarisse.exec_(app)
         else:
             sys.exit(app.exec_())
+
     @classmethod
     def get_main_window_geometry(cls):
         if cls.get_is_clarisse():
@@ -1258,7 +1320,7 @@ def set_qt_window_show(widget, pos=None, size=None, use_exec=False):
     q_margin = widget.contentsMargins()
     wl, wt, wr, wb = q_margin.left(), q_margin.top(), q_margin.right(), q_margin.bottom()
     vl, vt, vr, vb = 0, 0, 0, 0
-    w_1, h_1 = w_0 + sum([wl, vl, wr, vr]), h_0 + sum([wt, vt, wb, vb])
+    w_1, h_1 = w_0+sum([wl, vl, wr, vr]), h_0+sum([wt, vt, wb, vb])
 
     p = widget.parent()
     if p:
@@ -1274,9 +1336,9 @@ def set_qt_window_show(widget, pos=None, size=None, use_exec=False):
             o_x, o_y, p_w, p_h = widget._main_window_geometry
 
     if pos is not None:
-        x, y = pos[0] + o_x, pos[1] + o_y
+        x, y = pos[0]+o_x, pos[1]+o_y
     else:
-        x, y = (p_w - w_1) / 2 + o_x, (p_h - h_1) / 2 + o_y
+        x, y = (p_w-w_1)/2+o_x, (p_h-h_1)/2+o_y
     #
     widget.setGeometry(
         max(x, 0), max(y, 0), w_1, h_1
@@ -1289,36 +1351,46 @@ def set_qt_window_show(widget, pos=None, size=None, use_exec=False):
         widget.raise_()
 
 
-def show_prx_window_auto(prx_window_class, show_kwargs=None, **kwargs):
+def show_prx_window_auto(prx_window_class, show_kwargs=None, process_fnc=None, **kwargs):
     exists_app = QtWidgets.QApplication.instance()
     if exists_app is None:
         app = QtWidgets.QApplication(sys.argv)
         app.setPalette(QtDccMtd.get_palette())
 
         QtUtilMtd.add_fonts(
-            utl_gui_core.RscFontFile.get_all()
+            gui_core.RscFontFile.get_all()
         )
+
         prx_window = prx_window_class(**kwargs)
         prx_window.set_main_window_geometry(QtDccMtd.get_main_window_geometry())
+
         window = prx_window.widget
         system_tray_icon = QtSystemTrayIcon(window)
-        # a = gui_qt_core.QtWidgets.QAction('show', triggered=window.widget.show)
         system_tray_icon.setIcon(window.windowIcon())
         system_tray_icon.show()
         window._set_window_system_tray_icon_(system_tray_icon)
+
         if isinstance(show_kwargs, dict):
             prx_window.set_window_show(**show_kwargs)
         else:
             prx_window.set_window_show()
-        # sys.exit(app.exec_())
+
+        if process_fnc is not None:
+            process_fnc(prx_window)
+
         QtDccMtd.exit_app(app)
     else:
         prx_window = prx_window_class(**kwargs)
         prx_window.set_main_window_geometry(QtDccMtd.get_main_window_geometry())
+
         if isinstance(show_kwargs, dict):
             prx_window.set_window_show(**show_kwargs)
         else:
             prx_window.set_window_show()
+
+        if process_fnc is not None:
+            process_fnc(prx_window)
+
         if QtDccMtd.get_is_clarisse():
             QtDccMtd.exit_app(exists_app)
 
@@ -1334,6 +1406,7 @@ class QtTreeMtd(object):
                 if qt_tree_widget.itemFromIndex(child_index).isHidden() is False:
                     return True
         return False
+
     @classmethod
     def get_item_is_ancestor_hidden(cls, qt_tree_widget, qt_tree_widget_item):
         qt_model_index = qt_tree_widget.indexFromItem(qt_tree_widget_item)
@@ -1342,6 +1415,7 @@ class QtTreeMtd(object):
             if qt_tree_widget.itemFromIndex(ancestor_index).isHidden() is True:
                 return True
         return False
+
     @classmethod
     def _get_index_ancestor_indices_(cls, qt_model_index):
         def _rcs_fnc(index_):
@@ -1353,6 +1427,7 @@ class QtTreeMtd(object):
         lis = []
         _rcs_fnc(qt_model_index)
         return lis
+
     @classmethod
     def _set_item_row_draw_(cls, qt_painter, qt_option, qt_model_index):
         user_data = qt_model_index.data(QtCore.Qt.UserRole)
@@ -1363,10 +1438,10 @@ class QtTreeMtd(object):
             b_w, b_h = 2, 2
             foregrounds = user_data.get('foregrounds')
             if foregrounds is not None:
-                array_grid = bsc_core.RawListMtd.set_grid_to(foregrounds, 8)
+                array_grid = bsc_core.RawListMtd.grid_to(foregrounds, 8)
                 for column, a in enumerate(array_grid):
                     for row, b in enumerate(a):
-                        b_x, b_y = x + (w - b_w * column) - 2, y + (h - b_h * row) - 4
+                        b_x, b_y = x+(w-b_w*column)-2, y+(h-b_h*row)-4
                         box_rect = QtCore.QRect(
                             b_x, b_y,
                             b_w, b_h
@@ -1413,6 +1488,7 @@ class QtMethodThread(QtCore.QThread):
     #
     start_accepted = qt_signal(QtCore.QObject)
     finish_accepted = qt_signal(QtCore.QObject)
+
     def __init__(self, *args, **kwargs):
         super(QtMethodThread, self).__init__(*args, **kwargs)
         self._methods = []
@@ -1459,6 +1535,7 @@ class QtBuildThread(QtCore.QThread):
     status_changed = qt_signal(int)
     #
     Status = bsc_configure.Status
+
     def __init__(self, *args, **kwargs):
         super(QtBuildThread, self).__init__(*args, **kwargs)
         self._cache_fnc = None
@@ -1516,6 +1593,7 @@ class QtBuildThreadStack(QtCore.QObject):
     run_finished = qt_signal()
     run_resulted = qt_signal(list)
     Status = bsc_configure.Status
+
     def __init__(self, *args, **kwargs):
         super(QtBuildThreadStack, self).__init__(*args, **kwargs)
         #
@@ -1607,6 +1685,7 @@ class QtBuildSignals(QtCore.QObject):
 
 class QtBuildRunnable(QtCore.QRunnable):
     Status = bsc_configure.Status
+
     def __init__(self, pool):
         super(QtBuildRunnable, self).__init__()
         self._pool = pool
@@ -1659,6 +1738,7 @@ class QtBuildRunnable(QtCore.QRunnable):
 class QtBuildRunnableStack(QtCore.QObject):
     run_started = qt_signal()
     run_finished = qt_signal()
+
     def __init__(self, *args, **kwargs):
         super(QtBuildRunnableStack, self).__init__(*args, **kwargs)
         #
@@ -1773,7 +1853,7 @@ class QtVBoxLayout(QtWidgets.QVBoxLayout):
 
     def _set_align_top_(self):
         self.setAlignment(
-            QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop
+            QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop
         )
 
     def _clear_all_widgets_(self):
@@ -1812,7 +1892,7 @@ class QtGridLayout(QtWidgets.QGridLayout):
 
         index = c
         #
-        column = index % d
+        column = index%d
         row = int(index/d)
         self.addWidget(widget, row, column, 1, 1)
 
@@ -1839,13 +1919,14 @@ class QtSectorChartDrawData(object):
         self._draw_data = self._get_data_(
             data, position, size, align, side_w, mode
         )
+
     @classmethod
     def _get_basic_data_at_(cls, index, subDatum, offset, radius, tape_w, spacing, mode):
         e_r = 4
         start_angle = 90
         offset_x, offset_y = offset
         explain, value_maximum, value = subDatum
-        percent = float(value) / float(max(value_maximum, 1))
+        percent = float(value)/float(max(value_maximum, 1))
         #
         text = '{} : {}%'.format(explain, bsc_core.RawValueMtd.get_percent_prettify(value=value, maximum=value_maximum))
         #
@@ -1856,29 +1937,29 @@ class QtSectorChartDrawData(object):
         else:
             if percent == 1:
                 r, g, b = 63, 255, 127
-                if mode is utl_gui_configure.SectorChartMode.Error:
+                if mode is gui_configure.SectorChartMode.Error:
                     r, g, b = 255, 0, 63
             elif percent == 0:
                 r, g, b = 255, 0, 63
-                if mode is utl_gui_configure.SectorChartMode.Error:
+                if mode is gui_configure.SectorChartMode.Error:
                     r, g, b = 63, 255, 127
             #
             elif percent > 1:
-                r, g, b = bsc_core.RawColorMtd.hsv2rgb(240 - min(percent * 15, 45), 1, 1)
+                r, g, b = bsc_core.RawColorMtd.hsv2rgb(240-min(percent*15, 45), 1, 1)
             else:
-                r, g, b = bsc_core.RawColorMtd.hsv2rgb(45 * color_percent, 1, 1)
-                if mode is utl_gui_configure.SectorChartMode.Error:
-                    r, g, b = bsc_core.RawColorMtd.hsv2rgb(45 - 45 * color_percent, 1, 1)
+                r, g, b = bsc_core.RawColorMtd.hsv2rgb(45*color_percent, 1, 1)
+                if mode is gui_configure.SectorChartMode.Error:
+                    r, g, b = bsc_core.RawColorMtd.hsv2rgb(45-45*color_percent, 1, 1)
             #
             background_rgba = r, g, b, 255
             border_rgba = r, g, b, 255
         #
-        draw_percent = color_percent * .75
+        draw_percent = color_percent*.75
         #
-        out_x, out_y = offset_x + index * tape_w / 2, offset_y + index * tape_w / 2
-        in_x, in_y = out_x + (tape_w - spacing) / 2, out_y + (tape_w - spacing) / 2
-        out_r = radius - index * tape_w
-        in_r = out_r - tape_w + spacing
+        out_x, out_y = offset_x+index*tape_w/2, offset_y+index*tape_w/2
+        in_x, in_y = out_x+(tape_w-spacing)/2, out_y+(tape_w-spacing)/2
+        out_r = radius-index*tape_w
+        in_r = out_r-tape_w+spacing
         #
         rim_path = QtGui.QPainterPath()
         rim_path.addEllipse(
@@ -1888,32 +1969,33 @@ class QtSectorChartDrawData(object):
             in_x, in_y, in_r, in_r
         )
         #
-        cx, cy = out_x + out_r/2, out_y + out_r/2
+        cx, cy = out_x+out_r/2, out_y+out_r/2
         #
         rim_sub_path = QtGui.QPainterPath()
         rim_sub_path.moveTo(cx, cy)
-        sub_angle = -360 * .25
-        rim_sub_path.arcTo(out_x - 1, out_y - 1, out_r + 2, out_r + 2, start_angle, sub_angle)
+        sub_angle = -360*.25
+        rim_sub_path.arcTo(out_x-1, out_y-1, out_r+2, out_r+2, start_angle, sub_angle)
         #
         percent_sub_path = QtGui.QPainterPath()
         percent_sub_path.moveTo(cx, cy)
-        percent_sub_angle = -360 * (1 - draw_percent)
-        percent_sub_path.arcTo(out_x - 1, out_y - 1, out_r + 2, out_r + 2, start_angle, percent_sub_angle)
+        percent_sub_angle = -360*(1-draw_percent)
+        percent_sub_path.arcTo(out_x-1, out_y-1, out_r+2, out_r+2, start_angle, percent_sub_angle)
         #
-        total_path = rim_path - rim_sub_path
-        occupy_path = rim_path - percent_sub_path
+        total_path = rim_path-rim_sub_path
+        occupy_path = rim_path-percent_sub_path
         #
-        x1, y1 = cx, out_y + (tape_w - spacing)/4
-        x2, y2 = x1 + tape_w/4, y1
-        x3, y3 = x2 + tape_w/4, y2 + tape_w/4
-        x4, y4 = x3 + tape_w/4, y3
+        x1, y1 = cx, out_y+(tape_w-spacing)/4
+        x2, y2 = x1+tape_w/4, y1
+        x3, y3 = x2+tape_w/4, y2+tape_w/4
+        x4, y4 = x3+tape_w/4, y3
         text_line = QtGui.QPolygon(
-            [QtCore.QPoint(x1, y1), QtCore.QPoint(x2, y2), QtCore.QPoint(x3, y3), QtCore.QPoint(x4 - e_r, y4)]
+            [QtCore.QPoint(x1, y1), QtCore.QPoint(x2, y2), QtCore.QPoint(x3, y3), QtCore.QPoint(x4-e_r, y4)]
         )
-        text_point = QtCore.QPoint(x4 + e_r + 4, y4 + 4)
-        text_ellipse = QtCore.QRect(x4 - e_r, y4 - e_r, e_r * 2, e_r * 2)
+        text_point = QtCore.QPoint(x4+e_r+4, y4+4)
+        text_ellipse = QtCore.QRect(x4-e_r, y4-e_r, e_r*2, e_r*2)
         text_size = tape_w/3
         return background_rgba, border_rgba, total_path, occupy_path, text_point, text_line, text_ellipse, text_size, text
+
     @classmethod
     def _get_basic_data_(cls, data, offset, radius, tape_w, spacing, mode):
         lis = []
@@ -1925,6 +2007,7 @@ class QtSectorChartDrawData(object):
                     )
                 )
         return lis
+
     @classmethod
     def _get_data_(cls, data, position, size, align, side_w, mode):
         if data:
@@ -1934,23 +2017,23 @@ class QtSectorChartDrawData(object):
             size_w, size_h = size
             align_h, align_v = align
             #
-            radius = int(min(size_w, size_h)) - side_w * 2
+            radius = int(min(size_w, size_h))-side_w*2
             tape_w = int(radius/count*.75)
             #
             spacing = 8
             #
             if align_h is QtCore.Qt.AlignLeft:
-                offset_x = pos_x + side_w
+                offset_x = pos_x+side_w
             elif align_h is QtCore.Qt.AlignHCenter:
-                offset_x = pos_x + (size_w - radius) / 2
+                offset_x = pos_x+(size_w-radius)/2
             else:
-                offset_x = size_w - radius - side_w
+                offset_x = size_w-radius-side_w
             if align_v is QtCore.Qt.AlignTop:
-                offset_y = pos_y + side_w
+                offset_y = pos_y+side_w
             elif align_v is QtCore.Qt.AlignVCenter:
-                offset_y = pos_y + (size_h - radius) / 2
+                offset_y = pos_y+(size_h-radius)/2
             else:
-                offset_y = size_h - radius - side_w
+                offset_y = size_h-radius-side_w
             #
             basic_data = cls._get_basic_data_(
                 data, (offset_x, offset_y), radius, tape_w, spacing, mode
@@ -1991,7 +2074,7 @@ class QtProgressingChartDrawMtd(object):
         percent_sub_angle = 360*(1-percent)
         rim_sub_path.arcTo(rim_out_x-1, rim_out_y-1, rim_out_r+2, rim_out_r+2, start_angle, percent_sub_angle)
 
-        annulus_sector_path = rim_path - rim_sub_path
+        annulus_sector_path = rim_path-rim_sub_path
 
         annulus_sector_color = QtGui.QConicalGradient(cx, cy, start_angle)
         c = 10
@@ -2018,7 +2101,7 @@ class QtProgressingChartDrawMtd(object):
             t_x+4, t_y, text_w, text_h
         )
         show_percent_option = QtGui.QTextOption(
-            QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+            QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter
         )
         if label:
             show_name = label
@@ -2051,22 +2134,22 @@ class QtRadarChartDrawData(object):
             size_w, size_h = size
             align_h, align_v = align
             #
-            radius = int(min(size_w, size_h)) - side_w * 2
+            radius = int(min(size_w, size_h))-side_w*2
             #
             spacing = 8
             #
             if align_h is QtCore.Qt.AlignLeft:
-                offset_x = pos_x + side_w
+                offset_x = pos_x+side_w
             elif align_h is QtCore.Qt.AlignHCenter:
-                offset_x = pos_x + (size_w - radius) / 2
+                offset_x = pos_x+(size_w-radius)/2
             else:
-                offset_x = size_w - radius - side_w
+                offset_x = size_w-radius-side_w
             if align_v is QtCore.Qt.AlignTop:
-                offset_y = pos_y + side_w
+                offset_y = pos_y+side_w
             elif align_v is QtCore.Qt.AlignVCenter:
-                offset_y = pos_y + (size_h - radius) / 2
+                offset_y = pos_y+(size_h-radius)/2
             else:
-                offset_y = size_h - radius - side_w
+                offset_y = size_h-radius-side_w
             #
             mark_data = self._get_mark_data_(
                 data,
@@ -2090,25 +2173,28 @@ class QtRadarChartDrawData(object):
                 map=map_data,
                 mark=mark_data
             )
+
     @classmethod
     def _get_basic_data_points_(cls, cx, cy, radius, count):
         lis = []
         for seq in range(count):
-            angle = 360 * float(seq) / float(count) + 180
-            x, y = cx + cls.fnc_sin(cls.fnc_angle(angle)) * radius / 2, cy + cls.fnc_cos(
-                cls.fnc_angle(angle)) * radius / 2
+            angle = 360*float(seq)/float(count)+180
+            x, y = cx+cls.fnc_sin(cls.fnc_angle(angle))*radius/2, cy+cls.fnc_cos(
+                cls.fnc_angle(angle)
+            )*radius/2
             lis.append(QtCore.QPoint(x, y))
         #
-        return lis + lis[0:1]
+        return lis+lis[0:1]
+
     @classmethod
     def _get_basic_data_(cls, data, offset, radius, spacing):
         offset_x, offset_y = offset
         count = len(data)
-        cx, cy = offset_x + radius / 2, offset_y + radius / 2
+        cx, cy = offset_x+radius/2, offset_y+radius/2
         #
         basic_polygons = []
         for i in range(6):
-            r = radius * float(i + 1) / float(6)
+            r = radius*float(i+1)/float(6)
             i_polygon = QtGui.QPolygon(
                 cls._get_basic_data_points_(cx, cy, r, count)
             )
@@ -2116,11 +2202,12 @@ class QtRadarChartDrawData(object):
         #
         basic_polygons.reverse()
         return basic_polygons
+
     @classmethod
     def _get_image_data_(cls, data, offset, radius, spacing):
         offset_x, offset_y = offset
         count = len(data)
-        cx, cy = offset_x + radius / 2, offset_y + radius / 2
+        cx, cy = offset_x+radius/2, offset_y+radius/2
         #
         image_path = QtGui.QPainterPath()
         image_path.addPolygon(
@@ -2128,11 +2215,12 @@ class QtRadarChartDrawData(object):
         )
         #
         return image_path
+
     @classmethod
     def _get_map_data_(cls, mark_data, offset, radius):
         offset_x, offset_y = offset
         start_angle = 90
-        cx, cy = offset_x + radius / 2, offset_y + radius / 2
+        cx, cy = offset_x+radius/2, offset_y+radius/2
         #
         points_src = []
         points_tgt = []
@@ -2147,7 +2235,7 @@ class QtRadarChartDrawData(object):
         g_c = QtGui.QConicalGradient(cx, cy, start_angle)
         for seq, i_rgba in enumerate(colors):
             i_r, i_g, i_b, i_a = i_rgba
-            g_c.setColorAt(float(seq) / float(len(colors)), QtGui.QColor(i_r, i_g, i_b, 127))
+            g_c.setColorAt(float(seq)/float(len(colors)), QtGui.QColor(i_r, i_g, i_b, 127))
         #
         r, g, b, a = colors[0]
         g_c.setColorAt(1, QtGui.QColor(r, g, b, 127))
@@ -2157,17 +2245,18 @@ class QtRadarChartDrawData(object):
         map_polygon_src = QtGui.QPolygon(points_src)
         map_polygon_tgt = QtGui.QPolygon(points_tgt)
         return map_brush, map_polygon_src, map_polygon_tgt
+
     @classmethod
     def _get_mark_data_at_(cls, index, index_maximum, value_maximum, data, offset_x, offset_y, radius, spacing):
         e_r = 4
         start_angle = -90
         explain, value_src, value_tgt = data
         #
-        percent_src = float(value_src) / float(max(value_maximum, 1))
-        percent_tgt = float(value_tgt) / float(max(value_maximum, 1))
+        percent_src = float(value_src)/float(max(value_maximum, 1))
+        percent_tgt = float(value_tgt)/float(max(value_maximum, 1))
         #
-        value_sub = value_tgt - value_src
-        percent_sub = float(value_sub) / float(max(value_src, 1))
+        value_sub = value_tgt-value_src
+        percent_sub = float(value_sub)/float(max(value_src, 1))
         text_0 = explain
         if value_sub == 0:
             text_1 = '{}'.format(bsc_core.RawIntegerMtd.get_prettify(value_tgt))
@@ -2184,34 +2273,39 @@ class QtRadarChartDrawData(object):
             if percent_sub == 0:
                 r, g, b = 64, 255, 127
             elif percent_sub > 0:
-                r, g, b = bsc_core.RawColorMtd.hsv2rgb(45 * (1 - min(percent_sub, 1)), 1, 1)
+                r, g, b = bsc_core.RawColorMtd.hsv2rgb(45*(1-min(percent_sub, 1)), 1, 1)
             else:
-                r, g, b = bsc_core.RawColorMtd.hsv2rgb(120 + 45 * (1 - min(percent_sub, 1)), 1, 1)
+                r, g, b = bsc_core.RawColorMtd.hsv2rgb(120+45*(1-min(percent_sub, 1)), 1, 1)
             #
             background_rgba = r, g, b, 255
             border_rgba = r, g, b, 255
         #
-        draw_percent_src = percent_src * .75
-        draw_percent_tgt = percent_tgt * .75
+        draw_percent_src = percent_src*.75
+        draw_percent_tgt = percent_tgt*.75
         #
         x, y = offset_x, offset_y
         r = radius
-        cx, cy = x + r / 2, y + r / 2
+        cx, cy = x+r/2, y+r/2
         basic_path = QtGui.QPainterPath()
         basic_path.moveTo(cx, cy)
-        angle_start = 360 * (float(index) / float(index_maximum)) + 180
-        angle_end = 360 * (float(index + 1) / float(index_maximum)) + 180
-        basic_path.arcTo(x, y, r, r, angle_start + start_angle, angle_end + start_angle)
+        angle_start = 360*(float(index)/float(index_maximum))+180
+        angle_end = 360*(float(index+1)/float(index_maximum))+180
+        basic_path.arcTo(x, y, r, r, angle_start+start_angle, angle_end+start_angle)
         #
-        text_x_0, text_y_0 = cx + cls.fnc_sin(cls.fnc_angle(angle_start)) * radius / 2, cy + cls.fnc_cos(
-            cls.fnc_angle(angle_start)) * radius / 2
+        text_x_0, text_y_0 = cx+cls.fnc_sin(cls.fnc_angle(angle_start))*radius/2, cy+cls.fnc_cos(
+            cls.fnc_angle(angle_start)
+        )*radius/2
         #
-        map_x_0, map_y_0 = cx + cls.fnc_sin(
-            cls.fnc_angle(angle_start)) * radius / 2 * draw_percent_tgt, cy + cls.fnc_cos(
-            cls.fnc_angle(angle_start)) * radius / 2 * draw_percent_tgt
-        map_x_1, map_y_1 = cx + cls.fnc_sin(
-            cls.fnc_angle(angle_start)) * radius / 2 * draw_percent_src, cy + cls.fnc_cos(
-            cls.fnc_angle(angle_start)) * radius / 2 * draw_percent_src
+        map_x_0, map_y_0 = cx+cls.fnc_sin(
+            cls.fnc_angle(angle_start)
+        )*radius/2*draw_percent_tgt, cy+cls.fnc_cos(
+            cls.fnc_angle(angle_start)
+        )*radius/2*draw_percent_tgt
+        map_x_1, map_y_1 = cx+cls.fnc_sin(
+            cls.fnc_angle(angle_start)
+        )*radius/2*draw_percent_src, cy+cls.fnc_cos(
+            cls.fnc_angle(angle_start)
+        )*radius/2*draw_percent_src
         #
         f = QtGui.QFont()
         f.setPointSize(8)
@@ -2220,13 +2314,14 @@ class QtRadarChartDrawData(object):
         text_w_1 = m.width(text_1)
         text_h = m.height()
         #
-        text_point_0 = QtCore.QPoint(text_x_0 - text_w_0 / 2, text_y_0 - text_h / 2)
-        text_point_1 = QtCore.QPoint(text_x_0 - text_w_1 / 2, text_y_0 + text_h / 2)
-        mark_ellipse = QtCore.QRect(map_x_0 - e_r, map_y_0 - e_r, e_r * 2, e_r * 2)
+        text_point_0 = QtCore.QPoint(text_x_0-text_w_0/2, text_y_0-text_h/2)
+        text_point_1 = QtCore.QPoint(text_x_0-text_w_1/2, text_y_0+text_h/2)
+        mark_ellipse = QtCore.QRect(map_x_0-e_r, map_y_0-e_r, e_r*2, e_r*2)
         #
         point_tgt = QtCore.QPoint(map_x_0, map_y_0)
         point_src = QtCore.QPoint(map_x_1, map_y_1)
         return background_rgba, border_rgba, basic_path, text_point_0, text_point_1, text_0, text_1, point_src, point_tgt, mark_ellipse
+
     @classmethod
     def _get_mark_data_(cls, data, offset, radius, spacing):
         offset_x, offset_y = offset
@@ -2268,28 +2363,29 @@ class QtPieChartDrawData(object):
             basic_data = self._get_basic_data_(data, position, size, side_w)
             return basic_data
         return
+
     @classmethod
     def _get_basic_data_(cls, data, position, size, side):
         def rcs_fnc_(i_data_, i_seq_=0, qa=90, ma=0):
             _i_name, _i_value, color = i_data_[i_seq_]
             _i_color = bsc_core.RawTextOpt(_i_name).to_rgb()
             #
-            p = float(_i_value) / float(maximum)
-            _a = 360 * p
-            a = 360 - _a
-            s = ma + _a / 2
-            _xo = cls.fnc_sin(cls.fnc_angle(s)) * (side / 4)
-            _yo = cls.fnc_cos(cls.fnc_angle(s)) * (side / 4)
+            p = float(_i_value)/float(maximum)
+            _a = 360*p
+            a = 360-_a
+            s = ma+_a/2
+            _xo = cls.fnc_sin(cls.fnc_angle(s))*(side/4)
+            _yo = cls.fnc_cos(cls.fnc_angle(s))*(side/4)
             #
             piePath = QtGui.QPainterPath()
             _s = 4
-            cx = w1 / 2 + _s / 2 + x1
-            cy = w1 / 2 + _s / 2 + y1
+            cx = w1/2+_s/2+x1
+            cy = w1/2+_s/2+y1
             piePath.moveTo(cx, cy)
-            piePath.arcTo(x1 - _s / 2, y1 - _s / 2, w1 + _s, w1 + _s, qa, a)
+            piePath.arcTo(x1-_s/2, y1-_s/2, w1+_s, w1+_s, qa, a)
             #
-            _i_path = rimPath - piePath
-            _i_shadow_path = rimPath - piePath
+            _i_path = rimPath-piePath
+            _i_shadow_path = rimPath-piePath
             #
             _i_percent = '{}%'.format(
                 bsc_core.RawValueMtd.get_percent_prettify(value=_i_value, maximum=maximum)
@@ -2302,7 +2398,7 @@ class QtPieChartDrawData(object):
             i_seq_ += 1
             qa += a
             ma += _a
-            if i_seq_ <= dataCount - 1:
+            if i_seq_ <= dataCount-1:
                 rcs_fnc_(i_data_, i_seq_, qa, ma)
 
         #
@@ -2314,7 +2410,7 @@ class QtPieChartDrawData(object):
             maximum = sum([i[1] for i in data])
             if maximum > 0:
                 radius = min(width, height)
-                w = radius - side * 2
+                w = radius-side*2
                 x = side
                 y = side
                 #
@@ -2324,9 +2420,9 @@ class QtPieChartDrawData(object):
                 rimPath = QtGui.QPainterPath()
                 rimPath.addEllipse(x1, y1, w1, w1)
                 #
-                w2 = w1 / 2
-                x2 = (w1 - w2) / 2 + x1
-                y2 = (w1 - w2) / 2 + y1
+                w2 = w1/2
+                x2 = (w1-w2)/2+x1
+                y2 = (w1-w2)/2+y1
                 rimPath.addEllipse(x2, y2, w2, w2)
                 #
                 rcs_fnc_(data)
@@ -2372,19 +2468,21 @@ class QtMenuOpt(object):
             }
         else:
             raise RuntimeError()
+
     @utl_core.Modifier.exception_catch
     def _set_cmd_debug_run_(self, cmd_str):
         exec cmd_str
+
     @utl_core.Modifier.exception_catch
     def _set_fnc_debug_run_(self, fnc):
         fnc()
 
-    def set_create_by_content(self, content):
+    def create_by_content(self, content):
         self._root_menu.clear()
         self._item_dic = {
             '/': self._root_menu
         }
-        if isinstance(content, bsc_abstracts.AbsContent):
+        if isinstance(content, ctt_abstracts.AbsContent):
             keys = content.get_keys(regex='*.properties')
             for i_key in keys:
                 i_atr_path_opt = bsc_core.DccAttrPathOpt(i_key)
@@ -2427,6 +2525,7 @@ class QtMenuOpt(object):
         widget_action.setMenu(sub_menu)
         self._item_dic[path] = sub_menu
         return sub_menu
+
     #
     @classmethod
     def set_separator_add(cls, menu, content):
@@ -2503,6 +2602,7 @@ class QtPainterPath(QtGui.QPainterPath):
     def __init__(self, *args):
         super(QtPainterPath, self).__init__(*args)
         self.setFillRule(QtCore.Qt.WindingFill)
+
     #
     def _set_points_add_(self, points):
         points_ = [QtCore.QPointF(x, y) for x, y in points]
@@ -2515,6 +2615,7 @@ class QtRawColorMtd(object):
         return cls._get_image_draw_args_by_color_(
             *bsc_core.RawTextOpt(text).to_rgb_0(s_p=50, v_p=50)
         )
+
     @classmethod
     def _get_image_draw_args_by_color_(cls, *args):
         if len(args) == 3:
@@ -2549,6 +2650,7 @@ class QtPainter(QtGui.QPainter):
                 return cls._to_qt_color_(*_)
         else:
             return cls._to_qt_color_(*args)
+
     @classmethod
     def _to_qt_color_(cls, *args):
         if len(args) == 3:
@@ -2559,19 +2661,22 @@ class QtPainter(QtGui.QPainter):
         else:
             raise TypeError()
         return QtGui.QColor(r, g, b, a)
+
     #
     def __init__(self, *args, **kwargs):
         super(QtPainter, self).__init__(*args, **kwargs)
         self.setRenderHint(self.Antialiasing)
 
-    def _draw_capsule_by_rects_(self, rects, texts, checked_indices, index_hovered, index_pressed, use_exclusive=False, is_enable=True):
+    def _draw_capsule_by_rects_(
+            self, rects, texts, checked_indices, index_hover, index_press, use_exclusive=False, is_enable=True
+            ):
         c = len(texts)
         self._set_antialiasing_()
         for i, i_text in enumerate(texts):
             i_rect = rects[i]
             i_x, i_y = i_rect.x()+1, i_rect.y()
             i_w, i_h = i_rect.width()-2, i_rect.height()
-            if i == index_pressed:
+            if i == index_press:
                 i_x += 2
                 i_w -= 2
                 i_y += 2
@@ -2585,7 +2690,7 @@ class QtPainter(QtGui.QPainter):
             else:
                 i_border_radius = i_h/2
 
-            i_is_hovered = i == index_hovered
+            i_is_hovered = i == index_hover
             i_is_checked = checked_indices[i]
             if i_is_checked is True:
                 i_border_width = 2
@@ -2658,7 +2763,7 @@ class QtPainter(QtGui.QPainter):
             self._set_font_color_(i_font_color)
             # noinspection PyArgumentEqualDefault
             self.drawText(
-                i_new_rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+                i_new_rect, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
                 i_text
             )
 
@@ -2696,7 +2801,10 @@ class QtPainter(QtGui.QPainter):
         self._set_background_color_(color)
         self.drawRect(rect)
 
-    def _draw_tab_buttons_by_rects_(self, frame_rect, virtual_items, index_hovered, index_pressed, current_index):
+    def _draw_tab_buttons_by_rects_(
+        self, frame_rect, virtual_items, index_hover, index_press,
+        index_current
+    ):
         self._draw_frame_by_rect_(
             rect=frame_rect,
             border_color=QtBorderColors.Transparent,
@@ -2705,26 +2813,26 @@ class QtPainter(QtGui.QPainter):
         if virtual_items:
             for i_index, i_virtual_item in enumerate(virtual_items):
                 i_name_text = i_virtual_item.name_text
-                i_rect = i_virtual_item.rect
+                i_draw_rect = i_virtual_item.get_draw_rect()
                 i_icon_text = i_virtual_item.icon_text
-                i_is_hovered = i_index == index_hovered
-                i_is_pressed = i_index == index_pressed
-                i_is_current = i_index == current_index
+                i_is_hovered = i_index == index_hover
+                i_is_pressed = i_index == index_press
+                i_is_current = i_index == index_current
                 if i_is_current is False:
                     self._draw_tab_button_at_(
-                        frame_rect, i_rect, i_name_text, i_icon_text, i_is_hovered, i_is_pressed, i_is_current
+                        frame_rect, i_draw_rect, i_name_text, i_icon_text, i_is_hovered, i_is_pressed, i_is_current
                     )
             # draw current
             for i_index, i_virtual_item in enumerate(virtual_items):
                 i_name_text = i_virtual_item.name_text
-                i_rect = i_virtual_item.rect
+                i_draw_rect = i_virtual_item.get_draw_rect()
                 i_icon_text = i_virtual_item.icon_text
-                i_is_hovered = i_index == index_hovered
-                i_is_pressed = i_index == index_pressed
-                i_is_current = i_index == current_index
+                i_is_hovered = i_index == index_hover
+                i_is_pressed = i_index == index_press
+                i_is_current = i_index == index_current
                 if i_is_current is True:
                     self._draw_tab_button_at_(
-                        frame_rect, i_rect, i_name_text, i_icon_text, i_is_hovered, i_is_pressed, i_is_current
+                        frame_rect, i_draw_rect, i_name_text, i_icon_text, i_is_hovered, i_is_pressed, i_is_current
                     )
         else:
             f_x, f_y = frame_rect.x(), frame_rect.y()
@@ -2734,7 +2842,9 @@ class QtPainter(QtGui.QPainter):
             frame_coords = [(f_x, f_y+f_h), (f_w, f_y+f_h)]
             self._draw_path_by_coords_(frame_coords, antialiasing=False)
 
-    def _draw_tab_button_at_(self, frame_rect, rect, text, icon_name_text, is_hovered, is_pressed, is_current):
+    def _draw_tab_button_at_(
+        self, frame_rect, rect, text, icon_name_text, is_hovered, is_pressed, is_current
+    ):
         f_x, f_y = frame_rect.x(), frame_rect.y()
         f_w, f_h = frame_rect.width(), frame_rect.height()
         a = 255
@@ -2743,30 +2853,18 @@ class QtPainter(QtGui.QPainter):
             background_color = QtGui.QColor(63, 63, 63, a)
         else:
             border_color = QtTabColors.Line
-            background_color = QtGui.QColor(55, 55, 55, a)
-        #
-        if is_hovered is True:
-            color_hovered = QtGui.QColor(127, 127, 127, a)
-        else:
-            color_hovered = background_color
-        #
-        start_coord, end_coord = rect.topLeft(), rect.bottomLeft()
-        l_color_0 = QtGui.QLinearGradient(start_coord, end_coord)
-        l_color_1 = QtGui.QLinearGradient(start_coord, end_coord)
-        l_color_0.setColorAt(0, color_hovered)
-        l_color_1.setColorAt(0, color_hovered)
-        l_color_0.setColorAt(0.5, background_color)
-        #
+            background_color = QtGui.QColor(47, 47, 47, a)
+
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
-        #
+
         if is_pressed is True:
             offset = 2
             x += offset
             y += offset
             w -= offset
             h -= offset
-        #
+
         r = h
         if is_current is True:
             frm_x, frm_y = x, y
@@ -2787,29 +2885,48 @@ class QtPainter(QtGui.QPainter):
                 (frm_x, frm_y+frm_h), (frm_x+frm_h, frm_y), (frm_x+frm_w-frm_h, frm_y), (frm_x+frm_w, frm_y+frm_h),
             ]
             font_size = 8
-        #
+
         self._set_border_color_(border_color)
         self._set_border_width_(border_width)
-        self._set_background_color_(l_color_0)
-        #
+        self._set_background_color_(background_color)
+
         self._draw_path_by_coords_(frame_coords, antialiasing=False)
-        #
-        icn_w = 16
+
         if icon_name_text is not None:
-            coords = [
+            icn_w = 16
+            icon_coords = [
                 # bottom left, top left, top right, bottom right, ...
-                (frm_x+frm_w-icn_w, frm_y+frm_h), (frm_x+frm_w-frm_h-icn_w, frm_y+1), (frm_x+frm_w-frm_h, frm_y+1), (frm_x+frm_w-1, frm_y+frm_h),
+                (frm_x+frm_w-icn_w, frm_y+frm_h), (frm_x+frm_w-frm_h-icn_w, frm_y+1), (frm_x+frm_w-frm_h, frm_y+1),
+                (frm_x+frm_w-1, frm_y+frm_h),
                 (frm_x+frm_w-icn_w, frm_y+frm_h),
             ]
             i_r, i_g, i_b = bsc_core.RawTextOpt(icon_name_text).to_rgb_0(s_p=50, v_p=50)
             self._set_border_width_(1)
             self._set_border_color_(QtBorderColors.Transparent)
-            l_color_1.setColorAt(0.5, QtGui.QColor(i_r, i_g, i_b, a))
+            icn_bkg_color = QtGui.QColor(i_r, i_g, i_b, a)
             if is_hovered is True:
-                self._set_background_color_(l_color_1)
+                self._set_background_color_(icn_bkg_color)
             else:
                 self._set_background_color_(i_r, i_g, i_b)
-            self._draw_path_by_coords_(coords)
+            self._draw_path_by_coords_(icon_coords)
+        else:
+            icn_w = 0
+        #
+        if is_pressed or is_hovered:
+            if is_pressed is True:
+                act_bkg_color = QtGui.QColor(*bsc_configure.Rgba.LightBlue)
+            elif is_hovered is True:
+                act_bkg_color = QtGui.QColor(*bsc_configure.Rgba.LightOrange)
+            else:
+                act_bkg_color = background_color
+            act_w = 16
+            self._set_border_color_(QtBorderColors.Transparent)
+            self._set_background_color_(act_bkg_color)
+            act_frm_w = frm_w-f_h*2-icn_w
+            action_rect = QtCore.QRect(
+                frm_x+f_h+(act_frm_w-act_w)/2, f_y+f_h-4, act_w, 4
+            )
+            self.drawRoundedRect(action_rect, 2, 2, QtCore.Qt.AbsoluteSize)
         #
         if text is not None:
             txt_rect = QtCore.QRect(
@@ -2833,7 +2950,8 @@ class QtPainter(QtGui.QPainter):
         frm_w = frm_h = h-offset
         bsc_w, bsc_h = w-offset, h-offset
         coords = [
-            (frm_x+bsc_w-frm_w*2, frm_y+frm_h), (frm_x+bsc_w-frm_w, frm_y), (frm_x+bsc_w, frm_y), (frm_x+bsc_w, frm_y+frm_h)
+            (frm_x+bsc_w-frm_w*2, frm_y+frm_h), (frm_x+bsc_w-frm_w, frm_y), (frm_x+bsc_w, frm_y),
+            (frm_x+bsc_w, frm_y+frm_h)
         ]
         i_r, i_g, i_b = bsc_core.RawTextOpt(text).to_rgb_0(s_p=50, v_p=50)
         self._set_background_color_(i_r, i_g, i_b)
@@ -2847,7 +2965,7 @@ class QtPainter(QtGui.QPainter):
         )
         self._set_font_color_(i_r*.75, i_g*.75, i_b*.75)
         self.drawText(
-            txt_rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+            txt_rect, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
             str(text[0]).upper()
         )
 
@@ -2877,11 +2995,13 @@ class QtPainter(QtGui.QPainter):
             get_font(size=int(txt_r*.5)-offset, italic=True)
         )
         self.drawText(
-            txt_rect, QtCore.Qt.AlignRight | QtCore.Qt.AlignTop,
+            txt_rect, QtCore.Qt.AlignRight|QtCore.Qt.AlignTop,
             text
         )
 
-    def _draw_popup_frame_(self, rect, margin, side, shadow_radius, region, border_color, background_color, border_width=1):
+    def _draw_popup_frame_(
+            self, rect, margin, side, shadow_radius, region, border_color, background_color, border_width=1
+            ):
         x, y = rect.x(), rect.y()
         #
         w, h = rect.width(), rect.height()
@@ -2906,16 +3026,38 @@ class QtPainter(QtGui.QPainter):
         _y1, _y2, _y3 = f_y+f_h-1, f_y+f_h+margin-1, f_y+f_h-1
         if region == 0:
             path2.addPolygon(QtGui.QPolygonF([QtCore.QPointF(x1, y1), QtCore.QPointF(x2, y2), QtCore.QPointF(x3, y3)]))
-            path2_.addPolygon(QtGui.QPolygonF([QtCore.QPointF(x1+_s, y1+_s), QtCore.QPointF(x2+_s, y2+_s), QtCore.QPointF(x3+_s, y3+_s)]))
+            path2_.addPolygon(
+                QtGui.QPolygonF(
+                    [QtCore.QPointF(x1+_s, y1+_s), QtCore.QPointF(x2+_s, y2+_s), QtCore.QPointF(x3+_s, y3+_s)]
+                    )
+                )
         elif region == 1:
-            path2.addPolygon(QtGui.QPolygonF([QtCore.QPointF(_x1, y1), QtCore.QPointF(_x2, y2), QtCore.QPointF(_x3, y3)]))
-            path2_.addPolygon(QtGui.QPolygonF([QtCore.QPointF(_x1+_s, y1+_s), QtCore.QPointF(_x2+_s, y2+_s), QtCore.QPointF(_x3+_s, y3+_s)]))
+            path2.addPolygon(
+                QtGui.QPolygonF([QtCore.QPointF(_x1, y1), QtCore.QPointF(_x2, y2), QtCore.QPointF(_x3, y3)])
+                )
+            path2_.addPolygon(
+                QtGui.QPolygonF(
+                    [QtCore.QPointF(_x1+_s, y1+_s), QtCore.QPointF(_x2+_s, y2+_s), QtCore.QPointF(_x3+_s, y3+_s)]
+                    )
+                )
         elif region == 2:
-            path2.addPolygon(QtGui.QPolygonF([QtCore.QPointF(x1, _y1), QtCore.QPointF(x2, _y2), QtCore.QPointF(x3, _y3)]))
-            path2_.addPolygon(QtGui.QPolygonF([QtCore.QPointF(x1+_s, _y1+_s), QtCore.QPointF(x2+_s, _y2+_s), QtCore.QPointF(x3+_s, _y3+_s)]))
+            path2.addPolygon(
+                QtGui.QPolygonF([QtCore.QPointF(x1, _y1), QtCore.QPointF(x2, _y2), QtCore.QPointF(x3, _y3)])
+                )
+            path2_.addPolygon(
+                QtGui.QPolygonF(
+                    [QtCore.QPointF(x1+_s, _y1+_s), QtCore.QPointF(x2+_s, _y2+_s), QtCore.QPointF(x3+_s, _y3+_s)]
+                    )
+                )
         else:
-            path2.addPolygon(QtGui.QPolygonF([QtCore.QPointF(_x1, _y1), QtCore.QPointF(_x2, _y2), QtCore.QPointF(_x3, _y3)]))
-            path2_.addPolygon(QtGui.QPolygonF([QtCore.QPointF(_x1+_s, _y1+_s), QtCore.QPointF(_x2+_s, _y2+_s), QtCore.QPointF(_x3+_s, _y3+_s)]))
+            path2.addPolygon(
+                QtGui.QPolygonF([QtCore.QPointF(_x1, _y1), QtCore.QPointF(_x2, _y2), QtCore.QPointF(_x3, _y3)])
+                )
+            path2_.addPolygon(
+                QtGui.QPolygonF(
+                    [QtCore.QPointF(_x1+_s, _y1+_s), QtCore.QPointF(_x2+_s, _y2+_s), QtCore.QPointF(_x3+_s, _y3+_s)]
+                    )
+                )
         #
         self._set_border_color_(QtBorderColors.Transparent)
         self._set_background_color_(QtBackgroundColors.Shadow)
@@ -2997,8 +3139,8 @@ class QtPainter(QtGui.QPainter):
     def _set_pixmap_draw_by_rect_(self, rect, pixmap, offset=0, enable=True):
         if offset != 0:
             rect_ = QtCore.QRect(
-                rect.x() + offset, rect.y() + offset,
-                rect.width() - offset, rect.height() - offset
+                rect.x()+offset, rect.y()+offset,
+                rect.width()-offset, rect.height()-offset
             )
         else:
             rect_ = rect
@@ -3024,14 +3166,15 @@ class QtPainter(QtGui.QPainter):
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
         r = min(w, h)
-        frm_r = max(min(r * .5, 128), 32)
+        frm_r = max(min(r*.5, 128), 32)
         frm_w, frm_h = frm_r, frm_r
         rect = QtCore.QRect(
-            x + (w - frm_w) / 2, y + (h - frm_h) / 2, frm_w, frm_h
+            x+(w-frm_w)/2, y+(h-frm_h)/2, frm_w, frm_h
         )
         self._draw_icon_file_by_rect_(
-            rect=rect, file_path=utl_gui_core.RscIconFile.get(icon_name)
+            rect=rect, file_path=gui_core.RscIconFile.get(icon_name)
         )
+
     @classmethod
     def _get_font_test_size_(cls, font, text):
         fmt = QtGui.QFontMetrics(font)
@@ -3042,7 +3185,7 @@ class QtPainter(QtGui.QPainter):
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
         frm_w, frm_h = max(min(w, 200), 100), max(min(h, 40), 20)
-        frm_x, frm_y = x + (w - frm_w)/2, y + (h-frm_h) / 2
+        frm_x, frm_y = x+(w-frm_w)/2, y+(h-frm_h)/2
         #
         f_w_t, f_h_t = self._get_font_test_size_(get_font(size=12, weight=75), text)
         txt_x, txt_y, txt_w, txt_h = bsc_core.RawSizeMtd.fit_to(
@@ -3063,7 +3206,7 @@ class QtPainter(QtGui.QPainter):
                 x+(w-t_w_n)/2-txt_h/2, frm_y+txt_y-txt_s_h, txt_h, txt_h
             )
             self._draw_icon_file_by_rect_(
-                rect=icon_rect, file_path=utl_gui_core.RscIconFile.get(
+                rect=icon_rect, file_path=gui_core.RscIconFile.get(
                     'drag-and-drop'
                 )
             )
@@ -3078,7 +3221,7 @@ class QtPainter(QtGui.QPainter):
         self._set_font_(text_font)
         self.drawText(
             text_rect,
-            QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+            QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
             text
         )
         if text_sub:
@@ -3088,11 +3231,14 @@ class QtPainter(QtGui.QPainter):
             self._set_font_(text_sub_font)
             self.drawText(
                 sub_text_rect,
-                QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+                QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
                 text_sub
             )
 
-    def _draw_icon_file_by_rect_(self, rect, file_path, offset=0, frame_rect=None, is_hovered=False, hover_color=None, is_pressed=False):
+    def _draw_icon_file_by_rect_(
+            self, rect, file_path,
+            offset=0, frame_rect=None, is_hovered=False, hover_color=None, is_pressed=False
+        ):
         if file_path:
             # draw frame rect
             if frame_rect is not None:
@@ -3127,7 +3273,11 @@ class QtPainter(QtGui.QPainter):
                     is_pressed=is_pressed,
                 )
 
-    def _draw_image_use_file_path_by_rect_(self, rect, file_path, offset=0, draw_frame=False, background_color=None, border_color=None, border_radius=0, is_hovered=False):
+    def _draw_image_use_file_path_by_rect_(
+            self, rect, file_path,
+            offset=0, draw_frame=False, background_color=None, border_color=None, border_radius=0,
+            is_hovered=False
+        ):
         if file_path:
             if draw_frame is True:
                 self._draw_frame_by_rect_(
@@ -3189,6 +3339,7 @@ class QtPainter(QtGui.QPainter):
             )
         #
         self.device()
+
     @classmethod
     def _get_svg_rgb_over_(cls, rect, svg_render, rgb):
         w, h = rect.width(), rect.height()
@@ -3208,6 +3359,7 @@ class QtPainter(QtGui.QPainter):
         p_over.fill(QtGui.QColor(c.red(), c.green(), c.blue(), 127))
         p_over.setMask(p_mask)
         return p_over
+
     @classmethod
     def _get_pixmap_with_rgb_over_(cls, pixmap, rgb):
         w, h = pixmap.width(), pixmap.height()
@@ -3230,6 +3382,7 @@ class QtPainter(QtGui.QPainter):
             image_new.setAlphaChannel(i_alpha)
             pixmap_new = pixmap.fromImage(image_new)
         return pixmap_new
+
     @classmethod
     def _get_pixmap_mask_(cls, pixmap):
         w, h = pixmap.width(), pixmap.height()
@@ -3250,7 +3403,9 @@ class QtPainter(QtGui.QPainter):
         pixmap_mask = p.createMaskFromColor(QtCore.Qt.black)
         return pixmap_mask
 
-    def _draw_image_by_rect_(self, rect, file_path, offset=0, is_hovered=False, hover_color=None, is_pressed=False, cache_resize=False):
+    def _draw_image_by_rect_(
+            self, rect, file_path, offset=0, is_hovered=False, hover_color=None, is_pressed=False, cache_resize=False
+            ):
         rect_ = QtCore.QRect(
             rect.x()+offset, rect.y()+offset,
             rect.width()-offset, rect.height()-offset
@@ -3289,8 +3444,8 @@ class QtPainter(QtGui.QPainter):
     def _draw_image_data_by_rect_(self, rect, image_data, offset=0, text=None):
         if offset != 0:
             rect_offset = QtCore.QRect(
-                rect.x() + offset, rect.y() + offset,
-                rect.width() - offset, rect.height() - offset
+                rect.x()+offset, rect.y()+offset,
+                rect.width()-offset, rect.height()-offset
             )
         else:
             rect_offset = rect
@@ -3340,7 +3495,7 @@ class QtPainter(QtGui.QPainter):
             )
 
     def _draw_image_by_rect_use_text_(self, rect, text=None):
-        if text is not None:
+        if text is not None and text:
             draw_text = text[0]
         else:
             draw_text = 'N/a'
@@ -3365,7 +3520,7 @@ class QtPainter(QtGui.QPainter):
         self.drawText(
             rect,
             QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
-            draw_text.upper()
+            draw_text.capitalize()
         )
 
     def _set_antialiasing_(self, boolean=True):
@@ -3383,8 +3538,8 @@ class QtPainter(QtGui.QPainter):
         self._set_border_color_(QtFontColors.Basic)
         self.drawText(
             rect,
-            QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
-            'loading .{}'.format('.'*int((loading_index/10) % 3))
+            QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
+            'loading .{}'.format('.'*int((loading_index/10)%3))
         )
 
     def _set_exr_image_draw_by_rect_(self, rect, file_path, offset=0, is_hovered=False):
@@ -3395,8 +3550,8 @@ class QtPainter(QtGui.QPainter):
 
     def _set_mov_image_draw_by_rect_(self, rect, file_path, offset=0):
         rect_ = QtCore.QRect(
-            rect.x() + offset, rect.y() + offset,
-            rect.width() - offset, rect.height() - offset
+            rect.x()+offset, rect.y()+offset,
+            rect.width()-offset, rect.height()-offset
         )
         #
         thumbnail_file_path = bsc_core.VdoFileOpt(file_path).get_thumbnail()
@@ -3415,7 +3570,9 @@ class QtPainter(QtGui.QPainter):
         #
         self.device()
 
-    def _set_movie_play_button_draw_by_rect_(self, rect, scale=1.0, offset=0, border_width=4, is_hovered=False, is_selected=False, is_actioned=False):
+    def _set_movie_play_button_draw_by_rect_(
+            self, rect, scale=1.0, offset=0, border_width=4, is_hovered=False, is_selected=False, is_actioned=False
+            ):
         if offset != 0:
             rect_ = QtCore.QRect(
                 rect.x()+offset, rect.y()+offset,
@@ -3431,14 +3588,14 @@ class QtPainter(QtGui.QPainter):
         height = rect_.height()
         #
         r_ = height*scale
-        x_, y_ = (width - r_)/2 + x, (height - r_)/2 + y
+        x_, y_ = (width-r_)/2+x, (height-r_)/2+y
         #
         ellipse_rect = QtCore.QRect(x_-4, y_-4, r_+8, r_+8)
         points = [
-            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x_, y_), radius=r_, angle=90),
-            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x_, y_), radius=r_, angle=210),
-            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x_, y_), radius=r_, angle=330),
-            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x_, y_), radius=r_, angle=90)
+            gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x_, y_), radius=r_, angle=90),
+            gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x_, y_), radius=r_, angle=210),
+            gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x_, y_), radius=r_, angle=330),
+            gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x_, y_), radius=r_, angle=90)
         ]
         #
         self._set_background_color_(QtBackgroundColors.Transparent)
@@ -3471,7 +3628,10 @@ class QtPainter(QtGui.QPainter):
 
         self.drawRect(rect_)
 
-    def _draw_image_use_text_by_rect_(self, rect, text, border_color=None, background_color=None, font_color=None, offset=0, border_radius=0, border_width=1, is_hovered=False, is_enable=True, is_pressed=False):
+    def _draw_image_use_text_by_rect_(
+            self, rect, text, border_color=None, background_color=None, font_color=None, offset=0, border_radius=0,
+            border_width=1, is_hovered=False, is_enable=True, is_pressed=False
+            ):
         if offset != 0:
             rect_offset = QtCore.QRect(
                 rect.x()+offset, rect.y()+offset,
@@ -3594,7 +3754,7 @@ class QtPainter(QtGui.QPainter):
         #
         self.drawText(
             txt_rect,
-            QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+            QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
             text_draw
         )
 
@@ -3609,7 +3769,10 @@ class QtPainter(QtGui.QPainter):
             rect, pixmap
         )
 
-    def _draw_frame_by_rect_(self, rect, border_color, background_color, background_style=None, offset=0, border_radius=0, border_width=1, border_style=None):
+    def _draw_frame_by_rect_(
+            self, rect, border_color, background_color, background_style=None, offset=0, border_radius=0,
+            border_width=1, border_style=None
+            ):
         self._set_border_color_(border_color)
         self._set_background_color_(background_color)
         self._set_border_width_(border_width)
@@ -3696,8 +3859,8 @@ class QtPainter(QtGui.QPainter):
         #
         if offset != 0:
             rect_ = QtCore.QRect(
-                rect.x() + offset, rect.y() + offset,
-                rect.width() - offset, rect.height() - offset
+                rect.x()+offset, rect.y()+offset,
+                rect.width()-offset, rect.height()-offset
             )
         else:
             rect_ = rect
@@ -3720,8 +3883,8 @@ class QtPainter(QtGui.QPainter):
         if colors:
             if offset != 0:
                 rect_offset = QtCore.QRect(
-                    rect.x() + offset, rect.y() + offset,
-                    rect.width() - offset, rect.height() - offset
+                    rect.x()+offset, rect.y()+offset,
+                    rect.width()-offset, rect.height()-offset
                 )
             else:
                 rect_offset = rect
@@ -3733,7 +3896,7 @@ class QtPainter(QtGui.QPainter):
             c = len(colors)
             p = 1/float(c)
             for seq, i_color in enumerate(colors):
-                _ = float(seq) / float(c)
+                _ = float(seq)/float(c)
                 i_index = max(min(_, 1), 0)
                 i_qt_color = self._get_qt_color_(i_color)
                 gradient_color.setColorAt(i_index, i_qt_color)
@@ -3749,10 +3912,11 @@ class QtPainter(QtGui.QPainter):
                 )
             else:
                 self.drawRect(rect_offset)
+
     @classmethod
     def _get_alternating_color_(cls, rect, colors, width, time_offset=0, running=False):
         if running is True:
-            x_o = (time_offset % (width*2))
+            x_o = (time_offset%(width*2))
         else:
             x_o = 0
         x, y = rect.x(), rect.y()
@@ -3830,7 +3994,10 @@ class QtPainter(QtGui.QPainter):
             self._set_antialiasing_(False)
             self.drawRect(rect_offset)
 
-    def _draw_text_by_rect_(self, rect, text, font_color=None, font=None, offset=0, text_option=None, word_warp=False, is_hovered=False, is_selected=False):
+    def _draw_text_by_rect_(
+            self, rect, text, font_color=None, font=None, offset=0, text_option=None, word_warp=False, is_hovered=False,
+            is_selected=False
+        ):
         if font_color is not None:
             self._set_border_color_(font_color)
         else:
@@ -3850,7 +4017,7 @@ class QtPainter(QtGui.QPainter):
         if text_option is not None:
             text_option_ = text_option
         else:
-            text_option_ = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
+            text_option_ = QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter
         #
         if font is not None:
             self._set_font_(font)
@@ -3908,7 +4075,11 @@ class QtPainter(QtGui.QPainter):
     def _set_radar_chart_draw_by_rect_(self, rect, chart_data):
         pass
 
-    def _set_text_draw_by_rect_use_key_value_(self, rect, key_text, value_text, key_text_width, key_text_size=8, value_text_size=8, key_text_weight=50, value_text_weight=50, key_text_color=None, value_text_color=None, offset=0, is_hovered=False, is_selected=False):
+    def _set_text_draw_by_rect_use_key_value_(
+            self, rect, key_text, value_text, key_text_width, key_text_size=8, value_text_size=8, key_text_weight=50,
+            value_text_weight=50, key_text_color=None, value_text_color=None, offset=0, is_hovered=False,
+            is_selected=False
+        ):
         x, y = rect.x()+offset, rect.y()+offset
         w, h = rect.width()-offset, rect.height()-offset
         if w > 0 and h > 0:
@@ -3933,7 +4104,7 @@ class QtPainter(QtGui.QPainter):
             key_text_rect = QtCore.QRect(
                 x, y, key_text_width, h
             )
-            key_text_option = QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter
+            key_text_option = QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter
             key_text_font = Font.NameTextKey
             key_text_font.setPointSize(key_text_size)
             key_text_font.setWeight(key_text_weight)
@@ -3947,7 +4118,7 @@ class QtPainter(QtGui.QPainter):
             sep_text_rect = QtCore.QRect(
                 x+key_text_width, y, sep_text_width, h
             )
-            sep_text_option = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
+            sep_text_option = QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter
             self.drawText(
                 sep_text_rect,
                 sep_text_option,
@@ -3959,7 +4130,7 @@ class QtPainter(QtGui.QPainter):
                 x+key_text_width+sep_text_width, y, w-sep_text_width-key_text_width, h
             )
             qt_value_text_option = QtGui.QTextOption()
-            qt_value_text_option.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+            qt_value_text_option.setAlignment(QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter)
             qt_value_text_option.setUseDesignMetrics(True)
             value_text_ = self.fontMetrics().elidedText(
                 value_text,
@@ -3977,13 +4148,15 @@ class QtPainter(QtGui.QPainter):
                 qt_value_text_option,
             )
 
-    def set_button_draw(self, rect, background_color, border_color, border_radius=4, border_width=1, border_style='solid'):
+    def set_button_draw(
+            self, rect, background_color, border_color, border_radius=4, border_width=1, border_style='solid'
+        ):
         self._set_background_color_(background_color)
         self._set_border_color_(border_color)
         #
         p0, p1, p2, p3 = rect.topLeft(), rect.bottomLeft(), rect.bottomRight(), rect.topRight()
         w, h = rect.width(), rect.height()
-        cx, cy = p0.x()+w / 2, p0.y()+h / 2
+        cx, cy = p0.x()+w/2, p0.y()+h/2
         #
         angles = []
         for p in [p0, p1, p2, p3]:
@@ -3994,10 +4167,10 @@ class QtPainter(QtGui.QPainter):
             angles.append(a)
         #
         br, bb, bg, ba = border_color.red(), border_color.green(), border_color.blue(), border_color.alpha()
-        br0, bb0, bg0, ba0 = min(br * 1.25, 255), min(bb * 1.25, 255), min(bg * 1.25, 255), ba
-        br1, bb1, bg1, ba1 = min(br * 1.5, 255), min(bb * 1.5, 255), min(bg * 1.5, 255), ba
-        br3, bb3, bg3, ba3 = min(br * .875, 255), min(bb * .875, 255), min(bg * .875, 255), ba
-        br4, bb4, bg4, ba4 = min(br * .725, 255), min(bb * .725, 255), min(bg * .725, 255), ba
+        br0, bb0, bg0, ba0 = min(br*1.25, 255), min(bb*1.25, 255), min(bg*1.25, 255), ba
+        br1, bb1, bg1, ba1 = min(br*1.5, 255), min(bb*1.5, 255), min(bg*1.5, 255), ba
+        br3, bb3, bg3, ba3 = min(br*.875, 255), min(bb*.875, 255), min(bg*.875, 255), ba
+        br4, bb4, bg4, ba4 = min(br*.725, 255), min(bb*.725, 255), min(bg*.725, 255), ba
         self.setBorderRgba((0, 0, 0, 0))
         if border_style == 'solid':
             self._set_border_color_(border_color)
@@ -4016,7 +4189,7 @@ class QtPainter(QtGui.QPainter):
             color = QtGui.QConicalGradient(cx, cy, a)
             color.setColorAt(0, QtGui.QColor(br0, bb0, bg0, ba0))
             for seq, a in enumerate(angles):
-                p = float(a) / float(360)
+                p = float(a)/float(360)
                 if seq == 0:
                     color.setColorAt(p, QtGui.QColor(br1, bb1, bg1, ba1))
                 elif seq == 1:
@@ -4033,13 +4206,14 @@ class QtPainter(QtGui.QPainter):
             self.setBrush(brush)
             self.drawRoundedRect(rect, border_radius, border_radius, QtCore.Qt.AbsoluteSize)
         #
-        rect_ = QtCore.QRect(p0.x()+border_width, p0.y()+border_width, w-border_width * 2, h-border_width * 2)
+        rect_ = QtCore.QRect(p0.x()+border_width, p0.y()+border_width, w-border_width*2, h-border_width*2)
         self._set_background_color_(background_color)
         self.drawRoundedRect(
             rect_,
             border_radius-border_width, border_radius-border_width,
             QtCore.Qt.AbsoluteSize
         )
+
     @classmethod
     def _get_item_background_color_1_by_rect_(cls, rect, is_hovered=False, is_actioned=False):
         conditions = [is_hovered, is_actioned]
@@ -4057,8 +4231,11 @@ class QtPainter(QtGui.QPainter):
             color.setColorAt(0, color_0)
             color.setColorAt(1, color_1)
             return color
+
     @classmethod
-    def _get_item_background_color_by_rect_(cls, rect, is_hovered=False, is_selected=False, is_actioned=False, default_background_color=None):
+    def _get_item_background_color_by_rect_(
+            cls, rect, is_hovered=False, is_selected=False, is_actioned=False, default_background_color=None
+        ):
         conditions = [is_hovered, is_selected]
         if conditions == [False, False]:
             if default_background_color is not None:
@@ -4088,8 +4265,12 @@ class QtPainter(QtGui.QPainter):
             color.setColorAt(0, color_0)
             color.setColorAt(1, color_1)
             return color
+
     @classmethod
-    def _get_frame_background_color_by_rect_(cls, rect, check_is_hovered=False, is_checked=False, press_is_hovered=False, is_pressed=False, is_selected=False, delete_is_hovered=False):
+    def _get_frame_background_color_by_rect_(
+            cls, rect, check_is_hovered=False, is_checked=False, press_is_hovered=False, is_pressed=False,
+            is_selected=False, delete_is_hovered=False
+        ):
         conditions = [check_is_hovered, is_checked, press_is_hovered, is_pressed, is_selected]
         if True not in conditions:
             return QtBackgroundColors.Transparent
@@ -4155,6 +4336,7 @@ class QtPainter(QtGui.QPainter):
             i_index, i_color = i_args
             color.setColorAt(i_index, i_color)
         return color
+
     @classmethod
     def _get_item_border_color_(cls, rect, is_hovered=False, is_selected=False, is_actioned=False):
         if is_actioned:
@@ -4182,7 +4364,8 @@ class QtPainter(QtGui.QPainter):
                 #
                 i_r, i_g, i_b, i_a = i_background_rgba
                 self._set_background_color_(
-                    [(i_r, i_g, i_b, 96), (i_r, i_g, i_b, 255)][i_total_path.contains(hover_point) or i_text_ellipse.contains(hover_point)]
+                    [(i_r, i_g, i_b, 96), (i_r, i_g, i_b, 255)][
+                        i_total_path.contains(hover_point) or i_text_ellipse.contains(hover_point)]
                 )
                 self._set_border_color_(i_border_rgba)
                 self.drawPath(i_occupy_path)
@@ -4196,7 +4379,10 @@ class QtPainter(QtGui.QPainter):
                 #
                 self.drawText(i_text_point, i_text)
 
-    def _set_histogram_draw_(self, rect, value_array, value_scale, value_offset, label, grid_scale, grid_size, grid_offset, translate, current_index, mode):
+    def _set_histogram_draw_(
+            self, rect, value_array, value_scale, value_offset, label, grid_scale, grid_size, grid_offset, translate,
+            current_index, mode
+        ):
         maximum = max(value_array)
         spacing = 2
         if maximum:
@@ -4212,25 +4398,25 @@ class QtPainter(QtGui.QPainter):
             value_scale_x, value_scale_y = value_scale
             #
             grid_w, grid_h = grid_size
-            column_w = grid_w / grid_scale_x
+            column_w = grid_w/grid_scale_x
             #
-            minimum_h = grid_w / grid_scale_y
+            minimum_h = grid_w/grid_scale_y
             #
             current_x, current_y = None, None
             for i_index, i_value in enumerate(value_array):
-                i_color_percent = float(i_value) / float(maximum)
+                i_color_percent = float(i_value)/float(maximum)
                 #
-                i_r, i_g, i_b = bsc_core.RawColorMtd.hsv2rgb(140 * i_color_percent, 1, 1)
+                i_r, i_g, i_b = bsc_core.RawColorMtd.hsv2rgb(140*i_color_percent, 1, 1)
                 #
                 self._set_background_color_(i_r, i_g, i_b, 255)
                 self._set_border_color_(i_r, i_g, i_b, 255)
                 #
-                i_value_percent = float(i_value) / float(value_scale_y)
-                i_pos_x = pos_x + column_w * i_index + grid_offset_x + translate_x + 1
-                i_pos_y = (height - minimum_h * i_value_percent * grid_scale_y - grid_offset_y + translate_y)
+                i_value_percent = float(i_value)/float(value_scale_y)
+                i_pos_x = pos_x+column_w*i_index+grid_offset_x+translate_x+1
+                i_pos_y = (height-minimum_h*i_value_percent*grid_scale_y-grid_offset_y+translate_y)
                 # filter visible
                 if grid_offset_x <= i_pos_x <= width:
-                    i_w, i_h = column_w - spacing, (minimum_h * i_value_percent) * grid_scale_y
+                    i_w, i_h = column_w-spacing, (minimum_h*i_value_percent)*grid_scale_y
                     i_rect = QtCore.QRect(
                         i_pos_x, i_pos_y,
                         i_w, i_h
@@ -4238,22 +4424,22 @@ class QtPainter(QtGui.QPainter):
                     self.drawRect(i_rect)
                     #
                     if i_index == current_index:
-                        current_x = i_index + value_offset_x
-                        current_y = i_value + value_offset_y
+                        current_x = i_index+value_offset_x
+                        current_y = i_value+value_offset_y
                         #
                         self._set_background_color_(0, 0, 0, 0)
                         self._set_border_color_(223, 223, 223, 255)
                         #
                         selection_rect = QtCore.QRect(
                             i_pos_x, 0,
-                            column_w - 2, height - grid_offset_y
+                            column_w-2, height-grid_offset_y
                         )
                         #
                         self.drawRect(selection_rect)
             #
             if current_x is not None and current_y is not None:
                 current_label_rect = QtCore.QRect(
-                    grid_offset_x + 8, 0 + 8,
+                    grid_offset_x+8, 0+8,
                     width, height
                 )
                 #
@@ -4262,7 +4448,7 @@ class QtPainter(QtGui.QPainter):
                 #
                 self.drawText(
                     current_label_rect,
-                    QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop,
+                    QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop,
                     '{2} ( {0} )\r\n{3} ( {1} )'.format(
                         label_x, label_y,
                         current_x,
@@ -4278,10 +4464,11 @@ class QtPainter(QtGui.QPainter):
                 # else:
                 #     self._set_border_width_(1)
                 self.drawLine(*line_points)
+
         #
         def get_lines_h_fnc_():
             lis = []
-            for i_y in range(height / grid_h):
+            for i_y in range(height/grid_h):
                 pox_x_1, pox_x_2 = grid_offset_x, width
                 #
                 if axis_dir_y == -1:
@@ -4293,10 +4480,11 @@ class QtPainter(QtGui.QPainter):
                     (QtCore.QPointF(pox_x_1, pos_y_1), QtCore.QPointF(pox_x_2, pos_y_2))
                 )
             return lis
+
         #
         def get_lines_v_fnc_():
             lis = []
-            for i_x in range(width / grid_h):
+            for i_x in range(width/grid_h):
                 if axis_dir_x == -1:
                     pox_x_1 = pox_x_2 = width-grid_w*(i_x-index_x)-translate_x+grid_offset_x
                 else:
@@ -4308,6 +4496,7 @@ class QtPainter(QtGui.QPainter):
                     (QtCore.QPointF(pox_x_1, pos_y_1), QtCore.QPointF(pox_x_2, pos_y_2))
                 )
             return lis
+
         #
         width, height = rect.width(), rect.height()
         grid_w, grid_h = grid_size
@@ -4327,11 +4516,14 @@ class QtPainter(QtGui.QPainter):
         set_branch_draw_fnc_(lines_h, index_y, grid_scale_y)
         set_branch_draw_fnc_(lines_v, index_x, grid_scale_x)
 
-    def _set_grid_mark_draw_(self, rect, axis_dir, grid_size, translate, grid_offset, grid_scale, grid_value_offset, grid_border_color, grid_value_show_mode):
+    def _set_grid_mark_draw_(
+            self, rect, axis_dir, grid_size, translate, grid_offset, grid_scale, grid_value_offset, grid_border_color,
+            grid_value_show_mode
+            ):
         def set_branch_draw_fnc_(points, axis_index, scale, value_offset):
             for seq, i_point in enumerate(points):
-                if (seq - axis_index) % 5 == 0:
-                    value = (seq - axis_index)/scale+value_offset
+                if (seq-axis_index)%5 == 0:
+                    value = (seq-axis_index)/scale+value_offset
                     text = bsc_core.RawIntegerMtd.get_prettify_(
                         value,
                         grid_value_show_mode
@@ -4339,6 +4531,7 @@ class QtPainter(QtGui.QPainter):
                     self.drawText(
                         i_point, text
                     )
+
         #
         def get_h_points():
             lis = []
@@ -4358,6 +4551,7 @@ class QtPainter(QtGui.QPainter):
                 )
             #
             return lis
+
         #
         def get_v_points():
             lis = []
@@ -4377,6 +4571,7 @@ class QtPainter(QtGui.QPainter):
                 )
             #
             return lis
+
         #
         width, height = rect.width(), rect.height()
         grid_w, grid_h = grid_size
@@ -4447,7 +4642,10 @@ class QtPainter(QtGui.QPainter):
         #
         self.drawRect(rect)
 
-    def _set_node_frame_draw_by_rect_(self, rect, offset=0, border_radius=0, border_width=1, is_hovered=False, is_selected=False, is_actioned=False):
+    def _set_node_frame_draw_by_rect_(
+            self, rect, offset=0, border_radius=0, border_width=1, is_hovered=False, is_selected=False,
+            is_actioned=False
+            ):
         conditions = [is_hovered, is_selected]
         if conditions == [False, False]:
             color = QtBorderColors.Transparent
@@ -4475,26 +4673,26 @@ class QtPainter(QtGui.QPainter):
         self.setPen(pen)
         self.setBrush(QtGui.QBrush(QtBorderColors.Transparent))
 
-        b_ = border_width / 2
+        b_ = border_width/2
         if offset != 0:
-            offset_ = b_ + offset
+            offset_ = b_+offset
             rect_ = QtCore.QRect(
-                rect.x() + offset_, rect.y() + offset_,
-                rect.width() - offset_, rect.height() - offset_
+                rect.x()+offset_, rect.y()+offset_,
+                rect.width()-offset_, rect.height()-offset_
             )
         else:
             rect_ = rect
         #
         if border_radius > 0:
-            border_radius_ = b_ + border_radius
+            border_radius_ = b_+border_radius
             self.drawRoundedRect(
                 rect_,
                 border_radius_, border_radius_,
                 QtCore.Qt.AbsoluteSize
             )
         elif border_radius == -1:
-            border_radius = rect_.height() / 2
-            border_radius_ = b_ + border_radius
+            border_radius = rect_.height()/2
+            border_radius_ = b_+border_radius
             self.drawRoundedRect(
                 rect_,
                 border_radius_, border_radius_,
@@ -4529,6 +4727,7 @@ class QtPainter(QtGui.QPainter):
 class QtNGPainter(QtPainter):
     def __init__(self, *args, **kwargs):
         super(QtNGPainter, self).__init__(*args, **kwargs)
+
     @classmethod
     def _get_ng_node_background_color_(cls, rect, is_hovered=False, is_selected=False, is_actioned=False):
         conditions = [is_hovered, is_selected]
@@ -4545,8 +4744,8 @@ class QtNGPainter(QtPainter):
             if is_actioned:
                 color_0 = color_hovered
                 color_1 = color_actioned
-                start_coord, end_coord = rect.topLeft(), rect.bottomLeft()
-                l_color = QtGui.QLinearGradient(start_coord, end_coord)
+                start_p, end_p = rect.topLeft(), rect.bottomLeft()
+                l_color = QtGui.QLinearGradient(start_p, end_p)
                 l_color.setColorAt(0, color_0)
                 l_color.setColorAt(1, color_1)
                 return l_color
@@ -4558,8 +4757,8 @@ class QtNGPainter(QtPainter):
             else:
                 color_1 = color_selected
             #
-            start_coord, end_coord = rect.topLeft(), rect.bottomLeft()
-            l_color = QtGui.QLinearGradient(start_coord, end_coord)
+            start_p, end_p = rect.topLeft(), rect.bottomLeft()
+            l_color = QtGui.QLinearGradient(start_p, end_p)
             l_color.setColorAt(0, color_0)
             l_color.setColorAt(1, color_1)
             return l_color
@@ -4569,12 +4768,12 @@ class QtNGPainter(QtPainter):
         self._set_border_width_(border_width)
         self._set_background_color_(63, 255, 127, 255)
         #
-        b_ = border_width / 2
+        b_ = border_width/2
         if offset != 0:
-            offset_ = b_ + offset
+            offset_ = b_+offset
             rect_ = QtCore.QRect(
-                rect.x() + offset_, rect.y() + offset_,
-                rect.width() - offset_, rect.height() - offset_
+                rect.x()+offset_, rect.y()+offset_,
+                rect.width()-offset_, rect.height()-offset_
             )
         else:
             rect_ = rect
@@ -4586,12 +4785,12 @@ class QtNGPainter(QtPainter):
         self._set_border_width_(border_width)
         self._set_background_color_(255, 63, 31, 255)
         #
-        b_ = border_width / 2
+        b_ = border_width/2
         if offset != 0:
-            offset_ = b_ + offset
+            offset_ = b_+offset
             rect_ = QtCore.QRect(
-                rect.x() + offset_, rect.y() + offset_,
-                rect.width() - offset_, rect.height() - offset_
+                rect.x()+offset_, rect.y()+offset_,
+                rect.width()-offset_, rect.height()-offset_
             )
         else:
             rect_ = rect
@@ -4601,10 +4800,10 @@ class QtNGPainter(QtPainter):
         #
         r = h
         coords = [
-            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=90),
-            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=210),
-            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=330),
-            utl_gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=90)
+            gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=90),
+            gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=210),
+            gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=330),
+            gui_core.Ellipse2dMtd.get_coord_at_angle(start=(x, y), radius=r, angle=90)
         ]
         #
         self._draw_path_by_coords_(coords)
@@ -4630,7 +4829,10 @@ class QtNGPainter(QtPainter):
                 i_p_0, i_p_1 = QtCore.QPoint(x, y+i*h/c), QtCore.QPoint(x+w, y+i*h/c)
                 self.drawLine(i_p_0, i_p_1)
 
-    def _set_ng_node_frame_head_draw_(self, rect, border_color, border_width, border_radius, is_hovered=False, is_selected=False, is_actioned=False):
+    def _set_ng_node_frame_head_draw_(
+            self, rect, border_color, border_width, border_radius, is_hovered=False, is_selected=False,
+            is_actioned=False
+            ):
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
         x_0, y_0 = x, y
@@ -4660,9 +4862,9 @@ class QtNGPainter(QtPainter):
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
         x_0, y_0 = x, y
-        w_0, h_0 = w, h - border_radius - border_width
-        x_1, y_1 = x, y + border_radius + border_width
-        w_1, h_1 = w, h - border_radius - border_width
+        w_0, h_0 = w, h-border_radius-border_width
+        x_1, y_1 = x, y+border_radius+border_width
+        w_1, h_1 = w, h-border_radius-border_width
         self._set_border_color_(border_color)
         self._set_border_width_(border_width)
         self._set_border_join_(QtCore.Qt.MiterJoin)
@@ -4676,12 +4878,12 @@ class QtNGPainter(QtPainter):
             QtCore.QRectF(x_1, y_1, w_1, h_1),
             border_radius, border_radius, QtCore.Qt.AbsoluteSize
         )
-        self.drawPath(path_0 + path_1)
+        self.drawPath(path_0+path_1)
 
 
 def set_gui_proxy_set_print(gui_proxy, text):
-    if hasattr(gui_proxy, 'add_content_with_thread'):
-        gui_proxy.add_content_with_thread(text)
+    if hasattr(gui_proxy, 'append_content_use_thread'):
+        gui_proxy.append_content_use_thread(text)
 
 
 # log
@@ -4810,12 +5012,15 @@ def get_session_window_by_name(name):
 class AsbQtMenuSetup(object):
     def __init__(self, *args):
         pass
+
     @classmethod
     def get_menu(cls, menu_title):
         raise NotImplementedError()
+
     @classmethod
     def get_fnc(cls, text):
         exec text
+
     @classmethod
     def set_action_add(cls, action_item, action_data):
         name, icon_name, method = action_data
@@ -4829,6 +5034,7 @@ class AsbQtMenuSetup(object):
                 action_item.triggered.connect(method)
             elif isinstance(method, six.string_types):
                 action_item.triggered.connect(lambda *args, **kwargs: cls.get_fnc(method))
+
     @classmethod
     def set_menu_setup(cls, menu, menu_raw):
         if menu_raw:
@@ -4862,6 +5068,7 @@ class AsbQtMenuSetup(object):
                         pass
                 else:
                     menu.addSeparator()
+
     @classmethod
     def set_menu_build_by_configure(cls, configure):
         menu_raw = []
@@ -4906,6 +5113,7 @@ class AsbQtMenuSetup(object):
         if menu is not None:
             menu.clear()
             cls.set_menu_setup(menu, menu_raw)
+
     @classmethod
     def set_menu_build_by_menu_content(cls, menu, menu_content):
         if menu is not None:
@@ -4998,7 +5206,7 @@ class QtPixmapDrawer(object):
             painter._set_font_(get_font(g_h*.8))
 
             i_t_r, i_t_g, i_t_b = bsc_core.RawColorMtd.get_complementary_rgb(*i_background_rgb)
-            i_t_a = QtGui.qGray(i_t_r, i_t_g, i_t_b )
+            i_t_a = QtGui.qGray(i_t_r, i_t_g, i_t_b)
             if i_t_a >= 127:
                 i_t_r_ = 223
             else:
@@ -5006,7 +5214,7 @@ class QtPixmapDrawer(object):
             #
             i_t_r__ = QtGui.QColor(i_t_r_, i_t_r_, i_t_r_)
 
-            i_text_option = QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter
+            i_text_option = QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter
 
             painter._set_border_color_(i_t_r__)
             painter.drawText(
@@ -5024,6 +5232,7 @@ class QtPixmapDrawer(object):
             file_path,
             format_
         )
+
     @classmethod
     def get_image_by_data(cls, data, file_path):
         x, y = 0, 0
@@ -5080,4 +5289,3 @@ class QtItemSignals(
 
 if __name__ == '__main__':
     pass
-

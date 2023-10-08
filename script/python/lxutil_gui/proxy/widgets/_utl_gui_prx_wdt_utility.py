@@ -5,18 +5,18 @@ from lxbasic import bsc_core
 
 from lxutil_gui.qt import gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_resize, _utl_gui_qt_wgt_filter, \
-    _utl_gui_qt_wgt_item, _gui_qt_wgt_container, _gui_qt_wgt_entry, _gui_qt_wgt_chart, _utl_gui_qt_wgt_window
+from lxutil_gui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_resize, _gui_qt_wgt_filter, \
+    _gui_qt_wgt_item, _gui_qt_wgt_head, _gui_qt_wgt_container, _gui_qt_wgt_entry, _gui_qt_wgt_window
 
 from lxutil_gui.proxy import utl_gui_prx_configure, utl_gui_prx_abstract
 
-from lxutil_gui import utl_gui_core
+from lxutil_gui import gui_core
 
 from lxbasic import bsc_configure
 
 
 class PrxHScrollArea(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtHScrollArea
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtHScrollArea
 
     def __init__(self, *args, **kwargs):
         super(PrxHScrollArea, self).__init__(*args, **kwargs)
@@ -54,7 +54,7 @@ class PrxHScrollArea(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxVScrollArea(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtVScrollArea
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtVScrollArea
 
     def __init__(self, *args, **kwargs):
         super(PrxVScrollArea, self).__init__(*args, **kwargs)
@@ -95,7 +95,7 @@ class PrxVScrollArea(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxLeftExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_resize.QtHResizeFrame
+    QT_WIDGET_CLS = _gui_qt_wgt_resize.QtHResizeFrame
 
     def __init__(self, *args, **kwargs):
         super(PrxLeftExpandedGroup, self).__init__(*args, **kwargs)
@@ -105,7 +105,7 @@ class PrxLeftExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
             gui_qt_core.QtWidgets.QSizePolicy.Minimum
         )
 
-    def _set_build_(self):
+    def _gui_build_(self):
         self._wgt_w, self._wgt_h = 28, 28
         self._wgt_w_min, self._wgt_h_min = 12, 12
         #
@@ -115,21 +115,21 @@ class PrxLeftExpandedGroup(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_widget._resize_handle._set_resize_target_(self._qt_widget)
         self._qt_widget._resize_handle.size_changed.connect(self.__set_width)
         #
-        qt_layout_0 = _utl_gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
+        qt_layout_0 = _gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(0)
         qt_layout_0.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         #
-        qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
+        qt_widget_1 = _gui_qt_wgt_utility.QtWidget()
         qt_layout_0.addWidget(qt_widget_1)
-        qt_layout_1 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_1)
+        qt_layout_1 = _gui_qt_wgt_utility.QtVBoxLayout(qt_widget_1)
         qt_layout_1.setContentsMargins(*[0]*4)
         qt_layout_1.setSpacing(2)
         qt_layout_1.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         self._qt_view = qt_widget_1
         self._qt_layout_0 = qt_layout_1
         # header
-        self._qt_head = _utl_gui_qt_wgt_item._QtHContractItem()
+        self._qt_head = _gui_qt_wgt_item._QtHContractItem()
         qt_layout_0.addWidget(self._qt_head)
         self._qt_head.expand_toggled.connect(self.set_expanded)
         self._qt_head._set_tool_tip_text_('"LMB-click" to expand "on" / "off"')
@@ -207,7 +207,7 @@ class PrxRightExpandedGroup(PrxLeftExpandedGroup):
     def __init__(self, *args, **kwargs):
         super(PrxRightExpandedGroup, self).__init__(*args, **kwargs)
 
-    def _set_build_(self):
+    def _gui_build_(self):
         self._wgt_w, self._wgt_h = 28, 28
         self._wgt_w_min, self._wgt_h_min = 12, 12
         #
@@ -217,20 +217,20 @@ class PrxRightExpandedGroup(PrxLeftExpandedGroup):
         self._qt_widget._resize_handle.size_changed.connect(self.__set_width)
         self._qt_widget._resize_handle._set_resize_target_(self._qt_widget)
         #
-        qt_layout_0 = _utl_gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
+        qt_layout_0 = _gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(0)
         qt_layout_0.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         # handle
-        self._qt_head = _utl_gui_qt_wgt_item._QtHContractItem()
+        self._qt_head = _gui_qt_wgt_item._QtHContractItem()
         qt_layout_0.addWidget(self._qt_head)
         self._qt_head.expand_toggled.connect(self.set_expanded)
         self._qt_head._set_expand_direction_(self._qt_head.CollapseDirection.LeftToRight)
         self._qt_head._set_tool_tip_text_('"LMB-click" to expand "on" / "off"')
         #
-        qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
+        qt_widget_1 = _gui_qt_wgt_utility.QtWidget()
         qt_layout_0.addWidget(qt_widget_1)
-        qt_layout_1 = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_1)
+        qt_layout_1 = _gui_qt_wgt_utility.QtVBoxLayout(qt_widget_1)
         qt_layout_1.setContentsMargins(*[0]*4)
         qt_layout_1.setSpacing(2)
         qt_layout_1.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
@@ -249,28 +249,28 @@ class PrxRightExpandedGroup(PrxLeftExpandedGroup):
 
 
 class PrxHToolBox(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtWidget
 
     def __init__(self, *args, **kwargs):
         super(PrxHToolBox, self).__init__(*args, **kwargs)
 
-    def _set_build_(self):
+    def _gui_build_(self):
         self._wgt_w, self._wgt_h = 24, 24
         self._wgt_w_min, self._wgt_h_min = 12, 24
         #
-        qt_layout_0 = _utl_gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
+        qt_layout_0 = _gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(2)
         qt_layout_0.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         # header
-        self._qt_head = _gui_qt_wgt_container.QtHExpandHead2()
+        self._qt_head = _gui_qt_wgt_head.QtHExpandHead2()
         qt_layout_0.addWidget(self._qt_head)
         self._qt_head.expand_toggled.connect(self.set_expanded)
         self._qt_head._set_tool_tip_text_('"LMB-click" to expand "on" / "off"')
         #
-        qt_widget_1 = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+        qt_widget_1 = _gui_qt_wgt_utility._QtTranslucentWidget()
         qt_layout_0.addWidget(qt_widget_1)
-        qt_layout_1 = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
+        qt_layout_1 = _gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
         qt_layout_1.setContentsMargins(*[0]*4)
         qt_layout_1.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         #
@@ -362,15 +362,15 @@ class PrxVToolBox_(PrxHToolBox_):
 
 
 class Window(utl_gui_prx_abstract.AbsPrxWindow):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtMainWindow
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtMainWindow
 
     def __init__(self, *args, **kwargs):
         super(Window, self).__init__(*args, **kwargs)
 
-    def _set_build_(self):
-        self._qt_main_widget = _utl_gui_qt_wgt_utility.QtWidget()
+    def _gui_build_(self):
+        self._qt_main_widget = _gui_qt_wgt_utility.QtWidget()
         self._qt_widget.setCentralWidget(self._qt_main_widget)
-        self._qt_main_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(self._qt_main_widget)
+        self._qt_main_layout = _gui_qt_wgt_utility.QtHBoxLayout(self._qt_main_widget)
 
     def get_main_widget(self):
         return self._qt_main_widget
@@ -380,42 +380,42 @@ class Window(utl_gui_prx_abstract.AbsPrxWindow):
 
 
 class PrxLayerWidget(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
 
     def __init__(self, *args, **kwargs):
         super(PrxLayerWidget, self).__init__(*args, **kwargs)
 
-    def _set_build_(self):
-        qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
+    def _gui_build_(self):
+        qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self.widget)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
         qt_layout_0.setSpacing(0)
         #
-        qt_widget_0 = _utl_gui_qt_wgt_utility.QtHFrame()
+        qt_widget_0 = _gui_qt_wgt_utility.QtHFrame()
         qt_widget_0.setMaximumHeight(24)
         qt_widget_0.setMinimumHeight(24)
         qt_layout_0.addWidget(qt_widget_0)
         #
-        qt_top_layout_1 = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_0)
+        qt_top_layout_1 = _gui_qt_wgt_utility.QtHBoxLayout(qt_widget_0)
         qt_top_layout_1.setContentsMargins(0, 0, 0, 0)
         qt_top_layout_1.setSpacing(0)
-        self._qt_label_0 = _utl_gui_qt_wgt_utility.QtTextItem()
+        self._qt_label_0 = _gui_qt_wgt_utility.QtTextItem()
         self._qt_label_0._set_name_text_option_(
             gui_qt_core.QtCore.Qt.AlignHCenter|gui_qt_core.QtCore.Qt.AlignVCenter
         )
         self._qt_label_0._set_name_font_size_(12)
         qt_top_layout_1.addWidget(self._qt_label_0)
-        self._button_0 = PrxIconPressItem()
+        self._button_0 = PrxIconPressButton()
         self._button_0.set_icon_name('close')
         qt_top_layout_1.addWidget(self._button_0.widget)
 
-        self._qt_line = _utl_gui_qt_wgt_utility.QtHLine()
+        self._qt_line = _gui_qt_wgt_utility.QtHLine()
         qt_layout_0.addWidget(self._qt_line)
-        self._qt_central_widget_0 = _utl_gui_qt_wgt_utility.QtWidget()
+        self._qt_central_widget_0 = _gui_qt_wgt_utility.QtWidget()
         self._qt_central_widget_0.setSizePolicy(
             gui_qt_core.QtWidgets.QSizePolicy.Expanding, gui_qt_core.QtWidgets.QSizePolicy.Expanding
         )
         qt_layout_0.addWidget(self._qt_central_widget_0)
-        self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_central_widget_0)
+        self._qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_central_widget_0)
         self._qt_layout_0.setContentsMargins(2, 2, 2, 2)
 
     def set_name(self, text):
@@ -431,7 +431,7 @@ class PrxLayerWidget(utl_gui_prx_abstract.AbsPrxWidget):
             self._qt_layout_0.addWidget(widget._qt_widget)
 
     def connect_close_to(self, method):
-        self._button_0.widget.clicked.connect(method)
+        self._button_0.widget.press_clicked.connect(method)
 
     @property
     def central_layout(self):
@@ -452,7 +452,7 @@ class PrxLayerWidget(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxLayer(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
     #
     PRX_LAYER_WIDGET_CLS = PrxLayerWidget
 
@@ -464,7 +464,7 @@ class PrxLayer(utl_gui_prx_abstract.AbsPrxWidget):
         return self._layer_widget
 
     def create_widget(self, key, label=None):
-        qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
+        qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
         self._layer_widget = self.PRX_LAYER_WIDGET_CLS()
         if label is None:
@@ -475,13 +475,14 @@ class PrxLayer(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtWidget
 
     def __init__(self, *args, **kwargs):
         super(PrxTextBrowser, self).__init__(*args, **kwargs)
 
-    def _set_build_(self):
-        qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
+    def _gui_build_(self):
+        qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self.widget)
+        qt_layout_0.setContentsMargins(*[0]*4)
         widget = _gui_qt_wgt_entry.QtValueEntryAsContentEdit()
         widget._set_value_entry_enable_(False)
         qt_layout_0.addWidget(widget)
@@ -505,23 +506,23 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_result_add(self, text):
         self._qt_text_browser_0.append(
-            utl_gui_core.HtmlText.get_text(text)
+            gui_core.HtmlText.get_text(text)
         )
 
     def set_error_add(self, text):
         self._qt_text_browser_0.append(
-            utl_gui_core.HtmlText.get_text(text, font_color=utl_gui_prx_configure.Html.RED)
+            gui_core.HtmlText.get_text(text, font_color=utl_gui_prx_configure.Html.RED)
         )
 
     def set_warning_add(self, text):
         self._qt_text_browser_0.append(
-            utl_gui_core.HtmlText.get_text(text, font_color=utl_gui_prx_configure.Html.YELLOW)
+            gui_core.HtmlText.get_text(text, font_color=utl_gui_prx_configure.Html.YELLOW)
         )
 
     def set_print_add(self, text):
         self._qt_text_browser_0._add_value_(text)
 
-    def add_content_with_thread(self, text):
+    def append_content_use_thread(self, text):
         self._qt_text_browser_0._add_value_with_thread_(text)
 
     def set_content_with_thread(self, text):
@@ -552,7 +553,7 @@ class PrxTextBrowser(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxMenu(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtMenu
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtMenu
 
     def __init__(self, *args, **kwargs):
         super(PrxMenu, self).__init__(*args, **kwargs)
@@ -575,11 +576,11 @@ class PrxMenu(utl_gui_prx_abstract.AbsPrxWidget):
         )
 
 
-class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtIconPressButton
+class PrxIconPressButton(utl_gui_prx_abstract.AbsPrxWidget):
+    QT_WIDGET_CLS = _gui_qt_wgt_button.QtIconPressButton
 
     def __init__(self, *args, **kwargs):
-        super(PrxIconPressItem, self).__init__(*args, **kwargs)
+        super(PrxIconPressButton, self).__init__(*args, **kwargs)
         self.widget.setFixedSize(20, 20)
 
     def set_name(self, *args, **kwargs):
@@ -587,16 +588,19 @@ class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_icon_name(self, icon_name):
         self.widget._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get(icon_name)
+            gui_core.RscIconFile.get(icon_name)
         )
 
     def set_icon_sub_name(self, icon_name):
         self.widget._set_icon_sub_file_path_(
-            utl_gui_core.RscIconFile.get(icon_name)
+            gui_core.RscIconFile.get(icon_name)
         )
 
-    def set_icon_by_text(self, text):
-        self.widget._set_icon_text_(text)
+    def set_icon_by_name(self, text):
+        self.widget._set_icon_name_text_(text)
+
+    def set_icon_color(self, rgba):
+        self._qt_widget._set_icon_name_rgba_(rgba)
 
     def set_icon_size(self, w, h):
         self.widget._set_icon_file_draw_size_(w, h)
@@ -605,10 +609,7 @@ class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_widget._set_icon_frame_draw_size_(w, h)
 
     def connect_press_clicked_to(self, fnc):
-        self.widget.clicked.connect(fnc)
-
-    def set_click(self):
-        self.widget._send_press_clicked_emit_()
+        self.widget.press_clicked.connect(fnc)
 
     def set_tool_tip(self, *args, **kwargs):
         self.widget._set_tool_tip_(*args, **kwargs)
@@ -625,9 +626,15 @@ class PrxIconPressItem(utl_gui_prx_abstract.AbsPrxWidget):
     def connect_press_db_clicked_to(self, fnc):
         self._qt_widget.press_db_clicked.connect(fnc)
 
+    def set_drag_enable(self, boolean):
+        self._qt_widget._set_drag_enable_(boolean)
+
+    def set_drag_and_drop_scheme(self, text):
+        self._qt_widget._set_drag_and_drop_scheme_(text)
+
 
 class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_item.QtPressItem
+    QT_WIDGET_CLS = _gui_qt_wgt_item.QtPressButton
 
     def __init__(self, *args, **kwargs):
         super(PrxPressItem, self).__init__(*args, **kwargs)
@@ -662,8 +669,8 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget._icon_is_enable = True
         self.widget.update()
 
-    def set_icon_by_text(self, text):
-        self.widget._set_icon_text_(text)
+    def set_icon_by_name(self, text):
+        self.widget._set_icon_name_text_(text)
 
     def set_icon_color_by_name(self, name):
         pass
@@ -684,16 +691,13 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
         self.widget.check_clicked.connect(fnc)
 
     def connect_press_clicked_to(self, fnc):
-        self.widget.clicked.connect(fnc)
+        self.widget.press_clicked.connect(fnc)
 
     def set_press_clicked(self):
         self.widget.clicked.emit()
 
     def set_option_click_connect_to(self, fnc):
         self.widget.option_clicked.connect(fnc)
-
-    def set_click(self):
-        self.widget._send_press_clicked_emit_()
 
     def set_status_enable(self, boolean):
         pass
@@ -715,7 +719,7 @@ class PrxPressItem(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxCheckItem(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_item.QtCheckItem
+    QT_WIDGET_CLS = _gui_qt_wgt_item.QtCheckItem
 
     def __init__(self, *args, **kwargs):
         super(PrxCheckItem, self).__init__(*args, **kwargs)
@@ -724,13 +728,13 @@ class PrxCheckItem(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_check_icon_names(self, icon_name_0, icon_name_1):
         self.widget._set_check_icon_file_paths_(
-            utl_gui_core.RscIconFile.get(icon_name_0),
-            utl_gui_core.RscIconFile.get(icon_name_1)
+            gui_core.RscIconFile.get(icon_name_0),
+            gui_core.RscIconFile.get(icon_name_1)
         )
 
 
 class PrxEnableItem(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtIconEnableButton
+    QT_WIDGET_CLS = _gui_qt_wgt_button.QtIconEnableButton
 
     def __init__(self, *args, **kwargs):
         super(PrxEnableItem, self).__init__(*args, **kwargs)
@@ -741,7 +745,7 @@ class PrxEnableItem(utl_gui_prx_abstract.AbsPrxWidget):
 
     def set_icon_name(self, icon_name):
         self._qt_widget._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get(icon_name),
+            gui_core.RscIconFile.get(icon_name),
         )
 
     def set_tool_tip(self, text):
@@ -773,7 +777,7 @@ class PrxEnableItem(utl_gui_prx_abstract.AbsPrxWidget):
 
 
 class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_filter.QtFilterBar
+    QT_WIDGET_CLS = _gui_qt_wgt_filter.QtFilterBar
 
     def __init__(self, *args, **kwargs):
         super(PrxFilterBar, self).__init__(*args, **kwargs)
@@ -821,16 +825,16 @@ class PrxFilterBar(utl_gui_prx_abstract.AbsPrxWidget):
         pass
 
     def set_completion_gain_fnc(self, fnc):
-        self._qt_widget._set_completion_extra_gain_fnc_(fnc)
+        self._qt_widget._set_popup_completion_gain_fnc_(fnc)
 
 
 class PrxButtonGroup(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtLine
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtLine
 
     def __init__(self, *args, **kwargs):
         super(PrxButtonGroup, self).__init__(*args, **kwargs)
         # self._qt_widget._set_line_draw_enable_(True)
-        self._layout = _utl_gui_qt_wgt_utility.QtGridLayout(
+        self._layout = _gui_qt_wgt_utility.QtGridLayout(
             self._qt_widget
         )
         self._layout.setContentsMargins(8, 2, 0, 2)
@@ -846,7 +850,7 @@ class PrxButtonGroup(utl_gui_prx_abstract.AbsPrxWidget):
 class PrxFramelessWindow(
     utl_gui_prx_abstract.AbsPrxWindow,
 ):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_window._QtFramelessWindow
+    QT_WIDGET_CLS = _gui_qt_wgt_window._QtFramelessWindow
 
     def __init__(self, *args, **kwargs):
         super(PrxFramelessWindow, self).__init__(*args, **kwargs)
@@ -856,7 +860,7 @@ class PrxFramelessWindow(
 class PrxWindow(
     utl_gui_prx_abstract.AbsPrxWindow,
 ):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_window._QtWindow
+    QT_WIDGET_CLS = _gui_qt_wgt_window._QtWindow
 
     def __init__(self, *args, **kwargs):
         super(PrxWindow, self).__init__(*args, **kwargs)
@@ -865,7 +869,7 @@ class PrxWindow(
 class PrxWindow_(
     utl_gui_prx_abstract.AbsPrxWindow,
 ):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtMainWindow
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtMainWindow
 
     def __init__(self, *args, **kwargs):
         super(PrxWindow_, self).__init__(*args, **kwargs)
@@ -874,7 +878,7 @@ class PrxWindow_(
 class PrxScreenshotFrame(
     utl_gui_prx_abstract.AbsPrxWidget
 ):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtScreenshotFrame
+    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtScreenshotFrame
 
     def __init__(self, *args, **kwargs):
         main_window = gui_qt_core.QtDccMtd.get_active_window()
@@ -893,5 +897,5 @@ class PrxScreenshotFrame(
         self._qt_widget.screenshot_accepted.connect(fnc)
 
     @classmethod
-    def set_save_to(cls, geometry, file_path):
+    def save_to(cls, geometry, file_path):
         cls.QT_WIDGET_CLS._set_screenshot_save_to_(geometry, file_path)

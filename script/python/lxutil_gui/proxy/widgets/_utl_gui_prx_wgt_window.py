@@ -1,7 +1,7 @@
 # coding:utf-8
 from lxbasic import bsc_configure
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_chart
+from lxutil_gui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_item, _gui_qt_wgt_chart, _gui_qt_wgt_process
 
 from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _gui_prx_wdt_node, _gui_prx_wgt_contianer
 
@@ -20,7 +20,7 @@ class AbsPrxDialogWindow(
     QT_WIDGET_CLS = None
     BUTTON_WIDTH = 120
     #
-    PROGRESS_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtProgressBar
+    PROGRESS_WIDGET_CLS = _gui_qt_wgt_utility.QtProgressBar
     #
     QT_WAITING_CHART_CLS = _gui_qt_wgt_chart.QtWaitingChart
     QT_PROGRESSING_CHART_CLS = _gui_qt_wgt_chart.QtProgressingChart
@@ -31,16 +31,16 @@ class AbsPrxDialogWindow(
         super(AbsPrxDialogWindow, self).__init__(*args, **kwargs)
         if kwargs.get('parent'):
             self.widget.setWindowFlags(
-                _utl_gui_qt_wgt_utility.QtCore.Qt.Tool
-                # | _utl_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
+                _gui_qt_wgt_utility.QtCore.Qt.Tool
+                # | _gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
             )
         else:
             self.widget.setWindowFlags(
-                _utl_gui_qt_wgt_utility.QtCore.Qt.Window|_utl_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
+                _gui_qt_wgt_utility.QtCore.Qt.Window|_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
             )
         #
         self.widget.setWindowModality(
-            _utl_gui_qt_wgt_utility.QtCore.Qt.WindowModal
+            _gui_qt_wgt_utility.QtCore.Qt.WindowModal
         )
         self._use_thread = True
         self._notify_when_yes_completed = False
@@ -57,17 +57,17 @@ class AbsPrxDialogWindow(
         self._notify_when_yes_completed = boolean
 
     def _set_central_layout_create_(self):
-        self._central_widget = _utl_gui_qt_wgt_utility.QtWidget()
+        self._central_widget = _gui_qt_wgt_utility.QtWidget()
         self._qt_widget.setCentralWidget(self._central_widget)
-        self._central_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._central_widget)
+        self._central_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._central_widget)
         self._central_layout.setContentsMargins(*[4]*4)
 
-    def _set_build_(self):
+    def _gui_build_(self):
         self._set_central_layout_create_()
         #
         self._set_waiting_def_init_()
         #
-        self._sub_label = _utl_gui_qt_wgt_utility.QtTextItem()
+        self._sub_label = _gui_qt_wgt_utility.QtTextItem()
         self._central_layout.addWidget(self._sub_label)
         self._sub_label.setVisible(False)
         self._sub_label.setMaximumHeight(20)
@@ -98,14 +98,14 @@ class AbsPrxDialogWindow(
         s = _utl_gui_prx_wdt_utility.PrxVScrollArea()
         self._central_layout.addWidget(s.widget)
         #
-        self._customize_widget = _utl_gui_qt_wgt_utility.QtWidget()
+        self._customize_widget = _gui_qt_wgt_utility.QtWidget()
         s.add_widget(self._customize_widget)
         self._customize_widget.setSizePolicy(
             gui_qt_core.QtWidgets.QSizePolicy.Expanding,
             gui_qt_core.QtWidgets.QSizePolicy.Expanding
         )
         #
-        self._customize_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._customize_widget)
+        self._customize_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._customize_widget)
         self._customize_layout.setAlignment(gui_qt_core.QtCore.Qt.AlignTop)
         # option
         self._options_prx_node = _gui_prx_wdt_node.PrxNode_('options')
@@ -122,11 +122,11 @@ class AbsPrxDialogWindow(
         self._bottom_toolbar = _gui_prx_wgt_contianer.PrxHToolBar()
         self._central_layout.addWidget(self._bottom_toolbar.widget)
         self._bottom_toolbar.set_expanded(True)
-        qt_widget_2 = _utl_gui_qt_wgt_utility.QtWidget()
+        qt_widget_2 = _gui_qt_wgt_utility.QtWidget()
         self._bottom_toolbar.add_widget(qt_widget_2)
-        self._button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_2)
+        self._button_layout = _gui_qt_wgt_utility.QtHBoxLayout(qt_widget_2)
         #
-        qt_spacer_0 = _utl_gui_qt_wgt_utility._QtSpacer()
+        qt_spacer_0 = _gui_qt_wgt_utility._QtSpacer()
         self._button_layout.addWidget(qt_spacer_0)
         #
         self._yes_button = _utl_gui_prx_wdt_utility.PrxPressItem()
@@ -157,7 +157,7 @@ class AbsPrxDialogWindow(
         # self._close_button.set_visible(False)
         # self._button_layout.addWidget(self._close_button.widget)
         # self._close_button.set_name('Close')
-        # self._close_button.set_icon_by_text('close')
+        # self._close_button.set_icon_by_name('close')
         # self._close_button.set_width(self.BUTTON_WIDTH)
         #
         self._yes_methods = []
@@ -211,12 +211,8 @@ class AbsPrxDialogWindow(
             #
             t.start()
         else:
-            self.start_waiting()
-            #
             for i in methods:
                 i()
-            #
-            self.stop_waiting()
             self.close_window_later()
 
     def set_use_thread(self, boolean):
@@ -248,7 +244,7 @@ class AbsPrxDialogWindow(
 
     def set_yes_label(self, text):
         self._yes_button.set_name(text)
-        # self._yes_button.set_icon_by_text(text)
+        # self._yes_button.set_icon_by_name(text)
 
     def connect_yes_to(self, method, args=None):
         self._yes_methods.append(method)
@@ -258,7 +254,7 @@ class AbsPrxDialogWindow(
 
     def set_no_label(self, text):
         self._no_button.set_name(text)
-        # self._no_button.set_icon_by_text(text)
+        # self._no_button.set_icon_by_name(text)
 
     def connect_no_to(self, method, args=None):
         self._no_methods.append(method)
@@ -268,7 +264,7 @@ class AbsPrxDialogWindow(
 
     def set_cancel_label(self, text):
         self._cancel_button.set_name(text)
-        # self._cancel_button.set_icon_by_text(text)
+        # self._cancel_button.set_icon_by_name(text)
 
     def connect_cancel_method(self, method, args=None):
         self._cancel_methods.append(method)
@@ -289,7 +285,7 @@ class AbsPrxDialogWindow(
         self.set_content_with_thread(text)
 
     def add_content(self, text):
-        self.add_content_with_thread(text)
+        self.append_content_use_thread(text)
 
     def set_content_font_size(self, size):
         self._tip_text_browser.set_font_size(size)
@@ -314,8 +310,8 @@ class AbsPrxDialogWindow(
     def set_options_create_by_configure(self, configure):
         self._options_prx_node.create_ports_by_data(configure)
 
-    def add_content_with_thread(self, text):
-        self._tip_text_browser.add_content_with_thread(text)
+    def append_content_use_thread(self, text):
+        self._tip_text_browser.append_content_use_thread(text)
 
     def set_content_with_thread(self, text):
         self._tip_text_browser.set_content_with_thread(text)
@@ -328,7 +324,7 @@ class AbsPrxDialogWindow(
 
 
 class PrxDialogWindow0(AbsPrxDialogWindow):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtMainWindow
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtMainWindow
 
     def __init__(self, *args, **kwargs):
         super(PrxDialogWindow0, self).__init__(*args, **kwargs)
@@ -356,7 +352,7 @@ class PrxDialogWindow0(AbsPrxDialogWindow):
         geometry_args = get_geometry_args_fnc_()
         self._qt_widget.hide()
         self._qt_widget.setWindowModality(
-            [_utl_gui_qt_wgt_utility.QtCore.Qt.NonModal, _utl_gui_qt_wgt_utility.QtCore.Qt.WindowModal][
+            [_gui_qt_wgt_utility.QtCore.Qt.NonModal, _gui_qt_wgt_utility.QtCore.Qt.WindowModal][
                 self._modal_button.get_checked()]
         )
         self._qt_widget.show()
@@ -364,12 +360,12 @@ class PrxDialogWindow0(AbsPrxDialogWindow):
 
     def set_window_modality(self, boolean):
         self.widget.setWindowModality(
-            [_utl_gui_qt_wgt_utility.QtCore.Qt.NonModal, _utl_gui_qt_wgt_utility.QtCore.Qt.WindowModal][boolean]
+            [_gui_qt_wgt_utility.QtCore.Qt.NonModal, _gui_qt_wgt_utility.QtCore.Qt.WindowModal][boolean]
         )
 
 
 class PrxDialogWindow1(AbsPrxDialogWindow):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtDialog
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtDialog
 
     def __init__(self, *args, **kwargs):
         super(PrxDialogWindow1, self).__init__(*args, **kwargs)
@@ -378,11 +374,11 @@ class PrxDialogWindow1(AbsPrxDialogWindow):
         self.set_content_font_size(10)
 
     def _set_central_layout_create_(self):
-        layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self.widget)
+        layout = _gui_qt_wgt_utility.QtVBoxLayout(self.widget)
         layout.setContentsMargins(0, 0, 0, 0)
-        self._central_widget = _utl_gui_qt_wgt_utility.QtWidget()
+        self._central_widget = _gui_qt_wgt_utility.QtWidget()
         layout.addWidget(self._central_widget)
-        self._central_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._central_widget)
+        self._central_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._central_widget)
         self._central_layout.setContentsMargins(*[4]*4)
 
     def execute_yes(self):
@@ -448,143 +444,6 @@ class PrxTipWindow(PrxDialogWindow0):
         self.close_window_later()
 
 
-class PrxProcessWindow(utl_gui_prx_abstract.AbsPrxWindow):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtMainWindow
-
-    def __init__(self, *args, **kwargs):
-        super(PrxProcessWindow, self).__init__(*args, **kwargs)
-
-    def _set_build_(self):
-        qt_widget_0 = _utl_gui_qt_wgt_utility.QtWidget()
-        self._qt_widget.setCentralWidget(qt_widget_0)
-        self._central_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_widget_0)
-        #
-        self._tip_text_browser = _utl_gui_prx_wdt_utility.PrxTextBrowser()
-        self._central_layout.addWidget(self._tip_text_browser.widget)
-        #
-        qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
-        self._central_layout.addWidget(qt_widget_1)
-        #
-        self._button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
-        #
-        qt_spacer_0 = _utl_gui_qt_wgt_utility._QtSpacer()
-        self._button_layout.addWidget(qt_spacer_0)
-        #
-        self._stop_button = _utl_gui_prx_wdt_utility.PrxPressItem()
-        self._button_layout.addWidget(self._stop_button.widget)
-        self._stop_button.set_name('Stop')
-        self._stop_button.set_icon_by_text('Stop')
-        self._stop_button.set_width(80)
-        self._stop_button.connect_press_clicked_to(self.set_process_stop)
-        #
-        self._process = gui_qt_core.QtCore.QProcess(self.widget)
-        self._process_name = None
-        self._process_cmd = None
-        #
-        self._process_running_index = 0
-        #
-        self._process_running_timer = gui_qt_core.QtCore.QTimer(self.widget)
-        #
-        self.widget.close_clicked.connect(self.set_process_stop)
-
-    def set_content(self, text):
-        self._tip_text_browser.set_content(text)
-        gui_qt_core.QtWidgets.QApplication.instance().processEvents(
-            gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
-        )
-
-    def add_content(self, text):
-        self._tip_text_browser.append(text)
-
-    def set_process_start(self):
-        if self._process_cmd is not None:
-            self._process.start(self._process_cmd)
-            #
-            self._process.readyReadStandardOutput.connect(
-                self._set_process_output_result_update_
-            )
-            self._process.stateChanged.connect(
-                self._set_process_state_update_
-            )
-            self._process.finished.connect(
-                self._set_process_exists_update_
-            )
-            self._process.errorOccurred.connect(
-                self._set_process_error_update_
-            )
-            self._process_running_timer.timeout.connect(
-                self._set_process_running_update_
-            )
-            self._process_running_timer.start(1000)
-
-    def _set_process_running_update_(self):
-        if self._process.state() == self._process.Running:
-            self._process_running_index += 1
-            self.set_window_title(
-                '{} [ {} ]'.format(self._process_name, 'running {}'.format('.'*(self._process_running_index%5)))
-            )
-            gui_qt_core.QtWidgets.QApplication.instance().processEvents(
-                gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
-            )
-
-    def _set_process_output_result_update_(self):
-        self.add_content(
-            str(
-                self._process.readAllStandardOutput().data().decode('utf-8')
-            ).rstrip()
-        )
-        gui_qt_core.QtWidgets.QApplication.instance().processEvents(
-            gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
-        )
-
-    def _set_process_state_update_(self, process_state):
-        _ = {
-            self._process.NotRunning: 'stopped',
-            self._process.Starting: 'starting',
-            self._process.Running: 'running'
-        }
-        self.set_window_title(
-            '{} [ {} ]'.format(self._process_name, _[process_state])
-        )
-        #
-        gui_qt_core.QtWidgets.QApplication.instance().processEvents(
-            gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
-        )
-
-    def _set_process_exists_update_(self, process_exist_status):
-        if process_exist_status == self._process.NormalExit:
-            self.set_window_title(
-                '{} [ {} ]'.format(self._process_name, 'completed')
-            )
-        elif process_exist_status == self._process.CrashExit:
-            self.set_window_title(
-                '{} [ {} ]'.format(self._process_name, 'failed')
-            )
-        #
-        self._process_running_timer.stop()
-
-    def _set_process_error_update_(self, process_error):
-        self.set_window_title(
-            '{} [ {} ]'.format(self._process_name, str(process_error))
-        )
-        gui_qt_core.QtWidgets.QApplication.instance().processEvents(
-            gui_qt_core.QtCore.QEventLoop.ExcludeUserInputEvents
-        )
-
-    def set_process_stop(self):
-        self._process.kill()
-        self._process_running_timer.stop()
-
-    def set_process_name(self, name):
-        self._process_name = name
-
-    def set_process_cmd(self, cmd):
-        self._process_cmd = cmd
-        self.set_close_method(
-            self.set_process_stop
-        )
-
-
 class PrxMonitorWindow(
     utl_gui_prx_abstract.AbsPrxWindow,
     utl_gui_prx_abstract.AbsPrxWaitingDef,
@@ -592,7 +451,7 @@ class PrxMonitorWindow(
 ):
     ValidatorStatus = bsc_configure.ValidatorStatus
     #
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility.QtMainWindow
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtMainWindow
     #
     QT_WAITING_CHART_CLS = _gui_qt_wgt_chart.QtWaitingChart
     QT_PROGRESSING_CHART_CLS = _gui_qt_wgt_chart.QtProgressingChart
@@ -601,33 +460,33 @@ class PrxMonitorWindow(
         super(PrxMonitorWindow, self).__init__(*args, **kwargs)
         if kwargs.get('parent'):
             self.widget.setWindowFlags(
-                _utl_gui_qt_wgt_utility.QtCore.Qt.Tool|_utl_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
+                _gui_qt_wgt_utility.QtCore.Qt.Tool|_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
             )
         else:
             self.widget.setWindowFlags(
-                _utl_gui_qt_wgt_utility.QtCore.Qt.Window|_utl_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
+                _gui_qt_wgt_utility.QtCore.Qt.Window|_gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
             )
         self.widget.setWindowModality(
-            _utl_gui_qt_wgt_utility.QtCore.Qt.WindowModal
+            _gui_qt_wgt_utility.QtCore.Qt.WindowModal
         )
 
-    def _set_build_(self):
-        self._central_widget = _utl_gui_qt_wgt_utility.QtWidget()
+    def _gui_build_(self):
+        self._central_widget = _gui_qt_wgt_utility.QtWidget()
         self._qt_widget.setCentralWidget(self._central_widget)
-        self._central_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._central_widget)
+        self._central_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._central_widget)
         #
         self._tip_text_browser = _utl_gui_prx_wdt_utility.PrxTextBrowser()
         self._central_layout.addWidget(self._tip_text_browser.widget)
         #
-        qt_widget_1 = _utl_gui_qt_wgt_utility.QtWidget()
+        qt_widget_1 = _gui_qt_wgt_utility.QtWidget()
         self._central_layout.addWidget(qt_widget_1)
         #
-        self._button_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
+        self._button_layout = _gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
         #
         self._status_button = _utl_gui_prx_wdt_utility.PrxPressItem()
         self._button_layout.addWidget(self._status_button.widget)
         self._status_button.set_name('process')
-        self._status_button.set_icon_by_text('process')
+        self._status_button.set_icon_by_name('process')
 
         self._set_waiting_def_init_()
         self._set_progressing_def_init_()
@@ -639,10 +498,85 @@ class PrxMonitorWindow(
         return self._status_button
 
     def set_logging(self, *args):
-        self._tip_text_browser.add_content_with_thread(*args)
+        self._tip_text_browser.append_content_use_thread(*args)
 
     def set_status_at(self, *args):
         self._status_button.set_status_at(*args)
 
     def set_finished_at(self, *args):
         self._status_button.set_finished_at(*args)
+
+
+class PrxProcessingWindow(
+    utl_gui_prx_abstract.AbsPrxWindow,
+    utl_gui_prx_abstract.AbsPrxProgressingDef,
+):
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtMainWindow
+
+    def __init__(self, *args, **kwargs):
+        super(PrxProcessingWindow, self).__init__(*args, **kwargs)
+        if isinstance(kwargs.get('parent'), gui_qt_core.QtWidgets.QMainWindow):
+            self.widget.setWindowFlags(
+                _gui_qt_wgt_utility.QtCore.Qt.Tool | _gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
+            )
+            self.get_widget().setParent(kwargs['parent'])
+        else:
+            self.widget.setWindowFlags(
+                _gui_qt_wgt_utility.QtCore.Qt.Window | _gui_qt_wgt_utility.QtCore.Qt.WindowStaysOnTopHint
+            )
+
+        self.set_definition_window_size((480, 240))
+
+    def _gui_build_(self):
+        self._central_widget = _gui_qt_wgt_utility.QtWidget()
+        self._qt_widget.setCentralWidget(self._central_widget)
+        self._central_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._central_widget)
+        #
+        self._qt_processing_bar = _gui_qt_wgt_process.QtProcessingBar()
+        self._central_layout.addWidget(self._qt_processing_bar)
+        #
+        self._tip_text_browser = _utl_gui_prx_wdt_utility.PrxTextBrowser()
+        self._central_layout.addWidget(self._tip_text_browser.widget)
+
+        self._bottom_toolbar = _gui_prx_wgt_contianer.PrxHToolBar()
+        self._central_layout.addWidget(self._bottom_toolbar.widget)
+        self._bottom_toolbar.set_expanded(True)
+        self._bottom_toolbar.set_right_alignment()
+
+        self.connect_window_close_to(self.kill_processing)
+
+        self._stop_button = _gui_qt_wgt_item.QtPressButton()
+        self._bottom_toolbar.add_widget(self._stop_button)
+        self._stop_button._set_name_text_('Stop')
+        self._stop_button._set_icon_name_('stop')
+        self._stop_button.setFixedWidth(80)
+
+        self._stop_button.press_clicked.connect(self.kill_processing)
+
+        self._close_button = _gui_qt_wgt_item.QtPressButton()
+        self._bottom_toolbar.add_widget(self._close_button)
+        self._close_button._set_name_text_('Close')
+        self._close_button._set_icon_name_('cancel')
+        self._close_button.setFixedWidth(80)
+        self._close_button.press_clicked.connect(self.set_window_close)
+
+        self._qt_processing_bar.update_logging.connect(self.update_logging)
+
+    def start(self, fnc, *args, **kwargs):
+        t = self._qt_processing_bar._generate_thread_()
+        t.set_fnc(fnc, *args, **kwargs)
+        t.start()
+        t.finished.connect(self.__finish)
+        return t
+
+    def __finish(self):
+        self._stop_button.hide()
+
+    def kill_processing(self):
+        self._qt_processing_bar._kill_processing_()
+
+    def get_is_killed(self):
+        return self._qt_processing_bar._get_is_killed_()
+
+    def update_logging(self, text):
+        self._tip_text_browser.append_content_use_thread(text)

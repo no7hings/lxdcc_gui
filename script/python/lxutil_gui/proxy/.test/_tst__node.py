@@ -2,6 +2,7 @@
 import os
 
 import six
+
 from lxbasic import bsc_core
 
 import fnmatch
@@ -16,7 +17,7 @@ c = bsc_core.StgFileOpt(y_f).set_read()
 class TestWindow(prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(TestWindow, self).__init__(*args, **kwargs)
-        self.set_definition_window_size([480, 960])
+        self.set_definition_window_size([480, 720])
         f = prx_widgets.PrxFilterBar()
         f.set_history_key('filter.test')
         self.add_widget(f)

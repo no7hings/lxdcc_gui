@@ -58,6 +58,8 @@ class DragWidget(QWidget):
         pos = e.pos()
         widget = e.source()
 
+        print pos
+
         for n in range(self.blayout.count()):
             # Get the widget at each index in turn.
             w = self.blayout.itemAt(n).widget()

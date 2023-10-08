@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxutil_gui import utl_gui_core
+from lxutil_gui import gui_core
 
 import lxutil_gui.qt.widgets as qt_widgets
 

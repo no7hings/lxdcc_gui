@@ -46,6 +46,12 @@ constant/boolean:
     tool_tip: '...'
     enable: True
 
+constant/integer:
+    widget: integer
+    value: 1
+    tool_tip: '...'
+    enable: True
+
 constant/float:
     widget: float
     value: 1
@@ -64,6 +70,22 @@ constant/float3:
     tool_tip: '...'
     enable: True
 
+constant/rgba:
+    widget: rgba
+    value: [255, 255, 255, 255]
+    tool_tip: '...'
+    enable: True
+    lock: True
+
+constant/icon:
+    widget: icon
+    value: ['', 'application/katana', 'application/maya']
+    all_application_icon: True
+    default: ''
+    tool_tip: '...'
+    enable: True
+#    lock: True
+
 constant/script:
     widget: script
     value: ''
@@ -81,32 +103,32 @@ array/shotgun_entities_choose:
     tool_tip: '...'
     enable: True
 
-array/json_files:
-    widget: files
-    value: ''
-    tool_tip: '...'
-    ext_includes: ['.exr', '.jpg']
-    enable: True
-    height: 240
-
-array/directories:
-    widget: directories
-    value: ''
-    tool_tip: '...'
-    enable: True
-
-array/madias:
-    widget: medias
-    value: ''
-    tool_tip: '...'
-    history_key: 'test.medias-open'
-    ext_filter: 'All Media File (*.jpg *.png *.exr)'
-    enable: True
-
-array/values_choose:
-    widget: values_choose
-    value: ['A', 'B']
-    tool_tip: '...'
-    history_key: 'test.values'
-    ext_filter: 'All Media File (*.jpg *.png *.exr)'
-    enable: True
+#array/json_files:
+#    widget: files
+#    value: ''
+#    tool_tip: '...'
+#    ext_includes: ['.json']
+#    enable: True
+#    height: 240
+#
+#array/directories:
+#    widget: directories
+#    value: ''
+#    tool_tip: '...'
+#    enable: True
+#
+#array/medias:
+#    widget: medias
+#    value: ''
+#    tool_tip: '...'
+#    history_key: 'test.medias-open'
+#    ext_filter: 'All Media File (*.jpg *.png *.exr)'
+#    enable: True
+#
+#array/values_choose:
+#    widget: values_choose
+#    value: ['A', 'B']
+#    tool_tip: '...'
+#    history_key: 'test.values'
+#    ext_filter: 'All Media File (*.jpg *.png *.exr)'
+#    enable: True

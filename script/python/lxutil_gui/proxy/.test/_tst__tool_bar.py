@@ -12,7 +12,7 @@ class TestWindow(prx_widgets.PrxBaseWindow):
     def _test_(self):
         tool_bar = prx_widgets.PrxHToolBar()
         self.add_widget(tool_bar)
-        tool_bar.set_left_alignment_mode()
+        tool_bar.set_left_alignment()
         tool_bar.set_expanded(True)
         #
         tool_box = prx_widgets.PrxHToolBox_()
@@ -20,7 +20,7 @@ class TestWindow(prx_widgets.PrxBaseWindow):
         tool_box.set_expanded(True)
 
         for i in range(20):
-            i_tool = prx_widgets.PrxIconPressItem()
+            i_tool = prx_widgets.PrxIconPressButton()
             tool_box.add_widget(i_tool)
             i_tool.set_icon_name('application/python')
 

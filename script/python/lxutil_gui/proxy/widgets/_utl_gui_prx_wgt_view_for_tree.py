@@ -4,11 +4,11 @@ import collections
 import six
 from lxbasic import bsc_core
 
-from lxutil_gui import utl_gui_configure
+from lxutil_gui import gui_configure
 
 from lxutil_gui.qt import gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_entry_base, _utl_gui_qt_wgt_view_for_tree
+from lxutil_gui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_entry_base, _gui_qt_wgt_view_for_tree
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
@@ -27,18 +27,18 @@ class PrxTreeView(
     utl_gui_prx_abstract.AbsPrxViewVisibleConnectionDef,
 ):
     QT_WIDGET_CLS = _gui_qt_wgt_entry_base.QtEntryFrame
-    QT_VIEW_CLS = _utl_gui_qt_wgt_view_for_tree.QtTreeWidget
+    QT_VIEW_CLS = _gui_qt_wgt_view_for_tree.QtTreeWidget
     #
     FILTER_MAXIMUM = 50
     def __init__(self, *args, **kwargs):
         super(PrxTreeView, self).__init__(*args, **kwargs)
-        self._qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
+        self._qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
         self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
         #
         self._prx_top_tool_bar = _gui_prx_wgt_contianer.PrxHToolBar()
         self._prx_top_tool_bar.set_name('top')
-        self._prx_top_tool_bar.set_left_alignment_mode()
+        self._prx_top_tool_bar.set_left_alignment()
         self._qt_layout_0.addWidget(self._prx_top_tool_bar.widget)
         self._prx_top_tool_bar.set_border_radius(1)
         self._prx_filer_bar_0 = _utl_gui_prx_wdt_utility.PrxFilterBar()
@@ -250,12 +250,12 @@ class PrxTreeView(
         tag_filter_tgt_keys = prx_item_tgt.get_tag_filter_tgt_keys()
         tag_filter_tgt_mode = prx_item_tgt.get_tag_filter_tgt_mode()
         if tag_filter_tgt_keys:
-            if tag_filter_tgt_mode == utl_gui_configure.TagFilterMode.MatchAll:
+            if tag_filter_tgt_mode == gui_configure.TagFilterMode.MatchAll:
                 for tag_filter_tgt_key in tag_filter_tgt_keys:
                     if tag_filter_tgt_key not in tag_filter_all_keys_src:
                         return True, True
                 return True, False
-            elif tag_filter_tgt_mode == utl_gui_configure.TagFilterMode.MatchOne:
+            elif tag_filter_tgt_mode == gui_configure.TagFilterMode.MatchOne:
                 for tag_filter_tgt_key in tag_filter_tgt_keys:
                     if tag_filter_tgt_key in tag_filter_all_keys_src:
                         return True, False

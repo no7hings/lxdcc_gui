@@ -7,7 +7,7 @@ from lxbasic import bsc_core
 
 from lxutil import utl_core
 
-from lxutil_gui import utl_gui_core
+from lxutil_gui import gui_core
 
 from lxkatana import ktn_core
 
@@ -97,7 +97,7 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
         prx_item.set_check_enable(True)
 
         prx_item.set_image(
-            utl_gui_core.RscIconFile.get('image_loading_failed_error')
+            gui_core.RscIconFile.get('image_loading_failed_error')
         )
 
         default_render_version = self._options_prx_node.get('render.version')
@@ -149,11 +149,9 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
             if _name_dict:
                 if 'output-directory' in _name_dict:
                     _directory_path = _name_dict['output-directory']
-                    _exist_comp = bsc_core.StgExtraMtd.get_exists_component(_directory_path)
-                    if _exist_comp is not None:
-                        bsc_core.StgExtraMtd.set_directory_open(
-                            _exist_comp
-                        )
+                    bsc_core.StgSystem.open_directory(
+                        _directory_path
+                    )
 
         def enable_fnc_():
             _name_dict = prx_item.get_name_dict()
@@ -317,7 +315,7 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
         )
         w.set_yes_completed_notify_enable(True)
 
-        w.set_window_close_connect_to(
+        w.connect_window_close_to(
             self.widget.show
         )
 

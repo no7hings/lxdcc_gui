@@ -27,7 +27,7 @@ class W(prx_widgets.PrxBaseWindow):
 
         p_n = None
         for i in range(10):
-            i_n = o_t.set_obj_create(
+            i_n = o_t.create_obj(
                 '/test_{}'.format(i)
             )
             i_n.generate_input_port(

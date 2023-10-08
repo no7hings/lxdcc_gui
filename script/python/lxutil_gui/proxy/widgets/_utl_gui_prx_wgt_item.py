@@ -5,7 +5,7 @@ from lxutil import utl_core
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_item, _utl_gui_qt_wgt_guide, _utl_gui_qt_wgt_item_for_list, _utl_gui_qt_wgt_item_for_tree
+from lxutil_gui.qt.widgets import _gui_qt_wgt_item, _gui_qt_wgt_guide, _gui_qt_wgt_item_for_list, _gui_qt_wgt_item_for_tree
 
 from lxutil_gui.qt import gui_qt_core
 
@@ -90,7 +90,7 @@ class AbsPrxTreeDef(object):
         if name_icons is not None:
             for column, i_name_icon in enumerate(name_icons):
                 if i_name_icon is not None:
-                    item_prx.set_icon_by_text(i_name_icon, column)
+                    item_prx.set_icon_by_name(i_name_icon, column)
         #
         if name is not None:
             pass
@@ -99,7 +99,7 @@ class AbsPrxTreeDef(object):
             item_prx.set_gui_menu_raw(menu)
         #
         add_method(item_prx.widget)
-        item_prx.widget._set_item_show_connect_()
+        item_prx.widget._connect_item_show_()
         #
         if 'filter_key' in kwargs:
             _filter_key = kwargs['filter_key']
@@ -168,7 +168,7 @@ class PrxTreeItem(
     utl_gui_prx_abstract.AbsPrxItemFilterTgtDef,
     utl_gui_prx_abstract.AbsPrxItemVisibleConnectionDef
 ):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_item_for_tree.QtTreeWidgetItem
+    QT_WIDGET_CLS = _gui_qt_wgt_item_for_tree.QtTreeWidgetItem
     def __init__(self, *args, **kwargs):
         super(PrxTreeItem, self).__init__(*args, **kwargs)
         self._set_prx_tree_def_init_()
@@ -218,10 +218,10 @@ class PrxTreeItem(
             self._qt_widget._set_icon_(qt_icon, column)
 
     def set_icon_by_color(self, color, column=0):
-        self._qt_widget._set_color_icon_rgb_(color, column)
+        self._qt_widget._set_icon_color_rgb_(color, column)
 
-    def set_icon_by_text(self, text, column=0):
-        self._qt_widget._set_icon_text_(text, column)
+    def set_icon_by_name(self, text, column=0):
+        self._qt_widget._set_icon_name_text_(text, column)
 
     def get_parent(self):
         _ = self._qt_widget.parent()
@@ -707,7 +707,7 @@ class PrxListItemWidget(
     utl_gui_prx_abstract.AbsPrxItemFilterTgtDef,
     utl_gui_prx_abstract.AbsPrxItemVisibleConnectionDef
 ):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_item_for_list.QtListItemWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_item_for_list.QtListItemWidget
     def __init__(self, *args, **kwargs):
         super(PrxListItemWidget, self).__init__(*args, **kwargs)
         self._visible_tgt_key = None
@@ -730,7 +730,7 @@ class PrxListItemWidget(
 
     def set_icon_by_file(self, name=None, file_path=None):
         if name is not None:
-            self._qt_widget._set_icon_text_(
+            self._qt_widget._set_icon_name_text_(
                 utl_core.Icon.get(name)
             )
         elif file_path is not None:
@@ -761,8 +761,8 @@ class PrxListItemWidget(
             utl_core.Icon.get(icon_name)
         )
 
-    def set_icon_by_text(self, text):
-        self._qt_widget._set_icon_text_(
+    def set_icon_by_name(self, text):
+        self._qt_widget._set_icon_name_text_(
             text
         )
 
@@ -928,7 +928,7 @@ class PrxMediaItem(object):
 class PrxGuideBar(
     utl_gui_prx_abstract.AbsPrxWidget,
 ):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_guide.QtGuideBar
+    QT_WIDGET_CLS = _gui_qt_wgt_guide.QtGuideBar
     def __init__(self, *args, **kwargs):
         super(PrxGuideBar, self).__init__(*args, **kwargs)
 
@@ -957,6 +957,6 @@ class PrxGuideBar(
 class PrxTagBar(
     utl_gui_prx_abstract.AbsPrxWidget,
 ):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_guide.QtGuideBar
+    QT_WIDGET_CLS = _gui_qt_wgt_guide.QtGuideBar
     def __init__(self, *args, **kwargs):
         super(PrxTagBar, self).__init__(*args, **kwargs)

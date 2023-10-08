@@ -19,13 +19,13 @@ class TestWindow(utl_prx_widgets.PrxBaseWindow):
         n = utl_prx_widgets.PrxNode_('root')
         self.add_widget(n)
         p = n.add_port(
-            utl_prx_widgets.PrxPortAsEnumerate(
+            utl_prx_widgets.PrxPortAsConstantChoose(
                 'test_enumerate'
             )
         )
         p.set(['a', 'b'])
         p = n.add_port(
-            utl_prx_widgets.PrxDirectorySavePort(
+            utl_prx_widgets.PrxPortAsDirectorySave(
                 'test_directory_save'
             )
         )
@@ -35,7 +35,7 @@ class TestWindow(utl_prx_widgets.PrxBaseWindow):
             )
         )
         p = n.add_port(
-            utl_prx_widgets.PrxFilesOpenPort(
+            utl_prx_widgets.PrxPortAsFilesOpen(
                 'test_files_open'
             )
         )
@@ -45,13 +45,13 @@ class TestWindow(utl_prx_widgets.PrxBaseWindow):
         )
         p.set_use_enable(True)
         p = n.add_port(
-            utl_prx_widgets.PrxDirectoriesOpenPort(
+            utl_prx_widgets.PrxPortAsDirectoriesOpen(
                 'test_directories_open'
             )
         )
 
         p = n.add_port(
-            utl_prx_widgets.PrxMediasOpenPort(
+            utl_prx_widgets.PrxPortAsMediasOpen(
                 'test_medias_open'
             )
         )
@@ -63,7 +63,7 @@ class TestWindow(utl_prx_widgets.PrxBaseWindow):
         )
 
         p = n.add_port(
-            utl_prx_widgets.PrxRgbaPort(
+            utl_prx_widgets.PrxPortAsRgbaChoose(
                 'test_rgb'
             )
         )

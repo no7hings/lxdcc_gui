@@ -5,7 +5,7 @@ import lxutil_gui.qt.widgets as qt_widgets
 
 import lxutil_gui.proxy.widgets as prx_widgets
 
-from lxutil_gui import utl_gui_core
+from lxutil_gui import gui_core
 
 from lxutil_gui.panel import utl_gui_pnl_abstract
 
@@ -43,8 +43,8 @@ class AbsTaskMethodObjGuiDef(object):
             raise TypeError()
         #
         obj.set_obj_gui(obj_gui)
-        obj_gui.set_icon_by_text(obj.name)
-        obj_gui.set_icon_by_text(obj.type_name, 1)
+        obj_gui.set_icon_by_name(obj.name)
+        obj_gui.set_icon_by_name(obj.type_name, 1)
         return obj_gui
     @classmethod
     def _set_method_unit_obj_gui_add_(cls, method_obj, root_dcc_obj_gui):
@@ -82,8 +82,8 @@ class AbsTaskMethodObjGuiDef(object):
         #
         obj_gui.set_checked(True)
         obj.set_obj_gui(obj_gui)
-        obj_gui.set_icon_by_text(obj.name)
-        obj_gui.set_icon_by_text(obj.type_name, 1)
+        obj_gui.set_icon_by_name(obj.name)
+        obj_gui.set_icon_by_name(obj.type_name, 1)
         obj_gui.set_gui_dcc_obj(obj, namespace='method')
         return obj_gui
     @classmethod
@@ -172,7 +172,7 @@ class AbsSceneMethodRunnerPanel(
     DESCRIPTION_INDEX = 2
     def __init__(self, *args, **kwargs):
         super(AbsSceneMethodRunnerPanel, self).__init__(*args, **kwargs)
-        self._window_configure = utl_gui_core.PanelsConfigure().get_window(
+        self._window_configure = gui_core.PanelsConfigure().get_window(
             self.PANEL_KEY
         )
         self.set_window_title(
@@ -200,19 +200,19 @@ class AbsSceneMethodRunnerPanel(
         self._set_configure_groups_build_()
         #
         self._check_button = prx_widgets.PrxPressItem()
-        self._check_button.set_icon_by_text('Check')
+        self._check_button.set_icon_by_name('Check')
         self._check_button.set_name('Check')
         self.add_button(self._check_button)
         self._check_button.connect_press_clicked_to(self._set_checked_methods_check_run_)
         #
         self._repair_button = prx_widgets.PrxPressItem()
-        self._repair_button.set_icon_by_text('Repair')
+        self._repair_button.set_icon_by_name('Repair')
         self._repair_button.set_name('Repair')
         self.add_button(self._repair_button)
         self._repair_button.connect_press_clicked_to(self._set_checked_methods_repair_run_)
         #
         self._export_button = prx_widgets.PrxPressItem()
-        self._export_button.set_icon_by_text('Export')
+        self._export_button.set_icon_by_name('Export')
         self._export_button.set_name('Export')
         self.add_button(self._export_button)
         self._export_button.connect_press_clicked_to(self._set_checked_methods_export_run_)
@@ -244,16 +244,16 @@ class AbsSceneMethodRunnerPanel(
         qt_layout_0.addWidget(self._configure_gui.widget)
         #
         _port = self._configure_gui.add_port(
-            prx_widgets.PrxPortForString('work_scene_src_file_path', 'Work-Scene-src-file')
+            prx_widgets.PrxPortAsString('work_scene_src_file_path', 'Work-Scene-src-file')
         )
         _port.set_use_as_storage()
         _port = self._configure_gui.add_port(
-            prx_widgets.PrxPortAsEnumerate('scene_src_file_path', 'Scene-src-file')
+            prx_widgets.PrxPortAsConstantChoose('scene_src_file_path', 'Scene-src-file')
         )
         _port.set_use_as_storage()
         #
         _port = self._configure_gui.add_port(
-            prx_widgets.PrxPortAsEnumerate('scheme', 'Scheme')
+            prx_widgets.PrxPortAsConstantChoose('scheme', 'Scheme')
         )
         _port.set(
             [
@@ -263,7 +263,7 @@ class AbsSceneMethodRunnerPanel(
         )
         #
         _port = self._configure_gui.add_port(
-            prx_widgets.PrxPortAsEnumerate('version', 'Version')
+            prx_widgets.PrxPortAsConstantChoose('version', 'Version')
         )
         _port.set(['latest', 'new'])
         #

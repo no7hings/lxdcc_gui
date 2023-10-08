@@ -11,7 +11,7 @@ from lxbasic import bsc_configure, bsc_core
 
 from lxutil import utl_core
 
-from lxutil_gui import utl_gui_configure
+from lxutil_gui import gui_configure
 
 from lxutil_gui.qt import gui_qt_core
 
@@ -19,15 +19,15 @@ from lxutil_gui.proxy import utl_gui_prx_core
 
 
 class AbsPrxStateDef(object):
-    NORMAL_STATE = utl_gui_configure.State.NORMAL
-    ENABLE_STATE = utl_gui_configure.State.ENABLE
-    DISABLE_STATE = utl_gui_configure.State.DISABLE
-    WARNING_STATE = utl_gui_configure.State.WARNING
-    ERROR_STATE = utl_gui_configure.State.ERROR
+    NORMAL_STATE = gui_configure.State.NORMAL
+    ENABLE_STATE = gui_configure.State.ENABLE
+    DISABLE_STATE = gui_configure.State.DISABLE
+    WARNING_STATE = gui_configure.State.WARNING
+    ERROR_STATE = gui_configure.State.ERROR
 
-    LOCKED_STATE = utl_gui_configure.State.LOCKED
+    LOCKED_STATE = gui_configure.State.LOCKED
     #
-    State = utl_gui_configure.State
+    State = gui_configure.State
 
 
 class AbsPrx(object):
@@ -51,9 +51,10 @@ class AbsPrx(object):
         #
         self._custom_raw = {}
 
-    @property
-    def widget(self):
+    def get_widget(self):
         return self._qt_widget
+
+    widget = property(get_widget)
 
     @property
     def model(self):
@@ -112,9 +113,9 @@ class AbsPrxWidget(AbsPrx):
         #
         self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
         #
-        self._set_build_()
+        self._gui_build_()
 
-    def _set_build_(self):
+    def _gui_build_(self):
         pass
 
     def set_hide(self, boolean=True):
@@ -275,12 +276,12 @@ class AbsPrxWindow(AbsPrx):
         #
         self._status = bsc_configure.ValidatorStatus.Normal
 
-        self._set_build_()
+        self._gui_build_()
 
     def get_window_unique_id(self):
         return self._window_unicode_id
 
-    def _set_build_(self):
+    def _gui_build_(self):
         pass
 
     def set_main_window_geometry(self, geometry):
@@ -316,7 +317,7 @@ class AbsPrxWindow(AbsPrx):
     def set_close_method(self, method):
         self._close_methods.append(method)
 
-    def set_window_close_connect_to(self, method):
+    def connect_window_close_to(self, method):
         self._close_methods.append(method)
 
     def set_window_close(self):
@@ -334,13 +335,13 @@ class AbsPrxWindow(AbsPrx):
         text = args[0]
         self._window_title = text
         self._qt_widget.setWindowTitle(text)
-        self._qt_widget._set_icon_text_(text)
+        self._qt_widget._set_icon_name_text_(text)
 
     def get_window_title(self):
         return self._window_title
 
     def set_window_icon_name_text(self, text):
-        self.widget._set_icon_text_(text)
+        self.widget._set_icon_name_text_(text)
 
     def set_window_icon_name(self, icon_name):
         self.widget._set_icon_name_(icon_name)
@@ -365,16 +366,20 @@ class AbsPrxWindow(AbsPrx):
 
 class AbsPrxLayerBaseDef(object):
     PRX_LAYER_CLS = None
+    QT_LAYER_STACK_CLS = None
 
     def _init_layer_base_def_(self, layout):
         self._qt_layer_unit_layout = layout
+        self._qt_layer_stack = self.QT_LAYER_STACK_CLS()
+        self._qt_layer_unit_layout.addWidget(self._qt_layer_stack)
         self._layer_dict = {}
         self._layer_current = None
 
     def create_layer(self, key):
         layer = self.PRX_LAYER_CLS()
         layer._qt_widget.hide()
-        self._qt_layer_unit_layout.addWidget(layer._qt_widget)
+        # self._qt_layer_unit_layout.addWidget(layer._qt_widget)
+        self._qt_layer_stack._add_widget_(layer._qt_widget)
         self._layer_dict[key] = layer
         return layer
 
@@ -387,14 +392,17 @@ class AbsPrxLayerBaseDef(object):
     def get_layer_layout(self, key):
         return self.get_layer_widget(key).get_layout()
 
-    def show_layer(self, key):
-        pre_widget = self._layer_current
-        cur_widget = self._layer_dict[key]
-        if pre_widget is not None:
-            pre_widget._qt_widget.hide()
-        #
-        cur_widget._qt_widget.show()
-        self._layer_current = cur_widget
+    def switch_current_layer_to(self, key):
+        if key in self._layer_dict:
+            self._qt_layer_stack._switch_current_widget_to_(
+                self._layer_dict[key]._qt_widget
+            )
+
+    def set_current_layer(self, key):
+        if key in self._layer_dict:
+            self._qt_layer_stack._set_current_widget_(
+                self._layer_dict[key]._qt_widget
+            )
 
     def show_next_layer(self):
         pass

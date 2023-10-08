@@ -3,7 +3,7 @@ from lxbasic import bsc_core
 
 from lxutil_gui.qt import gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _gui_qt_wgt_for_usd
+from lxutil_gui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_for_usd
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
@@ -11,7 +11,7 @@ from lxutil_gui.proxy import utl_gui_prx_abstract
 class PrxUsdStageViewProxy(
     utl_gui_prx_abstract.AbsPrxWidget
 ):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
 
     def __init__(self, *args, **kwargs):
         super(PrxUsdStageViewProxy, self).__init__(*args, **kwargs)

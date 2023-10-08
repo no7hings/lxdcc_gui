@@ -10,7 +10,7 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxBaseWindow):
         super(TestWindow, self).__init__(*args, **kwargs)
 
     def _test_(self):
-        wdt = _gui_qt_wgt_chart.QtColorChooseChart()
+        wdt = _gui_qt_wgt_chart.QtChartAsRgbaChoose()
         self.set_qt_widget_add(wdt)
 
 

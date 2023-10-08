@@ -3,6 +3,8 @@ from ._utl_gui_prx_wdt_utility import *
 
 from ._utl_gui_prx_wgt_item import *
 
+from ._gui_prx_wgt_port import *
+
 from ._gui_prx_wdt_node import *
 
 from ._utl_gui_prx_wgt_view import *

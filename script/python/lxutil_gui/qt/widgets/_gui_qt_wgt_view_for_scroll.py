@@ -1,13 +1,13 @@
 # coding=utf-8
 from lxutil_gui.qt.gui_qt_core import *
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
+from lxutil_gui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button
 
 import lxutil_gui.qt.models as gui_qt_models
 
 
 class QtHScrollView(QtWidgets.QWidget):
-    def _refresh_widget_(self):
+    def _refresh_widget_all_(self):
         self._refresh_widget_draw_geometry_()
         self._refresh_widget_draw_()
 
@@ -42,11 +42,11 @@ class QtHScrollView(QtWidgets.QWidget):
             )
             if self._gui_scroll.get_is_minimum():
                 self._scroll_previous_button._set_icon_file_path_(
-                    utl_gui_core.RscIconFile.get('scroll-left-disable')
+                    gui_core.RscIconFile.get('scroll-left-disable')
                 )
             else:
                 self._scroll_previous_button._set_icon_file_path_(
-                    utl_gui_core.RscIconFile.get('scroll-left')
+                    gui_core.RscIconFile.get('scroll-left')
                 )
             #
             self._scroll_next_button.show()
@@ -55,11 +55,11 @@ class QtHScrollView(QtWidgets.QWidget):
             )
             if self._gui_scroll.get_is_maximum():
                 self._scroll_next_button._set_icon_file_path_(
-                    utl_gui_core.RscIconFile.get('scroll-right-disable')
+                    gui_core.RscIconFile.get('scroll-right-disable')
                 )
             else:
                 self._scroll_next_button._set_icon_file_path_(
-                    utl_gui_core.RscIconFile.get('scroll-right')
+                    gui_core.RscIconFile.get('scroll-right')
                 )
         else:
             self._scroll_button_frame.hide()
@@ -90,28 +90,28 @@ class QtHScrollView(QtWidgets.QWidget):
         self._gui_scroll = gui_qt_models.GuiScroll()
         self._gui_scroll.set_step(64)
 
-        self._scroll_button_frame = _utl_gui_qt_wgt_utility.QtButtonFrame(self)
+        self._scroll_button_frame = _gui_qt_wgt_utility.QtButtonFrame(self)
         self._scroll_button_frame.hide()
 
-        self._scroll_previous_button = _utl_gui_qt_wgt_utility.QtIconPressButton(self)
+        self._scroll_previous_button = _gui_qt_wgt_button.QtIconPressButton(self)
         self._scroll_previous_button.hide()
         self._scroll_previous_button._set_icon_geometry_mode_(
-            _utl_gui_qt_wgt_utility.QtIconPressButton.IconGeometryMode.Auto
+            _gui_qt_wgt_button.QtIconPressButton.IconGeometryMode.Auto
         )
         self._scroll_previous_button.setFixedSize(10, 20)
         self._scroll_previous_button._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get('scroll-left')
+            gui_core.RscIconFile.get('scroll-left')
         )
         self._scroll_previous_button.press_clicked.connect(self._do_scroll_previous_)
 
-        self._scroll_next_button = _utl_gui_qt_wgt_utility.QtIconPressButton(self)
+        self._scroll_next_button = _gui_qt_wgt_button.QtIconPressButton(self)
         self._scroll_next_button.hide()
         self._scroll_next_button._set_icon_geometry_mode_(
-            _utl_gui_qt_wgt_utility.QtIconPressButton.IconGeometryMode.Auto
+            _gui_qt_wgt_button.QtIconPressButton.IconGeometryMode.Auto
         )
         self._scroll_next_button.setFixedSize(10, 20)
         self._scroll_next_button._set_icon_file_path_(
-            utl_gui_core.RscIconFile.get('scroll-right')
+            gui_core.RscIconFile.get('scroll-right')
         )
         self._scroll_next_button.press_clicked.connect(self._do_scroll_next_)
 
@@ -119,7 +119,7 @@ class QtHScrollView(QtWidgets.QWidget):
         widget, event = args
         if widget == self:
             if event.type() == QtCore.QEvent.Resize:
-                self._refresh_widget_()
+                self._refresh_widget_all_()
         return False
 
     def _get_viewport_(self):
@@ -130,8 +130,8 @@ class QtHScrollView(QtWidgets.QWidget):
 
     def _do_scroll_previous_(self):
         if self._gui_scroll.step_to_previous():
-            self._refresh_widget_()
+            self._refresh_widget_all_()
 
     def _do_scroll_next_(self):
         if self._gui_scroll.step_to_next():
-            self._refresh_widget_()
+            self._refresh_widget_all_()

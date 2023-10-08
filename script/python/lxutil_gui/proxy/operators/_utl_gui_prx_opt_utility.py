@@ -1,7 +1,7 @@
 # coding:utf-8
 import functools
 
-from lxutil_gui import utl_gui_core
+from lxutil_gui import gui_core
 
 
 class GuiRsvObjOpt(object):
@@ -34,7 +34,7 @@ class GuiRsvObjOpt(object):
         if self.gui_get_is_exists(path) is False:
             prx_item = self._tree_view.create_item(
                 self.ROOT_NAME,
-                icon=utl_gui_core.RscIconFile.get('database/all'),
+                icon=gui_core.RscIconFile.get('database/all'),
             )
             self.gui_register(path, prx_item)
             prx_item.set_gui_dcc_obj(self._resolver, namespace=self.DCC_NAMESPACE)

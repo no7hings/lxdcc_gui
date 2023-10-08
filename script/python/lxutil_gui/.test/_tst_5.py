@@ -2,7 +2,7 @@
 
 from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _gui_prx_wdt_node, _utl_gui_prx_wgt_view
 
-from lxutil_gui.qt.widgets import _gui_qt_wgt_chart, _utl_gui_qt_wgt_view
+from lxutil_gui.qt.widgets import _gui_qt_wgt_chart, _gui_qt_wgt_view
 
 
 class TestWindow(_utl_gui_prx_wdt_utility.PrxBaseWindow):
@@ -18,7 +18,7 @@ class TestWindow(_utl_gui_prx_wdt_utility.PrxBaseWindow):
             item_prx.set_image('/data/f/vedio_test/laohu_da.rig.layout_rigging.v002.thumbnail.jpg')
             item_prx.set_icon_by_file('application/maya')
             item_prx.set_name(str(i).zfill(9))
-            # item_prx.set_icon_by_text('asset')
+            # item_prx.set_icon_by_name('asset')
             item_prx.set_gui_menu_raw(
                 [
                     ('Open folder', 'file/open-folder', None),

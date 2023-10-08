@@ -118,7 +118,7 @@ class AbsQtTreeWidget(
             #
             icon = QtGui.QIcon()
             p = QtGui.QPixmap(16, 16)
-            p.load(utl_gui_core.RscIconFile.get('qt-style/line-v'))
+            p.load(gui_core.RscIconFile.get('qt-style/line-v'))
             icon.addPixmap(
                 p,
                 QtGui.QIcon.Normal,
@@ -189,12 +189,13 @@ class AbsQtListWidget(
     _gui_qt_abs_basic.AbsQtShowForViewDef,
     _gui_qt_abs_basic.AbsQtBusyBaseDef,
 ):
-    SortMode = utl_gui_configure.SortMode
-    SortOrder = utl_gui_configure.SortOrder
+    SortMode = gui_configure.SortMode
+    SortOrder = gui_configure.SortOrder
 
     item_show_changed = qt_signal()
     press_released = qt_signal()
     pressed = qt_signal()
+
     def _refresh_widget_draw_(self):
         self.update()
         self.viewport().update()
@@ -229,14 +230,14 @@ class AbsQtListWidget(
         self._item_rects = []
         #
         self.setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QListView')
+            gui_core.QtStyleMtd.get('QListView')
         )
         #
         self.verticalScrollBar().setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QScrollBar')
+            gui_core.QtStyleMtd.get('QScrollBar')
         )
         self.horizontalScrollBar().setStyleSheet(
-            utl_gui_core.QtStyleMtd.get('QScrollBar')
+            gui_core.QtStyleMtd.get('QScrollBar')
         )
         #
         self._set_build_view_def_init_()
@@ -329,6 +330,7 @@ class AbsQtListWidget(
         item_widget = self.itemWidget(item)
         if item_widget:
             item_widget._set_selected_(boolean)
+
     # select
     def _get_selected_item_widgets_(self):
         return [self.itemWidget(i) for i in self.selectedItems()]
@@ -352,6 +354,7 @@ class AbsQtListWidget(
         if selected_items:
             [self._set_item_widget_selected_(i, True) for i in selected_items]
             self._pre_selected_items = selected_items
+
     # scroll
     def _scroll_view_to_item_top_(self, item):
         self.scrollToItem(item, self.PositionAtTop)
@@ -362,6 +365,7 @@ class AbsQtListWidget(
         if selected_items:
             item = selected_items[-1]
             self._scroll_view_to_item_top_(item)
+
     # show mode
     def _set_grid_mode_(self):
         self.setViewMode(self.IconMode)
@@ -370,6 +374,7 @@ class AbsQtListWidget(
     def _set_list_mode_(self):
         self.setViewMode(self.ListMode)
         self._update_by_item_mode_change_()
+
     #
     def _set_grid_size_(self, w, h):
         self._grid_size = w, h
@@ -390,6 +395,7 @@ class AbsQtListWidget(
     def _update_by_item_mode_change_(self):
         w, h = self._get_grid_size_()
         self.verticalScrollBar().setSingleStep(h)
+
     #
     def _get_viewport_size_(self):
         return self.viewport().width(), self.viewport().height()
@@ -445,7 +451,7 @@ class AbsQtListWidget(
                 selected_index_values = [i.row() for i in selected_indices]
                 #
                 idx = index_values.index(selected_index_values[0])
-                idx_max, idx_min = len(indices) - 1, 0
+                idx_max, idx_min = len(indices)-1, 0
                 #
                 idx = max(min(idx, idx_max), 0)
                 #
@@ -474,7 +480,7 @@ class AbsQtListWidget(
                 selected_index_values = [i.row() for i in selected_indices]
                 #
                 idx = index_values.index(selected_index_values[0])
-                idx_max, idx_min = len(indices) - 1, 0
+                idx_max, idx_min = len(indices)-1, 0
                 #
                 idx = max(min(idx, idx_max), 0)
                 if idx == idx_max:
@@ -517,7 +523,7 @@ class AbsQtListWidget(
     def _refresh_all_item_widgets_(self):
         for i in self._get_all_item_widgets_():
             if i is not None:
-                i._refresh_widget_()
+                i._refresh_widget_all_()
 
     def _set_scroll_enable_(self, boolean):
         super(AbsQtListWidget, self)._set_scroll_enable_(boolean)

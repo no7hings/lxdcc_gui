@@ -5,10 +5,10 @@ import lxutil_gui.qt.abstracts as gui_qt_abstract
 
 from lxbasic import bsc_configure, bsc_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility
+from lxutil_gui.qt.widgets import _gui_qt_wgt_utility
 
 
-class QtColorChooseChart(
+class QtChartAsRgbaChoose(
     QtWidgets.QWidget,
     gui_qt_abstract.AbsQtWidgetBaseDef,
     gui_qt_abstract.AbsQtActionBaseDef,
@@ -18,41 +18,44 @@ class QtColorChooseChart(
         pass
 
     color_choose_changed = qt_signal()
+
     def _execute_popup_filter_(self):
         self.update()
 
     def _refresh_chart_data_(self):
         def set_branch_draw_fnc_(x, y, radius_, color_h_offset_, color_h_multiply_):
             _i_pos = x, y
-            if not _i_pos in poses:
+            if _i_pos not in poses:
                 poses.append(_i_pos)
                 _i_color_point = QtCore.QPoint(x, y)
                 if color_path_main.contains(_i_color_point):
-                    _i_sub_points = utl_gui_core.ChartMethod.get_regular_polygon_points(
-                        x, y, side_count, subRadius-1, side=0
+                    _i_sub_points = gui_core.ChartMethod.get_regular_polygon_points(
+                        x, y, side_count, radius_sub-1, side=0
                     )
                     _i_color_path = QtPainterPath()
                     _i_color_path._set_points_add_(_i_sub_points)
                     #
-                    angle = utl_gui_core.ChartMethod.get_angle_by_coord(x, y, pos_x, pos_y)
-                    length = utl_gui_core.ChartMethod.get_length_by_coord(x, y, pos_x, pos_y)
+                    angle = gui_core.ChartMethod.get_angle_by_coord(x, y, pos_x, pos_y)
+                    length = gui_core.ChartMethod.get_length_by_coord(x, y, pos_x, pos_y)
                     #
-                    _color_h = -angle - color_h_offset_
+                    _color_h = -angle-color_h_offset_
                     #
                     r1 = radius_
                     a1 = angle
-                    d1 = 360.0 / side_count
-                    d2 = 360.0 / side_count / 2
+                    d1 = 360.0/side_count
+                    d2 = 360.0/side_count/2
                     of = -d2
-                    a2 = a1+of - utl_gui_core.ChartMethod.FNC_FLOOR(a1 / d1) * d1
+                    a2 = a1+of-gui_core.ChartMethod.FNC_FLOOR(a1/d1)*d1
                     _l = [
-                        utl_gui_core.ChartMethod.FNC_SIN(utl_gui_core.ChartMethod.FNC_ANGLE(d1)) / utl_gui_core.ChartMethod.FNC_COS(utl_gui_core.ChartMethod.FNC_ANGLE(a2)) * r1,
+                        gui_core.ChartMethod.FNC_SIN(
+                            gui_core.ChartMethod.FNC_ANGLE(d1)
+                            )/gui_core.ChartMethod.FNC_COS(gui_core.ChartMethod.FNC_ANGLE(a2))*r1,
                         r1
-                    ][a1 % 180 == 0]
+                    ][a1%180 == 0]
                     #
-                    s = length / (_l - subRadius)
+                    s = length/(_l-radius_sub)
                     s = float(max(min(s, 1.0), 0.0))
-                    v = color_h_multiply_ / 100.0
+                    v = color_h_multiply_/100.0
                     v = float(max(min(v, 1.0), 0.0))
                     #
                     r, g, b = bsc_core.RawColorMtd.hsv2rgb(_color_h, s, v)
@@ -60,71 +63,72 @@ class QtColorChooseChart(
                     i_border_rgba = 0, 0, 0, 0
                     #
                     self._chart_draw_data[i_background_rgba] = _i_color_path, _i_color_point, i_border_rgba
+
         #
         self._chart_draw_data = {}
         width, height = self.width(), self.height()
         #
         poses = []
         #
-        pos_x, pos_y = width / 2, height / 2
+        pos_x, pos_y = width/2, height/2
         #
         count = self._count
         #
         side = 16
         side_count = 6
         #
-        mainRadius = min(width, height) / 2 - side
+        radius_main = min(width, height)/2-side
         #
-        subRadius = float(mainRadius) / count
+        radius_sub = float(radius_main)/count
         #
-        points_main = utl_gui_core.ChartMethod.get_regular_polygon_points(
-            pos_x, pos_y, side_count, mainRadius, subRadius / 2
+        points_main = gui_core.ChartMethod.get_regular_polygon_points(
+            pos_x, pos_y, side_count, radius_main, radius_sub/2
         )
         color_path_main = QtPainterPath()
         color_path_main._set_points_add_(points_main)
         #
-        x_count = int(count * .75)
-        y_count = int(count * .75)
+        x_count = int(count*.75)
+        y_count = int(count*.75)
         #
         for i_x in range(x_count):
             for i_y in range(y_count):
-                x_offset = utl_gui_core.ChartMethod.FNC_SIN(utl_gui_core.ChartMethod.FNC_ANGLE(60)) * subRadius
+                x_offset = gui_core.ChartMethod.FNC_SIN(gui_core.ChartMethod.FNC_ANGLE(60))*radius_sub
                 #
-                xSubR = x_offset * i_x * 2 - x_offset * (i_y % 2)
-                ySubR = i_y * subRadius * 1.5
+                x_r_sub = x_offset*i_x*2-x_offset*(i_y%2)
+                y_r_sub = i_y*radius_sub*1.5
                 #
-                xSubPos = xSubR+pos_x
-                _ySubPos = ySubR+pos_y
+                x_p_sub_ = x_r_sub+pos_x
+                y_p_sub_ = y_r_sub+pos_y
                 #
-                _xSubPos = width / 2 - xSubR
-                ySubPos = height / 2 - ySubR
+                x_p_sub = width/2-x_r_sub
+                y_p_sub = height/2-y_r_sub
                 #
-                set_branch_draw_fnc_(xSubPos, ySubPos, mainRadius, self._color_h_offset, self._color_v_multiply)
-                set_branch_draw_fnc_(_xSubPos, ySubPos, mainRadius, self._color_h_offset, self._color_v_multiply)
-                set_branch_draw_fnc_(xSubPos, _ySubPos, mainRadius, self._color_h_offset, self._color_v_multiply)
-                set_branch_draw_fnc_(_xSubPos, _ySubPos, mainRadius, self._color_h_offset, self._color_v_multiply)
+                set_branch_draw_fnc_(x_p_sub_, y_p_sub, radius_main, self._color_h_offset, self._color_v_multiply)
+                set_branch_draw_fnc_(x_p_sub, y_p_sub, radius_main, self._color_h_offset, self._color_v_multiply)
+                set_branch_draw_fnc_(x_p_sub_, y_p_sub_, radius_main, self._color_h_offset, self._color_v_multiply)
+                set_branch_draw_fnc_(x_p_sub, y_p_sub_, radius_main, self._color_h_offset, self._color_v_multiply)
 
     def __init__(self, *args, **kwargs):
-        super(QtColorChooseChart, self).__init__(*args, **kwargs)
+        super(QtChartAsRgbaChoose, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setMouseTracking(True)
         self.installEventFilter(self)
-        #
+
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding,
             QtWidgets.QSizePolicy.Expanding
         )
-        #
+
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding,
             QtWidgets.QSizePolicy.Expanding
         )
-        #
+
         self._init_widget_base_def_(self)
         self._init_action_base_def_(self)
         self._init_chart_base_def_(self)
-        self._set_build_()
-    #
+        self._gui_build_()
+
     def paintEvent(self, event):
         self._color_path_dict = {}
         #
@@ -137,7 +141,7 @@ class QtColorChooseChart(
         #
         if self._chart_draw_data:
             for i_background_rgba, v in self._chart_draw_data.items():
-                _i_color_path, _i_color_point, i_border_rgba,  = v
+                _i_color_path, _i_color_point, i_border_rgba, = v
                 painter._set_border_color_(i_border_rgba)
                 painter._set_background_color_(i_background_rgba)
                 #
@@ -182,7 +186,7 @@ class QtColorChooseChart(
             painter.drawText(
                 text_rect,
                 QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop,
-                'H : {0}\r\nS : {1}\r\nV : {2}'.format(round(sh % 360, 2), round(ss, 2), round(sv, 2))
+                'H : {0}\r\nS : {1}\r\nV : {2}'.format(round(sh%360, 2), round(ss, 2), round(sv, 2))
             )
             #
             text_rect = QtCore.QRect(
@@ -208,10 +212,10 @@ class QtColorChooseChart(
                 if event.button() == QtCore.Qt.LeftButton:
                     # Press
                     self._color_point = event.pos()
-                    self._set_choose_color_update_()
+                    self._update_selected_()
                     # Move
                     self._move_flag = True
-                    self._set_action_flag_(self.ActionFlag.PressClick)
+                    self._set_action_flag_(self.ActionFlag.Press)
                 elif event.button() == QtCore.Qt.RightButton:
                     # Track
                     self._track_offset_start_point = event.globalPos()
@@ -221,7 +225,7 @@ class QtColorChooseChart(
                     point = event.pos()
                     self._circle_angle_start = self._get_angle_at_circle_(point)
                     self._circle_flag = True
-                    self._set_action_flag_(self.ActionFlag.TrackClick)
+                    self._set_action_flag_(self.ActionFlag.TrackPress)
             elif event.type() == QtCore.QEvent.MouseMove:
                 if event.buttons() == QtCore.Qt.LeftButton:
                     # Press
@@ -230,13 +234,13 @@ class QtColorChooseChart(
                     self._move_flag = True
                     #
                     self._color_point = event.pos()
-                    self._set_choose_color_update_()
+                    self._update_selected_()
                     #
                     self.update()
                 elif event.buttons() == QtCore.Qt.RightButton:
                     # Track
                     self._track_offset_flag = True
-                    point = event.globalPos() - self._track_offset_start_point
+                    point = event.globalPos()-self._track_offset_start_point
                     self._execute_action_track_offset_(point)
                 elif event.buttons() == QtCore.Qt.MidButton:
                     # Circle
@@ -247,7 +251,7 @@ class QtColorChooseChart(
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
                 if event.button() == QtCore.Qt.LeftButton:
                     if self._get_action_flag_is_match_(
-                        self.ActionFlag.PressClick
+                        self.ActionFlag.Press
                     ):
                         self._execute_action_press_click_(event)
                     #
@@ -279,29 +283,29 @@ class QtColorChooseChart(
                 self._refresh_widget_draw_()
         return False
 
-    def _set_choose_color_update_(self):
+    def _update_selected_(self):
         pre_color = self._color_rgba_255
         cur_color = self._color_rgba_255
+
         if self._chart_draw_data:
             for i_background_rgba, v in self._chart_draw_data.items():
                 _i_color_path, _i_color_point, i_border_rgba = v
                 if _i_color_path.contains(self._color_point):
                     cur_color = i_background_rgba
-        #
+
         if pre_color != cur_color:
             r, g, b, a = cur_color
             self._color_rgba_255 = r, g, b, a
-            self._color_hsv = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
-            self._color_css = hex(r)[2:].zfill(2)+hex(g)[2:].zfill(2)+hex(b)[2:].zfill(2)
-            #
+            self._update_color_()
+
             self.color_choose_changed.emit()
-            #
+
             self._refresh_widget_draw_()
-    #
+
     def _execute_action_press_click_(self, event):
         self._color_point = event.pos()
-        self._set_choose_color_update_()
-    #
+        self._update_selected_()
+
     def _execute_action_zoom_scale_(self, event):
         delta = event.angleDelta().y()
         #
@@ -319,8 +323,8 @@ class QtColorChooseChart(
             self._count = cur_count
             self._refresh_chart_data_()
             self._refresh_widget_draw_()
-            self._set_choose_color_update_()
-    #
+            self._update_selected_()
+
     def _execute_action_track_circle_(self, event):
         point = event.pos()
         #
@@ -334,8 +338,8 @@ class QtColorChooseChart(
         #
         self._refresh_chart_data_()
         self._refresh_widget_draw_()
-        self._set_choose_color_update_()
-    #
+        self._update_selected_()
+
     def _execute_action_track_offset_(self, point):
         xDelta = point.x()
         yDelta = point.y()
@@ -350,47 +354,52 @@ class QtColorChooseChart(
         )
         #
         self.update()
-    #
+
     def _execute_action_resize_(self, size):
         pass
-    #
-    def _get_popup_pos_(self, xPos, yPos, width, height):
+
+    def _get_popup_pos_(self, x, y, width, height):
         point = self._color_point
         pos0 = self._color_center_coord
-        #
+
         width0, height0 = self._size_temp
-        #
-        scale = float(min(width, height)) / float(min(width0, height0))
-        #
-        x = point.x()
-        y = point.y()
-        #
-        x -= (pos0[0]-xPos)
-        y -= (pos0[1]-yPos)
-        return QtCore.QPoint(x, y)
-    #
+
+        scale = float(min(width, height))/float(min(width0, height0))
+
+        x_c = point.x()
+        y_c = point.y()
+
+        x_c -= (pos0[0]-x)
+        y_c -= (pos0[1]-y)
+        return QtCore.QPoint(x_c, y_c)
+
     def _get_angle_at_circle_(self, point):
-        width = self.width()
-        height = self.height()
-        #
-        xPos = width / 2
-        yPos = height / 2
-        #
-        x = point.x()
-        y = point.y()
-        #
-        return utl_gui_core.ChartMethod.get_angle_by_coord(x, y, xPos, yPos)
-    #
+        return gui_core.ChartMethod.get_angle_by_coord(
+            point.x(), point.y(), self.width()/2, self.height()/2
+        )
+
     def _get_color_rgb_255_(self):
         return self._color_rgba_255
 
     def _get_color_rgba_(self):
         return tuple(map(lambda x: float(x/255.0), self._color_rgba_255))
-    #
+
+    def _get_color_rgba_255_(self):
+        return self._color_rgba_255
+
     def _set_color_rgba_(self, r, g, b, a):
         self._color_rgba_255 = tuple(map(lambda x: int(x*255), (r, g, b, a)))
-    #
-    def _set_build_(self):
+
+    def _set_color_rgba_255_(self, rgba):
+        self._color_rgba_255 = tuple(rgba)
+        self._update_color_()
+
+    def _update_color_(self):
+        r, g, b, a = self._color_rgba_255
+        self._color_hsv = bsc_core.RawColorMtd.rgb_to_hsv(r, g, b)
+        self._color_css = hex(r)[2:].zfill(2)+hex(g)[2:].zfill(2)+hex(b)[2:].zfill(2)
+
+    def _gui_build_(self):
         self._color_rgba_255 = 255, 255, 255, 255
         self._color_hsv = 0, 0, 1
         self._color_css = 'FFFFFF'
@@ -422,7 +431,7 @@ class QtColorChooseChart(
         self._track_offset_y = 0
         #
         self._count = 3*3+1
-        self._count_maximum = 3*10+1
+        self._count_maximum = 3*6+1
         self._count_minimum = 3*1+1
         #
         self._color_v_multiply = 100.0
@@ -454,7 +463,7 @@ class QtProgressingChart(
                 w, h = self.width(), self.height()
                 frm_w, frm_h = 96, 96
                 frame_rect = QtCore.QRect(
-                    x + (w - frm_w)/2, y + (h - frm_h) / 2, frm_w, frm_h
+                    x+(w-frm_w)/2, y+(h-frm_h)/2, frm_w, frm_h
                 )
                 base_rect = QtCore.QRect(
                     x, y, w, h
@@ -567,7 +576,7 @@ class QtInfoChart(
                 text=self._info_text,
                 font=get_font(size=10, italic=True),
                 font_color=QtFontColors.ToolTip,
-                text_option=QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter,
+                text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
             )
 
 
@@ -592,7 +601,7 @@ class QtWaitingChart(
         self._waiting_positions = []
         for i in range(c):
             i_angle = 360.0/c*i
-            i_x, i_y = utl_gui_core.Ellipse2dMtd.get_coord_at_angle(
+            i_x, i_y = gui_core.Ellipse2dMtd.get_coord_at_angle(
                 start=start_pos, radius=radius, angle=i_angle
             )
             self._waiting_positions.append(
@@ -612,7 +621,7 @@ class QtWaitingChart(
         self.installEventFilter(self)
 
         self._init_chart_base_def_(self)
-       
+
         self._waiting_draw_radius = 64
         self._waiting_draw_item_radius = 12
         self._waiting_draw_count = 10
@@ -635,7 +644,7 @@ class QtWaitingChart(
         # ApplicationOpt().set_process_run_0()
 
     def _refresh_waiting_draw_(self):
-        self._waiting_timestamp = int(bsc_core.TimeMtd.get_timestamp() * 5)
+        self._waiting_timestamp = int(bsc_core.TimeMtd.get_timestamp()*5)
         self._refresh_widget_draw_()
         # ApplicationOpt().set_process_run_0()
 
@@ -663,8 +672,8 @@ class QtWaitingChart(
         for seq, i in enumerate(self._waiting_positions):
             i_x, i_y = i
 
-            cur_index = c-timestamp % (c+1)
-            i_c_h = abs(cur_index-seq) * (360 / c)
+            cur_index = c-timestamp%(c+1)
+            i_c_h = abs(cur_index-seq)*(360/c)
             i_h, i_s, i_v = i_c_h, 0.5, 1.0
             i_c_r, i_c_g, i_c_b = bsc_core.RawColorMtd.hsv2rgb(i_h, i_s, i_v)
             #
@@ -678,10 +687,10 @@ class QtWaitingChart(
             else:
                 i_a = 360.0/c*seq
                 i_coords = [
-                    utl_gui_core.Ellipse2dMtd.get_coord_at_angle_(center=(i_x, i_y), radius=i_r, angle=-90+i_a),
-                    utl_gui_core.Ellipse2dMtd.get_coord_at_angle_(center=(i_x, i_y), radius=i_r, angle=-210+i_a),
-                    utl_gui_core.Ellipse2dMtd.get_coord_at_angle_(center=(i_x, i_y), radius=i_r, angle=-330+i_a),
-                    utl_gui_core.Ellipse2dMtd.get_coord_at_angle_(center=(i_x, i_y), radius=i_r, angle=-90+i_a)
+                    gui_core.Ellipse2dMtd.get_coord_at_angle_(center=(i_x, i_y), radius=i_r, angle=-90+i_a),
+                    gui_core.Ellipse2dMtd.get_coord_at_angle_(center=(i_x, i_y), radius=i_r, angle=-210+i_a),
+                    gui_core.Ellipse2dMtd.get_coord_at_angle_(center=(i_x, i_y), radius=i_r, angle=-330+i_a),
+                    gui_core.Ellipse2dMtd.get_coord_at_angle_(center=(i_x, i_y), radius=i_r, angle=-90+i_a)
                 ]
                 painter._draw_path_by_coords_(
                     i_coords
@@ -707,6 +716,7 @@ class QtSectorChart(
             side_w=16,
             mode=self._chart_mode
         ).get()
+
     #
     def __init__(self, *args, **kwargs):
         super(QtSectorChart, self).__init__(*args, **kwargs)
@@ -771,6 +781,7 @@ class QtRadarChart(
             side_w=16,
             mode=self._chart_mode
         ).get()
+
     #
     def __init__(self, *args, **kwargs):
         super(QtRadarChart, self).__init__(*args, **kwargs)
@@ -857,7 +868,9 @@ class QtRadarChart(
                     ) = i
                     #
                     r, g, b, a = i_background_rgba
-                    painter._set_background_color_([(r*.75, g*.75, b*.75, 255), (r, g, b, 255)][i_text_ellipse.contains(hoverPoint)])
+                    painter._set_background_color_(
+                        [(r*.75, g*.75, b*.75, 255), (r, g, b, 255)][i_text_ellipse.contains(hoverPoint)]
+                        )
                     painter._set_border_color_(i_border_rgba)
                     #
                     painter.drawEllipse(i_text_ellipse)
@@ -886,6 +899,7 @@ class QtPieChart(
             mode=self._chart_mode
         ).get()
         self._basic_data = self._chart_draw_data
+
     #
     def __set_press_update_(self, event):
         i_enable = False
@@ -916,6 +930,7 @@ class QtPieChart(
             self._current_percent = None
         #
         self.update()
+
     #
     def __init__(self, *args, **kwargs):
         super(QtPieChart, self).__init__(*args, **kwargs)
@@ -1002,13 +1017,13 @@ class QtPieChart(
             # Explain
             rect = QtCore.QRect(
                 side, side,
-                radius-side * 2, radius-side * 2
+                radius-side*2, radius-side*2
             )
             if self._current_name_text and self._current_percent:
                 painter.setPen(self._pen)
                 painter.setFont(get_font(size=12))
                 painter.drawText(
-                    rect, QtCore.Qt.AlignHCenter | QtCore.Qt.AlignVCenter, 
+                    rect, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
                     '{}: {}'.format(self._current_name_text, self._current_percent)
                 )
 
@@ -1040,10 +1055,12 @@ class QtHistogramChart(
         self._basic_data = self._chart_draw_data
 
         self._value_array = self._chart_data
+
     #
     def __set_selection_update_(self, event):
         x = event.pos().x()-self._track_offset_x-self._grid_offset_x
-        self._selectedIndex = int(x / int(self._grid_width / self._zoom_scale_x))
+        self._selectedIndex = int(x/int(self._grid_width/self._zoom_scale_x))
+
     #
     def __init__(self, *args, **kwargs):
         super(QtHistogramChart, self).__init__(*args, **kwargs)
@@ -1077,7 +1094,7 @@ class QtHistogramChart(
         #
         self._init_chart_base_def_(self)
         #
-        self._set_build_()
+        self._gui_build_()
 
     def _set_labels_(self, labels):
         self._xValueExplain, self._yValueExplain = labels
@@ -1095,7 +1112,7 @@ class QtHistogramChart(
             elif event.type() == QtCore.QEvent.MouseButtonPress:
                 if event.button() == QtCore.Qt.LeftButton:
                     x = event.pos().x()-self._track_offset_x-self._grid_offset_x
-                    self._selectedIndex = int(x / int(self._grid_width / 2))
+                    self._selectedIndex = int(x/int(self._grid_width/2))
                     #
                     self.update()
                     # Drag Select
@@ -1140,6 +1157,7 @@ class QtHistogramChart(
                 if self._zoom_scale_flag is True:
                     self._execute_action_zoom_scale_(event)
         return False
+
     #
     def paintEvent(self, event):
         x = 0
@@ -1166,7 +1184,7 @@ class QtHistogramChart(
         #
         if self._value_array:
             value_maximum = max(self._value_array)
-            value_scale_x, value_scale_y = 1.0, int(float('1'+len(str(value_maximum))*'0') / float(self._zoom_scale_y))
+            value_scale_x, value_scale_y = 1.0, int(float('1'+len(str(value_maximum))*'0')/float(self._zoom_scale_y))
             #
             painter._set_histogram_draw_(
                 rect,
@@ -1201,11 +1219,13 @@ class QtHistogramChart(
             self._grid_mark_border_color,
             self._grid_value_show_mode
         )
+
     #
     def _set_selected_at_(self, index):
         self._selectedIndex = index
+
     #
-    def _set_build_(self):
+    def _gui_build_(self):
         self._value_array = []
         #
         self._xValueExplain = 'X'
@@ -1222,7 +1242,8 @@ class QtSequenceChart(
     #
     gui_qt_abstract.AbsQtMenuBaseDef,
 ):
-    QT_MENU_CLS = _utl_gui_qt_wgt_utility.QtMenu
+    QT_MENU_CLS = _gui_qt_wgt_utility.QtMenu
+
     def _refresh_chart_data_(self):
         data = self._chart_data
         if data is not None:
@@ -1287,7 +1308,7 @@ class QtSequenceChart(
         #
         self.installEventFilter(self)
         #
-        self._set_build_()
+        self._gui_build_()
         #
         self._init_name_base_def_(self)
         self._init_chart_base_def_(self)
@@ -1321,6 +1342,7 @@ class QtSequenceChart(
                 self._hover_point = event.pos()
                 self.update()
         return False
+
     #
     def paintEvent(self, event):
         pos_x, pos_y = 0, 0
@@ -1340,7 +1362,7 @@ class QtSequenceChart(
         #
         if count > 0:
             name_rect = QtCore.QRect(
-                pos_x+side, pos_y+side, name_w, height-side * 2
+                pos_x+side, pos_y+side, name_w, height-side*2
             )
             painter._set_font_(get_font(size=10))
             painter._set_border_color_(self._name_color)
@@ -1353,7 +1375,7 @@ class QtSequenceChart(
             )
             painter.drawText(
                 name_rect,
-                QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter,
+                QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter,
                 text_
             )
             painter._set_border_color_(self._chart_border_color)
@@ -1363,13 +1385,13 @@ class QtSequenceChart(
             x, y = pos_x+name_w+side+spacing, pos_y+side
             sequence_w = width-name_w-spacing-side*2
             sequence_rect = QtCore.QRect(
-                x, y, sequence_w, height-side * 2
+                x, y, sequence_w, height-side*2
             )
             painter.drawRect(sequence_rect)
             #
             c_h, c_s, c_v = 60, .75, .75
             if isinstance(self._chart_index_merge_array, (tuple, list)):
-                d_w = float(sequence_w) / float(count)
+                d_w = float(sequence_w)/float(count)
                 i_s = side+2
                 for i_raw in self._chart_index_merge_array:
                     if isinstance(i_raw, (int, float)):
@@ -1377,9 +1399,9 @@ class QtSequenceChart(
                         i_x = x+int((i_index-index_minimum)*d_w)
                         i_y = i_s-1
                         i_w = int(d_w)
-                        i_h = height-i_s * 2+2
+                        i_h = height-i_s*2+2
                         #
-                        i_percent = float(1) / float(count)
+                        i_percent = float(1)/float(count)
                         #
                         i_rect = QtCore.QRect(i_x, i_y, i_w, i_h)
                         i_c_h = c_h-(1-i_percent)*c_h
@@ -1402,9 +1424,9 @@ class QtSequenceChart(
                         )
                     elif isinstance(i_raw, (tuple, list)):
                         i_start_index, i_end_index = i_raw
-                        i_x = x+int((i_start_index-index_minimum) * d_w)
+                        i_x = x+int((i_start_index-index_minimum)*d_w)
                         i_y = i_s-1
-                        i_w = int((i_end_index-i_start_index+1) * d_w)
+                        i_w = int((i_end_index-i_start_index+1)*d_w)
                         i_h = height-i_s*2+2
                         #
                         i_percent = float(i_end_index-i_start_index+1)/float(count)
@@ -1430,8 +1452,9 @@ class QtSequenceChart(
                             i_point,
                             '{}-{}'.format(i_start_index, i_end_index)
                         )
+
     #
-    def _set_build_(self):
+    def _gui_build_(self):
         self._chart_index_array = []
         self._chart_index_range = 0, 0
         #

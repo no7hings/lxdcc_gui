@@ -15,9 +15,9 @@ class TestWindow(utl_prx_widgets.PrxBaseWindow):
         tool_bar.set_expanded(True)
         tool_group_0 = utl_prx_widgets.PrxHToolBox()
         tool_bar.add_widget(tool_group_0)
-        tool_bar.set_left_alignment_mode()
+        tool_bar.set_left_alignment()
 
-        tool = utl_prx_widgets.PrxIconPressItem()
+        tool = utl_prx_widgets.PrxIconPressButton()
         tool_group_0.add_widget(tool)
         tool.set_icon_name('application/python')
 

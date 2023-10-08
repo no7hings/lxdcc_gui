@@ -210,19 +210,19 @@ class TestWindow(utl_prx_widgets.PrxDialogWindow0):
         n = self.get_options_node()
 
         p = n.add_port(
-            utl_prx_widgets.PrxMediasOpenPort(
+            utl_prx_widgets.PrxPortAsMediasOpen(
                 'test_medias_open'
             )
         )
 
         p = n.add_port(
-            utl_prx_widgets.PrxDirectoriesOpenPort(
+            utl_prx_widgets.PrxPortAsDirectoriesOpen(
                 'test_directories_open'
             )
         )
 
         p = n.add_port(
-            utl_prx_widgets.PrxDirectoryOpenPort(
+            utl_prx_widgets.PrxPortAsDirectoryOpen(
                 'test_directory_open'
             )
         )
@@ -234,7 +234,7 @@ class TestWindow(utl_prx_widgets.PrxDialogWindow0):
         )
 
         p = n.add_port(
-            utl_prx_widgets.PrxPortAsEnumerate(
+            utl_prx_widgets.PrxPortAsConstantChoose(
                 'text_enumerate'
             )
         )

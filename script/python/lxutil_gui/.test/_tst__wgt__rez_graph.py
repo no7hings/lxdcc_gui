@@ -62,7 +62,7 @@ class W(prx_widgets.PrxBaseWindow):
         path_dict = {}
         for i in ps:
             i_path = '/{}'.format(i)
-            i_p_n = r_p_t.set_obj_create(
+            i_p_n = r_p_t.create_obj(
                 i_path
             )
             i_p_n.generate_input_port(
@@ -113,7 +113,7 @@ class W(prx_widgets.PrxBaseWindow):
             else:
                 pass
             #
-            i_n = i_type.set_obj_create(
+            i_n = i_type.create_obj(
                 i_path
             )
             i_n.generate_input_port(
@@ -129,7 +129,7 @@ class W(prx_widgets.PrxBaseWindow):
             i_src_path, i_tgt_path = path_dict[i_src], path_dict[i_tgt]
             i_n_src = u.get_obj(i_src_path)
             i_n_tgt = u.get_obj(i_tgt_path)
-            i_n_src.get_output_port('output').set_connect_to(
+            i_n_src.get_output_port('output').connect_to(
                 i_n_tgt.get_input_port('input')
             )
 

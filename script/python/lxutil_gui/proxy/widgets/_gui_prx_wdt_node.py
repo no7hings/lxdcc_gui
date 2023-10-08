@@ -9,19 +9,19 @@ from lxutil import utl_core
 
 from lxbasic import bsc_configure
 
-from lxutil_gui import utl_gui_core
+from lxutil_gui import gui_core
 
 from lxutil_gui.qt import gui_qt_core
 
-from lxutil_gui.qt.widgets import _utl_gui_qt_wgt_utility, _utl_gui_qt_wgt_split
+from lxutil_gui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_split
 
 from lxutil_gui.proxy import utl_gui_prx_abstract
 
-from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _utl_gui_prx_wgt_entry, _gui_prx_wgt_contianer
+from lxutil_gui.proxy.widgets import _gui_prx_wgt_port_base, _gui_prx_wgt_port_entry, _gui_prx_wgt_contianer
 
 
 # port =============================================================================================================== #
-class AbsPrxPortDef(object):
+class AbsPrxPortBaseDef(object):
     ENTRY_TYPE = 'custom'
 
     def _set_prx_port_def_init_(self, category, path, label=None):
@@ -150,7 +150,7 @@ class AbsPrxPortDef(object):
 
 
 # port
-class AbsPrxTypePort(AbsPrxPortDef):
+class AbsPrxTypePort(AbsPrxPortBaseDef):
     ENTRY_TYPE = 'custom'
     ENABLE_CLS = None
     LABEL_CLS = None
@@ -366,8 +366,8 @@ class AbsPrxTypePort(AbsPrxPortDef):
         if self._custom_widget is not None:
             return self._custom_widget
         else:
-            widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
-            layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(widget)
+            widget = _gui_qt_wgt_utility._QtTranslucentWidget()
+            layout = _gui_qt_wgt_utility.QtHBoxLayout(widget)
             label = self.label_widget
             label.set_width(label_width)
             layout.addWidget(label.widget)
@@ -395,8 +395,8 @@ class AbsPrxTypePort(AbsPrxPortDef):
             i_qt_widget = i_port._prx_port_entry._qt_entry_widget
             # use radio icon
             i_qt_widget._set_check_icon_file_paths_(
-                utl_gui_core.RscIconFile.get('radio_unchecked'),
-                utl_gui_core.RscIconFile.get('radio_checked')
+                gui_core.RscIconFile.get('radio_unchecked'),
+                gui_core.RscIconFile.get('radio_checked')
             )
             i_qt_widget.user_check_clicked.connect(
                 functools.partial(
@@ -412,74 +412,96 @@ class AbsPrxTypePort(AbsPrxPortDef):
             self._main_qt_widget.setVisible(boolean)
 
 
-class PrxConstantPort(AbsPrxTypePort):
+# constant
+class _PrxPortAsConstant(AbsPrxTypePort):
     ENTRY_TYPE = 'constant'
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsConstant
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
+    ENTRY_CLS = _gui_prx_wgt_port_entry._PrxEntryAsConstant
 
     def __init__(self, *args, **kwargs):
-        super(PrxConstantPort, self).__init__(*args, **kwargs)
+        super(_PrxPortAsConstant, self).__init__(*args, **kwargs)
 
     def set_locked(self, boolean):
         self._prx_port_entry.set_locked(boolean)
 
 
-class PrxTextPort(PrxConstantPort):
+#   text
+class PrxPortAsText(_PrxPortAsConstant):
     ENTRY_TYPE = 'text'
-    ENTRY_CLS = _utl_gui_prx_wgt_entry.PrxTextEntry
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsText
 
     def __init__(self, *args, **kwargs):
-        super(PrxTextPort, self).__init__(*args, **kwargs)
+        super(PrxPortAsText, self).__init__(*args, **kwargs)
 
 
-class PrxPortForString(PrxConstantPort):
+#   string
+class PrxPortAsString(_PrxPortAsConstant):
     ENTRY_TYPE = 'string'
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsString
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsString
 
     def __init__(self, *args, **kwargs):
-        super(PrxPortForString, self).__init__(*args, **kwargs)
+        super(PrxPortAsString, self).__init__(*args, **kwargs)
 
 
-class PrxPortForName(PrxConstantPort):
+#   name
+class PrxPortAsName(_PrxPortAsConstant):
     ENTRY_TYPE = 'name'
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsString
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsString
 
     def __init__(self, *args, **kwargs):
-        super(PrxPortForName, self).__init__(*args, **kwargs)
+        super(PrxPortAsName, self).__init__(*args, **kwargs)
         self._prx_port_entry._qt_entry_widget._set_value_entry_validator_use_as_name_()
 
 
-class PrxFramesPort(PrxConstantPort):
+#   frames
+class PrxPortAsFrames(_PrxPortAsConstant):
     ENTRY_TYPE = 'frames'
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsString
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsString
 
     def __init__(self, *args, **kwargs):
-        super(PrxFramesPort, self).__init__(*args, **kwargs)
+        super(PrxPortAsFrames, self).__init__(*args, **kwargs)
         self._prx_port_entry.set_use_as_frames()
 
 
-class PrxIntegerPort(PrxConstantPort):
+#   integer
+class PrxPortInteger(_PrxPortAsConstant):
     ENTRY_TYPE = 'integer'
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsInteger
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsInteger
 
     def __init__(self, *args, **kwargs):
-        super(PrxIntegerPort, self).__init__(*args, **kwargs)
+        super(PrxPortInteger, self).__init__(*args, **kwargs)
 
 
-class PrxFloatPort(PrxConstantPort):
+#   boolean
+class PrxPortAsBoolean(AbsPrxTypePort):
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
+    LABEL_HIDED = True
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsBoolean
+
+    def __init__(self, *args, **kwargs):
+        super(PrxPortAsBoolean, self).__init__(*args, **kwargs)
+
+    def set_name(self, text):
+        self._prx_port_entry._qt_entry_widget._set_name_text_(text)
+
+
+#   float
+class PrxPortAsFloat(_PrxPortAsConstant):
     ENTRY_TYPE = 'float'
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsFloat
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsFloat
 
     def __init__(self, *args, **kwargs):
-        super(PrxFloatPort, self).__init__(*args, **kwargs)
+        super(PrxPortAsFloat, self).__init__(*args, **kwargs)
 
 
-class _PrxStgObjPort(PrxConstantPort):
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxStgObjEntry
+# storage
+class _PrxPortAsStorage(_PrxPortAsConstant):
+    ENTRY_CLS = _gui_prx_wgt_port_entry._PrxStgObjEntry
 
     def __init__(self, *args, **kwargs):
-        super(_PrxStgObjPort, self).__init__(*args, **kwargs)
+        super(_PrxPortAsStorage, self).__init__(*args, **kwargs)
 
     def set_ext_filter(self, ext_filter):
         self._prx_port_entry.set_ext_filter(ext_filter)
@@ -491,39 +513,45 @@ class _PrxStgObjPort(PrxConstantPort):
         self._prx_port_entry.set_history_key(key)
 
 
-class PrxFileOpenPort(_PrxStgObjPort):
-    ENTRY_CLS = _utl_gui_prx_wgt_entry.PrxFileOpenEntry
+#   file open
+class PrxPortAsFileOpen(_PrxPortAsStorage):
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryFileOpen
 
     def __init__(self, *args, **kwargs):
-        super(PrxFileOpenPort, self).__init__(*args, **kwargs)
+        super(PrxPortAsFileOpen, self).__init__(*args, **kwargs)
 
 
-class PrxFileSavePort(_PrxStgObjPort):
-    ENTRY_CLS = _utl_gui_prx_wgt_entry.PrxFileSaveEntry
-
-    def __init__(self, *args, **kwargs):
-        super(PrxFileSavePort, self).__init__(*args, **kwargs)
-
-
-class PrxDirectoryOpenPort(_PrxStgObjPort):
-    ENTRY_CLS = _utl_gui_prx_wgt_entry.PrxDirectoryOpenEntry
+#   file save
+class PrxPortAsFileSave(_PrxPortAsStorage):
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryFileSave
 
     def __init__(self, *args, **kwargs):
-        super(PrxDirectoryOpenPort, self).__init__(*args, **kwargs)
+        super(PrxPortAsFileSave, self).__init__(*args, **kwargs)
 
 
-class PrxDirectorySavePort(_PrxStgObjPort):
-    ENTRY_CLS = _utl_gui_prx_wgt_entry.PrxDirectorySaveEntry
-
-    def __init__(self, *args, **kwargs):
-        super(PrxDirectorySavePort, self).__init__(*args, **kwargs)
-
-
-class PrxPortForRsvProject(PrxConstantPort):
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsRsvProject
+#   directory open
+class PrxPortAsDirectoryOpen(_PrxPortAsStorage):
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsDirectoryOpen
 
     def __init__(self, *args, **kwargs):
-        super(PrxPortForRsvProject, self).__init__(*args, **kwargs)
+        super(PrxPortAsDirectoryOpen, self).__init__(*args, **kwargs)
+
+
+#   directory save
+class PrxPortAsDirectorySave(_PrxPortAsStorage):
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsDirectorySave
+
+    def __init__(self, *args, **kwargs):
+        super(PrxPortAsDirectorySave, self).__init__(*args, **kwargs)
+
+
+# resolver
+#   project choose
+class PrxPortAsRsvProjectChoose(_PrxPortAsConstant):
+    ENTRY_CLS = _gui_prx_wgt_port_entry._PrxEntryAsRsvProject
+
+    def __init__(self, *args, **kwargs):
+        super(PrxPortAsRsvProjectChoose, self).__init__(*args, **kwargs)
 
     def get_histories(self):
         return self.entry_widget.get_histories()
@@ -532,35 +560,23 @@ class PrxPortForRsvProject(PrxConstantPort):
         self._prx_port_entry.show_history_latest()
 
 
-class PrxSchemChoosePort(PrxConstantPort):
-    ENTRY_CLS = _utl_gui_prx_wgt_entry.PrxEntryForSchemeAsChoose
+#  scheme choose
+class PrxPortAsSchemChoose(_PrxPortAsConstant):
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryForSchemeAsChoose
 
     def __init__(self, *args, **kwargs):
-        super(PrxSchemChoosePort, self).__init__(*args, **kwargs)
+        super(PrxPortAsSchemChoose, self).__init__(*args, **kwargs)
         self._prx_port_entry.set_scheme_key(kwargs['scheme_key'])
 
 
-class PrxPortAsBoolean(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
-    LABEL_HIDED = True
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsBoolean
-
-    def __init__(self, *args, **kwargs):
-        super(PrxPortAsBoolean, self).__init__(*args, **kwargs)
-
-    def set_name(self, text):
-        self._prx_port_entry._qt_entry_widget._set_name_text_(text)
-
-
-class PrxPortAsEnumerate(AbsPrxTypePort):
+class PrxPortAsConstantChoose(AbsPrxTypePort):
     ENTRY_TYPE = 'enumerate'
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsEnumerate
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsConstantChoose
 
     def __init__(self, *args, **kwargs):
-        super(PrxPortAsEnumerate, self).__init__(*args, **kwargs)
+        super(PrxPortAsConstantChoose, self).__init__(*args, **kwargs)
 
     def get_enumerate_strings(self):
         return self._prx_port_entry.get_enumerate_strings()
@@ -571,10 +587,10 @@ class PrxPortAsEnumerate(AbsPrxTypePort):
 
 # capsule
 class PrxPortAsCapsuleString(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsCapsule
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsCapsule
 
     def __init__(self, *args, **kwargs):
         super(PrxPortAsCapsuleString, self).__init__(*args, **kwargs)
@@ -584,10 +600,10 @@ class PrxPortAsCapsuleString(AbsPrxTypePort):
 
 
 class PrxPortAsCapsuleStrings(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsCapsule
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsCapsule
 
     def __init__(self, *args, **kwargs):
         super(PrxPortAsCapsuleStrings, self).__init__(*args, **kwargs)
@@ -597,10 +613,10 @@ class PrxPortAsCapsuleStrings(AbsPrxTypePort):
 
 
 class PrxPortAsScript(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsScript
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsScript
 
     def __init__(self, *args, **kwargs):
         super(PrxPortAsScript, self).__init__(*args, **kwargs)
@@ -614,9 +630,9 @@ class PrxPortAsScript(AbsPrxTypePort):
 
 
 class PrxPortAsTuple(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsTuple
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
+    ENTRY_CLS = _gui_prx_wgt_port_entry._PrxEntryAsAnyTuple
 
     def __init__(self, *args, **kwargs):
         super(PrxPortAsTuple, self).__init__(*args, **kwargs)
@@ -629,35 +645,35 @@ class PrxPortAsTuple(AbsPrxTypePort):
 
 
 class PrxPortForIntegerTuple(PrxPortAsTuple):
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsIntegerTuple
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsIntegerTuple
 
     def __init__(self, *args, **kwargs):
         super(PrxPortForIntegerTuple, self).__init__(*args, **kwargs)
 
 
 class PrxPortForFloatTuple(PrxPortAsTuple):
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsFloatTuple
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsFloatTuple
 
     def __init__(self, *args, **kwargs):
         super(PrxPortForFloatTuple, self).__init__(*args, **kwargs)
 
 
-class PrxRgbaPort(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsRgba
+class PrxPortAsRgbaChoose(AbsPrxTypePort):
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsRgbaChoose
 
     def __init__(self, *args, **kwargs):
-        super(PrxRgbaPort, self).__init__(*args, **kwargs)
+        super(PrxPortAsRgbaChoose, self).__init__(*args, **kwargs)
         self._prx_port_entry.set_use_as_rgba()
 
 
 class PrxPortAsButton(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
     KEY_HIDE = True
     LABEL_HIDED = True
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsButton
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsPressButton
 
     def __init__(self, *args, **kwargs):
         super(PrxPortAsButton, self).__init__(*args, **kwargs)
@@ -691,11 +707,11 @@ class PrxPortAsCheckButton(PrxPortAsButton):
 
 
 class PrxSubProcessPort(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
     KEY_HIDE = True
     LABEL_HIDED = True
-    ENTRY_CLS = _utl_gui_prx_wgt_entry.PrxSubProcessEntry
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsSubProcessButton
 
     def __init__(self, *args, **kwargs):
         super(PrxSubProcessPort, self).__init__(*args, **kwargs)
@@ -750,11 +766,11 @@ class PrxSubProcessPort(AbsPrxTypePort):
 
 
 class PrxValidatorPort(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
     KEY_HIDE = True
     LABEL_HIDED = True
-    ENTRY_CLS = _utl_gui_prx_wgt_entry.PrxValidatorEntry
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryValidationButton
 
     def __init__(self, *args, **kwargs):
         super(PrxValidatorPort, self).__init__(*args, **kwargs)
@@ -780,36 +796,28 @@ class PrxValidatorPort(AbsPrxTypePort):
 
 
 class PrxRsvObjChoosePort(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsRsvObj
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsResolverEntity
 
     def __init__(self, *args, **kwargs):
         super(PrxRsvObjChoosePort, self).__init__(*args, **kwargs)
 
 
-class _PrxStgObjsPort(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
+# storage array
+#   many files open
+class PrxPortAsFilesOpen(AbsPrxTypePort):
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxStgObjsEntry
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsFilesOpen
 
     def __init__(self, *args, **kwargs):
-        super(_PrxStgObjsPort, self).__init__(*args, **kwargs)
-
-
-class PrxFilesOpenPort(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
-    LABEL_HIDED = False
-    ENTRY_CLS = _utl_gui_prx_wgt_entry.PrxEntryAsFilesOpen
-
-    def __init__(self, *args, **kwargs):
-        super(PrxFilesOpenPort, self).__init__(*args, **kwargs)
+        super(PrxPortAsFilesOpen, self).__init__(*args, **kwargs)
 
     def set_name(self, *args, **kwargs):
-        super(PrxFilesOpenPort, self).set_name(*args, **kwargs)
+        super(PrxPortAsFilesOpen, self).set_name(*args, **kwargs)
         self._prx_port_entry._qt_entry_widget._set_name_text_(args[0])
         self._prx_port_entry._qt_entry_widget._value_entry._set_empty_text_(args[0])
 
@@ -820,17 +828,18 @@ class PrxFilesOpenPort(AbsPrxTypePort):
         self._prx_port_entry.set_ext_includes(*args, **kwargs)
 
 
-class PrxDirectoriesOpenPort(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
+#   many directories open
+class PrxPortAsDirectoriesOpen(AbsPrxTypePort):
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLS = _utl_gui_prx_wgt_entry.PrxEntryAsDirectoriesOpen
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsDirectoriesOpen
 
     def __init__(self, *args, **kwargs):
-        super(PrxDirectoriesOpenPort, self).__init__(*args, **kwargs)
+        super(PrxPortAsDirectoriesOpen, self).__init__(*args, **kwargs)
 
     def set_name(self, *args, **kwargs):
-        super(PrxDirectoriesOpenPort, self).set_name(*args, **kwargs)
+        super(PrxPortAsDirectoriesOpen, self).set_name(*args, **kwargs)
         self._prx_port_entry._qt_entry_widget._set_name_text_(args[0])
         self._prx_port_entry._qt_entry_widget._value_entry._set_empty_text_(args[0])
 
@@ -841,17 +850,18 @@ class PrxDirectoriesOpenPort(AbsPrxTypePort):
         self._prx_port_entry.set_ext_includes(*args, **kwargs)
 
 
-class PrxMediasOpenPort(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
+#   many medias open
+class PrxPortAsMediasOpen(AbsPrxTypePort):
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLS = _utl_gui_prx_wgt_entry.PrxMediasOpenEntry
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxMediasOpenEntry
 
     def __init__(self, *args, **kwargs):
-        super(PrxMediasOpenPort, self).__init__(*args, **kwargs)
+        super(PrxPortAsMediasOpen, self).__init__(*args, **kwargs)
 
     def set_name(self, *args, **kwargs):
-        super(PrxMediasOpenPort, self).set_name(*args, **kwargs)
+        super(PrxPortAsMediasOpen, self).set_name(*args, **kwargs)
         self._prx_port_entry._qt_entry_widget._set_name_text_(args[0])
         self._prx_port_entry._qt_entry_widget._value_entry._set_empty_text_(args[0])
 
@@ -862,11 +872,23 @@ class PrxMediasOpenPort(AbsPrxTypePort):
         self._prx_port_entry.set_ext_includes(*args, **kwargs)
 
 
-class PrxPortForValueArray(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
+# icon choose
+class PrxPortAsIconChoose(AbsPrxTypePort):
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryForValueArray
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsIconChoose
+
+    def __init__(self, *args, **kwargs):
+        super(PrxPortAsIconChoose, self).__init__(*args, **kwargs)
+
+
+# any array
+class PrxPortForValueArray(AbsPrxTypePort):
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
+    LABEL_HIDED = False
+    ENTRY_CLS = _gui_prx_wgt_port_entry._PrxEntryForValueArray
 
     def __init__(self, *args, **kwargs):
         super(PrxPortForValueArray, self).__init__(*args, **kwargs)
@@ -875,11 +897,12 @@ class PrxPortForValueArray(AbsPrxTypePort):
         self._prx_port_entry.append(value)
 
 
+# any array choose
 class PrxPortForValueArrayAsChoose(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsArrayWithChoose
+    ENTRY_CLS = _gui_prx_wgt_port_entry._PrxEntryAsArrayWithChoose
 
     def __init__(self, *args, **kwargs):
         super(PrxPortForValueArrayAsChoose, self).__init__(*args, **kwargs)
@@ -894,10 +917,10 @@ class PrxPortForValueArrayAsChoose(AbsPrxTypePort):
 
 # shotgun
 class PrxPortAsShotgunEntity(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsShotgunEntityByChoose
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsShotgunEntityByChoose
 
     def __init__(self, *args, **kwargs):
         super(PrxPortAsShotgunEntity, self).__init__(*args, **kwargs)
@@ -922,10 +945,10 @@ class PrxPortAsShotgunEntity(AbsPrxTypePort):
 
 
 class PrxPortAsShotgunEntities(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsShotgunEntitiesWithChoose
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsShotgunEntitiesWithChoose
 
     def __init__(self, *args, **kwargs):
         super(PrxPortAsShotgunEntities, self).__init__(*args, **kwargs)
@@ -948,10 +971,10 @@ class PrxPortAsShotgunEntities(AbsPrxTypePort):
 
 
 class PrxNodeListViewPort(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsNodes
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsNodes
 
     def __init__(self, *args, **kwargs):
         super(PrxNodeListViewPort, self).__init__(*args, **kwargs)
@@ -977,10 +1000,10 @@ class PrxNodeTreeViewPort(PrxNodeListViewPort):
 
 
 class PrxPortAsFileList(AbsPrxTypePort):
-    ENABLE_CLS = _utl_gui_prx_wgt_entry._PrxPortStatus
-    LABEL_CLS = _utl_gui_prx_wgt_entry._PrxPortLabel
+    ENABLE_CLS = _gui_prx_wgt_port_base.PrxPortStatus
+    LABEL_CLS = _gui_prx_wgt_port_base.PrxPortLabel
     LABEL_HIDED = False
-    ENTRY_CLS = _utl_gui_prx_wgt_entry._PrxEntryAsFiles
+    ENTRY_CLS = _gui_prx_wgt_port_entry.PrxEntryAsFiles
 
     def __init__(self, *args, **kwargs):
         super(PrxPortAsFileList, self).__init__(*args, **kwargs)
@@ -1024,15 +1047,15 @@ class PrxPortStack(unr_abstracts.AbsObjStack):
 
 
 class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
     PORT_STACK_CLS = PrxPortStack
     LABEL_WIDTH = 160
     PORT_CLS_DICT = dict(
-        string=PrxPortForString,
-        interge=PrxIntegerPort,
-        float=PrxFloatPort,
+        string=PrxPortAsString,
+        interge=PrxPortInteger,
+        float=PrxPortAsFloat,
         button=PrxPortAsButton,
-        enumerate=PrxPortAsEnumerate
+        enumerate=PrxPortAsConstantChoose
     )
 
     @classmethod
@@ -1041,24 +1064,24 @@ class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
 
     def __init__(self, *args, **kwargs):
         super(PrxNode, self).__init__(*args, **kwargs)
-        qt_layout_0 = _utl_gui_qt_wgt_utility.QtHBoxLayout(self.widget)
+        qt_layout_0 = _gui_qt_wgt_utility.QtHBoxLayout(self.widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         #
-        qt_splitter_0 = _utl_gui_qt_wgt_split.QtHSplitter_()
+        qt_splitter_0 = _gui_qt_wgt_split.QtHSplitter_()
         qt_layout_0.addWidget(qt_splitter_0)
         #
-        self._qt_label_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+        self._qt_label_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
         # self._qt_label_widget.setMaximumWidth(self.LABEL_WIDTH)
         self._name_width = 160
         self._qt_label_widget.setFixedWidth(self._name_width)
         qt_splitter_0.addWidget(self._qt_label_widget)
-        self._qt_label_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_label_widget)
+        self._qt_label_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_label_widget)
         self._qt_label_layout.setAlignment(gui_qt_core.QtCore.Qt.AlignTop)
         self._qt_label_layout.setContentsMargins(2, 0, 2, 0)
         #
-        qt_entry_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+        qt_entry_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
         qt_splitter_0.addWidget(qt_entry_widget)
-        self._qt_entry_layout = _utl_gui_qt_wgt_utility.QtVBoxLayout(qt_entry_widget)
+        self._qt_entry_layout = _gui_qt_wgt_utility.QtVBoxLayout(qt_entry_widget)
         self._qt_entry_layout.setAlignment(gui_qt_core.QtCore.Qt.AlignTop)
         self._qt_entry_layout.setContentsMargins(2, 0, 2, 0)
 
@@ -1097,11 +1120,11 @@ class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
                     cur_port.label_widget.widget
                 )
                 #
-                enter_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+                enter_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
                 self._qt_entry_layout.addWidget(
                     enter_widget
                 )
-                enter_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(enter_widget)
+                enter_layout = _gui_qt_wgt_utility.QtHBoxLayout(enter_widget)
                 enter_layout.setContentsMargins(0, 0, 0, 0)
                 enter_layout.setSpacing(2)
                 enter_layout.addWidget(
@@ -1142,11 +1165,9 @@ class PrxNode(utl_gui_prx_abstract.AbsPrxWidget):
         self._qt_label_widget.setFixedWidth(self._name_width)
 
 
-class PrxGroupPort_(
-    AbsPrxPortDef
-):
+class PrxNodePortGroup(AbsPrxPortBaseDef):
     ENTRY_TYPE = 'group'
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
     PORT_STACK_CLS = PrxPortStack
 
     def __init__(self, path):
@@ -1198,19 +1219,19 @@ class PrxGroupPort_(
         #
         condition = pre_port_is_join_next, cur_port_is_join_next
         if condition == (False, False):
-            port_main_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+            port_main_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
             self._port_layout.addWidget(port_main_widget)
             cur_port.set_main_widget(port_main_widget)
-            cur_port_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(port_main_widget)
+            cur_port_layout = _gui_qt_wgt_utility.QtHBoxLayout(port_main_widget)
             cur_port_layout.setContentsMargins(0, 0, 0, 0)
             cur_port_layout._set_align_top_()
             cur_port._set_layout_(cur_port_layout)
             #
-            cur_key_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+            cur_key_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
             cur_key_widget.hide()
             cur_port._set_key_widget_(cur_key_widget)
             cur_port_layout.addWidget(cur_key_widget)
-            cur_key_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(cur_key_widget)
+            cur_key_layout = _gui_qt_wgt_utility.QtHBoxLayout(cur_key_widget)
             cur_key_layout.setContentsMargins(0, 0, 0, 0)
             cur_key_layout._set_align_top_()
             # + key
@@ -1225,18 +1246,18 @@ class PrxGroupPort_(
                 cur_key_widget.show()
         # joint to next
         elif condition == (False, True):
-            port_main_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+            port_main_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
             self._port_layout.addWidget(port_main_widget)
             cur_port.set_main_widget(port_main_widget)
-            cur_port_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(port_main_widget)
+            cur_port_layout = _gui_qt_wgt_utility.QtHBoxLayout(port_main_widget)
             cur_port_layout.setContentsMargins(0, 0, 0, 0)
             cur_port_layout._set_align_top_()
             cur_port._set_layout_(cur_port_layout)
-            cur_key_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+            cur_key_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
             # cur_key_widget.hide()
             cur_port._set_key_widget_(cur_key_widget)
             cur_port_layout.addWidget(cur_key_widget)
-            cur_key_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(cur_key_widget)
+            cur_key_layout = _gui_qt_wgt_utility.QtHBoxLayout(cur_key_widget)
             cur_key_layout.setContentsMargins(0, 0, 0, 0)
             cur_key_layout._set_align_top_()
             # + key
@@ -1245,9 +1266,9 @@ class PrxGroupPort_(
             # + value
             cur_port_layout.addWidget(cur_port._prx_port_entry._qt_widget)
             # value
-            next_port_widget = _utl_gui_qt_wgt_utility._QtTranslucentWidget()
+            next_port_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
             cur_port_layout.addWidget(next_port_widget)
-            next_port_layout = _utl_gui_qt_wgt_utility.QtHBoxLayout(next_port_widget)
+            next_port_layout = _gui_qt_wgt_utility.QtHBoxLayout(next_port_widget)
             next_port_layout.setContentsMargins(0, 0, 0, 0)
             next_port_layout.setSpacing(2)
 
@@ -1299,7 +1320,7 @@ class PrxGroupPort_(
     def get_child(self, name):
         return self._port_stack.get_object(name)
 
-    def generator_children_name_width(self):
+    def generate_children_name_width(self):
         widths = []
         children = self.get_children()
         for i_child in children:
@@ -1321,7 +1342,7 @@ class PrxGroupPort_(
         return 0
 
     def update_children_name_width(self):
-        width = self.generator_children_name_width()
+        width = self.generate_children_name_width()
         children = self.get_children()
         for i_child in children:
             if i_child.get_category() == 'group':
@@ -1365,23 +1386,23 @@ class PrxGroupPort_(
         return self.__str__()
 
 
-class PrxNodePortStack_(unr_abstracts.AbsObjStack):
+class PrxNodePortStack(unr_abstracts.AbsObjStack):
     def __init__(self):
-        super(PrxNodePortStack_, self).__init__()
+        super(PrxNodePortStack, self).__init__()
 
     def get_key(self, obj):
         return obj.get_port_path()
 
 
 class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
-    QT_WIDGET_CLS = _utl_gui_qt_wgt_utility._QtTranslucentWidget
-    PORT_STACK_CLS = PrxNodePortStack_
+    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    PORT_STACK_CLS = PrxNodePortStack
     PORT_CLS_DICT = dict(
-        string=PrxPortForString,
-        interge=PrxIntegerPort,
-        float=PrxFloatPort,
+        string=PrxPortAsString,
+        interge=PrxPortInteger,
+        float=PrxPortAsFloat,
         button=PrxPortAsButton,
-        enumerate=PrxPortAsEnumerate
+        enumerate=PrxPortAsConstantChoose
     )
 
     def __init__(self, path, *args, **kwargs):
@@ -1390,7 +1411,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         # debug: do not set minimum height
         # self._qt_widget.setMinimumHeight(24)
         #
-        qt_layout_0 = _utl_gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
+        qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(0)
 
@@ -1423,7 +1444,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         return group_port.add_child(port)
 
     def create_root_port(self):
-        group_port = PrxGroupPort_(
+        group_port = PrxNodePortGroup(
             path=self.get_path()
         )
         group_port._prx_widget.widget._set_line_draw_enable_(True)
@@ -1517,7 +1538,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         join_to_next_ = option.get('join_to_next') or False
 
         if widget_ in {'string'}:
-            port = PrxPortForString(
+            port = PrxPortAsString(
                 port_path,
                 node_widget=self.widget
             )
@@ -1528,7 +1549,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             port.set(value_)
             port.set_default(value_)
         elif widget_ in {'name'}:
-            port = PrxPortForName(
+            port = PrxPortAsName(
                 port_path,
                 node_widget=self.widget
             )
@@ -1539,14 +1560,14 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             port.set(value_)
             port.set_default(value_)
         elif widget_ in {'integer'}:
-            port = PrxIntegerPort(
+            port = PrxPortInteger(
                 port_path,
                 node_widget=self.widget
             )
             port.set(value_)
             port.set_default(value_)
         elif widget_ in {'float'}:
-            port = PrxFloatPort(
+            port = PrxPortAsFloat(
                 port_path,
                 node_widget=self.widget
             )
@@ -1569,8 +1590,8 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             port.set(value_)
             port.set_default(value_)
         #
-        elif widget_ in {'rgb'}:
-            port = PrxRgbaPort(
+        elif widget_ in {'rgb', 'rgba'}:
+            port = PrxPortAsRgbaChoose(
                 port_path,
                 node_widget=self.widget
             )
@@ -1586,17 +1607,17 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             port.set_default(value_)
 
         elif widget_ in {'enumerate'}:
-            port = PrxPortAsEnumerate(
+            port = PrxPortAsConstantChoose(
                 port_path,
                 node_widget=self.widget
             )
             port.set(value_)
             #
-            current_ = option.get('current') or option.get('default')
+            default_ = option.get('current') or option.get('default')
             current_index_ = option.get('current_index') or option.get('default_index')
-            if current_ is not None:
-                port.set(current_)
-                port.set_default(current_)
+            if default_ is not None:
+                port.set(default_)
+                port.set_default(default_)
             elif current_index_ is not None:
                 port.set(current_index_)
                 port.set_default(current_index_)
@@ -1606,7 +1627,24 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
                     port.set_default(value_[0])
                     # port.set(value_[-1])
                     # port.set_default(value_[-1])
-        #
+
+        elif widget_ in {'icon'}:
+            all_application_icon = option.get('all_application_icon')
+            if all_application_icon is True:
+                value_ = bsc_core.RscIconFileMtd.get_all_keys_at('application')
+                value_.insert(0, '')
+
+            port = PrxPortAsIconChoose(
+                port_path,
+                node_widget=self.widget
+            )
+            port.set(value_)
+
+            default_ = option.get('default')
+            if default_ is not None:
+                port.set(default_)
+                port.set_default(default_)
+
         elif widget_ in {'capsule_string'}:
             port = PrxPortAsCapsuleString(
                 port_path,
@@ -1643,12 +1681,12 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         elif widget_ in {'file'}:
             open_or_save = option.get('open_or_save')
             if open_or_save == 'save':
-                port = PrxFileSavePort(
+                port = PrxPortAsFileSave(
                     port_path,
                     node_widget=self.widget
                 )
             else:
-                port = PrxFileOpenPort(
+                port = PrxPortAsFileOpen(
                     port_path,
                     node_widget=self.widget
                 )
@@ -1673,12 +1711,12 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
         elif widget_ in {'directory'}:
             open_or_save_ = option.get('open_or_save')
             if open_or_save_ == 'save':
-                port = PrxDirectorySavePort(
+                port = PrxPortAsDirectorySave(
                     port_path,
                     node_widget=self.widget
                 )
             else:
-                port = PrxDirectoryOpenPort(
+                port = PrxPortAsDirectoryOpen(
                     port_path,
                     node_widget=self.widget
                 )
@@ -1695,7 +1733,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
                 port.show_history_latest()
         # storage array
         elif widget_ in {'directories'}:
-            port = PrxDirectoriesOpenPort(
+            port = PrxPortAsDirectoriesOpen(
                 port_path,
                 node_widget=self.widget
             )
@@ -1709,7 +1747,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             if 'history_visible' in option:
                 port.set_history_visible(option['history_visible'])
         elif widget_ in {'files'}:
-            port = PrxFilesOpenPort(
+            port = PrxPortAsFilesOpen(
                 port_path,
                 node_widget=self.widget
             )
@@ -1727,7 +1765,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             if 'history_visible' in option:
                 port.set_history_visible(option['history_visible'])
         elif widget_ in {'medias'}:
-            port = PrxMediasOpenPort(
+            port = PrxPortAsMediasOpen(
                 port_path,
                 node_widget=self.widget
             )
@@ -1818,7 +1856,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             port.set(value_)
         #
         elif widget_ in {'project'}:
-            port = PrxPortForRsvProject(
+            port = PrxPortAsRsvProjectChoose(
                 port_path,
                 node_widget=self.widget
             )
@@ -1835,7 +1873,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             )
             # port.set(value_)
         elif widget_ in {'scheme'}:
-            port = PrxSchemChoosePort(
+            port = PrxPortAsSchemChoose(
                 port_path,
                 scheme_key=option['scheme_key'],
                 node_widget=self.widget
@@ -1876,7 +1914,7 @@ class PrxNode_(utl_gui_prx_abstract.AbsPrxWidget):
             )
         #
         elif widget_ in {'frames'}:
-            port = PrxFramesPort(
+            port = PrxPortAsFrames(
                 port_path,
                 node_widget=self.widget
             )

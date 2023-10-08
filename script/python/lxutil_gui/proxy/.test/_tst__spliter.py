@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxutil_gui import utl_gui_configure
+from lxutil_gui import gui_configure
 
 import lxutil_gui.proxy.widgets as prx_widgets
 

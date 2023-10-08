@@ -110,7 +110,7 @@ class PnlHashGeometry(utl_gui_pnl_abs_utility.AbsPnlHashGeometry):
         #
         root = maya_dcc_objects.Selection.get_current()
         if root:
-            uuid = bsc_core.UuidMtd.get_new()
+            uuid = bsc_core.UuidMtd.generate_new()
             #
             self._geometry_unify_file_path = '/l/resource/temporary/.lynxi/.cache/geometry-unify/{}.usd'.format(uuid)
             self._geometry_unify_output_file_path = '/l/resource/temporary/.lynxi/.cache/geometry-unify/{}.output.usd'.format(uuid)
@@ -141,10 +141,10 @@ class PnlHashGeometry(utl_gui_pnl_abs_utility.AbsPnlHashGeometry):
             job_id = method.get_ddl_job_id()
             self._geometry_unify_ddl_job_process = ddl_objects.DdlJobProcess(job_id)
             if self._geometry_unify_ddl_job_process is not None:
-                self._geometry_unify_ddl_job_process.processing.set_connect_to(
+                self._geometry_unify_ddl_job_process.processing.connect_to(
                     self._set_geometry_unify_ddl_job_processing_
                 )
-                self._geometry_unify_ddl_job_process.status_changed.set_connect_to(
+                self._geometry_unify_ddl_job_process.status_changed.connect_to(
                     self._set_geometry_unify_ddl_job_status_changed_
                 )
                 self._geometry_unify_ddl_job_process.set_start()
@@ -223,7 +223,7 @@ class PnlHashGeometry(utl_gui_pnl_abs_utility.AbsPnlHashGeometry):
         #
         root = maya_dcc_objects.Selection.get_current()
         if root:
-            uuid = bsc_core.UuidMtd.get_new()
+            uuid = bsc_core.UuidMtd.generate_new()
             #
             self._geometry_uv_map_assign_file_path = '/l/resource/temporary/.lynxi/.cache/geometry-uv-assign/{}.usd'.format(uuid)
             self._geometry_uv_map_assign_output_file_path = '/l/resource/temporary/.lynxi/.cache/geometry-uv-assign/{}.output.usd'.format(uuid)
@@ -254,10 +254,10 @@ class PnlHashGeometry(utl_gui_pnl_abs_utility.AbsPnlHashGeometry):
             job_id = method.get_ddl_job_id()
             self._geometry_uv_assign_ddl_job_process = ddl_objects.DdlJobProcess(job_id)
             if self._geometry_uv_assign_ddl_job_process is not None:
-                self._geometry_uv_assign_ddl_job_process.processing.set_connect_to(
+                self._geometry_uv_assign_ddl_job_process.processing.connect_to(
                     self._set_geometry_uv_map_assign_ddl_job_processing_
                 )
-                self._geometry_uv_assign_ddl_job_process.status_changed.set_connect_to(
+                self._geometry_uv_assign_ddl_job_process.status_changed.connect_to(
                     self._set_geometry_uv_map_assign_ddl_job_status_changed_
                 )
                 self._geometry_uv_assign_ddl_job_process.set_start()

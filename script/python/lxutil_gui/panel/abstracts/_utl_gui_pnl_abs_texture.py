@@ -17,7 +17,7 @@ import lxsession.commands as ssn_commands
 
 import lxresolver.commands as rsv_commands
 
-from lxutil_gui import utl_gui_core
+from lxutil_gui import gui_core
 
 import lxresolver.methods as rsv_methods
 
@@ -49,7 +49,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
         self.add_widget(self._tab_view)
 
         s_0 = prx_widgets.PrxVScrollArea()
-        self._tab_view.create_item(
+        self._tab_view.add_widget(
             s_0,
             name='workspace',
             icon_name_text='workspace',
@@ -230,7 +230,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
         v_p.set(
             all_versions
         )
-        [v_p.set_icon_file_as_value(i, utl_gui_core.RscIconFile.get('lock')) for i in all_locked_versions]
+        [v_p.set_icon_file_as_value(i, gui_core.RscIconFile.get('lock')) for i in all_locked_versions]
 
         w.set_window_show()
 
@@ -414,10 +414,10 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
                     break
                 #
                 if i_cmd:
-                    bsc_core.TrdCmdPool.set_wait()
-                    i_t = bsc_core.TrdCmdPool.set_start(i_cmd, i_index)
-                    i_t.status_changed.set_connect_to(status_update_at_fnc_)
-                    i_t.finished.set_connect_to(finished_fnc_)
+                    bsc_core.TrdCommandPool.set_wait()
+                    i_t = bsc_core.TrdCommandPool.set_start(i_cmd, i_index)
+                    i_t.status_changed.connect_to(status_update_at_fnc_)
+                    i_t.finished.connect_to(finished_fnc_)
                 else:
                     status_update_at_fnc_(
                         i_index, bsc_configure.Status.Completed
@@ -454,7 +454,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
                     post_fnc
                 )
 
-            self.set_window_close_connect_to(quit_fnc_)
+            self.connect_window_close_to(quit_fnc_)
         else:
             button.restore_all()
 
@@ -573,7 +573,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         self.add_widget(self._tab_view)
 
         s_a_0 = prx_widgets.PrxVScrollArea()
-        self._tab_view.create_item(
+        self._tab_view.add_widget(
             s_a_0,
             name='dcc',
             icon_name_text='dcc',
@@ -884,10 +884,10 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                     break
                 #
                 if i_cmd:
-                    bsc_core.TrdCmdPool.set_wait()
-                    i_t = bsc_core.TrdCmdPool.set_start(i_cmd, i_index)
-                    i_t.status_changed.set_connect_to(status_update_at_fnc_)
-                    i_t.finished.set_connect_to(finished_fnc_)
+                    bsc_core.TrdCommandPool.set_wait()
+                    i_t = bsc_core.TrdCommandPool.set_start(i_cmd, i_index)
+                    i_t.status_changed.connect_to(status_update_at_fnc_)
+                    i_t.finished.connect_to(finished_fnc_)
                 else:
                     status_update_at_fnc_(
                         i_index, bsc_configure.Status.Completed
@@ -924,7 +924,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                     post_fnc
                 )
 
-            self.set_window_close_connect_to(quit_fnc_)
+            self.connect_window_close_to(quit_fnc_)
         else:
             button.restore_all()
 
