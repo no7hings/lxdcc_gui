@@ -1,11 +1,11 @@
 # coding:utf-8
 from lxbasic import bsc_core
 
-import lxutil_gui.qt.widgets as qt_widgets
+import lxgui.qt.widgets as qt_widgets
 
 from lxutil import utl_core
 
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
 import lxcontent.objects as ctt_objects
 
@@ -13,13 +13,15 @@ import lxresolver.commands as rsv_commands
 
 import lxuniverse.objects as unr_objects
 
-import lxutil_gui.proxy.operators as utl_prx_operators
+import lxgui.proxy.scripts as gui_prx_scripts
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
-from lxutil_gui import gui_core
+import lxgui.core as gui_core
 
-from lxutil_gui.qt import gui_qt_core
+import lxgui.qt.core as gui_qt_core
+
+import lxgui.proxy.core as gui_prx_core
 
 import lxsession.commands as ssn_commands
 
@@ -119,10 +121,10 @@ class AbsRenderSubmitterPanel(
         v_splitter_0.add_widget(qt_scroll_area_0)
         qt_layout_0 = qt_scroll_area_0._layout
         #
-        self._schemes_prx_node = prx_widgets.PrxNode_('schemes')
+        self._schemes_prx_node = prx_widgets.PrxNode('schemes')
         qt_layout_0.addWidget(self._schemes_prx_node.widget)
         #
-        self._options_prx_node = prx_widgets.PrxNode_('options')
+        self._options_prx_node = prx_widgets.PrxNode('options')
         qt_layout_0.addWidget(self._options_prx_node.widget)
         #
         prx_expanded_group_0 = prx_widgets.PrxHToolGroup()
@@ -145,13 +147,13 @@ class AbsRenderSubmitterPanel(
         qt_layout_1 = qt_scroll_area_1._layout
         h_splitter_0.add_widget(qt_scroll_area_1)
         #
-        self._usd_prx_node = prx_widgets.PrxNode_('usd')
+        self._usd_prx_node = prx_widgets.PrxNode('usd')
         qt_layout_1.addWidget(self._usd_prx_node.widget)
         #
-        self._variables_prx_node = prx_widgets.PrxNode_('variables')
+        self._variables_prx_node = prx_widgets.PrxNode('variables')
         qt_layout_1.addWidget(self._variables_prx_node.widget)
         #
-        self._settings_prx_node = prx_widgets.PrxNode_('settings')
+        self._settings_prx_node = prx_widgets.PrxNode('settings')
         qt_layout_1.addWidget(self._settings_prx_node.widget)
         #
         h_splitter_0.set_stretches([1, 2, 1])
@@ -165,7 +167,7 @@ class AbsRenderSubmitterPanel(
         )
         self._filter_tree_viewer_0.set_selection_use_single()
 
-        self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.GuiTagFilterOpt(
+        self._prx_dcc_obj_tree_view_tag_filter_opt = gui_prx_scripts.GuiPrxScpForTreeTagFilter(
             prx_tree_view_src=self._filter_tree_viewer_0,
             prx_tree_view_tgt=self._rsv_renderer_list_view,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
@@ -275,12 +277,12 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     self.set_combinations_refresh()
                     self.set_variables_refresh()
                 else:
-                    utl_core.DialogWindow.set_create(
+                    utl_core.DccDialog.create(
                         self._hook_gui_configure.get('name'),
                         content='file="{}" camera task is non-exists, please call for TD get more help'.format(
                             self._file_path
                             ),
-                        status=utl_core.DialogWindow.ValidatorStatus.Error,
+                        status=utl_core.DccDialog.ValidationStatus.Error,
                         #
                         yes_label='Close', yes_method=self.close_window_later,
                         #
@@ -293,7 +295,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
     def set_scheme_save(self):
         filter_dict = self._prx_dcc_obj_tree_view_tag_filter_opt.get_filter_dict()
         # print filter_dict
-        ctt_objects.Configure(value=filter_dict).set_print_as_yaml_style()
+        ctt_objects.Configure(value=filter_dict).print_as_yaml_style()
 
     # options
     def set_options_refresh(self):
@@ -341,10 +343,10 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             key = 'rig'
             cache_workspace = 'output'
         else:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 self._hook_gui_configure.get('name'),
                 content='step="{}" is not available, please call for TD get more help'.format(step),
-                status=utl_core.DialogWindow.ValidatorStatus.Error,
+                status=utl_core.DccDialog.ValidationStatus.Error,
                 #
                 yes_label='Close', yes_method=self.set_window_close,
                 #
@@ -426,7 +428,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             self.set_renderers_refresh,
             self.set_usd_refresh,
         ]
-        with utl_core.GuiProgressesRunner.create(maximum=len(methods), label='execute refresh method') as g_p:
+        with bsc_core.LogProcessContext.create(maximum=len(methods), label='execute refresh method') as g_p:
             for i in methods:
                 g_p.set_update()
                 result = i()
@@ -571,7 +573,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
         else:
             prx_item.set_image(
-                gui_core.RscIconFile.get('image_loading_failed')
+                gui_core.GuiIcon.get('image_loading_failed')
             )
         #
         for i_rsv_unit in self._check_rsv_units:
@@ -579,7 +581,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             if i_file_path:
                 i_rsv_properties = i_rsv_unit.get_properties_by_result(i_file_path)
                 i_rsv_unit_file = utl_dcc_objects.OsFile(i_file_path)
-                i_pixmap = gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
+                i_pixmap = gui_qt_core.GuiQtPixmap.get_by_file_ext_with_tag(
                     i_rsv_unit_file.ext,
                     tag=i_rsv_properties.get('workspace'),
                     frame_size=self.ITEM_ICON_SIZE
@@ -808,10 +810,10 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     'light_pass.{}'.format(i), names[seq]
                 )
         else:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 self._hook_gui_configure.get('name'),
                 content='light-rig(s) is not found, please call for TD get more help',
-                status=utl_core.DialogWindow.ValidatorStatus.Error,
+                status=utl_core.DccDialog.ValidationStatus.Error,
                 #
                 yes_label='Close', yes_method=self.set_window_close,
                 #
@@ -952,7 +954,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         # return not bsc_core.StgFileOpt(file_path_src).get_timestamp_is_same_to(file_path_tgt)
         return True
 
-    @gui_qt_core.set_prx_window_waiting
+    @gui_prx_core.GuiProxyModifier.window_proxy_waiting
     def set_camera_publish(self):
         camera_work_maya_scene_scr_file_path = self._camera_work_maya_scene_src_file_rsv_unit.get_result(
             version='latest'
@@ -974,12 +976,12 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 option=hook_option_opt.to_string()
             )
             #
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 self._hook_gui_configure.get('name'),
                 content='{} publish job is send to deadline, more information you see in deadline monitor'.format(
                     camera_work_maya_scene_scr_file_path
                     ),
-                status=utl_core.DialogWindow.ValidatorStatus.Correct,
+                status=utl_core.DccDialog.ValidationStatus.Correct,
                 #
                 yes_label='Close',
                 #
@@ -987,7 +989,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 use_exec=False
             )
 
-    @gui_qt_core.set_prx_window_waiting
+    @gui_prx_core.GuiProxyModifier.window_proxy_waiting
     def set_submit(self):
         if self._camera_abc_file_rsv_unit.get_result(
                 version='latest'
@@ -1002,12 +1004,12 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     ssn_commands.set_option_hook_execute_by_deadline(
                         option=option_opt.to_string()
                     )
-                    utl_core.DialogWindow.set_create(
+                    utl_core.DccDialog.create(
                         self._hook_gui_configure.get('name'),
                         content='{} render job is send to deadline, more information you see in deadline monitor'.format(
                             self._file_path
                             ),
-                        status=utl_core.DialogWindow.ValidatorStatus.Correct,
+                        status=utl_core.DccDialog.ValidationStatus.Correct,
                         #
                         yes_label='Close',
                         #
@@ -1015,12 +1017,12 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                         use_exec=False
                     )
                 else:
-                    utl_core.DialogWindow.set_create(
+                    utl_core.DccDialog.create(
                         self._hook_gui_configure.get('name'),
                         content='file="{}" is already submitted or scene changed is not be save'.format(
                             self._file_path
                             ),
-                        status=utl_core.DialogWindow.ValidatorStatus.Error,
+                        status=utl_core.DccDialog.ValidationStatus.Error,
                         #
                         yes_label='Close',
                         #
@@ -1028,12 +1030,12 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
                         use_exec=False
                     )
         else:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 self._hook_gui_configure.get('name'),
                 content='file="{}" camera cache(abc) is non-exists, please call for TD get more help'.format(
                     self._file_path
                     ),
-                status=utl_core.DialogWindow.ValidatorStatus.Error,
+                status=utl_core.DccDialog.ValidationStatus.Error,
                 #
                 yes_label='Close',
                 #
@@ -1153,7 +1155,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                 prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
         else:
             prx_item.set_image(
-                gui_core.RscIconFile.get('image_loading_failed')
+                gui_core.GuiIcon.get('image_loading_failed')
             )
 
         for i_rsv_unit in self._check_rsv_units:
@@ -1161,7 +1163,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             if i_file_path:
                 i_rsv_properties = i_rsv_unit.get_properties_by_result(i_file_path)
                 i_rsv_unit_file = utl_dcc_objects.OsFile(i_file_path)
-                i_pixmap = gui_qt_core.QtPixmapMtd.get_by_file_ext_with_tag(
+                i_pixmap = gui_qt_core.GuiQtPixmap.get_by_file_ext_with_tag(
                     i_rsv_unit_file.ext,
                     tag=i_rsv_properties.get('workspace'),
                     frame_size=self.ITEM_ICON_SIZE
@@ -1235,7 +1237,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
             self.set_renderers_refresh,
             self.set_combinations_refresh,
         ]
-        with utl_core.GuiProgressesRunner.create(maximum=len(methods), label='execute refresh method') as g_p:
+        with bsc_core.LogProcessContext.create(maximum=len(methods), label='execute refresh method') as g_p:
             for i in methods:
                 g_p.set_update()
                 result = i()
@@ -1270,7 +1272,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         return self._start_frame
 
     # options
-    @gui_qt_core.set_prx_window_waiting
+    @gui_prx_core.GuiProxyModifier.window_proxy_waiting
     def set_options_refresh(self):
         import lxusd.rsv.objects as usd_rsv_objects
 
@@ -1406,7 +1408,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                         k.replace('/', '.'), v
                     )
 
-    @gui_qt_core.set_prx_window_waiting
+    @gui_prx_core.GuiProxyModifier.window_proxy_waiting
     def set_renderers_refresh(self):
         def set_thread_create_fnc_(prx_item_, variants_):
             prx_item_.set_show_build_fnc(
@@ -1504,7 +1506,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
         # return not bsc_core.StgFileOpt(file_path_src).get_timestamp_is_same_to(file_path_tgt)
         return True
 
-    @gui_qt_core.set_prx_window_waiting
+    @gui_prx_core.GuiProxyModifier.window_proxy_waiting
     def set_submit(self):
         hook_option_dic = self._get_hook_option_dic_()
         if hook_option_dic:
@@ -1518,10 +1520,10 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     option=option_opt.to_string()
                 )
                 #
-                utl_core.DialogWindow.set_create(
+                utl_core.DccDialog.create(
                     self._hook_gui_configure.get('name'),
                     content='{} is submit completed'.format(self._file_path),
-                    status=utl_core.DialogWindow.ValidatorStatus.Correct,
+                    status=utl_core.DccDialog.ValidationStatus.Correct,
                     #
                     yes_label='Close',
                     #
@@ -1529,10 +1531,10 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
                     use_exec=False
                 )
             else:
-                utl_core.DialogWindow.set_create(
+                utl_core.DccDialog.create(
                     self._hook_gui_configure.get('name'),
                     content='file="{}" is already submitted or scene changed is not be save'.format(self._file_path),
-                    status=utl_core.DialogWindow.ValidatorStatus.Error,
+                    status=utl_core.DccDialog.ValidationStatus.Error,
                     #
                     yes_label='Close',
                     #

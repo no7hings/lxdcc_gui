@@ -1,15 +1,15 @@
 # coding:utf-8
-from lxutil_gui import gui_core
+import lxgui.core as gui_core
 
-import lxutil_gui.qt.widgets as qt_widgets
+import lxgui.qt.widgets as qt_widgets
 
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
 from lxbasic import bsc_core
 
 from lxutil import utl_core
 
-import lxutil_gui.proxy.operators as utl_prx_operators
+import lxgui.proxy.scripts as gui_prx_scripts
 
 
 class AbsPnlShaderViewer(
@@ -59,13 +59,13 @@ class AbsPnlShaderViewer(
             self.get_definition_window_size()[0]*(2.0/3.0) - 24
         )
         #
-        self._prx_dcc_obj_tree_view_add_opt = utl_prx_operators.PrxDccObjTreeViewAddOpt(
+        self._prx_dcc_obj_tree_view_add_opt = gui_prx_scripts.GuiPrxScpForTreeAdd(
             prx_tree_view=self._obj_tree_viewer_0,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem,
             dcc_namespace=self.DCC_NAMESPACE
         )
         #
-        self._prx_dcc_obj_tree_view_selection_opt = utl_prx_operators.PrxDccObjTreeViewSelectionOpt(
+        self._prx_dcc_obj_tree_view_selection_opt = gui_prx_scripts.GuiPrxScpForTreeSelection(
             prx_tree_view=self._obj_tree_viewer_0,
             dcc_selection_cls=self.DCC_SELECTION_CLS,
             dcc_namespace=self.DCC_NAMESPACE
@@ -74,12 +74,12 @@ class AbsPnlShaderViewer(
             self._prx_dcc_obj_tree_view_selection_opt.set_select
         )
         #
-        self._prx_dcc_obj_tree_view_gain_opt = utl_prx_operators.PrxDccObjTreeViewGainOpt(
+        self._prx_dcc_obj_tree_view_gain_opt = gui_prx_scripts.GuiPrxScpForTreeGain(
             prx_tree_view=self._obj_tree_viewer_0,
             dcc_namespace=self.DCC_NAMESPACE
         )
         #
-        self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.GuiTagFilterOpt(
+        self._prx_dcc_obj_tree_view_tag_filter_opt = gui_prx_scripts.GuiPrxScpForTreeTagFilter(
             prx_tree_view_src=self._filter_tree_viewer_0,
             prx_tree_view_tgt=self._obj_tree_viewer_0,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
@@ -98,7 +98,7 @@ class AbsPnlShaderViewer(
         #
         materials = self.DCC_MATERIALS_CLS().get_objs()
         if materials:
-            with utl_core.GuiProgressesRunner.create(maximum=len(materials), label='gui-add for material') as g_p:
+            with bsc_core.LogProcessContext.create(maximum=len(materials), label='gui-add for material') as g_p:
                 for i_material in materials:
                     g_p.set_update()
                     #
@@ -192,13 +192,13 @@ class AbsPnlMaterialViewer(
             self.get_definition_window_size()[0]*(2.0/3.0) - 24
         )
         #
-        self._prx_dcc_obj_tree_view_add_opt = utl_prx_operators.PrxDccObjTreeViewAddOpt1(
+        self._prx_dcc_obj_tree_view_add_opt = gui_prx_scripts.GuiPrxScpForTreeAdd1(
             prx_tree_view=self._obj_tree_viewer_0,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem,
             dcc_namespace=self.DCC_NAMESPACE
         )
         #
-        self._prx_dcc_obj_tree_view_selection_opt = utl_prx_operators.PrxDccObjTreeViewSelectionOpt(
+        self._prx_dcc_obj_tree_view_selection_opt = gui_prx_scripts.GuiPrxScpForTreeSelection(
             prx_tree_view=self._obj_tree_viewer_0,
             dcc_selection_cls=self.DCC_STAGE_SELECTION_CLS,
             dcc_namespace=self.DCC_NAMESPACE
@@ -207,12 +207,12 @@ class AbsPnlMaterialViewer(
             self._prx_dcc_obj_tree_view_selection_opt.set_select
         )
         #
-        self._prx_dcc_obj_tree_view_gain_opt = utl_prx_operators.PrxDccObjTreeViewGainOpt(
+        self._prx_dcc_obj_tree_view_gain_opt = gui_prx_scripts.GuiPrxScpForTreeGain(
             prx_tree_view=self._obj_tree_viewer_0,
             dcc_namespace=self.DCC_NAMESPACE
         )
         #
-        self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.GuiTagFilterOpt(
+        self._prx_dcc_obj_tree_view_tag_filter_opt = gui_prx_scripts.GuiPrxScpForTreeTagFilter(
             prx_tree_view_src=self._filter_tree_viewer_0,
             prx_tree_view_tgt=self._obj_tree_viewer_0,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
@@ -226,7 +226,7 @@ class AbsPnlMaterialViewer(
         )
 
     def _set_configure_groups_build_(self):
-        self._options_prx_node = prx_widgets.PrxNode_('options')
+        self._options_prx_node = prx_widgets.PrxNode('options')
         self.add_widget(self._options_prx_node)
         #
         self._options_prx_node.create_ports_by_data(

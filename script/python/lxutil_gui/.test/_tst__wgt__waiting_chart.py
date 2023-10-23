@@ -1,16 +1,16 @@
 # coding:utf-8
 from lxutil import utl_configure
 
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
-from lxutil_gui.qt.widgets import _gui_qt_wgt_chart
+from lxgui.qt.widgets import _gui_qt_wgt_chart
 
 
 class W(prx_widgets.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(W, self).__init__(*args, **kwargs)
         #
-        c = _gui_qt_wgt_chart.QtWaitingChart()
+        c = _gui_qt_wgt_chart.QtChartAsWaiting()
         self.add_widget(c)
         c._start_waiting_()
 

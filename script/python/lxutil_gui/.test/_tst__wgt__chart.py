@@ -1,7 +1,7 @@
 # coding:utf-8
-from lxutil_gui import gui_configure
+import lxgui.configure as gui_configure
 
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
 
 class W(prx_widgets.PrxBaseWindow):

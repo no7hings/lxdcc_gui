@@ -2,9 +2,9 @@
 import collections
 import copy
 
-from lxbasic import bsc_configure, bsc_core
+from lxbasic import bsc_core
 
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
 from lxutil import utl_core
 
@@ -12,13 +12,13 @@ import lxutil.scripts as utl_scripts
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
-import lxutil_gui.proxy.operators as utl_prx_operators
+import lxgui.proxy.scripts as gui_prx_scripts
 
 import lxresolver.commands as rsv_commands
 
 import lxsession.commands as ssn_commands
 
-from lxutil_gui import gui_core
+import lxgui.core as gui_core
 
 
 class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
@@ -41,7 +41,7 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
         sa_1 = prx_widgets.PrxVScrollArea()
         self.add_widget(sa_1)
         #
-        self._options_prx_node = prx_widgets.PrxNode_('options')
+        self._options_prx_node = prx_widgets.PrxNode('options')
         sa_1.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.options')
@@ -77,7 +77,7 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
         layer_widget = self.create_layer_widget('publish', 'Publish')
         sa_2 = prx_widgets.PrxVScrollArea()
         layer_widget.add_widget(sa_2)
-        self._publish_options_prx_node = prx_widgets.PrxNode_('options')
+        self._publish_options_prx_node = prx_widgets.PrxNode('options')
         sa_2.add_widget(self._publish_options_prx_node)
         self._publish_options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.publish_options')
@@ -145,10 +145,10 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
         self._user_name = bsc_core.SystemMtd.get_user_name()
         self._stg_user = self._stg_connector.get_stg_user(user=self._user_name)
         if not self._stg_user:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 self._session.gui_name,
                 content='user "{}" is not available'.format(self._user_name),
-                status=utl_core.DialogWindow.ValidatorStatus.Error,
+                status=utl_core.DccDialog.ValidationStatus.Error,
                 #
                 yes_label='Close',
                 #
@@ -341,10 +341,10 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
                 **self._task_data
             )
             if self._rsv_project is None:
-                utl_core.DialogWindow.set_create(
+                utl_core.DccDialog.create(
                     self.session.gui_name,
                     content='project is not available',
-                    status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                    status=utl_core.DccDialog.ValidationStatus.Warning,
                     #
                     yes_label='Close',
                     #
@@ -360,10 +360,10 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
                 **self._task_data
             )
             if self._rsv_task is None:
-                w = utl_core.DialogWindow.set_create(
+                w = utl_core.DccDialog.create(
                     self.session.gui_name,
                     content='task directory is non-exists, press "Yes" to create and continue',
-                    status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                    status=utl_core.DccDialog.ValidationStatus.Warning,
                     yes_method=self.create_task_directory,
                     # do not use thread
                     # use_thread=False
@@ -514,14 +514,14 @@ class AbsValidatorOpt(object):
             self.set_select
         )
 
-        self._filter_opt = utl_prx_operators.GuiTagFilterOpt(
+        self._filter_opt = gui_prx_scripts.GuiPrxScpForTreeTagFilter(
             prx_tree_view_src=self._filter_tree_view,
             prx_tree_view_tgt=self._result_tree_view,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
         )
 
     def set_select(self):
-        utl_prx_operators.PrxDccObjTreeViewSelectionOpt.select_fnc(
+        gui_prx_scripts.GuiPrxScpForTreeSelection.select_fnc(
             prx_tree_view=self._result_tree_view,
             dcc_selection_cls=self.DCC_SELECTION_CLS,
             dcc_namespace=self.DCC_NAMESPACE
@@ -536,7 +536,7 @@ class AbsValidatorOpt(object):
         scene_prx_item._child_dict = {}
         if not check_results:
             scene_prx_item.set_status(
-                bsc_configure.ValidatorStatus.Correct
+                utl_core.DccDialog.ValidationStatus.Correct
             )
             return True
         #
@@ -547,7 +547,7 @@ class AbsValidatorOpt(object):
         self._result_tree_view.expand_items_by_depth(1)
 
     def _set_sub_check_results_build_at_(self, scene_prx_item, rsv_scene_properties, results):
-        with utl_core.GuiProgressesRunner.create(maximum=len(results), label='gui-add for check result') as g_p:
+        with bsc_core.LogProcessContext.create(maximum=len(results), label='gui-add for check result') as g_p:
             for i_result in results:
                 g_p.set_update()
                 #
@@ -556,9 +556,9 @@ class AbsValidatorOpt(object):
                 i_group_name = i_result['group']
                 i_status = i_result['status']
                 if i_status == 'warning':
-                    i_validation_status = bsc_configure.ValidatorStatus.Warning
+                    i_validation_status = utl_core.DccDialog.ValidationStatus.Warning
                 elif i_status == 'error':
-                    i_validation_status = bsc_configure.ValidatorStatus.Error
+                    i_validation_status = utl_core.DccDialog.ValidationStatus.Error
                 else:
                     raise RuntimeError()
 
@@ -675,7 +675,7 @@ class AbsValidatorOpt(object):
 
         prx_item = scene_prx_item.add_child(
             name=group_name,
-            icon=gui_core.RscIconFile.get('application/python'),
+            icon=gui_core.GuiIcon.get('application/python'),
         )
         prx_item.set_checked(False)
         #
@@ -826,7 +826,7 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
             self._filter_tree_view, self._result_tree_view
         )
 
-        self._cfg_options_prx_node = prx_widgets.PrxNode_('options')
+        self._cfg_options_prx_node = prx_widgets.PrxNode('options')
         sa_1.add_widget(self._cfg_options_prx_node)
         self._cfg_options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.validation_options'),
@@ -883,7 +883,7 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
         layer_widget = self.create_layer_widget('publish', 'Publish')
         sa_2 = prx_widgets.PrxVScrollArea()
         layer_widget.add_widget(sa_2)
-        self._publish_options_prx_node = prx_widgets.PrxNode_('options')
+        self._publish_options_prx_node = prx_widgets.PrxNode('options')
         sa_2.add_widget(self._publish_options_prx_node)
         self._publish_options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.publish_options')
@@ -992,10 +992,10 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
                 )
 
         if contents:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 label=self._session.gui_name,
                 content=u'\n'.join(contents),
-                status=utl_core.DialogWindow.ValidatorStatus.Error,
+                status=utl_core.DccDialog.ValidationStatus.Error,
                 #
                 yes_label='Close', yes_method=self.set_window_close,
                 #

@@ -5,11 +5,11 @@ import functools
 
 from lxbasic import bsc_core
 
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
 from lxutil import utl_core
 
-from lxutil_gui.qt import gui_qt_core
+import lxgui.qt.core as gui_qt_core
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
@@ -17,19 +17,20 @@ import lxuniverse.objects as unr_objects
 
 import lxcontent.objects as ctt_objects
 
-import lxutil_gui.proxy.operators as utl_prx_operators
+import lxgui.proxy.scripts as gui_prx_scripts
 
 import lxsession.commands as ssn_commands
 
 import lxresolver.commands as rsv_commands
 
-from lxsession import ssn_core
+import lxsession.core as ssn_core
 
 import lxsession.objects as ssn_objects
 
 
 class AbsRezGraph(prx_widgets.PrxBaseWindow):
     OPTION_HOOK_KEY = None
+
     def __init__(self, hook_option, *args, **kwargs):
         super(AbsRezGraph, self).__init__(*args, **kwargs)
         if hook_option is not None:
@@ -236,58 +237,71 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
         p.save('/data/f/rez_test/png/test_0.png', 'PNG')
 
 
-class AbsAssetLineup(prx_widgets.PrxBaseWindow):
+class AbsAssetLineup(prx_widgets.PrxSessionWindow):
     OPTION_HOOK_KEY = None
     DCC_NAMESPACE = 'resolver'
-    def __init__(self, hook_option, *args, **kwargs):
+
+    def __init__(self, *args, **kwargs):
         super(AbsAssetLineup, self).__init__(*args, **kwargs)
-        self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
+        # self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
+        # #
+        # if hook_option is not None:
+        #     self._hook_option_opt = bsc_core.ArgDictStringOpt(hook_option)
+        #     self._hook_option_opt.set(
+        #         'option_hook_key', self.OPTION_HOOK_KEY
+        #     )
+        #     #
+        #     self._option_hook_configure = ssn_commands.get_option_hook_configure(
+        #         self._hook_option_opt.to_string()
+        #     )
+        #     #
+        #     self._hook_gui_configure = self._option_hook_configure.get_content('option.gui')
+        #     # self._hook_build_configure = self._option_hook_configure.get_content('build')
+        #     self._hook_resolver_configure = self._option_hook_configure.get_content('resolver')
+        #     self._hook_build_configure = self._option_hook_configure.get_content('build')
+        #     #
+        #     raw = bsc_core.EnvironMtd.get('REZ_BETA')
+        #     if raw:
+        #         self._rez_beta = True
+        #     else:
+        #         self._rez_beta = False
         #
-        if hook_option is not None:
-            self._hook_option_opt = bsc_core.ArgDictStringOpt(hook_option)
-            self._hook_option_opt.set(
-                'option_hook_key', self.OPTION_HOOK_KEY
-            )
-            #
-            self._option_hook_configure = ssn_commands.get_option_hook_configure(
-                self._hook_option_opt.to_string()
-            )
-            #
-            self._hook_gui_configure = self._option_hook_configure.get_content('option.gui')
-            # self._hook_build_configure = self._option_hook_configure.get_content('build')
-            self._hook_resolver_configure = self._option_hook_configure.get_content('resolver')
-            self._hook_build_configure = self._option_hook_configure.get_content('build')
-            #
-            raw = bsc_core.EnvironMtd.get('REZ_BETA')
-            if raw:
-                self._rez_beta = True
-            else:
-                self._rez_beta = False
+        #     if self._rez_beta:
+        #         self.set_window_title(
+        #             '[BETA] {}'.format(self._hook_gui_configure.get('name'))
+        #         )
+        #     else:
+        #         self.set_window_title(
+        #             self._hook_gui_configure.get('name')
+        #         )
+        #     #
+        #     self.set_window_icon_name_text(
+        #         self._hook_gui_configure.get('name')
+        #     )
+        #     self.set_definition_window_size(
+        #         self._hook_gui_configure.get('size')
+        #     )
+        #
+        #     self._session_dict = {}
+        #
+        #     self._image_dict = {}
+        #
+        #     self.start_loading(
+        #         time=1000,
+        #         method=self._set_tool_panel_setup_
+        #     )
 
-            if self._rez_beta:
-                self.set_window_title(
-                    '[BETA] {}'.format(self._hook_gui_configure.get('name'))
-                )
-            else:
-                self.set_window_title(
-                    self._hook_gui_configure.get('name')
-                )
-            #
-            self.set_window_icon_name_text(
-                self._hook_gui_configure.get('name')
-            )
-            self.set_definition_window_size(
-                self._hook_gui_configure.get('size')
-            )
+    def restore_variants(self):
+        self._session_dict = {}
+        self._image_dict = {}
 
-            self._session_dict = {}
-
-            self._image_dict = {}
-
-            self.start_loading(
-                time=1000,
-                method=self._set_tool_panel_setup_
-            )
+    def set_all_setup(self):
+        self._option_hook_configure = self._session.configure
+        self._hook_gui_configure = self._session.configure.get_content('option.gui')
+        # self._hook_build_configure = self._option_hook_configure.get_content('build')
+        self._hook_resolver_configure = self._session.configure.get_content('resolver')
+        self._hook_build_configure = self._session.configure.get_content('build')
+        self._set_tool_panel_setup_()
 
     def _set_tool_panel_setup_(self):
         h_s = prx_widgets.PrxHSplitter()
@@ -299,7 +313,7 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
 
         s = prx_widgets.PrxVScrollArea()
         v_s.add_widget(s)
-        self._options_prx_node = prx_widgets.PrxNode_('options')
+        self._options_prx_node = prx_widgets.PrxNode('options')
         s.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_data(
             self._hook_build_configure.get('node.options')
@@ -313,11 +327,11 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
 
         self._rsv_obj_tree_view_0.set_header_view_create(
             [('name', 3)],
-            self.get_definition_window_size()[0] * (1.0 / 4.0) - 24
+            self.get_definition_window_size()[0]*(1.0/4.0)-24
         )
         self._resolver = rsv_commands.get_resolver()
         # self._rsv_obj_tree_view_0.set_selection_use_single()
-        self._prx_dcc_obj_tree_view_add_opt = utl_prx_operators.GuiRsvObjOpt(
+        self._prx_dcc_obj_tree_view_add_opt = gui_prx_scripts.GuiPrxScpForResolver(
             self._resolver,
             prx_tree_view=self._rsv_obj_tree_view_0,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem,
@@ -364,18 +378,19 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
         )
         if is_create is True:
             prx_item.set_expanded(True, ancestors=True)
+
     #
     def _set_add_rsv_entities_(self, rsv_project):
         def post_fnc_():
             self._end_timestamp = bsc_core.TimeMtd.get_timestamp()
             #
-            utl_core.Log.set_module_result_trace(
+            bsc_core.Log.trace_method_result(
                 'load asset/shot from "{}"'.format(
                     rsv_project.path
                 ),
                 'count={}, cost-time="{}"'.format(
                     self._count,
-                    bsc_core.RawIntegerMtd.second_to_time_prettify(int(self._end_timestamp - self._start_timestamp))
+                    bsc_core.RawIntegerMtd.second_to_time_prettify(int(self._end_timestamp-self._start_timestamp))
                 )
             )
 
@@ -399,12 +414,13 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
                 )
             ts.set_start()
         else:
-            with utl_core.GuiProgressesRunner.create(maximum=len(rsv_tags), label='gui-add for entity') as g_p:
+            with bsc_core.LogProcessContext.create(maximum=len(rsv_tags), label='gui-add for entity') as g_p:
                 for i_rsv_tag in rsv_tags:
                     g_p.set_update()
                     self._set_gui_add_rsv_entities_(
                         self.__cache_rsv_entities_by_tag_(i_rsv_tag)
                     )
+
     # entities for tag
     def __cache_rsv_entities_by_tag_(self, rsv_tag):
         return rsv_tag.get_rsv_resources(**self._rsv_filter_opt.value)
@@ -467,19 +483,19 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
                 if result is not None:
                     self._image_dict[rsv_entity.path] = result
                     rsv_entity_gui.set_status(
-                        rsv_entity_gui.ValidatorStatus.Correct
+                        rsv_entity_gui.ValidationStatus.Correct
                     )
                 else:
                     rsv_entity_gui.set_status(
-                        rsv_entity_gui.ValidatorStatus.Disable
+                        rsv_entity_gui.ValidationStatus.Disable
                     )
             else:
                 rsv_entity_gui.set_status(
-                    rsv_entity_gui.ValidatorStatus.Warning
+                    rsv_entity_gui.ValidationStatus.Warning
                 )
         else:
             rsv_entity_gui.set_status(
-                rsv_entity_gui.ValidatorStatus.Error
+                rsv_entity_gui.ValidationStatus.Error
             )
 
     def _set_graph_reload_(self):
@@ -509,6 +525,7 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
         self._node_graph.set_clear()
         self._node_graph.set_universe(self._universe)
         self._node_graph.set_node_show()
+
     @classmethod
     def _get_menu_content_by_hook_keys_(cls, session_dict, hooks, *args, **kwargs):
         content = ctt_objects.Dict()
@@ -586,10 +603,12 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
                         '{}.properties.execute_fnc'.format(i_gui_path), i_execute_fnc
                     )
         return content
+
     @classmethod
     def _get_rsv_unit_action_hook_args_(cls, session_dict, key, *args, **kwargs):
         def execute_fnc():
             session.execute_python_file(python_file_path, session=session)
+
         #
         rsv_task = args[0]
         session_path = '{}/{}'.format(rsv_task.path, key)
@@ -608,7 +627,7 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
                         kwargs['configure'] = configure
                         #
                         if type_name in ['asset', 'shot', 'step', 'task']:
-                            session = ssn_objects.RsvObjActionSession(
+                            session = ssn_objects.RsvActionSession(
                                 *args,
                                 **kwargs
                             )
@@ -634,21 +653,21 @@ class AbsAssetLineup(prx_widgets.PrxBaseWindow):
             self._options_prx_node.get_port(
                 'output.file'
             ).update_history()
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 'Save Graph',
                 content='"{}" save is completed'.format(file_path),
-                status=utl_core.DialogWindow.ValidatorStatus.Correct,
+                status=utl_core.DccDialog.ValidationStatus.Correct,
                 #
-                yes_label='Open Folder', yes_method=bsc_core.StgPathOpt(file_path).set_open_in_system,
+                yes_label='Open Folder', yes_method=bsc_core.StgPathOpt(file_path).open_in_system,
                 no_label='Close',
                 #
                 cancel_visible=False
             )
         else:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 'Save Graph',
                 content='enter a file name',
-                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                status=utl_core.DccDialog.ValidationStatus.Warning,
                 #
                 yes_label='Close',
                 #

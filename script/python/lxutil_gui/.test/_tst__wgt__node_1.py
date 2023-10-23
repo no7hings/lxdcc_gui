@@ -3,7 +3,7 @@ import fnmatch
 
 import time
 
-import lxutil_gui.proxy.widgets as utl_prx_widgets
+import lxgui.proxy.widgets as utl_prx_widgets
 
 import lxresolver.commands as rsv_commands
 

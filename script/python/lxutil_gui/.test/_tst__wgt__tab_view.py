@@ -1,8 +1,8 @@
 # coding:utf-8
 
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
-import lxutil_gui.qt.widgets as qt_widgets
+import lxgui.qt.widgets as qt_widgets
 
 import lxresolver.commands as rsv_commands
 
@@ -15,6 +15,7 @@ class TestWindow(prx_widgets.PrxBaseWindow):
     def _test_(self):
         n = prx_widgets.PrxTabView()
         n.set_drag_enable(True)
+        self.set_main_style_mode(1)
         self.add_widget(n)
         for i in range(5):
             i_w = qt_widgets.QtTextBubble()

@@ -3,11 +3,11 @@ import rez.resolved_context as r_c
 
 from lxutil import utl_configure
 
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
 from lxutil import utl_core
 
-from lxutil_gui.qt import gui_qt_core
+import lxgui.qt.core as gui_qt_core
 
 import lxuniverse.objects as unr_objects
 

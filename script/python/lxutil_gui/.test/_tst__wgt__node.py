@@ -1,7 +1,7 @@
 # coding:utf-8
 import time
 
-import lxutil_gui.proxy.widgets as utl_prx_widgets
+import lxgui.proxy.widgets as utl_prx_widgets
 
 import lxresolver.commands as rsv_commands
 
@@ -16,7 +16,7 @@ class TestWindow(utl_prx_widgets.PrxBaseWindow):
         f = utl_prx_widgets.PrxFilterBar()
         f.set_history_key('filter.test')
         self.add_widget(f)
-        n = utl_prx_widgets.PrxNode_('root')
+        n = utl_prx_widgets.PrxNode('root')
         self.add_widget(n)
         p = n.add_port(
             utl_prx_widgets.PrxPortAsConstantChoose(

@@ -1,14 +1,16 @@
 # coding:utf-8
 import collections
 
-import lxutil_gui.qt.widgets as qt_widgets
+import lxgui.core as gui_core
 
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.qt.widgets as qt_widgets
+
+import lxgui.proxy.widgets as prx_widgets
 
 from lxutil import utl_core
 
 
-class AbsObjGuiDef(object):
+class AbsGuiExtraDef(object):
     UTL_OBJ_CLS = None
     @classmethod
     def _set_prd_obj_gui_add_(cls, obj, tree_view_gui):
@@ -18,9 +20,9 @@ class AbsObjGuiDef(object):
         port = obj.get_variant_port('icon')
         if port:
             icon_name = port.get()
-            obj_icon = utl_core.Icon.get(icon_name)
+            obj_icon = gui_core.GuiIcon.get(icon_name)
         else:
-            obj_icon = utl_core.Icon.get('tag')
+            obj_icon = gui_core.GuiIcon.get('tag')
         #
         if obj_path in item_dict:
             return item_dict[obj_path]
@@ -69,7 +71,7 @@ class AbsObjGuiDef(object):
             return item_dict[utl_obj.path]
         #
         if icon_name is not None:
-            icon = utl_core.Icon.get(icon_name)
+            icon = gui_core.GuiIcon.get(icon_name)
         else:
             icon = utl_obj.icon
 

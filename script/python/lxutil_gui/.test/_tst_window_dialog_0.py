@@ -3,7 +3,7 @@ import threading
 
 from lxutil import utl_core
 
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
 
 def yes_method():
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     w.set_window_show()
     for i in range(20):
         if i == 10:
-            w = utl_core.DialogWindow.set_create(
+            w = utl_core.DccDialog.create(
                 label='label',
                 sub_label='sub label',
                 yes_method=yes_method,
@@ -42,7 +42,7 @@ if __name__ == '__main__':
                     }
                 },
                 window_size=(480, 480),
-                status=utl_core.DialogWindow.ValidatorStatus.Error,
+                status=utl_core.DccDialog.ValidationStatus.Error,
                 parent=w.widget,
                 use_window_modality=False,
             )

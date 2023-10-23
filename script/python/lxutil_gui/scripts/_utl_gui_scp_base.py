@@ -1,7 +1,7 @@
 # coding:utf-8
 from lxbasic import bsc_core
 
-from lxutil_gui.qt import gui_qt_core
+import lxgui.qt.core as gui_qt_core
 
 
 class AbsScpGuiCmdBase(object):
@@ -94,7 +94,7 @@ class AbsScpGuiCmdBase(object):
         self._ts = []
 
     def append_cmd(self, cmd):
-        bsc_core.LogMtd.trace_method_result(
+        bsc_core.Log.trace_method_result(
             self.KEY, 'append command: `{}`'.format(cmd)
         )
         self._cmds.append(cmd)

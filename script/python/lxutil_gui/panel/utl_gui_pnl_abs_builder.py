@@ -1,11 +1,13 @@
 # coding:utf-8
 from lxbasic import bsc_core
 
-from lxutil_gui.qt import gui_qt_core
+import lxgui.qt.core as gui_qt_core
+
+import lxgui.proxy.core as gui_prx_core
 
 from lxutil import utl_configure
 
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
 import lxresolver.commands as rsv_commands
 
@@ -14,6 +16,7 @@ class AbsAssetBuilderPanel(
     prx_widgets.PrxBaseWindow
 ):
     CONFIGURE_FILE_PATH = 'utility/panel/asset-builder'
+
     def __init__(self, *args, **kwargs):
         super(AbsAssetBuilderPanel, self).__init__(*args, **kwargs)
         self._option_hook_configure = utl_configure.MainData.get_as_configure(
@@ -58,7 +61,7 @@ class AbsAssetBuilderPanel(
         self.refresh_all_fnc()
 
     def _set_group_0_build_(self):
-        self._options_prx_node = prx_widgets.PrxNode_('options')
+        self._options_prx_node = prx_widgets.PrxNode('options')
         self.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_data(
             self._hook_build_configure.get('node.options')
@@ -80,9 +83,11 @@ class AbsAssetBuilderPanel(
         self._options_prx_node.set('check_all', self._set_check_all_)
         self._options_prx_node.set('check_clear', self._set_check_clear_)
         self._options_prx_node.set('build', self._set_build_run_)
+
     @classmethod
     def _get_current_project_(cls):
         import os
+
         _ = os.environ.get('PG_SHOW')
         if _:
             return _.lower()
@@ -107,10 +112,10 @@ class AbsAssetBuilderPanel(
         for i in self._options_prx_node.get_port('build_options').get_children():
             i.set(False)
 
-    @gui_qt_core.set_prx_window_waiting
+    @gui_prx_core.GuiProxyModifier.window_proxy_waiting
     def refresh_all_fnc(self):
         self._set_assets_()
 
-    @gui_qt_core.set_prx_window_waiting
+    @gui_prx_core.GuiProxyModifier.window_proxy_waiting
     def _set_build_run_(self):
         pass

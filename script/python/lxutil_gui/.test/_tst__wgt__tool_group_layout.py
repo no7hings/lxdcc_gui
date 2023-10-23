@@ -1,8 +1,8 @@
 # coding:utf-8
 
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
-import lxutil_gui.qt.widgets as qt_widgets
+import lxgui.qt.widgets as qt_widgets
 
 import lxresolver.commands as rsv_commands
 

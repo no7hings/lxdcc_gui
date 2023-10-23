@@ -1,16 +1,16 @@
 # coding:utf-8
 import os
 
-from lxutil_gui.proxy.widgets import _utl_gui_prx_wgt_window_base, _utl_gui_prx_wdt_utility
+from lxgui.proxy.widgets import _gui_prx_wgt_window_base, _gui_prx_wdt_utility
 
-from lxutil_gui.qt.gui_qt_core import *
+from lxgui.qt.core import *
 
 
-class W(_utl_gui_prx_wgt_window_base.PrxBaseWindow):
+class W(_gui_prx_wgt_window_base.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(W, self).__init__(*args, **kwargs)
 
-        b = _utl_gui_prx_wdt_utility.PrxPressItem()
+        b = _gui_prx_wdt_utility.PrxPressItem()
         self.add_button(b)
         b.set_name('Test')
 

@@ -1,5 +1,5 @@
 # coding:utf-8
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
 from lxkatana import ktn_core
 
@@ -9,7 +9,7 @@ class PnlDccWorkspaceLoader(prx_widgets.PrxSessionToolWindow):
         super(PnlDccWorkspaceLoader, self).__init__(session, *args, **kwargs)
 
     def set_all_setup(self):
-        self._options_prx_node = prx_widgets.PrxNode_('options')
+        self._options_prx_node = prx_widgets.PrxNode('options')
         self.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.options'),
@@ -53,10 +53,10 @@ class PnlDccWorkspaceLoader(prx_widgets.PrxSessionToolWindow):
                 )
                 self.refresh_auto_fnc()
         else:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 session.gui_name,
                 content='open a task scene file and retry',
-                status=utl_core.DialogWindow.ValidatorStatus.Error,
+                status=utl_core.DccDialog.ValidationStatus.Error,
                 #
                 yes_label='Close',
                 #

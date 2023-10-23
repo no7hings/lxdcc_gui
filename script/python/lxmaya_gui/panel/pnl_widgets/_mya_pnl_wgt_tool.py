@@ -5,7 +5,7 @@ from lxutil import utl_configure
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
 
 class PnlSceneClearner(prx_widgets.PrxSessionToolWindow):
@@ -13,7 +13,7 @@ class PnlSceneClearner(prx_widgets.PrxSessionToolWindow):
         super(PnlSceneClearner, self).__init__(session, *args, **kwargs)
 
     def set_all_setup(self):
-        self._options_prx_node = prx_widgets.PrxNode_('options')
+        self._options_prx_node = prx_widgets.PrxNode('options')
         self.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.options'),
@@ -34,7 +34,7 @@ class PnlGeometryExporter(prx_widgets.PrxSessionToolWindow):
         super(PnlGeometryExporter, self).__init__(session, *args, **kwargs)
 
     def set_all_setup(self):
-        self._options_prx_node = prx_widgets.PrxNode_('options')
+        self._options_prx_node = prx_widgets.PrxNode('options')
         self.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.options'),
@@ -85,10 +85,10 @@ class PnlGeometryExporter(prx_widgets.PrxSessionToolWindow):
             )
             o.set('auxiliary.export', self.export_auxiliary_fnc_)
         else:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 session.gui_name,
                 content='open a task scene file and retry',
-                status=utl_core.DialogWindow.ValidatorStatus.Error,
+                status=utl_core.DccDialog.ValidationStatus.Error,
                 #
                 yes_label='Close',
                 #
@@ -167,7 +167,7 @@ class PnlGeometryBuilder(prx_widgets.PrxSessionToolWindow):
         super(PnlGeometryBuilder, self).__init__(session, *args, **kwargs)
 
     def set_all_setup(self):
-        self._options_prx_node = prx_widgets.PrxNode_('options')
+        self._options_prx_node = prx_widgets.PrxNode('options')
         self.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.options'),
@@ -208,10 +208,10 @@ class PnlGeometryBuilder(prx_widgets.PrxSessionToolWindow):
             o.set('geometry_uv_map.import', self.import_geometry_uv_map_fnc)
             self._tip_text_browser.set_content(self._session.gui_configure.get('content'))
         else:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 session.gui_name,
                 content='open a task scene file and retry',
-                status=utl_core.DialogWindow.ValidatorStatus.Error,
+                status=utl_core.DccDialog.ValidationStatus.Error,
                 #
                 yes_label='Close',
                 #
@@ -295,7 +295,7 @@ class PnlLookBuilder(prx_widgets.PrxSessionToolWindow):
         super(PnlLookBuilder, self).__init__(session, *args, **kwargs)
 
     def set_all_setup(self):
-        self._options_prx_node = prx_widgets.PrxNode_('options')
+        self._options_prx_node = prx_widgets.PrxNode('options')
         self.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.options'),
@@ -337,10 +337,10 @@ class PnlLookBuilder(prx_widgets.PrxSessionToolWindow):
             o.set('geometry_uv_map.import', self.import_geometry_uv_map_fnc)
             self._tip_text_browser.set_content(self._session.gui_configure.get('content'))
         else:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 session.gui_name,
                 content='open a task scene file and retry',
-                status=utl_core.DialogWindow.ValidatorStatus.Error,
+                status=utl_core.DccDialog.ValidationStatus.Error,
                 #
                 yes_label='Close',
                 #

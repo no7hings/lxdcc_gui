@@ -1,9 +1,9 @@
 # coding:utf-8
 from lxbasic import bsc_core
 
-from lxutil_gui.qt import gui_qt_core
+import lxgui.proxy.core as gui_prx_core
 
-import lxutil_gui.panel.utl_pnl_widgets as utl_pnl_widgets
+import lxutil_gui.panel.widgets as utl_pnl_widgets
 
 bsc_core.EnvExtraMtd.set_td_enable(True)
 
@@ -16,6 +16,6 @@ hook_option = 'file={}'.format('/l/prod/cgm/work/assets/chr/nn_4y_test/srf/surfa
 # hook_option = 'file={}'.format('/l/prod/cgm/work/assets/chr/nn_4y_test/rig/rigging/maya/scenes/nn_4y_test.rig.rigging.v111.ma')
 # hook_option = 'file={}'.format('/l/prod/cgm/work/assets/chr/nn_4y_test/grm/groom/maya/scenes/nn_4y_test.grm.groom.v103.ma')
 
-gui_qt_core.show_prx_window_auto(
+gui_prx_core.GuiProxyUtil.show_window_proxy_auto(
     utl_pnl_widgets.AssetRenderSubmitter, hook_option=hook_option
 )

@@ -1,7 +1,7 @@
 # coding:utf-8
-from lxutil_gui.qt.widgets import _gui_qt_wgt_utility
+from lxgui.qt.widgets import _gui_qt_wgt_utility
 
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
 
 if __name__ == '__main__':

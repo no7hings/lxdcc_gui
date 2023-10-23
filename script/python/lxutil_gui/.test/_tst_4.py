@@ -1,11 +1,11 @@
 # coding:utf-8
 
-from lxutil_gui.proxy.widgets import _utl_gui_prx_wdt_utility, _gui_prx_wdt_node
+from lxgui.proxy.widgets import _gui_prx_wdt_utility, _gui_prx_wdt_node, _
 
-from lxutil_gui.qt.widgets import _gui_qt_wgt_chart
+from lxgui.qt.widgets import _gui_qt_wgt_chart
 
 
-class TestWindow(_utl_gui_prx_wdt_utility.PrxBaseWindow):
+class TestWindow(_gui_prx_wdt_utility.PrxBaseWindow):
     def __init__(self, *args, **kwargs):
         super(TestWindow, self).__init__(*args, **kwargs)
 

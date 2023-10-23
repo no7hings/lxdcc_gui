@@ -1,5 +1,5 @@
 # coding:utf-8
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
 import lxuniverse.objects as unr_objects
 

@@ -1,7 +1,7 @@
 # coding:utf-8
 from lxutil import utl_configure
 
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
 
 class W(prx_widgets.PrxWindow):
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     #
     w = W()
-    w.set_definition_window_size((800, 800))
+    w.set_definition_window_size((480, 240))
     w.set_window_show()
     #
     sys.exit(app.exec_())

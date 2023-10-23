@@ -1,5 +1,5 @@
 # coding:utf-8
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 

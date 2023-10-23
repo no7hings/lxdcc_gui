@@ -19,6 +19,7 @@ class PnlHashGeometry(utl_gui_pnl_abs_utility.AbsPnlHashGeometry):
         import lxmaya.dcc.dcc_objects as maya_dcc_objects
         #
         import lxmaya.fnc.exporters as mya_fnc_exporters
+
         #
         file_path = self._utility_node_prx.get_port('save_usd_file').get()
         if file_path:
@@ -39,6 +40,7 @@ class PnlHashGeometry(utl_gui_pnl_abs_utility.AbsPnlHashGeometry):
 
     def _set_usd_file_import_(self):
         import lxmaya.fnc.importers as mya_fnc_importers
+
         #
         file_path = self._utility_node_prx.get_port('open_usd_file').get()
         if file_path:
@@ -50,6 +52,7 @@ class PnlHashGeometry(utl_gui_pnl_abs_utility.AbsPnlHashGeometry):
 
     def _set_database_uv_map_export_(self):
         import lxmaya.fnc.exporters as mya_fnc_exporters
+
         #
         force = self._database_export_node_prx.get_port('export_uv_map_force').get()
         mya_fnc_exporters.DatabaseGeometryExport(
@@ -58,8 +61,10 @@ class PnlHashGeometry(utl_gui_pnl_abs_utility.AbsPnlHashGeometry):
 
     def _set_database_uv_map_import_(self):
         import lxmaya.fnc.importers as mya_fnc_importers
+
         #
         mya_fnc_importers.DatabaseGeometryImporter().set_run()
+
     # geometry unify
     def _set_geometry_unify_run_(self):
         if self._geometry_unify_ddl_job_process is not None:
@@ -107,13 +112,16 @@ class PnlHashGeometry(utl_gui_pnl_abs_utility.AbsPnlHashGeometry):
         import lxmaya.dcc.dcc_objects as maya_dcc_objects
         #
         import lxmaya.fnc.exporters as mya_fnc_exporters
+
         #
         root = maya_dcc_objects.Selection.get_current()
         if root:
             uuid = bsc_core.UuidMtd.generate_new()
             #
             self._geometry_unify_file_path = '/l/resource/temporary/.lynxi/.cache/geometry-unify/{}.usd'.format(uuid)
-            self._geometry_unify_output_file_path = '/l/resource/temporary/.lynxi/.cache/geometry-unify/{}.output.usd'.format(uuid)
+            self._geometry_unify_output_file_path = '/l/resource/temporary/.lynxi/.cache/geometry-unify/{}.output.usd'.format(
+                uuid
+                )
             self._geometry_unify_time_tag = utl_core.System.get_time_tag()
             #
             mya_fnc_exporters.FncGeometryUsdExporter(
@@ -149,13 +157,14 @@ class PnlHashGeometry(utl_gui_pnl_abs_utility.AbsPnlHashGeometry):
                 )
                 self._geometry_unify_ddl_job_process.set_start()
         else:
-            utl_core.Log.set_module_warning_trace(
+            bsc_core.Log.trace_method_warning(
                 'geometry unify',
                 'please select a root'
             )
 
     def _set_geometry_unify_next_(self):
         import lxmaya.fnc.importers as mya_fnc_importers
+
         #
         if bsc_core.StgPathOpt(self._geometry_unify_output_file_path).get_is_exists() is True:
             mya_fnc_importers.FncGeometryUsdImporter(
@@ -167,12 +176,13 @@ class PnlHashGeometry(utl_gui_pnl_abs_utility.AbsPnlHashGeometry):
                 )
             ).execute()
         else:
-            utl_core.Log.set_module_warning_trace(
+            bsc_core.Log.trace_method_warning(
                 'geometry unify',
                 'file="{}" is non-exists'.format(self._geometry_unify_output_file_path)
             )
         #
         self._geometry_unify_ddl_job_process.set_stop()
+
     # geometry uv-map assign
     def _set_geometry_uv_map_assign_run_(self):
         if self._geometry_uv_assign_ddl_job_process is not None:
@@ -183,7 +193,7 @@ class PnlHashGeometry(utl_gui_pnl_abs_utility.AbsPnlHashGeometry):
                     self._set_geometry_uv_map_assign_next_()
         else:
             self._set_geometry_uv_map_assign_start_()
-    
+
     def _set_geometry_uv_map_assign_ddl_job_processing_(self, running_time_cost):
         if self._geometry_uv_assign_ddl_job_process is not None:
             port = self._hash_uv_node_prx.get_port('geometry_uv_map_assign')
@@ -220,13 +230,18 @@ class PnlHashGeometry(utl_gui_pnl_abs_utility.AbsPnlHashGeometry):
         import lxmaya.dcc.dcc_objects as maya_dcc_objects
         #
         import lxmaya.fnc.exporters as mya_fnc_exporters
+
         #
         root = maya_dcc_objects.Selection.get_current()
         if root:
             uuid = bsc_core.UuidMtd.generate_new()
             #
-            self._geometry_uv_map_assign_file_path = '/l/resource/temporary/.lynxi/.cache/geometry-uv-assign/{}.usd'.format(uuid)
-            self._geometry_uv_map_assign_output_file_path = '/l/resource/temporary/.lynxi/.cache/geometry-uv-assign/{}.output.usd'.format(uuid)
+            self._geometry_uv_map_assign_file_path = '/l/resource/temporary/.lynxi/.cache/geometry-uv-assign/{}.usd'.format(
+                uuid
+                )
+            self._geometry_uv_map_assign_output_file_path = '/l/resource/temporary/.lynxi/.cache/geometry-uv-assign/{}.output.usd'.format(
+                uuid
+                )
             self._geometry_uv_map_assign_time_tag = utl_core.System.get_time_tag()
             #
             mya_fnc_exporters.FncGeometryUsdExporter(
@@ -262,13 +277,14 @@ class PnlHashGeometry(utl_gui_pnl_abs_utility.AbsPnlHashGeometry):
                 )
                 self._geometry_uv_assign_ddl_job_process.set_start()
         else:
-            utl_core.Log.set_module_warning_trace(
+            bsc_core.Log.trace_method_warning(
                 'geometry uv-map assign',
                 'please select a root'
             )
 
     def _set_geometry_uv_map_assign_next_(self):
         import lxmaya.fnc.importers as mya_fnc_importers
+
         #
         if bsc_core.StgPathOpt(self._geometry_uv_map_assign_output_file_path).get_is_exists() is True:
             mya_fnc_importers.FncGeometryUsdImporter(
@@ -280,7 +296,7 @@ class PnlHashGeometry(utl_gui_pnl_abs_utility.AbsPnlHashGeometry):
                 )
             ).execute()
         else:
-            utl_core.Log.set_module_warning_trace(
+            bsc_core.Log.trace_method_warning(
                 'geometry uv-map assign',
                 'file="{}" is non-exists'.format(self._geometry_uv_map_assign_output_file_path)
             )

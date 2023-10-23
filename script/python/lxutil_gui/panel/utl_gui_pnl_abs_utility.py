@@ -1,17 +1,17 @@
 # coding:utf-8
 from lxbasic import bsc_core
 
-import lxutil_gui.qt.widgets as qt_widgets
+import lxgui.qt.widgets as qt_widgets
 
 from lxutil import utl_configure, utl_core
 
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
-from lxutil_gui import gui_core
+import lxgui.core as gui_core
 
-from lxutil_gui.qt import gui_qt_core
+import lxgui.qt.core as gui_qt_core
 
-import lxutil_gui.proxy.operators as utl_prx_operators
+import lxgui.proxy.scripts as gui_prx_scripts
 
 import lxutil.dcc.dcc_operators as utl_dcc_operators
 
@@ -39,9 +39,6 @@ def _set_texture_tx_create(window, item_prx, texture_references, includes, force
         pass
 
     #
-    import lxbasic.objects as bsc_objects
-
-    #
     textures_opt = utl_dcc_operators.DccTexturesOpt(
         texture_references,
         includes=includes,
@@ -54,7 +51,7 @@ def _set_texture_tx_create(window, item_prx, texture_references, includes, force
     # ).set_tx_create_and_repath_use_thread(use_deferred=True, force=force)
     #
     # create_process = result_dict['tx-create']
-    p_m = bsc_objects.ProcessMonitor(create_process)
+    p_m = bsc_core.TrdProcessMonitor(create_process)
     p_m.logging.connect_to(set_logging_update)
     p_m.processing.connect_to(set_processing_update)
     p_m.status_changed.connect_to(set_status_changed_update)
@@ -99,9 +96,6 @@ def _set_texture_jpg_create(window, item_prx, texture_references, includes, forc
 
     def set_logging_update(text):
         pass
-        #
-
-    import lxbasic.objects as bsc_objects
 
     #
     label = 'Load Texture-jpg(s)'
@@ -112,7 +106,7 @@ def _set_texture_jpg_create(window, item_prx, texture_references, includes, forc
     )
     create_process = textures_opt.set_jpg_create(use_deferred=True, force=force)
     #
-    p_m = bsc_objects.ProcessMonitor(create_process)
+    p_m = bsc_core.TrdProcessMonitor(create_process)
     p_m.logging.connect_to(set_logging_update)
     p_m.processing.connect_to(set_processing_update)
     p_m.status_changed.connect_to(set_status_changed_update)
@@ -232,7 +226,7 @@ class AbsSceneTextureManagerPanel(
         qt_widget_0 = qt_widgets.QtWidget()
         expand_box_0.add_widget(qt_widget_0)
         qt_layout_0 = qt_widgets.QtVBoxLayout(qt_widget_0)
-        self._tool_node_prx = prx_widgets.PrxNode()
+        self._tool_node_prx = prx_widgets.PrxNodeOld()
         qt_layout_0.addWidget(self._tool_node_prx.widget)
         #
         _port = self._tool_node_prx.add_port(
@@ -323,7 +317,7 @@ class AbsSceneTextureManagerPanel(
         qt_widget_0 = qt_widgets.QtWidget()
         expand_box_0.add_widget(qt_widget_0)
         qt_layout_0 = qt_widgets.QtVBoxLayout(qt_widget_0)
-        self._search_node_gui = prx_widgets.PrxNode()
+        self._search_node_gui = prx_widgets.PrxNodeOld()
         qt_layout_0.addWidget(self._search_node_gui.widget)
         #
         _port = self._search_node_gui.add_port(
@@ -353,7 +347,7 @@ class AbsSceneTextureManagerPanel(
         qt_widget_0 = qt_widgets.QtWidget()
         expand_box_0.add_widget(qt_widget_0)
         qt_layout_0 = qt_widgets.QtVBoxLayout(qt_widget_0)
-        self._copy_and_repath_node_gui = prx_widgets.PrxNode()
+        self._copy_and_repath_node_gui = prx_widgets.PrxNodeOld()
         qt_layout_0.addWidget(self._copy_and_repath_node_gui.widget)
         #
         _port = self._copy_and_repath_node_gui.add_port(
@@ -375,7 +369,7 @@ class AbsSceneTextureManagerPanel(
             self.get_definition_window_size()[0]*(1.0/4.0)-20
         )
         #
-        self._prx_dcc_obj_tree_view_tag_filter_opt = utl_prx_operators.GuiTagFilterOpt(
+        self._prx_dcc_obj_tree_view_tag_filter_opt = gui_prx_scripts.GuiPrxScpForTreeTagFilter(
             prx_tree_view_src=self._filter_tree_viewer_0,
             prx_tree_view_tgt=self._obj_tree_viewer_0,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
@@ -388,17 +382,17 @@ class AbsSceneTextureManagerPanel(
         #
         self._obj_tree_viewer_0.set_selection_use_single()
         #
-        self._prx_stg_obj_tree_view_add_opt = utl_prx_operators.PrxStgTextureTreeViewAddOpt(
+        self._prx_stg_obj_tree_view_add_opt = gui_prx_scripts.GuiPrxScpForTextureTreeAdd(
             prx_tree_view=self._obj_tree_viewer_0,
             prx_tree_item_cls=prx_widgets.PrxStgObjTreeItem,
         )
-        self._prx_dcc_obj_tree_view_add_opt = utl_prx_operators.PrxDccObjTreeViewAddOpt(
+        self._prx_dcc_obj_tree_view_add_opt = gui_prx_scripts.GuiPrxScpForTreeAdd(
             prx_tree_view=self._obj_tree_viewer_0,
             prx_tree_item_cls=prx_widgets.PrxDccObjTreeItem,
             dcc_namespace=self.DCC_NAMESPACE
         )
         #
-        self._prx_dcc_obj_tree_view_selection_opt = utl_prx_operators.PrxDccObjTreeViewSelectionOpt(
+        self._prx_dcc_obj_tree_view_selection_opt = gui_prx_scripts.GuiPrxScpForTreeSelection(
             prx_tree_view=self._obj_tree_viewer_0,
             dcc_selection_cls=self.DCC_SELECTION_CLS,
             dcc_namespace=self.DCC_NAMESPACE
@@ -419,9 +413,9 @@ class AbsSceneTextureManagerPanel(
                 self._dcc_objs = self._texture_references.get_objs()
             #
             if self._dcc_objs:
-                with utl_core.GuiProgressesRunner.create(
-                        maximum=len(self._dcc_objs), label='gui-add for texture'
-                        ) as g_p:
+                with bsc_core.LogProcessContext.create(
+                    maximum=len(self._dcc_objs), label='gui-add for texture'
+                ) as g_p:
                     for i_dcc_obj in self._dcc_objs:
                         g_p.set_update()
                         i_files = i_dcc_obj.get_file_objs()
@@ -502,13 +496,13 @@ class AbsSceneTextureManagerPanel(
                     descendants = tree_item_prx.get_descendants()
                     c = len(descendants)
                     if c > 100:
-                        w = utl_core.DialogWindow.set_create(
+                        w = utl_core.DccDialog.create(
                             'List all Texture(s)',
                             content='list {} texture units from "{}", press "Yes" to continue'.format(
                                 c,
                                 _.path
                             ),
-                            status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                            status=utl_core.DccDialog.ValidationStatus.Warning,
                         )
                         result = w.get_result()
                         if result is not True:
@@ -526,13 +520,13 @@ class AbsSceneTextureManagerPanel(
                     file_units = _.get_exists_units()
                     c = len(file_units)
                     if c > 50:
-                        w = utl_core.DialogWindow.set_create(
+                        w = utl_core.DccDialog.create(
                             'List all Texture-unit(s)',
                             content='list {} texture units from "{}", press "Yes" to continue'.format(
                                 c,
                                 _.path
                             ),
-                            status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                            status=utl_core.DccDialog.ValidationStatus.Warning,
                         )
                         result = w.get_result()
                         if result is not True:
@@ -720,7 +714,7 @@ class AbsShotgunEntitiesCreatorPanel(
         qt_widget_0 = qt_widgets.QtWidget()
         expand_box_0.add_widget(qt_widget_0)
         qt_layout_0 = qt_widgets.QtVBoxLayout(qt_widget_0)
-        self._tool_node_prx = prx_widgets.PrxNode()
+        self._tool_node_prx = prx_widgets.PrxNodeOld()
         qt_layout_0.addWidget(self._tool_node_prx.widget)
         #
         _port = self._tool_node_prx.add_port(
@@ -831,7 +825,7 @@ class AbsPnlHashGeometry(
         qt_widget_0 = qt_widgets.QtWidget()
         expand_box_0.add_widget(qt_widget_0)
         qt_layout_0 = qt_widgets.QtVBoxLayout(qt_widget_0)
-        self._utility_node_prx = prx_widgets.PrxNode()
+        self._utility_node_prx = prx_widgets.PrxNodeOld()
         qt_layout_0.addWidget(self._utility_node_prx.widget)
         #
         _port = self._utility_node_prx.add_port(
@@ -883,7 +877,7 @@ class AbsPnlHashGeometry(
         qt_widget_0 = qt_widgets.QtWidget()
         expand_box_0.add_widget(qt_widget_0)
         qt_layout_0 = qt_widgets.QtVBoxLayout(qt_widget_0)
-        self._database_export_node_prx = prx_widgets.PrxNode()
+        self._database_export_node_prx = prx_widgets.PrxNodeOld()
         qt_layout_0.addWidget(self._database_export_node_prx.widget)
         #
         _port = self._database_export_node_prx.add_port(
@@ -915,7 +909,7 @@ class AbsPnlHashGeometry(
         qt_widget_0 = qt_widgets.QtWidget()
         expand_box_0.add_widget(qt_widget_0)
         qt_layout_0 = qt_widgets.QtVBoxLayout(qt_widget_0)
-        self._database_import_node_prx = prx_widgets.PrxNode()
+        self._database_import_node_prx = prx_widgets.PrxNodeOld()
         qt_layout_0.addWidget(self._database_import_node_prx.widget)
         #
         _port = self._database_import_node_prx.add_port(
@@ -937,7 +931,7 @@ class AbsPnlHashGeometry(
         qt_widget_0 = qt_widgets.QtWidget()
         expand_box_0.add_widget(qt_widget_0)
         qt_layout_0 = qt_widgets.QtVBoxLayout(qt_widget_0)
-        self._hash_uv_node_prx = prx_widgets.PrxNode()
+        self._hash_uv_node_prx = prx_widgets.PrxNodeOld()
         qt_layout_0.addWidget(self._hash_uv_node_prx.widget)
         #
         _port = self._hash_uv_node_prx.add_port(
@@ -1055,5 +1049,5 @@ class AbsFncPanel(prx_widgets.PrxBaseWindow):
         self._set_panel_build_()
 
     def _set_panel_build_(self):
-        self._node_prx_0 = prx_widgets.PrxNode()
+        self._node_prx_0 = prx_widgets.PrxNodeOld()
         self.add_widget(self._node_prx_0)

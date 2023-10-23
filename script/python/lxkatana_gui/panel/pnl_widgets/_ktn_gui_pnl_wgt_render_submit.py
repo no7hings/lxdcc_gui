@@ -7,7 +7,7 @@ from lxbasic import bsc_core
 
 from lxutil import utl_core
 
-from lxutil_gui import gui_core
+import lxgui.core as gui_core
 
 from lxkatana import ktn_core
 
@@ -72,7 +72,7 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
         #
         ns = self.get_all_render_layers()
         c = len(ns)
-        with utl_core.GuiProgressesRunner.create(maximum=c, label='gui build render layer') as g_p:
+        with bsc_core.LogProcessContext.create(maximum=c, label='gui build render layer') as g_p:
             for i in ns:
                 g_p.set_update()
                 i_opt = ktn_core.NGObjOpt(i)
@@ -97,7 +97,7 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
         prx_item.set_check_enable(True)
 
         prx_item.set_image(
-            gui_core.RscIconFile.get('image_loading_failed_error')
+            gui_core.GuiIcon.get('image_loading_failed_error')
         )
 
         default_render_version = self._options_prx_node.get('render.version')
@@ -255,12 +255,12 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
 
         render_file_path = bsc_core.StgFileOpt(file_path).get_render_file_path()
         if bsc_core.StgPathMtd.get_is_exists(render_file_path) is True:
-            w = utl_core.DialogWindow.set_create(
+            w = utl_core.DccDialog.create(
                 label=self._session.gui_name,
                 content=six.u('Scene is non changed for submit, render file for this scene is exists:\n"{}"').format(
                     render_file_path
                 ),
-                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                status=utl_core.DccDialog.ValidationStatus.Warning,
                 window_size=(480, 160),
                 no_visible=False,
                 #
@@ -274,12 +274,12 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
         #
         render_nodes = self.get_checked_render_nodes()
         if not render_nodes:
-            w = utl_core.DialogWindow.set_create(
+            w = utl_core.DccDialog.create(
                 label=self._session.gui_name,
                 content=(
                     'No render-node is checked, check at least one render-node'
                 ),
-                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                status=utl_core.DccDialog.ValidationStatus.Warning,
                 window_size=(480, 160),
                 yes_visible=False,
                 no_visible=False,
@@ -287,7 +287,7 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
             )
             return
 
-        w = utl_core.DialogWindow.set_create(
+        w = utl_core.DccDialog.create(
             label=self._session.gui_name,
             content=(
                 'Submit render to deadline for render node:\n'

@@ -1,5 +1,5 @@
 # coding:utf-8
-import lxutil_gui.proxy.widgets as utl_prx_widgets
+import lxgui.proxy.widgets as utl_prx_widgets
 
 import lxresolver.commands as rsv_commands
 
@@ -28,7 +28,7 @@ class TestWindow(utl_prx_widgets.PrxBaseWindow):
         tool = utl_prx_widgets.PrxFilterBar()
         tool_group_1.add_widget(tool)
         # r = rsv_commands.get_resolver()
-        # n = utl_prx_widgets.PrxNode_('root')
+        # n = utl_prx_widgets.PrxNode('root')
         # self.add_widget(n)
         # assets = r.get_rsv_resources(
         #     project='cgm', branch='asset'

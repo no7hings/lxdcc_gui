@@ -1,23 +1,23 @@
 # coding:utf-8
 import time
 
-from lxbasic import bsc_configure, bsc_core
+from lxbasic import bsc_core
 
-import lxutil_gui.proxy.widgets as prx_widgets
+import lxgui.proxy.widgets as prx_widgets
 
 from lxutil import utl_core
 
-from lxutil_gui.qt import gui_qt_core
+import lxgui.qt.core as gui_qt_core
 
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
-import lxutil_gui.proxy.operators as utl_prx_operators
+import lxgui.proxy.scripts as gui_prx_scripts
 
 import lxsession.commands as ssn_commands
 
 import lxresolver.commands as rsv_commands
 
-from lxutil_gui import gui_core
+import lxgui.core as gui_core
 
 import lxresolver.methods as rsv_methods
 
@@ -30,6 +30,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
     DCC_NAMESPACE = None
     DCC_SELECTION_CLS = None
     TEXTURE_WORKSPACE_CLS = None
+
     def __init__(self, session, *args, **kwargs):
         super(AbsPnlAssetTextureManager, self).__init__(session, *args, **kwargs)
 
@@ -55,7 +56,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
             icon_name_text='workspace',
         )
 
-        self._options_prx_node = prx_widgets.PrxNode_('options')
+        self._options_prx_node = prx_widgets.PrxNode('options')
         s_0.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.options'),
@@ -155,12 +156,12 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
         if directory_path:
             return True
         else:
-            w = utl_core.DialogWindow.set_create(
+            w = utl_core.DccDialog.create(
                 self._session.gui_name,
                 content='workspace is not install in variant "{}", press "Confirm" to continue'.format(
                     current_variant
                 ),
-                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                status=utl_core.DccDialog.ValidationStatus.Warning,
                 #
                 yes_label='Confirm',
                 #
@@ -202,12 +203,12 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
         variant = self._options_prx_node.get('control.variant')
         next_version = self._rsv_workspace_texture_opt.get_new_version_at(variant)
 
-        w = utl_core.DialogWindow.set_create(
+        w = utl_core.DccDialog.create(
             self._session.gui_name,
             content=u'create new version "{}" in variant "{}" and pull textures from choose version ( lock choose version ), press "Confirm" to continue'.format(
                 next_version, variant
             ),
-            status=utl_core.DialogWindow.ValidatorStatus.Warning,
+            status=utl_core.DccDialog.ValidationStatus.Warning,
             #
             options_configure=self._session.configure.get('build.node.new_version'),
             #
@@ -230,14 +231,16 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
         v_p.set(
             all_versions
         )
-        [v_p.set_icon_file_as_value(i, gui_core.RscIconFile.get('lock')) for i in all_locked_versions]
+        [v_p.set_icon_file_as_value(i, gui_core.GuiIcon.get('lock')) for i in all_locked_versions]
 
         w.set_window_show()
 
     def _set_wsp_all_version_lock_(self):
         def yes_fnc_():
             if unlocked_directory_paths:
-                with utl_core.GuiProgressesRunner.create(maximum=len(unlocked_directory_paths), label='lock version directory') as g_p:
+                with bsc_core.LogProcessContext.create(
+                    maximum=len(unlocked_directory_paths), label='lock version directory'
+                ) as g_p:
                     for _i in unlocked_directory_paths:
                         bsc_core.StgPathPermissionMtd.lock(_i)
                         g_p.set_update()
@@ -254,11 +257,11 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
 
         unlocked_directory_paths = [i for i in directory_paths if bsc_core.StorageMtd.get_is_writeable(i) is True]
         if unlocked_directory_paths:
-            w = utl_core.DialogWindow.set_create(
+            w = utl_core.DccDialog.create(
                 self._session.gui_name,
                 sub_label='Lock All Version',
                 content=u'lock all texture directories(used and matched "texture workspace" rule), press "Confirm" to continue',
-                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                status=utl_core.DccDialog.ValidationStatus.Warning,
                 #
                 options_configure=self._session.configure.get('build.node.lock_all_version'),
                 #
@@ -279,10 +282,10 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
 
             w.set_window_show()
         else:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 self._session.gui_name,
                 content=u'all texture directories(used and matched "texture workspace" rule) is locked',
-                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                status=utl_core.DccDialog.ValidationStatus.Warning,
                 #
                 yes_label='Close',
                 #
@@ -311,17 +314,18 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
             (self._set_wsp_texture_pull_as_link_, (directory_path_tx_0, directory_path_tx_1))
         ]
 
-        with utl_core.GuiProgressesRunner.create(maximum=len(method_args), label='execute texture pull method') as g_p:
+        with bsc_core.LogProcessContext.create(maximum=len(method_args), label='execute texture pull method') as g_p:
             for i_method, i_args in method_args:
                 g_p.set_update()
                 i_method(*i_args)
+
     @classmethod
     def _set_wsp_texture_pull_as_link_(cls, directory_path_src, directory_path_tgt):
         file_paths_src = bsc_core.StgDirectoryMtd.get_file_paths__(
             directory_path_src
         )
         if file_paths_src:
-            with utl_core.GuiProgressesRunner.create(maximum=len(file_paths_src), label='pull texture as link') as g_p:
+            with bsc_core.LogProcessContext.create(maximum=len(file_paths_src), label='pull texture as link') as g_p:
                 for i_file_path in file_paths_src:
                     g_p.set_update()
                     #
@@ -354,7 +358,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
 
     def _set_tx_create_data_update_(self, directory_paths, force_enable=False, ext_tgt='.tx'):
         self._create_data = []
-        with utl_core.GuiProgressesRunner.create(maximum=len(directory_paths), label='create texture-tx in directory') as g_p:
+        with bsc_core.LogProcessContext.create(maximum=len(directory_paths), label='create texture-tx in directory') as g_p:
             for i_directory_path in directory_paths:
                 i_directory_path_src = '{}/src'.format(i_directory_path)
                 i_directory_path_tgt = '{}/{}'.format(i_directory_path, ext_tgt[1:])
@@ -369,7 +373,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
             directory_path_src
         )
         if file_paths_src:
-            with utl_core.GuiProgressesRunner.create(maximum=len(file_paths_src), label='texture-tx create running') as g_p:
+            with bsc_core.LogProcessContext.create(maximum=len(file_paths_src), label='texture-tx create running') as g_p:
                 for i_file_path in file_paths_src:
                     i_texture_src = utl_dcc_objects.OsTexture(
                         i_file_path
@@ -381,8 +385,8 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
                             )
                         else:
                             if i_texture_src.get_is_exists_as_tgt_ext(
-                                ext_tgt,
-                                directory_path_tgt
+                                    ext_tgt,
+                                    directory_path_tgt
                             ) is False:
                                 self._create_data.append(
                                     (i_texture_src.path, directory_path_tgt)
@@ -420,10 +424,10 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
                     i_t.finished.connect_to(finished_fnc_)
                 else:
                     status_update_at_fnc_(
-                        i_index, bsc_configure.Status.Completed
+                        i_index, button.Status.Completed
                     )
                     finished_fnc_(
-                        i_index, bsc_configure.Status.Completed
+                        i_index, button.Status.Completed
                     )
 
         def quit_fnc_():
@@ -441,8 +445,8 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
 
             c = len(self._create_data)
 
-            button.set_status(bsc_configure.Status.Started)
-            button.set_initialization(c, bsc_configure.Status.Started)
+            button.set_status(button.Status.Started)
+            button.set_initialization(c, button.Status.Started)
 
             t = gui_qt_core.QtMethodThread(self.widget)
             t.append_method(
@@ -463,10 +467,10 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
             ]
 
         if contents:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 self._session.gui_name,
                 content=u'\n'.join(contents),
-                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                status=utl_core.DccDialog.ValidationStatus.Warning,
                 #
                 yes_label='Close',
                 #
@@ -488,7 +492,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
                 (self._set_tx_create_data_update_, (directory_paths, force_enable, ext_tgt)),
                 (self._set_tx_create_by_data_, (button,))
             ]
-            with utl_core.GuiProgressesRunner.create(maximum=len(method_args), label='texture-tx create processing') as g_p:
+            with bsc_core.LogProcessContext.create(maximum=len(method_args), label='texture-tx create processing') as g_p:
                 for i_fnc, i_args in method_args:
                     g_p.set_update()
                     #
@@ -496,10 +500,10 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
                     if i_result is False:
                         break
         else:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 self._session.gui_name,
                 content='non-directory(s) for create',
-                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                status=utl_core.DccDialog.ValidationStatus.Warning,
                 #
                 yes_label='Close',
                 #
@@ -542,10 +546,10 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
                 session.gui_name, ddl_job_id
             )
         else:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 self._session.gui_name,
                 content='non-directory(s) for create',
-                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                status=utl_core.DccDialog.ValidationStatus.Warning,
                 #
                 yes_label='Close',
                 #
@@ -558,6 +562,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
 class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
     DCC_NAMESPACE = None
     DCC_SELECTION_CLS = None
+
     def __init__(self, session, *args, **kwargs):
         super(AbsPnlAssetDccTextureManager, self).__init__(session, *args, **kwargs)
 
@@ -603,17 +608,17 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         h_s_0.set_fixed_size_at(0, 240)
         h_s_0.set_contract_left_or_top_at(0)
         #
-        self._texture_add_opt = utl_prx_operators.PrxStgObjTreeViewAddOpt(
+        self._texture_add_opt = gui_prx_scripts.GuiPrxScpForStorageTreeAdd(
             prx_tree_view=self._tree_view,
             prx_tree_item_cls=prx_widgets.PrxStgObjTreeItem,
         )
-        self._dcc_obj_add_opt = utl_prx_operators.PrxDccObjTreeViewAddOpt(
+        self._dcc_obj_add_opt = gui_prx_scripts.GuiPrxScpForTreeAdd(
             prx_tree_view=self._tree_view,
             prx_tree_item_cls=prx_widgets.PrxDccObjTreeItem,
             dcc_namespace=self.DCC_NAMESPACE
         )
         #
-        self._tree_view_selection_opt = utl_prx_operators.PrxDccObjTreeViewSelectionOpt(
+        self._tree_view_selection_opt = gui_prx_scripts.GuiPrxScpForTreeSelection(
             prx_tree_view=self._tree_view,
             dcc_selection_cls=self.DCC_SELECTION_CLS,
             dcc_namespace=self.DCC_NAMESPACE
@@ -622,14 +627,14 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             self._tree_view_selection_opt.set_select
         )
 
-        self._tree_view_filter_opt = utl_prx_operators.GuiTagFilterOpt(
+        self._tree_view_filter_opt = gui_prx_scripts.GuiPrxScpForTreeTagFilter(
             prx_tree_view_src=self._filter_tree_view,
             prx_tree_view_tgt=self._tree_view,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
         )
         self.connect_refresh_action_to(self.refresh_gui_fnc)
         #
-        self._options_prx_node = prx_widgets.PrxNode_('options')
+        self._options_prx_node = prx_widgets.PrxNode('options')
         s_a_0.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.options'),
@@ -685,7 +690,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             (self._set_gui_textures_refresh_, ()),
             (self._set_gui_textures_validator_, ())
         ]
-        with utl_core.GuiProgressesRunner.create(maximum=len(method_args), label='gui processing') as g_p:
+        with bsc_core.LogProcessContext.create(maximum=len(method_args), label='gui processing') as g_p:
             for i_fnc, i_args in method_args:
                 g_p.set_update()
                 i_fnc(*i_args)
@@ -695,7 +700,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         self._tree_view_filter_opt.restore_all()
 
         if self._dcc_objs:
-            with utl_core.GuiProgressesRunner.create(maximum=len(self._dcc_objs), label='gui texture showing') as g_p:
+            with bsc_core.LogProcessContext.create(maximum=len(self._dcc_objs), label='gui texture showing') as g_p:
                 for i_dcc_obj in self._dcc_objs:
                     g_p.set_update()
                     #
@@ -728,11 +733,11 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         ext_tgt = self._options_prx_node.get('target.extension')
 
         repath_src_port = self._options_prx_node.get_port('target.repath_to_source')
-        repath_src_statuses = [bsc_configure.ValidatorStatus.Normal]*c
+        repath_src_statuses = [utl_core.DccDialog.ValidationStatus.Normal]*c
 
         repath_tgt_port = self._options_prx_node.get_port('target.repath_to_target')
-        repath_tgt_statuses = [bsc_configure.ValidatorStatus.Normal]*c
-        with utl_core.GuiProgressesRunner.create(maximum=len(textures), label='gui texture validating') as g_p:
+        repath_tgt_statuses = [utl_core.DccDialog.ValidationStatus.Normal]*c
+        with bsc_core.LogProcessContext.create(maximum=len(textures), label='gui texture validating') as g_p:
             for i_index, i_texture_any in enumerate(textures):
                 g_p.set_update()
 
@@ -740,45 +745,49 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                 #
                 i_descriptions = []
 
-                i_directory_args_dpt = utl_dcc_objects.OsTexture.get_directory_args_dpt_as_default_fnc(i_texture_any, ext_tgt)
+                i_directory_args_dpt = utl_dcc_objects.OsTexture.get_directory_args_dpt_as_default_fnc(
+                    i_texture_any, ext_tgt
+                    )
                 if i_directory_args_dpt:
-                    i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args_dpt)
+                    i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(
+                        ext_tgt, i_directory_args_dpt
+                        )
                     if i_texture_src.ext == ext_tgt:
                         i_descriptions.append(
                             u'source is non-exists'
                         )
-                        repath_src_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Error
+                        repath_src_statuses[i_index] = i_texture_prx_item.ValidationStatus.Error
                     else:
                         if i_texture_src.get_is_exists() is True:
                             if i_texture_src.get_is_writeable() is True:
                                 if i_texture_any == i_texture_src:
-                                    repath_src_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Correct
+                                    repath_src_statuses[i_index] = i_texture_prx_item.ValidationStatus.Correct
                             else:
-                                repath_src_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Locked
+                                repath_src_statuses[i_index] = i_texture_prx_item.ValidationStatus.Locked
                         else:
                             i_descriptions.append(
                                 u'source is non-exists'
                             )
-                            repath_src_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Error
+                            repath_src_statuses[i_index] = i_texture_prx_item.ValidationStatus.Error
                     #
                     if i_texture_tgt.get_is_exists() is True:
                         if i_texture_tgt.get_is_writeable() is True:
                             if i_texture_any == i_texture_tgt:
-                                repath_tgt_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Correct
+                                repath_tgt_statuses[i_index] = i_texture_prx_item.ValidationStatus.Correct
                         else:
-                            repath_tgt_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Locked
+                            repath_tgt_statuses[i_index] = i_texture_prx_item.ValidationStatus.Locked
                     else:
                         i_descriptions.append(
                             u'target is non-exists'
                         )
-                        repath_tgt_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Error
+                        repath_tgt_statuses[i_index] = i_texture_prx_item.ValidationStatus.Error
                     #
                     if i_texture_src.get_is_exists() is True and i_texture_tgt.get_is_exists() is True:
                         if i_texture_src.get_timestamp_is_same_to(i_texture_tgt) is False:
                             i_descriptions.append(
                                 u'target is changed'
                             )
-                            repath_tgt_statuses[i_index] = i_texture_prx_item.ValidatorStatus.Warning
+                            repath_tgt_statuses[i_index] = i_texture_prx_item.ValidationStatus.Warning
 
                 i_texture_prx_item.set_name(
                     u', '.join(i_descriptions), 2
@@ -816,16 +825,20 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         self._create_data = []
         textures = self._texture_add_opt.get_checked_files()
         if textures:
-            with utl_core.GuiProgressesRunner.create(maximum=len(textures), label='gain texture create-data') as g_p:
+            with bsc_core.LogProcessContext.create(maximum=len(textures), label='gain texture create-data') as g_p:
                 for i_texture_any in self._texture_add_opt.get_checked_files():
                     g_p.set_update()
                     # ignore is locked
                     if i_texture_any.get_is_readable() is False:
                         continue
                     #
-                    i_directory_args_dpt = utl_dcc_objects.OsTexture.get_directory_args_dpt_as_default_fnc(i_texture_any, ext_tgt)
+                    i_directory_args_dpt = utl_dcc_objects.OsTexture.get_directory_args_dpt_as_default_fnc(
+                        i_texture_any, ext_tgt
+                        )
                     if i_directory_args_dpt:
-                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args_dpt)
+                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(
+                            ext_tgt, i_directory_args_dpt
+                            )
                         if i_texture_src is not None:
                             i_texture_src_units = i_texture_src.get_exists_units()
                             i_output_directory_path = i_texture_tgt.directory.path
@@ -849,10 +862,10 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             )
 
         if contents:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 self._session.gui_name,
                 content=u'\n'.join(contents),
-                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                status=utl_core.DccDialog.ValidationStatus.Warning,
                 #
                 yes_label='Close',
                 #
@@ -890,10 +903,10 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                     i_t.finished.connect_to(finished_fnc_)
                 else:
                     status_update_at_fnc_(
-                        i_index, bsc_configure.Status.Completed
+                        i_index, button.Status.Completed
                     )
                     finished_fnc_(
-                        i_index, bsc_configure.Status.Completed
+                        i_index, button.Status.Completed
                     )
 
         def quit_fnc_():
@@ -911,8 +924,8 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
 
             c = len(self._create_data)
 
-            button.set_status(bsc_configure.Status.Started)
-            button.set_initialization(c, bsc_configure.Status.Started)
+            button.set_status(button.Status.Started)
+            button.set_initialization(c, button.Status.Started)
 
             t = gui_qt_core.QtMethodThread(self.widget)
             t.append_method(
@@ -933,10 +946,10 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             ]
 
         if contents:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 self._session.gui_name,
                 content=u'\n'.join(contents),
-                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                status=utl_core.DccDialog.ValidationStatus.Warning,
                 #
                 yes_label='Close',
                 #
@@ -956,7 +969,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             (self._set_target_create_data_update_, (ext_tgt, force_enable)),
             (self._set_target_create_by_data_, (button, self.refresh_gui_fnc))
         ]
-        with utl_core.GuiProgressesRunner.create(maximum=len(method_args), label='create texture by data') as g_p:
+        with bsc_core.LogProcessContext.create(maximum=len(method_args), label='create texture by data') as g_p:
             for i_fnc, i_args in method_args:
                 g_p.set_update()
                 #
@@ -970,15 +983,19 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         #
         textures = self._texture_add_opt.get_checked_files()
         if textures:
-            with utl_core.GuiProgressesRunner.create(maximum=len(textures), label='repath texture to source') as g_p:
+            with bsc_core.LogProcessContext.create(maximum=len(textures), label='repath texture to source') as g_p:
                 for i_texture_any in self._texture_add_opt.get_checked_files():
                     g_p.set_update()
 
                     i_texture_prx_item = i_texture_any.get_obj_gui()
 
-                    i_directory_args_dpt = utl_dcc_objects.OsTexture.get_directory_args_dpt_as_default_fnc(i_texture_any, ext_tgt)
+                    i_directory_args_dpt = utl_dcc_objects.OsTexture.get_directory_args_dpt_as_default_fnc(
+                        i_texture_any, ext_tgt
+                        )
                     if i_directory_args_dpt:
-                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args_dpt)
+                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(
+                            ext_tgt, i_directory_args_dpt
+                            )
                         if i_texture_src is not None:
                             if i_texture_src.get_is_exists() is True:
                                 i_dcc_obj_prx_items = i_texture_prx_item.get_children()
@@ -1001,10 +1018,10 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             )
 
         if contents:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 self._session.gui_name,
                 content=u'\n'.join(contents),
-                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                status=utl_core.DccDialog.ValidationStatus.Warning,
                 #
                 yes_label='Close',
                 #
@@ -1021,15 +1038,19 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         #
         textures = self._texture_add_opt.get_checked_files()
         if textures:
-            with utl_core.GuiProgressesRunner.create(maximum=len(textures), label='repath texture to target') as g_p:
+            with bsc_core.LogProcessContext.create(maximum=len(textures), label='repath texture to target') as g_p:
                 for i_texture_any in self._texture_add_opt.get_checked_files():
                     g_p.set_update()
 
                     i_texture_prx_item = i_texture_any.get_obj_gui()
 
-                    i_directory_args_dpt = utl_dcc_objects.OsTexture.get_directory_args_dpt_as_default_fnc(i_texture_any, ext_tgt)
+                    i_directory_args_dpt = utl_dcc_objects.OsTexture.get_directory_args_dpt_as_default_fnc(
+                        i_texture_any, ext_tgt
+                        )
                     if i_directory_args_dpt:
-                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(ext_tgt, i_directory_args_dpt)
+                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(
+                            ext_tgt, i_directory_args_dpt
+                            )
                         if i_texture_tgt.get_is_exists() is True:
                             i_dcc_obj_prx_items = i_texture_prx_item.get_children()
                             i_port_path = i_texture_any.get_relevant_dcc_port_path()
@@ -1049,10 +1070,10 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             )
 
         if contents:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 self._session.gui_name,
                 content=u'\n'.join(contents),
-                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                status=utl_core.DccDialog.ValidationStatus.Warning,
                 #
                 yes_label='Close',
                 #
@@ -1062,7 +1083,10 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             )
             return False
 
-    def execute_search_process(self, window, textures, directory, below_enable, ignore_exists, ignore_name_case, ignore_ext_case, ignore_ext):
+    def execute_search_process(
+            self, window, textures, directory, below_enable, ignore_exists, ignore_name_case, ignore_ext_case,
+            ignore_ext
+            ):
         if directory:
             search_opt = bsc_core.StgFileSearchOpt(
                 ignore_name_case=ignore_ext_case,
@@ -1102,11 +1126,12 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         if textures:
             def yes_fnc_():
                 self.execute_search_process(w, textures, **w.get_options_as_kwargs())
-            w = utl_core.DialogWindow.set_create(
+
+            w = utl_core.DccDialog.create(
                 self._session.gui_name,
                 sub_label='Search',
                 content=u'choose or entry a directory, press "Confirm" to continue',
-                status=utl_core.DialogWindow.ValidatorStatus.Active,
+                status=utl_core.DccDialog.ValidationStatus.Active,
                 #
                 options_configure=self._session.configure.get('build.node.extra_search'),
                 #
@@ -1127,10 +1152,10 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                 u'check one or more node and retry'
             )
         if contents:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 self._session.gui_name,
                 content=u'\n'.join(contents),
-                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                status=utl_core.DccDialog.ValidationStatus.Warning,
                 #
                 yes_label='Close',
                 #
@@ -1140,7 +1165,10 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             )
             return False
 
-    def execute_collection_process(self, window, textures, directory, scheme, mode, copy_or_link_enable, replace_enable, repath_enable, target_extension):
+    def execute_collection_process(
+            self, window, textures, directory, scheme, mode, copy_or_link_enable, replace_enable, repath_enable,
+            target_extension
+            ):
         if directory:
             with window.gui_progressing(maximum=len(textures)) as p:
                 for i_texture_any in self._texture_add_opt.get_checked_files():
@@ -1177,11 +1205,15 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
 
                         if copy_or_link_enable is True:
                             if mode == 'copy':
-                                [j.set_copy_to_directory(i_directory_src_dst, replace=replace_enable) for j in i_texture_src.get_exists_units()]
-                                [j.set_copy_to_directory(i_directory_tgt_dst, replace=replace_enable) for j in i_texture_tgt.get_exists_units()]
+                                [j.set_copy_to_directory(i_directory_src_dst, replace=replace_enable) for j in
+                                 i_texture_src.get_exists_units()]
+                                [j.set_copy_to_directory(i_directory_tgt_dst, replace=replace_enable) for j in
+                                 i_texture_tgt.get_exists_units()]
                             elif mode == 'link':
-                                [j.set_link_to_directory(i_directory_src_dst, replace=replace_enable) for j in i_texture_src.get_exists_units()]
-                                [j.set_link_to_directory(i_directory_tgt_dst, replace=replace_enable) for j in i_texture_tgt.get_exists_units()]
+                                [j.set_link_to_directory(i_directory_src_dst, replace=replace_enable) for j in
+                                 i_texture_src.get_exists_units()]
+                                [j.set_link_to_directory(i_directory_tgt_dst, replace=replace_enable) for j in
+                                 i_texture_tgt.get_exists_units()]
                         #
                         if repath_enable is True:
                             i_dcc_obj_prx_items = i_texture_prx_item.get_children()
@@ -1213,12 +1245,13 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         if textures:
             def yes_fnc_():
                 self.execute_collection_process(w, textures, **w.get_options_as_kwargs())
+
             #
-            w = utl_core.DialogWindow.set_create(
+            w = utl_core.DccDialog.create(
                 self._session.gui_name,
                 sub_label='Collection',
                 content=u'choose or entry a directory, press "Confirm" to continue',
-                status=utl_core.DialogWindow.ValidatorStatus.Active,
+                status=utl_core.DccDialog.ValidationStatus.Active,
                 #
                 options_configure=self._session.configure.get('build.node.extra_collection'),
                 #
@@ -1239,10 +1272,10 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
                 u'check one or more node and retry'
             )
         if contents:
-            utl_core.DialogWindow.set_create(
+            utl_core.DccDialog.create(
                 self._session.gui_name,
                 content=u'\n'.join(contents),
-                status=utl_core.DialogWindow.ValidatorStatus.Warning,
+                status=utl_core.DccDialog.ValidationStatus.Warning,
                 #
                 yes_label='Close',
                 #
@@ -1254,7 +1287,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
 
     def _set_detail_show_(self, item, column):
         texture = self._texture_add_opt.get_file(item)
-        w = utl_core.DialogWindow.set_create(
+        w = utl_core.DccDialog.create(
             self._session.gui_name,
             window_size=(512, 512),
             #
