@@ -1,5 +1,5 @@
 # coding=utf-8
-import lxgui.qt.abstracts as gui_qt_abstract
+import lxgui.qt.abstracts as gui_qt_abstracts
 
 from lxgui.qt.core import *
 
@@ -8,7 +8,7 @@ from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_item, _gui_qt_wgt_
 
 class _QtWindow(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstracts.AbsQtFrameBaseDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -44,7 +44,7 @@ class _QtWindow(
         self._set_widget_geometries_update_()
         #
         painter._draw_frame_by_rect_(
-            self._frame_draw_rect,
+            self._rect_frame_draw,
             background_color=self._frame_background_color,
             border_color=self._frame_border_color
         )

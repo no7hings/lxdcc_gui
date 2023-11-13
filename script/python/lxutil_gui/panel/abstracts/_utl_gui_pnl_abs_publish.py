@@ -47,19 +47,19 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
             self._session.configure.get('build.node.options')
         )
 
-        self._options_prx_node.get_port('resource_type').connect_value_changed_to(
+        self._options_prx_node.get_port('resource_type').connect_input_changed_to(
             self.refresh_resource_fnc
         )
         #
-        self._options_prx_node.get_port('shotgun.project').connect_value_changed_to(
+        self._options_prx_node.get_port('shotgun.project').connect_input_changed_to(
             self.refresh_resource_fnc
         )
         #
-        self._options_prx_node.get_port('shotgun.resource').connect_value_changed_to(
+        self._options_prx_node.get_port('shotgun.resource').connect_input_changed_to(
             self.refresh_task_fnc
         )
         #
-        self._options_prx_node.get_port('shotgun.task').connect_value_changed_to(
+        self._options_prx_node.get_port('shotgun.task').connect_input_changed_to(
             self.refresh_next_enable_fnc
         )
         #
@@ -83,7 +83,7 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
             self._session.configure.get('build.node.publish_options')
         )
 
-        self._publish_options_prx_node.get_port('version_scheme').connect_value_changed_to(
+        self._publish_options_prx_node.get_port('version_scheme').connect_input_changed_to(
             self.refresh_publish_version_directory
         )
 
@@ -125,7 +125,7 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
             )
             #
             fncs = [
-                (self.refresh_project_fnc, (self._task_data, )),
+                (self.refresh_project_fnc, (self._task_data,)),
                 (self.refresh_resource_fnc, (self._task_data,)),
                 (self.refresh_task_fnc, (self._task_data,)),
                 (self.refresh_next_enable_fnc, (self._task_data,)),
@@ -139,9 +139,10 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
             self.execute_show_next()
 
     def refresh_all_fnc(self):
-        import lxshotgun.objects as stg_objects
+        import lxwarp.shotgun.core as wrp_stg_core
+
         #
-        self._stg_connector = stg_objects.StgConnector()
+        self._stg_connector = wrp_stg_core.StgConnector()
         self._user_name = bsc_core.SystemMtd.get_user_name()
         self._stg_user = self._stg_connector.get_stg_user(user=self._user_name)
         if not self._stg_user:
@@ -282,8 +283,9 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
             pass
 
         def cache_fnc_():
-            import lxshotgun.operators as stg_operators
-            t_o = stg_operators.StgTaskOpt(self._stg_connector.to_query(stg_task))
+            import lxwarp.shotgun.core as wrp_stg_core
+
+            t_o = wrp_stg_core.StgTaskOpt(self._stg_connector.to_query(stg_task))
             notice_stg_users = t_o.get_notice_stg_users()
             return list(set([self._stg_connector.to_query(i).get('name').decode('utf-8') for i in notice_stg_users]))
 
@@ -321,7 +323,7 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
                 keyword
             )
             kwargs = copy.copy(self._rsv_project.properties.get_value())
-            kwargs['workspace'] = self._rsv_project.get_workspace(
+            kwargs['workspace'] = self._rsv_project.to_workspace(
                 self._rsv_project.WorkspaceKeys.Release
             )
             kwargs.update(self._task_data)
@@ -428,12 +430,14 @@ class AbsPnlGeneralPublish(prx_widgets.PrxSessionWindow):
         if bsc_core.ApplicationMtd.get_is_dcc():
             if bsc_core.ApplicationMtd.get_is_maya():
                 import lxmaya.dcc.dcc_objects as mya_dcc_objects
+
                 self._publish_options_prx_node.set(
                     'extra.scene', [mya_dcc_objects.Scene.get_current_file_path()]
 
                 )
             elif bsc_core.ApplicationMtd.get_is_katana():
                 import lxkatana.dcc.dcc_objects as ktn_dcc_objects
+
                 self._publish_options_prx_node.set(
                     'extra.scene', [ktn_dcc_objects.Scene.get_current_file_path()]
 
@@ -505,6 +509,7 @@ class AbsValidatorOpt(object):
     DCC_COMPONENT_CLS = None
     DCC_SELECTION_CLS = None
     DCC_PATHSEP = None
+
     def __init__(self, filter_tree_view, result_tree_view):
         self._filter_tree_view = filter_tree_view
         self._result_tree_view = result_tree_view
@@ -743,7 +748,7 @@ class AbsValidatorOpt(object):
         return prx_item
 
     def _get_directory_(self, scene_prx_item, node_prx_item, directory_path, description, status):
-        stg_directory = utl_dcc_objects.OsDirectory_(directory_path)
+        stg_directory = utl_dcc_objects.StgDirectory(directory_path)
         prx_item = node_prx_item.add_child(
             name=[stg_directory.get_path_prettify_(maximum=32), description],
             icon=stg_directory.icon,
@@ -757,6 +762,7 @@ class AbsValidatorOpt(object):
 
 class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
     DCC_VALIDATOR_OPT_CLS = None
+
     def __init__(self, session, *args, **kwargs):
         super(AbsPnlAssetPublish, self).__init__(session, *args, **kwargs)
 
@@ -810,14 +816,14 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
         h_s_0.add_widget(self._filter_tree_view)
         self._filter_tree_view.set_header_view_create(
             [('name', 3)],
-            self.get_definition_window_size()[0]*(1.0/3.0) - 32
+            self.get_definition_window_size()[0]*(1.0/3.0)-32
         )
         #
         self._result_tree_view = prx_widgets.PrxTreeView()
         h_s_0.add_widget(self._result_tree_view)
         self._result_tree_view.set_header_view_create(
             [('name', 4), ('description', 2)],
-            self.get_definition_window_size()[0]*(2.0/3.0) - 32
+            self.get_definition_window_size()[0]*(2.0/3.0)-32
         )
         h_s_0.set_fixed_size_at(0, 240)
         h_s_0.set_contract_left_or_top_at(0)
@@ -865,7 +871,7 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
         )
         self._cfg_options_prx_node.get_port(
             'publish.ignore_validation_error'
-        ).connect_value_changed_to(
+        ).connect_input_changed_to(
             self.refresh_next_enable_fnc
         )
 
@@ -1027,7 +1033,8 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
 
     def execute_validation(self):
         if self._rsv_scene_properties:
-            self._validation_check_options = {v: not self._cfg_options_prx_node.get(k) for k, v in self._check_key_map.items()}
+            self._validation_check_options = {v: not self._cfg_options_prx_node.get(k) for k, v in
+                                              self._check_key_map.items()}
             if bsc_core.ApplicationMtd.get_is_dcc():
                 if bsc_core.ApplicationMtd.get_is_katana():
                     self._set_katana_validation_in_execute_()
@@ -1073,6 +1080,7 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
 
         def finished_fnc_(*args):
             pass
+
         #
         s = ssn_commands.get_option_hook_session(
             bsc_core.ArgDictStringOpt(
@@ -1123,7 +1131,7 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
             pass
 
         def cache_fnc_():
-            t_o = stg_operators.StgTaskOpt(c.to_query(stg_task))
+            t_o = wrp_stg_core.StgTaskOpt(c.to_query(stg_task))
             notice_stg_users = t_o.get_notice_stg_users()
             return list(set([c.to_query(i).get('name').decode('utf-8') for i in notice_stg_users]))
 
@@ -1132,11 +1140,9 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
                 'notice', user_names
             )
 
-        import lxshotgun.objects as stg_objects
+        import lxwarp.shotgun.core as wrp_stg_core
 
-        import lxshotgun.operators as stg_operators
-
-        c = stg_objects.StgConnector()
+        c = wrp_stg_core.StgConnector()
 
         p = self._publish_options_prx_node.get_port('notice')
         p.set_clear()
@@ -1159,7 +1165,7 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
         p.run_as_thread(
             cache_fnc_, built_fnc_, post_fnc_
         )
-    
+
     def execute_show_next(self):
         if self._next_button.get_is_enable() is True:
             self.switch_current_layer_to('publish')
@@ -1170,7 +1176,7 @@ class AbsPnlAssetPublish(prx_widgets.PrxSessionWindow):
             )
             self.refresh_publish_options()
             self.refresh_publish_notice()
-    
+
     def execute_publish(self):
         utl_scripts.ScpAssetSurfacePublish(
             self,

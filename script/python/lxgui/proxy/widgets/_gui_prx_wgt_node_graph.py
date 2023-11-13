@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_entry_base, _gui_qt_wgt_node_graph
+from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_entry, _gui_qt_wgt_node_graph
 
 import lxgui.proxy.abstracts as gui_prx_abstracts
 
@@ -9,7 +9,7 @@ from lxgui.proxy.widgets import _gui_prx_wdt_utility, _gui_prx_wgt_contianer
 class PrxNGGraph(
     gui_prx_abstracts.AbsPrxWidget
 ):
-    QT_WIDGET_CLS = _gui_qt_wgt_entry_base.QtEntryFrame
+    QT_WIDGET_CLS = _gui_qt_wgt_entry.QtEntryFrame
     QT_VIEW_CLS = _gui_qt_wgt_node_graph._QtNGGraph
 
     def __init__(self, *args, **kwargs):
@@ -50,7 +50,7 @@ class PrxNGGraph(
 class PrxNGTree(
     gui_prx_abstracts.AbsPrxWidget
 ):
-    QT_WIDGET_CLS = _gui_qt_wgt_entry_base.QtEntryFrame
+    QT_WIDGET_CLS = _gui_qt_wgt_entry.QtEntryFrame
     QT_VIEW_CLS = _gui_qt_wgt_node_graph._QtNGTree
 
     def __init__(self, *args, **kwargs):
@@ -84,7 +84,7 @@ class PrxNGTree(
 class PrxNGImageGraph(
     gui_prx_abstracts.AbsPrxWidget
 ):
-    QT_WIDGET_CLS = _gui_qt_wgt_entry_base.QtEntryFrame
+    QT_WIDGET_CLS = _gui_qt_wgt_entry.QtEntryFrame
     QT_VIEW_CLS = _gui_qt_wgt_node_graph._QtNGImageGraph
 
     def __init__(self, *args, **kwargs):

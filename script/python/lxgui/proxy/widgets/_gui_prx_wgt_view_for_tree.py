@@ -8,7 +8,7 @@ import lxgui.configure as gui_configure
 
 import lxgui.qt.core as gui_qt_core
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_entry_base, _gui_qt_wgt_view_for_tree
+from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_entry, _gui_qt_wgt_view_for_tree
 
 import lxgui.proxy.abstracts as gui_prx_abstracts
 
@@ -26,10 +26,11 @@ class PrxTreeView(
     #
     gui_prx_abstracts.AbsPrxViewVisibleConnectionDef,
 ):
-    QT_WIDGET_CLS = _gui_qt_wgt_entry_base.QtEntryFrame
+    QT_WIDGET_CLS = _gui_qt_wgt_entry.QtEntryFrame
     QT_VIEW_CLS = _gui_qt_wgt_view_for_tree.QtTreeWidget
     #
     FILTER_MAXIMUM = 50
+
     def __init__(self, *args, **kwargs):
         super(PrxTreeView, self).__init__(*args, **kwargs)
         self._qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
@@ -53,7 +54,7 @@ class PrxTreeView(
         self._qt_view.gui_proxy = self
         self._qt_layout_0.addWidget(self._qt_view)
         # self._qt_view.setFocusProxy(
-        #     self._prx_filer_bar_0._qt_widget._value_entry
+        #     self._prx_filer_bar_0._qt_widget._entry_widget
         # )
         #
         self._set_prx_tree_def_init_()
@@ -77,14 +78,18 @@ class PrxTreeView(
         self._keyword_filter_item_prxes = []
 
         self._qt_view._set_view_keyword_filter_bar_(self._prx_filter_bar._qt_widget)
-        self._prx_filter_bar._qt_widget.user_entry_changed.connect(self.__keyword_filter_cbk)
-        self._prx_filter_bar._qt_widget.user_choose_changed.connect(self._qt_view._execute_view_keyword_filter_occurrence_to_current_)
+        self._prx_filter_bar._qt_widget.input_value_changed.connect(
+            self.__keyword_filter_cbk
+        )
+        self._prx_filter_bar._qt_widget.input_value_change_accepted.connect(
+            self._qt_view._do_keyword_filter_occurrence_
+        )
         #
         self._prx_filter_bar._qt_widget.occurrence_previous_press_clicked.connect(
-            self._qt_view._execute_view_keyword_filter_occurrence_to_previous_
+            self._qt_view._do_keyword_filter_occurrence_to_previous_
         )
         self._prx_filter_bar._qt_widget.occurrence_next_press_clicked.connect(
-            self._qt_view._execute_view_keyword_filter_occurrence_to_next_
+            self._qt_view._do_keyword_filter_occurrence_to_next_
         )
 
     def __keyword_filter_cbk(self):
@@ -103,9 +108,11 @@ class PrxTreeView(
 
     def set_resize_target(self, widget):
         self._qt_widget._set_resize_target_(widget)
+
     @property
     def view(self):
         return self._qt_view
+
     @property
     def filter_bar(self):
         return self._prx_filter_bar
@@ -123,11 +130,11 @@ class PrxTreeView(
 
     def set_loading_update(self):
         self._loading_index += 1
-        if self._loading_index % 15 == 0:
+        if self._loading_index%15 == 0:
             self._loading_show_index += 1
             for i in self._loading_item_prxes:
                 i.set_name(
-                    'loading {}'.format('.'*(self._loading_show_index % 5))
+                    'loading {}'.format('.'*(self._loading_show_index%5))
                 )
             #
             gui_qt_core.QtWidgets.QApplication.instance().processEvents(
@@ -179,6 +186,7 @@ class PrxTreeView(
             match_case=match_case,
             match_word=match_word
         )]
+
     # select
     def _get_selected_items_(self):
         return self.view.selectedItems()
@@ -245,8 +253,9 @@ class PrxTreeView(
         gui_prx_abstracts.AbsPrxViewFilterTagDef.set_tag_filter_all_keys_src(
             self, keys
         )
+
     @classmethod
-    def _get_item_tag_filter_tgt_match_args_(cls, prx_item_tgt, tag_filter_all_keys_src):
+    def _generate_item_tag_filter_tgt_match_args_(cls, prx_item_tgt, tag_filter_all_keys_src):
         tag_filter_tgt_keys = prx_item_tgt.get_tag_filter_tgt_keys()
         tag_filter_tgt_mode = prx_item_tgt.get_tag_filter_tgt_mode()
         if tag_filter_tgt_keys:
@@ -262,8 +271,9 @@ class PrxTreeView(
                 return True, True
             return True, False
         return False, False
+
     @classmethod
-    def _get_item_keyword_filter_match_args_(cls, item_prx, texts):
+    def _generate_item_keyword_filter_match_args_(cls, item_prx, texts):
         if texts:
             keyword = texts[0]
             keyword = keyword.lower()
@@ -284,6 +294,7 @@ class PrxTreeView(
                     return True, False
             return True, True
         return False, False
+
     @classmethod
     def _get_item_name_colors_(cls, prx_items, column=0):
         lis = []
@@ -322,7 +333,7 @@ class PrxTreeView(
     def set_view_update(self):
         self.view.update()
 
-    def connect_refresh_action_to(self, fnc):
+    def connect_refresh_action_for(self, fnc):
         self._qt_view.f5_key_pressed.connect(fnc)
 
     def set_filter_history_key(self, key):
@@ -341,7 +352,8 @@ class PrxTreeView(
                         map(
                             lambda x: x.lower(),
                             [
-                                j for i in self._qt_view._get_all_items_() for j in i._get_keyword_filter_keys_auto_as_split_()
+                                j for i in self._qt_view._get_all_items_()
+                                for j in i._get_keyword_filter_keys_auto_as_split_()
                             ]
                         )
                     )

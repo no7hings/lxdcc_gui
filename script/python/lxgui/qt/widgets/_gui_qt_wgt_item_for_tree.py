@@ -1,7 +1,7 @@
 # coding=utf-8
 from lxgui.qt.core import *
 
-import lxgui.qt.abstracts as gui_qt_abstract
+import lxgui.qt.abstracts as gui_qt_abstracts
 
 from lxgui.qt.widgets import _gui_qt_wgt_drag
 
@@ -10,26 +10,26 @@ import lxgui.qt.core as gui_qt_core
 
 class QtTreeWidgetItem(
     QtWidgets.QTreeWidgetItem,
-    gui_qt_abstract.AbsQtItemDagLoading,
+    gui_qt_abstracts.AbsQtItemDagLoading,
     #
-    gui_qt_abstract.AbsQtTypeDef,
-    gui_qt_abstract.AbsQtPathBaseDef,
-    gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstracts.AbsQtTypeDef,
+    gui_qt_abstracts.AbsQtPathBaseDef,
+    gui_qt_abstracts.AbsQtNameBaseDef,
     #
-    gui_qt_abstract.AbsQtIconBaseDef,
-    gui_qt_abstract.AbsQtShowBaseForItemDef,
-    gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstracts.AbsQtIconBaseDef,
+    gui_qt_abstracts.AbsQtShowBaseForItemDef,
+    gui_qt_abstracts.AbsQtMenuBaseDef,
     #
-    gui_qt_abstract.AbsQtItemFilterDef,
+    gui_qt_abstracts.AbsQtItemFilterDef,
     #
-    gui_qt_abstract.AbsQtStateDef,
+    gui_qt_abstracts.AbsQtStateDef,
     #
-    gui_qt_abstract.AbsQtDagDef,
-    gui_qt_abstract.AbsQtVisibleDef,
+    gui_qt_abstracts.AbsQtDagDef,
+    gui_qt_abstracts.AbsQtVisibleDef,
     #
-    gui_qt_abstract.AbsQtItemVisibleConnectionDef,
+    gui_qt_abstracts.AbsQtItemVisibleConnectionDef,
     #
-    gui_qt_abstract.AbsQtActionForDragDef,
+    gui_qt_abstracts.AbsQtActionForDragDef,
 ):
     def update(self):
         pass
@@ -150,10 +150,10 @@ class QtTreeWidgetItem(
         )
 
     def _set_icon_name_text_(self, text, column=0):
-        self._icon_name_text = text
+        self._icon_text = text
         icon = QtGui.QIcon()
         pixmap = GuiQtPixmap.get_by_name(
-            self._icon_name_text,
+            self._icon_text,
             size=(14, 14)
         )
         icon.addPixmap(
@@ -169,9 +169,9 @@ class QtTreeWidgetItem(
             pixmap = None
             if self._icon_file_path is not None:
                 pixmap = QtGui.QPixmap(self._icon_file_path)
-            elif self._icon_name_text is not None:
+            elif self._icon_text is not None:
                 pixmap = GuiQtPixmap.get_by_name(
-                    self._icon_name_text,
+                    self._icon_text,
                     size=(14, 14)
                 )
             #
@@ -261,7 +261,7 @@ class QtTreeWidgetItem(
     def _set_name_status_(self, status, column=0):
         font = QtFonts.Default
         if status == self.ValidationStatus.Normal:
-            color = QtColors.TextNormal
+            color = QtColors.Text
             self.setFont(column, font)
         elif status == self.ValidationStatus.Correct:
             color = QtColors.TextCorrect
@@ -300,9 +300,9 @@ class QtTreeWidgetItem(
                 pixmap = self._icon.pixmap(20, 20)
             elif self._icon_file_path is not None:
                 pixmap = QtGui.QPixmap(self._icon_file_path)
-            elif self._icon_name_text is not None:
+            elif self._icon_text is not None:
                 pixmap = GuiQtPixmap.get_by_name(
-                    self._icon_name_text,
+                    self._icon_text,
                     size=(14, 14)
                 )
             #
@@ -316,7 +316,7 @@ class QtTreeWidgetItem(
                     draw_status = True
                     if status == self.ValidationStatus.Normal:
                         draw_status = False
-                        background_color = QtColors.TextNormal
+                        background_color = QtColors.Text
                     elif status == self.ValidationStatus.Correct:
                         background_color = QtColors.TextCorrect
                     elif status == self.ValidationStatus.Warning:

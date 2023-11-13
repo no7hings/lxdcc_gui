@@ -47,7 +47,7 @@ class PrxBaseWindow(
         #
         gui_prx_core.GuiProxyLogBridge.generate_all()
 
-        self._qt_widget._create_window_shortcut_action_(
+        self._qt_widget._create_window_shortcut_action_for_(
             self.show_help, 'F1'
         )
         #
@@ -227,7 +227,7 @@ class PrxBaseWindow(
             size=self.get_definition_window_size()
         )
 
-    def start_loading(self, time, method):
+    def start_loading(self, delay_time, method):
         def method_fnc_():
             self.set_window_loading_end()
             method()
@@ -237,13 +237,13 @@ class PrxBaseWindow(
         self._loading_index = 0
         self.set_current_layer('window_loading_0')
         #
-        self.start_waiting(auto_stop_time=time)
+        self.start_waiting(auto_stop_time=delay_time)
         #
         self._loading_timer_start = gui_qt_core.QtCore.QTimer(self.widget)
-        self._loading_timer_start.singleShot(time, method_fnc_)
+        self._loading_timer_start.singleShot(delay_time, method_fnc_)
 
         self._loading_show_timer = gui_qt_core.QtCore.QTimer(self.widget)
-        self._loading_show_timer.singleShot(int(time*.8), self.set_window_loading_show)
+        self._loading_show_timer.singleShot(int(delay_time*.8), self.set_window_loading_show)
 
     def set_window_loading_end(self):
         gui_qt_core.GuiQtUtil.show_qt_window(
@@ -269,7 +269,7 @@ class PrxBaseWindow(
 
     def set_log_add(self, text):
         text_browser = self.get_log_text_browser()
-        text_browser.set_result_add(text)
+        text_browser.add_result(text)
 
     def set_log_file_path(self, file_path):
         if file_path is not None:
@@ -376,7 +376,7 @@ class PrxBaseWindow(
 
 class PrxSessionWindow(PrxBaseWindow):
     PRX_TYPE = 'session_window'
-    DEFERRED_TIME = 1000
+    LOADING_DELAY_TIME = 1000
 
     def __init__(self, session, *args, **kwargs):
         super(PrxSessionWindow, self).__init__(*args, **kwargs)
@@ -423,7 +423,7 @@ class PrxSessionWindow(PrxBaseWindow):
         self._session.reload_configure()
         if self._session.get_is_td_enable() is True:
             self.set_window_title(
-                '[TD] {} - {}'.format(
+                '[ALPHA] {} - {}'.format(
                     self._session.gui_configure.get('name'), str(self._session.application).capitalize()
                 )
             )
@@ -443,11 +443,12 @@ class PrxSessionWindow(PrxBaseWindow):
         if self._session.gui_configure.get('icon_name'):
             self.set_window_icon_by_name(self._session.gui_configure.get('icon_name'))
         #
-        # print self._session.gui_configure.get('size')
         self.set_definition_window_size(self._session.gui_configure.get('size'))
         self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
         #
-        self.start_loading(time=self.DEFERRED_TIME, method=self._setup_fnc_)
+        self.start_loading(
+            delay_time=self.LOADING_DELAY_TIME, method=self._setup_fnc_
+        )
 
     def _setup_fnc_(self):
         self.restore_variants()

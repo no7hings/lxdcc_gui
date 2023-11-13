@@ -20,6 +20,7 @@ class AbsPnlShaderViewer(
     #
     DCC_SELECTION_CLS = None
     DCC_NAMESPACE = None
+
     def __init__(self, session, *args, **kwargs):
         super(AbsPnlShaderViewer, self).__init__(session, *args, **kwargs)
 
@@ -52,11 +53,11 @@ class AbsPnlShaderViewer(
     def _set_obj_tree_viewer_build_(self):
         self._filter_tree_viewer_0.set_header_view_create(
             [('name', 3), ('count', 1)],
-            self.get_definition_window_size()[0]*(1.0/3.0) - 24
+            self.get_definition_window_size()[0]*(1.0/3.0)-24
         )
         self._obj_tree_viewer_0.set_header_view_create(
             [('name', 4), ('type', 2)],
-            self.get_definition_window_size()[0]*(2.0/3.0) - 24
+            self.get_definition_window_size()[0]*(2.0/3.0)-24
         )
         #
         self._prx_dcc_obj_tree_view_add_opt = gui_prx_scripts.GuiPrxScpForTreeAdd(
@@ -148,6 +149,7 @@ class AbsPnlMaterialViewer(
     DCC_MATERIALS_CLS = None
     #
     DESCRIPTION_INDEX = 2
+
     def __init__(self, session, *args, **kwargs):
         super(AbsPnlMaterialViewer, self).__init__(session, *args, **kwargs)
 
@@ -184,12 +186,12 @@ class AbsPnlMaterialViewer(
     def _set_tree_viewer_build_(self):
         self._filter_tree_viewer_0.set_header_view_create(
             [('name', 3), ('count', 1)],
-            self.get_definition_window_size()[0]*(1.0/3.0) - 24
+            self.get_definition_window_size()[0]*(1.0/3.0)-24
         )
         #
         self._obj_tree_viewer_0.set_header_view_create(
             [('name', 4), ('type', 2), ('description', 2)],
-            self.get_definition_window_size()[0]*(2.0/3.0) - 24
+            self.get_definition_window_size()[0]*(2.0/3.0)-24
         )
         #
         self._prx_dcc_obj_tree_view_add_opt = gui_prx_scripts.GuiPrxScpForTreeAdd1(

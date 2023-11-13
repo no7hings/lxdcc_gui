@@ -1,19 +1,15 @@
 # coding:utf-8
-import copy
-
-from lxutil import utl_core
-
 from lxutil_gui.panel import utl_gui_pnl_abs_utility
 
-import lxshotgun.objects as stg_objects
+import lxwarp.shotgun.core as wrp_stg_core
 
-import lxshotgun.methods as stg_methods
+import lxshotgun.scripts as stg_scripts
 
 
 class ShotgunEntityCreator(utl_gui_pnl_abs_utility.AbsShotgunEntitiesCreatorPanel):
     def __init__(self, *args, **kwargs):
         super(ShotgunEntityCreator, self).__init__(*args, **kwargs)
-        self._stg_connector = stg_objects.StgConnector()
+        self._stg_connector = wrp_stg_core.StgConnector()
         self.get_log_bar().set_expanded(True)
 
     def _get_projects_(self):
@@ -31,6 +27,6 @@ class ShotgunEntityCreator(utl_gui_pnl_abs_utility.AbsShotgunEntitiesCreatorPane
         project = self._get_project_()
         entities = self._get_entities_()
         task_template = self._get_task_template_()
-        stg_methods.StgTaskMtd.set_entities_create_by_template(
+        stg_scripts.StgScpTask.set_entities_create_by_template(
             project=project, entities=entities, task_template=task_template
         )

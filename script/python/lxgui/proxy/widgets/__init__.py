@@ -3,6 +3,8 @@ from ._gui_prx_wdt_utility import *
 
 from ._gui_prx_wgt_item import *
 
+from ._gui_prx_wgt_input import *
+
 from ._gui_prx_wgt_port import *
 
 from ._gui_prx_wdt_node import *
@@ -22,4 +24,7 @@ from ._gui_prx_wgt_window import *
 from ._gui_prx_wgt_chart import *
 
 from ._gui_prx_wgt_node_graph import *
+
+from ._gui_prx_wgt_for_usd import *
+
 

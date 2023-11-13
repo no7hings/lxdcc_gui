@@ -50,7 +50,7 @@ class AbsAssetBuilderPanel(
         self.get_log_bar().set_expanded(True)
         #
         self.start_loading(
-            time=1000,
+            delay_time=1000,
             method=self._set_tool_panel_setup_
         )
 

@@ -492,9 +492,30 @@ class GuiQtFont(object):
         return f
 
     @classmethod
+    def generate_2(cls, size=None, weight=None, italic=False, underline=False, strike_out=False, family='Arial'):
+        f = QtGui.QFont()
+        f.setPixelSize(size or gui_configure.Size.FontSizeDefault)
+        f.setFamily(family)
+        f.setWeight(weight or gui_configure.Size.FontWeightDefault)
+        f.setItalic(italic)
+        f.setUnderline(underline)
+        f.setWordSpacing(1)
+        f.setStrikeOut(strike_out)
+        return f
+
+    @classmethod
     def compute_size(cls, size, text):
         f = GuiQtFont.generate()
         f.setPointSize(size)
+        m = QtGui.QFontMetrics(f)
+        w = m.width(text)
+        h = m.height()
+        return w, h
+
+    @classmethod
+    def compute_size_2(cls, size, text):
+        f = GuiQtFont.generate()
+        f.setPixelSize(size)
         m = QtGui.QFontMetrics(f)
         w = m.width(text)
         h = m.height()
@@ -532,25 +553,49 @@ class QtFonts(object):
 
 
 class QtColors(object):
-    BackgroundNormal = QtGui.QColor(63, 63, 63, 255)
+    Background = QtGui.QColor(63, 63, 63, 255)
     BackgroundHover = QtGui.QColor(*gui_configure.Rgba.LightOrange)
-    BackgroundToolTip = QtGui.QColor(223, 223, 191, 255)
 
-    TabBorderNormal = QtGui.QColor(63, 63, 63, 255)
-    TabBackgroundNormal = QtGui.QColor(47, 47, 47, 255)
+    ToolTipText = QtGui.QColor(15, 15, 15, 255)
+    ToolTipBorder = QtGui.QColor(15, 15, 15, 255)
+    ToolTipBackground = QtGui.QColor(223, 223, 191, 255)
+
+    BubbleBackground = QtGui.QColor(223, 223, 223, 255)
+    BubbleBackgroundDisable = QtGui.QColor(127, 127, 127, 255)
+    BubbleNextWaiting = QtGui.QColor(*gui_configure.Rgba.LightYellow)
+    BubbleNextFinished = QtGui.QColor(*gui_configure.Rgba.LightGreen)
+    BubbleBackgroundHover = QtGui.QColor(*gui_configure.Rgba.LightOrange)
+    BubbleBackgroundActioned = QtGui.QColor(*gui_configure.Rgba.LightBlue)
+    BubbleBorder = QtGui.QColor(127, 127, 127, 255)
+    BubbleText = QtGui.QColor(31, 31, 31, 255)
+
+    CapsuleBorderChecked = QtGui.QColor(127, 127, 127, 255)
+    CapsuleBorderUnchecked = QtGui.QColor(55, 55, 55, 255)
+    CapsuleBorderHover = QtGui.QColor(*gui_configure.Rgba.LightOrange)
+    CapsuleBorderActioned = QtGui.QColor(*gui_configure.Rgba.LightBlue)
+    CapsuleBackground = QtGui.QColor(47, 47, 47, 255)
+    CapsuleBackgroundDisable = QtGui.QColor(63, 63, 63, 255)
+
+    SubIconBorder = QtGui.QColor(207, 207, 207, 255)
+    SubIconBackground = QtGui.QColor(127, 127, 127, 255)
+
+    PopupBorder = QtGui.QColor(*gui_configure.Rgba.LightBlue)
+
+    TabBorder = QtGui.QColor(63, 63, 63, 255)
+    TabBackground = QtGui.QColor(47, 47, 47, 255)
     TabBorderCurrent = QtGui.QColor(87, 87, 87, 255)
     TabBackgroundCurrent = QtGui.QColor(63, 63, 63, 255)
 
-    HeaderBorderColor = QtGui.QColor(87, 87, 87, 255)
-    HeaderBackgroundColor = QtGui.QColor(83, 83, 83, 255)
+    HeadBorder = QtGui.QColor(87, 87, 87, 255)
+    HeadBackground = QtGui.QColor(83, 83, 83, 255)
 
-    HeadTextNormal = QtGui.QColor(207, 207, 207, 255)
+    HeadText = QtGui.QColor(207, 207, 207, 255)
     HeadTextHover = QtGui.QColor(223, 223, 223, 255)
 
-    ButtonBorderNormal = QtGui.QColor(131, 131, 131, 255)
-    ButtonBackgroundNormal = QtGui.QColor(127, 127, 127, 255)
+    ButtonBorder = QtGui.QColor(131, 131, 131, 255)
+    ButtonBackground = QtGui.QColor(127, 127, 127, 255)
 
-    TextNormal = QtGui.QColor(223, 223, 223, 255)
+    Text = QtGui.QColor(223, 223, 223, 255)
     TextHover = QtGui.QColor(255, 255, 255, 255)
     TextEnable = QtGui.QColor(*gui_configure.Rgba.Green)
     TextDisable = QtGui.QColor(*gui_configure.Rgba.DarkGray)
@@ -560,14 +605,12 @@ class QtColors(object):
     TextLock = QtGui.QColor(*gui_configure.Rgba.Purple)
     TextCorrect = QtGui.QColor(*gui_configure.Rgba.Green)
     TextActive = QtGui.QColor(*gui_configure.Rgba.Blue)
-    TextToolTip = QtGui.QColor(15, 15, 15, 255)
 
     TextKeywordFilter = QtGui.QColor(255, 127, 63, 255)
     TextKeywordFilterOccurrence = QtGui.QColor(255, 63, 63, 255)
 
-    HeadBorderNormal = QtGui.QColor(47, 47, 47, 255)
-
-    ProgressNormal = QtGui.QColor(63, 255, 127, 255)
+    Progress = QtGui.QColor(63, 255, 127, 255)
+    ProgressBackground = QtGui.QColor(47, 47, 47, 255)
 
     Red = QtGui.QColor(*gui_configure.Rgba.Red)
     Yellow = QtGui.QColor(*gui_configure.Rgba.Yellow)
@@ -777,9 +820,9 @@ class QtFontColors(object):
 
 
 class QtBrushes(object):
-    BackgroundNormal = QtGui.QBrush(QtColors.BackgroundNormal)
+    Background = QtGui.QBrush(QtColors.Background)
 
-    TextNormal = QtGui.QBrush(QtColors.TextNormal)
+    Text = QtGui.QBrush(QtColors.Text)
     TextDisable = QtGui.QBrush(QtColors.TextDisable)
     TextTemporary = QtGui.QBrush(QtColors.TextTemporary)
     TextWarning = QtGui.QBrush(QtColors.TextWarning)
@@ -927,6 +970,17 @@ class GuiQtText(object):
         for i_text in texts:
             list_.append(widget.fontMetrics().width(i_text))
         return max(list_)
+
+    @classmethod
+    def generate_draw_args(cls, widget, text, w_maximum_text=None):
+        w, h = widget.width(), widget.height()
+        w_t, h_t = widget.fontMetrics().width(text),  widget.fontMetrics().height()/2
+        s_t = (h-h_t)/2
+        if w_maximum_text is not None:
+            w_t = min(w_t, w_maximum_text)
+        # fit to max size
+        w_c = w_t+s_t*2
+        return s_t, w_t, w_c, h
 
 
 class GuiQtTreeWidget(object):

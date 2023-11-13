@@ -158,7 +158,7 @@ class AbsSceneTextureManagerPanel(
         self._set_panel_build_()
         #
         self.start_loading(
-            time=1000,
+            delay_time=1000,
             method=self._set_tool_panel_setup_
         )
         #
@@ -695,7 +695,7 @@ class AbsShotgunEntitiesCreatorPanel(
         self.get_log_bar().set_expanded(True)
         #
         self.start_loading(
-            time=1000,
+            delay_time=1000,
             method=self._set_tool_panel_setup_
         )
 
@@ -1026,7 +1026,7 @@ class AbsGeometryCheckerPanel(
         self.get_log_bar().set_expanded(True)
         #
         self.start_loading(
-            time=1000,
+            delay_time=1000,
             method=self._set_tool_panel_setup_
         )
 

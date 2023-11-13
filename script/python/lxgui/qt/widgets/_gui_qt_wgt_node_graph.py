@@ -8,9 +8,9 @@ import collections
 
 from lxgui.qt.core import *
 
-import lxgui.qt.abstracts as gui_qt_abstract
+import lxgui.qt.abstracts as gui_qt_abstracts
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_entry_base, _gui_qt_wgt_item_for_tree, \
+from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_entry, _gui_qt_wgt_item_for_tree, \
     _gui_qt_wgt_view_for_tree
 
 
@@ -529,11 +529,11 @@ class _QtNGConnection(
     QtWidgets.QWidget,
     AbsQtNGConnectionDef,
     #
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForHoverDef,
-    gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForHoverDef,
+    gui_qt_abstracts.AbsQtActionForPressDef,
     #
-    gui_qt_abstract.AbsQtPressSelectExtraDef,
+    gui_qt_abstracts.AbsQtPressSelectExtraDef,
 ):
     def _refresh_widget_all_(self):
         self._set_wgt_update_shape_()
@@ -877,20 +877,20 @@ class AbsQtNGDrawNodeDef(object):
 class _QtNGNode(
     QtWidgets.QWidget,
     #
-    gui_qt_abstract.AbsQtFrameBaseDef,
-    gui_qt_abstract.AbsQtTypeDef,
-    gui_qt_abstract.AbsQtNameBaseDef,
-    gui_qt_abstract.AbsQtIconBaseDef,
-    gui_qt_abstract.AbsQtImageBaseDef,
-    gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstracts.AbsQtFrameBaseDef,
+    gui_qt_abstracts.AbsQtTypeDef,
+    gui_qt_abstracts.AbsQtNameBaseDef,
+    gui_qt_abstracts.AbsQtIconBaseDef,
+    gui_qt_abstracts.AbsQtImageBaseDef,
+    gui_qt_abstracts.AbsQtMenuBaseDef,
     #
     AbsQtBypassDef,
     #
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForHoverDef,
-    gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForHoverDef,
+    gui_qt_abstracts.AbsQtActionForPressDef,
     #
-    gui_qt_abstract.AbsQtPressSelectExtraDef,
+    gui_qt_abstracts.AbsQtPressSelectExtraDef,
     #
     AbsQtNGNodeDef,
     AbsQtNGDrawNodeDef,
@@ -970,7 +970,7 @@ class _QtNGNode(
         )
         # icon & button
         i_w, i_h = self._ng_draw_icon_w, self._ng_draw_icon_h
-        self._set_icon_name_draw_rect_(
+        self._set_icon_text_draw_rect_(
             f_x+(f_h_h-i_h)/2, f_y+(f_h_h-i_h)/2, i_w, i_h
         )
         # button
@@ -1152,10 +1152,10 @@ class _QtNGNode(
                 offset=offset
             )
 
-        if self._icon_name_text is not None:
+        if self._icon_text is not None:
             painter._draw_image_use_text_by_rect_(
-                self._icon_name_draw_rect,
-                text=self._icon_name_text,
+                self._icon_text_draw_rect,
+                text=self._icon_text,
                 offset=offset,
                 border_width=self._ng_draw_border_w,
                 border_radius=-1
@@ -1189,10 +1189,10 @@ class NGCmdNodesMove(QtWidgets.QUndoCommand):
 class _QtNGGraph(
     QtWidgets.QWidget,
     #
-    gui_qt_abstract.AbsQtDrawGridDef,
+    gui_qt_abstracts.AbsQtDrawGridDef,
     AbsQtNGGraphSbjDef,
     #
-    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
     AbsQtActionRectSelectDef,
     AbsQtActionFrameDef,
     #
@@ -1388,12 +1388,12 @@ class _QtNGGraph(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 parent = self.parent()
-                if isinstance(parent, _gui_qt_wgt_entry_base.QtEntryFrame):
+                if isinstance(parent, _gui_qt_wgt_entry.QtEntryFrame):
                     parent._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
-                if isinstance(parent, _gui_qt_wgt_entry_base.QtEntryFrame):
+                if isinstance(parent, _gui_qt_wgt_entry.QtEntryFrame):
                     parent._set_focused_(False)
         return False
 

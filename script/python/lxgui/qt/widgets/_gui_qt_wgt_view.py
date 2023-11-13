@@ -3,7 +3,7 @@ from lxgui.qt.core import *
 
 from lxgui.qt.widgets import _gui_qt_wgt_utility
 
-import lxgui.qt.abstracts as gui_qt_abstract
+import lxgui.qt.abstracts as gui_qt_abstracts
 
 import lxgui.qt.models as gui_qt_models
 

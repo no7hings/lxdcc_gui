@@ -4,8 +4,8 @@ p = bsc_core.PyReloader(
     [
         'lxuniverse', 'lxresolver',
         'lxarnold', 'lxusd',
-        'lxutil', 'lxutil_fnc', 'lxutil_gui',
-        'lxkatana', 'lxkatana_fnc', 'lxkatana_gui',
+        'lxutil', 'lxutil_gui',
+        'lxkatana', 'lxkatana_gui',
     ]
 )
 p.set_reload()

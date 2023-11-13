@@ -5,7 +5,7 @@ import functools
 
 from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_layer_stack
 
-import lxgui.qt.abstracts as gui_qt_abstract
+import lxgui.qt.abstracts as gui_qt_abstracts
 
 import lxgui.qt.models as gui_qt_models
 
@@ -40,12 +40,12 @@ class AbsQtItemsDef(object):
 class QtTabView(
     QtWidgets.QWidget,
     AbsQtItemsDef,
-    gui_qt_abstract.AbsQtFrameBaseDef,
-    gui_qt_abstract.AbsQtWidgetBaseDef,
+    gui_qt_abstracts.AbsQtFrameBaseDef,
+    gui_qt_abstracts.AbsQtWidgetBaseDef,
     #
-    gui_qt_abstract.AbsQtMenuBaseDef,
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForDragDef,
+    gui_qt_abstracts.AbsQtMenuBaseDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForDragDef,
 ):
     current_changed = qt_signal()
 
@@ -64,7 +64,7 @@ class QtTabView(
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
         #
-        self._frame_draw_rect.setRect(
+        self._rect_frame_draw.setRect(
             x, y, w, h
         )
         m_l, m_t, m_r, m_b = self._tab_view_margins
@@ -393,7 +393,7 @@ class QtTabView(
             self._tab_bar_draw_rect,
             virtual_items=self._tab_item_stack.get_all_items(),
             index_hover=self._index_hover,
-            index_press=self._index_press,
+            index_pressed=self._index_press,
             index_current=self._get_current_index_(),
         )
         #
@@ -507,7 +507,12 @@ class QtTabView(
 
     def _do_show_tool_tip_(self, event):
         if self._index_hover is not None:
-            title = self._get_page_key_at_(self._index_hover)
+            key = self._get_page_key_at_(self._index_hover)
+            if key is None:
+                title = self._get_page_name_text_at_(self._index_hover)
+            else:
+                title = key
+
             css = GuiQtUtil.generate_tool_tip_css(
                 title,
                 [
@@ -606,10 +611,14 @@ class QtTabView(
             index
         )
 
+    def _get_page_name_text_at_(self, index):
+        return self._tab_item_stack.get_name_at(index)
+
     def _tab_item_menu_gain_fnc_(self):
         if self._index_press is not None:
             return [
-                ('close tab', 'close-hover', functools.partial(self._delete_widget_at_, self._index_press))
+                ('close tab', 'cancel', functools.partial(self._delete_widget_at_, self._index_press)),
+                ('close other tabs', 'cancel', None)
             ]
         return []
 

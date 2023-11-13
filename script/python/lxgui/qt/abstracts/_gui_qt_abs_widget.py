@@ -1,26 +1,26 @@
 # coding:utf-8
 from lxgui.qt.core import *
 
-from lxgui.qt.abstracts import _gui_qt_abs_basic
+from lxgui.qt.abstracts import _gui_qt_abs_base
 
 
 class AbsQtTreeWidget(
     QtWidgets.QTreeWidget,
     #
-    _gui_qt_abs_basic.AbsQtEmptyBaseDef,
+    _gui_qt_abs_base.AbsQtEmptyBaseDef,
     #
-    _gui_qt_abs_basic.AbsQtMenuBaseDef,
+    _gui_qt_abs_base.AbsQtMenuBaseDef,
     #
-    _gui_qt_abs_basic.AbsQtViewFilterExtraDef,
+    _gui_qt_abs_base.AbsQtViewFilterExtraDef,
     #
-    _gui_qt_abs_basic.AbsQtViewStateDef,
-    _gui_qt_abs_basic.AbsQtViewVisibleConnectionDef,
+    _gui_qt_abs_base.AbsQtViewStateDef,
+    _gui_qt_abs_base.AbsQtViewVisibleConnectionDef,
     #
-    _gui_qt_abs_basic.AbsQtViewScrollActionDef,
-    _gui_qt_abs_basic.AbsQtBuildViewDef,
-    _gui_qt_abs_basic.AbsQtShowForViewDef,
+    _gui_qt_abs_base.AbsQtViewScrollActionDef,
+    _gui_qt_abs_base.AbsQtBuildViewDef,
+    _gui_qt_abs_base.AbsQtShowForViewDef,
     #
-    _gui_qt_abs_basic.AbsQtBusyBaseDef,
+    _gui_qt_abs_base.AbsQtBusyBaseDef,
 ):
     def __init__(self, *args, **kwargs):
         super(AbsQtTreeWidget, self).__init__(*args, **kwargs)
@@ -125,11 +125,11 @@ class AbsQtTreeWidget(
                 QtGui.QIcon.On
             )
             #
-            self.headerItem().setBackground(index, QtBrushes.BackgroundNormal)
+            self.headerItem().setBackground(index, QtBrushes.Background)
             self.headerItem().setForeground(index, QtGui.QBrush(QtGui.QColor(255, 255, 255, 255)))
             self.headerItem().setFont(index, QtFonts.NameNormal)
             # todo: in katana will make text display error, PyQt?
-            if LOAD_INDEX == 1:
+            if QT_LOAD_INDEX == 1:
                 self.headerItem().setIcon(index, icon)
 
     def _get_view_h_scroll_bar_(self):
@@ -177,17 +177,17 @@ class AbsQtTreeWidget(
 class AbsQtListWidget(
     QtWidgets.QListWidget,
     #
-    _gui_qt_abs_basic.AbsQtEmptyBaseDef,
+    _gui_qt_abs_base.AbsQtEmptyBaseDef,
     #
-    _gui_qt_abs_basic.AbsQtViewSelectActionDef,
-    _gui_qt_abs_basic.AbsQtViewScrollActionDef,
+    _gui_qt_abs_base.AbsQtViewSelectActionDef,
+    _gui_qt_abs_base.AbsQtViewScrollActionDef,
     #
-    _gui_qt_abs_basic.AbsQtViewFilterExtraDef,
-    _gui_qt_abs_basic.AbsQtViewStateDef,
-    _gui_qt_abs_basic.AbsQtViewVisibleConnectionDef,
-    _gui_qt_abs_basic.AbsQtBuildViewDef,
-    _gui_qt_abs_basic.AbsQtShowForViewDef,
-    _gui_qt_abs_basic.AbsQtBusyBaseDef,
+    _gui_qt_abs_base.AbsQtViewFilterExtraDef,
+    _gui_qt_abs_base.AbsQtViewStateDef,
+    _gui_qt_abs_base.AbsQtViewVisibleConnectionDef,
+    _gui_qt_abs_base.AbsQtBuildViewDef,
+    _gui_qt_abs_base.AbsQtShowForViewDef,
+    _gui_qt_abs_base.AbsQtBusyBaseDef,
 ):
     SortMode = gui_configure.SortMode
     SortOrder = gui_configure.SortOrder
@@ -424,6 +424,9 @@ class AbsQtListWidget(
     def _get_visible_items_(self):
         return [i for i in self._get_all_items_() if i.isHidden() is False]
 
+    def _get_all_visible_item_count_(self):
+        return len(self._get_visible_items_())
+
     def _get_visible_indices_(self):
         return [self.indexFromItem(i) for i in self._get_visible_items_() if i.isHidden() is False]
 
@@ -441,7 +444,7 @@ class AbsQtListWidget(
         #
         self.clear()
 
-    def _set_scroll_to_pre_item_(self):
+    def _scroll_to_pre_item_(self):
         # use visible indices for filter by visible
         indices = self._get_visible_indices_()
         if indices:
@@ -471,7 +474,7 @@ class AbsQtListWidget(
                 self._scroll_view_to_item_top_(item)
                 return
 
-    def _set_scroll_to_next_item_(self):
+    def _scroll_to_next_item_(self):
         indices = self._get_visible_indices_()
         if indices:
             selected_indices = self._get_selected_visible_indices_()

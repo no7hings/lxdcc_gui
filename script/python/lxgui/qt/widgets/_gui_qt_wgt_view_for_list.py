@@ -1,14 +1,14 @@
 # coding=utf-8
 from lxgui.qt.core import *
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_entry_base
+from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_entry
 
-import lxgui.qt.abstracts as gui_qt_abstract
+import lxgui.qt.abstracts as gui_qt_abstracts
 
 
 class QtListWidget(
-    gui_qt_abstract.AbsQtListWidget,
-    gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstracts.AbsQtListWidget,
+    gui_qt_abstracts.AbsQtMenuBaseDef,
 ):
     ctrl_f_key_pressed = qt_signal()
     f5_key_pressed = qt_signal()
@@ -146,13 +146,13 @@ class QtListWidget(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 parent = self.parent()
-                if isinstance(parent, _gui_qt_wgt_entry_base.QtEntryFrame):
+                if isinstance(parent, _gui_qt_wgt_entry.QtEntryFrame):
                     parent._set_focused_(True)
                 self.focus_changed.emit()
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
-                if isinstance(parent, _gui_qt_wgt_entry_base.QtEntryFrame):
+                if isinstance(parent, _gui_qt_wgt_entry.QtEntryFrame):
                     parent._set_focused_(False)
                 self.focus_changed.emit()
         elif widget == self.viewport():

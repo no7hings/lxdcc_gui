@@ -39,7 +39,7 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
         file_path = ktn_dcc_objects.Scene.get_current_file_path()
         self._options_prx_node.set('scene', file_path)
         self._options_prx_node.get_port('scene').set_locked(True)
-        self._result_list_view.connect_refresh_action_to(self.set_refresh_all)
+        self._result_list_view.connect_refresh_action_for(self.set_refresh_all)
 
     def set_refresh_all(self):
         self.gui_add_all_render_nodes()

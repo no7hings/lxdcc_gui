@@ -17,7 +17,7 @@ import threading
 
 import lxlog.core as log_core
 
-import lxgui.qt.abstracts as gui_qt_abstract
+import lxgui.qt.abstracts as gui_qt_abstracts
 
 
 class _Processing(object):
@@ -311,7 +311,7 @@ class QtProcessingBar(QtWidgets.QWidget):
         x, y = 0, 0
         w, h = self.width(), self.height()
 
-        self.__frame_draw_rect.setRect(
+        self.__rect_frame_draw.setRect(
             x, y, w-1, h-1
         )
         p_b_x, p_b_y = x+1, y+1
@@ -351,14 +351,14 @@ class QtProcessingBar(QtWidgets.QWidget):
         self.__start_timestamp = None
         self.__finish_timestamp = None
 
-        self.__frame_draw_rect = QtCore.QRect()
+        self.__rect_frame_draw = QtCore.QRect()
         self.__processing_draw_rect = QtCore.QRect()
         self.__text_draw_rect = QtCore.QRect()
 
         self.__status = self.Status.Waiting
         (
             self.__processing_draw_color, self.__processing_draw_color_hover
-        ) = gui_qt_abstract.AbsQtStatusBaseDef._get_rgba_args_by_status_(
+        ) = gui_qt_abstracts.AbsQtStatusBaseDef._get_rgba_args_by_status_(
             self.Status.Waiting
         )
 
@@ -438,7 +438,7 @@ class QtProcessingBar(QtWidgets.QWidget):
         self.__status = status
         (
             self.__processing_draw_color, self.__processing_draw_color_hover
-        ) = gui_qt_abstract.AbsQtStatusBaseDef._get_rgba_args_by_status_(
+        ) = gui_qt_abstracts.AbsQtStatusBaseDef._get_rgba_args_by_status_(
             status
         )
 
@@ -462,7 +462,7 @@ class QtProcessingBar(QtWidgets.QWidget):
     def paintEvent(self, event):
         painter = QtPainter(self)
         painter._draw_frame_by_rect_(
-            rect=self.__frame_draw_rect,
+            rect=self.__rect_frame_draw,
             border_color=self.__processing_draw_color_hover,
             background_color=QtBackgroundColors.Dim,
         )

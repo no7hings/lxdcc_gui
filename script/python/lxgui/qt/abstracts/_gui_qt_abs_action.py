@@ -80,10 +80,20 @@ class AbsQtActionBaseDef(object):
                     self.ActionFlag.ExpandPress,
                     self.ActionFlag.OptionPress,
                     self.ActionFlag.ChoosePress,
+                    self.ActionFlag.NextPress,
+                    self.ActionFlag.ComponentPress
                 }:
                     self._widget.setCursor(
                         QtGui.QCursor(
                             QtCore.Qt.PointingHandCursor
+                        )
+                    )
+                elif self._action_flag in {
+                    self.ActionFlag.HoverMove,
+                }:
+                    self._widget.setCursor(
+                        QtGui.QCursor(
+                            QtCore.Qt.ArrowCursor
                         )
                     )
                 elif self._action_flag in {
@@ -247,6 +257,13 @@ class AbsQtActionBaseDef(object):
 
     def _get_action_state_(self):
         return self._action_state
+
+    def _create_widget_shortcut_action_(self, fnc, shortcut):
+        action = QtWidgets.QAction(self._widget)
+        action.triggered.connect(fnc)
+        action.setShortcut(QtGui.QKeySequence(shortcut))
+        action.setShortcutContext(QtCore.Qt.WidgetWithChildrenShortcut)
+        self._widget.addAction(action)
 
 
 class AbsQtActionForHoverDef(object):

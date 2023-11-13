@@ -48,6 +48,8 @@ class AbsPrxDialogWindow(
 
         self._completed_content = 'process is completed, press "Close" to continue'
 
+        self.create_window_action_for(self.do_cancel, 'esc')
+
     def set_window_modality(self, boolean):
         pass
 
@@ -71,8 +73,7 @@ class AbsPrxDialogWindow(
         self._sub_label = _gui_qt_wgt_utility.QtTextItem()
         self._central_layout.addWidget(self._sub_label)
         self._sub_label.setVisible(False)
-        self._sub_label.setMaximumHeight(20)
-        self._sub_label.setMinimumHeight(20)
+        self._sub_label.setFixedHeight(20)
         self._sub_label._set_name_draw_font_(gui_qt_core.QtFonts.SubTitle)
         self._sub_label._set_name_text_option_(
             gui_qt_core.QtCore.Qt.AlignHCenter | gui_qt_core.QtCore.Qt.AlignVCenter
@@ -125,38 +126,38 @@ class AbsPrxDialogWindow(
         self._bottom_toolbar.set_expanded(True)
         qt_widget_2 = _gui_qt_wgt_utility.QtWidget()
         self._bottom_toolbar.add_widget(qt_widget_2)
-        self._button_layout = _gui_qt_wgt_utility.QtHBoxLayout(qt_widget_2)
+        self._input_button_layout = _gui_qt_wgt_utility.QtHLayout(qt_widget_2)
         #
         qt_spacer_0 = _gui_qt_wgt_utility._QtSpacer()
-        self._button_layout.addWidget(qt_spacer_0)
+        self._input_button_layout.addWidget(qt_spacer_0)
         #
         self._yes_button = _gui_prx_wdt_utility.PrxPressItem()
         # self._yes_button.set_visible(False)
-        self._button_layout.addWidget(self._yes_button.widget)
+        self._input_button_layout.addWidget(self._yes_button.widget)
         self._yes_button.set_name('Yes')
         self._yes_button.set_icon_name('adopt')
         self._yes_button.set_width(self.BUTTON_WIDTH)
-        self._yes_button.connect_press_clicked_to(self.execute_yes)
+        self._yes_button.connect_press_clicked_to(self.do_yes)
         #
         self._no_button = _gui_prx_wdt_utility.PrxPressItem()
         # self._no_button.set_visible(False)
-        self._button_layout.addWidget(self._no_button.widget)
+        self._input_button_layout.addWidget(self._no_button.widget)
         self._no_button.set_name('No')
         self._no_button.set_icon_name('warning')
         self._no_button.set_width(self.BUTTON_WIDTH)
-        self._no_button.connect_press_clicked_to(self.execute_no)
+        self._no_button.connect_press_clicked_to(self.do_no)
         #
         self._cancel_button = _gui_prx_wdt_utility.PrxPressItem()
         # self._cancel_button.set_visible(False)
-        self._button_layout.addWidget(self._cancel_button.widget)
+        self._input_button_layout.addWidget(self._cancel_button.widget)
         self._cancel_button.set_name('Cancel')
         self._cancel_button.set_icon_name('cancel')
         self._cancel_button.set_width(self.BUTTON_WIDTH)
-        self._cancel_button.connect_press_clicked_to(self.execute_cancel)
+        self._cancel_button.connect_press_clicked_to(self.do_cancel)
         #
         # self._close_button = _gui_prx_wdt_utility.PrxPressItem()
         # self._close_button.set_visible(False)
-        # self._button_layout.addWidget(self._close_button.widget)
+        # self._input_button_layout.addWidget(self._close_button.widget)
         # self._close_button.set_name('Close')
         # self._close_button.set_icon_by_name('close')
         # self._close_button.set_width(self.BUTTON_WIDTH)
@@ -219,17 +220,17 @@ class AbsPrxDialogWindow(
     def set_use_thread(self, boolean):
         self._use_thread = boolean
 
-    def execute_no(self):
+    def do_no(self):
         self._result = False
         self._kwargs = self.get_options_as_kwargs()
         self._execute_methods_(self._no_methods, scheme='no')
 
-    def execute_yes(self):
+    def do_yes(self):
         self._result = True
         self._kwargs = self.get_options_as_kwargs()
         self._execute_methods_(self._yes_methods, scheme='yes')
 
-    def execute_cancel(self):
+    def do_cancel(self):
         self._result = False
         self._kwargs = self.get_options_as_kwargs()
         self._execute_methods_(self._cancel_methods, scheme='cancel')
@@ -274,7 +275,7 @@ class AbsPrxDialogWindow(
         self._central_widget._set_status_(status)
         self._sub_label._set_status_(status)
 
-    def set_customize_widget_add(self, widget):
+    def add_customize_widget(self, widget):
         if isinstance(widget, gui_qt_core.QtCore.QObject):
             qt_widget = widget
         else:
@@ -382,7 +383,7 @@ class PrxDialogWindow1(AbsPrxDialogWindow):
         self._central_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._central_widget)
         self._central_layout.setContentsMargins(*[4]*4)
 
-    def execute_yes(self):
+    def do_yes(self):
         self._result = True
         self._kwargs = self.get_options_as_kwargs()
         for i in self._yes_methods:
@@ -391,7 +392,7 @@ class PrxDialogWindow1(AbsPrxDialogWindow):
         self.widget._set_yes_run_()
         # self.set_window_close()
 
-    def execute_no(self):
+    def do_no(self):
         self._result = False
         self._kwargs = self.get_options_as_kwargs()
         for i in self._no_methods:
@@ -400,7 +401,7 @@ class PrxDialogWindow1(AbsPrxDialogWindow):
         self.widget._set_no_run_()
         # self.set_window_close()
 
-    def execute_cancel(self):
+    def do_cancel(self):
         self._result = None
         self._kwargs = self.get_options_as_kwargs()
         for i in self._cancel_methods:
@@ -426,19 +427,19 @@ class PrxTipWindow(PrxDialogWindow0):
         self._tip_group.set_expanded(True)
         self.set_content_font_size(10)
 
-    def execute_no(self):
+    def do_no(self):
         self._result = False
         for i in self._no_methods:
             i()
         self.close_window_later()
 
-    def execute_yes(self):
+    def do_yes(self):
         self._result = True
         for i in self._yes_methods:
             i()
         self.close_window_later()
 
-    def execute_cancel(self):
+    def do_cancel(self):
         self._result = False
         for i in self._cancel_methods:
             i()
@@ -489,10 +490,10 @@ class PrxMonitorWindow(
         qt_widget_1 = _gui_qt_wgt_utility.QtWidget()
         self._central_layout.addWidget(qt_widget_1)
         #
-        self._button_layout = _gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
+        self._input_button_layout = _gui_qt_wgt_utility.QtHLayout(qt_widget_1)
         #
         self._status_button = _gui_prx_wdt_utility.PrxPressItem()
-        self._button_layout.addWidget(self._status_button.widget)
+        self._input_button_layout.addWidget(self._status_button.widget)
         self._status_button.set_name('process')
         self._status_button.set_icon_by_name('process')
 

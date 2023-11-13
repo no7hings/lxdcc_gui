@@ -21,9 +21,9 @@ class QtTimer(QtCore.QTimer):
         super(QtTimer, self).__init__(*args, **kwargs)
 
 
-class QtHBoxLayout(QtWidgets.QHBoxLayout):
+class QtHLayout(QtWidgets.QHBoxLayout):
     def __init__(self, *args, **kwargs):
-        super(QtHBoxLayout, self).__init__(*args, **kwargs)
+        super(QtHLayout, self).__init__(*args, **kwargs)
         self.setContentsMargins(*gui_configure.Size.LayoutDefaultContentsMargins)
         self.setSpacing(gui_configure.Size.LayoutDefaultSpacing)
 

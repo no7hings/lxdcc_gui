@@ -1,1074 +1,1689 @@
 # coding=utf-8
 from lxgui.qt.core import *
 
-import lxgui.configure as gui_configure
+import six
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_entry_base, _gui_qt_wgt_popup
+from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_resize
 
-import lxgui.qt.abstracts as gui_qt_abstract
+import lxgui.qt.abstracts as gui_qt_abstracts
 
 
-# any constant, etc. integer, float, string/text/name, ...
-class QtValueEntryAsConstant(
-    _gui_qt_wgt_entry_base.QtEntryFrame,
+# entry as constant, etc. float, integer, string, ...
+class QtEntryAsConstant(
+    QtWidgets.QLineEdit,
 
-    gui_qt_abstract.AbsQtValueEntryBaseDef,
-    gui_qt_abstract.AbsQtValueDefaultBaseDef,
+    gui_qt_abstracts.AbsQtEntryBaseDef,
+
+    gui_qt_abstracts.AbsQtEntryFrameExtraDef,
+    gui_qt_abstracts.AbsQtActionForDropBaseDef,
+
+    gui_qt_abstracts.AbsQtEntryPopupExtra,
 ):
-    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsTextEdit
+    user_entry_text_accepted = qt_signal(str)
 
-    entry_changed = qt_signal()
+    user_key_tab_pressed = qt_signal()
+
+    key_backspace_extra_pressed = qt_signal()
+
+    key_enter_pressed = qt_signal()
+
+    focus_in = qt_signal()
+    focus_out = qt_signal()
 
     def __init__(self, *args, **kwargs):
-        super(QtValueEntryAsConstant, self).__init__(*args, **kwargs)
+        super(QtEntryAsConstant, self).__init__(*args, **kwargs)
+        self.setPalette(GuiQtDcc.generate_qt_palette())
+        self.setFont(GuiQtFont.generate_2(size=12))
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
+        # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
-        self._init_value_entry_base_def_(self)
-        self._init_value_default_base_def_()
-        #
-        self._build_value_entry_(self._value_type)
+        self._value_type = str
 
-    def _build_value_entry_(self, value_type):
+        self._value_default = None
+
+        self._maximum = 1
+        self._minimum = 0
+
+        self.returnPressed.connect(self.user_entry_finished.emit)
+        self.returnPressed.connect(self.__execute_text_change_accepted_)
+        # emit send by setText
+        self.textChanged.connect(self._do_entry_change_)
+        # user enter
+        self.textEdited.connect(self._do_user_entry_change_)
+
+        self.setStyleSheet(
+            GuiQtStyle.get('QLineEdit')
+        )
+
+        self._init_entry_base_def_(self)
+        self._init_entry_frame_extra_def_(self)
+        self._init_entry_popup_extra_def_(self)
+
+        self._init_drop_base_def_(self)
+
+        self.setAcceptDrops(self._action_drop_is_enable)
+
+        self.installEventFilter(self)
+
+        # self.setPlaceholderText()
+
+        # self.setFocusPolicy(QtCore.Qt.StrongFocus)
+
+    def __execute_text_change_accepted_(self):
+        self.user_entry_text_accepted.emit(self.text())
+
+    def _set_entry_tip_(self, text):
+        self.setPlaceholderText(text)
+
+    def _do_wheel_(self, event):
+        if self._value_type in [int, float]:
+            delta = event.angleDelta().y()
+            pre_value = self._get_value_()
+            if delta > 0:
+                self._set_value_(pre_value+1)
+            else:
+                self._set_value_(pre_value-1)
+            #
+            self._do_entry_change_()
+            event.accept()
+            return True
+        else:
+            values_all = self._get_value_options_()
+            if values_all:
+                delta = event.angleDelta().y()
+                value_pre = self._get_value_()
+                if value_pre in values_all:
+                    minimum, maximum = 0, len(values_all)-1
+                    idx_pre = values_all.index(value_pre)
+                    if delta > 0:
+                        if idx_pre == 0:
+                            idx_cur = maximum
+                        else:
+                            idx_cur = idx_pre-1
+                    else:
+                        if idx_pre == maximum:
+                            idx_cur = minimum
+                        else:
+                            idx_cur = idx_pre+1
+                    idx_cur = max(min(idx_cur, maximum), 0)
+                    if idx_cur != idx_pre:
+                        self._set_value_(values_all[idx_cur])
+                        # set value before
+                        event.accept()
+                        return True
+        return False
+
+    def _do_drop_(self, event):
+        data = event.mimeData()
+        if data.hasUrls():
+            urls = event.mimeData().urls()
+            if urls:
+                value = urls[0].toLocalFile()
+                if self._get_value_is_valid_(value):
+                    self._set_value_(value)
+                    return True
+        return False
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.FocusIn:
+                self._is_focused = True
+                entry_frame = self._get_entry_frame_()
+                if isinstance(entry_frame, QtEntryFrame):
+                    entry_frame._set_focused_(True)
+                self.focus_in.emit()
+            elif event.type() == QtCore.QEvent.FocusOut:
+                self._is_focused = False
+                entry_frame = self._get_entry_frame_()
+                if isinstance(entry_frame, QtEntryFrame):
+                    entry_frame._set_focused_(False)
+                #
+                self.focus_out.emit()
+                #
+                self._completion_value_auto_()
+            elif event.type() == QtCore.QEvent.Wheel:
+                return self._do_wheel_(event)
+            elif event.type() == QtCore.QEvent.KeyPress:
+                if event.key() == QtCore.Qt.Key_Backspace:
+                    if not self.text():
+                        self.key_backspace_extra_pressed.emit()
+                elif event.key() == QtCore.Qt.Key_Tab:
+                    self.user_key_tab_pressed.emit()
+                elif event.key() in {QtCore.Qt.Key_Return, QtCore.Qt.Key_Enter}:
+                    self.user_entry_finished.emit()
+                    self._completion_value_auto_()
+                elif event.key() == QtCore.Qt.Key_Escape:
+                    self.clearFocus()
+                    return True
+        return False
+
+    def dropEvent(self, event):
+        if self._do_drop_(event) is True:
+            event.accept()
+        else:
+            event.ignore()
+
+    def contextMenuEvent(self, event):
+        menu_raw = [
+            ('basic',),
+            ('copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
+            ('paste', None, (True, self.paste, False), QtGui.QKeySequence.Paste),
+            ('cut', None, (True, self.cut, False), QtGui.QKeySequence.Cut),
+            ('extend',),
+            ('undo', None, (True, self.undo, False), QtGui.QKeySequence.Undo),
+            ('redo', None, (True, self.redo, False), QtGui.QKeySequence.Redo),
+            ('select all', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll),
+        ]
+        #
+        if self.isReadOnly():
+            menu_raw = [
+                ('basic',),
+                ('copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
+                ('extend',),
+                ('select all', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll)
+            ]
+        #
+        if self._entry_use_as_storage is True:
+            menu_raw.extend(
+                [
+                    ('system',),
+                    ('open folder', 'file/open-folder', (True, self._execute_open_in_system_, False),
+                     QtGui.QKeySequence.Open)
+                ]
+            )
+        #
+        if menu_raw:
+            self._qt_menu = _gui_qt_wgt_utility.QtMenu(self)
+            self._qt_menu._set_menu_data_(menu_raw)
+            self._qt_menu._set_show_()
+
+    def _set_drop_enable_(self, boolean):
+        super(QtEntryAsConstant, self)._set_drop_enable_(boolean)
+        self.setAcceptDrops(boolean)
+
+    def _do_entry_change_(self):
+        # noinspection PyUnresolvedReferences
+        self.entry_value_changed.emit()
+        text = self.text()
+        if not text:
+            self.entry_value_cleared.emit()
+
+    def _do_user_entry_change_(self):
+        # noinspection PyUnresolvedReferences
+        self.user_entry_value_changed.emit()
+        text = self.text()
+        if not text:
+            self.user_entry_value_cleared.emit()
+
+    def _completion_value_auto_(self):
+        if self._value_type in {int, float}:
+            if not self.text():
+                self._set_value_(0)
+        elif self._entry_use_as_rgba is True:
+            self._set_value_as_rgba_255_(self._get_value_as_rgba_255_())
+
+    def _set_value_type_(self, value_type):
         self._value_type = value_type
-        #
-        entry_layout = QtHBoxLayout(self)
-        entry_layout.setContentsMargins(2, 2, 2, 2)
-        entry_layout.setSpacing(4)
-        #
-        self._value_entry = self.QT_VALUE_ENTRY_CLS()
-        entry_layout.addWidget(self._value_entry)
-        self._value_entry._set_value_type_(self._value_type)
+        if self._value_type is None:
+            pass
+        elif self._value_type is str:
+            pass
+            # self._set_validator_use_as_name_()
+        elif self._value_type is int:
+            self._set_validator_use_as_integer_()
+        elif self._value_type is float:
+            self._set_validator_use_as_float_()
 
-    def _set_value_entry_validator_use_as_name_(self):
-        self._value_entry._set_validator_use_as_name_()
+    def _get_value_type_(self):
+        return self._value_type
 
-    def _set_value_entry_enable_(self, boolean):
-        super(QtValueEntryAsConstant, self)._set_value_entry_enable_(boolean)
+    def _execute_open_in_system_(self):
+        _ = self.text()
+        if _:
+            bsc_core.StgSystem.open(_)
 
-        self._value_entry.setReadOnly(not boolean)
+    def _set_entry_use_as_storage_(self, boolean=True):
+        super(QtEntryAsConstant, self)._set_entry_use_as_storage_(boolean)
+        if boolean is True:
+            action = QtWidgets.QAction(self)
+            action.triggered.connect(
+                self._execute_open_in_system_
+            )
+            action.setShortcut(
+                QtGui.QKeySequence.Open
+            )
+            action.setShortcutContext(
+                QtCore.Qt.WidgetShortcut
+            )
+            self.addAction(action)
 
-        self._frame_background_color = [
-            QtBackgroundColors.Basic, QtBackgroundColors.Dim
-        ][boolean]
-        self._refresh_widget_draw_()
+    def _set_entry_use_as_rgba_255_(self, boolean=False):
+        super(QtEntryAsConstant, self)._set_entry_use_as_rgba_255_(boolean)
+        if boolean is True:
+            self._set_validator_use_as_rgba_()
+
+    def _set_validator_use_as_rgba_(self):
+        reg = QtCore.QRegExp(r'^[0-9,]+$')
+        validator = QtGui.QRegExpValidator(reg, self)
+        self.setValidator(validator)
+
+    def _set_validator_use_as_name_(self):
+        reg = QtCore.QRegExp(r'^[a-zA-Z][a-zA-Z0-9_]+$')
+        validator = QtGui.QRegExpValidator(reg, self)
+        self.setValidator(validator)
+
+    def _set_validator_use_as_integer_(self):
+        self.setValidator(QtGui.QIntValidator())
+        self._completion_value_auto_()
+
+    def _set_validator_use_as_float_(self):
+        self.setValidator(QtGui.QDoubleValidator())
+        self._completion_value_auto_()
+
+    def _set_value_validator_use_as_frames_(self):
+        self._set_value_type_(str)
+        reg = QtCore.QRegExp(r'^[0-9-,:]+$')
+        validator = QtGui.QRegExpValidator(reg, self)
+        self.setValidator(validator)
+
+    def _set_value_validator_use_as_rgba_(self):
+        self._set_value_type_(str)
+        reg = QtCore.QRegExp(r'^[0-9.,]+$')
+        validator = QtGui.QRegExpValidator(reg, self)
+        self.setValidator(validator)
+
+    def _set_value_maximum_(self, value):
+        self._maximum = value
+
+    def _get_value_maximum_(self):
+        return self._maximum
+
+    def _set_value_minimum_(self, value):
+        self._minimum = value
+
+    def _get_value_minimum_(self):
+        return self._minimum
+
+    def _set_value_range_(self, maximum, minimum):
+        self._set_value_maximum_(maximum), self._set_value_minimum_(minimum)
+
+    def _get_value_range_(self):
+        return self._get_value_maximum_(), self._get_value_minimum_()
+
+    def _get_value_(self):
+        _ = self.text()
+        # do not encode output, use original data
+        if self._value_type == str:
+            # if isinstance(_, six.text_type):
+            #     _ = _.encode('utf-8')
+            return _
+        elif self._value_type == int:
+            return int(_ or 0)
+        elif self._value_type == float:
+            return float(_ or 0)
+        return _
+
+    def _set_value_(self, value):
+        pre_value = self.text()
+        if value is not None:
+            if isinstance(value, six.text_type):
+                value = value.encode('utf-8')
+
+            if isinstance(pre_value, six.text_type):
+                pre_value = pre_value.encode('utf-8')
+
+            if self._value_type is not None:
+                value = self._value_type(value)
+            #
+            if value != pre_value:
+                self.setText(str(value))
+                # self._do_entry_change_()
+        else:
+            self.setText('')
+
+    def _set_value_as_rgba_255_(self, rgba):
+        if isinstance(rgba, (tuple, list)):
+            text = ','.join(map(lambda x: str(int(x)), rgba))
+            self.setText(text)
+
+    def _get_value_as_rgba_255_(self):
+        text = self.text()
+        _ = map(lambda x: max(min(int(x), 255), 0) if x else 255, map(lambda x: str(x).strip(), text.split(',')))
+        c = len(_)
+        if c == 4:
+            return tuple(_)
+        elif c > 4:
+            return tuple(_[:4])
+        elif c < 4:
+            return tuple([_[i] if i < c else 255 for i in range(4)])
+        return 255, 255, 255, 255
+
+    def _connect_focused_to_(self, widget):
+        pass
+
+    #
+    def _get_is_selected_(self):
+        boolean = False
+        if self.selectedText():
+            boolean = True
+        return boolean
+
+    def _clear_input_(self):
+        self._set_value_('')
+
+    def _set_entry_enable_(self, boolean):
+        super(QtEntryAsConstant, self)._set_entry_enable_(boolean)
+        self.setReadOnly(not boolean)
+
+    def _set_all_selected_(self):
+        self.selectAll()
+
+    def _get_is_focused_(self):
+        return self.hasFocus()
+
+    def _set_entry_focus_in_(self):
+        # run behind "addWidget"
+        self.setFocus(QtCore.Qt.MouseFocusReason)
+
+    def _has_focus_(self):
+        return self.hasFocus()
+
+    def _set_clear_(self):
+        self.clear()
+
+    # for completion
+    def _build_entry_for_completion_popup_(self, popup_widget):
+        self._set_completion_popup_widget_(popup_widget)
+
+        self.user_entry_value_changed.connect(popup_widget._do_popup_start_)
+        self.user_entry_value_cleared.connect(popup_widget._do_popup_close_)
 
 
-# any content, etc. script, xml, doc
-class QtValueEntryAsContentEdit(
-    _gui_qt_wgt_entry_base.QtEntryFrame,
+# entry as content, etc. script
+class QtEntryAsContent(
+    QtWidgets.QTextEdit,
 
-    gui_qt_abstract.AbsQtValueEntryBaseDef,
-    gui_qt_abstract.AbsQtValueDefaultBaseDef,
+    gui_qt_abstracts.AbsQtEntryBaseDef,
+    gui_qt_abstracts.AbsQtEntryFrameExtraDef,
+
+    gui_qt_abstracts.AbsQtActionForDropBaseDef,
 ):
-    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsContentEdit
-
-    entry_changed = qt_signal()
+    focus_in = qt_signal()
+    focus_out = qt_signal()
+    focus_changed = qt_signal()
 
     def __init__(self, *args, **kwargs):
-        super(QtValueEntryAsContentEdit, self).__init__(*args, **kwargs)
+        super(QtEntryAsContent, self).__init__(*args, **kwargs)
+        self.setWordWrapMode(QtGui.QTextOption.WrapAnywhere)
+        self.installEventFilter(self)
+        # self.setAcceptRichText(False)
+        # self.setWordWrapMode(QtGui.QTextOption.NoWrap)
         #
-        self._init_value_entry_base_def_(self)
-        self._init_value_default_base_def_()
+        self.setFont(QtFonts.Content)
+        qt_palette = GuiQtDcc.generate_qt_palette()
+        self.setPalette(qt_palette)
+        self.setAutoFillBackground(True)
+        self.setFocusPolicy(QtCore.Qt.ClickFocus)
         #
-        self._external_editor_ext = '.txt'
+        self._print_signals = QtPrintSignals(self)
         #
-        self._external_editor_is_enable = False
-        self._external_editor_file_path = None
+        self._print_signals.print_add_accepted.connect(self._add_value_)
+        self._print_signals.print_over_accepted.connect(self._set_value_)
         #
-        self._build_value_entry_(self._value_type)
-
-        # self._frame_background_color = QtBackgroundColors.Dark
-
-    def _build_value_entry_(self, value_type):
-        self._value_type = value_type
-        #
-        main_layout = QtVBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
-        #
-        entry_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
-        main_layout.addWidget(entry_widget)
-        #
-        entry_layout = QtHBoxLayout(entry_widget)
-        entry_layout.setContentsMargins(2, 2, 2, 2)
-        entry_layout.setSpacing(0)
-        #
-        self._value_entry = self.QT_VALUE_ENTRY_CLS()
-        self._value_entry._set_entry_frame_(self)
-        # self._value_entry.setReadOnly(False)
-        entry_layout.addWidget(self._value_entry)
-        #
-        self._button_widget = _gui_qt_wgt_utility.QtLineWidget()
-        self._button_widget.hide()
-        self._button_widget._set_line_styles_(
-            [self._button_widget.Style.Null, self._button_widget.Style.Null, self._button_widget.Style.Solid,
-             self._button_widget.Style.Null]
-        )
-        entry_layout.addWidget(self._button_widget)
-        self._button_layout = QtVBoxLayout(self._button_widget)
-        self._button_layout._set_align_top_()
-        self._button_layout.setContentsMargins(2, 0, 0, 0)
-        self._button_layout.setSpacing(2)
-        #
-        self._open_in_external_editor_button = _gui_qt_wgt_button.QtIconEnableButton()
-        self._button_layout.addWidget(self._open_in_external_editor_button)
-        self._open_in_external_editor_button._set_icon_file_path_(
-            gui_core.GuiIcon.get('application/sublime-text')
-            )
-        self._open_in_external_editor_button._set_name_text_('open in external editor')
-        self._open_in_external_editor_button._set_tool_tip_('"LMB-click" to open in external editor')
-        self._open_in_external_editor_button.check_toggled.connect(self._start_open_in_external_editor_fnc_)
-        #
-        self._value_entry.focus_in.connect(
-            self._update_from_external_editor_fnc_
+        self.setStyleSheet(
+            GuiQtStyle.get('QTextEdit')
         )
         #
-        self._resize_handle.raise_()
-
-    def _get_tmp_text_file_path_(self):
-        return six.u('{}/editor/untitled-{}{}').format(
-            bsc_core.SystemMtd.get_home_directory(),
-            bsc_core.TimeExtraMtd.get_time_tag_36(),
-            self._external_editor_ext
+        self.verticalScrollBar().setStyleSheet(
+            GuiQtStyle.get('QScrollBar')
         )
+        self.horizontalScrollBar().setStyleSheet(
+            GuiQtStyle.get('QScrollBar')
+        )
+        self._init_entry_base_def_(self)
+        self._init_entry_frame_extra_def_(self)
+        self._init_drop_base_def_(self)
 
-    def _set_external_editor_ext_(self, ext):
-        self._external_editor_ext = ext
+        self._empty_icon_name = None
+        self._empty_text = None
 
-    def _update_from_external_editor_fnc_(self):
-        if self._external_editor_is_enable is True:
-            text = bsc_core.StgFileOpt(self._external_editor_file_path).set_read()
-            self._value_entry._set_value_(text)
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.FocusIn:
+                self._is_focused = True
+                entry_frame = self._get_entry_frame_()
+                if isinstance(entry_frame, QtEntryFrame):
+                    entry_frame._set_focused_(True)
+                #
+                self.focus_in.emit()
+                self.focus_changed.emit()
+            elif event.type() == QtCore.QEvent.FocusOut:
+                self._is_focused = False
+                entry_frame = self._get_entry_frame_()
+                if isinstance(entry_frame, QtEntryFrame):
+                    entry_frame._set_focused_(False)
+                #
+                self.focus_out.emit()
+                self.focus_changed.emit()
+            elif event.type() == QtCore.QEvent.Wheel:
+                if event.modifiers() == QtCore.Qt.ControlModifier:
+                    self._execute_font_scale_(event)
+                    return True
+        return False
 
-    def _start_open_in_external_editor_fnc_(self, boolean):
-        if boolean is True:
-            self._external_editor_is_enable = True
-            self._external_editor_file_path = self._get_tmp_text_file_path_()
-            text = self._value_entry._get_value_()
-            bsc_core.StgFileOpt(self._external_editor_file_path).set_write(
-                text
-            )
-            import lxbasic.extra.methods as bsc_etr_methods
+    def paintEvent(self, event):
+        if not self.toPlainText():
+            painter = QtPainter(self.viewport())
+            if self._empty_text:
+                painter._draw_empty_text_by_rect_(
+                    rect=self.rect(),
+                    text=self._empty_text,
+                    draw_drop_icon=True,
+                )
+            else:
+                painter._draw_empty_image_by_rect_(
+                    rect=self.rect(),
+                    icon_name=self._empty_icon_name,
+                )
 
-            bsc_etr_methods.EtrBase.open_ide(self._external_editor_file_path)
+        super(QtEntryAsContent, self).paintEvent(event)
+
+    def contextMenuEvent(self, event):
+        menu_raw = [
+            ('basic',),
+            ('copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
+            ('paste', None, (True, self.paste, False), QtGui.QKeySequence.Paste),
+            ('cut', None, (True, self.cut, False), QtGui.QKeySequence.Cut),
+            ('extend',),
+            ('undo', None, (True, self.undo, False), QtGui.QKeySequence.Undo),
+            ('redo', None, (True, self.redo, False), QtGui.QKeySequence.Redo),
+            ('select all', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll),
+        ]
+        if self.isReadOnly():
+            menu_raw = [
+                ('basic',),
+                ('copy', None, (True, self.copy, False), QtGui.QKeySequence.Copy),
+                ('extend',),
+                ('select all', None, (True, self.selectAll, False), QtGui.QKeySequence.SelectAll)
+            ]
+        #
+        if menu_raw:
+            self._qt_menu = _gui_qt_wgt_utility.QtMenu(self)
+            self._qt_menu._set_menu_data_(menu_raw)
+            self._qt_menu._set_show_()
+
+    def _execute_font_scale_(self, event):
+        delta = event.angleDelta().y()
+        font = self.font()
+        size_pre = font.pointSize()
+        if delta > 0:
+            size_cur = size_pre+1
         else:
-            self._external_editor_is_enable = False
-            if self._external_editor_file_path:
-                text = bsc_core.StgFileOpt(self._external_editor_file_path).set_read()
-                self._value_entry._set_value_(text)
+            size_cur = size_pre-1
+        #
+        size_cur = max(min(size_cur, 64), 6)
+        font.setPointSize(size_cur)
+        self.setFont(font)
+        self.update()
 
-    def _set_item_value_entry_enable_(self, boolean):
-        self._value_entry._set_entry_enable_(not boolean)
-        if boolean is True:
-            self._button_widget.show()
+    def _append_content_(self, text):
+        def add_fnc_(text_):
+            if isinstance(text_, six.text_type):
+                text_ = text_.encode('utf-8')
+
+            self.moveCursor(QtGui.QTextCursor.End)
+            self.insertPlainText(text_+'\n')
+
+        #
+        if isinstance(text, (tuple, list)):
+            [add_fnc_(i) for i in text]
         else:
-            self._button_widget.hide()
+            add_fnc_(text)
+        #
+        self.update()
 
-    def _set_resize_enable_(self, boolean):
-        self._resize_handle.setVisible(boolean)
+    def _set_content_(self, text):
+        self.setText(text)
 
-    def _set_value_entry_enable_(self, boolean):
-        super(QtValueEntryAsContentEdit, self)._set_value_entry_enable_(boolean)
+    def _add_value_with_thread_(self, text):
+        self._print_signals.print_add_accepted.emit(text)
 
-        self._value_entry.setReadOnly(not boolean)
-        # self._frame_background_color = [
-        #     QtBackgroundColors.Basic, QtBackgroundColors.Dim
-        # ][boolean]
-        # self._refresh_widget_draw_()
+    def _set_value_with_thread_(self, text):
+        self._print_signals.print_over_accepted.emit(text)
 
-    def _set_value_entry_drop_enable_(self, boolean):
-        self._value_entry._set_drop_enable_(boolean)
-        self._frame_border_draw_style = QtCore.Qt.DashLine
+    def _get_value_(self):
+        return self.toPlainText()
+
+    def _add_value_(self, value):
+        def add_fnc_(value_):
+            if isinstance(value_, six.text_type):
+                value_ = value_.encode('utf-8')
+            #
+            self.moveCursor(QtGui.QTextCursor.End)
+            self.insertPlainText(value_+'\n')
+
+        #
+        if isinstance(value, (tuple, list)):
+            [add_fnc_(i) for i in value]
+        else:
+            add_fnc_(value)
+        #
+        self.update()
+
+    def _set_value_(self, value):
+        if value is not None:
+            if isinstance(value, six.text_type):
+                value = value.encode('utf-8')
+            #
+            self.setText(
+                value
+            )
+        else:
+            self.setText('')
 
     def _set_empty_text_(self, text):
-        self._value_entry._set_empty_text_(text)
+        self._empty_text = text
+
+    def _set_entry_enable_(self, boolean):
+        super(QtEntryAsContent, self)._set_entry_enable_(boolean)
+        self.setReadOnly(not boolean)
+
+    def dropEvent(self, event):
+        self._do_drop_(event)
+
+    def _do_drop_(self, event):
+        if self._action_drop_is_enable is True:
+            data = event.mimeData()
+            if data.hasUrls():
+                urls = event.mimeData().urls()
+                if urls:
+                    for i_url in urls:
+                        i_path = i_url.toLocalFile()
+                        if bsc_core.StgPathMtd.get_is_file(i_path) is True:
+                            i_file_opt = bsc_core.StgFileOpt(i_path)
+                            i_data = i_file_opt.set_read()
+                            self.insertPlainText(i_data)
+                    event.accept()
+        else:
+            event.ignore()
+
+    def insertFromMimeData(self, data):
+        # add data as clear
+        if data.text():
+            self.insertPlainText(data.text())
+
+    def _set_entry_focus_enable_(self, boolean):
+        if boolean is False:
+            self._entry_focus_policy_mark = self.focusPolicy()
+            self.setFocusPolicy(
+                QtCore.Qt.NoFocus
+            )
+        else:
+            self.setFocusPolicy(
+                self._entry_focus_policy_mark
+            )
 
 
-# any constant entry and choose, etc. enumerate, file open/save, directory open/save, ...
-class QtValueEntryAsConstantChoose(
-    _gui_qt_wgt_entry_base.QtEntryFrame,
+# entry as list
+class QtEntryAsList(
+    gui_qt_abstracts.AbsQtListWidget,
+    gui_qt_abstracts.AbsQtHelpDef,
 
-    gui_qt_abstract.AbsQtValueEntryBaseDef,
-    gui_qt_abstract.AbsQtValueDefaultBaseDef,
+    gui_qt_abstracts.AbsQtEntryAsArrayBaseDef,
+    gui_qt_abstracts.AbsQtEntryFrameExtraDef,
 
-    gui_qt_abstract.AbsQtChooseBaseDef,
-    gui_qt_abstract.AbsQtChooseAsPopupBaseDef,
-
-    gui_qt_abstract.AbsQtCompletionAsPopupBaseDef,
+    gui_qt_abstracts.AbsQtActionForDropBaseDef,
 ):
-    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsTextEdit
+    entry_value_changed = qt_signal()
+    entry_value_added = qt_signal()
+    entry_value_removed = qt_signal()
+    # for popup choose
+    key_up_pressed = qt_signal()
+    key_down_pressed = qt_signal()
 
-    QT_POPUP_CHOOSE_CLS = _gui_qt_wgt_popup.QtPopupAsAnyChoose
-    QT_POPUP_COMPLETION_CLS = _gui_qt_wgt_popup.QtPopupAsCompletion
+    key_enter_pressed = qt_signal()
 
-    def _refresh_widget_all_(self):
-        self._refresh_widget_draw_geometry_()
-        self._refresh_choose_index_()
-        self._refresh_widget_draw_()
-
-    def _refresh_choose_index_(self):
-        self._value_index_label.hide()
-        if self._choose_index_show_enable is True:
-            if self._value_entry_is_enable is True:
-                values = self._get_choose_values_()
-                if values:
-                    self._value_index_label.show()
-                    maximum = len(values)
-                    value_cur = self._get_value_()
-                    if value_cur in values:
-                        index_cur = values.index(value_cur)+1
-                        text = '{}/{}'.format(index_cur, maximum)
-                    else:
-                        text = str(maximum)
-                    #
-                    self._value_index_label._set_name_text_(text)
-                    width = self._value_index_label._get_name_text_draw_width_(text)
-                    self._value_index_label.setMinimumWidth(width+4)
+    user_input_method_event_changed = qt_signal(object)
 
     def __init__(self, *args, **kwargs):
-        super(QtValueEntryAsConstantChoose, self).__init__(*args, **kwargs)
+        super(QtEntryAsList, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.viewport().installEventFilter(self)
+
+        self.setAttribute(QtCore.Qt.WA_InputMethodEnabled)
+        self.setSelectionMode(self.ExtendedSelection)
+
+        self._item_width, self._item_height = 20, 20
+        self._grid_size = 20, 20
+
+        self._set_help_def_init_(self)
+
+        self._init_entry_as_array_base_def_(self)
+        self._init_entry_frame_extra_def_(self)
+
+        self._init_drop_base_def_(self)
+
+        self.setAcceptDrops(self._action_drop_is_enable)
+
+        self._set_shortcut_register_()
+
+        self._item_icon_file_path = None
+
+        self._empty_icon_name = 'placeholder/default'
+        self._empty_text = None
+
+    def contextMenuEvent(self, event):
+        if self._entry_is_enable is True:
+            menu_raw = [
+                ('basic',),
+                ('copy', None, (True, self._do_action_copy_, False), QtGui.QKeySequence.Copy),
+                ('paste', None, (True, self._do_action_paste_, False), QtGui.QKeySequence.Paste),
+                ('cut', None, (True, self._do_action_cut_, False), QtGui.QKeySequence.Cut),
+                ('extend',),
+                ('select all', None, (True, self._do_action_select_all_, False), QtGui.QKeySequence.SelectAll),
+            ]
+        else:
+            menu_raw = [
+                ('basic',),
+                ('copy', None, (True, self._do_action_copy_, False), QtGui.QKeySequence.Copy),
+                ('extend',),
+                ('select all', None, (True, self._do_action_select_all_, False), QtGui.QKeySequence.SelectAll)
+            ]
         #
-        self._init_value_entry_base_def_(self)
-        self._init_value_default_base_def_()
+        items = self._get_selected_items_()
+        if items:
+            menu_raw.append(
+                ('open folder', 'file/open-folder', (True, self._execute_open_in_system_, False),
+                 QtGui.QKeySequence.Open)
+            )
         #
-        self._init_choose_base_def_()
-        self._init_choose_as_popup_base_def_(self)
-        self._init_completion_as_popup_base_def_(self)
+        if menu_raw:
+            self._qt_menu = _gui_qt_wgt_utility.QtMenu(self)
+            self._qt_menu._set_menu_data_(menu_raw)
+            self._qt_menu._set_show_()
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.KeyPress:
+                if event.key() == QtCore.Qt.Key_Control:
+                    self._action_control_flag = True
+                else:
+                    event.ignore()
+            elif event.type() == QtCore.QEvent.KeyRelease:
+                if event.key() == QtCore.Qt.Key_Control:
+                    self._action_control_flag = False
+                elif event.key() == QtCore.Qt.Key_Delete:
+                    self._execute_action_delete_(event)
+            elif event.type() == QtCore.QEvent.Wheel:
+                pass
+            elif event.type() == QtCore.QEvent.Resize:
+                pass
+            elif event.type() == QtCore.QEvent.FocusIn:
+                self._is_focused = True
+                entry_frame = self._get_entry_frame_()
+                if isinstance(entry_frame, QtEntryFrame):
+                    entry_frame._set_focused_(True)
+            elif event.type() == QtCore.QEvent.FocusOut:
+                self._is_focused = False
+                entry_frame = self._get_entry_frame_()
+                if isinstance(entry_frame, QtEntryFrame):
+                    entry_frame._set_focused_(False)
         #
-        self._build_value_entry_(self._value_type)
+        elif widget == self.verticalScrollBar():
+            pass
         #
+        elif widget == self.viewport():
+            if event.type() == QtCore.QEvent.Resize:
+                self._refresh_viewport_showable_auto_()
+                self._refresh_all_item_widgets_()
+        return False
+
+    def paintEvent(self, event):
+        if not self.count():
+            painter = QtPainter(self.viewport())
+            if self._empty_text:
+                painter._draw_empty_text_by_rect_(
+                    rect=self.rect(),
+                    text=self._empty_text,
+                    text_sub=self._empty_sub_text,
+                    draw_drop_icon=self._action_drop_is_enable
+                )
+            else:
+                painter._draw_empty_image_by_rect_(
+                    rect=self.rect(),
+                    icon_name=self._empty_icon_name,
+                )
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls:
+            event.accept()
+        else:
+            event.ignore()
+
+    def dragMoveEvent(self, event):
+        if self._entry_use_as_storage is True:
+            if event.mimeData().hasUrls:
+                # event.setDropAction(QtCore.Qt.CopyAction)
+                event.accept()
+                return
+            event.ignore()
+            return
+        event.ignore()
+        return
+
+    def dropEvent(self, event):
+        self._do_drop_(event)
+
+    def _execute_open_in_system_(self):
+        item = self._get_item_current_()
+        if item is not None:
+            item_widget = self.itemWidget(item)
+            if item_widget is not None:
+                value = item_widget._get_value_()
+                bsc_core.StgPathOpt(value).open_in_system()
+
+    def _set_shortcut_register_(self):
+        actions = [
+            (self._do_action_copy_, 'Ctrl+C'),
+            (self._do_action_paste_, 'Ctrl+V'),
+            (self._do_action_cut_, 'Ctrl+X'),
+            (self._do_action_select_all_, 'Ctrl+A')
+        ]
+        for i_fnc, i_shortcut in actions:
+            i_action = QtWidgets.QAction(self)
+            i_action.triggered.connect(
+                i_fnc
+            )
+            i_action.setShortcut(
+                QtGui.QKeySequence(
+                    i_shortcut
+                )
+            )
+            i_action.setShortcutContext(
+                QtCore.Qt.WidgetShortcut
+            )
+            self.addAction(i_action)
+
+    def _do_action_copy_(self):
+        selected_item_widgets = self._get_selected_item_widgets_()
+        if selected_item_widgets:
+            values = [i._get_value_() for i in selected_item_widgets]
+            QtWidgets.QApplication.clipboard().setText(
+                '\n'.join(values)
+            )
+
+    def _do_action_cut_(self):
+        selected_item_widgets = self._get_selected_item_widgets_()
+        if selected_item_widgets:
+            values = [i._get_value_() for i in selected_item_widgets]
+            QtWidgets.QApplication.clipboard().setText(
+                '\n'.join(values)
+            )
+            [self._delete_value_(i) for i in values]
+
+    def _do_action_paste_(self):
+        text = QtWidgets.QApplication.clipboard().text()
+        if text:
+            values = [i.strip() for i in text.split('\n')]
+            for i_value in values:
+                if self._get_value_is_valid_(i_value):
+                    self._append_value_(i_value)
+
+    def _do_action_select_all_(self):
+        self._set_all_items_selected_(True)
+
+    def _get_selected_item_widgets_(self):
+        return [self.itemWidget(i) for i in self.selectedItems()]
+
+    def _set_drop_enable_(self, boolean):
+        super(QtEntryAsList, self)._set_drop_enable_(boolean)
+        self.setAcceptDrops(boolean)
+        # self.setDragDropMode(self.DropOnly)
+        # self.setDropIndicatorShown(True)
+
+    def _do_drop_(self, event):
+        data = event.mimeData()
+        if self._entry_use_as_storage is True:
+            if data.hasUrls():
+                urls = event.mimeData().urls()
+                if urls:
+                    values = []
+                    #
+                    for i_url in urls:
+                        i_value = i_url.toLocalFile()
+                        if self._get_value_is_valid_(i_value):
+                            values.append(i_value)
+                    #
+                    if self._entry_use_as_file_multiply is True:
+                        values = bsc_core.StgFileMultiplyMtd.merge_to(
+                            values,
+                            ['*.<udim>.####.*', '*.####.*']
+                        )
+                    #
+                    [self._append_value_(i) for i in values]
+                    event.accept()
+        else:
+            event.ignore()
+
+    # noinspection PyUnusedLocal
+    def _execute_action_delete_(self, event):
+        item_widgets_selected = self._get_selected_item_widgets_()
+        if item_widgets_selected:
+            for i in item_widgets_selected:
+                i_value = i._get_value_()
+                self._delete_value_(i_value, False)
+            #
+            self._refresh_viewport_showable_auto_()
+
+    def _delete_values_(self, values):
+        [self._delete_value_(i, False) for i in values]
+        self._refresh_viewport_showable_auto_()
+
+    def _delete_value_(self, value, auto_refresh_showable=True):
+        if value:
+            if self._entry_is_enable is True:
+                index = self._values.index(value)
+                self._values.remove(value)
+                #
+                item = self.item(index)
+                # delete item widget
+                self._delete_item_widget_(item)
+                # delete item
+                self.takeItem(index)
+                self.entry_value_removed.emit()
+        #
+        if auto_refresh_showable is True:
+            self._refresh_viewport_showable_auto_()
+
+    def _append_value_(self, value):
+        # use original value, do not encode
+        if value and value not in self._values:
+            self._values.append(value)
+            self._create_bubble_(value)
+            self.entry_value_added.emit()
+
+    def _insert_value_(self, index, value):
+        # use original value, do not encode
+        if value and value not in self._values:
+            pass
+
+    def _extend_values_(self, values):
+        if values:
+            for i_value in values:
+                self._append_value_(i_value)
+
+    def _clear_all_values_(self):
+        super(QtEntryAsList, self)._clear_all_values_()
+        self._set_clear_()
+
+    def __item_show_deferred_fnc(self, data):
+        item_widget, text = data
+        item_widget._set_name_text_(text)
+        item_widget._set_tool_tip_(text)
+        if self._entry_use_as_storage is True:
+            if os.path.isdir(text):
+                item_widget._set_icon_(
+                    GuiQtDcc.get_qt_folder_icon(use_system=True)
+                )
+            elif os.path.isfile(text):
+                item_widget._set_icon_(
+                    GuiQtDcc.get_qt_file_icon(text)
+                )
+            else:
+                item_widget._set_icon_name_text_(text)
+        else:
+            if self._item_icon_file_path is not None:
+                item_widget._set_icon_file_path_(self._item_icon_file_path)
+            else:
+                item_widget._set_icon_name_text_(text)
+
+    def _create_bubble_(self, value):
+        def cache_fnc_():
+            return [item_widget, value]
+
+        def build_fnc_(data):
+            self.__item_show_deferred_fnc(data)
+
+        def delete_fnc_():
+            self._delete_value_(value)
+
+        item_widget = _gui_qt_wgt_utility._QtHItem()
+        item_widget._set_value_(value)
+        item_widget._set_delete_enable_(True)
+        item_widget.delete_press_clicked.connect(delete_fnc_)
+        item = _gui_qt_wgt_utility.QtListWidgetItem()
+        w, h = self._grid_size
+        item.setSizeHint(QtCore.QSize(w, h))
+        self.addItem(item)
+        item._connect_item_show_()
+        self.setItemWidget(item, item_widget)
+        item._set_item_show_fnc_(
+            cache_fnc_, build_fnc_
+        )
+        item_widget._refresh_widget_all_()
+
+    def _set_clear_(self):
+        super(QtEntryAsList, self)._set_clear_()
+        self._values = []
+
+    def _set_values_(self, values):
+        self._clear_all_values_()
+        [self._append_value_(i) for i in values]
+
+    def _set_item_icon_file_path_(self, file_path):
+        self._item_icon_file_path = file_path
+
+    def _set_entry_use_as_storage_(self, boolean):
+        super(QtEntryAsList, self)._set_entry_use_as_storage_(boolean)
+        if boolean is True:
+            i_action = QtWidgets.QAction(self)
+            i_action.triggered.connect(
+                self._execute_open_in_system_
+            )
+            i_action.setShortcut(
+                QtGui.QKeySequence.Open
+            )
+            i_action.setShortcutContext(
+                QtCore.Qt.WidgetShortcut
+            )
+            self.addAction(i_action)
+
+
+class QtEntryAsBubble(
+    QtWidgets.QWidget,
+
+    gui_qt_abstracts.AbsQtEntryBaseDef,
+
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForPressDef,
+):
+    def _refresh_widget_all_(self):
+        self._refresh_widget_draw_geometry_()
+        self._refresh_widget_draw_()
+
+    def _refresh_widget_draw_(self):
+        self.update()
+
+    def _refresh_widget_draw_geometry_(self):
+        if self.__text:
+
+            if self.__texts_draw:
+                cs = [len(i) for i in self.__texts_draw]
+                text = self.__texts_draw[cs.index(max(cs))]
+            else:
+                text = self.__text
+
+            s_t, w_t, w_c, h_c = GuiQtText.generate_draw_args(self, text, self.__w_maximum_text)
+            self.setFixedWidth(w_c)
+
+            self.__radius_border = s_t
+
+            x, y = 0, 0
+
+            self.__rect_frame_draw.setRect(
+                x+1, y+1, w_c-2, h_c-2
+            )
+            self.__rect_text_draw.setRect(
+                x+s_t, y, w_t, h_c
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(QtEntryAsBubble, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Expanding
+        )
+
+        self.setFont(GuiQtFont.generate_2(size=12))
+
+        self._init_entry_base_def_(self)
+
+        self._init_action_base_def_(self)
+        self._init_action_for_press_def_(self)
+
+        self.__text = None
+        self.__rect_frame_draw = QtCore.QRect()
+        self.__rect_text_draw = QtCore.QRect()
+
+        self.__texts_draw = []
+
+        self.__is_hovered = False
+
+        self.__radius_border = 0
+
+        self.__w_maximum_text = 96
+
+        self.__w_mark = None
+
+        self.setToolTip(
+            GuiQtUtil.generate_tool_tip_css(
+                'bubble entry',
+                [
+                    '"LMB-click" to show choose',
+                    '"MMB-wheel" to switch value',
+                ]
+            )
+        )
+
         self.installEventFilter(self)
 
     def eventFilter(self, *args):
-        super(QtValueEntryAsConstantChoose, self).eventFilter(*args)
-        #
         widget, event = args
         if widget == self:
-            if hasattr(self, '_action_is_enable') is True:
-                if self._action_is_enable is True:
-                    if event.type() == QtCore.QEvent.Wheel:
-                        self._do_wheel_(event)
-                        return True
+            if event.type() == QtCore.QEvent.Resize:
+                self._refresh_widget_all_()
+            #
+            elif event.type() == QtCore.QEvent.Enter:
+                self.__is_hovered = True
+                self._refresh_widget_draw_()
+            elif event.type() == QtCore.QEvent.Leave:
+                self.__is_hovered = False
+                self._refresh_widget_draw_()
+
+            elif event.type() == QtCore.QEvent.Wheel:
+                self._do_wheel_(event)
+
+            elif event.type() == QtCore.QEvent.MouseButtonPress:
+                if event.button() == QtCore.Qt.LeftButton:
+                    self._set_action_flag_(self.ActionFlag.Press)
+                self._refresh_widget_draw_()
+            elif event.type() == QtCore.QEvent.MouseButtonDblClick:
+                if event.button() == QtCore.Qt.LeftButton:
+                    self._set_action_flag_(self.ActionFlag.PressDbClick)
+                self._refresh_widget_draw_()
+            elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                if event.button() == QtCore.Qt.LeftButton:
+                    if self._get_action_flag_is_match_(self.ActionFlag.Press):
+                        self.press_clicked.emit()
+                #
+                self._clear_all_action_flags_()
+                #
+                self._is_hovered = False
+                self._refresh_widget_draw_()
+
         return False
 
     def _do_wheel_(self, event):
         delta = event.angleDelta().y()
-        values = self._get_choose_values_()
-        pre_value = self._get_value_()
-        maximum = len(values)-1
-        if pre_value in values:
-            pre_index = values.index(pre_value)
-            if delta > 0:
-                cur_index = pre_index-1
+        return self._scroll_to_(delta)
+
+    def paintEvent(self, event):
+        painter = QtPainter(self)
+        if self.__text is not None:
+            offset = self._get_action_offset_()
+            color_bkg, color_txt = GuiQtColor.generate_color_args_by_text(self.__text)
+
+            rect_frame = self.__rect_frame_draw
+            rect_frame = QtCore.QRect(
+                rect_frame.x()+offset, rect_frame.y()+offset, rect_frame.width()-offset, rect_frame.height()-offset
+            )
+            painter._set_border_color_(QtColors.BubbleBorder)
+            if offset:
+                painter._set_background_color_(QtColors.BubbleBackgroundActioned)
+            elif self.__is_hovered:
+                painter._set_background_color_(QtColors.BubbleBackgroundHover)
             else:
-                cur_index = pre_index+1
-            #
-            cur_index = max(min(cur_index, maximum), 0)
-            if cur_index != pre_index:
-                self._set_value_(values[cur_index])
-                # set value before
-                self.choose_changed.emit()
-                self.user_choose_changed.emit()
-                event.accept()
+                painter._set_background_color_(color_bkg)
 
-    def _build_value_entry_(self, value_type):
-        self._value_type = value_type
-        #
-        main_layout = QtVBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
-        entry_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
-        main_layout.addWidget(entry_widget)
-        #
-        entry_layout = QtHBoxLayout(entry_widget)
-        entry_layout.setContentsMargins(2, 2, 2, 2)
-        entry_layout.setSpacing(0)
-        # entry
-        self._value_entry = self.QT_VALUE_ENTRY_CLS()
-        entry_layout.addWidget(self._value_entry)
-        self._value_entry._set_entry_frame_(self)
-        self._value_entry._set_value_type_(self._value_type)
-        self._value_entry._set_entry_enable_(False)
-        #   connect tab key
-        self._value_entry.user_key_tab_pressed.connect(
-            self.user_key_tab_pressed.emit
-        )
-        #
-        self._value_index_label = _gui_qt_wgt_utility.QtTextItem()
-        self._value_index_label.hide()
-        entry_layout.addWidget(self._value_index_label)
-        self._value_index_label._set_name_color_(QtColors.TextDisable)
-        self._value_index_label.hide()
-        #
-        self._button_widget = _gui_qt_wgt_utility.QtLineWidget()
-        self._button_widget._set_line_styles_(
-            [self._button_widget.Style.Null, self._button_widget.Style.Null, self._button_widget.Style.Solid,
-             self._button_widget.Style.Null]
-        )
-        entry_layout.addWidget(self._button_widget)
-        self._button_layout = QtHBoxLayout(self._button_widget)
-        self._button_layout.setContentsMargins(2, 0, 0, 0)
-        self._button_layout.setSpacing(2)
-        #
-        self._value_add_button = _gui_qt_wgt_button.QtIconPressButton()
-        self._value_add_button.hide()
-        self._button_layout.addWidget(self._value_add_button)
-        self._value_add_button._set_icon_file_path_(gui_core.GuiIcon.get('file/file'))
-        self._value_add_button._set_icon_frame_draw_size_(18, 18)
-        #
-        self._value_choose_button = _gui_qt_wgt_button.QtIconPressButton()
-        self._button_layout.addWidget(self._value_choose_button)
-        self._value_choose_button._set_icon_file_path_(gui_core.GuiIcon.get('down'))
-        self._value_choose_button._set_icon_frame_draw_size_(18, 18)
-        self._value_choose_button._set_name_text_('choose value')
-        self._value_choose_button._set_tool_tip_('"LMB-click" to choose value from popup view')
-        self._value_choose_button.press_clicked.connect(self._do_popup_choose_start_)
-        #
-        self._build_popup_choose_(self._value_entry, self)
-        # choose
-        self.user_choose_finished.connect(self.choose_changed.emit)
-        self.user_choose_finished.connect(self.user_choose_changed.emit)
-        self.user_choose_text_accepted.connect(self._set_value_)
-        # completion
-        self._build_popup_completion_(self._value_entry, self)
-        self.user_completion_text_accepted.connect(self._set_value_)
-        #
-        self._set_popup_completion_gain_fnc_(
-            self._choose_value_completion_gain_fnc_
-        )
+            painter.drawRoundedRect(
+                rect_frame,
+                self.__radius_border, self.__radius_border,
+                QtCore.Qt.AbsoluteSize
+            )
 
-    def _set_value_entry_enable_(self, boolean):
-        super(QtValueEntryAsConstantChoose, self)._set_value_entry_enable_(boolean)
+            rect_text = self.__rect_text_draw
+            rect_text = QtCore.QRect(
+                rect_text.x()+offset, rect_text.y()+offset, rect_text.width()-offset, rect_text.height()-offset
+            )
 
-        self._value_entry._set_entry_enable_(boolean)
-        self._value_choose_button.setHidden(not boolean)
+            if offset:
+                painter._set_text_color_(QtColors.BubbleText)
+            elif self.__is_hovered:
+                painter._set_text_color_(QtColors.BubbleText)
+            else:
+                painter._set_text_color_(color_txt)
 
-        self._update_background_color_by_locked_(boolean)
-        #
-        self._refresh_widget_all_()
-
-    def _set_value_entry_drop_enable_(self, boolean):
-        self._value_entry._set_drop_enable_(boolean)
-
-    def _set_value_validation_fnc_(self, fnc):
-        self._value_entry._set_value_validation_fnc_(fnc)
-
-    def _set_value_entry_use_as_storage_(self, boolean):
-        self._value_entry._set_use_as_storage_(boolean)
-
-    def _set_value_entry_finished_connect_to_(self, fnc):
-        self._value_entry.user_entry_finished.connect(fnc)
-
-    def _set_value_entry_changed_connect_to_(self, fnc):
-        self._value_entry.entry_changed.connect(fnc)
-
-    def _set_value_choose_button_icon_file_path_(self, file_path):
-        self._value_choose_button._set_icon_file_path_(file_path)
-
-    def _set_value_choose_button_name_text_(self, text):
-        self._value_choose_button._set_name_text_(text)
-
-    def _set_choose_button_state_icon_file_path_(self, file_path):
-        self._value_choose_button._set_icon_state_file_path_(file_path)
-
-    def _get_value_choose_button_(self):
-        return self._value_choose_button
-
-    def _get_value_add_button_(self):
-        return self._value_add_button
-
-    def _add_value_entry_button_(self, widget):
-        self._button_layout.addWidget(widget)
-
-    def _create_value_entry_button_(self, name_text, icon_name=None, sub_icon_name=None, tool_tip=None):
-        button = _gui_qt_wgt_button.QtIconPressButton()
-        self._button_layout.addWidget(button)
-        button._set_name_text_(name_text)
-        if icon_name is not None:
-            button._set_icon_file_path_(gui_core.GuiIcon.get(icon_name))
-        if sub_icon_name is not None:
-            button._set_icon_sub_file_path_(gui_core.GuiIcon.get(sub_icon_name))
-        if tool_tip:
-            button._set_tool_tip_(tool_tip)
-        button._set_icon_frame_draw_size_(18, 18)
-        return button
-
-    def _set_choose_values_(self, values, *args, **kwargs):
-        super(QtValueEntryAsConstantChoose, self)._set_choose_values_(values, *args, **kwargs)
-        #
-        self._refresh_choose_index_()
-
-    def _get_choose_current_values_(self):
-        return [self._get_value_()]
-
-    def _extend_choose_current_values_(self, values):
-        self._set_value_(values[-1])
-        #
-        self._refresh_widget_all_()
-
-    def _set_choose_value_by_index_(self, index):
-        self._set_value_(
-            self._get_choose_values_()[index]
-        )
-
-    def _set_choose_value_default_by_index_(self, index):
-        self._set_value_default_(
-            self._get_choose_value_at_(index)
-        )
-
-    def _set_choose_tag_filter_size_(self, w, h):
-        pass
-
-    def _set_value_clear_(self):
-        self._restore_all_()
-        self.user_value_entry_cleared.emit()
-
-    def _restore_all_(self):
-        self._value_index_label.hide()
-        #
-        self._choose_values = []
-        self._choose_popup_image_url_dict = {}
-        self._choose_popup_keyword_filter_dict = {}
-        self._choose_popup_tag_filter_dict = {}
-        self._value_entry._set_value_clear_()
+            painter.drawText(
+                rect_text,
+                QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
+                self.__text
+            )
 
     def _set_value_(self, value):
-        super(QtValueEntryAsConstantChoose, self)._set_value_(value)
-        self._refresh_choose_index_()
+        if super(QtEntryAsBubble, self)._set_value_(value) is True:
+            if isinstance(self._value, six.string_types):
+                self.__text = self._value.capitalize()
+            else:
+                self.__text = str(self._value).capitalize()
+
+            self.entry_value_changed.emit()
+            self.entry_value_change_accepted.emit(value)
+
+        self._refresh_widget_all_()
+
+    def _get_value_(self):
+        return self._value
+
+    def _set_value_options_(self, values):
+        if super(QtEntryAsBubble, self)._set_value_options_(values) is True:
+            self.__texts_draw = map(
+                lambda x: x.capitalize() if isinstance(x, six.string_types) else str(x).capitalize(), values
+            )
+
+        self._refresh_widget_all_()
+
+    def _to_next_(self):
+        self._scroll_to_(1)
+
+    def _to_previous_(self):
+        self._scroll_to_(-1)
+
+    def _scroll_to_(self, delta):
+        values_all = self._get_value_options_()
+        if values_all:
+            value_pre = self._get_value_()
+            if value_pre in values_all:
+                minimum, maximum = 0, len(values_all)-1
+                idx_pre = values_all.index(value_pre)
+                if delta > 0:
+                    if idx_pre == 0:
+                        idx_cur = maximum
+                    else:
+                        idx_cur = idx_pre-1
+                else:
+                    if idx_pre == maximum:
+                        idx_cur = minimum
+                    else:
+                        idx_cur = idx_pre+1
+                idx_cur = max(min(idx_cur, maximum), 0)
+                if idx_cur != idx_pre:
+                    self._set_value_(values_all[idx_cur])
+                    # set value before
+                    return True
+        return False
+
+    def _get_frame_rect_(self):
+        return self.__rect_frame_draw
 
 
-# rgba entry and choose
-class QtValueEntryAsRgbaByChoose(
-    _gui_qt_wgt_entry_base.QtEntryFrame,
+# base entry as capsule, can be select one and more
+class QtEntryAsCapsule(
+    QtWidgets.QWidget,
 
-    gui_qt_abstract.AbsQtValueEntryAsOtherBaseDef,
+    gui_qt_abstracts.AbsQtNameBaseDef,
 
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForHoverDef,
-    gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstracts.AbsQtEntryBaseDef,
 
-    gui_qt_abstract.AbsQtValueDefaultBaseDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForHoverDef,
+    gui_qt_abstracts.AbsQtActionForPressDef,
 ):
-    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsTextEdit
-
-    QT_POPUP_CHOOSE_CLS = _gui_qt_wgt_popup.QtPopupAsRgbaChoose
-    QT_POPUP_COMPLETION_CLS = _gui_qt_wgt_popup.QtPopupAsCompletion
-
-    def _refresh_widget_draw_geometry_(self):
-        super(QtValueEntryAsRgbaByChoose, self)._refresh_widget_draw_geometry_()
-        #
-        x, y = 0, 0
-        w = h = self.height()
-        c_w, c_h = w, h
-        v_w, v_h = self._value_draw_width, self._value_draw_height
-        self._value_rect.setRect(
-            x, y, c_w, c_h
-        )
-        self._value_draw_rect.setRect(
-            x+(c_w-v_w)/2, y+(c_h-v_h)/2, v_w, v_h
-        )
+    value_changed = qt_signal()
+    user_value_changed = qt_signal()
 
     def __init__(self, *args, **kwargs):
-        super(QtValueEntryAsRgbaByChoose, self).__init__(*args, **kwargs)
-        self.setFixedHeight(gui_configure.Size.EntryDefaultHeight)
+        super(QtEntryAsCapsule, self).__init__(*args, **kwargs)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
+
+        self.setFont(GuiQtFont.generate_2(size=12))
+        self.setMouseTracking(True)
+
+        self._init_name_base_def_(self)
+
+        self._init_entry_base_def_(self)
 
         self._init_action_base_def_(self)
         self._init_action_for_hover_def_(self)
         self._init_action_for_press_def_(self)
 
-        self._init_value_entry_as_other_base_def_(self)
-        self._init_value_default_base_def_()
+        self._capsule_per_width = 0
 
-        self._build_value_entry_()
+        self.__check_use_exclusive = True
 
-    def _get_value_rect_(self):
-        return self._value_rect
+        self.__index_hover = None
+        self.__index_pressed = None
+        self.__index_current = None
 
-    def _build_value_entry_(self):
-        entry_layout = QtHBoxLayout(self)
-        entry_layout.setContentsMargins(self._value_draw_width+2, 0, 0, 0)
-        entry_layout.setSpacing(2)
+        self.__value_output = None
 
-        self._value_entry = self.QT_VALUE_ENTRY_CLS()
-        entry_layout.addWidget(self._value_entry)
-        self._value_entry._set_value_type_(str)
-        self._value_entry._set_use_as_rgba_255_(True)
-        self._value_entry.user_entry_finished.connect(self._refresh_widget_draw_)
+        self.__values = []
+        self.__texts_draw = []
+        self.__indices = []
+        #
+        self.__rects_frame = []
+        #
+        self.__indices_checked = []
 
-        self._build_popup_choose_(self._value_entry, self)
+        self._capsule_height = 18
+        self.installEventFilter(self)
+
+    def _refresh_widget_all_(self):
+        self._refresh_widget_draw_geometry_()
+        self._refresh_widget_draw_()
+
+    def _refresh_widget_draw_(self):
+        self.update()
+
+    def _refresh_widget_draw_geometry_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        #
+        if self.__texts_draw:
+            h_t = self.fontMetrics().height()
+            s_t = (h-h_t)/2
+            w_t = int(max([self.fontMetrics().width(i) for i in self.__texts_draw]))
+            c = len(self.__texts_draw)
+            self._capsule_per_width = w_t+(w_t%2)+s_t*2
+            for i_index in range(c):
+                i_x, i_y = x+i_index*self._capsule_per_width, y
+                i_w, i_h = self._capsule_per_width, h
+                self.__rects_frame[i_index].setRect(
+                    x+i_x, y+1, i_w, h-2
+                )
+
+            w_maximum = c*self._capsule_per_width
 
     def eventFilter(self, *args):
-        super(QtValueEntryAsRgbaByChoose, self).eventFilter(*args)
-
         widget, event = args
         if widget == self:
-            self._execute_action_hover_by_filter_(event)
-            if event.type() == QtCore.QEvent.MouseButtonPress:
-                if event.button() == QtCore.Qt.LeftButton:
-                    if self._value_entry_is_enable is True:
-                        if self._value_rect.contains(event.pos()):
-                            self._set_action_flag_(self.ActionFlag.ChoosePress)
-
-                self._refresh_widget_draw_()
-            elif event.type() == QtCore.QEvent.MouseButtonRelease:
-                if event.button() == QtCore.Qt.LeftButton:
-                    if self._get_action_flag_is_match_(
-                        self.ActionFlag.ChoosePress
-                    ) is True:
-                        self.press_clicked.emit()
-                        self._do_popup_choose_start_()
-
-                self._clear_all_action_flags_()
-                self._refresh_widget_draw_()
-            elif event.type() == QtCore.QEvent.Resize:
+            if event.type() == QtCore.QEvent.Resize:
                 self._refresh_widget_draw_geometry_()
+            elif event.type() == QtCore.QEvent.Enter:
+                pass
+            elif event.type() == QtCore.QEvent.Leave:
+                self.__index_hover = None
+                self._refresh_widget_all_()
+            # press
+            elif event.type() == QtCore.QEvent.MouseButtonPress:
+                if event.button() == QtCore.Qt.LeftButton:
+                    self._do_press_start_(event)
+                    self._set_action_flag_(
+                        self.ActionFlag.Press
+                    )
+            elif event.type() == QtCore.QEvent.MouseButtonDblClick:
+                if event.button() == QtCore.Qt.LeftButton:
+                    self._do_press_start_(event)
+                    self._set_action_flag_(
+                        self.ActionFlag.Press
+                    )
+            elif event.type() == QtCore.QEvent.MouseMove:
+                if self._get_action_flag_is_match_(self.ActionFlag.Press):
+                    self._do_press_move_(event)
+                #
+                self._do_hover_move_(event)
+            elif event.type() == QtCore.QEvent.ToolTip:
+                self._do_show_tool_tip_(event)
+            elif event.type() == QtCore.QEvent.MouseButtonRelease:
+                self._do_press_end_(event)
+                self._clear_all_action_flags_()
         return False
 
     def paintEvent(self, event):
-        super(QtValueEntryAsRgbaByChoose, self).paintEvent(self)
+        painter = QtPainter(self)
+        if self.__texts_draw:
+            painter._draw_capsule_by_rects_(
+                rects=self.__rects_frame,
+                texts=self.__texts_draw,
+                checked_indices=self.__indices_checked,
+                index_hover=self.__index_hover,
+                index_pressed=self.__index_pressed,
+                use_exclusive=self.__check_use_exclusive,
+                is_enable=self._action_is_enable
+            )
+
+    def _do_show_tool_tip_(self, event):
+        if self.__index_hover is not None:
+            value = self._get_value_options_()[self.__index_hover]
+            if not isinstance(value, six.text_type):
+                title = str(value)
+            else:
+                title = value
+
+            if self.__check_use_exclusive is True:
+                css = GuiQtUtil.generate_tool_tip_css(
+                    title,
+                    [
+                        '"LMB-click" to switch to this item',
+                    ]
+                )
+            else:
+                css = GuiQtUtil.generate_tool_tip_css(
+                    title,
+                    [
+                        '"LMB-click" to check this item on',
+                    ]
+                )
+            QtWidgets.QToolTip.showText(
+                QtGui.QCursor.pos(), css, self
+            )
+
+    def _set_value_options_(self, values):
+        if super(QtEntryAsCapsule, self)._set_value_options_(values) is True:
+            c = len(values)
+            self.__indices = range(c)
+            self.__texts_draw = []
+            self.__rects_frame = []
+            self.__indices_checked = []
+            for i_index in self.__indices:
+                self.__texts_draw.append(
+                    bsc_core.RawTextMtd.to_prettify(values[i_index], capitalize=True)
+                )
+                self.__rects_frame.append(QtCore.QRect())
+
+                self.__indices_checked.append(False)
+
+            if c:
+                if self.__check_use_exclusive is True:
+                    self._set_value_(values[0])
+
+        self._refresh_widget_draw_()
+
+    def _set_value_(self, value):
+        values_all = self._get_value_options_()
+        if self.__check_use_exclusive is True:
+            idx = values_all.index(value)
+            self.__index_current = idx
+            self.__indices_checked = [True if i in [idx] else False for i in self.__indices]
+        else:
+            if value:
+                indices = [values_all.index(i) for i in value if i in values_all]
+                self.__index_current = indices[0]
+                self.__indices_checked = [True if i in indices else False for i in self.__indices]
+
+        self._update_value_output_()
+        self._refresh_widget_draw_()
+
+    def _get_value_(self):
+        return self.__value_output
+
+    def _generate_value_output_(self):
+        values_all = self._get_value_options_()
+        _ = [values_all[i] for i in self.__indices if self.__indices_checked[i] is True]
+        if self.__check_use_exclusive:
+            if _:
+                return _[0]
+            return ''
+        return _
+
+    def _update_value_output_(self):
+        value_pre = self.__value_output
+        self.__value_output = self._generate_value_output_()
+        if value_pre != self.__value_output:
+            self.value_changed.emit()
+
+    def _set_use_exclusive_(self, boolean):
+        self.__check_use_exclusive = boolean
+
+    def _get_is_use_exclusive_(self):
+        return self.__check_use_exclusive
+
+    def _do_hover_move_(self, event):
+        if self._action_is_enable is False:
+            return
+        if not self._capsule_per_width:
+            return
+        p = event.pos()
+        x, y = p.x(), p.y()
+        self.__index_hover = int(x/self._capsule_per_width)
+        self._refresh_widget_draw_()
+
+    def _do_press_start_(self, event):
+        if self._action_is_enable is False:
+            return
+        if not self._capsule_per_width:
+            return
+        p = event.pos()
+        x, y = p.x(), p.y()
+        index_pre = self.__index_current
+        index = int(x/self._capsule_per_width)
+        if index in self.__indices:
+            self.__index_current = index
+            self.__index_pressed = self.__index_current
+            if self.__check_use_exclusive is True:
+                if index_pre is not None:
+                    self.__indices_checked[index_pre] = False
+                self.__indices_checked[self.__index_current] = True
+            else:
+                self.__indices_checked[self.__index_current] = not self.__indices_checked[
+                    self.__index_current]
+
+            self._capsule_press_state = self.__indices_checked[self.__index_current]
+
+            self._update_value_output_()
+
+    def _do_press_move_(self, event):
+        if self._action_is_enable is False:
+            return
+        if not self._capsule_per_width:
+            return
+        p = event.pos()
+        x, y = p.x(), p.y()
+        index_pre = self.__index_current
+        index = int(x/self._capsule_per_width)
+        if index in self.__indices:
+            self.__index_current = index
+            self.__index_pressed = self.__index_current
+            if index_pre != self.__index_current:
+                if self.__check_use_exclusive is True:
+                    if index_pre is not None:
+                        self.__indices_checked[index_pre] = False
+                    self.__indices_checked[self.__index_current] = True
+                else:
+                    self.__indices_checked[self.__index_current] = self._capsule_press_state
+                #
+                self._update_value_output_()
+
+    def _do_press_end_(self, event):
+        if self._action_is_enable is False:
+            return
+        self.__index_pressed = None
+        event.accept()
+
+    def _set_entry_enable_(self, boolean):
+        super(QtEntryAsCapsule, self)._set_entry_enable_(boolean)
+        self._set_action_enable_(boolean)
+
+
+# base entry frame
+class QtEntryFrame(
+    QtWidgets.QWidget,
+
+    gui_qt_abstracts.AbsQtNameBaseDef,
+    gui_qt_abstracts.AbsQtFrameBaseDef,
+    gui_qt_abstracts.AbsQtStatusBaseDef,
+
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtThreadBaseDef,
+):
+    geometry_changed = qt_signal(int, int, int, int)
+    entry_focus_in = qt_signal()
+    entry_focus_out = qt_signal()
+    entry_focus_changed = qt_signal()
+
+    def _refresh_widget_all_(self):
+        self._refresh_widget_draw_geometry_()
+        self._refresh_widget_draw_()
+
+    def _refresh_widget_draw_(self):
+        self.update()
+
+    def _refresh_widget_draw_geometry_(self):
+        x, y = 0, 0
+        w, h = self.width(), self.height()
+        # int left， int top， int right， int bottom
+        m_l, m_t, m_r, m_b = self._frame_draw_margins
         #
+        c = self._entry_count
+        #
+        frm_x, frm_y = x+m_l+1, y+m_t+1
+        frm_w, frm_h = w-m_l-m_r-2, h-m_t-m_b-2
+        #
+        self._rect_frame_draw.setRect(
+            frm_x, frm_y, frm_w, frm_h
+        )
+        if c > 1:
+            for i in range(c):
+                i_widget = self._value_entries[i]
+                i_p = i_widget.pos()
+                i_r = i_widget.rect()
+                i_x, i_y = i_p.x(), i_p.y()
+                i_w, i_h = i_r.width(), i_r.height()
+                self._frame_draw_rects[i].setRect(
+                    i_x, frm_y, i_w, frm_h
+                )
+        else:
+            self._frame_draw_rects[0].setRect(
+                frm_x, frm_y, frm_w, frm_h
+            )
+        #
+        if self._tip_draw_enable is True:
+            self._tip_draw_rect.setRect(
+                x, y, w, h
+            )
+        #
+        if self._resize_handle is not None:
+            frm_w, frm_h = 24, 24
+            r_x, r_y = x+(w-frm_w), y+(h-frm_h)
+            self._resize_handle.setGeometry(
+                r_x, r_y, frm_w, frm_h
+            )
+
+    def __init__(self, *args, **kwargs):
+        super(QtEntryFrame, self).__init__(*args, **kwargs)
+        self.installEventFilter(self)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        #
+        self._is_hovered = False
+        self._is_focused = False
+        self._entry_count = 1
+        #
+        self._entry_widget = None
+        self._value_entries = []
+        #
+        self._init_name_base_def_(self)
+        self._init_frame_base_def_(self)
+        self._init_status_base_def_(self)
+        self._init_action_base_def_(self)
+        self._init_thread_base_def_(self)
+        #
+        self._frame_border_color = QtBorderColors.Light
+        self._hovered_frame_border_color = QtBorderColors.Hovered
+        self._selected_frame_border_color = QtBorderColors.Selected
+        self._frame_background_color = QtBackgroundColors.Dim
+
+        self._resize_handle = _gui_qt_wgt_resize.QtVResizeHandle(self)
+        self._resize_handle.hide()
+
+        self._tip_draw_enable = False
+        self._tip_text = None
+        self._tip_draw_rect = QtCore.QRect()
+        # self._resize_handle._set_resize_target_(self)
+
+    def eventFilter(self, *args):
+        widget, event = args
+        if widget == self:
+            if event.type() == QtCore.QEvent.Resize:
+                self._refresh_widget_all_()
+                self.geometry_changed.emit(
+                    self.x(), self.y(), self.width(), self.height()
+                )
+        return False
+
+    def paintEvent(self, event):
         painter = QtPainter(self)
 
-        rgba = self._get_value_()
-        offset = self._get_action_offset_()
-        painter._draw_frame_by_rect_(
-            self._value_draw_rect,
-            border_color=QtBorderColors.Transparent,
-            background_color=rgba,
-            offset=offset
+        is_selected = self._is_focused
+
+        color_bkg = self._frame_background_color
+        color_bdr = [QtBorderColors.Basic, QtBorderColors.HighLight][is_selected]
+        w_bdr = [self._frame_border_draw_width, self._frame_border_draw_width+1][is_selected]
+        painter._set_border_color_(
+            QtColors.Transparent
         )
+        painter._set_background_color_(
+            color_bkg
+        )
+        for i_rect in self._frame_draw_rects:
+            painter.drawRect(i_rect)
 
-    def _build_popup_choose_(self, entry_gui, entry_frame_gui):
-        self._popup_choose_widget = self.QT_POPUP_CHOOSE_CLS(self)
-        self._popup_choose_widget._set_popup_entry_(entry_gui)
-        self._popup_choose_widget._set_popup_entry_frame_(entry_frame_gui)
-        self._popup_choose_widget.hide()
+        if self._tip_draw_enable is True:
+            if self._tip_text is not None:
+                painter._draw_text_by_rect_(
+                    rect=self._tip_draw_rect,
+                    text=self._tip_text,
+                    font_color=QtColors.TextDisable,
+                    font=QtFonts.DefaultItalic,
+                    text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
+                )
 
-    def _do_popup_choose_start_(self):
-        self._popup_choose_widget._do_popup_start_()
+        if self._thread_draw_flag is True:
+            for i_rect in self._frame_draw_rects:
+                painter._draw_alternating_colors_by_rect_(
+                    rect=i_rect,
+                    colors=((0, 0, 0, 63), (0, 0, 0, 0)),
+                    running=True
+                )
+
+        painter._set_border_color_(
+            color_bdr
+        )
+        painter._set_background_color_(
+            QtColors.Transparent
+        )
+        painter._set_border_width_(w_bdr)
+        for i_rect in self._frame_draw_rects:
+            painter.drawRect(i_rect)
+
+    # resize
+    def _get_resize_handle_(self):
+        return self._resize_handle
+
+    def _set_resize_enable_(self, boolean):
+        self._resize_handle.setVisible(boolean)
+
+    def _set_resize_minimum_(self, value):
+        self._resize_handle._set_resize_minimum_(value)
+
+    def _set_resize_target_(self, widget):
+        self._resize_handle._set_resize_target_(widget)
+
+    def _update_background_color_by_locked_(self, boolean):
+        self._frame_background_color = [
+            QtBackgroundColors.Basic, QtBackgroundColors.Dim
+        ][boolean]
 
     def _set_focused_(self, boolean):
         self._is_focused = boolean
-        self.update()
-
-    def _set_value_entry_enable_(self, boolean):
-        super(QtValueEntryAsRgbaByChoose, self)._set_value_entry_enable_(boolean)
-
-        self._value_entry._set_entry_enable_(boolean)
-
-        self._update_background_color_by_locked_(boolean)
-        #
-        self._refresh_widget_all_()
-
-    def _set_value_(self, value):
-        self._value_entry._set_value_as_rgba_255_(value)
-
-    def _get_value_(self):
-        return self._value_entry._get_value_as_rgba_255_()
-
-
-# icon entry and choose
-class QtValueEntryAsIconChoose(
-    _gui_qt_wgt_entry_base.QtEntryFrame,
-
-    gui_qt_abstract.AbsQtValueEntryAsOtherBaseDef,
-
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForHoverDef,
-    gui_qt_abstract.AbsQtActionForPressDef,
-
-    gui_qt_abstract.AbsQtChooseBaseDef,
-    gui_qt_abstract.AbsQtChooseAsPopupBaseDef,
-
-    gui_qt_abstract.AbsQtValueDefaultBaseDef,
-):
-    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsTextEdit
-
-    QT_POPUP_CHOOSE_CLS = _gui_qt_wgt_popup.QtPopupAsIconChoose
-
-    def _refresh_widget_draw_geometry_(self):
-        super(QtValueEntryAsIconChoose, self)._refresh_widget_draw_geometry_()
-        #
-        x, y = 0, 0
-        w = h = self.height()
-        c_w, c_h = w, h
-        v_w, v_h = self._value_draw_width, self._value_draw_height
-        self._value_rect.setRect(
-            x, y, c_w, c_h
-        )
-        self._value_draw_rect.setRect(
-            x+(c_w-v_w)/2, y+(c_h-v_h)/2, v_w, v_h
-        )
-
-    def __init__(self, *args, **kwargs):
-        super(QtValueEntryAsIconChoose, self).__init__(*args, **kwargs)
-        self.setFixedHeight(gui_configure.Size.EntryDefaultHeight)
-
-        self._init_action_base_def_(self)
-        self._init_action_for_hover_def_(self)
-        self._init_action_for_press_def_(self)
-
-        self._init_choose_base_def_()
-        self._init_choose_as_popup_base_def_(self)
-
-        self._init_value_entry_as_other_base_def_(self)
-        self._init_value_default_base_def_()
-
-        self._build_value_entry_()
-
-        self._set_choose_values_(
-            [
-                'application/katana',
-                'application/maya',
-                'application/houdini',
-                'application/clarisse',
-            ]*20
-        )
-
-    def eventFilter(self, *args):
-        super(QtValueEntryAsIconChoose, self).eventFilter(*args)
-
-        widget, event = args
-        if widget == self:
-            self._execute_action_hover_by_filter_(event)
-            if event.type() == QtCore.QEvent.MouseButtonPress:
-                if event.button() == QtCore.Qt.LeftButton:
-                    if self._value_entry_is_enable is True:
-                        if self._value_rect.contains(event.pos()):
-                            self._set_action_flag_(self.ActionFlag.ChoosePress)
-
-                self._refresh_widget_draw_()
-            elif event.type() == QtCore.QEvent.MouseButtonRelease:
-                if event.button() == QtCore.Qt.LeftButton:
-                    if self._get_action_flag_is_match_(
-                        self.ActionFlag.ChoosePress
-                    ) is True:
-                        self.press_clicked.emit()
-                        self._do_popup_choose_start_()
-
-                self._clear_all_action_flags_()
-                self._refresh_widget_draw_()
-            elif event.type() == QtCore.QEvent.Resize:
-                self._refresh_widget_draw_geometry_()
-        return False
-
-    def paintEvent(self, event):
-        super(QtValueEntryAsIconChoose, self).paintEvent(self)
-        #
-        painter = QtPainter(self)
-
-        icon_name = self._get_value_()
-        if icon_name == '':
-            icon_name = 'state-disable'
-
-        icon_file_path = gui_core.GuiIcon.get(icon_name)
-        if icon_file_path:
-            offset = self._get_action_offset_()
-
-            painter._draw_icon_file_by_rect_(
-                rect=self._value_draw_rect,
-                file_path=icon_file_path,
-                offset=offset
-            )
-
-    def _build_value_entry_(self):
-        entry_layout = QtHBoxLayout(self)
-        entry_layout.setContentsMargins(self._value_draw_width+2, 0, 0, 0)
-        entry_layout.setSpacing(2)
-
-        self._value_entry = self.QT_VALUE_ENTRY_CLS()
-        entry_layout.addWidget(self._value_entry)
-        self._value_entry._set_value_type_(str)
-        self._value_entry.user_entry_finished.connect(self._refresh_widget_draw_)
-
-        self._build_popup_choose_(self._value_entry, self)
-
-    def _build_popup_choose_(self, entry_gui, entry_frame_gui):
-        self._popup_choose_widget = self.QT_POPUP_CHOOSE_CLS(self)
-        self._popup_choose_widget._set_popup_entry_(entry_gui)
-        self._popup_choose_widget._set_popup_entry_frame_(entry_frame_gui)
-        self._popup_choose_widget.hide()
-
-        self._popup_choose_widget.user_popup_choose_text_accepted.connect(
-            self._do_choose_text_accept_
-        )
-
-    def _do_choose_text_accept_(self, text):
-        self._set_value_(text)
         self._refresh_widget_draw_()
+        self.entry_focus_changed.emit()
 
-    def _get_choose_current_values_(self):
-        return [self._get_value_()]
+    def _set_focus_in_(self):
+        self._set_focused_(True)
+        self.entry_focus_in.emit()
 
-    def _set_value_entry_enable_(self, boolean):
-        super(QtValueEntryAsIconChoose, self)._set_value_entry_enable_(boolean)
+    def set_focus_out_(self):
+        self._set_focused_(False)
+        self.entry_focus_out.emit()
 
-        self._value_entry._set_entry_enable_(boolean)
+    def _set_entry_count_(self, size):
+        self._entry_count = size
+        self._frame_draw_rects = [QtCore.QRect() for _ in range(size)]
 
-        self._update_background_color_by_locked_(boolean)
-        #
-        self._refresh_widget_all_()
-
-
-# any tuple, etc. float2, float3, ...
-class QtValueEntryAsTuple(
-    _gui_qt_wgt_entry_base.QtEntryFrame,
-
-    gui_qt_abstract.AbsQtValueEntryAsTupleBaseDef,
-):
-    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsTextEdit
-
-    entry_changed = qt_signal()
-
-    def __init__(self, *args, **kwargs):
-        super(QtValueEntryAsTuple, self).__init__(*args, **kwargs)
-        #
-        self._init_value_entry_as_tuple_base_def_()
-        # create entry layout first
-        self._entry_layout = QtHBoxLayout(self)
-        self._entry_layout.setContentsMargins(2, 2, 2, 2)
-        self._entry_layout.setSpacing(8)
-        self._build_value_entry_(2, self._value_type)
-
-    def _build_value_entry_(self, value_size, value_type):
-        self._value_type = value_type
-        #
-        if self._value_entries:
-            GuiQtLayout.clear_all_widgets(self._entry_layout)
-        #
-        self._value_entries = []
-        #
-        self._set_entry_count_(value_size)
-        if value_size:
-            for i in range(value_size):
-                i_widget = _gui_qt_wgt_entry_base.QtEntryAsTextEdit()
-                i_widget._set_value_type_(self._value_type)
-                self._entry_layout.addWidget(i_widget)
-                self._value_entries.append(i_widget)
-
-    def _set_value_entry_enable_(self, boolean):
-        pass
-
-
-class QtValueEntryAsList(
-    _gui_qt_wgt_entry_base.QtEntryFrame,
-
-    gui_qt_abstract.AbsQtNameBaseDef,
-
-    gui_qt_abstract.AbsQtValueEntryBaseDef,
-
-    gui_qt_abstract.AbsQtChooseBaseDef,
-    gui_qt_abstract.AbsQtChooseAsPopupBaseDef,
-):
-    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsList
-    #
-    QT_POPUP_CHOOSE_CLS = _gui_qt_wgt_popup.QtPopupAsAnyChoose
-    #
-    add_press_clicked = qt_signal()
-
-    def __init__(self, *args, **kwargs):
-        super(QtValueEntryAsList, self).__init__(*args, **kwargs)
-        self.installEventFilter(self)
-        #
-        self._init_name_base_def_(self)
-        self._init_value_entry_base_def_(self)
-        self._init_choose_base_def_()
-        self._init_choose_as_popup_base_def_(self)
-        #
-        self._build_value_entry_(str)
-        self._set_popup_choose_multiply_enable_(True)
-
-    def _build_value_entry_(self, value_type):
-        self._value_type = value_type
-        #
-        main_layout = QtVBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
-        #
-        entry_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
-        main_layout.addWidget(entry_widget)
-        #
-        entry_layout = QtHBoxLayout(entry_widget)
-        entry_layout.setContentsMargins(2, 2, 2, 2)
-        entry_layout.setSpacing(0)
-        #
-        self._value_entry = self.QT_VALUE_ENTRY_CLS()
-        entry_layout.addWidget(self._value_entry)
-        self._value_entry._set_entry_frame_(self)
-        #
-        self._button_widget = _gui_qt_wgt_utility.QtLineWidget()
-        self._button_widget._set_line_styles_(
-            [self._button_widget.Style.Null, self._button_widget.Style.Null, self._button_widget.Style.Solid,
-             self._button_widget.Style.Null]
+    def _set_size_policy_height_fixed_mode_(self):
+        self._entry_widget.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding,
+            QtWidgets.QSizePolicy.Minimum
         )
-        entry_layout.addWidget(self._button_widget)
-        self._button_layout = QtVBoxLayout(self._button_widget)
-        self._button_layout._set_align_top_()
-        self._button_layout.setContentsMargins(2, 0, 0, 0)
-        self._button_layout.setSpacing(2)
 
-        self._value_choose_button = _gui_qt_wgt_button.QtIconPressButton()
-        self._button_layout.addWidget(self._value_choose_button)
-        self._value_choose_button._set_icon_file_path_(gui_core.GuiIcon.get('file/file'))
-        self._value_choose_button._set_icon_state_name_('state/popup')
-        self._value_choose_button._set_icon_frame_draw_size_(18, 18)
-        self._value_choose_button._set_name_text_('choose value')
-        self._value_choose_button._set_tool_tip_('"LMB-click" to choose value from popup view')
-        self._value_choose_button.press_clicked.connect(self._do_popup_choose_start_)
-        # choose
-        self._build_popup_choose_(self._value_entry, self)
-        self.user_choose_finished.connect(self.choose_changed.emit)
-        self.user_choose_finished.connect(self.user_choose_changed.emit)
-        self.user_choose_list_accepted.connect(self._extend_choose_current_values_)
-        #
-        self._resize_handle.raise_()
+    def _set_tip_text_(self, text):
+        self._tip_text = text
 
-    def _get_value_entry_gui_(self):
-        return self._value_entry
-
-    def _set_value_entry_enable_(self, boolean):
-        super(QtValueEntryAsList, self)._set_value_entry_enable_(boolean)
-        self._value_entry._set_entry_enable_(boolean)
-        self._update_background_color_by_locked_(boolean)
-        self._refresh_widget_draw_()
-
-    def _set_value_entry_drop_enable_(self, boolean):
-        self._value_entry._set_drop_enable_(boolean)
-        self._frame_border_draw_style = QtCore.Qt.DashLine
-
-    def _set_value_entry_choose_enable_(self, boolean):
-        self._value_choose_button._set_action_enable_(boolean)
-
-    def _set_value_entry_choose_visible_(self, boolean):
-        self._value_choose_button._set_visible_(boolean)
-
-    def _set_values_append_fnc_(self, fnc):
-        pass
-
-    def _append_value_(self, value):
-        self._value_entry._append_value_(value)
-
-    def _extend_values_(self, values):
-        self._value_entry._extend_values_(values)
-
-    def _set_values_(self, values):
-        self._value_entry._set_values_(values)
-
-    def _get_values_(self):
-        return self._value_entry._get_values_()
-
-    def _set_clear_(self):
-        self._clear_all_values_()
-
-    def _clear_all_values_(self):
-        self._value_entry._clear_all_values_()
-
-    def _set_entry_item_icon_file_path_(self, file_path):
-        self._value_entry._set_item_icon_file_path_(file_path)
-
-    def _add_value_entry_button_(self, widget):
-        self._button_layout.addWidget(widget)
-
-    def _create_value_entry_button_(self, name_text, icon_name=None, sub_icon_name=None):
-        button = _gui_qt_wgt_button.QtIconPressButton()
-        self._button_layout.addWidget(button)
-        button._set_name_text_(name_text)
-        if icon_name is not None:
-            button._set_icon_file_path_(gui_core.GuiIcon.get(icon_name))
-        if sub_icon_name is not None:
-            button._set_icon_sub_file_path_(gui_core.GuiIcon.get(sub_icon_name))
-        button._set_icon_frame_draw_size_(18, 18)
-        return button
-
-    def _set_value_entry_use_as_storage_(self, boolean):
-        self._value_entry._set_use_as_storage_(boolean)
-
-    def _set_value_choose_button_icon_file_path_(self, file_path):
-        self._value_choose_button._set_icon_file_path_(file_path)
-
-    def _set_value_choose_button_name_text_(self, text):
-        self._value_choose_button._set_name_text_(text)
-
-    def _set_choose_button_state_icon_file_path_(self, file_path):
-        self._value_choose_button._set_icon_state_file_path_(file_path)
-
-    # choose
-    def _extend_choose_current_values_(self, values):
-        self._extend_values_(values)
-
-    def _get_choose_current_values_(self):
-        return self._get_values_()
-
-    def _set_empty_icon_name_(self, text):
-        self._value_entry._set_empty_icon_name_(text)
-
-    def _set_empty_text_(self, text):
-        self._value_entry._set_empty_text_(text)
-
-
-class QtValueEntryAsListWithChoose(
-    _gui_qt_wgt_entry_base.QtEntryFrame,
-
-    gui_qt_abstract.AbsQtNameBaseDef,
-
-    gui_qt_abstract.AbsQtValueEntryBaseDef,
-
-    gui_qt_abstract.AbsQtChooseBaseDef,
-    gui_qt_abstract.AbsQtChooseAsPopupBaseDef,
-):
-    QT_VALUE_ENTRY_CLS = _gui_qt_wgt_entry_base.QtEntryAsList
-    QT_POPUP_CHOOSE_CLS = _gui_qt_wgt_popup.QtPopupAsAnyChoose
-    #
-    add_press_clicked = qt_signal()
-
-    def __init__(self, *args, **kwargs):
-        super(QtValueEntryAsListWithChoose, self).__init__(*args, **kwargs)
-        self.installEventFilter(self)
-        #
-        self._init_name_base_def_(self)
-        self._init_value_entry_base_def_(self)
-        self._init_choose_base_def_()
-        self._init_choose_as_popup_base_def_(self)
-        #
-        self._build_value_entry_(str)
-        self._set_popup_choose_multiply_enable_(True)
-
-    def _build_value_entry_(self, value_type):
-        self._value_type = value_type
-
-        main_layout = QtVBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.setSpacing(0)
-
-        entry_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
-        main_layout.addWidget(entry_widget)
-        #
-        entry_layout = QtHBoxLayout(entry_widget)
-        entry_layout.setContentsMargins(2, 2, 2, 2)
-        entry_layout.setSpacing(0)
-        #
-        self._value_entry = self.QT_VALUE_ENTRY_CLS()
-        entry_layout.addWidget(self._value_entry)
-        self._value_entry._set_entry_frame_(self)
-        #
-        self._button_widget = _gui_qt_wgt_utility.QtLineWidget()
-        self._button_widget._set_line_styles_(
-            [self._button_widget.Style.Null, self._button_widget.Style.Null, self._button_widget.Style.Solid,
-             self._button_widget.Style.Null]
-        )
-        entry_layout.addWidget(self._button_widget)
-        self._button_layout = QtVBoxLayout(self._button_widget)
-        self._button_layout._set_align_top_()
-        self._button_layout.setContentsMargins(2, 0, 0, 0)
-        self._button_layout.setSpacing(2)
-
-        self._value_choose_button = _gui_qt_wgt_button.QtIconPressButton()
-        self._button_layout.addWidget(self._value_choose_button)
-        self._value_choose_button._set_icon_file_path_(gui_core.GuiIcon.get('file/file'))
-        self._value_choose_button._set_icon_state_name_('state/popup')
-        self._value_choose_button._set_icon_frame_draw_size_(18, 18)
-        self._value_choose_button._set_name_text_('choose value')
-        self._value_choose_button._set_tool_tip_('"LMB-click" to choose value from popup view')
-        self._value_choose_button.press_clicked.connect(self._do_popup_choose_start_)
-        # choose
-        self._build_popup_choose_(self._value_entry, self)
-        self.user_choose_finished.connect(self.choose_changed.emit)
-        self.user_choose_finished.connect(self.user_choose_changed.emit)
-        self.user_choose_list_accepted.connect(self._extend_choose_current_values_)
-        #
-        self._resize_handle.raise_()
-
-    def _get_value_entry_gui_(self):
-        return self._value_entry
-
-    #
-    def _set_value_entry_enable_(self, boolean):
-        super(QtValueEntryAsListWithChoose, self)._set_value_entry_enable_(boolean)
-
-        self._value_entry._set_entry_enable_(boolean)
-        self._update_background_color_by_locked_(boolean)
-        self._refresh_widget_draw_()
-
-    # drop
-    def _set_value_entry_drop_enable_(self, boolean):
-        self._value_entry._set_drop_enable_(boolean)
-
-    def _set_value_entry_choose_enable_(self, boolean):
-        self._value_choose_button._set_action_enable_(boolean)
-
-    def _set_value_entry_choose_visible_(self, boolean):
-        self._value_choose_button._set_visible_(boolean)
-
-    def _set_values_append_fnc_(self, fnc):
-        pass
-
-    def _append_value_(self, value):
-        self._value_entry._append_value_(value)
-
-    def _extend_values_(self, values):
-        self._value_entry._extend_values_(values)
-
-    def _set_values_(self, values):
-        self._value_entry._set_values_(values)
-
-    def _get_values_(self):
-        return self._value_entry._get_values_()
-
-    def _clear_all_values_(self):
-        self._value_entry._clear_all_values_()
-
-    def _set_entry_item_icon_file_path_(self, file_path):
-        self._value_entry._set_item_icon_file_path_(file_path)
-
-    def _add_value_entry_button_(self, widget):
-        self._button_layout.addWidget(widget)
-
-    def _create_value_entry_button_(self, name_text, icon_name=None, sub_icon_name=None):
-        button = _gui_qt_wgt_button.QtIconPressButton()
-        self._button_layout.addWidget(button)
-        button._set_name_text_(name_text)
-        if icon_name is not None:
-            button._set_icon_file_path_(gui_core.GuiIcon.get(icon_name))
-        if sub_icon_name is not None:
-            button._set_icon_sub_file_path_(gui_core.GuiIcon.get(sub_icon_name))
-        button._set_icon_frame_draw_size_(18, 18)
-        return button
-
-    def _set_value_entry_use_as_storage_(self, boolean):
-        self._value_entry._set_use_as_storage_(boolean)
-
-    def _set_value_choose_button_icon_file_path_(self, file_path):
-        self._value_choose_button._set_icon_file_path_(file_path)
-
-    def _set_value_choose_button_name_text_(self, text):
-        self._value_choose_button._set_name_text_(text)
-
-    def _set_choose_button_state_icon_file_path_(self, file_path):
-        self._value_choose_button._set_icon_state_file_path_(file_path)
-
-    # choose
-    def _extend_choose_current_values_(self, values):
-        self._extend_values_(values)
-
-    def _get_choose_current_values_(self):
-        return self._get_values_()
-
-
-class QtValueEntryAsBubblesChoose(
-    _gui_qt_wgt_entry_base.QtEntryFrame,
-
-    gui_qt_abstract.AbsQtNameBaseDef,
-
-    gui_qt_abstract.AbsQtValueEntryBaseDef,
-
-    gui_qt_abstract.AbsQtChooseBaseDef,
-    gui_qt_abstract.AbsQtChooseAsPopupBaseDef,
-):
-    def __init__(self, *args, **kwargs):
-        super(QtValueEntryAsBubblesChoose, self).__init__(*args, **kwargs)
-        self._init_name_base_def_(self)
-        self._init_value_entry_base_def_(self)
-        self._init_choose_base_def_()
-        self._init_choose_as_popup_base_def_(self)
-        #
-        self._build_value_entry_(str)
-        self._set_popup_choose_multiply_enable_(True)
+    def _set_tip_draw_enable_(self, boolean):
+        self._tip_draw_enable = boolean

@@ -3,7 +3,7 @@ from lxgui.qt.core import *
 
 import functools
 
-import lxgui.qt.abstracts as gui_qt_abstract
+import lxgui.qt.abstracts as gui_qt_abstracts
 
 import lxgui.configure as gui_configure
 
@@ -20,7 +20,7 @@ class QtItemDelegate(QtWidgets.QItemDelegate):
 class QtWidget(
     QtWidgets.QWidget,
     #
-    gui_qt_abstract.AbsQtStatusBaseDef
+    gui_qt_abstracts.AbsQtStatusBaseDef
 ):
     def __init__(self, *args, **kwargs):
         super(QtWidget, self).__init__(*args, **kwargs)
@@ -58,7 +58,7 @@ class QtWidget(
 
 class QtButtonFrame(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtFrameBaseDef
+    gui_qt_abstracts.AbsQtFrameBaseDef
 ):
     def _refresh_widget_all_(self):
         self._refresh_widget_draw_geometry_()
@@ -70,7 +70,7 @@ class QtButtonFrame(
     def _refresh_widget_draw_geometry_(self):
         x, y = 0, 0
         w, h = self.width(), self.height()
-        self._frame_draw_rect.setRect(
+        self._rect_frame_draw.setRect(
             x, y, w, h
         )
 
@@ -91,7 +91,7 @@ class QtButtonFrame(
         painter = QtPainter(self)
 
         painter._draw_frame_by_rect_(
-            rect=self._frame_draw_rect,
+            rect=self._rect_frame_draw,
             border_color=QtBorderColors.Transparent,
             background_color=QtBackgroundColors.Basic,
         )
@@ -99,9 +99,9 @@ class QtButtonFrame(
 
 class QtLine(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtFrameBaseDef,
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstracts.AbsQtFrameBaseDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForPressDef,
 ):
     def __init__(self, *args, **kwargs):
         super(QtLine, self).__init__(*args, **kwargs)
@@ -135,7 +135,7 @@ class QtLine(
     def paintEvent(self, event):
         painter = QtPainter(self)
 
-        bdr_color = QtColors.HeaderBorderColor
+        bdr_color = QtColors.HeadBorder
 
         offset = [0, 1][self._is_pressed]
         o_x, o_y = self._line_draw_offset_x, self._line_draw_offset_y
@@ -586,171 +586,15 @@ class QtInfoBubble(QtWidgets.QWidget):
             painter._draw_frame_by_rect_(
                 rect=rect,
                 border_color=QtBorderColors.Transparent,
-                background_color=QtColors.BackgroundToolTip,
+                background_color=QtColors.ToolTipBackground,
                 border_radius=4
             )
             painter._draw_text_by_rect_(
                 rect=self.rect(),
                 text=self._info_text,
                 font=self.font(),
-                font_color=QtColors.TextToolTip,
+                font_color=QtColors.ToolTipText,
                 text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
-            )
-
-
-class QtTextBubble(
-    QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForPressDef,
-):
-    delete_text_accepted = qt_signal(str)
-
-    def _refresh_widget_draw_(self):
-        self.update()
-
-    def __init__(self, *args, **kwargs):
-        super(QtTextBubble, self).__init__(*args, **kwargs)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setMouseTracking(True)
-        self.installEventFilter(self)
-        # noinspection PyArgumentEqualDefault
-        self.setFont(QtFonts.Button)
-
-        self._init_action_base_def_(self)
-        self._init_action_for_press_def_(self)
-
-        self._bubble_frame_draw_rect = QtCore.QRect()
-
-        self._bubble_is_hovered = False
-        self._bubble_delete_is_hovered = False
-
-        self._bubble_text_w, self._bubble_text_h = 0, 16
-        self._bubble_delete_w = 20
-        self._bubble_text_side = 2
-        self._bubble_text_spacing = 2
-        self._bubble_text = None
-        self._bubble_text_draw_rect = QtCore.QRect()
-        self._bubble_delete_action_rect = QtCore.QRect()
-        self._bubble_delete_size = 16, 16
-        self._bubble_delete_icon_draw_rect = QtCore.QRect()
-        self._bubble_delete_icon_draw_size = 8, 8
-        self._bubble_delete_icon_file_path_0 = gui_core.GuiIcon.get('close')
-        self._bubble_delete_icon_file_path_1 = gui_core.GuiIcon.get('close-hover')
-
-    def eventFilter(self, *args):
-        widget, event = args
-        if widget == self:
-            if hasattr(event, 'type'):
-                if event.type() == QtCore.QEvent.Close:
-                    self.delete_text_accepted.emit(self._get_bubble_text_())
-                #
-                elif event.type() == QtCore.QEvent.Resize:
-                    self._refresh_widget_draw_geometry_()
-                    self._refresh_widget_draw_()
-                #
-                elif event.type() == QtCore.QEvent.Enter:
-                    self._bubble_is_hovered = True
-                    self._refresh_widget_draw_()
-                elif event.type() == QtCore.QEvent.Leave:
-                    self._bubble_is_hovered = False
-                    self._bubble_delete_is_hovered = False
-                    self._refresh_widget_draw_()
-                elif event.type() == QtCore.QEvent.MouseMove:
-                    self._execute_action_move_(event)
-                #
-                elif event.type() == QtCore.QEvent.MouseButtonPress:
-                    if event.button() == QtCore.Qt.LeftButton:
-                        self._set_action_flag_(self.ActionFlag.Press)
-                    self._refresh_widget_draw_()
-                elif event.type() == QtCore.QEvent.MouseButtonDblClick:
-                    if event.button() == QtCore.Qt.LeftButton:
-                        pass
-                elif event.type() == QtCore.QEvent.MouseButtonRelease:
-                    if event.button() == QtCore.Qt.LeftButton:
-                        if self._bubble_delete_is_hovered is True:
-                            self.close()
-                            self.deleteLater()
-                    #
-                    self._clear_all_action_flags_()
-                    #
-                    self._is_hovered = False
-                    self._refresh_widget_draw_()
-        return False
-
-    def paintEvent(self, event):
-        painter = QtPainter(self)
-        if self._bubble_text is not None:
-            offset = self._get_action_offset_()
-            painter._draw_frame_by_rect_(
-                rect=self._bubble_frame_draw_rect,
-                border_color=QtBorderColors.Transparent,
-                background_color=[QtColors.BackgroundToolTip, QtColors.BackgroundHover][self._bubble_is_hovered],
-                border_radius=4,
-                offset=offset
-            )
-            painter._draw_text_by_rect_(
-                rect=self._bubble_text_draw_rect,
-                text=self._bubble_text,
-                font_color=QtColors.TextToolTip,
-                font=self.font(),
-                text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
-                offset=offset
-            )
-
-            painter._draw_icon_file_by_rect_(
-                rect=self._bubble_delete_icon_draw_rect,
-                file_path=[self._bubble_delete_icon_file_path_0, self._bubble_delete_icon_file_path_1][
-                    self._bubble_delete_is_hovered],
-                offset=offset
-            )
-
-    def _set_bubble_text_(self, text):
-        self._bubble_text = text
-        self.setToolTip(self._bubble_text)
-        self._update_widget_width_()
-
-    def _get_bubble_text_(self):
-        return self._bubble_text
-
-    def _execute_action_move_(self, event):
-        p = event.pos()
-        if self._bubble_delete_action_rect.contains(p):
-            self._bubble_delete_is_hovered = True
-        else:
-            self._bubble_delete_is_hovered = False
-        #
-        self._refresh_widget_draw_()
-
-    def _update_widget_width_(self):
-        w = self.fontMetrics().width(self._bubble_text)+self._bubble_text_side*2
-        # fit to max size
-        self._bubble_text_w = min(w, 48)
-        self.setMinimumWidth(
-            self._bubble_text_w+self._bubble_delete_w
-        )
-
-    def _refresh_widget_draw_geometry_(self):
-        if self._bubble_text:
-            side = self._bubble_text_side
-            txt_w, txt_h = self._bubble_text_w, self._bubble_text_h
-            dlt_w, dlt_h = self._bubble_delete_size
-            dlt_icon_w, dlt_icon_h = self._bubble_delete_icon_draw_size
-            x, y = 0, 0
-            w, h = self.width(), self.height()
-
-            self._bubble_frame_draw_rect.setRect(
-                x, y+(h-txt_h)/2, w, txt_h
-            )
-            x += side
-            self._bubble_text_draw_rect.setRect(
-                x, y+(h-txt_h)/2, txt_w, txt_h
-            )
-
-            self._bubble_delete_action_rect.setRect(
-                x+txt_w, y+(h-txt_h)/2, dlt_w, dlt_h
-            )
-            self._bubble_delete_icon_draw_rect.setRect(
-                x+txt_w+(dlt_w-dlt_icon_w)/2, y+(h-dlt_icon_h)/2, dlt_icon_w, dlt_icon_h
             )
 
 
@@ -780,7 +624,7 @@ class QtHScrollArea(QtWidgets.QScrollArea):
         self.setWidgetResizable(True)
         widget = QtWidget()
         self.setWidget(widget)
-        self._layout = QtHBoxLayout(widget)
+        self._layout = QtHLayout(widget)
         self._layout.setAlignment(QtCore.Qt.AlignTop)
         self._layout.setContentsMargins(*[0]*4)
         self._layout.setSpacing(gui_configure.Size.LayoutDefaultSpacing)
@@ -844,20 +688,20 @@ class QtThreadDef(object):
 
 class QtTextLabel(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstracts.AbsQtNameBaseDef,
 ):
     pass
 
 
 class QtTextItem(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtNameBaseDef,
+    gui_qt_abstracts.AbsQtNameBaseDef,
     #
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForHoverDef,
-    gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForHoverDef,
+    gui_qt_abstracts.AbsQtActionForPressDef,
     #
-    gui_qt_abstract.AbsQtStatusBaseDef,
+    gui_qt_abstracts.AbsQtStatusBaseDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -923,11 +767,11 @@ class QtTextItem(
 class QtMainWindow(
     QtWidgets.QMainWindow,
     #
-    gui_qt_abstract.AbsQtIconBaseDef,
-    gui_qt_abstract.AbsQtBusyBaseDef,
-    gui_qt_abstract.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtIconBaseDef,
+    gui_qt_abstracts.AbsQtBusyBaseDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
     #
-    gui_qt_abstract.AbsQtThreadBaseDef,
+    gui_qt_abstracts.AbsQtThreadBaseDef,
     #
     QtThreadDef
 ):
@@ -939,7 +783,6 @@ class QtMainWindow(
 
     def __init__(self, *args, **kwargs):
         super(QtMainWindow, self).__init__(*args, **kwargs)
-        self.installEventFilter(self)
         self.setWindowFlags(QtCore.Qt.Window)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         # todo: do not use WA_TranslucentBackground mode, GL bug
@@ -965,10 +808,11 @@ class QtMainWindow(
         self.menuBar().setStyleSheet(
             GuiQtStyle.get('QMenuBar')
         )
-        self._frame_draw_rect = QtCore.QRect()
+        self._rect_frame_draw = QtCore.QRect()
         self._menu_frame_draw_rect = QtCore.QRect()
 
-    #
+        self.installEventFilter(self)
+
     def _refresh_widget_draw_(self):
         self.update()
 
@@ -976,14 +820,13 @@ class QtMainWindow(
         x, y = 0, 0
         w, h = self.width(), self.height()
         m_h = self.menuBar().height()
-        self._frame_draw_rect.setRect(
+        self._rect_frame_draw.setRect(
             x, y, w, h
         )
         self._menu_frame_draw_rect.setRect(
             x, y, w, m_h
         )
 
-    #
     def _set_icon_name_text_(self, text):
         self.setWindowIcon(GuiQtIcon.generate_by_text(text))
 
@@ -1023,7 +866,7 @@ class QtMainWindow(
         self._refresh_widget_draw_geometry_()
         painter = QtPainter(self)
         painter.fillRect(
-            self._frame_draw_rect,
+            self._rect_frame_draw,
             QtBackgroundColors.Basic
         )
         painter.fillRect(
@@ -1043,17 +886,24 @@ class QtMainWindow(
         close_timer.timeout.connect(self._set_close_)
         close_timer.start(delay_time)
 
-    def _create_window_shortcut_action_(self, fnc, shortcut):
+    def _create_window_shortcut_action_for_(self, fnc, shortcut):
         action = QtWidgets.QAction(self)
         action.triggered.connect(fnc)
         action.setShortcut(QtGui.QKeySequence(shortcut))
         action.setShortcutContext(QtCore.Qt.WindowShortcut)
         self.addAction(action)
 
+    def _create_widget_shortcut_action_for_(self, fnc, shortcut):
+        action = QtWidgets.QAction(self)
+        action.triggered.connect(fnc)
+        action.setShortcut(QtGui.QKeySequence(shortcut))
+        action.setShortcutContext(QtCore.Qt.WidgetWithChildrenShortcut)
+        self.addAction(action)
+
 
 class QtDialog(
     QtWidgets.QDialog,
-    gui_qt_abstract.AbsQtStatusBaseDef,
+    gui_qt_abstracts.AbsQtStatusBaseDef,
     QtThreadDef
 ):
     size_changed = qt_signal()
@@ -1132,6 +982,13 @@ class QtDialog(
                 elif event.type() == QtCore.QEvent.Resize:
                     self.size_changed.emit()
         return False
+
+    def _create_window_shortcut_action_for_(self, fnc, shortcut):
+        action = QtWidgets.QAction(self)
+        action.triggered.connect(fnc)
+        action.setShortcut(QtGui.QKeySequence(shortcut))
+        action.setShortcutContext(QtCore.Qt.WindowShortcut)
+        self.addAction(action)
 
 
 class QtCommonStyle(QtWidgets.QCommonStyle):
@@ -1236,7 +1093,7 @@ class QtListWidgetStyledItemDelegate(QtWidgets.QStyledItemDelegate):
 
 class QtProgressBar(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtProgressBaseDef
+    gui_qt_abstracts.AbsQtProgressBaseDef
 ):
     def __init__(self, *args, **kwargs):
         super(QtProgressBar, self).__init__(*args, **kwargs)
@@ -1314,18 +1171,18 @@ class QtFileDialog(QtWidgets.QFileDialog):
 class QtListWidgetItem(
     QtWidgets.QListWidgetItem,
     #
-    gui_qt_abstract.AbsQtNamesBaseDef,
-    gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstracts.AbsQtNamesBaseDef,
+    gui_qt_abstracts.AbsQtMenuBaseDef,
     #
-    gui_qt_abstract.AbsQtItemFilterDef,
+    gui_qt_abstracts.AbsQtItemFilterDef,
     #
-    gui_qt_abstract.AbsQtStateDef,
+    gui_qt_abstracts.AbsQtStateDef,
     #
-    gui_qt_abstract.AbsQtDagDef,
-    gui_qt_abstract.AbsQtVisibleDef,
+    gui_qt_abstracts.AbsQtDagDef,
+    gui_qt_abstracts.AbsQtVisibleDef,
     #
-    gui_qt_abstract.AbsQtShowBaseForItemDef,
-    gui_qt_abstract.AbsQtItemVisibleConnectionDef,
+    gui_qt_abstracts.AbsQtShowBaseForItemDef,
+    gui_qt_abstracts.AbsQtItemVisibleConnectionDef,
 ):
     def update(self):
         pass
@@ -1429,26 +1286,26 @@ class QtListWidgetItem(
 
 class _QtHItem(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtFrameBaseDef,
-    gui_qt_abstract.AbsQtIndexBaseDef,
-    gui_qt_abstract.AbsQtTypeDef,
-    gui_qt_abstract.AbsQtIconBaseDef,
-    gui_qt_abstract.AbsQtNamesBaseDef,
-    gui_qt_abstract.AbsQtPathBaseDef,
-    gui_qt_abstract.AbsQtImageBaseDef,
+    gui_qt_abstracts.AbsQtFrameBaseDef,
+    gui_qt_abstracts.AbsQtIndexBaseDef,
+    gui_qt_abstracts.AbsQtTypeDef,
+    gui_qt_abstracts.AbsQtIconBaseDef,
+    gui_qt_abstracts.AbsQtNamesBaseDef,
+    gui_qt_abstracts.AbsQtPathBaseDef,
+    gui_qt_abstracts.AbsQtImageBaseDef,
     #
-    gui_qt_abstract.AbsQtValueBaseDef,
+    gui_qt_abstracts.AbsQtValueBaseDef,
     #
-    gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstracts.AbsQtMenuBaseDef,
     # action
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForHoverDef,
-    gui_qt_abstract.AbsQtActionForPressDef,
-    gui_qt_abstract.AbsQtPressSelectExtraDef,
-    gui_qt_abstract.AbsQtActionForCheckDef,
-    gui_qt_abstract.AbsQtDeleteBaseDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForHoverDef,
+    gui_qt_abstracts.AbsQtActionForPressDef,
+    gui_qt_abstracts.AbsQtPressSelectExtraDef,
+    gui_qt_abstracts.AbsQtActionForCheckDef,
+    gui_qt_abstracts.AbsQtDeleteBaseDef,
     #
-    gui_qt_abstract.AbsQtItemFilterDef,
+    gui_qt_abstracts.AbsQtItemFilterDef,
 ):
     delete_press_clicked = qt_signal()
 
@@ -1524,20 +1381,20 @@ class _QtHItem(
             c_w -= icn_frm_w+spacing
             # f_x += icn_frm_w+spacing
             # f_w -= icn_frm_w+spacing
-        # icon use file
-        if self._icon_file_path is not None:
+        # use icon
+        if self._icon is not None or self._icon_file_path is not None:
             icn_frm_w_0, icn_frm_h_0 = c_h, c_h
             icn_w_0, icn_h_0 = int(icn_frm_w_0*self._icon_draw_percent), int(icn_frm_h_0*self._icon_draw_percent)
-            self._set_icon_file_draw_rect_(
+            self._icon_draw_rect.setRect(
                 c_x+(icn_frm_w_0-icn_w_0)/2, c_y+(icn_frm_h_0-icn_h_0)/2, icn_w_0, icn_h_0
             )
             c_x += icn_frm_w_0+spacing
             c_w -= icn_frm_w_0+spacing
-        # icon use text
-        if self._icon_name_text is not None:
-            icn_p = self._icon_name_draw_percent
+        # use icon name
+        if self._icon_text is not None:
+            icn_p = self._icon_text_draw_percent
             icn_w, icn_h = c_h*icn_p, c_h*icn_p
-            self._set_icon_name_draw_rect_(
+            self._icon_text_draw_rect.setRect(
                 c_x+(c_h-icn_w)/2, c_y+(c_h-icn_h)/2, icn_w, icn_h
             )
             c_x += c_h+spacing
@@ -1639,7 +1496,7 @@ class _QtHItem(
         offset = self._get_action_offset_()
         #
         bkg_color = painter._get_frame_background_color_by_rect_(
-            rect=self._frame_draw_rect,
+            rect=self._rect_frame_draw,
             check_is_hovered=self._check_is_hovered,
             is_checked=self._is_checked,
             press_is_hovered=self._press_is_hovered,
@@ -1648,7 +1505,7 @@ class _QtHItem(
             delete_is_hovered=self._delete_is_hovered
         )
         painter._draw_frame_by_rect_(
-            self._frame_draw_rect,
+            self._rect_frame_draw,
             border_color=QtBorderColors.Transparent,
             background_color=bkg_color,
             border_radius=1
@@ -1662,20 +1519,28 @@ class _QtHItem(
                 # frame_rect=self._check_rect,
                 is_hovered=self._check_is_hovered
             )
-        # icon
-        if self._icon_name_text is not None:
-            painter._draw_image_use_text_by_rect_(
-                rect=self._icon_name_draw_rect,
-                text=self._icon_name_text,
-                background_color=bkg_color,
-                offset=offset,
-                border_radius=1, border_width=2
-            )
-        #
-        if self._icon_file_path is not None:
-            painter._draw_icon_file_by_rect_(
+
+        if self._icon is not None:
+            painter._draw_icon_by_rect_(
+                icon=self._icon,
                 rect=self._icon_draw_rect,
-                file_path=self._icon_file_path,
+                offset=offset
+            )
+        else:
+            # icon
+            if self._icon_text is not None:
+                painter._draw_image_use_text_by_rect_(
+                    rect=self._icon_text_draw_rect,
+                    text=self._icon_text,
+                    background_color=bkg_color,
+                    offset=offset,
+                    border_radius=1, border_width=2
+                )
+            #
+            if self._icon_file_path is not None:
+                painter._draw_icon_file_by_rect_(
+                    rect=self._icon_draw_rect,
+                    file_path=self._icon_file_path,
             )
         # image
         if self._image_draw_is_enable is True:
@@ -1729,9 +1594,6 @@ class _QtHItem(
                 is_hovered=self._delete_is_hovered
             )
 
-    def _execute_action_hover_entry_(self, event):
-        pass
-
     def _do_hover_move_(self, event):
         p = event.pos()
         self._check_is_hovered = False
@@ -1741,7 +1603,7 @@ class _QtHItem(
         if self._check_action_is_enable is True:
             if self._check_rect.contains(p):
                 self._check_is_hovered = True
-        if self._frame_draw_rect.contains(p):
+        if self._rect_frame_draw.contains(p):
             self._press_is_hovered = True
         if self._delete_is_enable is True:
             if self._delete_action_rect.contains(p):
@@ -1757,13 +1619,13 @@ class _QtHItem(
 
 class _QtScreenshotFrame(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtFrameBaseDef,
-    gui_qt_abstract.AbsQtScreenshotDef,
-    gui_qt_abstract.AbsQtHelpDef,
+    gui_qt_abstracts.AbsQtFrameBaseDef,
+    gui_qt_abstracts.AbsQtScreenshotDef,
+    gui_qt_abstracts.AbsQtHelpDef,
     #
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForHoverDef,
-    gui_qt_abstract.AbsQtActionForPressDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForHoverDef,
+    gui_qt_abstracts.AbsQtActionForPressDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -1772,7 +1634,7 @@ class _QtScreenshotFrame(
         x, y = 0, 0
         w, h = self.width(), self.height()
         #
-        self._frame_draw_rect.setRect(
+        self._rect_frame_draw.setRect(
             x-1, y-1, w+2, h+2
         )
 
@@ -1834,7 +1696,7 @@ class _QtScreenshotFrame(
             painter = QtPainter(self)
 
             painter._set_screenshot_draw_by_rect_(
-                rect_0=self._frame_draw_rect,
+                rect_0=self._rect_frame_draw,
                 rect_1=self._screenshot_rect,
                 border_color=(79, 95, 151),
                 background_color=(0, 0, 0, 127)

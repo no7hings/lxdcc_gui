@@ -1,7 +1,7 @@
 # coding=utf-8
 from lxgui.qt.core import *
 
-import lxgui.qt.abstracts as gui_qt_abstract
+import lxgui.qt.abstracts as gui_qt_abstracts
 
 import lxbasic.core as bsc_core
 
@@ -10,9 +10,9 @@ from lxgui.qt.widgets import _gui_qt_wgt_utility
 
 class QtChartAsRgbaChoose(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtWidgetBaseDef,
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtChartBaseDef,
+    gui_qt_abstracts.AbsQtWidgetBaseDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtChartBaseDef,
 ):
     def _refresh_widget_draw_(self):
         pass
@@ -357,7 +357,7 @@ class QtChartAsRgbaChoose(
         self._refresh_widget_draw_()
         self._update_selected_()
 
-    def _get_popup_pos_(self, x, y, width, height):
+    def _get_popup_pos_from_(self, x, y, width, height):
         point = self._color_point
         pos0 = self._color_center_coord
 
@@ -440,7 +440,7 @@ class QtChartAsRgbaChoose(
 
 class QtChartAsProgressing(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtProgressBaseDef
+    gui_qt_abstracts.AbsQtProgressBaseDef
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -509,7 +509,7 @@ class QtChartAsProgressing(
                         painter._set_background_color_(i_text_color)
                     painter.drawPath(i_annulus_sector_path)
 
-                    painter._set_font_color_(i_text_color)
+                    painter._set_text_color_(i_text_color)
                     painter._set_font_(QtFonts.Chart)
 
                     painter.drawText(
@@ -581,7 +581,7 @@ class QtChartAsInfo(
 
 class QtChartAsWaiting(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtChartBaseDef,
+    gui_qt_abstracts.AbsQtChartBaseDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -698,7 +698,7 @@ class QtChartAsWaiting(
 
 class QtChartAsSector(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtChartBaseDef
+    gui_qt_abstracts.AbsQtChartBaseDef
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -763,7 +763,7 @@ class QtChartAsSector(
 
 class QtChartAsRadar(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtChartBaseDef
+    gui_qt_abstracts.AbsQtChartBaseDef
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -880,7 +880,7 @@ class QtChartAsRadar(
 
 class QtChartAsPie(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtChartBaseDef
+    gui_qt_abstracts.AbsQtChartBaseDef
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -1029,12 +1029,12 @@ class QtChartAsPie(
 
 class QtChartAsHistogram(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtDrawGridDef,
+    gui_qt_abstracts.AbsQtDrawGridDef,
     #
-    gui_qt_abstract.AbsQtActionForTrackDef,
-    gui_qt_abstract.AbsQtActionForZoomDef,
+    gui_qt_abstracts.AbsQtActionForTrackDef,
+    gui_qt_abstracts.AbsQtActionForZoomDef,
     #
-    gui_qt_abstract.AbsQtChartBaseDef,
+    gui_qt_abstracts.AbsQtChartBaseDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -1235,11 +1235,11 @@ class QtChartAsHistogram(
 
 class QtChartAsSequence(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtNameBaseDef,
-    gui_qt_abstract.AbsQtChartBaseDef,
-    gui_qt_abstract.AbsQtStatusBaseDef,
+    gui_qt_abstracts.AbsQtNameBaseDef,
+    gui_qt_abstracts.AbsQtChartBaseDef,
+    gui_qt_abstracts.AbsQtStatusBaseDef,
     #
-    gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstracts.AbsQtMenuBaseDef,
 ):
     QT_MENU_CLS = _gui_qt_wgt_utility.QtMenu
 

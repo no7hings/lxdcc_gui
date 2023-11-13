@@ -25,7 +25,7 @@ import lxgui.proxy.core as gui_prx_core
 
 import lxsession.commands as ssn_commands
 
-import lxshotgun.objects as stg_objects
+import lxwarp.shotgun.core as wrp_stg_core
 
 import lxshotgun.rsv.scripts as stg_rsv_scripts
 
@@ -55,7 +55,7 @@ class AbsRenderSubmitterDef(object):
             else:
                 self._rez_beta = False
             #
-            self._stg_connector = stg_objects.StgConnector()
+            self._stg_connector = wrp_stg_core.StgConnector()
         else:
             self._file_path = None
         #
@@ -69,7 +69,7 @@ class AbsRenderSubmitterDef(object):
         self._variable_keys = []
 
 
-class AbsRenderSubmitterPanel(
+class AbsPnlRenderSubmitter(
     prx_widgets.PrxBaseWindow,
     AbsRenderSubmitterDef,
 ):
@@ -77,7 +77,7 @@ class AbsRenderSubmitterPanel(
     ITEM_ICON_SIZE = 24, 24
 
     def __init__(self, hook_option=None, *args, **kwargs):
-        super(AbsRenderSubmitterPanel, self).__init__(*args, **kwargs)
+        super(AbsPnlRenderSubmitter, self).__init__(*args, **kwargs)
         self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
         #
         if hook_option is not None:
@@ -104,7 +104,7 @@ class AbsRenderSubmitterPanel(
         # self.get_log_bar().set_expanded(True)
         #
         self.start_loading(
-            time=1000,
+            delay_time=1000,
             method=self._set_tool_panel_setup_
         )
 
@@ -222,13 +222,13 @@ class AbsRenderSubmitterPanel(
         return True
 
 
-class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
+class AbsPnlRenderSubmitterForAsset(AbsPnlRenderSubmitter):
     def __init__(self, hook_option=None, *args, **kwargs):
-        super(AbsAssetRenderSubmitterPanel, self).__init__(hook_option, *args, **kwargs)
+        super(AbsPnlRenderSubmitterForAsset, self).__init__(hook_option, *args, **kwargs)
 
     def set_all_refresh(self):
         if self._file_path:
-            self._file_path = bsc_core.StgPathMapMtd.map_to_current(self._file_path)
+            self._file_path = bsc_core.StgBasePathMapper.map_to_current(self._file_path)
             self._resolver = rsv_commands.get_resolver()
             self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
             if self._rsv_scene_properties:
@@ -441,22 +441,22 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         # self._schemes_prx_node.set(
         #     'save', self.set_scheme_save
         # )
-        self._schemes_prx_node.connect_value_changed_to(
+        self._schemes_prx_node.connect_input_changed_to(
             'variables', self.set_combinations_load_from_scheme
         )
-        self._schemes_prx_node.connect_value_changed_to(
+        self._schemes_prx_node.connect_input_changed_to(
             'settings', self.set_settings_load_from_scheme
         )
 
         self._options_prx_node.get_port(
             'shot'
-        ).connect_value_changed_to(
+        ).connect_input_changed_to(
             self.set_usd_refresh
         )
 
         self._options_prx_node.get_port(
             'shot'
-        ).connect_value_changed_to(
+        ).connect_input_changed_to(
             self.set_settings_refresh
         )
 
@@ -497,7 +497,7 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
         # print variable_name
         movie_file_path = self._render_movie_file_rsv_unit.get_result(
             version='latest',
-            extend_variants=variants
+            variants_extend=variants
         )
         if movie_file_path:
             rsv_properties = self._render_movie_file_rsv_unit.get_properties_by_result(
@@ -1044,19 +1044,19 @@ class AbsAssetRenderSubmitterPanel(AbsRenderSubmitterPanel):
             )
 
 
-class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
+class AbsPnlRenderSubmitterForShot(AbsPnlRenderSubmitter):
     def __init__(self, hook_option=None, *args, **kwargs):
-        super(AbsShotRenderSubmitterPanel, self).__init__(hook_option, *args, **kwargs)
+        super(AbsPnlRenderSubmitterForShot, self).__init__(hook_option, *args, **kwargs)
 
     def _set_prx_node_effect_(self):
         # self._schemes_prx_node.set(
         #     'save', self.set_scheme_save
         # )
-        self._schemes_prx_node.connect_value_changed_to(
+        self._schemes_prx_node.connect_input_changed_to(
             'variables', self.set_combinations_load_from_scheme
         )
 
-        self._schemes_prx_node.connect_value_changed_to(
+        self._schemes_prx_node.connect_input_changed_to(
             'settings', self.set_settings_load_from_scheme
         )
 
@@ -1097,7 +1097,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
         movie_file_path = self._render_movie_file_rsv_unit.get_result(
             version='latest',
-            extend_variants=variants
+            variants_extend=variants
         )
         if movie_file_path:
             rsv_properties = self._render_movie_file_rsv_unit.get_properties_by_result(
@@ -1196,7 +1196,7 @@ class AbsShotRenderSubmitterPanel(AbsRenderSubmitterPanel):
 
     def set_all_refresh(self):
         if self._file_path:
-            self._file_path = bsc_core.StgPathMapMtd.map_to_current(self._file_path)
+            self._file_path = bsc_core.StgBasePathMapper.map_to_current(self._file_path)
             self._resolver = rsv_commands.get_resolver()
             self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
             if self._rsv_scene_properties:

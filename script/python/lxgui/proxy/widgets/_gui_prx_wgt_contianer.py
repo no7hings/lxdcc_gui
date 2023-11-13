@@ -204,7 +204,7 @@ class PrxHToolBar(gui_prx_abstracts.AbsPrxWidget):
         self._wgt_w, self._wgt_h = 28, 28
         self._wgt_w_min, self._wgt_h_min = 12, 12
         #
-        qt_layout_0 = _gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
+        qt_layout_0 = _gui_qt_wgt_utility.QtHLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(2)
         # header
@@ -312,7 +312,7 @@ class PrxVToolBar(PrxHToolBar):
         self._wgt_w, self._wgt_h = 28, 28
         self._wgt_w_min, self._wgt_h_min = 12, 12
         #
-        qt_layout_0 = _gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
+        qt_layout_0 = _gui_qt_wgt_utility.QtHLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(2)
         qt_layout_0.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)

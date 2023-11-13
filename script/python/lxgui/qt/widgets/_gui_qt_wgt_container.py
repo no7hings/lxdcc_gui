@@ -3,15 +3,15 @@ from lxgui.qt.core import *
 
 from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_head, _gui_qt_wgt_drag
 
-import lxgui.qt.abstracts as gui_qt_abstract
+import lxgui.qt.abstracts as gui_qt_abstracts
 
 
 class AbsQtToolGroup(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForDragDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForDragDef,
 
-    gui_qt_abstract.AbsQtItemLayoutBaseDef,
+    gui_qt_abstracts.AbsQtItemLayoutBaseDef,
 ):
     QT_HEAD_HEIGHT = 22
 
@@ -184,7 +184,7 @@ class AbsQtToolBox(QtWidgets.QWidget):
 
     def _build_widget_(self):
         if self.QT_ORIENTATION == QtCore.Qt.Horizontal:
-            layout = _gui_qt_wgt_utility.QtHBoxLayout(self)
+            layout = _gui_qt_wgt_utility.QtHLayout(self)
         elif self.QT_ORIENTATION == QtCore.Qt.Vertical:
             layout = _gui_qt_wgt_utility.QtVBoxLayout(self)
         else:
@@ -202,7 +202,7 @@ class AbsQtToolBox(QtWidgets.QWidget):
         self._container = _gui_qt_wgt_utility._QtTranslucentWidget()
         layout.addWidget(self._container)
         if self.QT_ORIENTATION == QtCore.Qt.Horizontal:
-            self._qt_layout = _gui_qt_wgt_utility.QtHBoxLayout(self._container)
+            self._qt_layout = _gui_qt_wgt_utility.QtHLayout(self._container)
         elif self.QT_ORIENTATION == QtCore.Qt.Vertical:
             self._qt_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._container)
         else:

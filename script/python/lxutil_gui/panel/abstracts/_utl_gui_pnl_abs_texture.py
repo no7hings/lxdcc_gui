@@ -19,11 +19,7 @@ import lxresolver.commands as rsv_commands
 
 import lxgui.core as gui_core
 
-import lxresolver.methods as rsv_methods
-
 import lxutil.rsv.objects as utl_rsv_objects
-
-import lxutil.scripts as utl_scripts
 
 
 class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
@@ -67,7 +63,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
         )
         self._options_prx_node.get_port(
             'control.variant'
-        ).connect_value_changed_to(
+        ).connect_input_changed_to(
             self._set_wsp_texture_directories_update_
         )
 
@@ -542,7 +538,7 @@ class AbsPnlAssetTextureManager(prx_widgets.PrxSessionWindow):
             )
             ddl_job_id = session.get_ddl_job_id()
 
-            utl_core.DDlMonitor.set_create(
+            gui_core.GuiMonitorForDeadline.set_create(
                 session.gui_name, ddl_job_id
             )
         else:
@@ -632,7 +628,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
             prx_tree_view_tgt=self._tree_view,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
         )
-        self.connect_refresh_action_to(self.refresh_gui_fnc)
+        self.connect_refresh_action_for(self.refresh_gui_fnc)
         #
         self._options_prx_node = prx_widgets.PrxNode('options')
         s_a_0.add_widget(self._options_prx_node)
@@ -1299,7 +1295,7 @@ class AbsPnlAssetDccTextureManager(prx_widgets.PrxSessionWindow):
         )
 
         v = prx_widgets.PrxImageView()
-        w.set_customize_widget_add(v)
+        w.add_customize_widget(v)
 
         v.set_textures([texture])
 

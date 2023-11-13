@@ -76,11 +76,11 @@ class PnlGeometryExporter(prx_widgets.PrxSessionToolWindow):
 
             o.set('usd.file', result)
 
-            o.get_port('renderable.components').connect_value_changed_to(
+            o.get_port('renderable.components').connect_input_changed_to(
                 self.refresh_components
             )
             o.set('renderable.export', self.export_renderable_fnc_)
-            o.get_port('auxiliary.components').connect_value_changed_to(
+            o.get_port('auxiliary.components').connect_input_changed_to(
                 self.refresh_components
             )
             o.set('auxiliary.export', self.export_auxiliary_fnc_)

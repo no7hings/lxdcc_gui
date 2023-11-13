@@ -11,7 +11,7 @@ import lxbasic.core as bsc_core
 
 import lxgui.core as gui_core
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_entry_base, _gui_qt_wgt_chart, \
+from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_entry, _gui_qt_wgt_chart, \
     _gui_qt_wgt_view_for_list
 
 import lxgui.proxy.abstracts as gui_prx_abstracts
@@ -27,7 +27,7 @@ class PrxListView(
     #
     gui_prx_abstracts.AbsPrxViewVisibleConnectionDef,
 ):
-    QT_WIDGET_CLS = _gui_qt_wgt_entry_base.QtEntryFrame
+    QT_WIDGET_CLS = _gui_qt_wgt_entry.QtEntryFrame
     QT_VIEW_CLS = _gui_qt_wgt_view_for_list.QtListWidget
     #
     FILTER_MAXIMUM = 50
@@ -98,6 +98,7 @@ class PrxListView(
         )
         #
         self._prx_filter_bar = self._prx_filer_bar_0
+        self._qt_view._set_view_keyword_filter_bar_(self._prx_filter_bar._qt_widget)
 
         self._item_dict = collections.OrderedDict()
         self._filter_completion_cache = None
@@ -105,20 +106,17 @@ class PrxListView(
         self.__add_scale_switch_tools()
         self.__add_sort_mode_switch_tools()
 
-        self._prx_filter_bar._qt_widget.user_entry_changed.connect(
-            self.__keyword_filter_cbk
+        self._prx_filter_bar._qt_widget.user_input_value_changed.connect(self.__keyword_filter_cbk)
+        self._prx_filter_bar._qt_widget.input_value_change_accepted.connect(
+            self._qt_view._do_keyword_filter_occurrence_
         )
-        self._qt_view._set_view_keyword_filter_bar_(self._prx_filter_bar._qt_widget)
-        self._prx_filter_bar._qt_widget._set_popup_completion_gain_fnc_(self.__keyword_filter_completion_gain_fnc)
-        self._prx_filter_bar._qt_widget.user_choose_changed.connect(
-            self._qt_view._execute_view_keyword_filter_occurrence_to_current_
-            )
         self._prx_filter_bar._qt_widget.occurrence_previous_press_clicked.connect(
-            self._qt_view._execute_view_keyword_filter_occurrence_to_previous_
+            self._qt_view._do_keyword_filter_occurrence_to_previous_
         )
         self._prx_filter_bar._qt_widget.occurrence_next_press_clicked.connect(
-            self._qt_view._execute_view_keyword_filter_occurrence_to_next_
+            self._qt_view._do_keyword_filter_occurrence_to_next_
         )
+        self._prx_filter_bar._qt_widget._set_input_completion_buffer_fnc_(self.__keyword_filter_completion_gain_fnc)
 
     @property
     def view(self):
@@ -270,7 +268,6 @@ class PrxListView(
     def set_view_grid_mode(self):
         self._qt_view._set_grid_mode_()
 
-    #
     def set_item_frame_size(self, w, h):
         self._qt_view._set_item_frame_size_(w, h)
 
@@ -307,6 +304,12 @@ class PrxListView(
         self.view._set_item_image_frame_draw_enable_(boolean)
 
     def create_item(self, *args, **kwargs):
+        prx_item_widget = _gui_prx_wgt_item.PrxListItemWidget()
+        prx_item_widget.set_view(self)
+        self.view._add_item_widget_(prx_item_widget.widget, **kwargs)
+        return prx_item_widget
+
+    def create_item_widget(self, *args, **kwargs):
         prx_item_widget = _gui_prx_wgt_item.PrxListItemWidget()
         prx_item_widget.set_view(self)
         self.view._add_item_widget_(prx_item_widget.widget, **kwargs)
@@ -353,7 +356,7 @@ class PrxListView(
     def set_loading_update(self):
         self.view._set_loading_update_()
 
-    def connect_refresh_action_to(self, fnc):
+    def connect_refresh_action_for(self, fnc):
         self._qt_view.f5_key_pressed.connect(fnc)
 
     def get_checked_items(self):

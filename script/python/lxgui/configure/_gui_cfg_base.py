@@ -32,6 +32,7 @@ class ActionFlag(enum.IntEnum):
     Press = 0x01
     PressDbClick = 0x02
     PressMove = 0x03
+    HoverMove = 0x04
     #
     TrackPress = 0x11
     TrackMove = 0x12
@@ -44,6 +45,9 @@ class ActionFlag(enum.IntEnum):
     ExpandPress = 0x33
     OptionPress = 0x34
     ChoosePress = 0x35
+    NextPress = 0x36
+    ComponentPress = 0x37
+    ComponentDbClick = 0x38
     #
     SplitHHover = 0x41
     SplitVHover = 0x42
@@ -53,10 +57,12 @@ class ActionFlag(enum.IntEnum):
     SplitVMove = 0x46
     SwapH = 0x47
     SwapV = 0x48
+    #
     ResizeLeft = 0x49
     ResizeRight = 0x4A
     ResizeUp = 0x4B
     ResizeDown = 0x4C
+    Resize = 0x4D
     #
     ZoomWheel = 0x51
     #
@@ -72,6 +78,7 @@ class ActionFlag(enum.IntEnum):
     KeyControlPress = 0x82
     KeyShiftPress = 0x83
     KeyControlShiftPress = 0x84
+    KeyPress = 0x85
     #
     DragPress = 0x91
     DragEnter = 0x92
@@ -134,7 +141,9 @@ class SortOrder(enum.IntEnum):
 
 class Size(object):
     ItemDefaultHeight = 20
-    EntryDefaultHeight = 20
+    BubbleHeightDefault = 16
+    EntryBaseHeightDefault = 20
+    InputHeight = 24
 
     LayoutDefaultContentsMargins = 2, 2, 2, 2
     LayoutDefaultSpacing = 2

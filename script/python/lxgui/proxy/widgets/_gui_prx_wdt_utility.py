@@ -5,8 +5,8 @@ import lxbasic.core as bsc_core
 
 import lxgui.qt.core as gui_qt_core
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_resize, _gui_qt_wgt_filter, \
-    _gui_qt_wgt_item, _gui_qt_wgt_head, _gui_qt_wgt_container, _gui_qt_wgt_entry, _gui_qt_wgt_window
+from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_resize, _gui_qt_wgt_input_for_filter, \
+    _gui_qt_wgt_item, _gui_qt_wgt_head, _gui_qt_wgt_container, _gui_qt_wgt_input, _gui_qt_wgt_window
 
 import lxgui.proxy.abstracts as gui_prx_abstracts
 
@@ -115,7 +115,7 @@ class PrxLeftExpandedGroup(gui_prx_abstracts.AbsPrxWidget):
         self._qt_widget._resize_handle._set_resize_target_(self._qt_widget)
         self._qt_widget._resize_handle.size_changed.connect(self.__set_width)
         #
-        qt_layout_0 = _gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
+        qt_layout_0 = _gui_qt_wgt_utility.QtHLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(0)
         qt_layout_0.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
@@ -217,7 +217,7 @@ class PrxRightExpandedGroup(PrxLeftExpandedGroup):
         self._qt_widget._resize_handle.size_changed.connect(self.__set_width)
         self._qt_widget._resize_handle._set_resize_target_(self._qt_widget)
         #
-        qt_layout_0 = _gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
+        qt_layout_0 = _gui_qt_wgt_utility.QtHLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(0)
         qt_layout_0.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
@@ -258,7 +258,7 @@ class PrxHToolBox(gui_prx_abstracts.AbsPrxWidget):
         self._wgt_w, self._wgt_h = 24, 24
         self._wgt_w_min, self._wgt_h_min = 12, 24
         #
-        qt_layout_0 = _gui_qt_wgt_utility.QtHBoxLayout(self._qt_widget)
+        qt_layout_0 = _gui_qt_wgt_utility.QtHLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(2)
         qt_layout_0.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
@@ -270,7 +270,7 @@ class PrxHToolBox(gui_prx_abstracts.AbsPrxWidget):
         #
         qt_widget_1 = _gui_qt_wgt_utility._QtTranslucentWidget()
         qt_layout_0.addWidget(qt_widget_1)
-        qt_layout_1 = _gui_qt_wgt_utility.QtHBoxLayout(qt_widget_1)
+        qt_layout_1 = _gui_qt_wgt_utility.QtHLayout(qt_widget_1)
         qt_layout_1.setContentsMargins(*[0]*4)
         qt_layout_1.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         #
@@ -370,7 +370,7 @@ class Window(gui_prx_abstracts.AbsPrxWindow):
     def _gui_build_(self):
         self._qt_main_widget = _gui_qt_wgt_utility.QtWidget()
         self._qt_widget.setCentralWidget(self._qt_main_widget)
-        self._qt_main_layout = _gui_qt_wgt_utility.QtHBoxLayout(self._qt_main_widget)
+        self._qt_main_layout = _gui_qt_wgt_utility.QtHLayout(self._qt_main_widget)
 
     def get_main_widget(self):
         return self._qt_main_widget
@@ -395,7 +395,7 @@ class PrxLayerWidget(gui_prx_abstracts.AbsPrxWidget):
         qt_widget_0.setMinimumHeight(24)
         qt_layout_0.addWidget(qt_widget_0)
         #
-        qt_top_layout_1 = _gui_qt_wgt_utility.QtHBoxLayout(qt_widget_0)
+        qt_top_layout_1 = _gui_qt_wgt_utility.QtHLayout(qt_widget_0)
         qt_top_layout_1.setContentsMargins(0, 0, 0, 0)
         qt_top_layout_1.setSpacing(0)
         self._qt_label_0 = _gui_qt_wgt_utility.QtTextItem()
@@ -483,10 +483,10 @@ class PrxTextBrowser(gui_prx_abstracts.AbsPrxWidget):
     def _gui_build_(self):
         qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self.widget)
         qt_layout_0.setContentsMargins(*[0]*4)
-        widget = _gui_qt_wgt_entry.QtValueEntryAsContentEdit()
-        widget._set_value_entry_enable_(False)
+        widget = _gui_qt_wgt_input.QtInputAsContent()
+        widget._set_entry_enable_(False)
         qt_layout_0.addWidget(widget)
-        self._qt_text_browser_0 = widget._value_entry
+        self._qt_entry_widget = widget._entry_widget
 
     def set_markdown_file_open(self, file_path):
         if file_path:
@@ -496,60 +496,63 @@ class PrxTextBrowser(gui_prx_abstracts.AbsPrxWidget):
                 raw = f.read()
                 raw = raw.decode('utf-8')
                 html = markdown.markdown(raw)
-                self._qt_text_browser_0.setHtml(html)
+                self._qt_entry_widget.setHtml(html)
 
     def append(self, text):
         if isinstance(text, six.string_types):
-            self._qt_text_browser_0.append(
+            self._qt_entry_widget.append(
                 text
             )
 
-    def set_result_add(self, text):
-        self._qt_text_browser_0.append(
+    def add_result(self, text):
+        self._qt_entry_widget.append(
             gui_core.GuiXml.get_text(text)
         )
 
-    def set_error_add(self, text):
-        self._qt_text_browser_0.append(
+    def add_error(self, text):
+        self._qt_entry_widget.append(
             gui_core.GuiXml.get_text(text, font_color=gui_configure.XmlColor.Red)
         )
 
-    def set_warning_add(self, text):
-        self._qt_text_browser_0.append(
+    def add_warning(self, text):
+        self._qt_entry_widget.append(
             gui_core.GuiXml.get_text(text, font_color=gui_configure.XmlColor.Yellow)
         )
 
     def trace_log(self, text):
-        self._qt_text_browser_0._add_value_(text)
+        self._qt_entry_widget._add_value_(text)
 
     def trace_log_use_thread(self, text):
-        self._qt_text_browser_0._add_value_with_thread_(text)
+        self._qt_entry_widget._add_value_with_thread_(text)
 
     def set_content_with_thread(self, text):
-        self._qt_text_browser_0._set_value_with_thread_(text)
+        self._qt_entry_widget._set_value_with_thread_(text)
 
     def set_content(self, text, as_html=False):
         if as_html is True:
-            self._qt_text_browser_0.setHtml(
+            self._qt_entry_widget.setHtml(
                 text
             )
         else:
-            self._qt_text_browser_0.setText(
+            self._qt_entry_widget.setText(
                 text
             )
 
     def set_font_size(self, size):
         font = self.widget.font()
         font.setPointSize(size)
-        self._qt_text_browser_0.setFont(font)
+        self._qt_entry_widget.setFont(font)
 
     def get_content(self, as_html=False):
         if as_html is True:
-            return self._qt_text_browser_0.toHtml()
-        return self._qt_text_browser_0.toPlainText()
+            return self._qt_entry_widget.toHtml()
+        return self._qt_entry_widget.toPlainText()
 
     def set_status(self, status):
         self.widget._set_status_(status)
+
+    def set_focus_enable(self, boolean):
+        self._qt_entry_widget._set_entry_focus_enable_(boolean)
 
 
 class PrxMenu(gui_prx_abstracts.AbsPrxWidget):
@@ -780,7 +783,7 @@ class PrxEnableItem(gui_prx_abstracts.AbsPrxWidget):
 
 
 class PrxFilterBar(gui_prx_abstracts.AbsPrxWidget):
-    QT_WIDGET_CLS = _gui_qt_wgt_filter.QtFilterBar
+    QT_WIDGET_CLS = _gui_qt_wgt_input_for_filter.QtInputAsFilter
 
     def __init__(self, *args, **kwargs):
         super(PrxFilterBar, self).__init__(*args, **kwargs)
@@ -789,7 +792,7 @@ class PrxFilterBar(gui_prx_abstracts.AbsPrxWidget):
         self._qt_widget._set_filter_tip_(text)
 
     def get_enter_widget(self):
-        return self._qt_widget._get_value_entry_()
+        return self._qt_widget._get_entry_widget_()
 
     def set_filter_connect_to(self, proxy):
         proxy._set_filter_bar_(self)
@@ -798,7 +801,7 @@ class PrxFilterBar(gui_prx_abstracts.AbsPrxWidget):
         return self.get_enter_widget()._get_value_()
 
     def get_keywords(self):
-        return self._qt_widget._get_all_filter_keyword_texts_()
+        return self._qt_widget._get_all_keywords_()
 
     def get_is_match_case(self):
         return self.widget._get_is_match_case_()
@@ -822,13 +825,13 @@ class PrxFilterBar(gui_prx_abstracts.AbsPrxWidget):
         self.widget._set_entry_focus_(boolean)
 
     def set_history_key(self, key):
-        self._qt_widget._set_history_extra_key_(key)
+        self._qt_widget._set_history_key_(key)
 
     def set_history_filter_fnc(self, fnc):
         pass
 
     def set_completion_gain_fnc(self, fnc):
-        self._qt_widget._set_popup_completion_gain_fnc_(fnc)
+        self._qt_widget._set_input_completion_buffer_fnc_(fnc)
 
 
 class PrxButtonGroup(gui_prx_abstracts.AbsPrxWidget):

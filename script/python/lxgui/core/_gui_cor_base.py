@@ -381,6 +381,33 @@ class GuiDialog(object):
         return w
 
 
+class GuiMonitorForDeadline(object):
+    @classmethod
+    def set_create(cls, label, job_id, parent=None):
+        import lxgui.proxy.widgets as prx_widgets
+
+        import lxdeadline.core as ddl_core
+
+        w = prx_widgets.PrxMonitorWindow(parent=parent)
+        w.set_window_title(
+            '{}({})'.format(
+                label, job_id
+            )
+        )
+        button = w.get_status_button()
+        j_m = ddl_core.DdlJobMonitor(job_id)
+        button.set_statuses(j_m.get_task_statuses())
+        button.set_initialization(j_m.get_task_count())
+        j_m.logging.connect_to(w.set_logging)
+        j_m.task_status_changed_at.connect_to(w.set_status_at)
+        j_m.task_finished_at.connect_to(w.set_finished_at)
+        j_m.set_start()
+
+        w.connect_window_close_to(j_m.set_stop)
+
+        w.set_window_show(size=(480, 240))
+
+
 class GuiDpiScale(object):
     @classmethod
     def get(cls, *args):

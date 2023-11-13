@@ -8,6 +8,11 @@ import lxbasic.core as bsc_core
 import lxgui.configure as gui_configure
 
 
+class QtActionSignals(QtCore.QObject):
+    dict_accepted = qt_signal(dict)
+    str_accepted = qt_signal(str)
+
+
 class QtPrintSignals(QtCore.QObject):
     added = qt_signal(str)
     overed = qt_signal(str)
@@ -111,11 +116,14 @@ class QtBuildThread(QtCore.QThread):
         self.status_changed.emit(status)
 
     def set_quit(self):
-        self.set_kill()
-        #
-        self.quit()
-        self.wait()
-        self.deleteLater()
+        if self.isFinished() is False:
+            self.set_kill()
+            #
+            self.quit()
+            self.wait()
+            self.deleteLater()
+            return True
+        return False
 
     def run(self):
         if self._status == self.Status.Waiting:
@@ -140,6 +148,27 @@ class QtBuildThread(QtCore.QThread):
                 self.run_finished.emit()
                 self.finish_accepted.emit(self)
                 self.set_status(self.Status.Finished)
+
+
+class QtBuildThreadExtra(QtBuildThread):
+    MUTEX = QtCore.QMutex()
+    MAXIMUM = 1
+    COUNT = 0
+
+    def __init__(self, *args, **kwargs):
+        super(QtBuildThreadExtra, self).__init__(*args, **kwargs)
+
+    def run(self):
+        QtBuildThreadExtra.MUTEX.lock()
+        QtBuildThreadExtra.COUNT += 1
+        super(QtBuildThreadExtra, self).run()
+        QtBuildThreadExtra.COUNT -= 1
+        QtBuildThreadExtra.MUTEX.unlock()
+
+    def set_quit(self):
+        if super(QtBuildThreadExtra, self).set_quit() is True:
+            QtBuildThreadExtra.COUNT -= 1
+        QtBuildThreadExtra.MUTEX.unlock()
 
 
 class QtBuildThreadStack(QtCore.QObject):

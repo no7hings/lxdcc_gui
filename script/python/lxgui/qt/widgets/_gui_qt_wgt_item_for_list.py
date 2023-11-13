@@ -3,37 +3,37 @@ from lxgui.qt.core import *
 
 from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_drag
 
-import lxgui.qt.abstracts as gui_qt_abstract
+import lxgui.qt.abstracts as gui_qt_abstracts
 
 
 class QtListItemWidget(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtWidgetBaseDef,
-    gui_qt_abstract.AbsQtFrameBaseDef,
-    gui_qt_abstract.AbsQtTypeDef,
-    gui_qt_abstract.AbsQtIndexBaseDef,
-    gui_qt_abstract.AbsQtImageBaseDef,
-    gui_qt_abstract.AbsQtMovieBaseDef,
+    gui_qt_abstracts.AbsQtWidgetBaseDef,
+    gui_qt_abstracts.AbsQtFrameBaseDef,
+    gui_qt_abstracts.AbsQtTypeDef,
+    gui_qt_abstracts.AbsQtIndexBaseDef,
+    gui_qt_abstracts.AbsQtImageBaseDef,
+    gui_qt_abstracts.AbsQtMovieBaseDef,
     #
-    gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstracts.AbsQtMenuBaseDef,
     #
-    gui_qt_abstract.AbsQtIconBaseDef,
-    gui_qt_abstract.AbsQtIconsBaseDef,
-    gui_qt_abstract.AbsQtNamesBaseDef,
+    gui_qt_abstracts.AbsQtIconBaseDef,
+    gui_qt_abstracts.AbsQtIconsBaseDef,
+    gui_qt_abstracts.AbsQtNamesBaseDef,
     #
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForHoverDef,
-    gui_qt_abstract.AbsQtActionForCheckDef,
-    gui_qt_abstract.AbsQtActionForPressDef,
-    gui_qt_abstract.AbsQtPressSelectExtraDef,
-    gui_qt_abstract.AbsQtActionForDragDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForHoverDef,
+    gui_qt_abstracts.AbsQtActionForCheckDef,
+    gui_qt_abstracts.AbsQtActionForPressDef,
+    gui_qt_abstracts.AbsQtPressSelectExtraDef,
+    gui_qt_abstracts.AbsQtActionForDragDef,
     #
-    gui_qt_abstract.AbsQtStateDef,
-    gui_qt_abstract.AbsQtStatusBaseDef,
+    gui_qt_abstracts.AbsQtStateDef,
+    gui_qt_abstracts.AbsQtStatusBaseDef,
     #
-    gui_qt_abstract.AbsQtItemMovieActionDef,
+    gui_qt_abstracts.AbsQtItemMovieActionDef,
     #
-    gui_qt_abstract.AbsQtItemWidgetExtra,
+    gui_qt_abstracts.AbsQtItemWidgetExtra,
 ):
     viewport_show = qt_signal()
     viewport_hide = qt_signal()
@@ -184,8 +184,8 @@ class QtListItemWidget(
                     )
             #
             if self._icon_is_enable is True:
-                if self._icon_name_text:
-                    self._icon_name_draw_rect.setRect(
+                if self._icon_text:
+                    self._icon_text_draw_rect.setRect(
                         x+(w-h), y, h, h
                     )
 
@@ -327,6 +327,7 @@ class QtListItemWidget(
         self._init_icons_base_def_(self)
         self._init_image_base_def_()
         self._init_names_base_def_(self)
+        self._set_name_text_option_to_align_center_top_()
         self._init_menu_base_def_(self)
         self._init_movie_base_def_()
         #
@@ -488,7 +489,7 @@ class QtListItemWidget(
         item = self._get_item_()
         if item._item_show_status in {item.ShowStatus.Loading, item.ShowStatus.Waiting}:
             painter._draw_loading_by_rect_(
-                self._frame_draw_rect,
+                self._rect_frame_draw,
                 item._item_show_loading_index
             )
         else:
@@ -567,18 +568,17 @@ class QtListItemWidget(
                                 )
             # icon
             if self._icon_is_enable is True:
-                if self._icon_name_text:
+                if self._icon_text:
                     painter._draw_frame_color_with_name_text_by_rect_(
                         rect=self._name_frame_draw_rect,
-                        text=self._icon_name_text,
+                        text=self._icon_text,
                         offset=offset,
                     )
             # name
             if self._get_has_names_() is True:
                 name_indices = self._get_name_indices_()
                 if name_indices:
-                    text_option = QtCore.Qt.AlignLeft|QtCore.Qt.AlignTop
-                    #
+                    text_option = self._name_text_option
                     name_text_dict = self._get_name_text_dict_()
                     if name_text_dict:
                         painter.setFont(QtFonts.Default)
@@ -664,7 +664,7 @@ class QtListItemWidget(
             # index
             if self._index_draw_enable is True:
                 painter._draw_index_by_rect_(
-                    rect=self._frame_draw_rect,
+                    rect=self._rect_frame_draw,
                     text=self._index_text,
                     offset=offset,
                 )

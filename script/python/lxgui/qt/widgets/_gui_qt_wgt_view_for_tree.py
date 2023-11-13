@@ -1,15 +1,15 @@
 # coding=utf-8
 from lxgui.qt.core import *
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_entry_base
+from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_entry
 
-import lxgui.qt.abstracts as gui_qt_abstract
+import lxgui.qt.abstracts as gui_qt_abstracts
 
 import lxgui.core as gui_core
 
 
 class QtTreeWidget(
-    gui_qt_abstract.AbsQtTreeWidget
+    gui_qt_abstracts.AbsQtTreeWidget
 ):
     PEN_LINE = QtGui.QPen(QtBackgroundColors.Basic, gui_core.GuiDpiScale.get(1))
     PEN_BRANCH = QtGui.QPen(QtBackgroundColors.Button, gui_core.GuiDpiScale.get(1))
@@ -300,12 +300,12 @@ class QtTreeWidget(
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
                 parent = self.parent()
-                if isinstance(parent, _gui_qt_wgt_entry_base.QtEntryFrame):
+                if isinstance(parent, _gui_qt_wgt_entry.QtEntryFrame):
                     parent._set_focused_(True)
             elif event.type() == QtCore.QEvent.FocusOut:
                 self._is_focused = False
                 parent = self.parent()
-                if isinstance(parent, _gui_qt_wgt_entry_base.QtEntryFrame):
+                if isinstance(parent, _gui_qt_wgt_entry.QtEntryFrame):
                     parent._set_focused_(False)
             elif event.type() == QtCore.QEvent.Resize:
                 self._refresh_view_all_items_viewport_showable_()

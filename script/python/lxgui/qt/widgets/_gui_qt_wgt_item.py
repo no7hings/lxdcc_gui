@@ -3,18 +3,18 @@ from lxgui.qt.core import *
 
 from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_chart
 
-import lxgui.qt.abstracts as gui_qt_abstract
+import lxgui.qt.abstracts as gui_qt_abstracts
 
 
 class _QtStatusItem(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtFrameBaseDef,
-    gui_qt_abstract.AbsQtNameBaseDef,
-    gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstracts.AbsQtFrameBaseDef,
+    gui_qt_abstracts.AbsQtNameBaseDef,
+    gui_qt_abstracts.AbsQtIconBaseDef,
     #
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForHoverDef,
-    gui_qt_abstract.AbsQtActionForCheckDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForHoverDef,
+    gui_qt_abstracts.AbsQtActionForCheckDef,
 ):
     def __init__(self, *args, **kwargs):
         super(_QtStatusItem, self).__init__(*args, **kwargs)
@@ -97,13 +97,13 @@ class _QtStatusItem(
 
 class _QtHContractItem(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstracts.AbsQtIconBaseDef,
     #
-    gui_qt_abstract.AbsQtNameBaseDef,
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForHoverDef,
-    gui_qt_abstract.AbsQtActionForPressDef,
-    gui_qt_abstract.AbsQtActionForExpandDef,
+    gui_qt_abstracts.AbsQtNameBaseDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForHoverDef,
+    gui_qt_abstracts.AbsQtActionForPressDef,
+    gui_qt_abstracts.AbsQtActionForExpandDef,
 ):
     def __init__(self, *args, **kwargs):
         super(_QtHContractItem, self).__init__(*args, **kwargs)
@@ -254,7 +254,7 @@ class _QtHContractItem(
 
 class _QtWindowHead(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtFrameBaseDef,
+    gui_qt_abstracts.AbsQtFrameBaseDef,
 ):
     def _refresh_widget_draw_(self):
         self.update()
@@ -290,7 +290,7 @@ class _QtWindowHead(
         self._set_widget_geometries_update_()
         #
         painter._draw_frame_by_rect_(
-            self._frame_draw_rect,
+            self._rect_frame_draw,
             background_color=self._frame_background_color,
             border_color=self._frame_border_color
         )

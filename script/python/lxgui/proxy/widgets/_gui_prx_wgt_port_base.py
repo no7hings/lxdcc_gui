@@ -5,7 +5,7 @@ import lxgui.proxy.abstracts as gui_prx_abstracts
 
 
 class AttrConfig(object):
-    PRX_PORT_HEIGHT = 22
+    PRX_PORT_HEIGHT = 24
     PRX_PORT_HEIGHT_2 = 82
 
 

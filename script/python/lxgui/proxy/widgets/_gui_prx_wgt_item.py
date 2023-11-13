@@ -5,7 +5,7 @@ import lxgui.core as gui_core
 
 import lxgui.proxy.abstracts as gui_prx_abstracts
 
-from lxgui.qt.widgets import _gui_qt_wgt_guide, _gui_qt_wgt_item_for_list, _gui_qt_wgt_item_for_tree
+from lxgui.qt.widgets import _gui_qt_wgt_input_for_guide, _gui_qt_wgt_item_for_list, _gui_qt_wgt_item_for_tree
 
 import lxgui.qt.core as gui_qt_core
 
@@ -132,7 +132,7 @@ class PrxTreeItemCheckState(object):
             self.set_passed(column)
 
     def set_normal(self, column=0):
-        self.widget.setForeground(column, gui_qt_core.QtBrushes.TextNormal)
+        self.widget.setForeground(column, gui_qt_core.QtBrushes.Text)
         self._item_prx.set_gui_attribute(
             'state', 'normal'
         )
@@ -182,9 +182,10 @@ class PrxTreeItem(
         #
         self._loading_item_prx = None
 
-    @property
-    def item(self):
+    def get_item(self):
         return self._qt_widget
+
+    item = property(get_item)
 
     def set_type(self, text):
         self._qt_widget._set_type_text_(text)
@@ -312,6 +313,9 @@ class PrxTreeItem(
         self._qt_widget.setExpanded(True)
         if ancestors is True:
             [i.widget.setExpanded(True) for i in self.get_ancestors()]
+
+    def get_is_expanded(self):
+        return self._qt_widget.isExpanded()
 
     def set_selected(self, boolean):
         self._qt_widget._set_selected_(boolean)
@@ -501,20 +505,6 @@ class PrxTreeItem(
             user_data
         )
 
-    def _set_item_filter_occurrence_(self, boolean, column=0):
-        _ = self._qt_widget.data(column, gui_qt_core.QtCore.Qt.UserRole)
-        if isinstance(_, dict):
-            user_data = _
-        else:
-            user_data = {}
-        #
-        user_data['filter_occurrence'] = boolean
-        self._qt_widget.setData(
-            column, gui_qt_core.QtCore.Qt.UserRole,
-            user_data
-        )
-
-    #
     def set_visible_connect_to(self, key, prx_item_tgt):
         self.set_visible_src_key(key)
         self.set_visible_tgt_view(prx_item_tgt.get_view())
@@ -608,7 +598,7 @@ class PrxLabelTreeItem(PrxTreeItem):
 
     def set_normal_state(self):
         self.set_icon_by_file(gui_core.GuiIcon.get('tag'))
-        self.set_foreground_update(gui_qt_core.QtBrushes.TextNormal)
+        self.set_foreground_update(gui_qt_core.QtBrushes.Text)
 
     def set_error_state(self):
         self.set_icon_by_file(gui_core.GuiIcon.get('error'))
@@ -649,7 +639,7 @@ class PrxLoadingTreeItem(PrxTreeItem):
 class PrxObjTreeItem(PrxTreeItem):
     def __init__(self, *args, **kwargs):
         super(PrxObjTreeItem, self).__init__(*args, **kwargs)
-        self._qt_widget.setForeground(0, gui_qt_core.QtBrushes.TextNormal)
+        self._qt_widget.setForeground(0, gui_qt_core.QtBrushes.Text)
         # self.set_icon_by_file(gui_core.GuiIcon.get('tag'))
         self.set_normal_state()
 
@@ -664,7 +654,7 @@ class PrxObjTreeItem(PrxTreeItem):
         )
 
     def set_normal_state(self, column=0):
-        self._qt_widget.setForeground(column, gui_qt_core.QtBrushes.TextNormal)
+        self._qt_widget.setForeground(column, gui_qt_core.QtBrushes.Text)
         self.set_gui_attribute(
             'state', 'normal'
         )
@@ -798,6 +788,9 @@ class PrxListItemWidget(
 
     def get_names(self):
         return self._qt_widget._get_name_texts_()
+
+    def set_name_align_center_top(self):
+        self._qt_widget._set_name_text_option_to_align_center_top_()
 
     def set_name_frame_border_color(self, color):
         return self._qt_widget._set_name_frame_border_color_(color)
@@ -935,7 +928,7 @@ class PrxMediaItem(object):
 class PrxGuideBar(
     gui_prx_abstracts.AbsPrxWidget,
 ):
-    QT_WIDGET_CLS = _gui_qt_wgt_guide.QtGuideBar
+    QT_WIDGET_CLS = _gui_qt_wgt_input_for_guide.QtInputAsGuide
 
     def __init__(self, *args, **kwargs):
         super(PrxGuideBar, self).__init__(*args, **kwargs)
@@ -965,7 +958,7 @@ class PrxGuideBar(
 class PrxTagBar(
     gui_prx_abstracts.AbsPrxWidget,
 ):
-    QT_WIDGET_CLS = _gui_qt_wgt_guide.QtGuideBar
+    QT_WIDGET_CLS = _gui_qt_wgt_input_for_guide.QtInputAsGuide
 
     def __init__(self, *args, **kwargs):
         super(PrxTagBar, self).__init__(*args, **kwargs)

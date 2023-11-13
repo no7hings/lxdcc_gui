@@ -39,16 +39,16 @@ class PnlDccWorkspaceLoader(prx_widgets.PrxSessionToolWindow):
             )
             if self._rsv_task:
                 o = self._options_prx_node
-                o.get_port('area').connect_value_changed_to(
+                o.get_port('area').connect_input_changed_to(
                     self.refresh_auto_fnc
                 )
-                o.get_port('team.file').connect_refresh_action_to(
+                o.get_port('team.file').connect_refresh_action_for(
                     self.refresh_team_file_fnc
                 )
-                o.get_port('artist.name').connect_value_changed_to(
+                o.get_port('artist.name').connect_input_changed_to(
                     self.refresh_artist_file_fnc
                 )
-                o.get_port('artist.file').connect_refresh_action_to(
+                o.get_port('artist.file').connect_refresh_action_for(
                     self.refresh_artist_file_fnc
                 )
                 self.refresh_auto_fnc()
@@ -76,10 +76,10 @@ class PnlDccWorkspaceLoader(prx_widgets.PrxSessionToolWindow):
             keyword_0 = 'project-user-katana-scene-src-dir'
             keyword_1 = 'project-user-katana-scene-src-file'
             rsv_unit_0 = self._rsv_task.get_rsv_unit(
-                keyword=keyword_0, extend_variants=dict(artist=artist)
+                keyword=keyword_0, variants_extend=dict(artist=artist)
             )
             rsv_unit_1 = self._rsv_task.get_rsv_unit(
-                keyword=keyword_1, extend_variants=dict(artist=artist)
+                keyword=keyword_1, variants_extend=dict(artist=artist)
             )
             root_location = rsv_unit_0.get_result()
             if root_location:

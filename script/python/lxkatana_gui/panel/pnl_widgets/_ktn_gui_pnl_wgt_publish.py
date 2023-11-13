@@ -9,12 +9,14 @@ class ValidatorOpt(utl_gui_pnl_abstracts.AbsValidatorOpt):
     DCC_NODE_CLS = ktn_dcc_objects.Node
     DCC_SELECTION_CLS = ktn_dcc_objects.Selection
     DCC_PATHSEP = '/'
+
     def __init__(self, *args, **kwargs):
         super(ValidatorOpt, self).__init__(*args, **kwargs)
 
 
 class PnlAssetPublish(utl_gui_pnl_abstracts.AbsPnlAssetPublish):
     DCC_VALIDATOR_OPT_CLS = ValidatorOpt
+
     def __init__(self, session, *args, **kwargs):
         super(PnlAssetPublish, self).__init__(session, *args, **kwargs)
 

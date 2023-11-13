@@ -26,7 +26,7 @@ class GuiPrxScpForResolver(object):
         self._item_dict[path] = prx_item
         prx_item.set_gui_attribute('path', path)
 
-    def restore_all(self):
+    def restore(self):
         self._tree_view.set_clear()
         self._keys.clear()
 

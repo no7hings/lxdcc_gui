@@ -532,7 +532,7 @@ class AbsPnlAssetGeometryComparer(prx_widgets.PrxSessionWindow):
                 keyword=keyword
             )
             file_paths = file_rsv_unit.get_result(
-                version='all', extend_variants=dict(var='hi')
+                version='all', variants_extend=dict(var='hi')
             )
             self._options_prx_node.set(
                 'usd.target_file', file_paths

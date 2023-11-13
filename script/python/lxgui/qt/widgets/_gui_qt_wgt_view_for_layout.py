@@ -3,20 +3,20 @@ from lxgui.qt.core import *
 
 from lxgui.qt.widgets import _gui_qt_wgt_utility
 
-import lxgui.qt.abstracts as gui_qt_abstract
+import lxgui.qt.abstracts as gui_qt_abstracts
 
 import lxgui.qt.models as gui_qt_models
 
 
 class QtToolGridLayoutWidget(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtFrameBaseDef,
-    gui_qt_abstract.AbsQtPathBaseDef,
+    gui_qt_abstracts.AbsQtFrameBaseDef,
+    gui_qt_abstracts.AbsQtPathBaseDef,
     #
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForDropDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForDropDef,
 
-    gui_qt_abstract.AbsQtMenuBaseDef,
+    gui_qt_abstracts.AbsQtMenuBaseDef,
 ):
     QT_MENU_CLS = _gui_qt_wgt_utility.QtMenu
 
@@ -139,7 +139,7 @@ class QtToolGridLayoutWidget(
         frm_w, frm_h = w, vpt_h+m_t+m_b
         self.setMinimumHeight(frm_h)
 
-        self._frame_draw_rect.setRect(
+        self._rect_frame_draw.setRect(
             x+1, y+1, w-2, frm_h-2
         )
 
@@ -223,7 +223,7 @@ class QtToolGridLayoutWidget(
         painter = QtPainter(self)
         if self._frame_draw_is_enable is True:
             painter._draw_frame_by_rect_(
-                rect=self._frame_draw_rect,
+                rect=self._rect_frame_draw,
                 border_color=QtBorderColors.Basic,
                 background_color=QtBackgroundColors.Dark,
                 border_radius=4
@@ -366,8 +366,8 @@ class QtToolGridLayoutWidget(
 class QtToolGroupVLayoutWidget(
     QtWidgets.QWidget,
 
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForDropDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForDropDef,
 ):
     LAYOUT_MODEL_CLS = gui_qt_models.GuiVLayout
 

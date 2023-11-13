@@ -1,19 +1,19 @@
 # coding=utf-8
 from lxgui.qt.core import *
 
-import lxgui.qt.abstracts as gui_qt_abstract
+import lxgui.qt.abstracts as gui_qt_abstracts
 
 
 class AbsQtHead(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtFrameBaseDef,
-    gui_qt_abstract.AbsQtNameBaseDef,
-    gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstracts.AbsQtFrameBaseDef,
+    gui_qt_abstracts.AbsQtNameBaseDef,
+    gui_qt_abstracts.AbsQtIconBaseDef,
     #
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForHoverDef,
-    gui_qt_abstract.AbsQtActionForPressDef,
-    gui_qt_abstract.AbsQtActionForExpandDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForHoverDef,
+    gui_qt_abstracts.AbsQtActionForPressDef,
+    gui_qt_abstracts.AbsQtActionForExpandDef,
 ):
     def __init__(self, *args, **kwargs):
         super(AbsQtHead, self).__init__(*args, **kwargs)
@@ -139,11 +139,11 @@ class AbsQtHead(
         #
         offset = self._get_action_offset_()
 
-        bdr_color = QtColors.HeaderBorderColor
-        bkg_color = QtColors.HeaderBackgroundColor
+        bdr_color = QtColors.HeadBorder
+        bkg_color = QtColors.HeadBackground
 
         painter._draw_frame_by_rect_(
-            self._frame_draw_rect,
+            self._rect_frame_draw,
             border_color=bdr_color,
             background_color=bkg_color,
             # border_radius=1,
@@ -151,10 +151,10 @@ class AbsQtHead(
         )
         # name-icon
         if self._icon_name_is_enable is True:
-            if self._icon_name_text is not None:
+            if self._icon_text is not None:
                 painter._draw_frame_color_with_name_text_by_rect_(
-                    rect=self._frame_draw_rect,
-                    text=self._icon_name_text,
+                    rect=self._rect_frame_draw,
+                    text=self._icon_text,
                     offset=offset,
                 )
         # file-icon
@@ -166,7 +166,7 @@ class AbsQtHead(
         )
         # text
         if self._name_text is not None:
-            color = [QtColors.HeadTextNormal, QtColors.HeadTextHover][self._is_hovered]
+            color = [QtColors.HeadText, QtColors.HeadTextHover][self._is_hovered]
             painter._draw_text_by_rect_(
                 self._name_draw_rect,
                 self._name_text,
@@ -266,7 +266,7 @@ class QtHeadAsLine(AbsQtHead):
         #
         offset = self._get_action_offset_()
 
-        bkg_color = QtColors.HeaderBackgroundColor
+        bkg_color = QtColors.HeadBackground
 
         painter._draw_line_by_points_(
             point_0=self._line_draw_points[0], point_1=self._line_draw_points[1],
@@ -275,10 +275,10 @@ class QtHeadAsLine(AbsQtHead):
         )
         # name-icon
         if self._icon_name_is_enable is True:
-            if self._icon_name_text is not None:
+            if self._icon_text is not None:
                 painter._draw_frame_color_with_name_text_by_rect_(
-                    rect=self._frame_draw_rect,
-                    text=self._icon_name_text,
+                    rect=self._rect_frame_draw,
+                    text=self._icon_text,
                     offset=offset,
                 )
         # file-icon
@@ -290,7 +290,7 @@ class QtHeadAsLine(AbsQtHead):
         )
         # text
         if self._name_text is not None:
-            text_color = [QtColors.HeadTextNormal, QtColors.HeadTextHover][self._is_hovered]
+            text_color = [QtColors.HeadText, QtColors.HeadTextHover][self._is_hovered]
             painter._draw_text_by_rect_(
                 rect=self._name_draw_rect,
                 text=self._name_text,
@@ -303,14 +303,14 @@ class QtHeadAsLine(AbsQtHead):
 
 class AbsQtHead1(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtFrameBaseDef,
-    gui_qt_abstract.AbsQtNameBaseDef,
-    gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstracts.AbsQtFrameBaseDef,
+    gui_qt_abstracts.AbsQtNameBaseDef,
+    gui_qt_abstracts.AbsQtIconBaseDef,
     #
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForHoverDef,
-    gui_qt_abstract.AbsQtActionForPressDef,
-    gui_qt_abstract.AbsQtActionForExpandDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForHoverDef,
+    gui_qt_abstracts.AbsQtActionForPressDef,
+    gui_qt_abstracts.AbsQtActionForExpandDef,
 ):
     toggled = qt_signal(bool)
 
@@ -366,11 +366,11 @@ class AbsQtHead1(
 
         offset = self._get_action_offset_()
 
-        bdr_color = QtColors.HeaderBorderColor
-        bkg_color = QtColors.HeaderBackgroundColor
+        bdr_color = QtColors.HeadBorder
+        bkg_color = QtColors.HeadBackground
 
         painter._draw_frame_by_rect_(
-            rect=self._frame_draw_rect,
+            rect=self._rect_frame_draw,
             border_color=bdr_color,
             background_color=bkg_color,
             # border_radius=self._frame_border_radius,
@@ -468,13 +468,13 @@ class QtVExpandHead1(AbsQtHead1):
 
 class AbsQtHead2(
     QtWidgets.QWidget,
-    gui_qt_abstract.AbsQtNameBaseDef,
-    gui_qt_abstract.AbsQtIconBaseDef,
+    gui_qt_abstracts.AbsQtNameBaseDef,
+    gui_qt_abstracts.AbsQtIconBaseDef,
     #
-    gui_qt_abstract.AbsQtActionBaseDef,
-    gui_qt_abstract.AbsQtActionForHoverDef,
-    gui_qt_abstract.AbsQtActionForPressDef,
-    gui_qt_abstract.AbsQtActionForExpandDef,
+    gui_qt_abstracts.AbsQtActionBaseDef,
+    gui_qt_abstracts.AbsQtActionForHoverDef,
+    gui_qt_abstracts.AbsQtActionForPressDef,
+    gui_qt_abstracts.AbsQtActionForExpandDef,
 ):
     def __init__(self, *args, **kwargs):
         super(AbsQtHead2, self).__init__(*args, **kwargs)

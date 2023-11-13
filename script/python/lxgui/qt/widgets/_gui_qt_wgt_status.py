@@ -10,4 +10,4 @@ class QtStatusBar(
     def __init__(self, *args, **kwargs):
         super(QtStatusBar, self).__init__(*args, **kwargs)
 
-        self.setFixedHeight(gui_configure.Size.EntryDefaultHeight)
+        self.setFixedHeight(gui_configure.Size.InputHeight)
