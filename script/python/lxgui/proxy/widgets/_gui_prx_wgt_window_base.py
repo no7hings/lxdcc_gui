@@ -53,8 +53,13 @@ class PrxBaseWindow(
         #
         self.set_show_menu_raw(
             [
-                ('log', 'log', self.set_log_unit_show),
+                ('log', 'log', self.show_log_unit),
                 ('help', 'help', self.show_help)
+            ]
+        )
+        self.set_debugger_menu_raw(
+            [
+                ('log bar visible', 'box-check', (self._log_tool_bar.get_is_visible, self.swap_log_bar_visible)),
             ]
         )
 
@@ -63,9 +68,13 @@ class PrxBaseWindow(
         # menu bar
         self._qt_menu_bar_0 = _gui_qt_wgt_utility.QtMenuBar()
         self._qt_widget.setMenuBar(self._qt_menu_bar_0)
-        self._menu_0 = _gui_prx_wdt_utility.PrxMenu(self._qt_menu_bar_0)
-        self._menu_0.set_name('show')
-        self._qt_menu_bar_0.addMenu(self._menu_0.widget)
+        self.__show_menu = _gui_prx_wdt_utility.PrxMenu(self._qt_menu_bar_0)
+        self.__show_menu.set_name('show')
+        self._qt_menu_bar_0.addMenu(self.__show_menu.widget)
+
+        self.__debug_menu = _gui_prx_wdt_utility.PrxMenu(self._qt_menu_bar_0)
+        self.__debug_menu.set_name('debugger')
+        self._qt_menu_bar_0.addMenu(self.__debug_menu.widget)
         #
         self._qt_central_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
         self._qt_widget.setCentralWidget(self._qt_central_widget)
@@ -202,7 +211,12 @@ class PrxBaseWindow(
 
     def set_show_menu_raw(self, menu_raw):
         if menu_raw:
-            menu = self._menu_0
+            menu = self.__show_menu
+            menu.set_setup(menu_raw)
+
+    def set_debugger_menu_raw(self, menu_raw):
+        if menu_raw:
+            menu = self.__debug_menu
             menu.set_setup(menu_raw)
 
     def set_option_unit_name(self, text):
@@ -255,11 +269,14 @@ class PrxBaseWindow(
         self._is_loading = False
 
     # log
-    def set_log_unit_show(self):
+    def show_log_unit(self):
         self.switch_current_layer_to('window_log_0')
         #
         context = self._log_text_browser_0.get_content()
         self._log_text_browser.set_content(context)
+
+    def swap_log_bar_visible(self):
+        self._log_tool_bar.swap_visible()
 
     def get_log_bar(self):
         return self._log_tool_bar

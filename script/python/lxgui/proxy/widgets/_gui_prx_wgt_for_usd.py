@@ -93,7 +93,7 @@ else:
             pass
 
         def get_usd_model(self):
-            return self._qt_widget._get_usd_model_()
+            pass
 
         def restore(self):
             pass

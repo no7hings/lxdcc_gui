@@ -18,6 +18,9 @@ class QtInputAsConstant(
 
     entry_value_changed = qt_signal()
 
+    def _pull_history_(self, value):
+        self._entry_widget._set_value_(value)
+
     def __init__(self, *args, **kwargs):
         super(QtInputAsConstant, self).__init__(*args, **kwargs)
         self.setSizePolicy(
@@ -42,6 +45,10 @@ class QtInputAsConstant(
         entry_layout.addWidget(self._entry_widget)
         self._entry_widget._set_value_type_(self._value_type)
         self._entry_widget._set_entry_frame_(self)
+
+        self.input_value_change_accepted = self._entry_widget.entry_value_change_accepted
+
+        self._entry_widget.entry_value_change_accepted.connect(self._push_history_)
 
     def _set_value_entry_validator_use_as_name_(self):
         self._entry_widget._set_validator_use_as_name_()
@@ -856,6 +863,8 @@ class QtInputAsPath(
 
         self._build_input_entry_()
 
+        self._index_thread_batch = 0
+
     def _build_input_entry_(self):
         self._entry_frame_widget = self
 
@@ -904,14 +913,18 @@ class QtInputAsPath(
         def cache_fnc_():
             _key = path.to_string()
             if _key in self.__buffer_cache:
-                return [self.__buffer_cache[_key]]
+                return [self._index_thread_batch, self.__buffer_cache[_key]]
 
             _data = self.__buffer_fnc(path)
             self.__buffer_cache[_key] = _data
-            return [_data]
+            return [self._index_thread_batch, _data]
 
-        def build_fnc_(data_):
-            _dict = data_[0]
+        def build_fnc_(*args):
+            _index_thread_batch_current, _dict = args[0]
+
+            if _index_thread_batch_current != self._index_thread_batch:
+                return
+
             if _dict:
                 self._entry_extend_widget._set_next_name_texts_(
                     _dict.get('names') or []
@@ -928,6 +941,8 @@ class QtInputAsPath(
 
         def post_fnc_():
             self._entry_extend_widget._do_next_wait_end_()
+
+        self._index_thread_batch += 1
 
         # thread only use when widget is show
         if self.isVisible() is True:

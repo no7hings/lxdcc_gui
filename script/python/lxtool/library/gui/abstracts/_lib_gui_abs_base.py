@@ -27,6 +27,8 @@ import lxgui.core as gui_core
 
 import lxgui.qt.core as gui_qt_core
 
+import lxgui.qt_for_usd.core as gui_qt_usd_core
+
 import lxgui.qt.widgets as qt_widgets
 
 import lxgui.proxy.abstracts as prx_abstracts
@@ -430,7 +432,7 @@ class _GuiTagOpt(
 
         t = gui_qt_core.QtBuildThread(self._window.widget)
         t.set_cache_fnc(cache_fnc_)
-        t.built.connect(build_fnc_)
+        t.cache_value_accepted.connect(build_fnc_)
         t.run_finished.connect(post_fnc_)
         #
         t.start()
@@ -866,7 +868,7 @@ class _GuiDirectoryOpt(
 
         t = gui_qt_core.QtBuildThread(self._window.widget)
         t.set_cache_fnc(cache_fnc_)
-        t.built.connect(build_fnc_)
+        t.cache_value_accepted.connect(build_fnc_)
         t.run_finished.connect(post_fnc_)
         #
         t.start()
@@ -1222,7 +1224,7 @@ class _GuiUsdStageViewOpt(_GuiBaseOpt):
         dtb_version_opt = dtb_objects.DtbVersionOpt(
             self._dtb_opt, dtb_version
         )
-        geometry_usd_file_path = dtb_version_opt.get_geometry_usd_file()
+        geometry_usd_file_path = dtb_version_opt.get_geometry_usd_file(force=True)
         look_preview_usd_file_path = dtb_version_opt.get_look_preview_usd_file()
         texture_preview_assigns = dtb_version_opt.get_texture_preview_assigns()
         self.__class__.CACHE[key] = geometry_usd_file_path, look_preview_usd_file_path, texture_preview_assigns
@@ -1610,7 +1612,7 @@ class AbsPnlResourceLibrary(prx_widgets.PrxSessionWindow):
 
     def __restore_thread_stack(self):
         if self.__running_threads_stacks:
-            [i.set_kill() for i in self.__running_threads_stacks]
+            [i.do_kill() for i in self.__running_threads_stacks]
         #
         self.__running_threads_stacks = []
 
@@ -1646,7 +1648,7 @@ class AbsPnlResourceLibrary(prx_widgets.PrxSessionWindow):
             )
 
         def quit_fnc_():
-            ts.set_quit()
+            ts.do_quit()
 
         #
         self.__start_timestamp = bsc_core.TimeMtd.get_timestamp()
@@ -1735,7 +1737,7 @@ class AbsPnlResourceLibrary(prx_widgets.PrxSessionWindow):
             pass
 
         def quit_fnc_():
-            ts.set_quit()
+            ts.do_quit()
 
         #
         dtb_types_map = bsc_core.RawListMtd.grid_to(
@@ -1785,7 +1787,7 @@ class AbsPnlResourceLibrary(prx_widgets.PrxSessionWindow):
             pass
 
         def quit_fnc_():
-            ts.set_quit()
+            ts.do_quit()
 
         if args[0] is None:
             return
@@ -1867,17 +1869,18 @@ class AbsPnlResourceLibrary(prx_widgets.PrxSessionWindow):
             self._resource_prx_view.refresh_viewport_showable_auto()
 
     def __gui_refresh_usd_stage(self, dtb_resource):
-        dtb_version = self._dtb_opt.get_entity(
-            entity_type=self._dtb_opt.EntityTypes.Version,
-            filters=[
-                ('path', 'is', self._dtb_opt.get_property(dtb_resource.path, 'version')),
-            ],
-        )
-        use_as_imperfection = self._dtb_superclass_name_cur in {'imperfection', 'texture'}
-        if self._qt_thread_enable is True:
-            self._gui_usd_stage_view_opt.refresh_textures_use_thread(dtb_resource, dtb_version, use_as_imperfection)
-        else:
-            self._gui_usd_stage_view_opt.refresh_textures(dtb_resource, dtb_version, use_as_imperfection)
+        if gui_qt_usd_core.QT_USD_FLAG is True:
+            dtb_version = self._dtb_opt.get_entity(
+                entity_type=self._dtb_opt.EntityTypes.Version,
+                filters=[
+                    ('path', 'is', self._dtb_opt.get_property(dtb_resource.path, 'version')),
+                ],
+            )
+            use_as_imperfection = self._dtb_superclass_name_cur in {'imperfection', 'texture'}
+            if self._qt_thread_enable is True:
+                self._gui_usd_stage_view_opt.refresh_textures_use_thread(dtb_resource, dtb_version, use_as_imperfection)
+            else:
+                self._gui_usd_stage_view_opt.refresh_textures(dtb_resource, dtb_version, use_as_imperfection)
 
     # build for storage
     def __do_gui_refresh_for_directories(self):

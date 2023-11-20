@@ -2046,7 +2046,8 @@ class AbsQtThreadBaseDef(object):
 
     def _thread_start_accept_fnc_(self, thread):
         if self.__thread_exists:
-            self.__thread_exists.set_quit()
+            if thread.isFinished() is False:
+                thread.do_quit()
             self.__thread_exists = None
 
         self.__thread_exists = thread
@@ -2054,7 +2055,8 @@ class AbsQtThreadBaseDef(object):
             self._start_thread_draw_()
 
     def _thread_finish_accept_fnc_(self, thread):
-        thread.set_quit()
+        if thread.isFinished() is False:
+            thread.do_quit()
         self.__thread_exists = None
         self._stop_thread_draw_()
 
@@ -2066,7 +2068,7 @@ class AbsQtThreadBaseDef(object):
         if self._qt_thread_enable is True:
             t = QtBuildThreadExtra(self._widget)
             t.set_cache_fnc(cache_fnc)
-            t.built.connect(build_fnc)
+            t.cache_value_accepted.connect(build_fnc)
             t.run_finished.connect(post_fnc)
             t.start_accepted.connect(self._thread_start_accept_fnc_)
             t.finish_accepted.connect(self._thread_finish_accept_fnc_)
@@ -3231,10 +3233,10 @@ class AbsQtShowBaseForItemDef(
 
     def _kill_item_all_show_runnables_(self):
         if self._item_show_runnable is not None:
-            self._item_show_runnable.set_kill()
+            self._item_show_runnable.do_kill()
         #
         if self._item_show_image_runnable is not None:
-            self._item_show_image_runnable.set_kill()
+            self._item_show_image_runnable.do_kill()
 
     def _set_item_viewport_visible_(self, boolean):
         if boolean is True:

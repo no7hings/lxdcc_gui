@@ -9,8 +9,9 @@ import importlib
 
 import lxlog.core as log_core
 
-__pyqt5 = pkgutil.find_loader('PyQt5')
+QT_LOAD_INDEX = None
 
+__pyqt5 = pkgutil.find_loader('PyQt5')
 if __pyqt5 is not None:
     QT_LOAD_INDEX = 0
     # noinspection PyUnresolvedReferences
@@ -28,17 +29,50 @@ else:
             'qt warp', 'load form "PySide2"'
         )
     else:
-        raise ImportError(
-            log_core.Log.trace_error(
-                'neither "PyQt5" or "PySide2" is found'
-            )
+        __qtside = pkgutil.find_loader('QtSide')
+        if __qtside is not None:
+            # noinspection PyUnresolvedReferences
+            import QtSide
+
+            # noinspection PyUnresolvedReferences
+            __pyqt5 = sys.modules.get('PyQt5')
+            if __pyqt5 is not None:
+                QT_LOAD_INDEX = 0
+                # noinspection PyUnresolvedReferences
+                from PyQt5 import QtGui, QtCore, QtWidgets, QtSvg, QtOpenGL
+
+                log_core.Log.trace_method_result(
+                    'qt warp', 'load form "PyQt5"'
+                )
+            else:
+                __pyside2 = sys.modules.get('PySide2')
+                if __pyside2 is not None:
+                    # noinspection PyUnresolvedReferences
+                    from PySide2 import QtGui, QtCore, QtWidgets, QtSvg, QtOpenGL
+
+                    log_core.Log.trace_method_result(
+                        'qt warp', 'load form "PySide2"'
+                    )
+
+if QT_LOAD_INDEX is None:
+    raise ImportError(
+        log_core.Log.trace_error(
+            'neither "PyQt5" or "PySide2" is found'
         )
+    )
+
+
+log_directory_path = log_core.LogBase.get_user_debug_directory(
+    tag='qt', create=True
+)
 
 cgitb.enable(
-    logdir=log_core.LogBase.get_user_debug_directory(
-        tag='qt', create=True
-    ),
+    logdir=log_directory_path,
     format='text'
+)
+
+log_core.Log.trace_method_result(
+    'qt warp', 'register log at: {}'.format(log_directory_path)
 )
 
 load_dic = {

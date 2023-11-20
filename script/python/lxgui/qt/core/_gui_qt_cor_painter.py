@@ -1590,6 +1590,7 @@ class QtPainter(QtGui.QPainter):
             )
         else:
             text_option__.setUseDesignMetrics(True)
+            text_option__.setWrapMode( text_option__.NoWrap)
             #
             text_ = self.fontMetrics().elidedText(
                 text,

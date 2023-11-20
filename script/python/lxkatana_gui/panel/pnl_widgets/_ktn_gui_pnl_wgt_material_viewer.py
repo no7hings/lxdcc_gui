@@ -1,5 +1,5 @@
 # coding:utf-8
-import lxutil_gui.panel.abstracts as utl_gui_pnl_abstracts
+import lxtool.viewer.gui.abstracts as vwr_gui_abstracts
 
 from lxbasic import bsc_core
 
@@ -14,7 +14,7 @@ import lxkatana.fnc.importers as ktn_fnc_importers
 from lxkatana import ktn_core
 
 
-class PnlMaterialViewer(utl_gui_pnl_abstracts.AbsPnlMaterialViewer):
+class PnlViewerForMaterialDcc(vwr_gui_abstracts.AbsPnlViewerForMaterialDcc):
     DCC_SCENE_CLS = ktn_dcc_objects.Scene
     DCC_FNC_LOOK_IMPORTER_CLS = ktn_fnc_importers.LookAssImporter
     DCC_SELECTION_CLS = ktn_dcc_objects.Selection
@@ -34,8 +34,9 @@ class PnlMaterialViewer(utl_gui_pnl_abstracts.AbsPnlMaterialViewer):
     DCC_MATERIAL_ROOT = '/root/materials'
     #
     DCC_MATERIALS_CLS = ktn_dcc_objects.Materials
+
     def __init__(self, *args, **kwargs):
-        super(PnlMaterialViewer, self).__init__(*args, **kwargs)
+        super(PnlViewerForMaterialDcc, self).__init__(*args, **kwargs)
 
     def post_setup_fnc(self):
         ns = ktn_scripts.ScpLookOutput.get_all_source_nodes()
@@ -89,41 +90,50 @@ class PnlMaterialViewer(utl_gui_pnl_abstracts.AbsPnlMaterialViewer):
             def select_material_fnc_():
                 if _material_obj is not None:
                     self.DCC_SELECTION_CLS([_material_obj.path]).select_all()
+
             #
             def select_nmc_material_fnc_():
                 if _material_obj is not None:
                     _nmc_material_obj = nmc_material_dict[_material_scene_graph_path]
                     self.DCC_SELECTION_CLS([_nmc_material_obj.path]).select_all()
+
             #
             def select_nme_material_fnc_():
                 if _material_obj is not None:
                     _nme_material_obj = nme_material_dict[_material_scene_graph_path]
                     self.DCC_SELECTION_CLS([_nme_material_obj.path]).select_all()
+
             #
             def get_nme_material_is_exists_fnc():
                 return _material_scene_graph_path in nme_material_dict
+
             #
             def expanded_shaders_fnc_():
                 if _material_obj is not None:
                     objs = _material_obj.get_all_source_objs()
                     [ktn_core.NGObjOpt(i.ktn_obj).set_shader_gui_expanded() for i in objs]
+
             #
             def collapsed_shaders_fnc_():
                 if _material_obj is not None:
                     objs = _material_obj.get_all_source_objs()
                     [ktn_core.NGObjOpt(i.ktn_obj).set_shader_gui_collapsed() for i in objs]
+
             #
             def colour_shaders_fnc_():
                 if _material_obj is not None:
                     _material_obj.set_source_objs_colour()
+
             #
             def layout_shaders_with_expanded_fnc_():
                 if _material_obj is not None:
                     ktn_core.NGObjOpt(_material_obj.ktn_obj).gui_layout_shader_graph(size=(320, 960), expanded=True)
+
             #
             def layout_shaders_with_collapsed_fnc_():
                 if _material_obj is not None:
                     ktn_core.NGObjOpt(_material_obj.ktn_obj).gui_layout_shader_graph(size=(320, 240), collapsed=True)
+
             #
             geometry_obj_.set_gui_attribute(
                 'gui_menu',
@@ -131,7 +141,8 @@ class PnlMaterialViewer(utl_gui_pnl_abstracts.AbsPnlMaterialViewer):
                     ('Select material', None, select_material_fnc_),
                     (),
                     ('Select material in "NetworkMaterialCreate"', None, select_nmc_material_fnc_),
-                    ('Select material in "NetworkMaterialEdit"', None, (get_nme_material_is_exists_fnc, select_nme_material_fnc_, False)),
+                    ('Select material in "NetworkMaterialEdit"', None,
+                     (get_nme_material_is_exists_fnc, select_nme_material_fnc_, False)),
                     (),
                     ('Expanded shader(s)', None, expanded_shaders_fnc_),
                     ('Collapsed shader(s)', None, collapsed_shaders_fnc_),
@@ -167,6 +178,7 @@ class PnlMaterialViewer(utl_gui_pnl_abstracts.AbsPnlMaterialViewer):
             _geometry_obj_gui.set_name(_sub_material_key, self.DESCRIPTION_INDEX)
             _material_color = bsc_core.RawTextOpt(_sub_material_key).to_rgb()
             _geometry_obj_gui.set_icon_by_color(_material_color, self.DESCRIPTION_INDEX)
+
         #
         self._prx_dcc_obj_tree_view_add_opt.restore_all()
         #

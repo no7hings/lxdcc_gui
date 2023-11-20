@@ -62,9 +62,9 @@ class GuiUtil(object):
 
     @classmethod
     def get_windows_user_directory(cls):
-        return '{}/{}/.lynxi'.format(
+        return '{}{}/.lynxi'.format(
             os.environ.get('HOMEDRIVE', 'c:'),
-            os.environ.get('HOMEPATH', 'c:/temp')
+            os.environ.get('HOMEPATH', '/temp')
         ).replace('\\', '/')
 
     @classmethod
@@ -323,7 +323,7 @@ class GuiDialog(object):
         show=True,
         use_exec=True,
         options_configure=None,
-        use_thread=True,
+        use_thread=False,
         parent=None,
         #
         use_window_modality=True

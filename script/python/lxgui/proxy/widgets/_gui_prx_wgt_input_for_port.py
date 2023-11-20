@@ -75,6 +75,9 @@ class _AbsPrxInput(gui_prx_abstracts.AbsPrxWidget):
     def connect_input_changed_to(self, fnc):
         pass
 
+    def connect_user_input_changed_to(self, fnc):
+        pass
+
     def connect_tab_pressed_to(self, fnc):
         pass
 
@@ -95,7 +98,10 @@ class _AbsPrxInput(gui_prx_abstracts.AbsPrxWidget):
         pass
 
     def set_history_key(self, key):
-        pass
+        self._qt_input_widget._set_history_key_(key)
+
+    def pull_history_latest(self):
+        return self._qt_input_widget._pull_history_latest_()
 
     def set_tool_tip(self, *args, **kwargs):
         if hasattr(self._qt_input_widget, '_set_tool_tip_'):
@@ -118,9 +124,6 @@ class PrxInputAsStorage(_AbsPrxInput):
         self.set_history_key(
             'gui.storage'
         )
-
-    def pull_history_latest(self):
-        self._qt_input_widget._pull_history_latest_()
 
     def set_ext_filter(self, text):
         self._qt_input_widget._set_ext_filter_(text)

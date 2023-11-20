@@ -252,6 +252,12 @@ class PrxHToolBar(gui_prx_abstracts.AbsPrxWidget):
         self._qt_head._set_expanded_(boolean)
         self._refresh_expand_()
 
+    def swap_expanded(self):
+        self.set_expanded(not self.get_is_expanded())
+
+    def swap_visible(self):
+        self.set_visible(not self.get_is_visible())
+
     def get_is_expanded(self):
         return self._qt_head._get_is_expanded_()
 

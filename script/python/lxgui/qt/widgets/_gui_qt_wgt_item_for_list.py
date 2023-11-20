@@ -407,41 +407,50 @@ class QtListItemWidget(
                     self._do_hover_move_(event)
             #
             elif event.type() == QtCore.QEvent.MouseButtonPress:
-                if event.button() == QtCore.Qt.RightButton:
-                    self._popup_menu_()
-                elif event.button() == QtCore.Qt.LeftButton:
+                if event.button() == QtCore.Qt.LeftButton:
+                    self._drag_point_offset = event.pos()
+                    # check
                     if self._get_action_check_is_valid_(event) is True:
-                        self._set_action_check_execute_(event)
-                        self.check_clicked.emit()
-                        self.check_toggled.emit(self._is_checked)
-                        self.user_check_toggled.emit(self._is_checked)
                         self._set_action_flag_(self.ActionFlag.CheckPress)
+                        event.accept()
+                        return True
+                    # press
                     else:
-                        self.press_clicked.emit()
                         self._set_pressed_(True)
                         self._set_action_flag_(self.ActionFlag.Press)
-                        self._drag_point_offset = event.pos()
+                elif event.button() == QtCore.Qt.RightButton:
+                    self._popup_menu_()
+                    event.accept()
+                    self._clear_all_action_flags_()
+                    return True
             #
             elif event.type() == QtCore.QEvent.MouseButtonDblClick:
                 if event.button() == QtCore.Qt.LeftButton:
+                    # check
                     if self._get_action_check_is_valid_(event) is True:
-                        self._set_action_check_execute_(event)
-                        self.check_clicked.emit()
-                        self.check_toggled.emit(self._is_checked)
-                        self.user_check_toggled.emit(self._is_checked)
                         self._set_action_flag_(self.ActionFlag.CheckDbClick)
+                        event.accept()
+                        return True
+                    # press
                     else:
-                        self.press_clicked.emit()
-                        self._set_pressed_(True)
                         self._set_action_flag_(self.ActionFlag.PressDbClick)
             #
             elif event.type() == QtCore.QEvent.MouseButtonRelease:
-                if self._get_action_flag_is_match_(self.ActionFlag.Press):
+                if self._get_action_flag_is_match_(self.ActionFlag.CheckPress):
+                    self._do_check_press_(event)
+                    self.check_clicked.emit()
+                    self.check_toggled.emit(self._is_checked)
+                    self.user_check_toggled.emit(self._is_checked)
+                    event.accept()
+                    self._clear_all_action_flags_()
+                    return True
+                elif self._get_action_flag_is_match_(self.ActionFlag.CheckDbClick):
+                    self.check_db_clicked.emit()
+                elif self._get_action_flag_is_match_(self.ActionFlag.Press):
                     self.press_clicked.emit()
                 elif self._get_action_flag_is_match_(self.ActionFlag.PressDbClick):
                     self.press_db_clicked.emit()
                 #
-                self._set_pressed_(False)
                 self._clear_all_action_flags_()
             #
             elif event.type() == QtCore.QEvent.ChildAdded:
@@ -463,6 +472,7 @@ class QtListItemWidget(
         bsc_w, bsc_h = w-2, h-2
         #
         offset = self._get_action_offset_()
+        is_actioned = self._get_is_actioned_()
         #
         base_rect = QtCore.QRect(bsc_x, bsc_y, bsc_w, bsc_h)
         shadow_rect = QtCore.QRect(bsc_x+2, bsc_y+2, bsc_w-2, bsc_h-2)
@@ -472,7 +482,7 @@ class QtListItemWidget(
             check_is_hovered=self._check_is_hovered,
             is_checked=self._is_checked,
             press_is_hovered=self._press_is_hovered,
-            is_pressed=self._is_pressed,
+            is_pressed=is_actioned,
             is_selected=self._is_selected,
         )
         if self._get_status_is_enable_() is True:

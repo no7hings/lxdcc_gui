@@ -177,6 +177,10 @@ class QtTextBubble(
 class QtInfoBubble(
     QtWidgets.QWidget,
 ):
+    class SizeMode(object):
+        Auto = 0x00
+        Fixed = 0x01
+
     def _refresh_widget_all_(self):
         self._refresh_widget_draw_geometry_()
         self._refresh_widget_draw_()
@@ -188,9 +192,7 @@ class QtInfoBubble(
         if self.__text:
             w, h = self.width(), self.height()
 
-            self.__size_text = h*self.__text_percent
-
-            self.setFont(GuiQtFont.generate_2(size=self.__size_text))
+            self.setFont(GuiQtFont.generate_2(size=h*self.__text_percent))
 
             w_t, h_t = self.fontMetrics().width(self.__text), self.fontMetrics().height()/2
             s_t = (h-h_t)/2
@@ -199,7 +201,8 @@ class QtInfoBubble(
 
             w_c = w_t+s_t*2
 
-            self.setFixedWidth(w_c)
+            if self.__size_mode == self.SizeMode.Auto:
+                self.setFixedWidth(w_c)
 
             x_0, y_0 = 0, 0
             w_0, h_0 = self.width(), self.height()
@@ -219,7 +222,8 @@ class QtInfoBubble(
         self.__margins = 2, 2, 2, 2
 
         self.__text_percent = 0.5
-        self.__size_text = 0
+
+        self.__size_mode = self.SizeMode.Auto
 
         self.__radius_border = 0
 
@@ -243,6 +247,9 @@ class QtInfoBubble(
                 font=self.font(),
                 text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
             )
+
+    def _set_size_mode_(self, mode):
+        self.__size_mode = mode
 
     def _set_text_(self, text):
         self.__text = text
@@ -585,12 +592,13 @@ class QtChoiceBubbles(
         x_d, y_d = rect_draw.x(), rect_draw.y()
         w_d, h_d = rect_draw.width(), rect_draw.height()
         # update font
-        painter._set_font_(GuiQtFont.generate_2(size=h*.85))
+        painter._set_font_(GuiQtFont.generate_2(size=h*.725))
 
         text_option_ = QtGui.QTextOption(
             QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter
         )
         text_option_.setUseDesignMetrics(True)
+        text_option_.setWrapMode(text_option_.NoWrap)
 
         text_ = painter.fontMetrics().elidedText(
             text,
@@ -679,13 +687,13 @@ class QtChoiceBubbles(
 
                 for i_seq, i_index in enumerate(self.__indices_matched):
                     i_text = self.__texts[i_index]
-                    i_t_w, i_t_h = GuiQtFont.compute_size_2(c_h*.85, i_text)
+                    i_t_w, i_t_h = GuiQtFont.compute_size_2(c_h*.725, i_text)
 
                     i_rect = self.__rects[i_index]
                     i_x, i_y = x_0+(w_0-i_t_w)/2, y_0+(h_0-v_h)/2+c_h*i_seq
 
                     if self._get_action_flag_is_match_(
-                            self.ActionFlag.HoverMove
+                        self.ActionFlag.HoverMove
                     ):
                         if i_seq == 0:
                             if x < h_y < i_y+c_h:
@@ -728,7 +736,6 @@ class QtChoiceBubbles(
         self.__rects = []
 
         self.__font_input = GuiQtFont.generate(size=12)
-        self.__font_default = GuiQtFont.generate()
         self.__font_current = GuiQtFont.generate(size=24)
 
         self.__y_hover = -1
@@ -837,7 +844,7 @@ class QtChoiceBubbles(
 
                     h_c = self.__h_text_maximum+4
                     t_w_c, t_h_c = GuiQtFont.compute_size_2(
-                        h_c*.85, text_cur
+                        h_c*.725, text_cur
                     )
 
                     p_c_c = rect_cur.center()

@@ -1,12 +1,12 @@
 # coding:utf-8
-import lxutil_gui.panel.abstracts as utl_gui_pnl_abstracts
+import lxtool.viewer.gui.abstracts as vwr_gui_abstracts
 
 import lxkatana.dcc.dcc_objects as ktn_dcc_objects
 
 import lxkatana.fnc.importers as ktn_fnc_importers
 
 
-class PnlShaderViewer(utl_gui_pnl_abstracts.AbsPnlShaderViewer):
+class PnlViewerForShaderDcc(vwr_gui_abstracts.AbsPnlViewerForShaderDcc):
     """
 # coding:utf-8
 import lxkatana
@@ -21,5 +21,6 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
     DCC_SHADER_CLS = ktn_dcc_objects.AndShader
     #
     DCC_SELECTION_CLS = ktn_dcc_objects.Selection
+
     def __init__(self, *args, **kwargs):
-        super(PnlShaderViewer, self).__init__(*args, **kwargs)
+        super(PnlViewerForShaderDcc, self).__init__(*args, **kwargs)

@@ -754,6 +754,10 @@ class QtTextItem(
         if self._name_text is not None:
             color, hover_color = self._get_text_rgba_args_by_validator_status_(self._status)
             text_color = [color, hover_color][self._is_hovered]
+
+            # painter.fillRect(
+            #     self._name_draw_rect, QtGui.QColor(255, 0, 0, 255)
+            # )
             #
             painter._draw_text_by_rect_(
                 rect=self._name_draw_rect,
@@ -1468,7 +1472,7 @@ class _QtHItem(
                     self._set_action_flag_(self.ActionFlag.AnyClick)
                     if self._get_action_check_is_valid_(event) is True:
                         self.check_clicked.emit()
-                        self._set_action_check_execute_(event)
+                        self._do_check_press_(event)
                     elif self._get_action_delete_is_valid_(event) is True:
                         self.delete_press_clicked.emit()
                     else:

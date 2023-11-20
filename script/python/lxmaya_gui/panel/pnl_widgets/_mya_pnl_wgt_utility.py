@@ -4,14 +4,12 @@ import maya.cmds as cmds
 
 from lxbasic import bsc_core
 
-from lxutil import utl_core
-
-from lxutil_gui.panel import utl_gui_pnl_abs_utility
+import lxtool.utility.gui.abstracts as utl_gui_abstracts
 
 import lxmaya.dcc.dcc_objects as mya_dcc_objects
 
 
-class PnlHashGeometry(utl_gui_pnl_abs_utility.AbsPnlHashGeometry):
+class PnlHashGeometry(utl_gui_abstracts.AbsPnlForHashGeometryDcc):
     def __init__(self, session, *args, **kwargs):
         super(PnlHashGeometry, self).__init__(session, *args, **kwargs)
 

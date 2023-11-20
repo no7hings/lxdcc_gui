@@ -37,7 +37,6 @@ class AbsPnlAssetLineup(prx_widgets.PrxSessionWindow):
     def set_all_setup(self):
         self._option_hook_configure = self._session.configure
         self._hook_gui_configure = self._session.configure.get_content('option.gui')
-        # self._hook_build_configure = self._option_hook_configure.get_content('build')
         self._hook_resolver_configure = self._session.configure.get_content('resolver')
         self._hook_build_configure = self._session.configure.get_content('build')
         self._set_tool_panel_setup_()

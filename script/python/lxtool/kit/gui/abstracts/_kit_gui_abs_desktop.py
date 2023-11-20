@@ -192,7 +192,7 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         self.__option_hook_dict = {}
 
     def set_all_setup(self):
-        menu = self.create_menu('debug')
+        menu = self.create_menu('extra')
         menu.set_menu_data(
             [
                 ('show environ', None, self._set_environ_show_),
@@ -322,7 +322,7 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         text_browser.set_font_size(12)
         #
         tool_bar = prx_widgets.PrxHToolBar()
-        s.add_widget(tool_bar.widget)
+        layer_widget.add_widget(tool_bar.widget)
         tool_bar.set_expanded(True)
         button = prx_widgets.PrxPressItem()
         tool_bar.add_widget(button)
@@ -349,7 +349,7 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         text_browser.set_font_size(12)
         #
         tool_bar = prx_widgets.PrxHToolBar()
-        s.add_widget(tool_bar.widget)
+        layer_widget.add_widget(tool_bar.widget)
         tool_bar.set_expanded(True)
         button = prx_widgets.PrxPressItem()
         tool_bar.add_widget(button)
@@ -376,7 +376,7 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         text_browser.set_font_size(12)
         #
         tool_bar = prx_widgets.PrxHToolBar()
-        s.add_widget(tool_bar.widget)
+        layer_widget.add_widget(tool_bar.widget)
         tool_bar.set_expanded(True)
         button = prx_widgets.PrxPressItem()
         tool_bar.add_widget(button)

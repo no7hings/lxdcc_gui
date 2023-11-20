@@ -1,16 +1,12 @@
 # coding:utf-8
-from lxbasic import bsc_core
-
-from lxmaya import ma_core
-
-import lxutil_gui.panel.abstracts as utl_gui_pnl_abstracts
+import lxtool.comparer.gui.abstracts as cpr_gui_abstracts
 
 import lxmaya.dcc.dcc_objects as mya_dcc_objects
 
 import lxmaya.fnc.comparers as mya_fnc_comparers
 
 
-class PnlAssetDccGeometryComparer(utl_gui_pnl_abstracts.AbsPnlAssetDccGeometryComparer):
+class PnlComparerForAssetGeometryDcc(cpr_gui_abstracts.AbsPnlComparerForAssetGeometryDcc):
     DCC_NODE_CLS = mya_dcc_objects.Node
     #
     FNC_GEOMETRY_COMPARER = mya_fnc_comparers.FncGeometryComparer
@@ -24,7 +20,7 @@ class PnlAssetDccGeometryComparer(utl_gui_pnl_abstracts.AbsPnlAssetDccGeometryCo
     #
     DCC_GEOMETRY_LOCATION = None
     def __init__(self, session, *args, **kwargs):
-        super(PnlAssetDccGeometryComparer, self).__init__(session, *args, **kwargs)
+        super(PnlComparerForAssetGeometryDcc, self).__init__(session, *args, **kwargs)
 
     def post_setup_fnc(self):
         scene_src_file_path = mya_dcc_objects.Scene.get_current_file_path()

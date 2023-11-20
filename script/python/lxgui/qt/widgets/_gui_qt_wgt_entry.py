@@ -71,6 +71,9 @@ class QtEntryAsConstant(
 
     def __execute_text_change_accepted_(self):
         self.user_entry_text_accepted.emit(self.text())
+        self.entry_value_change_accepted.emit(
+            self._get_value_()
+        )
 
     def _set_entry_tip_(self, text):
         self.setPlaceholderText(text)
@@ -337,6 +340,7 @@ class QtEntryAsConstant(
                 value = self._value_type(value)
             #
             if value != pre_value:
+                self.entry_value_change_accepted.emit(value)
                 self.setText(str(value))
                 # self._do_entry_change_()
         else:

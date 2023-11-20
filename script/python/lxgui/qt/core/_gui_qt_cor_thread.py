@@ -71,7 +71,7 @@ class QtMethodThread(QtCore.QThread):
             self.run_finished.emit()
             self.finish_accepted.emit(self)
 
-    def set_quit(self):
+    def do_quit(self):
         self.quit()
         self.wait()
         self.deleteLater()
@@ -84,7 +84,7 @@ class QtBuildThread(QtCore.QThread):
     cache_started = qt_signal()
     cache_finished = qt_signal()
     #
-    built = qt_signal(list)
+    cache_value_accepted = qt_signal(list)
     #
     start_accepted = qt_signal(QtCore.QObject)
     finish_accepted = qt_signal(QtCore.QObject)
@@ -105,25 +105,18 @@ class QtBuildThread(QtCore.QThread):
     def set_cache_fnc(self, method):
         self._cache_fnc = method
 
-    def set_mutex(self):
-        pass
-
-    def set_kill(self):
+    def do_kill(self):
         self._status = self.Status.Killed
 
     def set_status(self, status):
         self._status = status
         self.status_changed.emit(status)
 
-    def set_quit(self):
-        if self.isFinished() is False:
-            self.set_kill()
-            #
-            self.quit()
-            self.wait()
-            self.deleteLater()
-            return True
-        return False
+    def do_quit(self):
+        self.do_kill()
+        self.quit()
+        self.wait()
+        self.deleteLater()
 
     def run(self):
         if self._status == self.Status.Waiting:
@@ -137,12 +130,12 @@ class QtBuildThread(QtCore.QThread):
                 self.cache_finished.emit()
                 # ignore when status is killed or other (not running)
                 if self._status == self.Status.Running:
-                    self.built.emit(list(cache))
+                    self.cache_value_accepted.emit(list(cache))
             except Exception:
                 self.run_failed.emit()
                 self.set_status(self.Status.Failed)
                 print 'thread failed'
-                print bsc_core.ExceptionMtd.get_stack_()
+                bsc_core.ExceptionMtd.print_stack()
             #
             finally:
                 self.run_finished.emit()
@@ -165,9 +158,8 @@ class QtBuildThreadExtra(QtBuildThread):
         QtBuildThreadExtra.COUNT -= 1
         QtBuildThreadExtra.MUTEX.unlock()
 
-    def set_quit(self):
-        if super(QtBuildThreadExtra, self).set_quit() is True:
-            QtBuildThreadExtra.COUNT -= 1
+    def do_quit(self):
+        super(QtBuildThreadExtra, self).do_quit()
         QtBuildThreadExtra.MUTEX.unlock()
 
 
@@ -193,7 +185,7 @@ class QtBuildThreadStack(QtCore.QObject):
     def create_thread(self, cache_fnc, build_fnc, previous_fnc=None, post_fnc=None):
         thread = QtBuildThread(self._widget)
         thread.set_cache_fnc(cache_fnc)
-        thread.built.connect(build_fnc)
+        thread.cache_value_accepted.connect(build_fnc)
         thread.start_accepted.connect(self.start_accept_fnc)
         thread.finish_accepted.connect(self.finish_accept_fnc)
         self._results.append(0)
@@ -223,12 +215,12 @@ class QtBuildThreadStack(QtCore.QObject):
             if len(self._results) == sum(self._results):
                 self.run_finished.emit()
 
-    def set_kill(self):
-        [i.set_kill() for i in self._threads]
+    def do_kill(self):
+        [i.do_kill() for i in self._threads]
         # self._mutex.unlock()
 
-    def set_quit(self):
-        self.set_kill()
+    def do_quit(self):
+        self.do_kill()
         for seq, i in enumerate(self._threads):
             i.quit()
             i.wait()
@@ -257,7 +249,7 @@ class QtBuildRunnableSignals(QtCore.QObject):
     cache_started = qt_signal()
     cache_finished = qt_signal()
     #
-    built = qt_signal(list)
+    cache_value_accepted = qt_signal(list)
     #
     run_started = qt_signal()
     run_finished = qt_signal()
@@ -287,7 +279,7 @@ class QtBuildRunnable(QtCore.QRunnable):
         self._status = status
         self._build_signals.status_changed.emit(status)
 
-    def set_kill(self):
+    def do_kill(self):
         self.set_status(self.Status.Killed)
 
     def set_stop(self):
@@ -304,7 +296,7 @@ class QtBuildRunnable(QtCore.QRunnable):
                 self._build_signals.cache_finished.emit()
                 # ignore when status is killed or other (not running)
                 if self._status == self.Status.Running:
-                    self._build_signals.built.emit(list(cache))
+                    self._build_signals.cache_value_accepted.emit(list(cache))
             except Exception:
                 self._build_signals.run_failed.emit()
                 self.set_status(self.Status.Failed)
@@ -339,7 +331,7 @@ class QtBuildRunnableStack(QtCore.QObject):
     def create_thread(self, cache_fnc, build_fnc, post_fnc=None):
         runnable = QtBuildRunnable(self._pool)
         runnable.set_cache_fnc(cache_fnc)
-        runnable._build_signals.built.connect(build_fnc)
+        runnable._build_signals.cache_value_accepted.connect(build_fnc)
         if post_fnc is not None:
             runnable._build_signals.run_finished.connect(post_fnc)
         return runnable
@@ -359,8 +351,8 @@ class QtBuildRunnableStack(QtCore.QObject):
     def start_runnable(self, runnable):
         self._pool.start(runnable)
 
-    def set_kill(self):
-        [i.set_kill() for i in self._threads]
+    def do_kill(self):
+        [i.do_kill() for i in self._threads]
 
     def set_start(self):
         self.run_started.emit()

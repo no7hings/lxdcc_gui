@@ -51,9 +51,9 @@ class AbsGuiCmdBase(object):
             button.set_stopped()
             #
             for _i in self._ts:
-                _i.set_kill()
+                _i.do_kill()
             #
-            q_t.set_quit()
+            q_t.do_quit()
 
         contents = []
         if cmds:

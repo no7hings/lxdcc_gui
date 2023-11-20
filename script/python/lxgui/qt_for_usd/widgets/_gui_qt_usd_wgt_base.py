@@ -124,7 +124,7 @@ if QT_USD_FLAG is True:
                     bsc_core.Resource.get('asset/library/preview-light.usda')
                 )
             #
-            for i_usd_prim in usd_core.UsdStageOpt(self._usd_stage).get_all_mesh_prims():
+            for i_usd_prim in usd_core.UsdStageOpt(self._usd_stage).get_all_mesh_objs():
                 usd_core.UsdMaterialAssignOpt(
                     i_usd_prim
                 ).assign(
@@ -166,7 +166,7 @@ if QT_USD_FLAG is True:
                     bsc_core.Resource.get('asset/library/arnold-light.usda')
                 )
             #
-            for i_usd_prim in usd_core.UsdStageOpt(self._usd_stage).get_all_mesh_prims():
+            for i_usd_prim in usd_core.UsdStageOpt(self._usd_stage).get_all_mesh_objs():
                 usd_core.UsdMaterialAssignOpt(
                     i_usd_prim
                 ).assign(
@@ -240,7 +240,7 @@ if QT_USD_FLAG is True:
             # light_opt = usd_core.UsdLightOpt(light_prim)
             # light_opt.set_shadow_enable(True)
             #
-            for i_usd_prim in usd_core.UsdStageOpt(self._usd_stage).get_all_mesh_prims():
+            for i_usd_prim in usd_core.UsdStageOpt(self._usd_stage).get_all_mesh_objs():
                 i_material_prim = self._usd_stage.GetPrimAtPath('/mtl_preview')
                 if i_material_prim.IsValid() is True:
                     usd_core.UsdMaterialAssignOpt(
@@ -333,7 +333,7 @@ if QT_USD_FLAG is True:
             #     ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (-w-25, 25, 0, 1))
             # )
             #
-            for i_usd_prim in usd_core.UsdStageOpt(self._usd_stage).get_all_mesh_prims():
+            for i_usd_prim in usd_core.UsdStageOpt(self._usd_stage).get_all_mesh_objs():
                 usd_core.UsdMaterialAssignOpt(
                     i_usd_prim
                 ).assign(

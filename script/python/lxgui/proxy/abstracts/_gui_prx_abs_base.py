@@ -100,6 +100,9 @@ class AbsPrx(object):
     def set_visible(self, boolean, **kwargs):
         self.widget.setHidden(not boolean)
 
+    def get_is_visible(self):
+        return self.widget.isVisible()
+
     def set_actions_register(self, action_data):
         pass
 
@@ -761,7 +764,7 @@ class AbsGuiPrxTreeViewAsDirectoryOpt(AbsGuiPrxTreeViewOpt):
 
         t = gui_qt_core.QtBuildThread(self._prx_tree_view.get_widget())
         t.set_cache_fnc(cache_fnc_)
-        t.built.connect(build_fnc_)
+        t.cache_value_accepted.connect(build_fnc_)
         t.run_finished.connect(post_fnc_)
         #
         t.start()

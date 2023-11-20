@@ -87,8 +87,12 @@ class QtInputAsStorage(
 
     def _set_ext_filter_(self, text):
         self._ext_filter = text
-
         self._input_info_bubble._set_text_(self._ext_filter)
+        self._input_info_bubble.setToolTip(
+            GuiQtUtil.generate_tool_tip_css(
+                'ext filter', self._ext_filter
+            )
+        )
 
     def _get_ext_filter_(self):
         return self._ext_filter
@@ -246,6 +250,8 @@ class QtInputAsStorage(
         self._input_info_bubble = _gui_qt_wgt_bubble.QtInfoBubble()
         self._input_info_bubble.hide()
         entry_layout.addWidget(self._input_info_bubble)
+        self._input_info_bubble._set_size_mode_(self._input_info_bubble.SizeMode.Fixed)
+        self._input_info_bubble.setFixedWidth(64)
         #
         self._input_button_widget = _gui_qt_wgt_utility.QtLineWidget()
         self._input_button_widget._set_line_styles_(

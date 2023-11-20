@@ -5,14 +5,15 @@ import lxkatana.dcc.dcc_objects as ktn_dcc_objects
 
 import lxkatana.scripts as ktn_scripts
 
-import lxutil_gui.panel.abstracts as utl_gui_pnl_abstracts
+import lxtool.manager.gui.abstracts as mng_gui_abstracts
 
 
-class PnlAssetTextureManager(utl_gui_pnl_abstracts.AbsPnlAssetTextureManager):
+class PnlManagerForTextureSpaceDcc(mng_gui_abstracts.AbsPnlManagerForTextureSpaceDcc):
     DCC_SELECTION_CLS = ktn_dcc_objects.Selection
     DCC_NAMESPACE = 'katana'
+
     def __init__(self, session, *args, **kwargs):
-        super(PnlAssetTextureManager, self).__init__(session, *args, **kwargs)
+        super(PnlManagerForTextureSpaceDcc, self).__init__(session, *args, **kwargs)
 
     def _set_dcc_scene_update_(self):
         self._file_path = ktn_dcc_objects.Scene.get_current_file_path()
@@ -37,7 +38,7 @@ class PnlAssetTextureManager(utl_gui_pnl_abstracts.AbsPnlAssetTextureManager):
             )
 
 
-class PnlAssetDccTextureManager(utl_gui_pnl_abstracts.AbsPnlAssetDccTextureManager):
+class PnlManagerForAssetTextureDcc(mng_gui_abstracts.AbsPnlManagerForAssetTextureDcc):
     """
     # coding:utf-8
     import lxkatana
@@ -47,8 +48,9 @@ class PnlAssetDccTextureManager(utl_gui_pnl_abstracts.AbsPnlAssetDccTextureManag
     """
     DCC_SELECTION_CLS = ktn_dcc_objects.Selection
     DCC_NAMESPACE = 'maya'
+
     def __init__(self, *args, **kwargs):
-        super(PnlAssetDccTextureManager, self).__init__(*args, **kwargs)
+        super(PnlManagerForAssetTextureDcc, self).__init__(*args, **kwargs)
 
     def post_setup_fnc(self):
         ns = ktn_scripts.ScpLookOutput.get_look_output_node_opts()

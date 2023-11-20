@@ -71,8 +71,6 @@ class AbsPnlDccLauncher(prx_widgets.PrxSessionWindow):
                 ],
             )
 
-            print cmd
-
             bsc_core.ExcExtra.execute_shell_script_use_terminal(
                 '"{}"'.format(cmd), **dict(title=self.__get_application())
             )

@@ -13,12 +13,12 @@ from lxkatana import ktn_core
 
 import lxkatana.scripts as ktn_scripts
 
-import lxutil_gui.panel.abstracts as utl_gui_panel_abstracts
+import lxtool.submitter.gui.abstracts as smt_gui_abstracts
 
 import lxkatana.dcc.dcc_objects as ktn_dcc_objects
 
 
-class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
+class PnlRenderSubmitter(smt_gui_abstracts.AbsPnlSubmitterForAssetRenderDcc):
     """
     # coding:utf-8
     import lxkatana
@@ -27,8 +27,10 @@ class PnlRenderSubmitter(utl_gui_panel_abstracts.AbsPnlRenderSubmitter):
     import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-tool-panels/katana/asset-render-submitter")
     """
     DCC_NAMESPACE = 'katana'
+
     def __init__(self, *args, **kwargs):
         super(PnlRenderSubmitter, self).__init__(*args, **kwargs)
+
     @classmethod
     def _to_render_layer_(cls, opt_opt):
         parent_opt = opt_opt.get_parent_opt()

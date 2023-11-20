@@ -355,6 +355,7 @@ class AbsQtActionForPressDef(object):
 
 class AbsQtActionForCheckDef(object):
     check_clicked = qt_signal()
+    check_db_clicked = qt_signal()
     check_toggled = qt_signal(bool)
     user_check_clicked = qt_signal()
     user_check_toggled = qt_signal(bool)
@@ -475,7 +476,7 @@ class AbsQtActionForCheckDef(object):
     def _set_item_check_changed_connect_to_(self, fnc):
         self.check_clicked.connect(fnc)
 
-    def _set_action_check_execute_(self, event):
+    def _do_check_press_(self, event):
         self._execute_check_swap_()
 
     def _set_check_icon_file_paths_(self, file_path_0, file_path_1):

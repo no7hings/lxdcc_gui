@@ -19,6 +19,8 @@ import lxgui.core as gui_core
 
 import lxgui.qt.core as gui_qt_core
 
+import lxgui.qt_for_usd.core as gui_qt_usd_core
+
 import lxgui.qt.widgets as qt_widgets
 
 import lxgui.proxy.abstracts as prx_abstracts
@@ -171,7 +173,7 @@ class _GuiEntityOpt(
             )
 
         def quit_fnc_():
-            ts.set_quit()
+            ts.do_quit()
 
         #
         self.__resource_count = 0
@@ -311,7 +313,7 @@ class _GuiTagOpt(
 
         t = gui_qt_core.QtBuildThread(self._window.widget)
         t.set_cache_fnc(cache_fnc_)
-        t.built.connect(build_fnc_)
+        t.cache_value_accepted.connect(build_fnc_)
         t.run_finished.connect(post_fnc_)
         #
         t.start()
@@ -657,7 +659,7 @@ class _GuiFileOpt(
 
         t = gui_qt_core.QtBuildThread(self._prx_list_view.get_widget())
         t.set_cache_fnc(cache_fnc_)
-        t.built.connect(build_fnc_)
+        t.cache_value_accepted.connect(build_fnc_)
         t.run_finished.connect(post_fnc_)
         #
         t.start()
@@ -669,7 +671,8 @@ class _GuiUsdStageViewOpt(_GuiBaseOpt):
     def __init__(self, window, session, database_opt, usd_stage_view):
         super(_GuiUsdStageViewOpt, self).__init__(window, session, database_opt)
         self._usd_stage_view = usd_stage_view
-        self._usd_stage_view.get_usd_model().set_camera_light_enable(True)
+        if gui_qt_usd_core.QT_USD_FLAG is True:
+            self._usd_stage_view.get_usd_model().set_camera_light_enable(True)
         self._index_thread_batch = 1
 
     def gui_load_use_thread(self, rsv_task):
@@ -1060,7 +1063,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
 
     def __restore_thread_stack_(self):
         if self.__running_threads_stacks:
-            [i.set_kill() for i in self.__running_threads_stacks]
+            [i.do_kill() for i in self.__running_threads_stacks]
         #
         self.__running_threads_stacks = []
 
@@ -1072,14 +1075,14 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             self.set_filter_update()
 
         def quit_fnc_():
-            t.set_quit()
+            t.do_quit()
 
         #
         t = gui_qt_core.QtBuildThread(self.widget)
         t.set_cache_fnc(
             functools.partial(self.__gui_cache_fnc_for_tasks_by_resource_, rsv_resource)
         )
-        t.built.connect(self.__gui_build_fnc_for_tasks_)
+        t.cache_value_accepted.connect(self.__gui_build_fnc_for_tasks_)
         t.run_finished.connect(post_fnc_)
         #
         t.start()
@@ -1126,7 +1129,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             pass
 
         def quit_fnc_():
-            ts.set_quit()
+            ts.do_quit()
 
         rsv_entities_map = bsc_core.RawListMtd.grid_to(
             rsv_entities, self.THREAD_STEP
@@ -1175,7 +1178,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
             self.set_filter_update()
 
         def quit_fnc_():
-            ts.set_quit()
+            ts.do_quit()
 
         rsv_entities, thread_stack_index = args[0]
         rsv_entities_map = bsc_core.RawListMtd.grid_to(
@@ -1401,14 +1404,15 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         qt_view._refresh_viewport_showable_auto_()
 
     def __do_gui_refresh_for_usd_stage(self):
-        self._gui_usd_stage_view_opt.restore()
-        if (
-            self._main_h_s.get_is_contracted_at(2) is False
-            and self._right_v_s.get_is_contracted_at(1) is False
-        ):
-            rsv_task = self._gui_task_opt.get_current_obj()
-            if rsv_task is not None:
-                self.__gui_refresh_usd_stage(rsv_task)
+        if gui_qt_usd_core.QT_USD_FLAG is True:
+            self._gui_usd_stage_view_opt.restore()
+            if (
+                self._main_h_s.get_is_contracted_at(2) is False
+                and self._right_v_s.get_is_contracted_at(1) is False
+            ):
+                rsv_task = self._gui_task_opt.get_current_obj()
+                if rsv_task is not None:
+                    self.__gui_refresh_usd_stage(rsv_task)
 
     def __gui_refresh_usd_stage(self, rsv_task):
         if self._qt_thread_enable is True:

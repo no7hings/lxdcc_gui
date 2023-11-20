@@ -67,7 +67,7 @@ class AbsRenderSubmitterDef(object):
         self._variable_keys = []
 
 
-class AbsPnlRenderSubmitter(
+class AbsPnlSubmitterForRenderBase(
     prx_widgets.PrxBaseWindow,
     AbsRenderSubmitterDef,
 ):
@@ -75,7 +75,7 @@ class AbsPnlRenderSubmitter(
     ITEM_ICON_SIZE = 24, 24
 
     def __init__(self, hook_option=None, *args, **kwargs):
-        super(AbsPnlRenderSubmitter, self).__init__(*args, **kwargs)
+        super(AbsPnlSubmitterForRenderBase, self).__init__(*args, **kwargs)
         self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
         #
         if hook_option is not None:
@@ -220,7 +220,7 @@ class AbsPnlRenderSubmitter(
         return True
 
 
-class AbsPnlRenderSubmitterForAsset(AbsPnlRenderSubmitter):
+class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
     def __init__(self, hook_option=None, *args, **kwargs):
         super(AbsPnlRenderSubmitterForAsset, self).__init__(hook_option, *args, **kwargs)
 
@@ -389,7 +389,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlRenderSubmitter):
             t.set_cache_fnc(
                 cache_fnc_
             )
-            t.built.connect(build_fnc_)
+            t.cache_value_accepted.connect(build_fnc_)
             t.run_finished.connect(post_fnc_)
             #
             t.start()
@@ -412,7 +412,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlRenderSubmitter):
             t.set_cache_fnc(
                 cache_fnc_
             )
-            t.built.connect(build_fnc_)
+            t.cache_value_accepted.connect(build_fnc_)
             t.run_finished.connect(post_fnc_)
             #
             t.start()
@@ -640,7 +640,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlRenderSubmitter):
             t.set_cache_fnc(
                 cache_fnc_
             )
-            t.built.connect(build_fnc_)
+            t.cache_value_accepted.connect(build_fnc_)
             t.run_finished.connect(post_fnc_)
             #
             t.start()
@@ -667,7 +667,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlRenderSubmitter):
             t.set_cache_fnc(
                 cache_fnc_
             )
-            t.built.connect(build_fnc_)
+            t.cache_value_accepted.connect(build_fnc_)
             t.run_finished.connect(post_fnc_)
             #
             t.start()
@@ -730,7 +730,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlRenderSubmitter):
             t.set_cache_fnc(
                 cache_fnc_
             )
-            t.built.connect(build_fnc_)
+            t.cache_value_accepted.connect(build_fnc_)
             t.run_finished.connect(post_fnc_)
             #
             t.start()
@@ -1042,7 +1042,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlRenderSubmitter):
             )
 
 
-class AbsPnlRenderSubmitterForShot(AbsPnlRenderSubmitter):
+class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
     def __init__(self, hook_option=None, *args, **kwargs):
         super(AbsPnlRenderSubmitterForShot, self).__init__(hook_option, *args, **kwargs)
 
@@ -1344,7 +1344,7 @@ class AbsPnlRenderSubmitterForShot(AbsPnlRenderSubmitter):
             t.set_cache_fnc(
                 cache_fnc_
             )
-            t.built.connect(build_fnc_)
+            t.cache_value_accepted.connect(build_fnc_)
             t.run_finished.connect(post_fnc_)
             #
             t.start()
