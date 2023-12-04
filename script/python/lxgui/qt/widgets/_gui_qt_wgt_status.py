@@ -1,7 +1,7 @@
 # coding=utf-8
-from lxgui.qt.core import *
+from lxgui.qt.wrap import *
 
-import lxgui.configure as gui_configure
+import lxgui.core as gui_core
 
 
 class QtStatusBar(
@@ -10,4 +10,4 @@ class QtStatusBar(
     def __init__(self, *args, **kwargs):
         super(QtStatusBar, self).__init__(*args, **kwargs)
 
-        self.setFixedHeight(gui_configure.Size.InputHeight)
+        self.setFixedHeight(gui_core.GuiSize.InputHeight)

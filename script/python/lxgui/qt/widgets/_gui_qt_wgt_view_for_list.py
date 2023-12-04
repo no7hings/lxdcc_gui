@@ -1,9 +1,13 @@
 # coding=utf-8
-from lxgui.qt.core import *
+from lxgui.qt.wrap import *
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_entry
+import lxgui.qt.core as gui_qt_core
 
 import lxgui.qt.abstracts as gui_qt_abstracts
+
+from ..widgets import \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_entry
 
 
 class QtListWidget(
@@ -22,44 +26,42 @@ class QtListWidget(
     def __init__(self, *args, **kwargs):
         super(QtListWidget, self).__init__(*args, **kwargs)
         self._init_menu_base_def_(self)
-        qt_palette = GuiQtDcc.generate_qt_palette()
+        qt_palette = gui_qt_core.GuiQtDcc.generate_qt_palette()
         self.setPalette(qt_palette)
-        # self.setDragDropMode(self.DragOnly)
-        # self.setDragEnabled(False)
+
         self.setSelectionMode(self.SingleSelection)
-        #
+
         self.setResizeMode(self.Adjust)
-        # self.setItemDelegate(_gui_qt_wgt_utility.QtListWidgetStyledItemDelegate(self))
         self.setVerticalScrollMode(self.ScrollPerItem)
-        #
+
         self._item_frame_icon_width, self._item_frame_icon_height = 40, 128
         self._item_frame_image_width, self._item_frame_image_height = 128, 128
         self._item_frame_name_width, self._item_frame_name_height = 128, 40
-        #
+
         self._grid_size = 128, 128
-        #
+
         self._item_side = 4
         self._item_spacing = 2
-        #
+
         self._item_frame_size = 128, 128
         self._item_frame_size_basic = 128, 128
         self._item_frame_draw_enable = False
-        #
+
         self._item_icon_frame_size = 20, 20
         self._item_icon_size = 16, 16
         self._item_icon_frame_draw_enable = False
-        #
+
         self._item_name_frame_size = 16, 16
         self._item_name_size = 12, 12
         self._item_name_frame_draw_enable = False
         self._item_names_draw_range = None
-        #
+
         self._item_scale_percent = 1.0
-        #
+
         self._item_image_frame_draw_enable = False
-        #
+
         self._set_grid_mode_()
-        #
+
         self._action_control_flag = False
 
         self.item_checked.connect(
@@ -141,7 +143,7 @@ class QtListWidget(
                 self._do_wheel_(event)
                 return True
             elif event.type() == QtCore.QEvent.Resize:
-                self._refresh_size_()
+                # self._refresh_size_()
                 self._refresh_view_all_items_viewport_showable_()
             elif event.type() == QtCore.QEvent.FocusIn:
                 self._is_focused = True
@@ -168,13 +170,14 @@ class QtListWidget(
 
     def paintEvent(self, event):
         if not self.count():
-            painter = QtPainter(self.viewport())
+            painter = gui_qt_core.QtPainter(self.viewport())
             painter._draw_empty_image_by_rect_(
                 self.rect(),
                 self._empty_icon_name
             )
         # super(QtListWidget, self).paintEvent(event)
 
+    # noinspection PyUnusedLocal
     def _refresh_size_(self):
         if self._scroll_is_enable is False:
             w, h = self.viewport().width(), self.viewport().height()
@@ -183,6 +186,7 @@ class QtListWidget(
             # print h+h_add
             # self.adjustSize()
 
+    # noinspection PyUnusedLocal
     def _refresh_info_(self, *args, **kwargs):
         c = sum([self.item(i)._get_is_checked_() for i in range(self.count())])
         if c:
@@ -282,6 +286,7 @@ class QtListWidget(
     def _get_is_grid_mode_(self):
         return self.viewMode() == self.IconMode
 
+    # noinspection PyUnusedLocal
     def _add_item_widget_(self, item_widget, *args, **kwargs):
         view = self
         #

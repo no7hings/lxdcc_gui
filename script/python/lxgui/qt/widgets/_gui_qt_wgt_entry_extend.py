@@ -1,7 +1,13 @@
 # coding:utf-8
-from lxgui.qt.core import *
+from lxgui.qt.wrap import *
 
-from lxgui.qt.widgets import _gui_qt_wgt_entry, _gui_qt_wgt_bubble
+import lxcontent.core as ctt_core
+
+import lxgui.qt.core as gui_qt_core
+
+from ..widgets import \
+    _gui_qt_wgt_entry, \
+    _gui_qt_wgt_bubble
 
 
 # entry as path
@@ -56,7 +62,7 @@ class QtEntryExtendAsPath(QtWidgets.QWidget):
         self._entry_widget = _gui_qt_wgt_entry.QtEntryAsConstant()
         self.__lot.addWidget(self._entry_widget)
         self._entry_widget.setFocusPolicy(QtCore.Qt.ClickFocus)
-        self._entry_widget.setFont(GuiQtFont.generate_2(size=12))
+        self._entry_widget.setFont(gui_qt_core.GuiQtFont.generate_2(size=12))
         # reg = QtCore.QRegExp(r'^[a-zA-Z][a-zA-Z0-9_]+$')
         reg = QtCore.QRegExp(r'^[a-zA-Z0-9_]+$')
         validator = QtGui.QRegExpValidator(reg, self._entry_widget)
@@ -68,7 +74,7 @@ class QtEntryExtendAsPath(QtWidgets.QWidget):
         self.__next_name_texts = []
 
         self._entry_widget.setToolTip(
-            GuiQtUtil.generate_tool_tip_css(
+            gui_qt_core.GuiQtUtil.generate_tool_tip_css(
                 'constant entry',
                 [
                     '"LMB-click" to start entry',
@@ -149,7 +155,7 @@ class QtEntryExtendAsPath(QtWidgets.QWidget):
     def _get_matched_next_name_texts_(self, keyword):
         name_texts = self._get_next_name_texts_()
         if name_texts:
-            return bsc_core.PtnFnmatch.filter(
+            return ctt_core.ContentUtil.filter(
                 name_texts, '*{}*'.format(keyword)
             )
         return []

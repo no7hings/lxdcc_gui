@@ -7,7 +7,7 @@ import lxlog.core as log_core
 
 import lxbasic.core as bsc_core
 
-from lxusd import usd_core
+import lxusd.core as usd_core
 
 
 class GuiGLUsdData(object):

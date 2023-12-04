@@ -1,9 +1,16 @@
 # coding:utf-8
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_entry, _gui_qt_wgt_node_graph
+import lxgui.qt.core as gui_qt_core
+
+from lxgui.qt.widgets import \
+    _gui_qt_wgt_base, \
+    _gui_qt_wgt_entry, \
+    _gui_qt_wgt_node_graph
 
 import lxgui.proxy.abstracts as gui_prx_abstracts
 
-from lxgui.proxy.widgets import _gui_prx_wdt_utility, _gui_prx_wgt_contianer
+from lxgui.proxy.widgets import \
+    _gui_prx_wdt_utility, \
+    _gui_prx_wgt_contianer
 
 
 class PrxNGGraph(
@@ -14,7 +21,7 @@ class PrxNGGraph(
 
     def __init__(self, *args, **kwargs):
         super(PrxNGGraph, self).__init__(*args, **kwargs)
-        self._qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
+        self._qt_layout_0 = _gui_qt_wgt_base.QtVBoxLayout(self._qt_widget)
         self._qt_layout_0.setContentsMargins(2, 2, 2, 2)
         self._qt_layout_0.setSpacing(2)
         self._prx_top_tool_bar = _gui_prx_wgt_contianer.PrxHToolBar()
@@ -55,7 +62,7 @@ class PrxNGTree(
 
     def __init__(self, *args, **kwargs):
         super(PrxNGTree, self).__init__(*args, **kwargs)
-        self._qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
+        self._qt_layout_0 = _gui_qt_wgt_base.QtVBoxLayout(self._qt_widget)
         self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
         self._prx_top_tool_bar = _gui_prx_wgt_contianer.PrxHToolBar()
@@ -89,7 +96,7 @@ class PrxNGImageGraph(
 
     def __init__(self, *args, **kwargs):
         super(PrxNGImageGraph, self).__init__(*args, **kwargs)
-        self._qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
+        self._qt_layout_0 = _gui_qt_wgt_base.QtVBoxLayout(self._qt_widget)
         self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
         self._prx_top_tool_bar = _gui_prx_wgt_contianer.PrxHToolBar()

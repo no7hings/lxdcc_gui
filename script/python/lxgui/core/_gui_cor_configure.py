@@ -9,24 +9,24 @@ class Data(object):
     DATA_ROOT = '{}/.data'.format(ROOT)
 
 
-class Orientation(enum.IntEnum):
+class GuiOrientation(enum.IntEnum):
     Horizontal = 0
     Vertical = 1
 
 
-class Alignment(enum.IntEnum):
+class GuiAlignment(enum.IntEnum):
     Left = 0
     Right = 1
 
 
-class Direction(enum.IntEnum):
+class GuiDirection(enum.IntEnum):
     LeftToRight = 0
     RightToLeft = 1
     TopToBottom = 2
     BottomToTop = 3
 
 
-class ActionFlag(enum.IntEnum):
+class GuiActionFlag(enum.IntEnum):
     AnyClick = 0x00
     #
     Press = 0x01
@@ -91,13 +91,13 @@ class ActionFlag(enum.IntEnum):
     DragChildAddCancel = 0x99
 
 
-class DragFlag(enum.IntEnum):
+class GuiDragFlag(enum.IntEnum):
     Ignore = 0x00
     Copy = 0x01
     Move = 0x02
 
 
-class RectRegion(enum.IntEnum):
+class GuiRectRegion(enum.IntEnum):
     Unknown = 0
     Top = 1
     Bottom = 2
@@ -111,7 +111,7 @@ class RectRegion(enum.IntEnum):
     Outside = 10
 
 
-class AlignRegion(enum.IntEnum):
+class GuiAlignRegion(enum.IntEnum):
     Unknown = 0
     Top = 1
     Bottom = 2
@@ -124,22 +124,22 @@ class AlignRegion(enum.IntEnum):
     Center = 9
 
 
-class TagFilterMode(enum.IntEnum):
+class GuiTagFilterMode(enum.IntEnum):
     MatchAll = 0
     MatchOne = 1
 
 
-class SortMode(enum.IntEnum):
+class GuiSortMode(enum.IntEnum):
     Number = 0
     Name = 1
 
 
-class SortOrder(enum.IntEnum):
+class GuiSortOrder(enum.IntEnum):
     Ascend = 0
     Descend = 1
 
 
-class Size(object):
+class GuiSize(object):
     ItemDefaultHeight = 20
     BubbleHeightDefault = 16
     EntryBaseHeightDefault = 20
@@ -152,22 +152,12 @@ class Size(object):
     FontWeightDefault = 50
 
 
-class SectorChartMode(enum.IntEnum):
+class GuiSectorChartMode(enum.IntEnum):
     Completion = 0
     Error = 1
 
 
-class State(object):
-    NORMAL = 'normal'
-    ENABLE = 'enable'
-    DISABLE = 'disable'
-    WARNING = 'warning'
-    ERROR = 'error'
-    LOCKED = 'locked'
-    LOST = 'lost'
-
-
-class XmlColor(object):
+class GuiXmlColor(object):
     Red = 0x00
     Yellow = 0x01
     Orange = 0x02
@@ -204,7 +194,7 @@ class XmlColor(object):
     }
 
 
-class Rgba(object):
+class GuiRgba(object):
     # 63+48=111
     # 127+48=175
     Red = 255, 0, 63, 255
@@ -267,7 +257,7 @@ class Rgba(object):
     ]
 
 
-class Status(enum.IntEnum):
+class GuiStatus(enum.IntEnum):
     Unknown = 0
     Started = 1
     Running = 2
@@ -281,7 +271,7 @@ class Status(enum.IntEnum):
     Finished = 10
 
 
-class ShowStatus(enum.IntEnum):
+class GuiShowStatus(enum.IntEnum):
     Unknown = -1
     Started = 0
     Loading = 1
@@ -293,7 +283,7 @@ class ShowStatus(enum.IntEnum):
     Killed = 7
 
 
-class ValidationStatus(enum.IntEnum):
+class GuiValidationStatus(enum.IntEnum):
     Normal = 0x20
     Correct = 0x21
     Warning = 0x22
@@ -302,9 +292,12 @@ class ValidationStatus(enum.IntEnum):
     Locked = 0x25
     Active = 0x26
     Disable = 0x27
+    Unreadable = 0x28
+    Unwritable = 0x29
+    Lost = 0x2A
 
 
-class ActionState(enum.IntEnum):
+class GuiActionState(enum.IntEnum):
     Normal = 0x30
     Enable = 0x31
     Disable = 0x32

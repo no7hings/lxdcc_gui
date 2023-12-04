@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxbasic import bsc_core
+import lxbasic.core as bsc_core
 
 import lxgui.qt.core as gui_qt_core
 
@@ -9,6 +9,8 @@ import lxgui.proxy.widgets as prx_widgets
 
 
 class AbsPnlDccLauncher(prx_widgets.PrxSessionWindow):
+    KEY = 'launcher'
+
     def __init__(self, session, *args, **kwargs):
         super(AbsPnlDccLauncher, self).__init__(session, *args, **kwargs)
 
@@ -20,27 +22,32 @@ class AbsPnlDccLauncher(prx_widgets.PrxSessionWindow):
         self._sub_label._set_name_draw_font_(gui_qt_core.QtFonts.SubTitle)
         self._sub_label._set_name_text_option_to_align_center_()
 
-        self._ipt = prx_widgets.PrxInputAsStgTask()
-        self.add_widget(self._ipt)
+        self.__input = prx_widgets.PrxInputAsStgTask()
+        self.add_widget(self.__input)
 
-        self._ipt.set_focus_in()
+        self.__input.set_focus_in()
 
         self.get_widget().key_escape_pressed.connect(
             self.__do_cancel
         )
 
-        self._tip = prx_widgets.PrxTextBrowser()
-        self.add_widget(self._tip)
-        self._tip.set_focus_enable(False)
+        self.__tip = prx_widgets.PrxTextBrowser()
+        self.add_widget(self.__tip)
+        self.__tip.set_focus_enable(False)
 
-        self._ipt.connect_result_to(
-            self._do_accept
+        self.__next_button = prx_widgets.PrxPressItem()
+        self.__next_button.set_name('next')
+        self.add_button(
+            self.__next_button
         )
-        self._ipt.connect_tip_trace_to(
-            self._do_tip_trace
-        )
+        self.__next_button.connect_press_clicked_to(self.__do_next)
 
-        self._ipt.setup()
+        self.__next_button.set_enable(False)
+
+        self.__input.connect_result_to(self.__do_accept)
+        self.__input.connect_tip_trace_to(self.__do_tip_accept)
+
+        self.__input.setup()
 
         self.__application = 'maya'
 
@@ -55,30 +62,51 @@ class AbsPnlDccLauncher(prx_widgets.PrxSessionWindow):
     def __get_application(self):
         return self.__application
 
-    def _do_accept(self, dict_):
+    def __do_accept(self, dict_):
         if dict_:
             option_opt = bsc_core.ArgDictStringOpt(dict_)
             option_opt.set('application', self.__get_application())
             option = option_opt.to_string()
 
-            cmd = bsc_core.PkgContextNew(
-                ' '.join(['lxdcc'])
-            ).get_command(
-                args_execute=[
-                    '-- lxapp -o \\\"{}\\\"'.format(
-                        option
-                    )
-                ],
-            )
+            if bsc_core.SystemMtd.get_is_linux():
+                cmd = bsc_core.PkgContextNew(
+                    ' '.join(['lxdcc'])
+                ).get_command(
+                    args_execute=[
+                        '-- lxapp -o \\\"{}\\\"'.format(
+                            option
+                        )
+                    ],
+                )
+            elif bsc_core.SystemMtd.get_is_windows():
+                cmd = bsc_core.PkgContextNew(
+                    ' '.join(['lxdcc'])
+                ).get_command(
+                    args_execute=[
+                        '-- lxapp -o "{}"'.format(
+                            bsc_core.SubProcessMtd.cmd_cleanup(option)
+                        )
+                    ],
+                )
+            else:
+                raise RuntimeError()
 
             bsc_core.ExcExtra.execute_shell_script_use_terminal(
                 '"{}"'.format(cmd), **dict(title=self.__get_application())
             )
             self.close_window_later()
 
-    def _do_tip_trace(self, text):
-        self._tip.set_content(text)
+    def __do_next(self):
+        self.__do_accept(self.__input.get_result())
+
+    def __do_tip_accept(self, text):
+        if self.__input.get_is_valid():
+            self.__next_button.set_enable(True)
+        else:
+            self.__next_button.set_enable(False)
+
+        self.__tip.set_content(text)
 
     def __do_cancel(self):
-        if self._ipt.has_focus() is False:
+        if self.__input.has_focus() is False:
             self.close_window_later()

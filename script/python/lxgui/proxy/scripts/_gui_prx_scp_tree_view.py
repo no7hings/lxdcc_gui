@@ -3,15 +3,13 @@ import six
 
 import collections
 
-import functools
-
 import lxbasic.core as bsc_core
 
-import lxcontent.objects as ctt_objects
+import lxcontent.core as ctt_core
 
-import lxgui.configure as gui_configure
+import lxgui.core as gui_core
 
-import lxgui.proxy.core as gui_prx_core
+import lxgui.proxy.abstracts as prx_abstracts
 
 
 class GuiPrxScpForTreeSelection(object):
@@ -83,7 +81,7 @@ class GuiPrxScpForTreeTagFilter(object):
         #
         self._prx_tree_item_cls = prx_tree_item_cls
         #
-        self._filter_content = ctt_objects.Content(
+        self._filter_content = ctt_core.Content(
             value=collections.OrderedDict()
         )
         #
@@ -93,7 +91,7 @@ class GuiPrxScpForTreeTagFilter(object):
 
         self._namespace_src = 'filter'
 
-        self._obj_add_dict = self._prx_tree_view_src._item_dict
+        self._item_dict = self._prx_tree_view_src._item_dict
         #
         self._prx_tree_view_src.connect_item_check_changed_to(
             self.set_filter
@@ -113,13 +111,10 @@ class GuiPrxScpForTreeTagFilter(object):
     def restore_all(self):
         self._prx_tree_view_src.restore_all()
         #
-        self._filter_content = ctt_objects.Content(
+        self._filter_content = ctt_core.Content(
             value=collections.OrderedDict()
         )
         self._dcc_obj_dict = {}
-
-    def _to_filter_key_path_(self, key):
-        return self._filter_content._to_key_path_(key)
 
     def set_tgt_item_tag_update(self, key, prx_item_tgt, dcc_obj=None):
         self.register(
@@ -139,8 +134,8 @@ class GuiPrxScpForTreeTagFilter(object):
     def _add_prx_item_src_(self, path):
         path_dag_opt = bsc_core.DccPathDagOpt(path)
         key = path_dag_opt.path
-        if key in self._obj_add_dict:
-            return False, self._obj_add_dict[key]
+        if key in self._item_dict:
+            return False, self._item_dict[key]
         #
         _kwargs = dict(
             name='...',
@@ -149,8 +144,8 @@ class GuiPrxScpForTreeTagFilter(object):
         )
         #
         parent_path = bsc_core.DccPathDagOpt(path).get_parent_path()
-        if parent_path in self._obj_add_dict:
-            prx_item_parent = self._obj_add_dict[parent_path]
+        if parent_path in self._item_dict:
+            prx_item_parent = self._item_dict[parent_path]
             prx_item = prx_item_parent.add_child(
                 **_kwargs
             )
@@ -173,8 +168,8 @@ class GuiPrxScpForTreeTagFilter(object):
     def set_src_items_refresh(self, expand_depth=None):
         self._prx_tree_view_src.set_clear()
         #
-        leaf_paths = self._filter_content.get_leaf_key_as_paths()
-        all_paths = self._filter_content.get_key_as_paths()
+        leaf_paths = self._filter_content.get_all_leaf_key_as_dag_paths()
+        all_paths = ['/'] + self._filter_content.get_all_key_as_dag_paths()
         all_paths.sort()
         all_paths = bsc_core.RawTextsOpt(all_paths).sort_by_number()
         for path in all_paths:
@@ -204,9 +199,9 @@ class GuiPrxScpForTreeTagFilter(object):
                         if tgt_item_prxes:
                             states = self._prx_tree_view_tgt.get_item_states(tgt_item_prxes)
                             if i_prx_item_src.get_check_enable() is True:
-                                if gui_configure.State.ERROR in states:
+                                if gui_core.GuiState.ERROR in states:
                                     i_prx_item_src.set_error_state()
-                                elif gui_configure.State.WARNING in states:
+                                elif gui_core.GuiState.WARNING in states:
                                     i_prx_item_src.set_warning_state()
                                 # else:
                                 #     i_prx_item_src.set_adopt_state()
@@ -262,9 +257,9 @@ class GuiPrxScpForTreeTagFilter(object):
 
     def register(self, prx_item_tgt, keys, dcc_obj=None, expand_depth=1):
         for i_key in keys:
-            i_path = self._to_filter_key_path_(i_key)
+            i_path = ctt_core.ContentUtil.key_path_to_dag_path(i_key)
             #
-            prx_item_tgt.set_tag_filter_tgt_mode(gui_configure.TagFilterMode.MatchAll)
+            prx_item_tgt.set_tag_filter_tgt_mode(gui_core.GuiTagFilterMode.MatchAll)
             prx_item_tgt.set_tag_filter_tgt_key_add(
                 i_path, ancestors=True
             )
@@ -282,8 +277,8 @@ class GuiPrxScpForTreeTagFilter(object):
             prx_item_src.set_name(str(count), 1)
 
     def _get_item_src_(self, path, dcc_obj=None, expand_depth=1):
-        if path in self._obj_add_dict:
-            return self._obj_add_dict[path]
+        if path in self._item_dict:
+            return self._item_dict[path]
         #
         path_dag_opt = bsc_core.DccPathDagOpt(path)
         ancestor_paths = path_dag_opt.get_ancestor_paths()
@@ -291,7 +286,7 @@ class GuiPrxScpForTreeTagFilter(object):
             ancestor_paths.reverse()
             #
             for seq, i_ancestor_path in enumerate(ancestor_paths):
-                if i_ancestor_path not in self._obj_add_dict:
+                if i_ancestor_path not in self._item_dict:
                     i_is_create, i_ancestor_prx_item_src = self._add_prx_item_src_(i_ancestor_path)
                     if i_is_create is True:
                         if seq+1 <= expand_depth:
@@ -309,21 +304,24 @@ class GuiPrxScpForTreeTagFilter(object):
         return prx_item_src
 
 
-class GuiPrxScpForTreeAdd(object):
+class GuiPrxScpForTreeAdd(prx_abstracts.AbsGuiPrxCacheDef):
     def __init__(self, prx_tree_view, prx_tree_item_cls, dcc_namespace):
         self._prx_tree_view = prx_tree_view
         self._prx_tree_item_cls = prx_tree_item_cls
         #
         self._dcc_namespace = dcc_namespace
-        self._obj_add_dict = self._prx_tree_view._item_dict
+        self._item_dict = self._prx_tree_view._item_dict
+
+        self._init_cache_def_(self._prx_tree_view)
 
     def restore_all(self):
+        self._generate_cache(self._item_dict)
         self._prx_tree_view.set_clear()
 
     def _set_dag_dcc_obj_gui_add_(self, obj):
         obj_path = obj.path
-        if obj_path in self._obj_add_dict:
-            return self._obj_add_dict[obj_path]
+        if obj_path in self._item_dict:
+            return self._item_dict[obj_path]
         else:
             kwargs = dict(
                 name=(obj.name, obj.type),
@@ -333,7 +331,7 @@ class GuiPrxScpForTreeAdd(object):
             )
             parent = obj.get_parent()
             if parent is not None:
-                prx_item_parent = self._obj_add_dict[parent.path]
+                prx_item_parent = self._item_dict[parent.path]
                 prx_item = prx_item_parent.add_child(
                     **kwargs
                 )
@@ -346,10 +344,11 @@ class GuiPrxScpForTreeAdd(object):
             prx_item.set_expanded(True)
             prx_item.set_checked(False)
             prx_item.set_icon_by_name(obj.type_name, 1)
-            self._obj_add_dict[obj_path] = prx_item
+            self._item_dict[obj_path] = prx_item
             return prx_item
 
     def gui_add(self, obj, prx_item_parent, name_use_path_prettify):
+        key = obj.path
         tool_tips = [
             'type: {}'.format(obj.type_name),
             'path: {}'.format(obj.path)
@@ -380,15 +379,22 @@ class GuiPrxScpForTreeAdd(object):
                 **kwargs
             )
         prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
-        prx_item.set_expanded(True)
-        prx_item.set_checked(False)
-        self._obj_add_dict[obj.path] = prx_item
+        self._item_dict[key] = prx_item
+
+        if key in self._cache_expand:
+            prx_item.set_expanded(self._cache_expand[key])
+        else:
+            prx_item.set_expanded(False)
+        if key in self._cache_check:
+            prx_item.set_checked(self._cache_check[key])
+        else:
+            prx_item.set_checked(False)
         return prx_item
 
     def _set_prx_item_add_2_(self, obj, prx_item_parent):
         obj_key = obj.path
-        if obj_key in self._obj_add_dict:
-            return self._obj_add_dict[obj_key]
+        if obj_key in self._item_dict:
+            return self._item_dict[obj_key]
         else:
             return self.gui_add(
                 obj,
@@ -398,29 +404,29 @@ class GuiPrxScpForTreeAdd(object):
 
     def _set_prx_item_add_0_(self, obj, parent=None):
         obj_key = obj.path
-        if obj_key in self._obj_add_dict:
-            return self._obj_add_dict[obj_key]
+        if obj_key in self._item_dict:
+            return self._item_dict[obj_key]
         else:
             if parent is not None:
                 parent_key = parent.path
-                prx_item_parent = self._obj_add_dict[parent_key]
+                prx_item_parent = self._item_dict[parent_key]
             else:
                 prx_item_parent = None
             return self.gui_add(obj, prx_item_parent, name_use_path_prettify=False)
 
     def _set_prx_item_add_1_(self, obj, parent=None):
         obj_key = obj.path
-        if obj_key in self._obj_add_dict:
-            return self._obj_add_dict[obj_key]
+        if obj_key in self._item_dict:
+            return self._item_dict[obj_key]
         else:
             if parent is not None:
                 parent_key = parent.path
-                prx_item_parent = self._obj_add_dict[parent_key]
+                prx_item_parent = self._item_dict[parent_key]
             else:
                 prx_item_parent = None
             return self.gui_add(obj, prx_item_parent, name_use_path_prettify=True)
 
-    def set_prx_item_add_as(self, obj, mode='tree'):
+    def gui_add_as(self, obj, mode='tree'):
         if mode == 'tree':
             return self.gui_add_as_tree(obj)
         elif mode == 'list':
@@ -441,7 +447,7 @@ class GuiPrxScpForTreeAdd(object):
             #
             for ancestor in ancestors:
                 ancestor_path = ancestor.path
-                if ancestor_path not in self._obj_add_dict:
+                if ancestor_path not in self._item_dict:
                     self._set_dag_dcc_obj_gui_add_(ancestor)
         #
         return self._set_dag_dcc_obj_gui_add_(obj)
@@ -456,27 +462,30 @@ class GuiPrxScpForTreeAdd(object):
         return list_
 
 
-class GuiPrxScpForStorageTreeAdd(object):
+class GuiPrxScpForStorageTreeAdd(prx_abstracts.AbsGuiPrxCacheDef):
     def __init__(self, prx_tree_view, prx_tree_item_cls):
         self._prx_tree_view = prx_tree_view
         self._prx_tree_item_cls = prx_tree_item_cls
-        self._obj_add_dict = self._prx_tree_view._item_dict
+        self._item_dict = self._prx_tree_view._item_dict
+
+        self._init_cache_def_(self._prx_tree_view)
 
         self._dcc_namespace = 'storage'
 
     def restore_all(self):
+        self._generate_cache(self._item_dict)
         self._prx_tree_view.set_clear()
 
     def _set_dag_dcc_obj_gui_add_(self, obj):
         obj_path = obj.path
         obj_key = obj.normcase_path
-        if obj_path in self._obj_add_dict:
-            return False, self._obj_add_dict[obj_path]
+        if obj_path in self._item_dict:
+            return False, self._item_dict[obj_path]
         else:
-            kwargs = self._get_add_kwargs_(obj, False)
+            kwargs = self._generate_add_kwargs(obj, False)
             parent = obj.get_parent()
             if parent is not None:
-                prx_item_parent = self._obj_add_dict[parent.path]
+                prx_item_parent = self._item_dict[parent.path]
                 prx_item = prx_item_parent.add_child(
                     **kwargs
                 )
@@ -487,10 +496,10 @@ class GuiPrxScpForStorageTreeAdd(object):
             #
             prx_item.set_checked(False)
             prx_item.set_icon_by_color(bsc_core.RawTextOpt(obj.type).to_rgb(), 1)
-            self._obj_add_dict[obj_key] = prx_item
+            self._item_dict[obj_key] = prx_item
             return True, prx_item
 
-    def _get_add_kwargs_(self, obj, name_use_path_prettify):
+    def _generate_add_kwargs(self, obj, name_use_path_prettify):
         obj_name = obj.name
         type_name = 'directory'
         if obj.get_is_file():
@@ -512,23 +521,14 @@ class GuiPrxScpForStorageTreeAdd(object):
             )
         return kwargs
 
-    def _get_item_prx_parent_(self, obj, parent):
-        obj_key = obj.normcase_path
-        if obj_key in self._obj_add_dict:
-            return self._obj_add_dict[obj_key]
-        else:
-            if parent is not None:
-                parent_key = parent.normcase_path
-                return self._obj_add_dict[parent_key]
-
     def gui_add(self, obj, parent=None, use_show_thread=False, name_use_path_prettify=False):
-        obj_key = obj.normcase_path
-        if obj_key in self._obj_add_dict:
-            return False, self._obj_add_dict[obj_key]
+        key = obj.normcase_path
+        if key in self._item_dict:
+            return False, self._item_dict[key]
         else:
             if parent is not None:
                 parent_key = parent.normcase_path
-                prx_item_parent = self._obj_add_dict[parent_key]
+                prx_item_parent = self._item_dict[parent_key]
             else:
                 prx_item_parent = None
             #
@@ -546,9 +546,17 @@ class GuiPrxScpForStorageTreeAdd(object):
                 prx_item = self._prx_tree_view.create_item(
                     **create_kwargs
                 )
+
+            self._item_dict[key] = prx_item
+            if key in self._cache_expand:
+                prx_item.set_expanded(self._cache_expand[key])
+            else:
+                prx_item.set_expanded(False)
+            if key in self._cache_check:
+                prx_item.set_checked(self._cache_check[key])
+            else:
+                prx_item.set_checked(False)
             #
-            self._obj_add_dict[obj_key] = prx_item
-            prx_item.set_checked(False)
             prx_item.update_keyword_filter_keys_tgt([obj.path, obj.type])
             obj.set_obj_gui(prx_item)
             prx_item.set_gui_dcc_obj(obj, namespace=self._dcc_namespace)
@@ -566,7 +574,7 @@ class GuiPrxScpForStorageTreeAdd(object):
                 self._set_prx_item_show_deferred_(prx_item, name_use_path_prettify)
                 return True, prx_item
 
-    def set_prx_item_add_as(self, obj, mode='tree', use_show_thread=False):
+    def gui_add_as(self, obj, mode='tree', use_show_thread=False):
         if mode == 'tree':
             return self.gui_add_as_tree(obj)
         elif mode == 'list':
@@ -574,16 +582,18 @@ class GuiPrxScpForStorageTreeAdd(object):
 
     def gui_add_as_list(self, obj, use_show_thread=False):
         obj_key = obj.normcase_path
-        if obj_key in self._obj_add_dict:
-            return False, self._obj_add_dict[obj_key]
+        if obj_key in self._item_dict:
+            return False, self._item_dict[obj_key]
 
         if obj.PATHSEP in obj.path:
             root = obj.get_root()
             if root is not None:
+                # add root
                 self.gui_add(
                     obj=root,
                     use_show_thread=use_show_thread
                 )
+                # add directory
                 directory = obj.get_parent()
                 self.gui_add(
                     obj=directory,
@@ -591,7 +601,7 @@ class GuiPrxScpForStorageTreeAdd(object):
                     use_show_thread=use_show_thread,
                     name_use_path_prettify=True
                 )
-                #
+                # add file
                 return self.gui_add(
                     obj=obj,
                     parent=directory,
@@ -604,10 +614,9 @@ class GuiPrxScpForStorageTreeAdd(object):
         ancestors = obj.get_ancestors()
         if ancestors:
             ancestors.reverse()
-            #
             for i_ancestor in ancestors:
                 i_ancestor_path = i_ancestor.path
-                if i_ancestor_path not in self._obj_add_dict:
+                if i_ancestor_path not in self._item_dict:
                     self._set_dag_dcc_obj_gui_add_(i_ancestor)
         #
         return self._set_dag_dcc_obj_gui_add_(obj)
@@ -641,10 +650,10 @@ class GuiPrxScpForStorageTreeAdd(object):
                         tool_tip_.append(i_file_tile)
                     else:
                         readable = i_file_tile.get_is_readable()
-                        writeable = i_file_tile.get_is_writeable()
+                        writable = i_file_tile.get_is_writable()
                         tool_tip_.append(
-                            u'path="{}"; readable={}; writeable={}'.format(
-                                i_file_tile.path, readable, writeable
+                            u'path="{}"; readable={}; writable={}'.format(
+                                i_file_tile.path, readable, writable
                             )
                         )
                 #
@@ -677,9 +686,11 @@ class GuiPrxScpForStorageTreeAdd(object):
         #
         if obj.get_is_root() is False:
             if obj.get_is_exists() is False:
-                prx_item.set_status(prx_item.ValidationStatus.Disable)
-            elif obj.get_is_writeable() is False:
-                prx_item.set_status(prx_item.ValidationStatus.Locked)
+                prx_item.set_status(prx_item.ValidationStatus.Lost)
+            elif obj.get_is_readable() is False:
+                prx_item.set_status(prx_item.ValidationStatus.Unreadable)
+            elif obj.get_is_writable() is False:
+                prx_item.set_status(prx_item.ValidationStatus.Unwritable)
             else:
                 prx_item.set_status(prx_item.ValidationStatus.Normal)
                 if obj.get_is_directory() is True:
@@ -804,15 +815,15 @@ class GuiPrxScpForTreeAdd1(object):
         self._prx_tree_item_cls = prx_tree_item_cls
         #
         self._dcc_namespace = dcc_namespace
-        self._obj_add_dict = self._prx_tree_view._item_dict
+        self._item_dict = self._prx_tree_view._item_dict
 
     def restore_all(self):
         self._prx_tree_view.set_clear()
 
     def _set_dag_dcc_obj_gui_add_(self, obj):
         obj_path = obj.path
-        if obj_path in self._obj_add_dict:
-            return self._obj_add_dict[obj_path]
+        if obj_path in self._item_dict:
+            return self._item_dict[obj_path]
         else:
             kwargs = dict(
                 name=(obj.name, obj.type.name),
@@ -823,7 +834,7 @@ class GuiPrxScpForTreeAdd1(object):
             )
             parent = obj.get_parent()
             if parent is not None:
-                prx_item_parent = self._obj_add_dict[parent.path]
+                prx_item_parent = self._item_dict[parent.path]
                 prx_item = prx_item_parent.add_child(
                     **kwargs
                 )
@@ -837,7 +848,7 @@ class GuiPrxScpForTreeAdd1(object):
             prx_item.set_expanded(True)
             prx_item.set_checked(False)
             prx_item.set_icon_by_color(bsc_core.RawTextOpt(obj.type.name).to_rgb(), 1)
-            self._obj_add_dict[obj_path] = prx_item
+            self._item_dict[obj_path] = prx_item
             return prx_item
 
     def _set_prx_item_show_deferred_(self, prx_item, name_use_path_prettify):
@@ -888,7 +899,7 @@ class GuiPrxScpForTreeAdd1(object):
         prx_item.set_expanded(True)
         prx_item.set_checked(True)
         #
-        self._obj_add_dict[obj.path] = prx_item
+        self._item_dict[obj.path] = prx_item
         # prx_item.set_show_build_fnc(
         #     functools.partial(
         #         self._set_prx_item_show_deferred_, prx_item, name_use_path_prettify
@@ -898,12 +909,12 @@ class GuiPrxScpForTreeAdd1(object):
 
     def _set_prx_item_add_0_(self, obj, parent=None):
         obj_key = obj.path
-        if obj_key in self._obj_add_dict:
-            return self._obj_add_dict[obj_key]
+        if obj_key in self._item_dict:
+            return self._item_dict[obj_key]
         else:
             if parent is not None:
                 parent_key = parent.path
-                prx_item_parent = self._obj_add_dict[parent_key]
+                prx_item_parent = self._item_dict[parent_key]
             else:
                 prx_item_parent = None
             return self.gui_add(
@@ -914,12 +925,12 @@ class GuiPrxScpForTreeAdd1(object):
 
     def _set_prx_item_add_1_(self, obj, parent=None):
         obj_key = obj.path
-        if obj_key in self._obj_add_dict:
-            return self._obj_add_dict[obj_key]
+        if obj_key in self._item_dict:
+            return self._item_dict[obj_key]
         else:
             if parent is not None:
                 parent_key = parent.path
-                prx_item_parent = self._obj_add_dict[parent_key]
+                prx_item_parent = self._item_dict[parent_key]
             else:
                 prx_item_parent = None
             return self.gui_add(
@@ -928,7 +939,7 @@ class GuiPrxScpForTreeAdd1(object):
                 name_use_path_prettify=True
             )
 
-    def set_prx_item_add_as(self, obj, mode='tree'):
+    def gui_add_as(self, obj, mode='tree'):
         if mode == 'tree':
             return self.gui_add_as_tree(obj)
         elif mode == 'list':
@@ -950,7 +961,7 @@ class GuiPrxScpForTreeAdd1(object):
             #
             for i_ancestor in ancestors:
                 i_ancestor_path = i_ancestor.path
-                if i_ancestor_path not in self._obj_add_dict:
+                if i_ancestor_path not in self._item_dict:
                     self._set_dag_dcc_obj_gui_add_(i_ancestor)
         #
         return self._set_dag_dcc_obj_gui_add_(obj)

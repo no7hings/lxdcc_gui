@@ -1,9 +1,15 @@
 # coding=utf-8
-from lxgui.qt.core import *
+from lxgui.qt.wrap import *
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_head, _gui_qt_wgt_drag
+import lxgui.qt.core as gui_qt_core
 
 import lxgui.qt.abstracts as gui_qt_abstracts
+
+from ..widgets import \
+    _gui_qt_wgt_base, \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_head, \
+    _gui_qt_wgt_drag
 
 
 class AbsQtToolGroup(
@@ -29,7 +35,7 @@ class AbsQtToolGroup(
 
         self._init_item_layout_base_def_(self)
 
-        self.__base_layout = _gui_qt_wgt_utility.QtVBoxLayout(self)
+        self.__base_layout = _gui_qt_wgt_base.QtVBoxLayout(self)
         self.__base_layout.setAlignment(QtCore.Qt.AlignTop)
         self.__base_layout.setContentsMargins(0, 0, 0, 0)
         self.__base_layout.setSpacing(2)
@@ -42,7 +48,7 @@ class AbsQtToolGroup(
 
         self.__view = _gui_qt_wgt_utility._QtTranslucentWidget()
         self.__base_layout.addWidget(self.__view)
-        self.__layout = _gui_qt_wgt_utility.QtVBoxLayout(self.__view)
+        self.__layout = _gui_qt_wgt_base.QtVBoxLayout(self.__view)
         self.__layout.setContentsMargins(2, 0, 0, 0)
         self.__layout.setSpacing(2)
 
@@ -86,8 +92,9 @@ class AbsQtToolGroup(
             self._set_action_flag_(self.ActionFlag.DragMove)
             event.accept()
 
+    # noinspection PyUnusedLocal
     def _do_drag_move_(self, event):
-        self.__drag = _gui_qt_wgt_drag.QtWidgetDrag(self.__head)
+        self.__drag = _gui_qt_wgt_drag.QtDrag(self.__head)
 
         item = self._get_layout_item_()
         if item:
@@ -184,9 +191,9 @@ class AbsQtToolBox(QtWidgets.QWidget):
 
     def _build_widget_(self):
         if self.QT_ORIENTATION == QtCore.Qt.Horizontal:
-            layout = _gui_qt_wgt_utility.QtHLayout(self)
+            layout = _gui_qt_wgt_base.QtHBoxLayout(self)
         elif self.QT_ORIENTATION == QtCore.Qt.Vertical:
-            layout = _gui_qt_wgt_utility.QtVBoxLayout(self)
+            layout = _gui_qt_wgt_base.QtVBoxLayout(self)
         else:
             raise RuntimeError()
         layout.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
@@ -202,9 +209,9 @@ class AbsQtToolBox(QtWidgets.QWidget):
         self._container = _gui_qt_wgt_utility._QtTranslucentWidget()
         layout.addWidget(self._container)
         if self.QT_ORIENTATION == QtCore.Qt.Horizontal:
-            self._qt_layout = _gui_qt_wgt_utility.QtHLayout(self._container)
+            self._qt_layout = _gui_qt_wgt_base.QtHBoxLayout(self._container)
         elif self.QT_ORIENTATION == QtCore.Qt.Vertical:
-            self._qt_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._container)
+            self._qt_layout = _gui_qt_wgt_base.QtVBoxLayout(self._container)
         else:
             raise RuntimeError()
         self._qt_layout.setContentsMargins(*[0]*4)

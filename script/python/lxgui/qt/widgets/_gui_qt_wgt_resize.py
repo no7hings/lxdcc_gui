@@ -1,11 +1,13 @@
 # coding=utf-8
-import lxgui.qt.abstracts as gui_qt_abstracts
-
-from lxgui.qt.core import *
+from lxgui.qt.wrap import *
 
 import lxgui.core as gui_core
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility
+import lxgui.qt.core as gui_qt_core
+
+import lxgui.qt.abstracts as gui_qt_abstracts
+
+from ..widgets import _gui_qt_wgt_utility
 
 
 class QtHResizeHandle(
@@ -54,11 +56,11 @@ class QtHResizeHandle(
         self._init_action_for_hover_def_(self)
         self._init_action_for_press_def_(self)
         #
-        self._hovered_frame_border_color = QtBorderColors.Button
-        self._hovered_frame_background_color = QtBackgroundColors.Button
+        self._hovered_frame_border_color = gui_qt_core.QtBorderColors.Button
+        self._hovered_frame_background_color = gui_qt_core.QtBackgroundColors.Button
 
-        self._actioned_frame_border_color = QtBorderColors.Actioned
-        self._actioned_frame_background_color = QtBackgroundColors.Actioned
+        self._actioned_frame_border_color = gui_qt_core.QtBorderColors.Actioned
+        self._actioned_frame_background_color = gui_qt_core.QtBackgroundColors.Actioned
 
         self._set_name_text_('resize handle')
         self._set_tool_tip_text_(
@@ -97,7 +99,7 @@ class QtHResizeHandle(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         painter._draw_icon_file_by_rect_(
             rect=self._resize_icon_draw_rect,
             file_path=self._resize_icon_file_path,
@@ -123,6 +125,7 @@ class QtHResizeHandle(
                 # self._resize_target.setMaximumWidth(w_1)
                 self.size_changed.emit(w_1)
 
+    # noinspection PyUnusedLocal
     def _execute_action_resize_move_stop_(self, event):
         self.resize_finished.emit()
 

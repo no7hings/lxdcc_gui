@@ -24,7 +24,7 @@ class PnlSceneClearner(prx_widgets.PrxSessionToolWindow):
         if ps:
             with self.gui_progressing(maximum=len(ps), label='clean all') as g_p:
                 for i_p in ps:
-                    g_p.set_update()
+                    g_p.do_update()
                     #
                     i_p.execute()
 
@@ -167,14 +167,16 @@ class PnlGeometryBuilder(prx_widgets.PrxSessionToolWindow):
         super(PnlGeometryBuilder, self).__init__(session, *args, **kwargs)
 
     def set_all_setup(self):
+        s = prx_widgets.PrxVScrollArea()
+        self.add_widget(s)
         self._options_prx_node = prx_widgets.PrxNode('options')
-        self.add_widget(self._options_prx_node)
+        s.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.options'),
         )
         # tip
         self._tip_group = prx_widgets.PrxHToolGroup()
-        self.add_widget(self._tip_group)
+        s.add_widget(self._tip_group)
         self._tip_group.set_expanded(True)
         self._tip_group.set_name('tips')
         self._tip_text_browser = prx_widgets.PrxTextBrowser()
@@ -295,14 +297,16 @@ class PnlLookBuilder(prx_widgets.PrxSessionToolWindow):
         super(PnlLookBuilder, self).__init__(session, *args, **kwargs)
 
     def set_all_setup(self):
+        s = prx_widgets.PrxVScrollArea()
+        self.add_widget(s)
         self._options_prx_node = prx_widgets.PrxNode('options')
-        self.add_widget(self._options_prx_node)
+        s.add_widget(self._options_prx_node)
         self._options_prx_node.create_ports_by_data(
             self._session.configure.get('build.node.options'),
         )
         # tip
         self._tip_group = prx_widgets.PrxHToolGroup()
-        self.add_widget(self._tip_group)
+        s.add_widget(self._tip_group)
         self._tip_group.set_expanded(True)
         self._tip_group.set_name('tips')
         self._tip_text_browser = prx_widgets.PrxTextBrowser()

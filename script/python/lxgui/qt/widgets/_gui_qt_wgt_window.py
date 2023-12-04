@@ -1,9 +1,15 @@
 # coding=utf-8
+from lxgui.qt.wrap import *
+
+import lxgui.qt.core as gui_qt_core
+
 import lxgui.qt.abstracts as gui_qt_abstracts
 
-from lxgui.qt.core import *
-
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_item, _gui_qt_wgt_view
+from ..widgets import \
+    _gui_qt_wgt_base, \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_item, \
+    _gui_qt_wgt_view
 
 
 class _QtWindow(
@@ -19,7 +25,7 @@ class _QtWindow(
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
-        self._qt_main_layout = QtVBoxLayout(self)
+        self._qt_main_layout = _gui_qt_wgt_base.QtVBoxLayout(self)
         self._qt_main_layout.setContentsMargins(0, 0, 0, 0)
         self._qt_main_layout.setSpacing(0)
         #
@@ -39,7 +45,7 @@ class _QtWindow(
         )
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         #
         self._set_widget_geometries_update_()
         #
@@ -64,7 +70,7 @@ class _QtFramelessWindow(
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
-        self._qt_main_layout = QtVBoxLayout(self)
+        self._qt_main_layout = _gui_qt_wgt_base.QtVBoxLayout(self)
         self._qt_main_layout.setContentsMargins(0, 0, 0, 0)
         self._qt_main_layout.setSpacing(0)
         self._header = _gui_qt_wgt_item._QtWindowHead()
@@ -76,4 +82,3 @@ class _QtFramelessWindow(
             QtWidgets.QSizePolicy.Expanding
         )
         self._qt_main_layout.addWidget(self._qt_main_widget)
-

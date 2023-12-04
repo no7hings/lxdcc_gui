@@ -1,7 +1,7 @@
 # coding:utf-8
 import time
 
-from lxbasic import bsc_core
+import lxbasic.core as bsc_core
 
 import lxgui.proxy.widgets as prx_widgets
 
@@ -67,7 +67,7 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
             prx_tree_view=self._tree_view,
             prx_tree_item_cls=prx_widgets.PrxStgObjTreeItem,
         )
-        self._dcc_obj_add_opt = gui_prx_scripts.GuiPrxScpForTreeAdd(
+        self._dcc_add_opt = gui_prx_scripts.GuiPrxScpForTreeAdd(
             prx_tree_view=self._tree_view,
             prx_tree_item_cls=prx_widgets.PrxDccObjTreeItem,
             dcc_namespace=self.DCC_NAMESPACE
@@ -147,7 +147,7 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
         ]
         with bsc_core.LogProcessContext.create(maximum=len(method_args), label='gui processing') as g_p:
             for i_fnc, i_args in method_args:
-                g_p.set_update()
+                g_p.do_update()
                 i_fnc(*i_args)
 
     def _set_gui_textures_refresh_(self):
@@ -157,24 +157,24 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
         if self._dcc_objs:
             with bsc_core.LogProcessContext.create(maximum=len(self._dcc_objs), label='gui texture showing') as g_p:
                 for i_dcc_obj in self._dcc_objs:
-                    g_p.set_update()
+                    g_p.do_update()
                     #
                     i_files = i_dcc_obj.get_file_objs()
                     if i_files:
                         j_keys = []
                         for j_file in i_files:
-                            j_is_create, j_file_prx_item = self._texture_add_opt.set_prx_item_add_as(
+                            j_is_create, j_file_prx_item = self._texture_add_opt.gui_add_as(
                                 j_file,
                                 mode='list',
                                 use_show_thread=True
                             )
                             if j_is_create is True:
                                 j_file_prx_item.connect_press_db_clicked_to(
-                                    self._set_detail_show_
+                                    self._show_image_detail
                                 )
                             #
                             if j_file_prx_item is not None:
-                                i_dcc_obj_prx_item = self._dcc_obj_add_opt._set_prx_item_add_2_(
+                                i_dcc_obj_prx_item = self._dcc_add_opt._set_prx_item_add_2_(
                                     i_dcc_obj,
                                     j_file_prx_item
                                 )
@@ -185,87 +185,88 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
         textures = self._texture_add_opt.get_files()
         c = len(textures)
 
-        ext_tgt = self._options_prx_node.get('target.extension')
-
         repath_src_port = self._options_prx_node.get_port('target.repath_to_source')
         repath_src_statuses = [utl_core.DccDialog.ValidationStatus.Normal]*c
 
         repath_tgt_port = self._options_prx_node.get_port('target.repath_to_target')
         repath_tgt_statuses = [utl_core.DccDialog.ValidationStatus.Normal]*c
-        with bsc_core.LogProcessContext.create(maximum=len(textures), label='gui texture validating') as g_p:
-            for i_index, i_texture_any in enumerate(textures):
-                g_p.set_update()
 
-                i_texture_prx_item = i_texture_any.get_obj_gui()
-                #
-                i_descriptions = []
+        if self._options_prx_node.get('validation_enable') is True:
+            ext_tgt = self._options_prx_node.get('target.extension')
+            with bsc_core.LogProcessContext.create(maximum=len(textures), label='gui texture validating') as g_p:
+                for i_index, i_texture_any in enumerate(textures):
+                    g_p.do_update()
 
-                i_directory_args_dpt = utl_dcc_objects.OsTexture.get_directory_args_dpt_as_default_fnc(
-                    i_texture_any, ext_tgt
-                    )
-                if i_directory_args_dpt:
-                    i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(
-                        ext_tgt, i_directory_args_dpt
+                    i_texture_prx_item = i_texture_any.get_obj_gui()
+                    #
+                    i_descriptions = []
+
+                    i_directory_args_dpt = utl_dcc_objects.OsTexture.get_directory_args_dpt_as_default_fnc(
+                        i_texture_any, ext_tgt
                         )
-                    if i_texture_src.ext == ext_tgt:
-                        i_descriptions.append(
-                            u'source is non-exists'
-                        )
-                        repath_src_statuses[i_index] = i_texture_prx_item.ValidationStatus.Error
-                    else:
-                        if i_texture_src.get_is_exists() is True:
-                            if i_texture_src.get_is_writeable() is True:
-                                if i_texture_any == i_texture_src:
-                                    repath_src_statuses[i_index] = i_texture_prx_item.ValidationStatus.Correct
-                            else:
-                                repath_src_statuses[i_index] = i_texture_prx_item.ValidationStatus.Locked
-                        else:
+                    if i_directory_args_dpt:
+                        i_texture_src, i_texture_tgt = i_texture_any.get_args_as_ext_tgt_by_directory_args(
+                            ext_tgt, i_directory_args_dpt
+                            )
+                        if i_texture_src.ext == ext_tgt:
                             i_descriptions.append(
                                 u'source is non-exists'
                             )
-                            repath_src_statuses[i_index] = i_texture_prx_item.ValidationStatus.Error
-                    #
-                    if i_texture_tgt.get_is_exists() is True:
-                        if i_texture_tgt.get_is_writeable() is True:
-                            if i_texture_any == i_texture_tgt:
-                                repath_tgt_statuses[i_index] = i_texture_prx_item.ValidationStatus.Correct
+                            repath_src_statuses[i_index] = i_texture_prx_item.ValidationStatus.Lost
                         else:
-                            repath_tgt_statuses[i_index] = i_texture_prx_item.ValidationStatus.Locked
-                    else:
-                        i_descriptions.append(
-                            u'target is non-exists'
-                        )
-                        repath_tgt_statuses[i_index] = i_texture_prx_item.ValidationStatus.Error
-                    #
-                    if i_texture_src.get_is_exists() is True and i_texture_tgt.get_is_exists() is True:
-                        if i_texture_src.get_timestamp_is_same_to(i_texture_tgt) is False:
+                            if i_texture_src.get_is_exists() is True:
+                                if i_texture_src.get_is_writable() is True:
+                                    if i_texture_any == i_texture_src:
+                                        repath_src_statuses[i_index] = i_texture_prx_item.ValidationStatus.Correct
+                                else:
+                                    repath_src_statuses[i_index] = i_texture_prx_item.ValidationStatus.Locked
+                            else:
+                                i_descriptions.append(
+                                    u'source is non-exists'
+                                )
+                                repath_src_statuses[i_index] = i_texture_prx_item.ValidationStatus.Lost
+                        #
+                        if i_texture_tgt.get_is_exists() is True:
+                            if i_texture_tgt.get_is_writable() is True:
+                                if i_texture_any == i_texture_tgt:
+                                    repath_tgt_statuses[i_index] = i_texture_prx_item.ValidationStatus.Correct
+                            else:
+                                repath_tgt_statuses[i_index] = i_texture_prx_item.ValidationStatus.Locked
+                        else:
                             i_descriptions.append(
-                                u'target is changed'
+                                u'target is non-exists'
                             )
-                            repath_tgt_statuses[i_index] = i_texture_prx_item.ValidationStatus.Warning
+                            repath_tgt_statuses[i_index] = i_texture_prx_item.ValidationStatus.Lost
+                        #
+                        if i_texture_src.get_is_exists() is True and i_texture_tgt.get_is_exists() is True:
+                            if i_texture_src.get_timestamp_is_same_to(i_texture_tgt) is False:
+                                i_descriptions.append(
+                                    u'target is changed'
+                                )
+                                repath_tgt_statuses[i_index] = i_texture_prx_item.ValidationStatus.Warning
 
-                i_texture_prx_item.set_name(
-                    u', '.join(i_descriptions), 2
-                )
-
-                i_color_space = i_texture_src.get_best_color_space()
-                i_texture_prx_item.set_name(i_color_space, 1)
-
-                i_dcc_obj_prx_items = i_texture_prx_item.get_children()
-                for j_dcc_obj_prx_item in i_dcc_obj_prx_items:
-                    j_dcc_obj = j_dcc_obj_prx_item.get_gui_dcc_obj(
-                        namespace=self.DCC_NAMESPACE
+                    i_texture_prx_item.set_name(
+                        u', '.join(i_descriptions), 2
                     )
-                    j_color_space = j_dcc_obj.get_color_space()
-                    j_dcc_obj_prx_item.set_name(j_color_space, 1)
-                    if i_descriptions:
-                        self._tree_view_filter_opt.register(
-                            j_dcc_obj_prx_item, [bsc_core.SPathMtd.set_quote_to(i) for i in i_descriptions]
+
+                    i_color_space = i_texture_src.get_best_color_space()
+                    i_texture_prx_item.set_name(i_color_space, 1)
+
+                    i_dcc_obj_prx_items = i_texture_prx_item.get_children()
+                    for j_dcc_obj_prx_item in i_dcc_obj_prx_items:
+                        j_dcc_obj = j_dcc_obj_prx_item.get_gui_dcc_obj(
+                            namespace=self.DCC_NAMESPACE
                         )
-                    else:
-                        self._tree_view_filter_opt.register(
-                            j_dcc_obj_prx_item, [bsc_core.SPathMtd.set_quote_to(i) for i in ['N/a']]
-                        )
+                        j_color_space = j_dcc_obj.get_color_space()
+                        j_dcc_obj_prx_item.set_name(j_color_space, 1)
+                        if i_descriptions:
+                            self._tree_view_filter_opt.register(
+                                j_dcc_obj_prx_item, [bsc_core.SPathMtd.set_quote_to(i) for i in i_descriptions]
+                            )
+                        else:
+                            self._tree_view_filter_opt.register(
+                                j_dcc_obj_prx_item, [bsc_core.SPathMtd.set_quote_to(i) for i in ['N/a']]
+                            )
 
         repath_src_port.set_statuses(
             repath_src_statuses
@@ -282,7 +283,7 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
         if textures:
             with bsc_core.LogProcessContext.create(maximum=len(textures), label='gain texture create-data') as g_p:
                 for i_texture_any in self._texture_add_opt.get_checked_files():
-                    g_p.set_update()
+                    g_p.do_update()
                     # ignore is locked
                     if i_texture_any.get_is_readable() is False:
                         continue
@@ -426,7 +427,7 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
         ]
         with bsc_core.LogProcessContext.create(maximum=len(method_args), label='create texture by data') as g_p:
             for i_fnc, i_args in method_args:
-                g_p.set_update()
+                g_p.do_update()
                 #
                 i_result = i_fnc(*i_args)
                 if i_result is False:
@@ -440,7 +441,7 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
         if textures:
             with bsc_core.LogProcessContext.create(maximum=len(textures), label='repath texture to source') as g_p:
                 for i_texture_any in self._texture_add_opt.get_checked_files():
-                    g_p.set_update()
+                    g_p.do_update()
 
                     i_texture_prx_item = i_texture_any.get_obj_gui()
 
@@ -495,7 +496,7 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
         if textures:
             with bsc_core.LogProcessContext.create(maximum=len(textures), label='repath texture to target') as g_p:
                 for i_texture_any in self._texture_add_opt.get_checked_files():
-                    g_p.set_update()
+                    g_p.do_update()
 
                     i_texture_prx_item = i_texture_any.get_obj_gui()
 
@@ -539,9 +540,9 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
             return False
 
     def execute_search_process(
-            self, window, textures, directory, below_enable, ignore_exists, ignore_name_case, ignore_ext_case,
-            ignore_ext
-            ):
+        self, window, textures, directory, below_enable, ignore_exists, ignore_name_case, ignore_ext_case,
+        ignore_ext
+    ):
         if directory:
             search_opt = bsc_core.StgFileSearchOpt(
                 ignore_name_case=ignore_ext_case,
@@ -551,7 +552,7 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
             search_opt.append_search_directory(directory, below_enable)
             with window.gui_progressing(maximum=len(textures)) as p:
                 for i_texture_any in self._texture_add_opt.get_checked_files():
-                    p.set_update()
+                    p.do_update()
                     #
                     if ignore_exists is True:
                         if i_texture_any.get_is_exists() is True:
@@ -621,13 +622,13 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
             return False
 
     def execute_collection_process(
-            self, window, textures, directory, scheme, mode, copy_or_link_enable, replace_enable, repath_enable,
-            target_extension
-            ):
+        self, window, textures, directory, scheme, mode, copy_or_link_enable, replace_enable, repath_enable,
+        target_extension
+    ):
         if directory:
             with window.gui_progressing(maximum=len(textures)) as p:
                 for i_texture_any in self._texture_add_opt.get_checked_files():
-                    p.set_update()
+                    p.do_update()
                     #
                     if i_texture_any.directory.path == directory:
                         continue
@@ -740,7 +741,7 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
             )
             return False
 
-    def _set_detail_show_(self, item, column):
+    def _show_image_detail(self, item, column):
         texture = self._texture_add_opt.get_file(item)
         w = utl_core.DccDialog.create(
             self._session.gui_name,

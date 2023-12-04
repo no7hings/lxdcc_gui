@@ -1,5 +1,9 @@
 # coding:utf-8
-from lxgui.qt.core import *
+from lxgui.qt.wrap import *
+
+import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
 
 from lxgui.qt.abstracts import _gui_qt_abs_base
 
@@ -38,16 +42,16 @@ class AbsQtTreeWidget(
         self._set_view_scroll_action_def_init_()
         # noinspection PyUnresolvedReferences
         self._get_view_v_scroll_bar_().valueChanged.connect(
-            self._refresh_viewport_showable_auto_
+            self._refresh_viewport_showable_by_scroll_
         )
         #
-        self._set_build_view_def_init_()
-        self._set_build_view_setup_(self)
+        self._init_view_build_extra_def_()
+        self._setup_view_build_(self)
 
         self._init_show_for_view_def_(self)
         #
         self._init_busy_base_def_(self)
-        self.setFont(QtFonts.Default)
+        self.setFont(gui_qt_core.QtFonts.Default)
         #
         self.customContextMenuRequested.connect(
             self._popup_menu_cbk_
@@ -125,9 +129,9 @@ class AbsQtTreeWidget(
                 QtGui.QIcon.On
             )
             #
-            self.headerItem().setBackground(index, QtBrushes.Background)
+            self.headerItem().setBackground(index, gui_qt_core.QtBrushes.Background)
             self.headerItem().setForeground(index, QtGui.QBrush(QtGui.QColor(255, 255, 255, 255)))
-            self.headerItem().setFont(index, QtFonts.NameNormal)
+            self.headerItem().setFont(index, gui_qt_core.QtFonts.NameNormal)
             # todo: in katana will make text display error, PyQt?
             if QT_LOAD_INDEX == 1:
                 self.headerItem().setIcon(index, icon)
@@ -146,6 +150,7 @@ class AbsQtTreeWidget(
     def _set_filter_style_(self):
         pass
 
+    # noinspection PyUnusedLocal
     def _popup_menu_cbk_(self, *args):
         indices = self.selectedIndexes()
         if indices:
@@ -189,8 +194,8 @@ class AbsQtListWidget(
     _gui_qt_abs_base.AbsQtShowForViewDef,
     _gui_qt_abs_base.AbsQtBusyBaseDef,
 ):
-    SortMode = gui_configure.SortMode
-    SortOrder = gui_configure.SortOrder
+    SortMode = gui_core.GuiSortMode
+    SortOrder = gui_core.GuiSortOrder
 
     item_show_changed = qt_signal()
     press_released = qt_signal()
@@ -220,7 +225,7 @@ class AbsQtListWidget(
         self.itemSelectionChanged.connect(self._view_item_widget_select_cbk)
         # noinspection PyUnresolvedReferences
         self._get_view_v_scroll_bar_().valueChanged.connect(
-            self._refresh_viewport_showable_auto_
+            self._refresh_viewport_showable_by_scroll_
         )
         # noinspection PyUnresolvedReferences
         # self._get_view_v_scroll_bar_().rangeChanged.connect(
@@ -230,18 +235,18 @@ class AbsQtListWidget(
         self._item_rects = []
         #
         self.setStyleSheet(
-            GuiQtStyle.get('QListView')
+            gui_qt_core.GuiQtStyle.get('QListView')
         )
         #
         self.verticalScrollBar().setStyleSheet(
-            GuiQtStyle.get('QScrollBar')
+            gui_qt_core.GuiQtStyle.get('QScrollBar')
         )
         self.horizontalScrollBar().setStyleSheet(
-            GuiQtStyle.get('QScrollBar')
+            gui_qt_core.GuiQtStyle.get('QScrollBar')
         )
         #
-        self._set_build_view_def_init_()
-        self._set_build_view_setup_(self)
+        self._init_view_build_extra_def_()
+        self._setup_view_build_(self)
 
         self._init_show_for_view_def_(self)
         self._init_busy_base_def_(self)
@@ -430,7 +435,8 @@ class AbsQtListWidget(
     def _get_visible_indices_(self):
         return [self.indexFromItem(i) for i in self._get_visible_items_() if i.isHidden() is False]
 
-    def _set_loading_update_(self):
+    @staticmethod
+    def _set_loading_update_():
         QtWidgets.QApplication.instance().processEvents(
             QtCore.QEventLoop.ExcludeUserInputEvents
         )

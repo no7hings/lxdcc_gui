@@ -9,7 +9,7 @@ import time
 
 import functools
 
-from lxbasic import bsc_core
+import lxbasic.core as bsc_core
 
 import lxgui.core as gui_core
 
@@ -80,10 +80,6 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
         self._options_prx_node.set_default(
             'match_pattern', '*.<udim>.####.{ext}, *.<udim>.{ext}, *.{ext}'
         )
-        #
-        self._options_prx_node.set(
-            'match', self.refresh_gui_fnc
-        )
         self._options_prx_node.set(
             'by_format.execute', self.execute_create_by_format
         )
@@ -108,6 +104,11 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
         self._tree_view.connect_refresh_action_for(
             self.refresh_gui_fnc
         )
+
+        self._refresh_button = prx_widgets.PrxPressItem()
+        self.add_button(self._refresh_button)
+        self._refresh_button.set_name('refresh')
+        self._refresh_button.connect_press_clicked_to(self.refresh_gui_fnc)
 
     @classmethod
     def _set_file_args_update_0_(cls, file_dict, file_opt, include_patterns, ext_includes):
@@ -173,7 +174,6 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
 
         directory_paths = self._get_directory_paths_(directory_path, below_enable)
         self._tree_view_add_opt.restore_all()
-        # self._tree_view_add_opt.set_output_directory(output_directory_path)
 
         if directory_paths:
             ts = gui_qt_core.QtBuildThreadStack(self.widget)
@@ -206,14 +206,14 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
         for i_k in file_paths:
             i_texture_src = utl_dcc_objects.OsTexture(i_k)
 
-            i_is_create, i_prx_item = self._tree_view_add_opt.set_prx_item_add_as(
+            i_is_create, i_prx_item = self._tree_view_add_opt.gui_add_as(
                 i_texture_src,
                 mode='list',
                 use_show_thread=True
             )
             if i_is_create is True:
                 i_prx_item.connect_press_db_clicked_to(
-                    self._set_detail_show_
+                    self._show_image_detail
                 )
 
         self._set_gui_textures_validator_()
@@ -270,7 +270,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
         if textures:
             with bsc_core.LogProcessContext.create(maximum=len(textures), label='gain texture create-data') as g_p:
                 for i_texture_src in textures:
-                    g_p.set_update()
+                    g_p.do_update()
                     #
                     i_texture_tgt = i_texture_src.__class__(
                         six.u('{}/{}{}').format(
@@ -298,7 +298,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
                                 )
         else:
             contents = [
-                'non-texture(s) to execute, you can click "match" or enter a new "directory" and click "match"'
+                'non-texture(s) to execute, you can click "refresh" or enter a new "directory" and click "refresh"'
             ]
         #
         if contents:
@@ -409,7 +409,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
         else:
             return True
 
-    @gui_core.GuiModifier.debug_run
+    @gui_core.GuiModifier.run_with_exception_catch
     def execute_create_by_format(self):
         ext_tgt = self._options_prx_node.get('by_format.extension')
         width = self._options_prx_node.get('by_format.width')
@@ -429,7 +429,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
         ]
         with bsc_core.LogProcessContext.create(maximum=len(method_args), label='create texture by data') as g_p:
             for i_fnc, i_args in method_args:
-                g_p.set_update()
+                g_p.do_update()
                 i_result = i_fnc(*i_args)
                 if i_result is False:
                     break
@@ -476,7 +476,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
         if textures:
             with bsc_core.LogProcessContext.create(maximum=len(textures), label='gain texture create-data') as g_p:
                 for i_texture_src in textures:
-                    g_p.set_update()
+                    g_p.do_update()
                     #
                     i_texture_tgt = i_texture_src.__class__(
                         '{}/{}{}'.format(
@@ -489,7 +489,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
                     i_texture_units_src = i_texture_src.get_exists_units()
                     #
                     i_color_space_src = i_texture_src.get_best_color_space()
-                    i_color_space_tgt = i_texture_src.TEXTURE_ACES_COLOR_SPACE_CONFIGURE.get_default_color_space()
+                    i_color_space_tgt = i_texture_src.generate_color_space_configure_for_aces().get_default_color_space()
                     for j_texture_unit_src in i_texture_units_src:
                         j_texture_unit_tgt = j_texture_unit_src.set_directory_repath_to(
                             directory_path_tgt
@@ -530,7 +530,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
             button.set_status_at(index, status)
 
         def run_fnc_():
-            from lxarnold import and_core
+            import lxarnold.core as and_core
 
             for i_index, (i_file_path_src, i_directory_path_tgt, i_color_space_src, i_color_space_tgt) in enumerate(
                     self._target_color_space_create_data
@@ -538,7 +538,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
                 bsc_core.StgFileOpt(i_directory_path_tgt).create_directory()
                 #
                 i_path_base, i_ext_src = os.path.splitext(i_file_path_src)
-                i_cmd = and_core.AndTextureOpt_.get_format_convert_as_aces_command(
+                i_cmd = and_core.AndTextureOpt.get_format_convert_as_aces_command(
                     i_file_path_src, i_directory_path_tgt, i_color_space_src, i_color_space_tgt
                 )
                 if button.get_is_stopped():
@@ -611,7 +611,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
         else:
             return True
 
-    @gui_core.GuiModifier.debug_run
+    @gui_core.GuiModifier.run_with_exception_catch
     def execute_create_by_color_space(self):
         directory_path_tgt = self._options_prx_node.get('by_color_space.directory')
         ext_tgt = self._options_prx_node.get('by_color_space.extension')
@@ -626,12 +626,12 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
         ]
         with bsc_core.LogProcessContext.create(maximum=len(method_args), label='create texture by data') as g_p:
             for i_fnc, i_args in method_args:
-                g_p.set_update()
+                g_p.do_update()
                 i_result = i_fnc(*i_args)
                 if i_result is False:
                     break
 
-    def _set_detail_show_(self, item, column):
+    def _show_image_detail(self, item, column):
         texture = self._tree_view_add_opt.get_file(item)
         w = gui_core.GuiDialog.create(
             self._session.gui_name,

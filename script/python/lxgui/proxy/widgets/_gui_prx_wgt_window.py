@@ -1,14 +1,18 @@
 # coding:utf-8
-import lxgui.configure as gui_configure
-
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, \
-    _gui_qt_wgt_item, _gui_qt_wgt_chart, _gui_qt_wgt_process
-
-from lxgui.proxy.widgets import _gui_prx_wdt_utility, _gui_prx_wdt_node, _gui_prx_wgt_contianer
+import lxgui.core as gui_core
 
 import lxgui.qt.core as gui_qt_core
 
+from lxgui.qt.widgets import \
+    _gui_qt_wgt_base, \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_button, \
+    _gui_qt_wgt_chart, \
+    _gui_qt_wgt_process
+
 import lxgui.proxy.abstracts as gui_prx_abstracts
+
+from lxgui.proxy.widgets import _gui_prx_wdt_utility, _gui_prx_wdt_node, _gui_prx_wgt_contianer
 
 
 class AbsPrxDialogWindow(
@@ -26,7 +30,7 @@ class AbsPrxDialogWindow(
     QT_WAITING_CHART_CLS = _gui_qt_wgt_chart.QtChartAsWaiting
     QT_PROGRESSING_CHART_CLS = _gui_qt_wgt_chart.QtChartAsProgressing
     #
-    ValidationStatus = gui_configure.ValidationStatus
+    ValidationStatus = gui_core.GuiValidationStatus
 
     def __init__(self, *args, **kwargs):
         super(AbsPrxDialogWindow, self).__init__(*args, **kwargs)
@@ -62,7 +66,7 @@ class AbsPrxDialogWindow(
     def _set_central_layout_create_(self):
         self._central_widget = _gui_qt_wgt_utility.QtWidget()
         self._qt_widget.setCentralWidget(self._central_widget)
-        self._central_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._central_widget)
+        self._central_layout = _gui_qt_wgt_base.QtVBoxLayout(self._central_widget)
         self._central_layout.setContentsMargins(*[4]*4)
 
     def _gui_build_(self):
@@ -107,7 +111,7 @@ class AbsPrxDialogWindow(
             gui_qt_core.QtWidgets.QSizePolicy.Expanding
         )
         #
-        self._customize_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._customize_widget)
+        self._customize_layout = _gui_qt_wgt_base.QtVBoxLayout(self._customize_widget)
         self._customize_layout.setAlignment(gui_qt_core.QtCore.Qt.AlignTop)
         # option
         self._options_prx_node = _gui_prx_wdt_node.PrxNode('options')
@@ -126,7 +130,7 @@ class AbsPrxDialogWindow(
         self._bottom_toolbar.set_expanded(True)
         qt_widget_2 = _gui_qt_wgt_utility.QtWidget()
         self._bottom_toolbar.add_widget(qt_widget_2)
-        self._input_button_layout = _gui_qt_wgt_utility.QtHLayout(qt_widget_2)
+        self._input_button_layout = _gui_qt_wgt_base.QtHBoxLayout(qt_widget_2)
         #
         qt_spacer_0 = _gui_qt_wgt_utility._QtSpacer()
         self._input_button_layout.addWidget(qt_spacer_0)
@@ -376,11 +380,11 @@ class PrxDialogWindow1(AbsPrxDialogWindow):
         self.set_content_font_size(10)
 
     def _set_central_layout_create_(self):
-        layout = _gui_qt_wgt_utility.QtVBoxLayout(self.widget)
+        layout = _gui_qt_wgt_base.QtVBoxLayout(self.widget)
         layout.setContentsMargins(0, 0, 0, 0)
         self._central_widget = _gui_qt_wgt_utility.QtWidget()
         layout.addWidget(self._central_widget)
-        self._central_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._central_widget)
+        self._central_layout = _gui_qt_wgt_base.QtVBoxLayout(self._central_widget)
         self._central_layout.setContentsMargins(*[4]*4)
 
     def do_yes(self):
@@ -458,7 +462,7 @@ class PrxMonitorWindow(
     gui_prx_abstracts.AbsPrxWaitingDef,
     gui_prx_abstracts.AbsPrxProgressingDef,
 ):
-    ValidationStatus = gui_configure.ValidationStatus
+    ValidationStatus = gui_core.GuiValidationStatus
     #
     QT_WIDGET_CLS = _gui_qt_wgt_utility.QtMainWindow
     #
@@ -482,7 +486,7 @@ class PrxMonitorWindow(
     def _gui_build_(self):
         self._central_widget = _gui_qt_wgt_utility.QtWidget()
         self._qt_widget.setCentralWidget(self._central_widget)
-        self._central_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._central_widget)
+        self._central_layout = _gui_qt_wgt_base.QtVBoxLayout(self._central_widget)
         #
         self._tip_text_browser = _gui_prx_wdt_utility.PrxTextBrowser()
         self._central_layout.addWidget(self._tip_text_browser.widget)
@@ -490,7 +494,7 @@ class PrxMonitorWindow(
         qt_widget_1 = _gui_qt_wgt_utility.QtWidget()
         self._central_layout.addWidget(qt_widget_1)
         #
-        self._input_button_layout = _gui_qt_wgt_utility.QtHLayout(qt_widget_1)
+        self._input_button_layout = _gui_qt_wgt_base.QtHBoxLayout(qt_widget_1)
         #
         self._status_button = _gui_prx_wdt_utility.PrxPressItem()
         self._input_button_layout.addWidget(self._status_button.widget)
@@ -539,7 +543,7 @@ class PrxProcessingWindow(
     def _gui_build_(self):
         self._central_widget = _gui_qt_wgt_utility.QtWidget()
         self._qt_widget.setCentralWidget(self._central_widget)
-        self._central_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._central_widget)
+        self._central_layout = _gui_qt_wgt_base.QtVBoxLayout(self._central_widget)
         #
         self._qt_processing_bar = _gui_qt_wgt_process.QtProcessingBar()
         self._central_layout.addWidget(self._qt_processing_bar)

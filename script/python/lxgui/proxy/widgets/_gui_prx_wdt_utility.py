@@ -5,14 +5,21 @@ import lxbasic.core as bsc_core
 
 import lxgui.qt.core as gui_qt_core
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_resize, _gui_qt_wgt_input_for_filter, \
-    _gui_qt_wgt_item, _gui_qt_wgt_head, _gui_qt_wgt_container, _gui_qt_wgt_input, _gui_qt_wgt_window
+import lxgui.core as gui_core
+
+from lxgui.qt.widgets import \
+    _gui_qt_wgt_base, \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_button, \
+    _gui_qt_wgt_resize, \
+    _gui_qt_wgt_input_for_filter, \
+    _gui_qt_wgt_item, \
+    _gui_qt_wgt_head, \
+    _gui_qt_wgt_container, \
+    _gui_qt_wgt_input, \
+    _gui_qt_wgt_window
 
 import lxgui.proxy.abstracts as gui_prx_abstracts
-
-import lxgui.configure as gui_configure
-
-import lxgui.core as gui_core
 
 
 class PrxHScrollArea(gui_prx_abstracts.AbsPrxWidget):
@@ -115,14 +122,14 @@ class PrxLeftExpandedGroup(gui_prx_abstracts.AbsPrxWidget):
         self._qt_widget._resize_handle._set_resize_target_(self._qt_widget)
         self._qt_widget._resize_handle.size_changed.connect(self.__set_width)
         #
-        qt_layout_0 = _gui_qt_wgt_utility.QtHLayout(self._qt_widget)
+        qt_layout_0 = _gui_qt_wgt_base.QtHBoxLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(0)
         qt_layout_0.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         #
         qt_widget_1 = _gui_qt_wgt_utility.QtWidget()
         qt_layout_0.addWidget(qt_widget_1)
-        qt_layout_1 = _gui_qt_wgt_utility.QtVBoxLayout(qt_widget_1)
+        qt_layout_1 = _gui_qt_wgt_base.QtVBoxLayout(qt_widget_1)
         qt_layout_1.setContentsMargins(*[0]*4)
         qt_layout_1.setSpacing(2)
         qt_layout_1.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
@@ -217,7 +224,7 @@ class PrxRightExpandedGroup(PrxLeftExpandedGroup):
         self._qt_widget._resize_handle.size_changed.connect(self.__set_width)
         self._qt_widget._resize_handle._set_resize_target_(self._qt_widget)
         #
-        qt_layout_0 = _gui_qt_wgt_utility.QtHLayout(self._qt_widget)
+        qt_layout_0 = _gui_qt_wgt_base.QtHBoxLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(0)
         qt_layout_0.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
@@ -230,7 +237,7 @@ class PrxRightExpandedGroup(PrxLeftExpandedGroup):
         #
         qt_widget_1 = _gui_qt_wgt_utility.QtWidget()
         qt_layout_0.addWidget(qt_widget_1)
-        qt_layout_1 = _gui_qt_wgt_utility.QtVBoxLayout(qt_widget_1)
+        qt_layout_1 = _gui_qt_wgt_base.QtVBoxLayout(qt_widget_1)
         qt_layout_1.setContentsMargins(*[0]*4)
         qt_layout_1.setSpacing(2)
         qt_layout_1.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
@@ -258,7 +265,7 @@ class PrxHToolBox(gui_prx_abstracts.AbsPrxWidget):
         self._wgt_w, self._wgt_h = 24, 24
         self._wgt_w_min, self._wgt_h_min = 12, 24
         #
-        qt_layout_0 = _gui_qt_wgt_utility.QtHLayout(self._qt_widget)
+        qt_layout_0 = _gui_qt_wgt_base.QtHBoxLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(2)
         qt_layout_0.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
@@ -270,7 +277,7 @@ class PrxHToolBox(gui_prx_abstracts.AbsPrxWidget):
         #
         qt_widget_1 = _gui_qt_wgt_utility._QtTranslucentWidget()
         qt_layout_0.addWidget(qt_widget_1)
-        qt_layout_1 = _gui_qt_wgt_utility.QtHLayout(qt_widget_1)
+        qt_layout_1 = _gui_qt_wgt_base.QtHBoxLayout(qt_widget_1)
         qt_layout_1.setContentsMargins(*[0]*4)
         qt_layout_1.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         #
@@ -370,7 +377,7 @@ class Window(gui_prx_abstracts.AbsPrxWindow):
     def _gui_build_(self):
         self._qt_main_widget = _gui_qt_wgt_utility.QtWidget()
         self._qt_widget.setCentralWidget(self._qt_main_widget)
-        self._qt_main_layout = _gui_qt_wgt_utility.QtHLayout(self._qt_main_widget)
+        self._qt_main_layout = _gui_qt_wgt_base.QtHBoxLayout(self._qt_main_widget)
 
     def get_main_widget(self):
         return self._qt_main_widget
@@ -386,7 +393,7 @@ class PrxLayerWidget(gui_prx_abstracts.AbsPrxWidget):
         super(PrxLayerWidget, self).__init__(*args, **kwargs)
 
     def _gui_build_(self):
-        qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self.widget)
+        qt_layout_0 = _gui_qt_wgt_base.QtVBoxLayout(self.widget)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
         qt_layout_0.setSpacing(0)
         #
@@ -395,7 +402,7 @@ class PrxLayerWidget(gui_prx_abstracts.AbsPrxWidget):
         qt_widget_0.setMinimumHeight(24)
         qt_layout_0.addWidget(qt_widget_0)
         #
-        qt_top_layout_1 = _gui_qt_wgt_utility.QtHLayout(qt_widget_0)
+        qt_top_layout_1 = _gui_qt_wgt_base.QtHBoxLayout(qt_widget_0)
         qt_top_layout_1.setContentsMargins(0, 0, 0, 0)
         qt_top_layout_1.setSpacing(0)
         self._qt_label_0 = _gui_qt_wgt_utility.QtTextItem()
@@ -415,7 +422,7 @@ class PrxLayerWidget(gui_prx_abstracts.AbsPrxWidget):
             gui_qt_core.QtWidgets.QSizePolicy.Expanding, gui_qt_core.QtWidgets.QSizePolicy.Expanding
         )
         qt_layout_0.addWidget(self._qt_central_widget_0)
-        self._qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_central_widget_0)
+        self._qt_layout_0 = _gui_qt_wgt_base.QtVBoxLayout(self._qt_central_widget_0)
         self._qt_layout_0.setContentsMargins(2, 2, 2, 2)
 
     def set_name(self, text):
@@ -464,7 +471,7 @@ class PrxLayer(gui_prx_abstracts.AbsPrxWidget):
         return self._layer_widget
 
     def create_widget(self, key, label=None):
-        qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
+        qt_layout_0 = _gui_qt_wgt_base.QtVBoxLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
         self._layer_widget = self.PRX_LAYER_WIDGET_CLS()
         if label is None:
@@ -481,7 +488,7 @@ class PrxTextBrowser(gui_prx_abstracts.AbsPrxWidget):
         super(PrxTextBrowser, self).__init__(*args, **kwargs)
 
     def _gui_build_(self):
-        qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self.widget)
+        qt_layout_0 = _gui_qt_wgt_base.QtVBoxLayout(self.widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         widget = _gui_qt_wgt_input.QtInputAsContent()
         widget._set_entry_enable_(False)
@@ -511,12 +518,12 @@ class PrxTextBrowser(gui_prx_abstracts.AbsPrxWidget):
 
     def add_error(self, text):
         self._qt_entry_widget.append(
-            gui_core.GuiXml.get_text(text, font_color=gui_configure.XmlColor.Red)
+            gui_core.GuiXml.get_text(text, font_color=gui_core.GuiXmlColor.Red)
         )
 
     def add_warning(self, text):
         self._qt_entry_widget.append(
-            gui_core.GuiXml.get_text(text, font_color=gui_configure.XmlColor.Yellow)
+            gui_core.GuiXml.get_text(text, font_color=gui_core.GuiXmlColor.Yellow)
         )
 
     def trace_log(self, text):
@@ -720,7 +727,7 @@ class PrxPressItem(gui_prx_abstracts.AbsPrxWidget):
     def set_finished_at(self, index, status):
         self.widget.rate_finished_at.emit(index, status)
 
-    def set_initialization(self, count, status=gui_configure.Status.Started):
+    def set_initialization(self, count, status=gui_core.GuiStatus.Started):
         self.widget._initialization_sub_process_(count, status)
 
 
@@ -840,7 +847,7 @@ class PrxButtonGroup(gui_prx_abstracts.AbsPrxWidget):
     def __init__(self, *args, **kwargs):
         super(PrxButtonGroup, self).__init__(*args, **kwargs)
         # self._qt_widget._set_line_draw_enable_(True)
-        self._layout = _gui_qt_wgt_utility.QtGridLayout(
+        self._layout = gui_qt_core.QtGridLayout(
             self._qt_widget
         )
         self._layout.setContentsMargins(8, 2, 0, 2)

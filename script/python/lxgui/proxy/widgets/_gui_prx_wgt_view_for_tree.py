@@ -1,20 +1,27 @@
 # coding:utf-8
 import collections
 
+import fnmatch
+
 import six
+
 import lxbasic.core as bsc_core
 
-import lxgui.configure as gui_configure
+import lxgui.core as gui_core
 
 import lxgui.qt.core as gui_qt_core
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_entry, _gui_qt_wgt_view_for_tree
+from lxgui.qt.widgets import \
+    _gui_qt_wgt_base, \
+    _gui_qt_wgt_entry, \
+    _gui_qt_wgt_view_for_tree
 
 import lxgui.proxy.abstracts as gui_prx_abstracts
 
-from lxgui.proxy.widgets import _gui_prx_wdt_utility, _gui_prx_wgt_item, _gui_prx_wgt_contianer
-
-import fnmatch
+from lxgui.proxy.widgets import \
+    _gui_prx_wdt_utility, \
+    _gui_prx_wgt_item, \
+    _gui_prx_wgt_contianer
 
 
 class PrxTreeView(
@@ -33,7 +40,7 @@ class PrxTreeView(
 
     def __init__(self, *args, **kwargs):
         super(PrxTreeView, self).__init__(*args, **kwargs)
-        self._qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
+        self._qt_layout_0 = _gui_qt_wgt_base.QtVBoxLayout(self._qt_widget)
         self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
         #
@@ -67,6 +74,8 @@ class PrxTreeView(
         # self._prx_filer_bar_0.set_filter_connect_to(self)
         self._gui_menu_raw = []
         self._item_dict = collections.OrderedDict()
+        self._cache_expand = dict()
+        self._cache_check = dict()
         self._filter_completion_cache = None
         self._loading_item_prxes = []
         self._view_keyword_filter_occurrence_index_current = 0
@@ -259,12 +268,12 @@ class PrxTreeView(
         tag_filter_tgt_keys = prx_item_tgt.get_tag_filter_tgt_keys()
         tag_filter_tgt_mode = prx_item_tgt.get_tag_filter_tgt_mode()
         if tag_filter_tgt_keys:
-            if tag_filter_tgt_mode == gui_configure.TagFilterMode.MatchAll:
+            if tag_filter_tgt_mode == gui_core.GuiTagFilterMode.MatchAll:
                 for tag_filter_tgt_key in tag_filter_tgt_keys:
                     if tag_filter_tgt_key not in tag_filter_all_keys_src:
                         return True, True
                 return True, False
-            elif tag_filter_tgt_mode == gui_configure.TagFilterMode.MatchOne:
+            elif tag_filter_tgt_mode == gui_core.GuiTagFilterMode.MatchOne:
                 for tag_filter_tgt_key in tag_filter_tgt_keys:
                     if tag_filter_tgt_key in tag_filter_all_keys_src:
                         return True, False

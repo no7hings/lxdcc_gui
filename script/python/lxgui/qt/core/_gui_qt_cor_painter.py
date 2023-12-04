@@ -1,7 +1,7 @@
 # coding:utf-8
-import math
+from lxgui.qt.wrap import *
 
-from lxgui.qt.warp import *
+import math
 
 import os
 
@@ -9,11 +9,9 @@ import time
 
 import lxbasic.core as bsc_core
 
-import lxgui.configure as gui_configure
-
 import lxgui.core as gui_core
 
-from lxgui.qt.core import _gui_qt_cor_base
+from ..core import _gui_qt_cor_base
 
 
 class QtPainterPath(QtGui.QPainterPath):
@@ -291,9 +289,9 @@ class QtPainter(QtGui.QPainter):
 
         if is_pressed is True or is_hovered is True:
             if is_pressed is True:
-                act_bkg_color = QtGui.QColor(*gui_configure.Rgba.LightBlue)
+                act_bkg_color = QtGui.QColor(*gui_core.GuiRgba.LightBlue)
             elif is_hovered is True:
-                act_bkg_color = QtGui.QColor(*gui_configure.Rgba.LightOrange)
+                act_bkg_color = QtGui.QColor(*gui_core.GuiRgba.LightOrange)
             else:
                 act_bkg_color = background_color
 
@@ -729,13 +727,13 @@ class QtPainter(QtGui.QPainter):
         svg_render = QtSvg.QSvgRenderer(file_path)
         svg_render.render(self, r_f)
         if is_pressed is True:
-            p_over = self._get_svg_rgba_over_(rect_, svg_render, gui_configure.Rgba.LightBlue)
+            p_over = self._get_svg_rgba_over_(rect_, svg_render, gui_core.GuiRgba.LightBlue)
             self.drawPixmap(
                 rect_,
                 p_over
             )
         elif is_hovered is True:
-            p_over = self._get_svg_rgba_over_(rect_, svg_render, gui_configure.Rgba.LightOrange)
+            p_over = self._get_svg_rgba_over_(rect_, svg_render, gui_core.GuiRgba.LightOrange)
             self.drawPixmap(
                 rect_,
                 p_over
@@ -836,9 +834,9 @@ class QtPainter(QtGui.QPainter):
         #
         pixmap = QtGui.QPixmap(img_scaled)
         if is_pressed is True:
-            pixmap = self._get_pixmap_with_rgba_over_(pixmap, gui_configure.Rgba.LightBlue, alpha=63)
+            pixmap = self._get_pixmap_with_rgba_over_(pixmap, gui_core.GuiRgba.LightBlue, alpha=63)
         elif is_hovered is True:
-            pixmap = self._get_pixmap_with_rgba_over_(pixmap, gui_configure.Rgba.LightOrange, alpha=63)
+            pixmap = self._get_pixmap_with_rgba_over_(pixmap, gui_core.GuiRgba.LightOrange, alpha=63)
         #
         self.drawPixmap(
             rect_,
@@ -1217,7 +1215,7 @@ class QtPainter(QtGui.QPainter):
 
         if is_pressed is True:
             p_over_1 = self._get_svg_rgba_over_(
-                rect_, svg_render, gui_configure.Rgba.LightBlue,
+                rect_, svg_render, gui_core.GuiRgba.LightBlue,
                 alpha=63, mask_color=QtGui.QColor(255, 0, 0, 255)
             )
             self.drawPixmap(
@@ -1226,7 +1224,7 @@ class QtPainter(QtGui.QPainter):
             )
         elif is_hovered is True:
             p_over_1 = self._get_svg_rgba_over_(
-                rect_, svg_render, gui_configure.Rgba.LightOrange,
+                rect_, svg_render, gui_core.GuiRgba.LightOrange,
                 alpha=63, mask_color=QtGui.QColor(255, 0, 0, 255)
             )
             self.drawPixmap(

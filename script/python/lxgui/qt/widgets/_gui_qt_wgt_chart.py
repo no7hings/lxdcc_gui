@@ -1,11 +1,15 @@
 # coding=utf-8
-from lxgui.qt.core import *
-
-import lxgui.qt.abstracts as gui_qt_abstracts
+from lxgui.qt.wrap import *
 
 import lxbasic.core as bsc_core
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility
+import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
+
+import lxgui.qt.abstracts as gui_qt_abstracts
+
+from ..widgets import _gui_qt_wgt_utility
 
 
 class QtChartAsRgbaChoose(
@@ -32,7 +36,7 @@ class QtChartAsRgbaChoose(
                     _i_sub_points = gui_core.GuiChat.get_regular_polygon_points(
                         x, y, side_count, radius_sub-1, side=0
                     )
-                    _i_color_path = QtPainterPath()
+                    _i_color_path = gui_qt_core.QtPainterPath()
                     _i_color_path._set_points_add_(_i_sub_points)
                     #
                     angle = gui_core.GuiChat.get_angle_by_coord(x, y, pos_x, pos_y)
@@ -84,7 +88,7 @@ class QtChartAsRgbaChoose(
         points_main = gui_core.GuiChat.get_regular_polygon_points(
             pos_x, pos_y, side_count, radius_main, radius_sub/2
         )
-        color_path_main = QtPainterPath()
+        color_path_main = gui_qt_core.QtPainterPath()
         color_path_main._set_points_add_(points_main)
         #
         x_count = int(count*.75)
@@ -132,7 +136,7 @@ class QtChartAsRgbaChoose(
     def paintEvent(self, event):
         self._color_path_dict = {}
         #
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         # painter.begin(self)  # for pyside2
         painter.setRenderHint(painter.Antialiasing)
         #
@@ -167,7 +171,7 @@ class QtChartAsRgbaChoose(
                 width, height
             )
             #
-            painter.setFont(QtFonts.Default)
+            painter.setFont(gui_qt_core.QtFonts.Default)
             painter._set_border_width_(1)
             painter.drawText(
                 text_rect,
@@ -181,7 +185,7 @@ class QtChartAsRgbaChoose(
                 width, height
             )
             #
-            painter._set_font_(QtFonts.Default)
+            painter._set_font_(gui_qt_core.QtFonts.Default)
             painter._set_border_width_(1)
             painter.drawText(
                 text_rect,
@@ -195,7 +199,7 @@ class QtChartAsRgbaChoose(
             )
             #
             painter._set_border_color_(223, 223, 223, 255)
-            painter.setFont(QtFonts.Default)
+            painter.setFont(gui_qt_core.QtFonts.Default)
             painter._set_border_width_(1)
             painter.drawText(
                 text_rect,
@@ -341,9 +345,9 @@ class QtChartAsRgbaChoose(
         self._update_selected_()
 
     def _do_track_offset_(self, point):
-        delta_x = point.x()
+        _delta_x = point.x()
         delta_y = point.y()
-        radix_x = 5.0
+        _radix_x = 5.0
         radix_y = 5.0
         self._color_v_multiply = bsc_core.RawValueMtd.step_to(
             value=self._color_v_multiply,
@@ -363,7 +367,7 @@ class QtChartAsRgbaChoose(
 
         width0, height0 = self._size_temp
 
-        scale = float(min(width, height))/float(min(width0, height0))
+        _scale = float(min(width, height))/float(min(width0, height0))
 
         x_c = point.x()
         y_c = point.y()
@@ -455,7 +459,7 @@ class QtChartAsProgressing(
         self._init_progress_base_def_()
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         if self._get_progress_is_enable_() is True:
             if self._progress_raw:
                 x, y = 0, 0
@@ -475,7 +479,7 @@ class QtChartAsProgressing(
                 for i_index, i in enumerate(self._progress_raw):
                     i_percent, i_percent_range, i_label, i_show_percent = i
                     if i_index == 0:
-                        i_data = QtProcessingChartDrawData._get_basic_data_(
+                        i_data = gui_qt_core.GuiQtChartDrawDataForProcessing._get_basic_data_(
                             rect=frame_rect,
                             index=i_index,
                             percent=i_percent,
@@ -485,7 +489,7 @@ class QtChartAsProgressing(
                             tape_w=12, spacing=4
                         )
                     else:
-                        i_data = QtProcessingChartDrawData._get_basic_data_(
+                        i_data = gui_qt_core.GuiQtChartDrawDataForProcessing._get_basic_data_(
                             rect=frame_rect,
                             index=i_index,
                             percent=i_percent,
@@ -502,7 +506,7 @@ class QtChartAsProgressing(
                         i_text_color
                     ) = i_data
                     #
-                    painter._set_border_color_(QtBorderColors.Transparent)
+                    painter._set_border_color_(gui_qt_core.QtBorderColors.Transparent)
                     if i_index == 0:
                         painter._set_background_color_(i_annulus_sector_color)
                     else:
@@ -510,7 +514,7 @@ class QtChartAsProgressing(
                     painter.drawPath(i_annulus_sector_path)
 
                     painter._set_text_color_(i_text_color)
-                    painter._set_font_(QtFonts.Chart)
+                    painter._set_font_(gui_qt_core.QtFonts.Chart)
 
                     painter.drawText(
                         i_show_name_rect_f, i_show_name, i_show_name_option
@@ -558,23 +562,23 @@ class QtChartAsInfo(
         self._set_info_text_('')
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         if self._info_text:
             rect = self.rect()
             painter._draw_frame_by_rect_(
                 rect=rect,
-                border_color=QtBorderColors.Transparent,
-                background_color=QtBackgroundColors.ToolTip,
+                border_color=gui_qt_core.QtBorderColors.Transparent,
+                background_color=gui_qt_core.QtBackgroundColors.ToolTip,
             )
             painter._draw_line_by_points_(
                 point_0=rect.topLeft(), point_1=rect.topRight(),
-                border_color=QtBorderColors.Basic
+                border_color=gui_qt_core.QtBorderColors.Basic
             )
             painter._draw_text_by_rect_(
                 rect=self.rect(),
                 text=self._info_text,
-                font=GuiQtFont.generate(size=10, italic=True),
-                font_color=QtFontColors.ToolTip,
+                font=gui_qt_core.GuiQtFont.generate(size=10, italic=True),
+                font_color=gui_qt_core.QtFontColors.ToolTip,
                 text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
             )
 
@@ -656,7 +660,7 @@ class QtChartAsWaiting(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         painter._set_border_color_(0, 0, 0, 0)
         painter._set_antialiasing_()
 
@@ -707,7 +711,7 @@ class QtChartAsSector(
         x, y = 0, 0
         # noinspection PyUnresolvedReferences
         w, h = self.width(), self.height()
-        self._chart_draw_data = QtSectorChartDrawData(
+        self._chart_draw_data = gui_qt_core.GuiQtChartDrawDataForSector(
             data=self._chart_data,
             position=(x, y),
             size=(w, h),
@@ -748,7 +752,7 @@ class QtChartAsSector(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         # painter.begin(self)  # for pyside2
         painter.setRenderHint(painter.Antialiasing)
         #
@@ -772,7 +776,7 @@ class QtChartAsRadar(
         x, y = 0, 0
         # noinspection PyUnresolvedReferences
         w, h = self.width(), self.height()
-        self._chart_draw_data = QtRadarChartDrawData(
+        self._chart_draw_data = gui_qt_core.GuiQtChartDrawDataForRadar(
             data=self._chart_data,
             position=(x, y),
             size=(w, h),
@@ -823,14 +827,14 @@ class QtChartAsRadar(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         # painter.begin(self)  # for pyside2
         painter.setRenderHint(painter.Antialiasing)
         if self._chart_draw_data is not None:
             basic_data = self._chart_draw_data['basic']
             map_data = self._chart_draw_data['map']
             mark_data = self._chart_draw_data['mark']
-            hoverPoint = self._hover_point
+            p_hover = self._hover_point
             #
             if basic_data is not None:
                 for seq, i in enumerate(basic_data):
@@ -868,7 +872,7 @@ class QtChartAsRadar(
                     #
                     r, g, b, a = i_background_rgba
                     painter._set_background_color_(
-                        [(r*.75, g*.75, b*.75, 255), (r, g, b, 255)][i_text_ellipse.contains(hoverPoint)]
+                        [(r*.75, g*.75, b*.75, 255), (r, g, b, 255)][i_text_ellipse.contains(p_hover)]
                         )
                     painter._set_border_color_(i_border_rgba)
                     #
@@ -889,7 +893,7 @@ class QtChartAsPie(
         x, y = 0, 0
         # noinspection PyUnresolvedReferences
         w, h = self.width(), self.height()
-        self._chart_draw_data = QtPieChartDrawData(
+        self._chart_draw_data = gui_qt_core.GuiQtChartDrawDataForPie(
             data=self._chart_data,
             position=(x, y),
             size=(w, h),
@@ -990,7 +994,7 @@ class QtChartAsPie(
         #
         radius = min(width, height)
         #
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         painter.setRenderHint(painter.Antialiasing)
         if self._basic_data:
             current_shadow_path = None
@@ -1020,7 +1024,7 @@ class QtChartAsPie(
             )
             if self._current_name_text and self._current_percent:
                 painter.setPen(self._pen)
-                painter.setFont(QtFonts.Large)
+                painter.setFont(gui_qt_core.QtFonts.Large)
                 painter.drawText(
                     rect, QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
                     '{}: {}'.format(self._current_name_text, self._current_percent)
@@ -1043,7 +1047,7 @@ class QtChartAsHistogram(
         x, y = 0, 0
         # noinspection PyUnresolvedReferences
         w, h = self.width(), self.height()
-        self._chart_draw_data = QtHistogramChartDrawData(
+        self._chart_draw_data = gui_qt_core.GuiQtChartDrawDataForHistogram(
             data=self._chart_data,
             position=(x, y),
             size=(w, h),
@@ -1167,7 +1171,7 @@ class QtChartAsHistogram(
         #
         value_scale_x, value_scale_y = self._zoom_scale_x, self._zoom_scale_y
         #
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         rect = QtCore.QRect(
             x, y, width, height
         )
@@ -1270,9 +1274,9 @@ class QtChartAsSequence(
             )
             #
             if self._chart_index_lost_array:
-                self._status = gui_configure.Status.Error
+                self._status = gui_core.GuiStatus.Error
             else:
-                self._status = gui_configure.Status.Completed
+                self._status = gui_core.GuiStatus.Completed
             #
             self.setToolTip(
                 (
@@ -1351,9 +1355,9 @@ class QtChartAsSequence(
         spacing = 4
         name_w = self._name_width
         #
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         #
-        painter.setFont(QtFonts.Default)
+        painter.setFont(gui_qt_core.QtFonts.Default)
         #
         index_minimum, index_maximum = self._chart_index_check_range
         #
@@ -1363,7 +1367,7 @@ class QtChartAsSequence(
             name_rect = QtCore.QRect(
                 pos_x+side, pos_y+side, name_w, height-side*2
             )
-            painter._set_font_(GuiQtFont.generate(size=10))
+            painter._set_font_(gui_qt_core.GuiQtFont.generate(size=10))
             painter._set_border_color_(self._name_color)
             if self._hover_flag is True:
                 if name_rect.contains(self._hover_point):
@@ -1413,7 +1417,7 @@ class QtChartAsSequence(
                         painter._set_background_color_(i_c_r, i_c_g, i_c_b, 255)
                         painter.drawRect(i_rect)
                         #
-                        painter._set_font_(QtFonts.Default)
+                        painter._set_font_(gui_qt_core.QtFonts.Default)
                         painter._set_border_color_(self._chart_text_color)
                         painter._set_background_color_(0, 0, 0, 0)
                         i_point = QtCore.QPoint(i_x, i_y+i_h/2+4)
@@ -1443,7 +1447,7 @@ class QtChartAsSequence(
                         painter._set_background_color_(i_c_r, i_c_g, i_c_b, 255)
                         painter.drawRect(i_rect)
                         #
-                        painter._set_font_(QtFonts.Default)
+                        painter._set_font_(gui_qt_core.QtFonts.Default)
                         painter._set_border_color_(self._chart_text_color)
                         painter._set_background_color_(0, 0, 0, 0)
                         i_point = QtCore.QPoint(i_x, i_y+i_h/2+4)

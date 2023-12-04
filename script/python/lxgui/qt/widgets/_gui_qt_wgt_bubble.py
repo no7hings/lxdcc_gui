@@ -1,13 +1,19 @@
 # coding=utf-8
-from lxgui.qt.core import *
+import sys
 
 import re
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility
+from lxgui.qt.wrap import *
+
+import lxbasic.core as bsc_core
+
+import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
 
 import lxgui.qt.abstracts as gui_qt_abstracts
 
-import lxgui.core as gui_core
+from ..widgets import _gui_qt_wgt_base
 
 
 class QtTextBubble(
@@ -64,7 +70,7 @@ class QtTextBubble(
         )
         self.setMouseTracking(True)
 
-        self.setFont(GuiQtFont.generate_2(size=12))
+        self.setFont(gui_qt_core.GuiQtFont.generate_2(size=12))
 
         self._init_action_base_def_(self)
         self._init_action_for_press_def_(self)
@@ -130,20 +136,20 @@ class QtTextBubble(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         if self.__text is not None:
             offset = self._get_action_offset_()
             painter._draw_frame_by_rect_(
                 rect=self.__rect_frame_draw,
-                border_color=QtBorderColors.Transparent,
-                background_color=[QtColors.BubbleBackground, QtColors.BubbleBackgroundHover][self.__is_hovered],
+                border_color=gui_qt_core.QtBorderColors.Transparent,
+                background_color=[gui_qt_core.QtColors.BubbleBackground, gui_qt_core.QtColors.BubbleBackgroundHover][self.__is_hovered],
                 border_radius=self.__radius_border,
                 offset=offset
             )
             painter._draw_text_by_rect_(
                 rect=self.__rect_text_draw,
                 text=self.__text,
-                font_color=QtColors.ToolTipText,
+                font_color=gui_qt_core.QtColors.ToolTipText,
                 font=self.font(),
                 text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
                 offset=offset
@@ -192,7 +198,7 @@ class QtInfoBubble(
         if self.__text:
             w, h = self.width(), self.height()
 
-            self.setFont(GuiQtFont.generate_2(size=h*self.__text_percent))
+            self.setFont(gui_qt_core.GuiQtFont.generate_2(size=h*self.__text_percent))
 
             w_t, h_t = self.fontMetrics().width(self.__text), self.fontMetrics().height()/2
             s_t = (h-h_t)/2
@@ -238,12 +244,12 @@ class QtInfoBubble(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         if self.__text:
             painter._draw_text_by_rect_(
                 rect=self.__rect,
                 text=self.__text,
-                font_color=QtColors.TextTemporary,
+                font_color=gui_qt_core.QtColors.TextTemporary,
                 font=self.font(),
                 text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
             )
@@ -272,7 +278,7 @@ class QtTextBubbles(
 
     def __init__(self, *args, **kwargs):
         super(QtTextBubbles, self).__init__(*args, **kwargs)
-        self.__lot = _gui_qt_wgt_utility.QtHLayout(self)
+        self.__lot = _gui_qt_wgt_base.QtHBoxLayout(self)
         self.__lot.setContentsMargins(*[2]*4)
         self.__lot.setSpacing(1)
 
@@ -357,7 +363,7 @@ class QtPathBubble(
                         x+c_x, y, i_w_c, h
                     )
                 else:
-                    i_s_t, i_w_t, i_w_c, i_h_c = GuiQtText.generate_draw_args(
+                    i_s_t, i_w_t, i_w_c, i_h_c = gui_qt_core.GuiQtText.generate_draw_args(
                         self, i_text
                     )
                     i_rect_frame.setRect(
@@ -381,7 +387,7 @@ class QtPathBubble(
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
         )
-        self.setFont(GuiQtFont.generate_2(size=12))
+        self.setFont(gui_qt_core.GuiQtFont.generate_2(size=12))
         self.setFocusPolicy(QtCore.Qt.NoFocus)
 
         self._init_action_base_def_(self)
@@ -452,23 +458,23 @@ class QtPathBubble(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         if self.__components:
             painter._set_antialiasing_(False)
             for i_index, i_path in enumerate(self.__components):
                 i_text = i_path.get_name()
                 i_rect_frame = self.__rects_frame[i_index]
                 i_rect_text = self.__rects_text[i_index]
-                painter._set_border_color_(QtColors.BubbleBorder)
+                painter._set_border_color_(gui_qt_core.QtColors.BubbleBorder)
                 i_is_hovered = i_index == self.__component_index_hovered
                 i_is_pressed = i_index == self.__component_index_pressed
                 i_offset = [0, 1][i_is_pressed]
                 if i_is_pressed is True:
-                    painter._set_background_color_(QtColors.BubbleBackgroundActioned)
+                    painter._set_background_color_(gui_qt_core.QtColors.BubbleBackgroundActioned)
                 elif i_is_hovered is True:
-                    painter._set_background_color_(QtColors.BubbleBackgroundHover)
+                    painter._set_background_color_(gui_qt_core.QtColors.BubbleBackgroundHover)
                 else:
-                    painter._set_background_color_(QtColors.BubbleBackground)
+                    painter._set_background_color_(gui_qt_core.QtColors.BubbleBackground)
 
                 if i_offset > 0:
                     i_rect_frame = QtCore.QRect(
@@ -483,7 +489,7 @@ class QtPathBubble(
                 painter.drawRect(i_rect_frame)
 
                 if i_index > 0:
-                    painter._set_text_color_(QtColors.BubbleText)
+                    painter._set_text_color_(gui_qt_core.QtColors.BubbleText)
                     painter.drawText(
                         i_rect_text,
                         QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
@@ -499,29 +505,29 @@ class QtPathBubble(
                     (x_p, y_p), (x_p+d_p, y_p+d_p), (x_p, y_p+h_p),
                     (x_p, y_p)
                 ]
-                painter._set_border_color_(QtColors.BubbleBorder)
+                painter._set_border_color_(gui_qt_core.QtColors.BubbleBorder)
                 if self.__next_is_hovered is True:
                     if self._get_action_flag_is_match_(self.ActionFlag.NextPress):
                         painter._set_background_color_(
-                            QtColors.BubbleBackgroundActioned
+                            gui_qt_core.QtColors.BubbleBackgroundActioned
                         )
                     else:
                         painter._set_background_color_(
-                            QtColors.BubbleBackgroundHover
+                            gui_qt_core.QtColors.BubbleBackgroundHover
                         )
                 else:
                     painter._set_background_color_(
-                        QtColors.BubbleBackground
+                        gui_qt_core.QtColors.BubbleBackground
                     )
                 painter._draw_path_by_coords_(
                     next_coords, False
                 )
             else:
-                painter._set_border_color_(QtColors.BubbleBorder)
+                painter._set_border_color_(gui_qt_core.QtColors.BubbleBorder)
                 if self.__next_is_waiting is True:
-                    painter._set_background_color_(QtColors.BubbleNextWaiting)
+                    painter._set_background_color_(gui_qt_core.QtColors.BubbleNextWaiting)
                 else:
-                    painter._set_background_color_(QtColors.BubbleNextFinished)
+                    painter._set_background_color_(gui_qt_core.QtColors.BubbleNextFinished)
                 painter.drawRect(
                     self.__rect_next
                 )
@@ -586,13 +592,14 @@ class QtChoiceBubbles(
     choice_index_accepted = qt_signal(int)
 
     def __draw_text(self, painter, rect, rect_draw, text, text_color, highlight_color):
+        # noinspection PyUnusedLocal
         x, y = rect.x(), rect.y()
         w, h = rect.width(), rect.height()
 
         x_d, y_d = rect_draw.x(), rect_draw.y()
         w_d, h_d = rect_draw.width(), rect_draw.height()
         # update font
-        painter._set_font_(GuiQtFont.generate_2(size=h*.725))
+        painter._set_font_(gui_qt_core.GuiQtFont.generate_2(size=h*.725))
 
         text_option_ = QtGui.QTextOption(
             QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter
@@ -687,7 +694,7 @@ class QtChoiceBubbles(
 
                 for i_seq, i_index in enumerate(self.__indices_matched):
                     i_text = self.__texts[i_index]
-                    i_t_w, i_t_h = GuiQtFont.compute_size_2(c_h*.725, i_text)
+                    i_t_w, i_t_h = gui_qt_core.GuiQtFont.compute_size_2(c_h*.725, i_text)
 
                     i_rect = self.__rects[i_index]
                     i_x, i_y = x_0+(w_0-i_t_w)/2, y_0+(h_0-v_h)/2+c_h*i_seq
@@ -735,8 +742,8 @@ class QtChoiceBubbles(
         self.__rect_input = QtCore.QRect()
         self.__rects = []
 
-        self.__font_input = GuiQtFont.generate(size=12)
-        self.__font_current = GuiQtFont.generate(size=24)
+        self.__font_input = gui_qt_core.GuiQtFont.generate(size=12)
+        self.__font_current = gui_qt_core.GuiQtFont.generate(size=24)
 
         self.__y_hover = -1
 
@@ -805,7 +812,7 @@ class QtChoiceBubbles(
 
     def paintEvent(self, event):
         if self.__texts:
-            painter = QtPainter(self)
+            painter = gui_qt_core.QtPainter(self)
             painter._set_antialiasing_(False)
             x, y = 0, 0
             w, h = self.width(), self.height()
@@ -843,7 +850,7 @@ class QtChoiceBubbles(
                     rect_cur = self.__rects[self.__index_current]
 
                     h_c = self.__h_text_maximum+4
-                    t_w_c, t_h_c = GuiQtFont.compute_size_2(
+                    t_w_c, t_h_c = gui_qt_core.GuiQtFont.compute_size_2(
                         h_c*.725, text_cur
                     )
 
@@ -878,12 +885,12 @@ class QtChoiceBubbles(
             if self.__text_input:
                 if self.__indices_matched:
                     text = self.__text_input
-                    painter._set_text_color_(QtColors.TextCorrect)
+                    painter._set_text_color_(gui_qt_core.QtColors.TextCorrect)
                 else:
                     text = self.__text_input
-                    painter._set_text_color_(QtColors.TextError)
+                    painter._set_text_color_(gui_qt_core.QtColors.TextError)
             else:
-                painter._set_text_color_(QtColors.TextWarning)
+                painter._set_text_color_(gui_qt_core.QtColors.TextWarning)
                 text = 'type to narrow choices'
 
             painter.drawText(
@@ -893,7 +900,7 @@ class QtChoiceBubbles(
             )
 
     def _do_filter_(self):
-        p = GuiQtUtil.get_qt_cursor_point()
+        p = gui_qt_core.GuiQtUtil.get_qt_cursor_point()
         l_p = self.mapFromGlobal(p)
 
         self.__y_hover = l_p.y()

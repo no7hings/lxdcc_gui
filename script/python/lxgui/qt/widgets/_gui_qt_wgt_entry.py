@@ -1,11 +1,19 @@
 # coding=utf-8
-from lxgui.qt.core import *
-
 import six
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_resize
+import os
+
+from lxgui.qt.wrap import *
+
+import lxbasic.core as bsc_core
+
+import lxgui.qt.core as gui_qt_core
 
 import lxgui.qt.abstracts as gui_qt_abstracts
+
+from ..widgets import \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_resize
 
 
 # entry as constant, etc. float, integer, string, ...
@@ -32,8 +40,8 @@ class QtEntryAsConstant(
 
     def __init__(self, *args, **kwargs):
         super(QtEntryAsConstant, self).__init__(*args, **kwargs)
-        self.setPalette(GuiQtDcc.generate_qt_palette())
-        self.setFont(GuiQtFont.generate_2(size=12))
+        self.setPalette(gui_qt_core.GuiQtDcc.generate_qt_palette())
+        self.setFont(gui_qt_core.GuiQtFont.generate_2(size=12))
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
@@ -52,7 +60,7 @@ class QtEntryAsConstant(
         self.textEdited.connect(self._do_user_entry_change_)
 
         self.setStyleSheet(
-            GuiQtStyle.get('QLineEdit')
+            gui_qt_core.GuiQtStyle.get('QLineEdit')
         )
 
         self._init_entry_base_def_(self)
@@ -424,26 +432,26 @@ class QtEntryAsContent(
         # self.setAcceptRichText(False)
         # self.setWordWrapMode(QtGui.QTextOption.NoWrap)
         #
-        self.setFont(QtFonts.Content)
-        qt_palette = GuiQtDcc.generate_qt_palette()
+        self.setFont(gui_qt_core.QtFonts.Content)
+        qt_palette = gui_qt_core.GuiQtDcc.generate_qt_palette()
         self.setPalette(qt_palette)
         self.setAutoFillBackground(True)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         #
-        self._print_signals = QtPrintSignals(self)
+        self._print_signals = gui_qt_core.QtPrintSignals(self)
         #
         self._print_signals.print_add_accepted.connect(self._add_value_)
         self._print_signals.print_over_accepted.connect(self._set_value_)
         #
         self.setStyleSheet(
-            GuiQtStyle.get('QTextEdit')
+            gui_qt_core.GuiQtStyle.get('QTextEdit')
         )
         #
         self.verticalScrollBar().setStyleSheet(
-            GuiQtStyle.get('QScrollBar')
+            gui_qt_core.GuiQtStyle.get('QScrollBar')
         )
         self.horizontalScrollBar().setStyleSheet(
-            GuiQtStyle.get('QScrollBar')
+            gui_qt_core.GuiQtStyle.get('QScrollBar')
         )
         self._init_entry_base_def_(self)
         self._init_entry_frame_extra_def_(self)
@@ -479,7 +487,7 @@ class QtEntryAsContent(
 
     def paintEvent(self, event):
         if not self.toPlainText():
-            painter = QtPainter(self.viewport())
+            painter = gui_qt_core.QtPainter(self.viewport())
             if self._empty_text:
                 painter._draw_empty_text_by_rect_(
                     rect=self.rect(),
@@ -633,7 +641,7 @@ class QtEntryAsContent(
 # entry as list
 class QtEntryAsList(
     gui_qt_abstracts.AbsQtListWidget,
-    gui_qt_abstracts.AbsQtHelpDef,
+    gui_qt_abstracts.AbsQtHelpBaseDef,
 
     gui_qt_abstracts.AbsQtEntryAsArrayBaseDef,
     gui_qt_abstracts.AbsQtEntryFrameExtraDef,
@@ -662,7 +670,7 @@ class QtEntryAsList(
         self._item_width, self._item_height = 20, 20
         self._grid_size = 20, 20
 
-        self._set_help_def_init_(self)
+        self._init_help_base_def_(self)
 
         self._init_entry_as_array_base_def_(self)
         self._init_entry_frame_extra_def_(self)
@@ -747,7 +755,7 @@ class QtEntryAsList(
 
     def paintEvent(self, event):
         if not self.count():
-            painter = QtPainter(self.viewport())
+            painter = gui_qt_core.QtPainter(self.viewport())
             if self._empty_text:
                 painter._draw_empty_text_by_rect_(
                     rect=self.rect(),
@@ -930,11 +938,11 @@ class QtEntryAsList(
         if self._entry_use_as_storage is True:
             if os.path.isdir(text):
                 item_widget._set_icon_(
-                    GuiQtDcc.get_qt_folder_icon(use_system=True)
+                    gui_qt_core.GuiQtDcc.get_qt_folder_icon(use_system=True)
                 )
             elif os.path.isfile(text):
                 item_widget._set_icon_(
-                    GuiQtDcc.get_qt_file_icon(text)
+                    gui_qt_core.GuiQtDcc.get_qt_file_icon(text)
                 )
             else:
                 item_widget._set_icon_name_text_(text)
@@ -1020,7 +1028,7 @@ class QtEntryAsBubble(
             else:
                 text = self.__text
 
-            s_t, w_t, w_c, h_c = GuiQtText.generate_draw_args(self, text, self.__w_maximum_text)
+            s_t, w_t, w_c, h_c = gui_qt_core.GuiQtText.generate_draw_args(self, text, self.__w_maximum_text)
             self.setFixedWidth(w_c)
 
             self.__radius_border = s_t
@@ -1041,7 +1049,7 @@ class QtEntryAsBubble(
             QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Expanding
         )
 
-        self.setFont(GuiQtFont.generate_2(size=12))
+        self.setFont(gui_qt_core.GuiQtFont.generate_2(size=12))
 
         self._init_entry_base_def_(self)
 
@@ -1063,7 +1071,7 @@ class QtEntryAsBubble(
         self.__w_mark = None
 
         self.setToolTip(
-            GuiQtUtil.generate_tool_tip_css(
+            gui_qt_core.GuiQtUtil.generate_tool_tip_css(
                 'bubble entry',
                 [
                     '"LMB-click" to show choose',
@@ -1115,20 +1123,20 @@ class QtEntryAsBubble(
         return self._scroll_to_(delta)
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         if self.__text is not None:
             offset = self._get_action_offset_()
-            color_bkg, color_txt = GuiQtColor.generate_color_args_by_text(self.__text)
+            color_bkg, color_txt = gui_qt_core.GuiQtColor.generate_color_args_by_text(self.__text)
 
             rect_frame = self.__rect_frame_draw
             rect_frame = QtCore.QRect(
                 rect_frame.x()+offset, rect_frame.y()+offset, rect_frame.width()-offset, rect_frame.height()-offset
             )
-            painter._set_border_color_(QtColors.BubbleBorder)
+            painter._set_border_color_(gui_qt_core.QtColors.BubbleBorder)
             if offset:
-                painter._set_background_color_(QtColors.BubbleBackgroundActioned)
+                painter._set_background_color_(gui_qt_core.QtColors.BubbleBackgroundActioned)
             elif self.__is_hovered:
-                painter._set_background_color_(QtColors.BubbleBackgroundHover)
+                painter._set_background_color_(gui_qt_core.QtColors.BubbleBackgroundHover)
             else:
                 painter._set_background_color_(color_bkg)
 
@@ -1144,9 +1152,9 @@ class QtEntryAsBubble(
             )
 
             if offset:
-                painter._set_text_color_(QtColors.BubbleText)
+                painter._set_text_color_(gui_qt_core.QtColors.BubbleText)
             elif self.__is_hovered:
-                painter._set_text_color_(QtColors.BubbleText)
+                painter._set_text_color_(gui_qt_core.QtColors.BubbleText)
             else:
                 painter._set_text_color_(color_txt)
 
@@ -1235,7 +1243,7 @@ class QtEntryAsCapsule(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
         )
 
-        self.setFont(GuiQtFont.generate_2(size=12))
+        self.setFont(gui_qt_core.GuiQtFont.generate_2(size=12))
         self.setMouseTracking(True)
 
         self._init_name_base_def_(self)
@@ -1291,7 +1299,7 @@ class QtEntryAsCapsule(
                     x+i_x, y+1, i_w, h-2
                 )
 
-            w_maximum = c*self._capsule_per_width
+            _w_maximum = c*self._capsule_per_width
 
     def eventFilter(self, *args):
         widget, event = args
@@ -1329,7 +1337,7 @@ class QtEntryAsCapsule(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         if self.__texts_draw:
             painter._draw_capsule_by_rects_(
                 rects=self.__rects_frame,
@@ -1341,6 +1349,7 @@ class QtEntryAsCapsule(
                 is_enable=self._action_is_enable
             )
 
+    # noinspection PyUnusedLocal
     def _do_show_tool_tip_(self, event):
         if self.__index_hover is not None:
             value = self._get_value_options_()[self.__index_hover]
@@ -1350,14 +1359,14 @@ class QtEntryAsCapsule(
                 title = value
 
             if self.__check_use_exclusive is True:
-                css = GuiQtUtil.generate_tool_tip_css(
+                css = gui_qt_core.GuiQtUtil.generate_tool_tip_css(
                     title,
                     [
                         '"LMB-click" to switch to this item',
                     ]
                 )
             else:
-                css = GuiQtUtil.generate_tool_tip_css(
+                css = gui_qt_core.GuiQtUtil.generate_tool_tip_css(
                     title,
                     [
                         '"LMB-click" to check this item on',
@@ -1577,10 +1586,10 @@ class QtEntryFrame(
         self._init_action_base_def_(self)
         self._init_thread_base_def_(self)
         #
-        self._frame_border_color = QtBorderColors.Light
-        self._hovered_frame_border_color = QtBorderColors.Hovered
-        self._selected_frame_border_color = QtBorderColors.Selected
-        self._frame_background_color = QtBackgroundColors.Dim
+        self._frame_border_color = gui_qt_core.QtBorderColors.Light
+        self._hovered_frame_border_color = gui_qt_core.QtBorderColors.Hovered
+        self._selected_frame_border_color = gui_qt_core.QtBorderColors.Selected
+        self._frame_background_color = gui_qt_core.QtBackgroundColors.Dim
 
         self._resize_handle = _gui_qt_wgt_resize.QtVResizeHandle(self)
         self._resize_handle.hide()
@@ -1601,15 +1610,15 @@ class QtEntryFrame(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
 
         is_selected = self._is_focused
 
         color_bkg = self._frame_background_color
-        color_bdr = [QtBorderColors.Basic, QtBorderColors.HighLight][is_selected]
+        color_bdr = [gui_qt_core.QtBorderColors.Basic, gui_qt_core.QtBorderColors.HighLight][is_selected]
         w_bdr = [self._frame_border_draw_width, self._frame_border_draw_width+1][is_selected]
         painter._set_border_color_(
-            QtColors.Transparent
+            gui_qt_core.QtColors.Transparent
         )
         painter._set_background_color_(
             color_bkg
@@ -1622,8 +1631,8 @@ class QtEntryFrame(
                 painter._draw_text_by_rect_(
                     rect=self._tip_draw_rect,
                     text=self._tip_text,
-                    font_color=QtColors.TextDisable,
-                    font=QtFonts.DefaultItalic,
+                    font_color=gui_qt_core.QtColors.TextDisable,
+                    font=gui_qt_core.QtFonts.DefaultItalic,
                     text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
                 )
 
@@ -1639,7 +1648,7 @@ class QtEntryFrame(
             color_bdr
         )
         painter._set_background_color_(
-            QtColors.Transparent
+            gui_qt_core.QtColors.Transparent
         )
         painter._set_border_width_(w_bdr)
         for i_rect in self._frame_draw_rects:
@@ -1660,7 +1669,7 @@ class QtEntryFrame(
 
     def _update_background_color_by_locked_(self, boolean):
         self._frame_background_color = [
-            QtBackgroundColors.Basic, QtBackgroundColors.Dim
+            gui_qt_core.QtBackgroundColors.Basic, gui_qt_core.QtBackgroundColors.Dim
         ][boolean]
 
     def _set_focused_(self, boolean):

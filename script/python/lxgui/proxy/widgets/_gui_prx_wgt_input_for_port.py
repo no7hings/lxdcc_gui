@@ -15,11 +15,19 @@ import lxgui.core as gui_core
 
 import lxgui.qt.core as gui_qt_core
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_input, _gui_qt_wgt_input_for_storage
-
 import lxgui.proxy.abstracts as gui_prx_abstracts
 
-from lxgui.proxy.widgets import _gui_prx_wdt_utility, _gui_prx_wgt_port_base, _gui_prx_wgt_view_for_tree
+from lxgui.qt.widgets import \
+    _gui_qt_wgt_base, \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_button, \
+    _gui_qt_wgt_input, \
+    _gui_qt_wgt_input_for_storage
+
+from lxgui.proxy.widgets import \
+    _gui_prx_wdt_utility, \
+    _gui_prx_wgt_port_base, \
+    _gui_prx_wgt_view_for_tree
 
 
 # entry
@@ -33,7 +41,7 @@ class _AbsPrxInput(gui_prx_abstracts.AbsPrxWidget):
         )
 
     def _gui_build_(self):
-        self._qt_layout = _gui_qt_wgt_utility.QtHLayout(self._qt_widget)
+        self._qt_layout = _gui_qt_wgt_base.QtHBoxLayout(self._qt_widget)
         self._qt_layout.setContentsMargins(0, 0, 0, 0)
         self._qt_layout.setSpacing(2)
         #
@@ -1161,12 +1169,12 @@ class PrxInputAsPressButton(_AbsPrxInput):
     def get(self):
         return None
 
-    @gui_core.GuiModifier.debug_run
+    @gui_core.GuiModifier.run_with_exception_catch
     def __exec_fnc(self, fnc):
         fnc()
 
     @staticmethod
-    @gui_core.GuiModifier.debug_run
+    @gui_core.GuiModifier.run_with_exception_catch
     def __exec_scp(script):
         exec script
 
@@ -1203,7 +1211,7 @@ class PrxInputAsSubProcessButton(_AbsPrxInput):
     def get(self):
         return None
 
-    @gui_core.GuiModifier.debug_run
+    @gui_core.GuiModifier.run_with_exception_catch
     def __exec_fnc(self, fnc):
         fnc()
 
@@ -1239,7 +1247,7 @@ class PrxInputAsValidationButton(_AbsPrxInput):
     def get(self):
         return None
 
-    @gui_core.GuiModifier.debug_run
+    @gui_core.GuiModifier.run_with_exception_catch
     def __exec_fnc(self, fnc):
         fnc()
 
@@ -1354,7 +1362,7 @@ class _AbsPrxInputExtra(gui_prx_abstracts.AbsPrxWidget):
         super(_AbsPrxInputExtra, self).__init__(*args, **kwargs)
 
     def _gui_build_(self):
-        self._qt_layout = _gui_qt_wgt_utility.QtHLayout(self._qt_widget)
+        self._qt_layout = _gui_qt_wgt_base.QtHBoxLayout(self._qt_widget)
         self._qt_layout.setContentsMargins(0, 0, 0, 0)
         self._qt_layout.setSpacing(2)
         #
@@ -1418,13 +1426,13 @@ class PrxInputAsResolverEntity(_AbsPrxInputExtra):
         self._prx_input.set_resize_target(self.widget)
         self._prx_input.set_resize_enable(True)
         self._prx_input.set_resize_minimum(82)
-        self._obj_add_dict = {}
+        self._item_dict = {}
 
     def __set_item_comp_add_as_tree_(self, obj, use_show_thread=False):
         obj_path = obj.path
         obj_type = obj.type
-        if obj_path in self._obj_add_dict:
-            prx_item = self._obj_add_dict[obj_path]
+        if obj_path in self._item_dict:
+            prx_item = self._item_dict[obj_path]
             return False, prx_item, None
         else:
             create_kwargs = dict(
@@ -1434,7 +1442,7 @@ class PrxInputAsResolverEntity(_AbsPrxInputExtra):
             )
             parent = obj.get_parent()
             if parent is not None:
-                prx_item_parent = self._obj_add_dict[parent.path]
+                prx_item_parent = self._item_dict[parent.path]
                 prx_item = prx_item_parent.add_child(
                     **create_kwargs
                 )
@@ -1446,7 +1454,7 @@ class PrxInputAsResolverEntity(_AbsPrxInputExtra):
             prx_item.update_keyword_filter_keys_tgt([obj_path, obj_type])
             obj.set_obj_gui(prx_item)
             prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
-            self._obj_add_dict[obj_path] = prx_item
+            self._item_dict[obj_path] = prx_item
             #
             if use_show_thread is True:
                 prx_item.set_show_build_fnc(
@@ -1497,7 +1505,7 @@ class PrxInputAsResolverEntity(_AbsPrxInputExtra):
             ancestors.reverse()
             for i_rsv_obj in ancestors:
                 ancestor_path = i_rsv_obj.path
-                if ancestor_path not in self._obj_add_dict:
+                if ancestor_path not in self._item_dict:
                     self.__set_item_comp_add_as_tree_(i_rsv_obj, use_show_thread=True)
         #
         self.__set_item_comp_add_as_tree_(obj, use_show_thread=True)
@@ -1517,7 +1525,7 @@ class PrxInputAsResolverEntity(_AbsPrxInputExtra):
         prx_item.update_keyword_filter_keys_tgt([obj_path, obj_type])
         obj.set_obj_gui(prx_item)
         prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
-        self._obj_add_dict[obj_path] = prx_item
+        self._item_dict[obj_path] = prx_item
         #
         prx_item.set_show_build_fnc(
             functools.partial(
@@ -1541,7 +1549,7 @@ class PrxInputAsResolverEntity(_AbsPrxInputExtra):
             if objs:
                 with log_core.LogProcessContext.create(maximum=len(objs), label='gui-add for resolver object') as g_p:
                     for i in objs:
-                        g_p.set_update()
+                        g_p.do_update()
                         #
                         self.__add_item_as_list(i)
                     #
@@ -1583,15 +1591,15 @@ class PrxInputAsNodes(_AbsPrxInputExtra):
         self._prx_input.set_resize_enable(True)
         self._prx_input.set_resize_minimum(82)
         #
-        self._obj_add_dict = self._prx_input._item_dict
+        self._item_dict = self._prx_input._item_dict
 
         self._view_mode = 'list'
 
     def __add_item_comp_as_tree_(self, obj, use_show_thread=False):
         obj_path = obj.path
         obj_type = obj.type
-        if obj_path in self._obj_add_dict:
-            prx_item = self._obj_add_dict[obj_path]
+        if obj_path in self._item_dict:
+            prx_item = self._item_dict[obj_path]
             return False, prx_item, None
         else:
             create_kwargs = dict(
@@ -1601,7 +1609,7 @@ class PrxInputAsNodes(_AbsPrxInputExtra):
             )
             parent = obj.get_parent()
             if parent is not None:
-                prx_item_parent = self._obj_add_dict[parent.path]
+                prx_item_parent = self._item_dict[parent.path]
                 prx_item = prx_item_parent.add_child(
                     **create_kwargs
                 )
@@ -1614,7 +1622,7 @@ class PrxInputAsNodes(_AbsPrxInputExtra):
             prx_item.update_keyword_filter_keys_tgt([obj_path, obj_type])
             obj.set_obj_gui(prx_item)
             prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
-            self._obj_add_dict[obj_path] = prx_item
+            self._item_dict[obj_path] = prx_item
             #
             if use_show_thread is True:
                 prx_item.set_show_build_fnc(
@@ -1665,7 +1673,7 @@ class PrxInputAsNodes(_AbsPrxInputExtra):
             ancestors.reverse()
             for i_rsv_obj in ancestors:
                 ancestor_path = i_rsv_obj.path
-                if ancestor_path not in self._obj_add_dict:
+                if ancestor_path not in self._item_dict:
                     i_is_create, i_prx_item, _ = self.__add_item_comp_as_tree_(i_rsv_obj, use_show_thread=True)
                     if i_is_create is True:
                         i_prx_item.set_expanded(True)
@@ -1690,7 +1698,7 @@ class PrxInputAsNodes(_AbsPrxInputExtra):
         obj.set_obj_gui(prx_item)
         prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
         prx_item.set_tool_tip(path)
-        self._obj_add_dict[path] = prx_item
+        self._item_dict[path] = prx_item
         #
         self.__item_show_deferred_fnc(prx_item, use_as_tree=False)
 
@@ -1776,7 +1784,7 @@ class PrxInputAsFiles(_AbsPrxInputExtra):
         #
         self._prx_input.connect_refresh_action_for(self.refresh)
         #
-        self._obj_add_dict = self._prx_input._item_dict
+        self._item_dict = self._prx_input._item_dict
 
         self._root_location = None
 
@@ -1787,8 +1795,8 @@ class PrxInputAsFiles(_AbsPrxInputExtra):
     def __add_item_comp_as_tree_(self, obj, scheme):
         path = obj.path
         type_name = obj.type
-        if path in self._obj_add_dict:
-            prx_item = self._obj_add_dict[path]
+        if path in self._item_dict:
+            prx_item = self._item_dict[path]
             return False, prx_item, None
 
         create_kwargs = dict(
@@ -1797,7 +1805,7 @@ class PrxInputAsFiles(_AbsPrxInputExtra):
         )
         parent_path = obj.get_parent_path()
         if parent_path is not None:
-            prx_item_parent = self._obj_add_dict[parent_path]
+            prx_item_parent = self._item_dict[parent_path]
             prx_item = prx_item_parent.add_child(
                 **create_kwargs
             )
@@ -1810,7 +1818,7 @@ class PrxInputAsFiles(_AbsPrxInputExtra):
         prx_item.update_keyword_filter_keys_tgt([path, type_name])
         obj.set_gui(prx_item)
         prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
-        self._obj_add_dict[path] = prx_item
+        self._item_dict[path] = prx_item
         #
         prx_item.set_show_build_fnc(
             lambda *args, **kwargs: self.__item_show_deferred_fnc(prx_item, scheme)
@@ -1825,23 +1833,30 @@ class PrxInputAsFiles(_AbsPrxInputExtra):
             )
 
         def rpc_unlock_folder_fnc_():
-            bsc_core.StgPathPermissionMtd.change_mode(path, mode='777')
+            bsc_core.StgPathPermissionMtd.change_mode(path, mode='775')
             prx_item.set_status(
                 prx_item.ValidationStatus.Normal
             )
 
         def rpc_lock_files_fnc_():
             file_paths = bsc_core.StgDirectoryOpt(path).get_all_file_paths()
-            for i_file_path in file_paths:
-                bsc_core.StgPathPermissionMtd.change_mode(i_file_path, mode='555')
+            with log_core.LogProcessContext.create(maximum=len(file_paths), label='rpc unlock files (555)') as g_p:
+                for i_file_path in file_paths:
+                    bsc_core.StgPathPermissionMtd.change_mode(i_file_path, mode='555')
+                    g_p.do_update()
+
                 prx_item.set_status(
                     prx_item.ValidationStatus.Normal
                 )
 
         def rpc_unlock_files_fnc_():
             file_paths = bsc_core.StgDirectoryOpt(path).get_all_file_paths()
-            for i_file_path in file_paths:
-                bsc_core.StgPathPermissionMtd.change_mode(i_file_path, mode='777')
+            with log_core.LogProcessContext.create(maximum=len(file_paths), label='rpc unlock files (775)') as g_p:
+                for i_file_path in file_paths:
+                    i_file_opt = bsc_core.StgFileOpt(i_file_path)
+                    bsc_core.StgPathPermissionMtd.change_mode(i_file_path, mode='775')
+                    g_p.do_update()
+
                 prx_item.set_status(
                     prx_item.ValidationStatus.Normal
                 )
@@ -1900,20 +1915,27 @@ class PrxInputAsFiles(_AbsPrxInputExtra):
             menu_raw.extend(
                 [
                     ('rpc folder permission',),
-                    ('rpc lock folder', 'lock', rpc_lock_folder_fnc_),
-                    ('rpc unlock folder', 'lock', rpc_unlock_folder_fnc_),
+                    ('rpc lock folder (555)', 'lock', rpc_lock_folder_fnc_),
+                    ('rpc unlock folder (775)', 'lock', rpc_unlock_folder_fnc_),
                     ('rpc file permission',),
-                    ('rpc lock files', 'lock', rpc_lock_files_fnc_),
-                    ('rpc unlock files', 'lock', rpc_unlock_files_fnc_),
+                    ('rpc lock files (555)', 'lock', rpc_lock_files_fnc_),
+                    ('rpc unlock files (775)', 'lock', rpc_unlock_files_fnc_),
                 ]
             )
         #
         prx_item.set_gui_menu_raw(menu_raw)
         #
-        is_writeable = obj.get_is_writeable()
-        if is_writeable is False:
+        if obj.get_is_exists() is False:
             prx_item.set_status(
-                prx_item.ValidationStatus.Locked
+                prx_item.ValidationStatus.Lost
+            )
+        elif obj.get_is_readable() is False:
+            prx_item.set_status(
+                prx_item.ValidationStatus.Unreadable
+            )
+        elif obj.get_is_writable() is False:
+            prx_item.set_status(
+                prx_item.ValidationStatus.Unwritable
             )
 
     #
@@ -1927,7 +1949,7 @@ class PrxInputAsFiles(_AbsPrxInputExtra):
             if self._root_location in ancestor_paths:
                 index = ancestor_paths.index(self._root_location)
                 for i_path in ancestor_paths[index:]:
-                    if i_path not in self._obj_add_dict:
+                    if i_path not in self._item_dict:
                         i_obj = self._root_obj.create_dag_fnc(i_path)
                         i_is_create, i_prx_item, _ = self.__add_item_comp_as_tree_(i_obj, scheme='folder')
                         if i_is_create is True:
@@ -1940,7 +1962,7 @@ class PrxInputAsFiles(_AbsPrxInputExtra):
                 ancestor_paths.reverse()
                 for i_path in ancestor_paths:
                     i_obj = self._root_obj.create_dag_fnc(i_path)
-                    if i_path not in self._obj_add_dict:
+                    if i_path not in self._item_dict:
                         i_is_create, i_prx_item, _ = self.__add_item_comp_as_tree_(i_obj, scheme='folder')
                         if i_is_create is True:
                             i_prx_item.set_expanded(True)
@@ -1950,8 +1972,8 @@ class PrxInputAsFiles(_AbsPrxInputExtra):
     def __add_item_as_list(self, obj, scheme):
         path = obj.get_path()
         type_name = obj.get_type_name()
-        if path in self._obj_add_dict:
-            prx_item = self._obj_add_dict[path]
+        if path in self._item_dict:
+            prx_item = self._item_dict[path]
             return False, prx_item, None
         #
         create_kwargs = dict(
@@ -1967,7 +1989,7 @@ class PrxInputAsFiles(_AbsPrxInputExtra):
         obj.set_gui(prx_item)
         prx_item.set_gui_dcc_obj(obj, namespace=self.NAMESPACE)
         prx_item.set_tool_tip(path)
-        self._obj_add_dict[path] = prx_item
+        self._item_dict[path] = prx_item
         #
         prx_item.set_show_build_fnc(
             lambda *args, **kwargs: self.__item_show_deferred_fnc(prx_item, scheme, use_as_tree=False)

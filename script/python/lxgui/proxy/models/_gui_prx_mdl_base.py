@@ -75,7 +75,7 @@ class GuiProgress(object):
     def set_start(self):
         pass
 
-    def set_update(self, *args, **kwargs):
+    def do_update(self, *args, **kwargs):
         if self._is_stop is False:
             self._value += 1
             #

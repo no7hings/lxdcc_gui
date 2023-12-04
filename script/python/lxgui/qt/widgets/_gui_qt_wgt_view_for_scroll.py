@@ -1,9 +1,13 @@
 # coding=utf-8
-from lxgui.qt.core import *
+from lxgui.qt.wrap import *
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button
+import lxgui.core as gui_core
 
-import lxgui.qt.models as gui_qt_models
+import lxgui.qt.core as gui_qt_core
+
+from ..widgets import \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_button
 
 
 class QtHScrollView(QtWidgets.QWidget):
@@ -87,7 +91,7 @@ class QtHScrollView(QtWidgets.QWidget):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(2)
 
-        self._gui_scroll = gui_qt_models.GuiScroll()
+        self._gui_scroll = gui_qt_core.GuiScrollModel()
         self._gui_scroll.set_step(64)
 
         self._scroll_button_frame = _gui_qt_wgt_utility.QtButtonFrame(self)

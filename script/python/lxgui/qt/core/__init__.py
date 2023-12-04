@@ -11,4 +11,7 @@ from ._gui_qt_cor_chart import *
 
 from ._gui_qt_cor_dcc import *
 
+from ._gui_qt_cor_model import *
+
+
 

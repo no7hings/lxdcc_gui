@@ -7,13 +7,19 @@ import lxbasic.core as bsc_core
 
 import lxgui.qt.core as gui_qt_core
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_chart, _gui_qt_wgt_layer_stack
-
-import lxgui.proxy.abstracts as gui_prx_abstracts
+from lxgui.qt.widgets import \
+    _gui_qt_wgt_base, \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_chart, \
+    _gui_qt_wgt_layer_stack
 
 import lxgui.proxy.core as gui_prx_core
 
-from lxgui.proxy.widgets import _gui_prx_wdt_utility, _gui_prx_wgt_contianer
+import lxgui.proxy.abstracts as gui_prx_abstracts
+
+from lxgui.proxy.widgets import \
+    _gui_prx_wdt_utility, \
+    _gui_prx_wgt_contianer
 
 
 class PrxBaseWindow(
@@ -40,17 +46,19 @@ class PrxBaseWindow(
 
     def __init__(self, *args, **kwargs):
         super(PrxBaseWindow, self).__init__(*args, **kwargs)
-        #
+        self._init_base_window_def_(*args, **kwargs)
+
+    def _init_base_window_def_(self, *args, **kwargs):
         self.set_log_file_path(bsc_core.StgUserMtd.get_user_log_directory())
-        #
+
         self._log_file_path = None
-        #
+
         gui_prx_core.GuiProxyLogBridge.generate_all()
 
         self._qt_widget._create_window_shortcut_action_for_(
             self.show_help, 'F1'
         )
-        #
+
         self.set_show_menu_raw(
             [
                 ('log', 'log', self.show_log_unit),
@@ -81,7 +89,7 @@ class PrxBaseWindow(
         #
         self._set_progressing_def_init_()
         #
-        self._qt_central_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_central_widget)
+        self._qt_central_layout = _gui_qt_wgt_base.QtVBoxLayout(self._qt_central_widget)
         self._qt_central_layout.setContentsMargins(0, 0, 0, 0)
         #
         self._init_layer_base_def_(self._qt_central_layout)
@@ -128,7 +136,7 @@ class PrxBaseWindow(
     def __build_main_layer(self):
         # content_widget_0
         layer = self.create_layer('main_0')
-        qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(layer._qt_widget)
+        qt_layout_0 = _gui_qt_wgt_base.QtVBoxLayout(layer._qt_widget)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
         qt_layout_0.setSpacing(0)
         self._qt_main_line = _gui_qt_wgt_utility.QtHLine()
@@ -136,7 +144,7 @@ class PrxBaseWindow(
         # main widget
         self._qt_main_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
         qt_layout_0.addWidget(self._qt_main_widget)
-        self._qt_main_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_main_widget)
+        self._qt_main_layout = _gui_qt_wgt_base.QtVBoxLayout(self._qt_main_widget)
         self._qt_main_layout.setContentsMargins(2, 2, 2, 2)
         # bottom toolbar
         self._window_bottom_tool_bar = _gui_prx_wgt_contianer.PrxHToolBar()
@@ -397,6 +405,9 @@ class PrxSessionWindow(PrxBaseWindow):
 
     def __init__(self, session, *args, **kwargs):
         super(PrxSessionWindow, self).__init__(*args, **kwargs)
+        self._init_session_window_def_(session, *args, **kwargs)
+
+    def _init_session_window_def_(self, session, *args, **kwargs):
         self._debug_run_(self._main_fnc_, session)
 
     @property

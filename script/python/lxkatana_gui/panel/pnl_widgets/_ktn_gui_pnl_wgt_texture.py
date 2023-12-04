@@ -69,11 +69,19 @@ class PnlManagerForAssetTextureDcc(mng_gui_abstracts.AbsPnlManagerForAssetTextur
             node_path = self._options_prx_node.get('dcc.node')
             if node_path:
                 obj_opt = ktn_core.NGObjOpt(node_path)
+                scheme = self._options_prx_node.get('scheme')
                 scp = ktn_scripts.ScpLookOutput(obj_opt)
-                root = self._options_prx_node.get('dcc.location')
+                geometry_location_sub = self._options_prx_node.get('dcc.location')
                 geometry_location = '/root/world/geo'
-                location = '{}{}'.format(geometry_location, root)
-                dcc_shaders = scp.get_all_dcc_geometry_shaders_by_location(location)
+                location = '{}{}'.format(geometry_location, geometry_location_sub)
+                print scheme
+                if scheme == 'assignment':
+                    dcc_shaders = scp.get_all_dcc_geometry_shaders_by_location(location)
+                elif scheme == 'all':
+                    dcc_shaders = scp.get_all_dcc_shaders()
+                else:
+                    raise RuntimeError()
+
                 self._dcc_objs = self._dcc_texture_references.get_objs(
                     include_paths=[i.path for i in dcc_shaders]
                 )

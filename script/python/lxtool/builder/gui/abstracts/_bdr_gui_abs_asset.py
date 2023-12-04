@@ -13,7 +13,7 @@ class AbsPnlBuilderForAsset(prx_widgets.PrxSessionToolWindow):
         super(AbsPnlBuilderForAsset, self).__init__(session, *args, **kwargs)
 
     def set_all_setup(self):
-        self._hook_build_configure = self._session.configure.get_content('build')
+        self._hook_build_configure = self._session.configure.get_as_content('build')
         self._set_group_0_build_()
 
     def _set_tool_panel_setup_(self):

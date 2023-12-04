@@ -97,7 +97,7 @@ class PnlDccWorkspaceLoader(prx_widgets.PrxSessionToolWindow):
         result_0 = rsv_unit_0.get_result(version='all')
         if result_0:
             for i_result in result_0:
-                i_properties = rsv_unit_0.get_properties_by_result(i_result)
+                i_properties = rsv_unit_0.generate_properties_by_result(i_result)
                 i_artist = i_properties.get('artist')
                 self._artists.append(i_artist)
         #

@@ -1,26 +1,27 @@
 # coding=utf-8
-# noinspection PyUnresolvedReferences
 from lxgui.qt_for_usd.warp import *
 
 import functools
 
 import six
 
-import lxgui.qt_for_usd.core as gui_qt_usd_core
-
-import lxgui.qt.core as gui_qt_core
-
-import lxbasic.configure as bsc_configure
-
 import lxbasic.core as bsc_core
+
+import lxusd.core as usd_core
 
 import lxgui.core as gui_core
 
+import lxgui.qt.core as gui_qt_core
+
 import lxgui.qt.abstracts as gui_qt_abstracts
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_container
+import lxgui.qt_for_usd.core as gui_qt_usd_core
 
-from lxusd import usd_core
+from lxgui.qt.widgets import \
+    _gui_qt_wgt_base, \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_button, \
+    _gui_qt_wgt_container
 
 
 if QT_USD_FLAG is True:
@@ -71,7 +72,7 @@ if QT_USD_FLAG is True:
             self._hovered_frame_border_color = gui_qt_core.QtBorderColors.Hovered
             self._selected_frame_border_color = gui_qt_core.QtBorderColors.Selected
             self._frame_background_color = gui_qt_core.QtBackgroundColors.Dim
-            layout_g = _gui_qt_wgt_utility.QtGridLayout(self)
+            layout_g = gui_qt_core.QtGridLayout(self)
             layout_g.setContentsMargins(2, 2, 2, 2)
             layout_g.setSpacing(0)
 
@@ -80,7 +81,7 @@ if QT_USD_FLAG is True:
             self._main_button._set_icon_file_path_(
                 gui_core.GuiIcon.get('application/usd')
             )
-            self._main_button._set_menu_data_gain_fnc_(
+            self._main_button._set_menu_data_generate_fnc_(
                 self._get_main_menu_data_
             )
             self._main_button.setFixedSize(28, 28)
@@ -107,21 +108,21 @@ if QT_USD_FLAG is True:
             self._usd_stage.Reload()
             root_layer = self._usd_stage.GetRootLayer()
             root_layer.subLayerPaths.append(
-                bsc_core.Resource.get('asset/library/geo/sphere.usda')
+                bsc_core.ExtendResource.get('asset/library/geo/sphere.usda')
             )
             if use_acescg is True:
                 root_layer.subLayerPaths.append(
-                    bsc_core.Resource.get('asset/library/acescg-preview-material.usda')
+                    bsc_core.ExtendResource.get('asset/library/acescg-preview-material.usda')
                 )
                 root_layer.subLayerPaths.append(
-                    bsc_core.Resource.get('asset/library/acescg-preview-light.usda')
+                    bsc_core.ExtendResource.get('asset/library/acescg-preview-light.usda')
                 )
             else:
                 root_layer.subLayerPaths.append(
-                    bsc_core.Resource.get('asset/library/preview-material.usda')
+                    bsc_core.ExtendResource.get('asset/library/preview-material.usda')
                 )
                 root_layer.subLayerPaths.append(
-                    bsc_core.Resource.get('asset/library/preview-light.usda')
+                    bsc_core.ExtendResource.get('asset/library/preview-light.usda')
                 )
             #
             for i_usd_prim in usd_core.UsdStageOpt(self._usd_stage).get_all_mesh_objs():
@@ -132,7 +133,7 @@ if QT_USD_FLAG is True:
                 )
             #
             if texture_preview_assigns:
-                for i_key in bsc_configure.TextureTypes.UsdPreviews:
+                for i_key in bsc_core.BscTextureTypes.UsdPreviews:
                     i_usd_prim = self._usd_stage.GetPrimAtPath('/mtl_preview/txr_{}'.format(i_key))
                     if i_usd_prim.IsValid() is True:
                         if i_key in texture_preview_assigns:
@@ -149,21 +150,21 @@ if QT_USD_FLAG is True:
             self._usd_stage.Reload()
             root_layer = self._usd_stage.GetRootLayer()
             root_layer.subLayerPaths.append(
-                bsc_core.Resource.get('asset/library/geo/sphere.usda')
+                bsc_core.ExtendResource.get('asset/library/geo/sphere.usda')
             )
             if use_acescg is True:
                 root_layer.subLayerPaths.append(
-                    bsc_core.Resource.get('asset/library/acescg-arnold-material.usda')
+                    bsc_core.ExtendResource.get('asset/library/acescg-arnold-material.usda')
                 )
                 root_layer.subLayerPaths.append(
-                    bsc_core.Resource.get('asset/library/acescg-arnold-light.usda')
+                    bsc_core.ExtendResource.get('asset/library/acescg-arnold-light.usda')
                 )
             else:
                 root_layer.subLayerPaths.append(
-                    bsc_core.Resource.get('asset/library/arnold-material.usda')
+                    bsc_core.ExtendResource.get('asset/library/arnold-material.usda')
                 )
                 root_layer.subLayerPaths.append(
-                    bsc_core.Resource.get('asset/library/arnold-light.usda')
+                    bsc_core.ExtendResource.get('asset/library/arnold-light.usda')
                 )
             #
             for i_usd_prim in usd_core.UsdStageOpt(self._usd_stage).get_all_mesh_objs():
@@ -211,7 +212,7 @@ if QT_USD_FLAG is True:
             root_layer = self._usd_stage.GetRootLayer()
             root_layer.subLayerPaths.append(usd_file)
             root_layer.subLayerPaths.append(
-                bsc_core.Resource.get('asset/library/camera.usda')
+                bsc_core.ExtendResource.get('asset/library/camera.usda')
             )
             self._usd_update_camera_()
 
@@ -219,7 +220,7 @@ if QT_USD_FLAG is True:
                 root_layer.subLayerPaths.append(look_preview_usd_file)
             #
             root_layer.subLayerPaths.append(
-                bsc_core.Resource.get('asset/library/preview-light.usda')
+                bsc_core.ExtendResource.get('asset/library/preview-light.usda')
             )
             #
             (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).get_geometry_args('/')
@@ -250,7 +251,7 @@ if QT_USD_FLAG is True:
                     )
             #
             texture_preview_assigns = texture_preview_assigns or {}
-            for i_key in bsc_configure.TextureTypes.UsdPreviews:
+            for i_key in bsc_core.BscTextureTypes.UsdPreviews:
                 i_usd_prim = self._usd_stage.GetPrimAtPath('/mtl_preview/txr_{}'.format(i_key))
                 if i_usd_prim.IsValid() is True:
                     if i_key in texture_preview_assigns:
@@ -300,23 +301,23 @@ if QT_USD_FLAG is True:
             root_layer = self._usd_stage.GetRootLayer()
             root_layer.subLayerPaths.append(usd_file)
             root_layer.subLayerPaths.append(
-                bsc_core.Resource.get('asset/library/camera.usda')
+                bsc_core.ExtendResource.get('asset/library/camera.usda')
             )
             self._usd_update_camera_()
             #
             if use_acescg is True:
                 root_layer.subLayerPaths.append(
-                    bsc_core.Resource.get('asset/library/acescg-arnold-material.usda')
+                    bsc_core.ExtendResource.get('asset/library/acescg-arnold-material.usda')
                 )
                 root_layer.subLayerPaths.append(
-                    bsc_core.Resource.get('asset/library/acescg-arnold-light.usda')
+                    bsc_core.ExtendResource.get('asset/library/acescg-arnold-light.usda')
                 )
             else:
                 root_layer.subLayerPaths.append(
-                    bsc_core.Resource.get('asset/library/arnold-material.usda')
+                    bsc_core.ExtendResource.get('asset/library/arnold-material.usda')
                 )
                 root_layer.subLayerPaths.append(
-                    bsc_core.Resource.get('asset/library/arnold-light.usda')
+                    bsc_core.ExtendResource.get('asset/library/arnold-light.usda')
                 )
             #
             # (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).get_geometry_args('/')
@@ -384,7 +385,7 @@ if QT_USD_FLAG is True:
             root_layer = self._usd_stage.GetRootLayer()
             root_layer.subLayerPaths.append(usd_file)
             root_layer.subLayerPaths.append(
-                bsc_core.Resource.get('asset/library/camera.usda')
+                bsc_core.ExtendResource.get('asset/library/camera.usda')
             )
             self._usd_update_camera_()
 
@@ -735,9 +736,9 @@ if QT_USD_FLAG is True:
             self._dataModel.viewSettings.ambientLightOnly = False
             self._dataModel.viewSettings.domeLightEnabled = False
             #
-            self._dataModel.viewSettings.displayGuide = False
             self._dataModel.viewSettings.displayRender = True
-            self._dataModel.viewSettings.displayProxy = True
+            self._dataModel.viewSettings.displayProxy = False
+            self._dataModel.viewSettings.displayGuide = False
             # self._dataModel.viewSettings.cullBackfaces = True
             #
             self._dataModel.viewSettings.enableSceneLights = True
@@ -897,7 +898,7 @@ if QT_USD_FLAG is True:
                 '/lights/lgt_render/lgt_env/lgt_env_shape'
             )
             usd_core.UsdLightOpt(prim).set_texture_file(
-                bsc_core.Resource.get('asset/library/lgt/acescg/tx/{}.tx'.format(key))
+                bsc_core.ExtendResource.get('asset/library/lgt/acescg/tx/{}.tx'.format(key))
             )
 
         def _usd_get_environment_current_is_(self, key):
@@ -1324,7 +1325,7 @@ if QT_USD_FLAG is True:
                  self._top_tool_widget.Style.Null]
             )
 
-            self._top_tool_layout = _gui_qt_wgt_utility.QtHLayout(self._top_tool_widget)
+            self._top_tool_layout = _gui_qt_wgt_base.QtHBoxLayout(self._top_tool_widget)
             self._top_tool_layout.setContentsMargins(*[0]*4)
             self._top_tool_layout.setSpacing(0)
             self._top_tool_layout._set_align_left_()
@@ -1365,7 +1366,7 @@ if QT_USD_FLAG is True:
                 i_button._set_checked_(i_value)
                 i_button.check_toggled.connect(i_enable_fnc)
                 i_button._set_menu_title_text_(i_key)
-                i_button._set_menu_data_gain_fnc_(
+                i_button._set_menu_data_generate_fnc_(
                     i_menu_data_gain_fnc
                 )
 
@@ -1393,7 +1394,7 @@ if QT_USD_FLAG is True:
                 )
                 i_button._set_checked_(i_value)
                 i_button.check_toggled.connect(i_enable_fnc)
-                i_button._set_menu_data_gain_fnc_(i_menu_data_gain_fnc)
+                i_button._set_menu_data_generate_fnc_(i_menu_data_gain_fnc)
                 #
                 tool_box._add_widget_(i_button)
 
@@ -1417,7 +1418,7 @@ if QT_USD_FLAG is True:
                 )
                 i_button._set_checked_(i_value)
                 i_button.check_toggled.connect(i_enable_fnc)
-                i_button._set_menu_data_gain_fnc_(i_menu_data_gain_fnc)
+                i_button._set_menu_data_generate_fnc_(i_menu_data_gain_fnc)
 
                 tool_box._add_widget_(i_button)
 
@@ -1448,7 +1449,7 @@ if QT_USD_FLAG is True:
                     gui_core.GuiIcon.get('tool/{}'.format(i_key))
                 )
                 #
-                i_button._set_menu_data_gain_fnc_(i_menu_data_gain_fnc)
+                i_button._set_menu_data_generate_fnc_(i_menu_data_gain_fnc)
 
                 tool_box._add_widget_(i_button)
 
@@ -1469,7 +1470,7 @@ if QT_USD_FLAG is True:
                 i_button._set_icon_file_path_(
                     gui_core.GuiIcon.get('tool/{}'.format(i_key))
                 )
-                i_button._set_menu_data_gain_fnc_(i_menu_data_gain_fnc)
+                i_button._set_menu_data_generate_fnc_(i_menu_data_gain_fnc)
                 #
                 tool_box._add_widget_(i_button)
 
@@ -1490,7 +1491,7 @@ if QT_USD_FLAG is True:
                 i_button._set_icon_file_path_(
                     gui_core.GuiIcon.get('tool/{}'.format(i_key))
                 )
-                i_button._set_menu_data_gain_fnc_(i_menu_data_gain_fnc)
+                i_button._set_menu_data_generate_fnc_(i_menu_data_gain_fnc)
                 i_button.press_clicked.connect(i_fnc)
                 #
                 tool_box._add_widget_(i_button)
@@ -1558,7 +1559,7 @@ if QT_USD_FLAG is True:
                  self._left_tool_widget.Style.Null, self._left_tool_widget.Style.Solid]
             )
 
-            self._left_tool_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._left_tool_widget)
+            self._left_tool_layout = _gui_qt_wgt_base.QtVBoxLayout(self._left_tool_widget)
             self._left_tool_layout.setContentsMargins(*[0]*4)
             self._left_tool_layout.setSpacing(0)
             self._left_tool_layout._set_align_top_()
@@ -1657,7 +1658,7 @@ if QT_USD_FLAG is True:
                 i_button._set_checked_(i_value)
                 if i_enable_fnc is not None:
                     i_button.check_toggled.connect(i_enable_fnc)
-                i_button._set_menu_data_gain_fnc_(i_menu_data_gain_fnc)
+                i_button._set_menu_data_generate_fnc_(i_menu_data_gain_fnc)
 
                 tool_box._add_widget_(i_button)
 

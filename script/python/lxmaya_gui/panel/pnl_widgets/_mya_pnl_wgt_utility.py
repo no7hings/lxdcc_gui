@@ -2,7 +2,7 @@
 # noinspection PyUnresolvedReferences
 import maya.cmds as cmds
 
-from lxbasic import bsc_core
+import lxbasic.core as bsc_core
 
 import lxtool.utility.gui.abstracts as utl_gui_abstracts
 

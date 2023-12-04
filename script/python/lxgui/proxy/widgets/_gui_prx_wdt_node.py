@@ -7,27 +7,31 @@ import lxbasic.core as bsc_core
 
 import lxuniverse.abstracts as unr_abstracts
 
-import lxgui.configure as gui_configure
-
 import lxgui.core as gui_core
 
 import lxgui.qt.core as gui_qt_core
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_split
+from lxgui.qt.widgets import \
+    _gui_qt_wgt_base, \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_split
 
 import lxgui.proxy.abstracts as gui_prx_abstracts
 
-from lxgui.proxy.widgets import _gui_prx_wgt_port_base, _gui_prx_wgt_input_for_port, _gui_prx_wgt_contianer
+from lxgui.proxy.widgets import \
+    _gui_prx_wgt_port_base, \
+    _gui_prx_wgt_input_for_port, \
+    _gui_prx_wgt_contianer
 
 
 # port =============================================================================================================== #
 class AbsPrxPortBaseDef(object):
     ENTRY_TYPE = 'custom'
 
-    Status = gui_configure.Status
-    ProcessStatus = gui_configure.Status
-    ShowStatus = gui_configure.ShowStatus
-    ValidationStatus = gui_configure.ValidationStatus
+    Status = gui_core.GuiStatus
+    ProcessStatus = gui_core.GuiStatus
+    ShowStatus = gui_core.GuiShowStatus
+    ValidationStatus = gui_core.GuiValidationStatus
 
     def _init_prx_port_def_(self, category, port_path, label=None):
         self._prx_node = None
@@ -391,7 +395,7 @@ class _AbsPrxPortBase(AbsPrxPortBaseDef):
             return self._custom_widget
         else:
             widget = _gui_qt_wgt_utility._QtTranslucentWidget()
-            layout = _gui_qt_wgt_utility.QtHLayout(widget)
+            layout = _gui_qt_wgt_base.QtHBoxLayout(widget)
             label = self.label_widget
             label.set_width(label_width)
             layout.addWidget(label.widget)
@@ -757,7 +761,7 @@ class PrxSubProcessPort(_AbsPrxPortBase):
     def set_statuses(self, statuses):
         self.get_input_widget()._set_sub_process_statuses_(statuses)
 
-    def set_initialization(self, count, status=gui_configure.Status.Started):
+    def set_initialization(self, count, status=gui_core.GuiStatus.Started):
         self.get_input_widget()._initialization_sub_process_(count, status)
 
     def restore_all(self):
@@ -1082,7 +1086,7 @@ class PrxNodeOld(gui_prx_abstracts.AbsPrxWidget):
 
     def __init__(self, *args, **kwargs):
         super(PrxNodeOld, self).__init__(*args, **kwargs)
-        qt_layout_0 = _gui_qt_wgt_utility.QtHLayout(self.widget)
+        qt_layout_0 = _gui_qt_wgt_base.QtHBoxLayout(self.widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         #
         qt_splitter_0 = _gui_qt_wgt_split.QtHSplitterOld()
@@ -1093,13 +1097,13 @@ class PrxNodeOld(gui_prx_abstracts.AbsPrxWidget):
         self._name_width = 160
         self._qt_label_widget.setFixedWidth(self._name_width)
         qt_splitter_0.addWidget(self._qt_label_widget)
-        self._qt_label_layout = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_label_widget)
+        self._qt_label_layout = _gui_qt_wgt_base.QtVBoxLayout(self._qt_label_widget)
         self._qt_label_layout.setAlignment(gui_qt_core.QtCore.Qt.AlignTop)
         self._qt_label_layout.setContentsMargins(2, 0, 2, 0)
         #
         qt_entry_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
         qt_splitter_0.addWidget(qt_entry_widget)
-        self._qt_entry_layout = _gui_qt_wgt_utility.QtVBoxLayout(qt_entry_widget)
+        self._qt_entry_layout = _gui_qt_wgt_base.QtVBoxLayout(qt_entry_widget)
         self._qt_entry_layout.setAlignment(gui_qt_core.QtCore.Qt.AlignTop)
         self._qt_entry_layout.setContentsMargins(2, 0, 2, 0)
 
@@ -1142,7 +1146,7 @@ class PrxNodeOld(gui_prx_abstracts.AbsPrxWidget):
                 self._qt_entry_layout.addWidget(
                     enter_widget
                 )
-                enter_layout = _gui_qt_wgt_utility.QtHLayout(enter_widget)
+                enter_layout = _gui_qt_wgt_base.QtHBoxLayout(enter_widget)
                 enter_layout.setContentsMargins(0, 0, 0, 0)
                 enter_layout.setSpacing(2)
                 enter_layout.addWidget(
@@ -1242,7 +1246,7 @@ class PrxNodePortGroup(AbsPrxPortBaseDef):
             port_main_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
             self._port_layout.addWidget(port_main_widget)
             cur_port.set_main_widget(port_main_widget)
-            cur_port_layout = _gui_qt_wgt_utility.QtHLayout(port_main_widget)
+            cur_port_layout = _gui_qt_wgt_base.QtHBoxLayout(port_main_widget)
             cur_port_layout.setContentsMargins(0, 0, 0, 0)
             cur_port_layout._set_align_top_()
             cur_port._set_layout_(cur_port_layout)
@@ -1251,7 +1255,7 @@ class PrxNodePortGroup(AbsPrxPortBaseDef):
             cur_key_widget.hide()
             cur_port._set_key_widget_(cur_key_widget)
             cur_port_layout.addWidget(cur_key_widget)
-            cur_key_layout = _gui_qt_wgt_utility.QtHLayout(cur_key_widget)
+            cur_key_layout = _gui_qt_wgt_base.QtHBoxLayout(cur_key_widget)
             cur_key_layout.setContentsMargins(0, 0, 0, 0)
             cur_key_layout._set_align_top_()
             # + key
@@ -1269,7 +1273,7 @@ class PrxNodePortGroup(AbsPrxPortBaseDef):
             port_main_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
             self._port_layout.addWidget(port_main_widget)
             cur_port.set_main_widget(port_main_widget)
-            cur_port_layout = _gui_qt_wgt_utility.QtHLayout(port_main_widget)
+            cur_port_layout = _gui_qt_wgt_base.QtHBoxLayout(port_main_widget)
             cur_port_layout.setContentsMargins(0, 0, 0, 0)
             cur_port_layout._set_align_top_()
             cur_port._set_layout_(cur_port_layout)
@@ -1277,7 +1281,7 @@ class PrxNodePortGroup(AbsPrxPortBaseDef):
             # cur_key_widget.hide()
             cur_port._set_key_widget_(cur_key_widget)
             cur_port_layout.addWidget(cur_key_widget)
-            cur_key_layout = _gui_qt_wgt_utility.QtHLayout(cur_key_widget)
+            cur_key_layout = _gui_qt_wgt_base.QtHBoxLayout(cur_key_widget)
             cur_key_layout.setContentsMargins(0, 0, 0, 0)
             cur_key_layout._set_align_top_()
             # + key
@@ -1288,7 +1292,7 @@ class PrxNodePortGroup(AbsPrxPortBaseDef):
             # value
             next_port_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
             cur_port_layout.addWidget(next_port_widget)
-            next_port_layout = _gui_qt_wgt_utility.QtHLayout(next_port_widget)
+            next_port_layout = _gui_qt_wgt_base.QtHBoxLayout(next_port_widget)
             next_port_layout.setContentsMargins(0, 0, 0, 0)
             next_port_layout.setSpacing(2)
 
@@ -1433,7 +1437,7 @@ class PrxNode(gui_prx_abstracts.AbsPrxWidget):
         # debug: do not set minimum height
         # self._qt_widget.setMinimumHeight(24)
         #
-        qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
+        qt_layout_0 = _gui_qt_wgt_base.QtVBoxLayout(self._qt_widget)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(0)
 

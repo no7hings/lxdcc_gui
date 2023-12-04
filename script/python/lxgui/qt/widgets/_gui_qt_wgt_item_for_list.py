@@ -1,9 +1,21 @@
 # coding=utf-8
-from lxgui.qt.core import *
+import six
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_drag
+import math
+
+from lxgui.qt.wrap import *
+
+import lxbasic.core as bsc_core
+
+import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
 
 import lxgui.qt.abstracts as gui_qt_abstracts
+
+from ..widgets import \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_drag
 
 
 class QtListItemWidget(
@@ -48,16 +60,14 @@ class QtListItemWidget(
         self._refresh_widget_draw_()
 
     def _refresh_widget_draw_(self):
+        self.update()
+
+    def _refresh_widget_force_(self):
         self._refresh_widget_draw_geometry_()
         # noinspection PyUnresolvedReferences
         self.update()
 
     def _refresh_widget_draw_geometry_(self):
-        w_pre, h_pre = self._w, self._h
-        w, h = self.width(), self.height()
-        if w != w_pre or h != h_pre:
-            self._w, self._h = w, h
-
         self._refresh_widget_frame_draw_geometries_()
         #
         self._refresh_widget_icon_draw_geometries_()
@@ -70,7 +80,7 @@ class QtListItemWidget(
             x, y = rect.x(), rect.y()
             w, h = rect.width(), rect.height()
             #
-            side = 2
+            _side = 2
             spacing = 0
             #
             icn_frm_w, icn_frm_h = self._icon_frame_draw_size
@@ -192,7 +202,6 @@ class QtListItemWidget(
     def _refresh_widget_frame_draw_geometries_(self):
         if self._list_widget is not None:
             side = 4
-
             x, y = 0, 0
             w, h = self.width(), self.height()
 
@@ -201,22 +210,22 @@ class QtListItemWidget(
             self._set_frame_draw_rect_(b_x, b_y, b_w, b_h)
 
             frm_x, frm_y = side, side
-            frm_w, frm_h = self._frame_size
+            frm_w, frm_h = w-side*2, h-side*2
             #
             m_frm_x, m_frm_y = frm_x+x, frm_y+y
             m_frm_w, m_frm_h = frm_w-x, frm_h-y
 
             if self._list_widget._get_is_grid_mode_():
-                self._set_widget_frame_geometry_update_as_grid_mode_(
+                self._do_update_widget_frame_geometries_for_grid_mode_(
                     (m_frm_x, m_frm_y), (m_frm_w, m_frm_h)
                 )
             else:
-                self._set_widget_frame_geometry_update_as_list_mode_(
+                self._do_update_widget_frame_geometries_for_list_mode_(
                     (m_frm_x, m_frm_y), (m_frm_w, m_frm_h)
                 )
 
     # frame for grid mode
-    def _set_widget_frame_geometry_update_as_grid_mode_(self, pos, size):
+    def _do_update_widget_frame_geometries_for_grid_mode_(self, pos, size):
         x, y = pos
         w, h = size
         frm_s = self._frame_spacing
@@ -265,15 +274,14 @@ class QtListItemWidget(
                 image_x_, image_y_, image_bsc_w, image_bsc_h
             )
 
-    def _set_widget_frame_geometry_update_as_list_mode_(self, pos, size):
+    def _do_update_widget_frame_geometries_for_list_mode_(self, pos, size):
         x, y = pos
         w, h = size
-        width, height = self.width(), self.height()
-        f_side = self._frame_side
-        frm_s = self._frame_spacing
-        #
+        _f_side = self._frame_side
+        spc_frm = self._frame_spacing
         # icon
-        icon_bsc_w, icon_bsc_h = -frm_s, 0
+        c_x = x
+        icon_bsc_w, icon_bsc_h = -spc_frm, 0
         if self._get_has_icons_() is True or self._check_is_enable is True:
             icn_frm_w, icn_frm_h = self._icon_frame_draw_size
             icn_x_, icn_y_ = x, y
@@ -294,21 +302,25 @@ class QtListItemWidget(
                 self._icon_frame_draw_rect.setRect(
                     -40, -40, 20, 20
                 )
+
+            c_x += icon_bsc_w+spc_frm
         #
-        image_bsc_w, image_bsc_h = -frm_s, 0
+        image_bsc_w, image_bsc_h = -spc_frm, 0
         if self._get_has_image_() is True:
-            image_x_, image_y_ = x+(icon_bsc_w+frm_s), y
-            image_bsc_w, image_bsc_h = w-(icon_bsc_w+frm_s), h
+            image_x_, image_y_ = x+(icon_bsc_w+spc_frm), y
+            image_bsc_w, image_bsc_h = h, h
             self._image_frame_rect.setRect(
-                image_x_, image_y_, image_bsc_w, image_bsc_h
+                c_x+spc_frm, image_y_, image_bsc_w, image_bsc_h
             )
+
+            c_x += image_bsc_w+spc_frm
         #
         if self._get_has_names_() is True:
-            name_x_, name_y_ = x+(icon_bsc_w+frm_s)+(image_bsc_w+frm_s), y
-            name_bsc_w, name_bsc_h = width-(icon_bsc_w+frm_s)-(image_bsc_w+frm_s)-f_side*2, h
+            name_x_, name_y_ = x+(icon_bsc_w+spc_frm)+(image_bsc_w+spc_frm), y
+            name_bsc_w, name_bsc_h = w-c_x+spc_frm, h
             #
             self._name_frame_draw_rect.setRect(
-                name_x_, name_y_,
+                c_x+spc_frm, name_y_,
                 name_bsc_w, name_bsc_h
             )
 
@@ -360,11 +372,11 @@ class QtListItemWidget(
         #
         self._frame_size = 128, 128
         #
-        self._frame_background_color = QtBackgroundColors.Light
+        self._frame_background_color = gui_qt_core.QtBackgroundColors.Light
         #
         self._is_viewport_show_enable = True
         #
-        self.setFont(QtFonts.Default)
+        self.setFont(gui_qt_core.QtFonts.Default)
 
         self._sort_name_key = ''
         self._sort_number_key = 0
@@ -383,14 +395,14 @@ class QtListItemWidget(
                 self._set_action_hovered_(False)
             #
             elif event.type() == QtCore.QEvent.Resize:
-                self._refresh_widget_draw_()
+                self._refresh_widget_all_()
             # drag move
             elif event.type() == QtCore.QEvent.MouseMove:
                 if self._get_action_flag_is_match_(self.ActionFlag.Press):
                     if self._drag_is_enable is True:
                         self._set_action_flag_(self.ActionFlag.DragMove)
                         #
-                        self._drag = _gui_qt_wgt_drag.QtWidgetDrag(self)
+                        self._drag = _gui_qt_wgt_drag.QtDrag(self)
                         view = self._get_view_()
                         if view._get_is_multiply_selection_() is True:
                             selected_item_widgets = view._get_selected_item_widgets_()
@@ -420,8 +432,9 @@ class QtListItemWidget(
                         self._set_action_flag_(self.ActionFlag.Press)
                 elif event.button() == QtCore.Qt.RightButton:
                     self._popup_menu_()
-                    event.accept()
                     self._clear_all_action_flags_()
+                    self._set_action_hovered_(False)
+                    event.accept()
                     return True
             #
             elif event.type() == QtCore.QEvent.MouseButtonDblClick:
@@ -464,7 +477,7 @@ class QtListItemWidget(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         #
         x, y = 0, 0
         w, h = self.width(), self.height()
@@ -486,7 +499,7 @@ class QtListItemWidget(
             is_selected=self._is_selected,
         )
         if self._get_status_is_enable_() is True:
-            bdr_color_, bdr_hover_color = self._get_border_rgba_args_by_validator_status_(
+            bdr_color_, bdr_hover_color = self._get_rgba_args_by_validator_status_(
                 self._status
             )
             if self._press_is_hovered is True:
@@ -494,7 +507,7 @@ class QtListItemWidget(
             else:
                 bdr_color = bdr_color_
         else:
-            bdr_color = QtBackgroundColors.Transparent
+            bdr_color = gui_qt_core.QtBackgroundColors.Transparent
         #
         item = self._get_item_()
         if item._item_show_status in {item.ShowStatus.Loading, item.ShowStatus.Waiting}:
@@ -502,188 +515,188 @@ class QtListItemWidget(
                 self._rect_frame_draw,
                 item._item_show_loading_index
             )
-        else:
-            if self._icon_frame_draw_enable is True:
+        # else:
+        if self._icon_frame_draw_enable is True:
+            painter._draw_frame_by_rect_(
+                rect=shadow_rect,
+                border_color=gui_qt_core.QtBorderColors.Transparent,
+                background_color=gui_qt_core.QtBackgroundColors.Shadow,
+                offset=4
+            )
+        #
+        painter._draw_frame_by_rect_(
+            rect=base_rect,
+            border_color=bdr_color,
+            background_color=bkg_color,
+            border_radius=1,
+            offset=offset,
+        )
+        # icon frame
+        if self._icon_frame_draw_enable is True:
+            if self._get_has_icons_() or self._check_is_enable is True:
                 painter._draw_frame_by_rect_(
-                    rect=shadow_rect,
-                    border_color=QtBorderColors.Transparent,
-                    background_color=QtBackgroundColors.Shadow,
-                    offset=4
+                    self._icon_frame_draw_rect,
+                    border_color=gui_qt_core.QtBorderColors.Transparent,
+                    background_color=self._frame_background_color,
+                    offset=offset
+                )
+        # name frame
+        if self._name_frame_draw_enable is True:
+            if self._get_has_names_():
+                painter._draw_frame_by_rect_(
+                    self._name_frame_draw_rect,
+                    border_color=gui_qt_core.QtBorderColors.Transparent,
+                    background_color=self._frame_background_color,
+                    offset=offset
+                )
+        #
+        if self._image_frame_draw_enable is True:
+            if self._get_has_image_():
+                painter._draw_frame_by_rect_(
+                    self._image_frame_rect,
+                    border_color=gui_qt_core.QtBorderColors.Transparent,
+                    background_color=self._frame_background_color,
+                    offset=offset
+                )
+        # check icon
+        if self._check_is_enable is True:
+            painter._draw_icon_file_by_rect_(
+                rect=self._check_icon_draw_rect,
+                file_path=self._check_icon_file_path_current,
+                offset=offset,
+                # frame_rect=self._check_icon_frame_draw_rect,
+                is_hovered=self._check_is_hovered
+            )
+        # icons
+        if self._get_has_icons_() is True:
+            icon_indices = self._get_icon_indices_()
+            if icon_indices:
+                icon_pixmaps = self._get_icons_as_pixmap_()
+                if icon_pixmaps:
+                    for icon_index in icon_indices:
+                        painter._set_pixmap_draw_by_rect_(
+                            self._get_icon_rect_at_(icon_index),
+                            self._get_icon_as_pixmap_at_(icon_index),
+                            offset=offset
+                        )
+                else:
+                    icon_file_paths = self._get_icon_file_paths_()
+                    if icon_file_paths:
+                        for icon_index in icon_indices:
+                            painter._draw_icon_file_by_rect_(
+                                self._get_icon_rect_at_(icon_index),
+                                self._get_icon_file_path_at_(icon_index),
+                                offset=offset,
+                                is_hovered=self._check_is_hovered
+                            )
+        # icon
+        if self._icon_is_enable is True:
+            if self._icon_text:
+                painter._draw_frame_color_with_name_text_by_rect_(
+                    rect=self._name_frame_draw_rect,
+                    text=self._icon_text,
+                    offset=offset,
+                )
+        # name
+        if self._get_has_names_() is True:
+            name_indices = self._get_name_indices_()
+            if name_indices:
+                text_option = self._name_text_option
+                name_text_dict = self._get_name_text_dict_()
+                if name_text_dict:
+                    painter.setFont(gui_qt_core.QtFonts.Default)
+                    key_text_width = gui_qt_core.GuiQtText.get_draw_width_maximum(
+                        painter, self._name_text_dict.keys()
+                    )
+                    if self._list_widget._get_is_grid_mode_():
+                        if self._names_draw_range is not None:
+                            key_text_width = gui_qt_core.GuiQtText.get_draw_width_maximum(
+                                painter,
+                                self._name_text_dict.keys()[self._names_draw_range[0]:self._names_draw_range[1]]
+                            )
+                    #
+                    for i_name_index, (i_key, i_value) in enumerate(name_text_dict.items()):
+                        painter._set_text_draw_by_rect_use_key_value_(
+                            rect=self._get_name_rect_at_(i_name_index),
+                            key_text=i_key,
+                            value_text=i_value,
+                            key_text_width=key_text_width,
+                            offset=offset,
+                            is_hovered=self._is_hovered,
+                            is_selected=self._is_selected
+                        )
+                else:
+                    for i_name_index in name_indices:
+                        painter._draw_text_by_rect_(
+                            rect=self._get_name_rect_at_(i_name_index),
+                            text=self._get_name_text_at_(i_name_index),
+                            font=gui_qt_core.QtFonts.Default,
+                            text_option=text_option,
+                            word_warp=self._name_word_warp,
+                            offset=offset,
+                            is_hovered=self._is_hovered,
+                            is_selected=self._is_selected
+                        )
+        # image
+        if self._get_has_image_() is True:
+            if self._image_pixmap:
+                painter._draw_pixmap_by_rect_(
+                    rect=self._image_draw_rect,
+                    pixmap=self._image_pixmap,
+                    offset=offset,
+                )
+            # draw by image file
+            elif self._image_file_path:
+                painter._draw_image_use_file_path_by_rect_(
+                    rect=self._image_draw_rect,
+                    file_path=self._image_file_path,
+                    offset=offset
+                )
+            # draw image by text
+            elif self._image_text:
+                painter._draw_image_use_text_by_rect_(
+                    rect=self._image_draw_rect,
+                    text=self._image_text,
+                    border_radius=4,
+                    offset=offset,
+                    border_color=gui_qt_core.QtBorderColors.Icon,
+                    border_width=2
                 )
             #
-            painter._draw_frame_by_rect_(
-                rect=base_rect,
-                border_color=bdr_color,
-                background_color=bkg_color,
-                border_radius=1,
+            if self._image_sub_file_path:
+                painter._draw_image_use_file_path_by_rect_(
+                    rect=self._image_sub_draw_rect,
+                    file_path=self._image_sub_file_path,
+                    offset=offset,
+                    #
+                    draw_frame=True,
+                    background_color=gui_qt_core.QtBorderColors.Icon,
+                    border_color=gui_qt_core.QtBorderColors.Icon,
+                    border_radius=4
+                )
+            #
+        # play button
+        if self._get_play_draw_is_enable_() is True:
+            painter._set_movie_play_button_draw_by_rect_(
+                self._movie_rect,
+                offset=offset,
+                is_hovered=self._is_hovered,
+                is_selected=self._is_selected,
+                is_actioned=self._get_is_actioned_()
+            )
+        # index
+        if self._index_draw_enable is True:
+            painter._draw_index_by_rect_(
+                rect=self._rect_frame_draw,
+                text=self._index_text,
                 offset=offset,
             )
-            # icon frame
-            if self._icon_frame_draw_enable is True:
-                if self._get_has_icons_() or self._check_is_enable is True:
-                    painter._draw_frame_by_rect_(
-                        self._icon_frame_draw_rect,
-                        border_color=QtBorderColors.Transparent,
-                        background_color=self._frame_background_color,
-                        offset=offset
-                    )
-            # name frame
-            if self._name_frame_draw_enable is True:
-                if self._get_has_names_():
-                    painter._draw_frame_by_rect_(
-                        self._name_frame_draw_rect,
-                        border_color=QtBorderColors.Transparent,
-                        background_color=self._frame_background_color,
-                        offset=offset
-                    )
-            #
-            if self._image_frame_draw_enable is True:
-                if self._get_has_image_():
-                    painter._draw_frame_by_rect_(
-                        self._image_frame_rect,
-                        border_color=QtBorderColors.Transparent,
-                        background_color=self._frame_background_color,
-                        offset=offset
-                    )
-            # check icon
-            if self._check_is_enable is True:
-                painter._draw_icon_file_by_rect_(
-                    rect=self._check_icon_draw_rect,
-                    file_path=self._check_icon_file_path_current,
-                    offset=offset,
-                    # frame_rect=self._check_icon_frame_draw_rect,
-                    is_hovered=self._check_is_hovered
-                )
-            # icons
-            if self._get_has_icons_() is True:
-                icon_indices = self._get_icon_indices_()
-                if icon_indices:
-                    icon_pixmaps = self._get_icons_as_pixmap_()
-                    if icon_pixmaps:
-                        for icon_index in icon_indices:
-                            painter._set_pixmap_draw_by_rect_(
-                                self._get_icon_rect_at_(icon_index),
-                                self._get_icon_as_pixmap_at_(icon_index),
-                                offset=offset
-                            )
-                    else:
-                        icon_file_paths = self._get_icon_file_paths_()
-                        if icon_file_paths:
-                            for icon_index in icon_indices:
-                                painter._draw_icon_file_by_rect_(
-                                    self._get_icon_rect_at_(icon_index),
-                                    self._get_icon_file_path_at_(icon_index),
-                                    offset=offset,
-                                    is_hovered=self._check_is_hovered
-                                )
-            # icon
-            if self._icon_is_enable is True:
-                if self._icon_text:
-                    painter._draw_frame_color_with_name_text_by_rect_(
-                        rect=self._name_frame_draw_rect,
-                        text=self._icon_text,
-                        offset=offset,
-                    )
-            # name
-            if self._get_has_names_() is True:
-                name_indices = self._get_name_indices_()
-                if name_indices:
-                    text_option = self._name_text_option
-                    name_text_dict = self._get_name_text_dict_()
-                    if name_text_dict:
-                        painter.setFont(QtFonts.Default)
-                        key_text_width = GuiQtText.get_draw_width_maximum(
-                            painter, self._name_text_dict.keys()
-                        )
-                        if self._list_widget._get_is_grid_mode_():
-                            if self._names_draw_range is not None:
-                                key_text_width = GuiQtText.get_draw_width_maximum(
-                                    painter,
-                                    self._name_text_dict.keys()[self._names_draw_range[0]:self._names_draw_range[1]]
-                                )
-                        #
-                        for i_name_index, (i_key, i_value) in enumerate(name_text_dict.items()):
-                            painter._set_text_draw_by_rect_use_key_value_(
-                                rect=self._get_name_rect_at_(i_name_index),
-                                key_text=i_key,
-                                value_text=i_value,
-                                key_text_width=key_text_width,
-                                offset=offset,
-                                is_hovered=self._is_hovered,
-                                is_selected=self._is_selected
-                            )
-                    else:
-                        for i_name_index in name_indices:
-                            painter._draw_text_by_rect_(
-                                rect=self._get_name_rect_at_(i_name_index),
-                                text=self._get_name_text_at_(i_name_index),
-                                font=QtFonts.Default,
-                                text_option=text_option,
-                                word_warp=self._name_word_warp,
-                                offset=offset,
-                                is_hovered=self._is_hovered,
-                                is_selected=self._is_selected
-                            )
-            # image
-            if self._get_has_image_() is True:
-                if self._image_pixmap:
-                    painter._draw_pixmap_by_rect_(
-                        rect=self._image_draw_rect,
-                        pixmap=self._image_pixmap,
-                        offset=offset,
-                    )
-                # draw by image file
-                elif self._image_file_path:
-                    painter._draw_image_use_file_path_by_rect_(
-                        rect=self._image_draw_rect,
-                        file_path=self._image_file_path,
-                        offset=offset
-                    )
-                # draw image by text
-                elif self._image_text:
-                    painter._draw_image_use_text_by_rect_(
-                        rect=self._image_draw_rect,
-                        text=self._image_text,
-                        border_radius=4,
-                        offset=offset,
-                        border_color=QtBorderColors.Icon,
-                        border_width=2
-                    )
-                #
-                if self._image_sub_file_path:
-                    painter._draw_image_use_file_path_by_rect_(
-                        rect=self._image_sub_draw_rect,
-                        file_path=self._image_sub_file_path,
-                        offset=offset,
-                        #
-                        draw_frame=True,
-                        background_color=QtBorderColors.Icon,
-                        border_color=QtBorderColors.Icon,
-                        border_radius=4
-                    )
-                #
-            # play button
-            if self._get_play_draw_is_enable_() is True:
-                painter._set_movie_play_button_draw_by_rect_(
-                    self._movie_rect,
-                    offset=offset,
-                    is_hovered=self._is_hovered,
-                    is_selected=self._is_selected,
-                    is_actioned=self._get_is_actioned_()
-                )
-            # index
-            if self._index_draw_enable is True:
-                painter._draw_index_by_rect_(
-                    rect=self._rect_frame_draw,
-                    text=self._index_text,
-                    offset=offset,
-                )
-            #
-            if item._item_show_image_status in [item.ShowStatus.Loading, item.ShowStatus.Waiting]:
-                painter._draw_loading_by_rect_(
-                    rect=self._image_frame_rect,
-                    loading_index=item._item_show_image_loading_index
-                )
+        #
+        if item._item_show_image_status in [item.ShowStatus.Loading, item.ShowStatus.Waiting]:
+            painter._draw_loading_by_rect_(
+                rect=self._image_frame_rect,
+                loading_index=item._item_show_image_loading_index
+            )
 
     @classmethod
     def _create_mine_data_(cls, urls):
@@ -717,11 +730,13 @@ class QtListItemWidget(
         super(QtListItemWidget, self)._set_drag_enable_(boolean)
         self.setAcceptDrops(True)
 
+    # noinspection PyUnusedLocal
     def _do_drag_pressed_(self, *args, **kwargs):
         self.drag_pressed.emit(
             args[0]
         )
 
+    # noinspection PyUnusedLocal
     def _drag_release_cbk_(self, *args, **kwargs):
         self._get_view_()._clear_selection_()
         self._get_view_()._set_current_item_(self._get_item_())
@@ -755,12 +770,12 @@ class QtListItemWidget(
 
     def _set_sort_number_key_(self, value):
         self._sort_number_key = value
-        if self._get_view_()._get_sort_mode_() == gui_configure.SortMode.Number:
+        if self._get_view_()._get_sort_mode_() == gui_core.GuiSortMode.Number:
             self._get_item_().setText(str(value).zfill(4))
 
     def _set_sort_name_key_(self, value):
         self._sort_name_key = value
-        if self._get_view_()._get_sort_mode_() == gui_configure.SortMode.Name:
+        if self._get_view_()._get_sort_mode_() == gui_core.GuiSortMode.Name:
             if isinstance(value, six.text_type):
                 value = value.encode('utf-8')
             #

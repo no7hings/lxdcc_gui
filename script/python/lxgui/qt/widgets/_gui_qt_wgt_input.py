@@ -1,12 +1,24 @@
 # coding=utf-8
-from lxgui.qt.core import *
+import six
 
-import lxgui.configure as gui_configure
+from lxgui.qt.wrap import *
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_bubble, _gui_qt_wgt_button, _gui_qt_wgt_entry, \
-    _gui_qt_wgt_entry_extend, _gui_qt_wgt_popup
+import lxbasic.core as bsc_core
+
+import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
 
 import lxgui.qt.abstracts as gui_qt_abstracts
+
+from ..widgets import \
+    _gui_qt_wgt_base, \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_bubble, \
+    _gui_qt_wgt_button, \
+    _gui_qt_wgt_entry, \
+    _gui_qt_wgt_entry_extend, \
+    _gui_qt_wgt_popup
 
 
 # input as any constant, etc. integer, float, string/text/name, ...
@@ -26,7 +38,7 @@ class QtInputAsConstant(
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
         )
-        self.setFixedHeight(gui_configure.Size.InputHeight)
+        self.setFixedHeight(gui_core.GuiSize.InputHeight)
 
         self._init_input_base_def_(self)
 
@@ -37,7 +49,7 @@ class QtInputAsConstant(
 
         self._value_type = value_type
         #
-        entry_layout = QtHLayout(self)
+        entry_layout = _gui_qt_wgt_base.QtHBoxLayout(self)
         entry_layout.setContentsMargins(2, 2, 2, 2)
         entry_layout.setSpacing(4)
         #
@@ -59,7 +71,7 @@ class QtInputAsConstant(
         self._entry_widget.setReadOnly(not boolean)
 
         self._frame_background_color = [
-            QtBackgroundColors.Basic, QtBackgroundColors.Dim
+            gui_qt_core.QtBackgroundColors.Basic, gui_qt_core.QtBackgroundColors.Dim
         ][boolean]
         self._refresh_widget_draw_()
 
@@ -104,7 +116,7 @@ class QtInputAsConstantWithChoose(
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
         )
-        self.setFixedHeight(gui_configure.Size.InputHeight)
+        self.setFixedHeight(gui_core.GuiSize.InputHeight)
 
         self._init_input_base_def_(self)
 
@@ -120,13 +132,13 @@ class QtInputAsConstantWithChoose(
 
         self._value_type = value_type
         #
-        main_layout = QtVBoxLayout(self)
+        main_layout = _gui_qt_wgt_base.QtVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
         entry_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
         main_layout.addWidget(entry_widget)
         #
-        entry_layout = QtHLayout(entry_widget)
+        entry_layout = _gui_qt_wgt_base.QtHBoxLayout(entry_widget)
         entry_layout.setContentsMargins(2, 2, 2, 2)
         entry_layout.setSpacing(0)
         # entry
@@ -150,7 +162,7 @@ class QtInputAsConstantWithChoose(
              self._input_button_widget.Style.Null]
         )
         entry_layout.addWidget(self._input_button_widget)
-        self._input_button_layout = QtHLayout(self._input_button_widget)
+        self._input_button_layout = _gui_qt_wgt_base.QtHBoxLayout(self._input_button_widget)
         self._input_button_layout.setContentsMargins(2, 0, 0, 0)
         self._input_button_layout.setSpacing(2)
         #
@@ -277,7 +289,7 @@ class QtInputAsCapsule(
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
         )
-        self.setFixedHeight(gui_configure.Size.InputHeight)
+        self.setFixedHeight(gui_core.GuiSize.InputHeight)
 
         self._init_input_base_def_(self)
         self._build_input_entry_(str)
@@ -287,7 +299,7 @@ class QtInputAsCapsule(
 
         self._value_type = value_type
         #
-        entry_layout = QtHLayout(self)
+        entry_layout = _gui_qt_wgt_base.QtHBoxLayout(self)
         entry_layout.setContentsMargins(*[1]*4)
         entry_layout.setSpacing(4)
         #
@@ -336,7 +348,7 @@ class QtInputAsBubbleWithChoose(
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
         )
-        self.setFixedHeight(gui_configure.Size.InputHeight)
+        self.setFixedHeight(gui_core.GuiSize.InputHeight)
 
         self._init_input_base_def_(self)
         self._init_input_choose_extra_def_(self)
@@ -348,7 +360,7 @@ class QtInputAsBubbleWithChoose(
 
         self._value_type = value_type
 
-        entry_layout = QtHLayout(self)
+        entry_layout = _gui_qt_wgt_base.QtHBoxLayout(self)
         entry_layout.setContentsMargins(*[1]*4)
         entry_layout.setSpacing(4)
 
@@ -406,21 +418,21 @@ class QtInputAsContent(
         #
         self._build_input_entry_(self._value_type)
 
-        # self._frame_background_color = QtBackgroundColors.Dark
+        # self._frame_background_color = gui_qt_core.QtBackgroundColors.Dark
 
     def _build_input_entry_(self, value_type):
         self._entry_frame_widget = self
 
         self._value_type = value_type
         #
-        main_layout = QtVBoxLayout(self)
+        main_layout = _gui_qt_wgt_base.QtVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
         #
         entry_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
         main_layout.addWidget(entry_widget)
         #
-        entry_layout = QtHLayout(entry_widget)
+        entry_layout = _gui_qt_wgt_base.QtHBoxLayout(entry_widget)
         entry_layout.setContentsMargins(2, 2, 2, 2)
         entry_layout.setSpacing(0)
         #
@@ -436,7 +448,7 @@ class QtInputAsContent(
              self._input_button_widget.Style.Null]
         )
         entry_layout.addWidget(self._input_button_widget)
-        self._input_button_layout = QtVBoxLayout(self._input_button_widget)
+        self._input_button_layout = _gui_qt_wgt_base.QtVBoxLayout(self._input_button_widget)
         self._input_button_layout._set_align_top_()
         self._input_button_layout.setContentsMargins(2, 0, 0, 0)
         self._input_button_layout.setSpacing(2)
@@ -503,7 +515,7 @@ class QtInputAsContent(
 
         self._entry_widget.setReadOnly(not boolean)
         # self._frame_background_color = [
-        #     QtBackgroundColors.Basic, QtBackgroundColors.Dim
+        #     gui_qt_core.QtBackgroundColors.Basic, gui_qt_core.QtBackgroundColors.Dim
         # ][boolean]
         # self._refresh_widget_draw_()
 
@@ -544,14 +556,14 @@ class QtInputAsList(
 
         self._value_type = value_type
         #
-        main_layout = QtVBoxLayout(self)
+        main_layout = _gui_qt_wgt_base.QtVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
         #
         entry_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
         main_layout.addWidget(entry_widget)
         #
-        entry_layout = QtHLayout(entry_widget)
+        entry_layout = _gui_qt_wgt_base.QtHBoxLayout(entry_widget)
         entry_layout.setContentsMargins(2, 2, 2, 2)
         entry_layout.setSpacing(0)
         #
@@ -565,7 +577,7 @@ class QtInputAsList(
              self._input_button_widget.Style.Null]
         )
         entry_layout.addWidget(self._input_button_widget)
-        self._input_button_layout = QtVBoxLayout(self._input_button_widget)
+        self._input_button_layout = _gui_qt_wgt_base.QtVBoxLayout(self._input_button_widget)
         self._input_button_layout._set_align_top_()
         self._input_button_layout.setContentsMargins(2, 0, 0, 0)
         self._input_button_layout.setSpacing(2)
@@ -696,14 +708,14 @@ class QtInputAsListWithChoose(
 
         self._value_type = value_type
 
-        main_layout = QtVBoxLayout(self)
+        main_layout = _gui_qt_wgt_base.QtVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
         entry_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
         main_layout.addWidget(entry_widget)
         #
-        entry_layout = QtHLayout(entry_widget)
+        entry_layout = _gui_qt_wgt_base.QtHBoxLayout(entry_widget)
         entry_layout.setContentsMargins(2, 2, 2, 2)
         entry_layout.setSpacing(0)
         #
@@ -717,7 +729,7 @@ class QtInputAsListWithChoose(
              self._input_button_widget.Style.Null]
         )
         entry_layout.addWidget(self._input_button_widget)
-        self._input_button_layout = QtVBoxLayout(self._input_button_widget)
+        self._input_button_layout = _gui_qt_wgt_base.QtVBoxLayout(self._input_button_widget)
         self._input_button_layout._set_align_top_()
         self._input_button_layout.setContentsMargins(2, 0, 0, 0)
         self._input_button_layout.setSpacing(2)
@@ -850,7 +862,7 @@ class QtInputAsPath(
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
         )
-        self.setFixedHeight(gui_configure.Size.InputHeight)
+        self.setFixedHeight(gui_core.GuiSize.InputHeight)
 
         self._init_input_base_def_(self)
         # extra
@@ -868,7 +880,7 @@ class QtInputAsPath(
     def _build_input_entry_(self):
         self._entry_frame_widget = self
 
-        entry_layout = QtHLayout(self)
+        entry_layout = _gui_qt_wgt_base.QtHBoxLayout(self)
         entry_layout.setContentsMargins(2, 2, 2, 2)
         entry_layout.setSpacing(4)
 
@@ -1018,7 +1030,7 @@ class QtInputAsRgba(
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
         )
-        self.setFixedHeight(gui_configure.Size.InputHeight)
+        self.setFixedHeight(gui_core.GuiSize.InputHeight)
 
         self._init_input_choose_extra_def_(self)
 
@@ -1037,7 +1049,7 @@ class QtInputAsRgba(
     def _build_input_entry_(self):
         self._entry_frame_widget = self
 
-        entry_layout = QtHLayout(self)
+        entry_layout = _gui_qt_wgt_base.QtHBoxLayout(self)
         entry_layout.setContentsMargins(self._value_draw_width+2, 0, 0, 0)
         entry_layout.setSpacing(2)
 
@@ -1079,13 +1091,13 @@ class QtInputAsRgba(
     def paintEvent(self, event):
         super(QtInputAsRgba, self).paintEvent(self)
         #
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
 
         rgba = self._get_value_()
         offset = self._get_action_offset_()
         painter._draw_frame_by_rect_(
             self._value_draw_rect,
-            border_color=QtBorderColors.Transparent,
+            border_color=gui_qt_core.QtBorderColors.Transparent,
             background_color=rgba,
             offset=offset
         )
@@ -1147,7 +1159,7 @@ class QtInputAsIcon(
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
         )
-        self.setFixedHeight(gui_configure.Size.InputHeight)
+        self.setFixedHeight(gui_core.GuiSize.InputHeight)
 
         self._init_input_as_other_base_def_(self)
         self._init_input_choose_extra_def_(self)
@@ -1188,7 +1200,7 @@ class QtInputAsIcon(
     def paintEvent(self, event):
         super(QtInputAsIcon, self).paintEvent(self)
         #
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
 
         icon_name = self._get_value_()
         if icon_name == '':
@@ -1207,7 +1219,7 @@ class QtInputAsIcon(
     def _build_input_entry_(self):
         self._entry_frame_widget = self
 
-        entry_layout = QtHLayout(self)
+        entry_layout = _gui_qt_wgt_base.QtHBoxLayout(self)
         entry_layout.setContentsMargins(self._value_draw_width+2, 0, 0, 0)
         entry_layout.setSpacing(2)
 
@@ -1263,11 +1275,11 @@ class QtInputAsTuple(
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
         )
-        self.setFixedHeight(gui_configure.Size.InputHeight)
+        self.setFixedHeight(gui_core.GuiSize.InputHeight)
 
         self._init_input_as_components_base_def_(self)
         # create entry layout first
-        self._entry_layout = QtHLayout(self)
+        self._entry_layout = _gui_qt_wgt_base.QtHBoxLayout(self)
         self._entry_layout.setContentsMargins(2, 2, 2, 2)
         self._entry_layout.setSpacing(8)
         self._build_input_entry_(2, self._value_type)
@@ -1278,7 +1290,7 @@ class QtInputAsTuple(
         self._value_type = value_type
         #
         if self._value_entries:
-            GuiQtLayout.clear_all_widgets(self._entry_layout)
+            gui_qt_core.GuiQtLayout.clear_all_widgets(self._entry_layout)
         #
         self._value_entries = []
         #

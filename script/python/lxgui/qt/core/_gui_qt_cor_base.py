@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxgui.qt.warp import *
+from lxgui.qt.wrap import *
 
 import six
 
@@ -7,48 +7,57 @@ import sys
 
 import lxbasic.core as bsc_core
 
-import lxgui.configure as gui_configure
-
 import lxgui.core as gui_core
 
-import lxcontent.objects as ctt_objects
+import lxcontent.core as ctt_core
 
 
 class GuiQtStyle(object):
-    CONFIGURE = ctt_objects.Configure(
-        value='{}/qt-style.yml'.format(gui_configure.Data.DATA_ROOT)
-    )
-    CONFIGURE.set(
-        'option.icon-dir', gui_core.GuiIconDirectory.get('qt-style')
-    )
-    CONFIGURE.set_flatten()
+    CONTENT = None
+
+    @classmethod
+    def __generate_content(cls):
+        if cls.CONTENT is not None:
+            return cls.CONTENT
+        cls.CONTENT = ctt_core.Content(
+            value='{}/qt-style.yml'.format(gui_core.Data.DATA_ROOT)
+        )
+        cls.CONTENT.set(
+            'option.icon-dir', gui_core.GuiIconDirectory.get('qt-style')
+        )
+        cls.CONTENT.do_flatten()
+        return cls.CONTENT
 
     @classmethod
     def get(cls, key):
-        return cls.CONFIGURE.get(
+        c = cls.__generate_content()
+        return c.get(
             'widget.{}'.format(key)
         )
 
     @classmethod
     def get_border(cls, key):
+        c = cls.__generate_content()
         return eval(
-            cls.CONFIGURE.get(
+            c.get(
                 'option.border.{}'.format(key)
             )
         )
 
     @classmethod
     def get_background(cls, key):
+        c = cls.__generate_content()
         return eval(
-            cls.CONFIGURE.get(
+            c.get(
                 'option.background.{}'.format(key)
             )
         )
 
     @classmethod
     def get_font(cls, key):
+        c = cls.__generate_content()
         return eval(
-            cls.CONFIGURE.get(
+            c.get(
                 'option.font.{}'.format(key)
             )
         )
@@ -482,9 +491,9 @@ class GuiQtFont(object):
     @classmethod
     def generate(cls, size=None, weight=None, italic=False, underline=False, strike_out=False, family='Arial'):
         f = QtGui.QFont()
-        f.setPointSize(size or gui_configure.Size.FontSizeDefault)
+        f.setPointSize(size or gui_core.GuiSize.FontSizeDefault)
         f.setFamily(family)
-        f.setWeight(weight or gui_configure.Size.FontWeightDefault)
+        f.setWeight(weight or gui_core.GuiSize.FontWeightDefault)
         f.setItalic(italic)
         f.setUnderline(underline)
         f.setWordSpacing(1)
@@ -494,9 +503,9 @@ class GuiQtFont(object):
     @classmethod
     def generate_2(cls, size=None, weight=None, italic=False, underline=False, strike_out=False, family='Arial'):
         f = QtGui.QFont()
-        f.setPixelSize(size or gui_configure.Size.FontSizeDefault)
+        f.setPixelSize(size or gui_core.GuiSize.FontSizeDefault)
         f.setFamily(family)
-        f.setWeight(weight or gui_configure.Size.FontWeightDefault)
+        f.setWeight(weight or gui_core.GuiSize.FontWeightDefault)
         f.setItalic(italic)
         f.setUnderline(underline)
         f.setWordSpacing(1)
@@ -520,315 +529,6 @@ class GuiQtFont(object):
         w = m.width(text)
         h = m.height()
         return w, h
-
-
-class QtFonts(object):
-    Default = GuiQtFont.generate(size=8)
-    DefaultItalic = GuiQtFont.generate(size=8, italic=True)
-    Medium = GuiQtFont.generate(size=10)
-    Large = GuiQtFont.generate(size=12)
-
-    Index = GuiQtFont.generate(size=8)
-
-    NameNormal = GuiQtFont.generate(size=8)
-    NameDisable = GuiQtFont.generate(size=8, italic=True, strike_out=True)
-    NameKey = GuiQtFont.generate(size=8, italic=True)
-    NameValue = GuiQtFont.generate(size=8)
-
-    Description = GuiQtFont.generate(size=10)
-    Content = GuiQtFont.generate(size=8, family='Monospace')
-
-    Loading = GuiQtFont.generate(size=10, weight=75, italic=True)
-
-    Label = GuiQtFont.generate(size=8)
-    Button = GuiQtFont.generate(size=9)
-    Chart = GuiQtFont.generate(size=10, italic=True)
-
-    ToolGroup = GuiQtFont.generate(size=9, weight=75, italic=True)
-
-    Title = GuiQtFont.generate(size=12)
-    SubTitle = GuiQtFont.generate(size=11, italic=True)
-
-    MenuSeparator = GuiQtFont.generate(size=8, italic=True)
-
-
-class QtColors(object):
-    Background = QtGui.QColor(63, 63, 63, 255)
-    BackgroundHover = QtGui.QColor(*gui_configure.Rgba.LightOrange)
-
-    ToolTipText = QtGui.QColor(15, 15, 15, 255)
-    ToolTipBorder = QtGui.QColor(15, 15, 15, 255)
-    ToolTipBackground = QtGui.QColor(223, 223, 191, 255)
-
-    BubbleBackground = QtGui.QColor(223, 223, 223, 255)
-    BubbleBackgroundDisable = QtGui.QColor(127, 127, 127, 255)
-    BubbleNextWaiting = QtGui.QColor(*gui_configure.Rgba.LightYellow)
-    BubbleNextFinished = QtGui.QColor(*gui_configure.Rgba.LightGreen)
-    BubbleBackgroundHover = QtGui.QColor(*gui_configure.Rgba.LightOrange)
-    BubbleBackgroundActioned = QtGui.QColor(*gui_configure.Rgba.LightBlue)
-    BubbleBorder = QtGui.QColor(127, 127, 127, 255)
-    BubbleText = QtGui.QColor(31, 31, 31, 255)
-
-    CapsuleBorderChecked = QtGui.QColor(127, 127, 127, 255)
-    CapsuleBorderUnchecked = QtGui.QColor(55, 55, 55, 255)
-    CapsuleBorderHover = QtGui.QColor(*gui_configure.Rgba.LightOrange)
-    CapsuleBorderActioned = QtGui.QColor(*gui_configure.Rgba.LightBlue)
-    CapsuleBackground = QtGui.QColor(47, 47, 47, 255)
-    CapsuleBackgroundDisable = QtGui.QColor(63, 63, 63, 255)
-
-    SubIconBorder = QtGui.QColor(207, 207, 207, 255)
-    SubIconBackground = QtGui.QColor(127, 127, 127, 255)
-
-    PopupBorder = QtGui.QColor(*gui_configure.Rgba.LightBlue)
-
-    TabBorder = QtGui.QColor(63, 63, 63, 255)
-    TabBackground = QtGui.QColor(47, 47, 47, 255)
-    TabBorderCurrent = QtGui.QColor(87, 87, 87, 255)
-    TabBackgroundCurrent = QtGui.QColor(63, 63, 63, 255)
-
-    HeadBorder = QtGui.QColor(87, 87, 87, 255)
-    HeadBackground = QtGui.QColor(83, 83, 83, 255)
-
-    HeadText = QtGui.QColor(207, 207, 207, 255)
-    HeadTextHover = QtGui.QColor(223, 223, 223, 255)
-
-    ButtonBorder = QtGui.QColor(131, 131, 131, 255)
-    ButtonBackground = QtGui.QColor(127, 127, 127, 255)
-
-    Text = QtGui.QColor(223, 223, 223, 255)
-    TextHover = QtGui.QColor(255, 255, 255, 255)
-    TextEnable = QtGui.QColor(*gui_configure.Rgba.Green)
-    TextDisable = QtGui.QColor(*gui_configure.Rgba.DarkGray)
-    TextTemporary = QtGui.QColor(*gui_configure.Rgba.Gray)
-    TextWarning = QtGui.QColor(*gui_configure.Rgba.Yellow)
-    TextError = QtGui.QColor(*gui_configure.Rgba.Red)
-    TextLock = QtGui.QColor(*gui_configure.Rgba.Purple)
-    TextCorrect = QtGui.QColor(*gui_configure.Rgba.Green)
-    TextActive = QtGui.QColor(*gui_configure.Rgba.Blue)
-
-    TextKeywordFilter = QtGui.QColor(255, 127, 63, 255)
-    TextKeywordFilterOccurrence = QtGui.QColor(255, 63, 63, 255)
-
-    Progress = QtGui.QColor(63, 255, 127, 255)
-    ProgressBackground = QtGui.QColor(47, 47, 47, 255)
-
-    Red = QtGui.QColor(*gui_configure.Rgba.Red)
-    Yellow = QtGui.QColor(*gui_configure.Rgba.Yellow)
-    Transparent = QtGui.QColor(*gui_configure.Rgba.Transparent)
-
-
-class QtBorderColors(object):
-    @staticmethod
-    def get(key):
-        return QtGui.QColor(
-            *GuiQtStyle.get_border(key)
-        )
-
-    Transparent = QtGui.QColor(
-        *GuiQtStyle.get_border('color-transparent')
-    )
-
-    Dim = QtGui.QColor(
-        *GuiQtStyle.get_border('color-dim')
-    )
-    Dark = QtGui.QColor(
-        *GuiQtStyle.get_border('color-dark')
-    )
-    Basic = QtGui.QColor(
-        *GuiQtStyle.get_border('color-basic')
-    )
-    Light = QtGui.QColor(
-        *GuiQtStyle.get_border('color-light')
-    )
-    HighLight = QtGui.QColor(
-        *GuiQtStyle.get_border('color-high-light')
-    )
-    Selected = QtGui.QColor(
-        *GuiQtStyle.get_border('color-selected')
-    )
-    Actioned = QtGui.QColor(
-        *GuiQtStyle.get_border('color-actioned')
-    )
-    Hovered = QtGui.QColor(
-        *GuiQtStyle.get_border('color-hovered')
-    )
-
-    Icon = QtGui.QColor(
-        *GuiQtStyle.get_border('color-icon')
-    )
-
-    Button = QtGui.QColor(
-        *GuiQtStyle.get_border('color-button')
-    )
-    ButtonDisable = QtGui.QColor(
-        *GuiQtStyle.get_border('color-button-disable')
-    )
-
-    Popup = QtGui.QColor(*gui_configure.Rgba.LightOrange)
-    SplitMoving = QtGui.QColor(127, 127, 127, 255)
-
-
-class QtBackgroundColors(object):
-    @staticmethod
-    def get(key):
-        return QtGui.QColor(
-            *GuiQtStyle.get_background(key)
-        )
-
-    Shadow = QtGui.QColor(0, 0, 0, 31)
-
-    Transparent = QtGui.QColor(
-        *GuiQtStyle.get_background('color-transparent')
-    )
-    Black = QtGui.QColor(
-        *GuiQtStyle.get_background('color-black')
-    )
-    Dim = QtGui.QColor(
-        *GuiQtStyle.get_background('color-dim')
-    )
-    Dark = QtGui.QColor(
-        *GuiQtStyle.get_background('color-dark')
-    )
-    Basic = QtGui.QColor(
-        *GuiQtStyle.get_background('color-basic')
-    )
-    Light = QtGui.QColor(
-        *GuiQtStyle.get_background('color-light')
-    )
-    White = QtGui.QColor(
-        *GuiQtStyle.get_background('color-white')
-    )
-
-    Hovered = QtGui.QColor(
-        *GuiQtStyle.get_background('color-hovered')
-    )
-    Selected = QtGui.QColor(
-        *GuiQtStyle.get_background('color-selected')
-    )
-    #
-    Checked = QtGui.QColor(127, 63, 127, 255)
-    CheckHovered = QtGui.QColor(191, 127, 191, 255)
-    #
-    DeleteHovered = QtGui.QColor(255, 63, 127, 255)
-    #
-    Pressed = QtGui.QColor(95, 255, 159, 255)
-    PressedHovered = QtGui.QColor(255, 179, 47, 255)
-    #
-    Actioned = QtGui.QColor(
-        *GuiQtStyle.get_background('color-actioned')
-    )
-    #
-    Icon = QtGui.QColor(
-        *GuiQtStyle.get_background('color-icon')
-    )
-    #
-    Button = QtGui.QColor(
-        *GuiQtStyle.get_background('color-button')
-    )
-    ButtonHovered = QtGui.QColor(
-        *GuiQtStyle.get_background('color-button-hovered')
-    )
-    ButtonDisable = QtGui.QColor(
-        *GuiQtStyle.get_background('color-button-disable')
-    )
-    ToolTip = QtGui.QColor(
-        *GuiQtStyle.get_background('color-tool-tip')
-    )
-    #
-    ItemSelected = QtGui.QColor(
-        *GuiQtStyle.get_background('color-item-selected')
-    )
-    ItemSelectedIndirect = QtGui.QColor(
-        *GuiQtStyle.get_background('color-item-selected-indirect')
-    )
-    ItemHovered = QtGui.QColor(
-        *GuiQtStyle.get_background('color-item-hovered')
-    )
-    #
-    ItemLoading = QtGui.QColor(
-        *GuiQtStyle.get_background('color-item-loading')
-    )
-    Error = QtGui.QColor(
-        *GuiQtStyle.get_background('color-error')
-    )
-
-    BDragChildPolish = QtGui.QColor(*gui_configure.Rgba.LightYellow)
-    BDragChildAdd = QtGui.QColor(*gui_configure.Rgba.LightGreen)
-
-
-class QtFontColors(object):
-    @staticmethod
-    def get(key):
-        return QtGui.QColor(
-            *GuiQtStyle.get_font(key)
-        )
-
-    Black = QtGui.QColor(
-        *GuiQtStyle.get_font('color-black')
-    )
-    Dark = QtGui.QColor(
-        *GuiQtStyle.get_font('color-dark')
-    )
-    Basic = QtGui.QColor(
-        *GuiQtStyle.get_font('color-basic')
-    )
-    Light = QtGui.QColor(
-        *GuiQtStyle.get_font('color-light')
-    )
-    Hovered = QtGui.QColor(
-        *GuiQtStyle.get_font('color-hovered')
-    )
-    Selected = QtGui.QColor(
-        *GuiQtStyle.get_font('color-selected')
-    )
-
-    KeyBasic = QtGui.QColor(
-        *GuiQtStyle.get_font('color-key-basic')
-    )
-    KeyHovered = QtGui.QColor(
-        *GuiQtStyle.get_font('color-key-hovered')
-    )
-    ValueBasic = QtGui.QColor(
-        *GuiQtStyle.get_font('color-value-basic')
-    )
-    ValueHovered = QtGui.QColor(
-        *GuiQtStyle.get_font('color-value-hovered')
-    )
-
-    ToolTip = QtGui.QColor(
-        *GuiQtStyle.get_font('color-tool-tip')
-    )
-    #
-    Normal = QtGui.QColor(
-        *GuiQtStyle.get_font('color-normal')
-    )
-    Correct = QtGui.QColor(
-        *GuiQtStyle.get_font('color-correct')
-    )
-    Warning = QtGui.QColor(
-        *GuiQtStyle.get_font('color-warning')
-    )
-    Error = QtGui.QColor(
-        *GuiQtStyle.get_font('color-error')
-    )
-    Active = QtGui.QColor(
-        *GuiQtStyle.get_font('color-active')
-    )
-    Disable = QtGui.QColor(
-        *GuiQtStyle.get_font('color-disable')
-    )
-
-
-class QtBrushes(object):
-    Background = QtGui.QBrush(QtColors.Background)
-
-    Text = QtGui.QBrush(QtColors.Text)
-    TextDisable = QtGui.QBrush(QtColors.TextDisable)
-    TextTemporary = QtGui.QBrush(QtColors.TextTemporary)
-    TextWarning = QtGui.QBrush(QtColors.TextWarning)
-    TextError = QtGui.QBrush(QtColors.TextError)
-    TextCorrect = QtGui.QBrush(QtColors.TextCorrect)
-    TextActive = QtGui.QBrush(QtColors.TextActive)
 
 
 class GuiQtPixmap(object):
@@ -1059,3 +759,330 @@ class GuiQtLayout(object):
 
         #
         rcs_fnc_(layout)
+
+
+class GuiQtApplicationOpt(object):
+    def __init__(self, app=None):
+        if app is None:
+            self._instance = QtWidgets.QApplication.instance()
+        else:
+            self._instance = None
+
+    def set_process_run_0(self):
+        if self._instance:
+            self._instance.processEvents(
+                QtCore.QEventLoop.ExcludeUserInputEvents
+            )
+
+    def set_process_run_1(self):
+        if self._instance:
+            self._instance.processEvents()
+
+
+class QtFonts(object):
+    Default = GuiQtFont.generate(size=8)
+    DefaultItalic = GuiQtFont.generate(size=8, italic=True)
+    Medium = GuiQtFont.generate(size=10)
+    Large = GuiQtFont.generate(size=12)
+
+    Index = GuiQtFont.generate(size=8)
+
+    NameNormal = GuiQtFont.generate(size=8)
+    NameDisable = GuiQtFont.generate(size=8, italic=True, strike_out=True)
+    NameKey = GuiQtFont.generate(size=8, italic=True)
+    NameValue = GuiQtFont.generate(size=8)
+
+    Description = GuiQtFont.generate(size=10)
+    Content = GuiQtFont.generate(size=8, family='Monospace')
+
+    Loading = GuiQtFont.generate(size=10, weight=75, italic=True)
+
+    Label = GuiQtFont.generate(size=8)
+    Button = GuiQtFont.generate(size=9)
+    Chart = GuiQtFont.generate(size=10, italic=True)
+
+    ToolGroup = GuiQtFont.generate(size=9, weight=75, italic=True)
+
+    Title = GuiQtFont.generate(size=12)
+    SubTitle = GuiQtFont.generate(size=11, italic=True)
+
+    MenuSeparator = GuiQtFont.generate(size=8, italic=True)
+
+
+class QtColors(object):
+    Background = QtGui.QColor(63, 63, 63, 255)
+    BackgroundHover = QtGui.QColor(*gui_core.GuiRgba.LightOrange)
+
+    ToolTipText = QtGui.QColor(15, 15, 15, 255)
+    ToolTipBorder = QtGui.QColor(15, 15, 15, 255)
+    ToolTipBackground = QtGui.QColor(223, 223, 191, 255)
+
+    BubbleBackground = QtGui.QColor(223, 223, 223, 255)
+    BubbleBackgroundDisable = QtGui.QColor(127, 127, 127, 255)
+    BubbleNextWaiting = QtGui.QColor(*gui_core.GuiRgba.LightYellow)
+    BubbleNextFinished = QtGui.QColor(*gui_core.GuiRgba.LightGreen)
+    BubbleBackgroundHover = QtGui.QColor(*gui_core.GuiRgba.LightOrange)
+    BubbleBackgroundActioned = QtGui.QColor(*gui_core.GuiRgba.LightBlue)
+    BubbleBorder = QtGui.QColor(127, 127, 127, 255)
+    BubbleText = QtGui.QColor(31, 31, 31, 255)
+
+    CapsuleBorderChecked = QtGui.QColor(127, 127, 127, 255)
+    CapsuleBorderUnchecked = QtGui.QColor(55, 55, 55, 255)
+    CapsuleBorderHover = QtGui.QColor(*gui_core.GuiRgba.LightOrange)
+    CapsuleBorderActioned = QtGui.QColor(*gui_core.GuiRgba.LightBlue)
+    CapsuleBackground = QtGui.QColor(47, 47, 47, 255)
+    CapsuleBackgroundDisable = QtGui.QColor(63, 63, 63, 255)
+
+    SubIconBorder = QtGui.QColor(207, 207, 207, 255)
+    SubIconBackground = QtGui.QColor(127, 127, 127, 255)
+
+    PopupBorder = QtGui.QColor(*gui_core.GuiRgba.LightBlue)
+
+    TabBorder = QtGui.QColor(63, 63, 63, 255)
+    TabBackground = QtGui.QColor(47, 47, 47, 255)
+    TabBorderCurrent = QtGui.QColor(87, 87, 87, 255)
+    TabBackgroundCurrent = QtGui.QColor(63, 63, 63, 255)
+
+    HeadBorder = QtGui.QColor(87, 87, 87, 255)
+    HeadBackground = QtGui.QColor(83, 83, 83, 255)
+
+    HeadText = QtGui.QColor(207, 207, 207, 255)
+    HeadTextHover = QtGui.QColor(223, 223, 223, 255)
+
+    ButtonBorder = QtGui.QColor(131, 131, 131, 255)
+    ButtonBackground = QtGui.QColor(127, 127, 127, 255)
+
+    Text = QtGui.QColor(223, 223, 223, 255)
+    TextHover = QtGui.QColor(255, 255, 255, 255)
+    TextEnable = QtGui.QColor(*gui_core.GuiRgba.Green)
+    TextDisable = QtGui.QColor(*gui_core.GuiRgba.DarkGray)
+    TextTemporary = QtGui.QColor(*gui_core.GuiRgba.Gray)
+    TextWarning = QtGui.QColor(*gui_core.GuiRgba.Yellow)
+    TextError = QtGui.QColor(*gui_core.GuiRgba.Red)
+    TextLock = QtGui.QColor(*gui_core.GuiRgba.Purple)
+    TextCorrect = QtGui.QColor(*gui_core.GuiRgba.Green)
+    TextActive = QtGui.QColor(*gui_core.GuiRgba.Blue)
+
+    TextKeywordFilter = QtGui.QColor(255, 127, 63, 255)
+    TextKeywordFilterOccurrence = QtGui.QColor(255, 63, 63, 255)
+
+    Progress = QtGui.QColor(63, 255, 127, 255)
+    ProgressBackground = QtGui.QColor(47, 47, 47, 255)
+
+    Red = QtGui.QColor(*gui_core.GuiRgba.Red)
+    Yellow = QtGui.QColor(*gui_core.GuiRgba.Yellow)
+    Transparent = QtGui.QColor(*gui_core.GuiRgba.Transparent)
+
+
+class QtBorderColors(object):
+    @staticmethod
+    def get(key):
+        return QtGui.QColor(
+            *GuiQtStyle.get_border(key)
+        )
+
+    Transparent = QtGui.QColor(
+        *GuiQtStyle.get_border('color-transparent')
+    )
+
+    Dim = QtGui.QColor(
+        *GuiQtStyle.get_border('color-dim')
+    )
+    Dark = QtGui.QColor(
+        *GuiQtStyle.get_border('color-dark')
+    )
+    Basic = QtGui.QColor(
+        *GuiQtStyle.get_border('color-basic')
+    )
+    Light = QtGui.QColor(
+        *GuiQtStyle.get_border('color-light')
+    )
+    HighLight = QtGui.QColor(
+        *GuiQtStyle.get_border('color-high-light')
+    )
+    Selected = QtGui.QColor(
+        *GuiQtStyle.get_border('color-selected')
+    )
+    Actioned = QtGui.QColor(
+        *GuiQtStyle.get_border('color-actioned')
+    )
+    Hovered = QtGui.QColor(
+        *GuiQtStyle.get_border('color-hovered')
+    )
+
+    Icon = QtGui.QColor(
+        *GuiQtStyle.get_border('color-icon')
+    )
+
+    Button = QtGui.QColor(
+        *GuiQtStyle.get_border('color-button')
+    )
+    ButtonDisable = QtGui.QColor(
+        *GuiQtStyle.get_border('color-button-disable')
+    )
+
+    Popup = QtGui.QColor(*gui_core.GuiRgba.LightOrange)
+    SplitMoving = QtGui.QColor(127, 127, 127, 255)
+
+
+class QtBackgroundColors(object):
+    @staticmethod
+    def get(key):
+        return QtGui.QColor(
+            *GuiQtStyle.get_background(key)
+        )
+
+    Shadow = QtGui.QColor(0, 0, 0, 31)
+
+    Transparent = QtGui.QColor(
+        *GuiQtStyle.get_background('color-transparent')
+    )
+    Black = QtGui.QColor(
+        *GuiQtStyle.get_background('color-black')
+    )
+    Dim = QtGui.QColor(
+        *GuiQtStyle.get_background('color-dim')
+    )
+    Dark = QtGui.QColor(
+        *GuiQtStyle.get_background('color-dark')
+    )
+    Basic = QtGui.QColor(
+        *GuiQtStyle.get_background('color-basic')
+    )
+    Light = QtGui.QColor(
+        *GuiQtStyle.get_background('color-light')
+    )
+    White = QtGui.QColor(
+        *GuiQtStyle.get_background('color-white')
+    )
+
+    Hovered = QtGui.QColor(
+        *GuiQtStyle.get_background('color-hovered')
+    )
+    Selected = QtGui.QColor(
+        *GuiQtStyle.get_background('color-selected')
+    )
+    #
+    Checked = QtGui.QColor(127, 63, 127, 255)
+    CheckHovered = QtGui.QColor(191, 127, 191, 255)
+    #
+    DeleteHovered = QtGui.QColor(255, 63, 127, 255)
+    #
+    Pressed = QtGui.QColor(95, 255, 159, 255)
+    PressedHovered = QtGui.QColor(255, 179, 47, 255)
+    #
+    Actioned = QtGui.QColor(
+        *GuiQtStyle.get_background('color-actioned')
+    )
+    #
+    Icon = QtGui.QColor(
+        *GuiQtStyle.get_background('color-icon')
+    )
+    #
+    Button = QtGui.QColor(
+        *GuiQtStyle.get_background('color-button')
+    )
+    ButtonHovered = QtGui.QColor(
+        *GuiQtStyle.get_background('color-button-hovered')
+    )
+    ButtonDisable = QtGui.QColor(
+        *GuiQtStyle.get_background('color-button-disable')
+    )
+    ToolTip = QtGui.QColor(
+        *GuiQtStyle.get_background('color-tool-tip')
+    )
+    #
+    ItemSelected = QtGui.QColor(
+        *GuiQtStyle.get_background('color-item-selected')
+    )
+    ItemSelectedIndirect = QtGui.QColor(
+        *GuiQtStyle.get_background('color-item-selected-indirect')
+    )
+    ItemHovered = QtGui.QColor(
+        *GuiQtStyle.get_background('color-item-hovered')
+    )
+    #
+    ItemLoading = QtGui.QColor(
+        *GuiQtStyle.get_background('color-item-loading')
+    )
+    Error = QtGui.QColor(
+        *GuiQtStyle.get_background('color-error')
+    )
+
+    BDragChildPolish = QtGui.QColor(*gui_core.GuiRgba.LightYellow)
+    BDragChildAdd = QtGui.QColor(*gui_core.GuiRgba.LightGreen)
+
+
+class QtFontColors(object):
+    @staticmethod
+    def get(key):
+        return QtGui.QColor(
+            *GuiQtStyle.get_font(key)
+        )
+
+    Black = QtGui.QColor(
+        *GuiQtStyle.get_font('color-black')
+    )
+    Dark = QtGui.QColor(
+        *GuiQtStyle.get_font('color-dark')
+    )
+    Basic = QtGui.QColor(
+        *GuiQtStyle.get_font('color-basic')
+    )
+    Light = QtGui.QColor(
+        *GuiQtStyle.get_font('color-light')
+    )
+    Hovered = QtGui.QColor(
+        *GuiQtStyle.get_font('color-hovered')
+    )
+    Selected = QtGui.QColor(
+        *GuiQtStyle.get_font('color-selected')
+    )
+
+    KeyBasic = QtGui.QColor(
+        *GuiQtStyle.get_font('color-key-basic')
+    )
+    KeyHovered = QtGui.QColor(
+        *GuiQtStyle.get_font('color-key-hovered')
+    )
+    ValueBasic = QtGui.QColor(
+        *GuiQtStyle.get_font('color-value-basic')
+    )
+    ValueHovered = QtGui.QColor(
+        *GuiQtStyle.get_font('color-value-hovered')
+    )
+
+    ToolTip = QtGui.QColor(
+        *GuiQtStyle.get_font('color-tool-tip')
+    )
+    #
+    Normal = QtGui.QColor(
+        *GuiQtStyle.get_font('color-normal')
+    )
+    Correct = QtGui.QColor(
+        *GuiQtStyle.get_font('color-correct')
+    )
+    Warning = QtGui.QColor(
+        *GuiQtStyle.get_font('color-warning')
+    )
+    Error = QtGui.QColor(
+        *GuiQtStyle.get_font('color-error')
+    )
+    Active = QtGui.QColor(
+        *GuiQtStyle.get_font('color-active')
+    )
+    Disable = QtGui.QColor(
+        *GuiQtStyle.get_font('color-disable')
+    )
+
+
+class QtBrushes(object):
+    Background = QtGui.QBrush(QtColors.Background)
+
+    Text = QtGui.QBrush(QtColors.Text)
+    TextDisable = QtGui.QBrush(QtColors.TextDisable)
+    TextTemporary = QtGui.QBrush(QtColors.TextTemporary)
+    TextWarning = QtGui.QBrush(QtColors.TextWarning)
+    TextError = QtGui.QBrush(QtColors.TextError)
+    TextCorrect = QtGui.QBrush(QtColors.TextCorrect)
+    TextActive = QtGui.QBrush(QtColors.TextActive)

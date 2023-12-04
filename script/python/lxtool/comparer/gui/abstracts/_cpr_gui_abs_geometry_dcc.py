@@ -1,9 +1,9 @@
 # coding:utf-8
-from lxbasic import bsc_core
+import lxbasic.core as bsc_core
 #
 from lxutil import utl_configure
 
-import lxgui.configure as gui_configure
+import lxgui.core as gui_core
 
 import lxgui.proxy.widgets as prx_widgets
 
@@ -159,7 +159,7 @@ class AbsPnlComparerForAssetGeometryDcc(prx_widgets.PrxSessionWindow):
         if comparer_results:
             with bsc_core.LogProcessContext.create(maximum=count, label='gui-add for geometry-comparer result') as g_p:
                 for i_src_geometry_path, i_tgt_geometry_path, i_check_statuses in comparer_results:
-                    g_p.set_update()
+                    g_p.do_update()
                     #
                     i_check_statuses_list = i_check_statuses.split('+')
                     for j_check_status in i_check_statuses_list:
@@ -173,7 +173,7 @@ class AbsPnlComparerForAssetGeometryDcc(prx_widgets.PrxSessionWindow):
                         i_dcc_geometry = self._fnc_dcc_geometry_comparer.get_geometry_tgt(i_src_geometry_path)
                         #
                     if i_dcc_geometry.type_name in ['Mesh', 'mesh']:
-                        i_mesh_prx_item_src = self._prx_usd_mesh_tree_view_add_opt.set_prx_item_add_as(
+                        i_mesh_prx_item_src = self._prx_usd_mesh_tree_view_add_opt.gui_add_as(
                             i_dcc_geometry, mode='list'
                         )
                         #
@@ -220,7 +220,7 @@ class AbsPnlComparerForAssetGeometryDcc(prx_widgets.PrxSessionWindow):
         #
         self._sector_chart.set_chart_data(
             sector_chart_data,
-            gui_configure.SectorChartMode.Error
+            gui_core.GuiSectorChartMode.Error
         )
 
     def refresh_all_fnc(self):
@@ -276,7 +276,7 @@ class AbsPnlComparerForAssetGeometryDcc(prx_widgets.PrxSessionWindow):
         if checked_src_geometries:
             with bsc_core.LogProcessContext.create(maximum=len(checked_src_geometries), label='import geometry') as g_p:
                 for i_src_geometry_item_prx, i_src_dcc_geometry in checked_src_geometries:
-                    g_p.set_update()
+                    g_p.do_update()
                     if i_src_dcc_geometry.type_name in ['Mesh', 'mesh']:
                         i_tgt_dcc_mesh_path = i_src_geometry_item_prx.get_gui_attribute('tgt_mesh_dcc_path')
                         if i_tgt_dcc_mesh_path is not None:

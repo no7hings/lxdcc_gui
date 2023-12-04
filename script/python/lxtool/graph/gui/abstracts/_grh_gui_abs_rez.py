@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxbasic import bsc_core
+import lxbasic.core as bsc_core
 
 import lxgui.proxy.widgets as prx_widgets
 
@@ -25,7 +25,7 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
                 self._hook_option_opt.to_string()
             )
             #
-            self._hook_gui_configure = self._option_hook_configure.get_content('option.gui')
+            self._hook_gui_configure = self._option_hook_configure.get_as_content('option.gui')
             #
             raw = bsc_core.EnvironMtd.get('REZ_BETA')
             if raw:

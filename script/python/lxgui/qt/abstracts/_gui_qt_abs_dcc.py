@@ -1,9 +1,9 @@
 # coding:utf-8
-from lxgui.qt.warp import *
+import six
 
 import types
 
-import six
+from lxgui.qt.wrap import *
 
 import lxgui.qt.core as gui_qt_core
 

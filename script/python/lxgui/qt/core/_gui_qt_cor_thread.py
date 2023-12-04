@@ -1,11 +1,11 @@
 # coding:utf-8
-from lxgui.qt.warp import *
+from lxgui.qt.wrap import *
 
 import functools
 
 import lxbasic.core as bsc_core
 
-import lxgui.configure as gui_configure
+import lxgui.core as gui_core
 
 
 class QtActionSignals(QtCore.QObject):
@@ -93,7 +93,7 @@ class QtBuildThread(QtCore.QThread):
     #
     status_changed = qt_signal(int)
     #
-    Status = gui_configure.Status
+    Status = gui_core.GuiStatus
 
     def __init__(self, *args, **kwargs):
         super(QtBuildThread, self).__init__(*args, **kwargs)
@@ -143,31 +143,11 @@ class QtBuildThread(QtCore.QThread):
                 self.set_status(self.Status.Finished)
 
 
-class QtBuildThreadExtra(QtBuildThread):
-    MUTEX = QtCore.QMutex()
-    MAXIMUM = 1
-    COUNT = 0
-
-    def __init__(self, *args, **kwargs):
-        super(QtBuildThreadExtra, self).__init__(*args, **kwargs)
-
-    def run(self):
-        QtBuildThreadExtra.MUTEX.lock()
-        QtBuildThreadExtra.COUNT += 1
-        super(QtBuildThreadExtra, self).run()
-        QtBuildThreadExtra.COUNT -= 1
-        QtBuildThreadExtra.MUTEX.unlock()
-
-    def do_quit(self):
-        super(QtBuildThreadExtra, self).do_quit()
-        QtBuildThreadExtra.MUTEX.unlock()
-
-
 class QtBuildThreadStack(QtCore.QObject):
     run_started = qt_signal()
     run_finished = qt_signal()
     run_resulted = qt_signal(list)
-    Status = gui_configure.Status
+    Status = gui_core.GuiStatus
 
     def __init__(self, *args, **kwargs):
         super(QtBuildThreadStack, self).__init__(*args, **kwargs)
@@ -180,18 +160,18 @@ class QtBuildThreadStack(QtCore.QObject):
         self._status = self.Status.Waiting
         self._sub_statuses = []
 
-        # self._mutex = QtCore.QMutex()
+        self.__mutex = QtCore.QMutex()
+        self.__maximum = 8
+        self.__count = 0
 
-    def create_thread(self, cache_fnc, build_fnc, previous_fnc=None, post_fnc=None):
+    def generate_thread(self, cache_fnc, build_fnc, previous_fnc=None, post_fnc=None):
         thread = QtBuildThread(self._widget)
         thread.set_cache_fnc(cache_fnc)
         thread.cache_value_accepted.connect(build_fnc)
         thread.start_accepted.connect(self.start_accept_fnc)
         thread.finish_accepted.connect(self.finish_accept_fnc)
         self._results.append(0)
-        self._sub_statuses.append(
-            self.Status.Waiting
-        )
+        self._sub_statuses.append(self.Status.Waiting)
         if previous_fnc is not None:
             thread.run_started.connect(previous_fnc)
         if post_fnc is not None:
@@ -199,7 +179,7 @@ class QtBuildThreadStack(QtCore.QObject):
         return thread
 
     def register(self, cache_fnc, build_fnc, previous_fnc=None, post_fnc=None):
-        thread = self.create_thread(cache_fnc, build_fnc, previous_fnc, post_fnc)
+        thread = self.generate_thread(cache_fnc, build_fnc, previous_fnc, post_fnc)
         self._threads.append(thread)
         return thread
 
@@ -229,20 +209,37 @@ class QtBuildThreadStack(QtCore.QObject):
             del self._threads[seq]
 
     def set_start(self):
-        # self._mutex.lock()
         self._status = self.Status.Running
         self.run_started.emit()
         c_t = None
-        # running one by one
+        # running one by one for keep the order
         for i_t in self._threads:
             if c_t is None:
                 i_t.start()
             else:
-                c_t.cache_started.connect(i_t.start)
+                c_t.cache_finished.connect(i_t.start)
             #
             c_t = i_t
 
-        # self._mutex.unlock()
+
+class QtBuildThreadExtra(QtBuildThread):
+    MUTEX = QtCore.QMutex()
+    MAXIMUM = 1
+    COUNT = 0
+
+    def __init__(self, *args, **kwargs):
+        super(QtBuildThreadExtra, self).__init__(*args, **kwargs)
+
+    def run(self):
+        QtBuildThreadExtra.MUTEX.lock()
+        QtBuildThreadExtra.COUNT += 1
+        super(QtBuildThreadExtra, self).run()
+        QtBuildThreadExtra.COUNT -= 1
+        QtBuildThreadExtra.MUTEX.unlock()
+
+    def do_quit(self):
+        super(QtBuildThreadExtra, self).do_quit()
+        QtBuildThreadExtra.MUTEX.unlock()
 
 
 class QtBuildRunnableSignals(QtCore.QObject):
@@ -259,7 +256,7 @@ class QtBuildRunnableSignals(QtCore.QObject):
 
 
 class QtBuildRunnable(QtCore.QRunnable):
-    Status = gui_configure.Status
+    Status = gui_core.GuiStatus
 
     def __init__(self, pool):
         super(QtBuildRunnable, self).__init__()
@@ -305,6 +302,8 @@ class QtBuildRunnable(QtCore.QRunnable):
             #
             finally:
                 self._build_signals.run_finished.emit()
+        else:
+            self._build_signals.run_finished.emit()
 
     def set_start(self):
         self._pool.start(self)
@@ -320,7 +319,7 @@ class QtBuildRunnableStack(QtCore.QObject):
         self._widget = self.parent()
 
         self._pool = QtCore.QThreadPool(self.parent())
-        self._pool.setMaxThreadCount(100)
+        self._pool.setMaxThreadCount(8)
         #
         self._cache_fncs = []
         self._build_fncs = []
@@ -328,7 +327,11 @@ class QtBuildRunnableStack(QtCore.QObject):
         self._threads = []
         self._results = []
 
-    def create_thread(self, cache_fnc, build_fnc, post_fnc=None):
+        self.__mutex = QtCore.QMutex()
+        self.__maximum = 8
+        self.__count = 0
+
+    def generate_thread(self, cache_fnc, build_fnc, post_fnc=None):
         runnable = QtBuildRunnable(self._pool)
         runnable.set_cache_fnc(cache_fnc)
         runnable._build_signals.cache_value_accepted.connect(build_fnc)
@@ -337,7 +340,7 @@ class QtBuildRunnableStack(QtCore.QObject):
         return runnable
 
     def register(self, cache_fnc, build_fnc, post_fnc=None):
-        thread = self.create_thread(cache_fnc, build_fnc, post_fnc)
+        thread = self.generate_thread(cache_fnc, build_fnc, post_fnc)
         self._threads.append(thread)
         self._results.append(0)
         return thread
@@ -365,7 +368,7 @@ class QtBuildRunnableStack(QtCore.QObject):
             if c_t is None:
                 i_t.set_start()
             else:
-                c_t._build_signals.run_finished.connect(i_t.set_start)
+                c_t._build_signals.cache_finished.connect(i_t.set_start)
             #
             c_t = i_t
 

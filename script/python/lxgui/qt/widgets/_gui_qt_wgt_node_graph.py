@@ -1,16 +1,26 @@
 # coding=utf-8
 import functools
+
 import os.path
 
 import enum
 
 import collections
 
-from lxgui.qt.core import *
+from lxgui.qt.wrap import *
+
+import lxbasic.core as bsc_core
+
+import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
 
 import lxgui.qt.abstracts as gui_qt_abstracts
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_entry, _gui_qt_wgt_item_for_tree, \
+from ..widgets import \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_entry, \
+    _gui_qt_wgt_item_for_tree, \
     _gui_qt_wgt_view_for_tree
 
 
@@ -288,7 +298,7 @@ class AbsQtNGGraphDef(object):
             matrix[0][0]*i_x_0+matrix[0][1]*i_y_0+matrix[0][2],
             matrix[1][0]*i_x_0+matrix[1][1]*i_y_0+matrix[1][2]
         )
-        point.setX(i_x_0_);
+        point.setX(i_x_0_)
         point.setY(i_y_0_)
 
 
@@ -673,7 +683,7 @@ class _QtNGConnection(
         return False
 
     def paintEvent(self, event):
-        painter = QtNGPainter(self)
+        painter = gui_qt_core.QtNGPainter(self)
 
         painter.setRenderHints(
             painter.Antialiasing
@@ -695,7 +705,7 @@ class _QtNGConnection(
         )
 
     def _do_hover_move_(self, event):
-        point = event.pos()
+        _point = event.pos()
 
 
 class AbsQtNGNodeDef(AbsQtNGSbjDef):
@@ -830,6 +840,7 @@ class AbsQtNGNodeDef(AbsQtNGSbjDef):
     def _set_ng_action_node_press_move_execute_(self, event):
         raise NotImplementedError()
 
+    # noinspection PyUnusedLocal
     def _set_ng_action_node_press_move_stop_(self, event):
         self._get_ng_graph_()._set_ng_graph_node_move_stop_()
 
@@ -1101,7 +1112,7 @@ class _QtNGNode(
         return False
 
     def paintEvent(self, event):
-        painter = QtNGPainter(self)
+        painter = gui_qt_core.QtNGPainter(self)
 
         offset = 0
 
@@ -1146,8 +1157,8 @@ class _QtNGNode(
             painter._draw_text_by_rect_(
                 self._name_draw_rect,
                 self._name_text,
-                font=GuiQtFont.generate(size=self._ng_draw_font_h),
-                font_color=QtFontColors.Basic,
+                font=gui_qt_core.GuiQtFont.generate(size=self._ng_draw_font_h),
+                font_color=gui_qt_core.QtFontColors.Basic,
                 text_option=QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter,
                 offset=offset
             )
@@ -1398,7 +1409,7 @@ class _QtNGGraph(
         return False
 
     def paintEvent(self, event):
-        painter = QtNGPainter(self)
+        painter = gui_qt_core.QtNGPainter(self)
         x, y = 0, 0
         width, height = self.width(), self.height()
 
@@ -1442,8 +1453,8 @@ class _QtNGGraph(
         ):
             painter._set_dotted_frame_draw_(
                 self._action_rect_select_rect,
-                border_color=QtBorderColors.Selected,
-                background_color=QtBackgroundColors.Transparent
+                border_color=gui_qt_core.QtBorderColors.Selected,
+                background_color=gui_qt_core.QtBackgroundColors.Transparent
             )
 
         infos = collections.OrderedDict(
@@ -1457,7 +1468,7 @@ class _QtNGGraph(
             ]
         )
 
-        key_text_width = GuiQtText.get_draw_width_maximum(
+        key_text_width = gui_qt_core.GuiQtText.get_draw_width_maximum(
             painter, infos.keys()
         )
         c = len(infos)
@@ -1575,7 +1586,7 @@ class _QtNGGraph(
         xs_1, ys_1 = [i.x() for i in ng_nodes], [i.y()+i.height() for i in ng_nodes]
         x_0, y_0 = min(xs_0), min(ys_0)
         x_1, y_1 = max(xs_1), max(ys_1)
-        w_0, h_0 = x_1-x_0, y_1-y_0
+        _w_0, _h_0 = x_1-x_0, y_1-y_0
         return x_0, y_0, x_1, y_1
 
     def _set_ng_graph_frame_translate_to_nodes_(self, ng_nodes):
@@ -1640,7 +1651,7 @@ class _QtNGGraph(
                     else:
                         o2c_dict[_i_obj_path] = _cur_column
                     #
-                    if not _i_obj in obj_stack:
+                    if _i_obj not in obj_stack:
                         obj_stack.append(_i_obj)
                         rcs_fnc_(_i_obj, _cur_column)
 
@@ -1714,7 +1725,7 @@ class _QtNGGraph(
         query_dict = {}
         for i_ng_node in ng_nodes:
             i_x = i_ng_node.pos().x()
-            i_width = i_ng_node.width()
+            _i_width = i_ng_node.width()
             i_height = i_ng_node._get_image_line_height_()
 
             if sort_key in ['x', '-x']:
@@ -2054,7 +2065,7 @@ class _QtNGImage(_QtNGNode):
         self._image_line_height = 0
 
     def paintEvent(self, event):
-        painter = QtNGPainter(self)
+        painter = gui_qt_core.QtNGPainter(self)
 
         offset = 0
 
@@ -2073,8 +2084,8 @@ class _QtNGImage(_QtNGNode):
             painter._draw_text_by_rect_(
                 self._name_draw_rect,
                 text,
-                font=GuiQtFont.generate(size=self._ng_draw_font_h),
-                font_color=QtFontColors.Basic,
+                font=gui_qt_core.GuiQtFont.generate(size=self._ng_draw_font_h),
+                font_color=gui_qt_core.QtFontColors.Basic,
                 text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
                 offset=offset,
                 word_warp=True
@@ -2135,7 +2146,7 @@ class _QtNGImageGraph(_QtNGGraph):
 
     # widget
     def paintEvent(self, event):
-        painter = QtNGPainter(self)
+        painter = gui_qt_core.QtNGPainter(self)
         x, y = 0, 0
         width, height = self.width(), self.height()
 
@@ -2159,8 +2170,8 @@ class _QtNGImageGraph(_QtNGGraph):
         ):
             painter._set_dotted_frame_draw_(
                 self._action_rect_select_rect,
-                border_color=QtBorderColors.Selected,
-                background_color=QtBackgroundColors.Transparent
+                border_color=gui_qt_core.QtBorderColors.Selected,
+                background_color=gui_qt_core.QtBackgroundColors.Transparent
             )
 
     def _set_ng_universe_(self, universe):
@@ -2258,7 +2269,7 @@ class _QtNGImageGraph(_QtNGGraph):
         size = QtCore.QSize(w_, h_)
         pixmap = QtGui.QPixmap(size)
         pixmap.fill(QtGui.QColor(55, 55, 55, 255))
-        painter = QtPainter(pixmap)
+        painter = gui_qt_core.QtPainter(pixmap)
         rect = pixmap.rect()
         ng_nodes = self._set_ng_graph_nodes_sort_by_(ng_nodes, sort_key='x')
         offset = 0
@@ -2277,8 +2288,8 @@ class _QtNGImageGraph(_QtNGGraph):
             painter._draw_text_by_rect_(
                 i_t_rect,
                 i_t_name_text,
-                font=GuiQtFont.generate(size=i_t_font_size),
-                font_color=QtFontColors.Basic,
+                font=gui_qt_core.GuiQtFont.generate(size=i_t_font_size),
+                font_color=gui_qt_core.QtFontColors.Basic,
                 text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
                 offset=offset,
                 word_warp=True

@@ -1,12 +1,20 @@
 # coding=utf-8
-from lxgui.qt.core import *
-
 import copy
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_resize, _gui_qt_wgt_entry, \
-    _gui_qt_wgt_popup, _gui_qt_wgt_bubble
+from lxgui.qt.wrap import *
+
+import lxgui.core as gui_core
 
 import lxgui.qt.abstracts as gui_qt_abstracts
+
+from ..widgets import \
+    _gui_qt_wgt_base, \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_button, \
+    _gui_qt_wgt_resize, \
+    _gui_qt_wgt_entry, \
+    _gui_qt_wgt_popup, \
+    _gui_qt_wgt_bubble
 
 
 class QtInputAsFilter(
@@ -49,7 +57,7 @@ class QtInputAsFilter(
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
         )
-        qt_layout_0 = QtHLayout(self)
+        qt_layout_0 = _gui_qt_wgt_base.QtHBoxLayout(self)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(2)
         qt_layout_0.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
@@ -131,7 +139,7 @@ class QtInputAsFilter(
 
     def _build_input_entry_(self, value_type):
         self._value_type = value_type
-        self._input_layout = QtHLayout(self._entry_frame_widget)
+        self._input_layout = _gui_qt_wgt_base.QtHBoxLayout(self._entry_frame_widget)
         self._input_layout.setContentsMargins(2, 0, 2, 0)
         self._input_layout.setSpacing(0)
         #

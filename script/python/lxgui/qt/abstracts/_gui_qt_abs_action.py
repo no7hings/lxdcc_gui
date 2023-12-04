@@ -1,18 +1,16 @@
 # coding:utf-8
-from lxgui.qt.warp import *
-
 import enum
 
-import lxbasic.core as bsc_core
+from lxgui.qt.wrap import *
 
-import lxgui.configure as gui_configure
+import lxbasic.core as bsc_core
 
 import lxgui.core as gui_core
 
 
 class AbsQtActionBaseDef(object):
-    ActionFlag = gui_configure.ActionFlag
-    ActionState = gui_configure.ActionState
+    ActionFlag = gui_core.GuiActionFlag
+    ActionState = gui_core.GuiActionState
 
     def _init_action_base_def_(self, widget):
         self._widget = widget
@@ -302,7 +300,7 @@ class AbsQtActionForPressDef(object):
     #
     clicked = qt_signal()
     #
-    ActionFlag = gui_configure.ActionFlag
+    ActionFlag = gui_core.GuiActionFlag
 
     def _init_action_for_press_def_(self, widget):
         self._widget = widget
@@ -364,7 +362,7 @@ class AbsQtActionForCheckDef(object):
     check_changed_as_exclusive = qt_signal()
     check_swapped_as_exclusive = qt_signal()
     #
-    ActionFlag = gui_configure.ActionFlag
+    ActionFlag = gui_core.GuiActionFlag
 
     def _init_action_for_check_def_(self, widget):
         self._widget = widget
@@ -507,7 +505,7 @@ class AbsQtActionForExpandDef(object):
     EXPAND_TOP_TO_BOTTOM = 0
     EXPAND_BOTTOM_TO_TOP = 1
     #
-    ActionFlag = gui_configure.ActionFlag
+    ActionFlag = gui_core.GuiActionFlag
 
     def _init_action_for_expand_def_(self, widget):
         self._widget = widget

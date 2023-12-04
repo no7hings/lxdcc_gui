@@ -1,7 +1,9 @@
 # coding=utf-8
-from lxgui.qt.core import *
+from lxgui.qt.wrap import *
 
-from lxgui.qt.abstracts import _gui_qt_abs_base
+import lxgui.core as gui_core
+
+from ..abstracts import _gui_qt_abs_base
 
 
 # entry for value base

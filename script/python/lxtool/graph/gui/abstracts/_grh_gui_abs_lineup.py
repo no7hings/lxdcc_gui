@@ -3,7 +3,7 @@ import six
 
 import functools
 
-from lxbasic import bsc_core
+import lxbasic.core as bsc_core
 
 import lxgui.proxy.widgets as prx_widgets
 
@@ -13,7 +13,7 @@ import lxgui.qt.core as gui_qt_core
 
 import lxuniverse.objects as unr_objects
 
-import lxcontent.objects as ctt_objects
+import lxcontent.core as ctt_core
 
 import lxgui.proxy.scripts as gui_prx_scripts
 
@@ -36,9 +36,9 @@ class AbsPnlAssetLineup(prx_widgets.PrxSessionWindow):
 
     def set_all_setup(self):
         self._option_hook_configure = self._session.configure
-        self._hook_gui_configure = self._session.configure.get_content('option.gui')
-        self._hook_resolver_configure = self._session.configure.get_content('resolver')
-        self._hook_build_configure = self._session.configure.get_content('build')
+        self._hook_gui_configure = self._session.configure.get_as_content('option.gui')
+        self._hook_resolver_configure = self._session.configure.get_as_content('resolver')
+        self._hook_build_configure = self._session.configure.get_as_content('build')
         self._set_tool_panel_setup_()
 
     def _set_tool_panel_setup_(self):
@@ -99,7 +99,7 @@ class AbsPnlAssetLineup(prx_widgets.PrxSessionWindow):
         self._rsv_filter_opt = bsc_core.ArgDictStringOpt(self._rsv_filter)
 
         self._rsv_project.restore_all_gui_variants()
-        self._prx_dcc_obj_tree_view_add_opt.restore_all()
+        self._prx_dcc_obj_tree_view_add_opt.restore()
 
         self._image_dict = {}
 
@@ -154,7 +154,7 @@ class AbsPnlAssetLineup(prx_widgets.PrxSessionWindow):
         else:
             with bsc_core.LogProcessContext.create(maximum=len(rsv_tags), label='gui-add for entity') as g_p:
                 for i_rsv_tag in rsv_tags:
-                    g_p.set_update()
+                    g_p.do_update()
                     self._set_gui_add_rsv_entities_(
                         self.__cache_rsv_entities_by_tag_(i_rsv_tag)
                     )
@@ -266,7 +266,7 @@ class AbsPnlAssetLineup(prx_widgets.PrxSessionWindow):
 
     @classmethod
     def _get_menu_content_by_hook_keys_(cls, session_dict, hooks, *args, **kwargs):
-        content = ctt_objects.Dict()
+        content = ctt_core.Dict()
         for i_hook in hooks:
             if isinstance(i_hook, six.string_types):
                 i_hook_key = i_hook
@@ -359,7 +359,7 @@ class AbsPnlAssetLineup(prx_widgets.PrxSessionWindow):
                 python_file = bsc_core.StgFileOpt(python_file_path)
                 yaml_file = bsc_core.StgFileOpt(yaml_file_path)
                 if python_file.get_is_exists() is True and yaml_file.get_is_exists() is True:
-                    configure = ctt_objects.Configure(value=yaml_file.path)
+                    configure = ctt_core.Content(value=yaml_file.path)
                     type_name = configure.get('option.type')
                     if type_name is not None:
                         kwargs['configure'] = configure

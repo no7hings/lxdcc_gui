@@ -11,12 +11,21 @@ import lxbasic.core as bsc_core
 
 import lxgui.core as gui_core
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_entry, _gui_qt_wgt_chart, \
+import lxgui.qt.core as gui_qt_core
+
+from lxgui.qt.widgets import \
+    _gui_qt_wgt_base, \
+    _gui_qt_wgt_button, \
+    _gui_qt_wgt_entry, \
+    _gui_qt_wgt_chart, \
     _gui_qt_wgt_view_for_list
 
 import lxgui.proxy.abstracts as gui_prx_abstracts
 
-from lxgui.proxy.widgets import _gui_prx_wdt_utility, _gui_prx_wgt_item, _gui_prx_wgt_contianer
+from lxgui.proxy.widgets import \
+    _gui_prx_wdt_utility, \
+    _gui_prx_wgt_item, \
+    _gui_prx_wgt_contianer
 
 
 class PrxListView(
@@ -34,7 +43,7 @@ class PrxListView(
 
     def __init__(self, *args, **kwargs):
         super(PrxListView, self).__init__(*args, **kwargs)
-        self._qt_layout_0 = _gui_qt_wgt_utility.QtVBoxLayout(self._qt_widget)
+        self._qt_layout_0 = _gui_qt_wgt_base.QtVBoxLayout(self._qt_widget)
         self._qt_layout_0.setContentsMargins(4, 4, 4, 4)
         self._qt_layout_0.setSpacing(2)
         #
@@ -410,7 +419,7 @@ class PrxListView(
 class PrxImageView(PrxListView):
     def __init__(self, *args, **kwargs):
         super(PrxImageView, self).__init__(*args, **kwargs)
-        self.set_item_frame_size(225, 256)
+        self.set_item_frame_size(128, 128+48)
         self.set_item_icon_frame_draw_enable(True)
         self.set_item_name_frame_draw_enable(True)
         self.set_item_image_frame_draw_enable(True)
@@ -418,9 +427,9 @@ class PrxImageView(PrxListView):
     def set_textures(self, textures):
         for i_texture in textures:
             for j_texture_unit in i_texture.get_exists_units():
-                self._set_texture_show_(self.create_item(), j_texture_unit)
+                self._add_texture(self.create_item(), j_texture_unit)
 
-    def _set_texture_show_(self, prx_item, texture_unit):
+    def _add_texture(self, prx_item, texture_unit):
         def cache_fnc_():
             return [
                 prx_item, texture_unit
@@ -433,20 +442,23 @@ class PrxImageView(PrxListView):
             cache_fnc_, build_fnc_
         )
 
-    def _set_texture_show_deferred_(self, data):
+    @staticmethod
+    def _set_texture_show_deferred_(data):
         prx_item, texture_unit = data
 
-        info = texture_unit.get_info()
         show_info_dict = collections.OrderedDict(
             [
                 ('name', texture_unit.name),
-                ('size', '{width} x {height}'.format(**info)),
             ]
         )
-        image_file_path, image_sub_process_cmds = bsc_core.ImgFileOpt(texture_unit.path).get_thumbnail_create_args()
-        prx_item.set_image(image_file_path)
-        prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
+        if texture_unit.get_is_readable():
+            info = texture_unit.get_info()
+            show_info_dict['size'] = '{width} x {height}'.format(**info)
+            image_file_path, image_sub_process_cmds = bsc_core.ImgFileOpt(texture_unit.path).get_thumbnail_create_args()
+            prx_item.set_image(image_file_path)
+            prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
+
         prx_item.set_name_dict(show_info_dict)
         prx_item.set_tool_tip(
-            ['{}={}'.format(k, v) for k, v in info.items()]
+            texture_unit.get_path()
         )

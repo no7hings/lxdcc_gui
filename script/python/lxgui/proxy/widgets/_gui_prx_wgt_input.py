@@ -1,27 +1,16 @@
 # coding:utf-8
 import copy
 
-import six
-
-import os
-
-import functools
-
-import types
-
-import lxlog.core as log_core
-
 import lxbasic.core as bsc_core
-
-import lxgui.core as gui_core
 
 import lxgui.qt.core as gui_qt_core
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_input, _gui_qt_wgt_input_for_storage
-
 import lxgui.proxy.abstracts as gui_prx_abstracts
 
-from lxgui.proxy.widgets import _gui_prx_wdt_utility, _gui_prx_wgt_port_base, _gui_prx_wgt_view_for_tree
+from lxgui.qt.widgets import \
+    _gui_qt_wgt_base, \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_input
 
 
 class PrxInputAsStgTask(gui_prx_abstracts.AbsPrxWidget):
@@ -56,70 +45,71 @@ class PrxInputAsStgTask(gui_prx_abstracts.AbsPrxWidget):
         self.__resource_dict = {}
         self.__task_dict = {}
 
+        self.__stg_task = None
         self.__result_dict = None
 
         import lxwarp.shotgun.core as wrp_stg_core
 
         self._stg_connector = wrp_stg_core.StgConnector()
 
-        l_0 = _gui_qt_wgt_utility.QtHLayout(self.get_widget())
+        l_0 = _gui_qt_wgt_base.QtHBoxLayout(self.get_widget())
         l_0.setContentsMargins(*[0]*4)
         l_0._set_align_top_()
 
-        self.__scheme_input = _gui_qt_wgt_input.QtInputAsBubbleWithChoose()
-        l_0.addWidget(self.__scheme_input)
-        self.__scheme_input._set_choose_values_(
+        self.__qt_scheme_input = _gui_qt_wgt_input.QtInputAsBubbleWithChoose()
+        l_0.addWidget(self.__qt_scheme_input)
+        self.__qt_scheme_input._set_choose_values_(
             self.Schemes.All
         )
-        self.__scheme_input.input_value_change_accepted.connect(
+        self.__qt_scheme_input.input_value_change_accepted.connect(
             self.__update_branch
         )
 
-        self.__path_input = _gui_qt_wgt_input.QtInputAsPath()
-        l_0.addWidget(self.__path_input)
+        self.__qt_task_input = _gui_qt_wgt_input.QtInputAsPath()
+        l_0.addWidget(self.__qt_task_input)
 
-        self.__path_input._set_buffer_fnc_(
+        self.__qt_task_input._set_buffer_fnc_(
             self.__buffer_fnc
         )
 
-        self.__path_input._set_value_('/')
-        self.__path_input._set_choose_popup_auto_resize_enable_(False)
-        self.__path_input._set_choose_popup_tag_filter_enable_(True)
-        self.__path_input._set_choose_popup_keyword_filter_enable_(True)
+        self.__qt_task_input._set_value_('/')
+        self.__qt_task_input._set_choose_popup_auto_resize_enable_(False)
+        self.__qt_task_input._set_choose_popup_tag_filter_enable_(True)
+        self.__qt_task_input._set_choose_popup_keyword_filter_enable_(True)
 
-        self.__path_input._set_choose_popup_item_size_(40, 40)
+        self.__qt_task_input._set_choose_popup_item_size_(40, 40)
 
-        self.__path_input._setup_()
+        self.__qt_task_input._setup_()
 
-        self.__path_input.input_value_change_accepted.connect(self.__update_task)
-        self.__path_input.user_input_entry_finished.connect(self.__accept_result)
+        self.__qt_task_input.input_value_change_accepted.connect(self.__update_task)
+        self.__qt_task_input.user_input_entry_finished.connect(self.__accept_result)
 
-        self.__scheme_input._set_value_(self.Schemes.AssetTask)
+        self.__qt_scheme_input._set_value_(self.Schemes.AssetTask)
 
-        self.__scheme_input._set_history_key_('gui.shotgun-branch')
-        self.__scheme_input._pull_history_latest_()
+        self.__qt_scheme_input._set_history_key_('gui.shotgun-branch')
+        self.__qt_scheme_input._pull_history_latest_()
 
-        self.__path_input._set_history_key_('gui.input-path-{}'.format(self.__scheme))
-        self.__path_input._pull_history_latest_()
+        self.__qt_task_input._set_history_key_('gui.input-path-{}'.format(self.__scheme))
+        self.__qt_task_input._pull_history_latest_()
 
-        self.__path_input._create_widget_shortcut_action_(
+        self.__qt_task_input._create_widget_shortcut_action_(
             self.__to_next_scheme, 'Alt+Right'
         )
-        self.__path_input._create_widget_shortcut_action_(
+        self.__qt_task_input._create_widget_shortcut_action_(
             self.__to_previous_scheme, 'Alt+Left'
         )
 
     def __to_next_scheme(self):
-        self.__scheme_input._get_entry_widget_()._to_next_()
+        self.__qt_scheme_input._get_entry_widget_()._to_next_()
 
     def __to_previous_scheme(self):
-        self.__scheme_input._get_entry_widget_()._to_previous_()
+        self.__qt_scheme_input._get_entry_widget_()._to_previous_()
 
     def set_focus_in(self):
-        self.__path_input._set_input_entry_focus_in_()
+        self.__qt_task_input._set_input_entry_focus_in_()
 
     def has_focus(self):
-        return self.__path_input._get_input_entry_has_focus_()
+        return self.__qt_task_input._get_input_entry_has_focus_()
 
     def connect_result_to(self, fnc):
         self.__signals.dict_accepted.connect(fnc)
@@ -129,11 +119,11 @@ class PrxInputAsStgTask(gui_prx_abstracts.AbsPrxWidget):
 
     def __update_branch(self, text):
         if text != self.__scheme:
-            path_text = self.__path_input._get_value_()
+            path_text = self.__qt_task_input._get_value_()
             path = bsc_core.DccPathDagOpt(path_text)
 
             self.__scheme = text
-            self.__path_input._restore_buffer_cache_()
+            self.__qt_task_input._restore_buffer_cache_()
 
             self.__resource_type = None
             if self.__scheme == self.Schemes.AssetTask:
@@ -143,17 +133,17 @@ class PrxInputAsStgTask(gui_prx_abstracts.AbsPrxWidget):
             elif self.__scheme == self.Schemes.ShotTask:
                 self.__resource_type = 'shot'
 
-            self.__path_input._set_history_key_('gui.input-path-{}'.format(self.__scheme))
-            if self.__path_input._pull_history_latest_() is False:
+            self.__qt_task_input._set_history_key_('gui.input-path-{}'.format(self.__scheme))
+            if self.__qt_task_input._pull_history_latest_() is False:
                 cs = path.get_components()
                 cs.reverse()
                 d = len(cs)
                 if d > 1:
-                    self.__path_input._set_value_(cs[1].to_string())
+                    self.__qt_task_input._set_value_(cs[1].to_string())
 
-            path_text_cur = self.__path_input._get_value_()
+            path_text_cur = self.__qt_task_input._get_value_()
             if path_text_cur == path_text:
-                self.__path_input._update_next_()
+                self.__qt_task_input._update_next_()
 
     def __cache_projects(self):
         self.__project_dict = {}
@@ -256,14 +246,15 @@ class PrxInputAsStgTask(gui_prx_abstracts.AbsPrxWidget):
             'project': project,
             'task': task
         }
-        stg_task = self._stg_connector.find_stg_task(
+        self.__stg_task = self._stg_connector.find_stg_task(
             **kw
         )
-        if stg_task:
+        if self.__stg_task:
             result = copy.copy(kw)
             result['scheme'] = self.__scheme
             result['project'] = kw['project'].lower()
-            result['task_id'] = stg_task['id']
+            result['branch'] = self.__resource_type
+            result['task_id'] = self.__stg_task['id']
             self.__result_dict = result
 
     def __update_resource_task_result(self, project, resource, task):
@@ -272,17 +263,19 @@ class PrxInputAsStgTask(gui_prx_abstracts.AbsPrxWidget):
             self.__resource_type: resource,
             'task': task
         }
-        stg_task = self._stg_connector.find_stg_task(
+        self.__stg_task = self._stg_connector.find_stg_task(
             **kw
         )
-        if stg_task:
+        if self.__stg_task:
             result = copy.copy(kw)
             result['scheme'] = self.__scheme
             result['project'] = kw['project'].lower()
-            result['task_id'] = stg_task['id']
+            result['branch'] = self.__resource_type
+            result['task_id'] = self.__stg_task['id']
             self.__result_dict = result
 
     def __update_task(self, path_text):
+        self.__stg_task = None
         self.__result_dict = None
         if path_text:
             path = bsc_core.DccPathDagOpt(path_text)
@@ -366,11 +359,20 @@ class PrxInputAsStgTask(gui_prx_abstracts.AbsPrxWidget):
 
     def __accept_result(self):
         self.__update_task(
-            self.__path_input._get_value_()
+            self.__qt_task_input._get_value_()
         )
         dict_ = self.__result_dict
         if dict_:
             self.__signals.dict_accepted.emit(dict_)
+
+    def get_is_valid(self):
+        return self.__result_dict is not None
+
+    def get_result(self):
+        return self.__result_dict
+
+    def get_stg_task(self):
+        return self.__stg_task
 
     def __accept_tip(self):
         self.__signals.str_accepted.emit(
@@ -388,3 +390,33 @@ class PrxInputAsStgTask(gui_prx_abstracts.AbsPrxWidget):
 
     def setup(self):
         self.__accept_tip()
+
+    def setup_from_task_id(self, task_id):
+        task_data = self._stg_connector.get_data_from_task_id(
+            str(task_id)
+        )
+        branch = task_data['branch']
+        if branch == 'project':
+            self.__qt_scheme_input._set_value_(
+                self.Schemes.ProjectTask
+            )
+            peth_text = '/{}/{}'.format(task_data['project'], task_data['task'])
+        elif branch == 'asset':
+            self.__qt_scheme_input._set_value_(
+                self.Schemes.AssetTask
+            )
+            peth_text = '/{}/{}/{}'.format(task_data['project'], task_data['asset'], task_data['task'])
+        elif branch == 'sequence':
+            self.__qt_scheme_input._set_value_(
+                self.Schemes.SequenceTask
+            )
+            peth_text = '/{}/{}/{}'.format(task_data['project'], task_data['sequence'], task_data['task'])
+        elif branch == 'shot':
+            self.__qt_scheme_input._set_value_(
+                self.Schemes.ShotTask
+            )
+            peth_text = '/{}/{}/{}'.format(task_data['project'], task_data['shot'], task_data['task'])
+        else:
+            raise RuntimeError()
+
+        self.__qt_task_input._set_value_(peth_text)

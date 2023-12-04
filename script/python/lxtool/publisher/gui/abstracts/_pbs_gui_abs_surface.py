@@ -1,7 +1,7 @@
 # coding:utf-8
 import collections
 
-from lxbasic import bsc_core
+import lxbasic.core as bsc_core
 
 import lxgui.proxy.widgets as prx_widgets
 
@@ -30,7 +30,7 @@ class AbsValidatorOpt(object):
     def __init__(self, filter_tree_view, result_tree_view):
         self._filter_tree_view = filter_tree_view
         self._result_tree_view = result_tree_view
-        self._obj_add_dict = self._result_tree_view._item_dict
+        self._item_dict = self._result_tree_view._item_dict
 
         self._result_tree_view.connect_item_select_changed_to(
             self.set_select
@@ -71,7 +71,7 @@ class AbsValidatorOpt(object):
     def _set_sub_check_results_build_at_(self, scene_prx_item, rsv_scene_properties, results):
         with bsc_core.LogProcessContext.create(maximum=len(results), label='gui-add for check result') as g_p:
             for i_result in results:
-                g_p.set_update()
+                g_p.do_update()
                 #
                 i_type = i_result['type']
                 i_dcc_path = i_result['node']
@@ -165,8 +165,8 @@ class AbsValidatorOpt(object):
         )
 
     def _get_scene_(self, file_path):
-        if file_path in self._obj_add_dict:
-            return self._obj_add_dict[file_path]
+        if file_path in self._item_dict:
+            return self._item_dict[file_path]
         #
         stg_file = utl_dcc_objects.OsFile(file_path)
         name = stg_file.get_path_prettify_()
@@ -187,7 +187,7 @@ class AbsValidatorOpt(object):
         )
 
         prx_item._child_dict = {}
-        self._obj_add_dict[file_path] = prx_item
+        self._item_dict[file_path] = prx_item
         return prx_item
 
     def _get_group_(self, scene_prx_item, group_name):
@@ -468,7 +468,7 @@ class AbsPnlPublisherForAsset(prx_widgets.PrxSessionWindow):
     def refresh_next_enable_fnc(self):
         self._validation_info_file = self._get_validation_info_file_path_()
         if self._validation_info_file is not None:
-            info = '\n'.join(self._get_validation_info_texts_())
+            info = '\n'.join(map(bsc_core.auto_encode, self._get_validation_info_texts_()))
             bsc_core.StgFileOpt(
                 self._validation_info_file
             ).set_write(

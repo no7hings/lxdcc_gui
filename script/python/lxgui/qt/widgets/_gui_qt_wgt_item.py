@@ -1,9 +1,15 @@
 # coding=utf-8
-from lxgui.qt.core import *
+from lxgui.qt.wrap import *
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_chart
+import lxbasic.core as bsc_core
+
+import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
 
 import lxgui.qt.abstracts as gui_qt_abstracts
+
+from ..widgets import _gui_qt_wgt_button
 
 
 class _QtStatusItem(
@@ -66,7 +72,7 @@ class _QtStatusItem(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         #
         self._refresh_widget_draw_geometry_()
         #
@@ -74,7 +80,7 @@ class _QtStatusItem(
         is_hovered = self._get_is_hovered_()
         #
         if self._get_is_checked_():
-            background_color = [QtColors.Yellow, QtColors.BackgroundHover][is_hovered]
+            background_color = [gui_qt_core.QtColors.Yellow, gui_qt_core.QtColors.BackgroundHover][is_hovered]
             painter._draw_image_use_text_by_rect_(
                 rect=self._icon_color_draw_rect,
                 text='l',
@@ -84,7 +90,7 @@ class _QtStatusItem(
                 border_radius=1
             )
         else:
-            background_color = [QtColors.Transparent, QtColors.BackgroundHover][is_hovered]
+            background_color = [gui_qt_core.QtColors.Transparent, gui_qt_core.QtColors.BackgroundHover][is_hovered]
             painter._draw_image_use_text_by_rect_(
                 rect=self._icon_color_draw_rect,
                 text='d',
@@ -114,7 +120,7 @@ class _QtHContractItem(
             QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
         )
         #
-        self._name_draw_font = QtFonts.ToolGroup
+        self._name_draw_font = gui_qt_core.QtFonts.ToolGroup
         #
         self._init_icon_base_def_(self)
         self._init_name_base_def_(self)
@@ -159,7 +165,7 @@ class _QtHContractItem(
         self._frame_background_color = color
         self._hovered_frame_background_color = hover_color
         # font
-        self.setFont(QtFonts.NameNormal)
+        self.setFont(gui_qt_core.QtFonts.NameNormal)
 
         self._icon_frame_draw_size = 12, 24
         self._icon_draw_percent = 1
@@ -224,7 +230,7 @@ class _QtHContractItem(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         #
         self._refresh_widget_draw_geometry_()
         #
@@ -285,7 +291,7 @@ class _QtWindowHead(
         self._orientation = QtCore.Qt.Horizontal
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         #
         self._set_widget_geometries_update_()
         #

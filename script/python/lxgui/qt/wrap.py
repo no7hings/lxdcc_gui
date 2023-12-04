@@ -1,78 +1,79 @@
 # coding:utf-8
-import sys
+import sys as _sys
 
-import cgitb
+import cgitb as _cgitb
 
-import pkgutil
+import pkgutil as _pkgutil
 
-import importlib
+import importlib as _importlib
 
-import lxlog.core as log_core
+import lxlog.core as _log_core
 
 QT_LOAD_INDEX = None
 
-__pyqt5 = pkgutil.find_loader('PyQt5')
+__pyqt5 = _pkgutil.find_loader('PyQt5')
 if __pyqt5 is not None:
     QT_LOAD_INDEX = 0
     # noinspection PyUnresolvedReferences
     from PyQt5 import QtGui, QtCore, QtWidgets, QtSvg, QtOpenGL
-    log_core.Log.trace_method_result(
-        'qt warp', 'load form "PyQt5"'
+    _log_core.Log.trace_method_result(
+        'qt wrap', 'load form "PyQt5"'
     )
 else:
-    QT_LOAD_INDEX = 1
-    __pyside2 = pkgutil.find_loader('PySide2')
+    __pyside2 = _pkgutil.find_loader('PySide2')
     if __pyside2 is not None:
+        QT_LOAD_INDEX = 1
         # noinspection PyUnresolvedReferences
         from PySide2 import QtGui, QtCore, QtWidgets, QtSvg, QtOpenGL
-        log_core.Log.trace_method_result(
-            'qt warp', 'load form "PySide2"'
+        _log_core.Log.trace_method_result(
+            'qt wrap', 'load form "PySide2"'
         )
     else:
-        __qtside = pkgutil.find_loader('QtSide')
+        __qtside = _pkgutil.find_loader('QtSide')
         if __qtside is not None:
             # noinspection PyUnresolvedReferences
             import QtSide
 
             # noinspection PyUnresolvedReferences
-            __pyqt5 = sys.modules.get('PyQt5')
+            __pyqt5 = _sys.modules.get('PyQt5')
             if __pyqt5 is not None:
                 QT_LOAD_INDEX = 0
                 # noinspection PyUnresolvedReferences
                 from PyQt5 import QtGui, QtCore, QtWidgets, QtSvg, QtOpenGL
 
-                log_core.Log.trace_method_result(
-                    'qt warp', 'load form "PyQt5"'
+                _log_core.Log.trace_method_result(
+                    'qt wrap', 'load form "PyQt5"'
                 )
             else:
-                __pyside2 = sys.modules.get('PySide2')
+                __pyside2 = _sys.modules.get('PySide2')
                 if __pyside2 is not None:
+                    QT_LOAD_INDEX = 1
                     # noinspection PyUnresolvedReferences
                     from PySide2 import QtGui, QtCore, QtWidgets, QtSvg, QtOpenGL
 
-                    log_core.Log.trace_method_result(
-                        'qt warp', 'load form "PySide2"'
+                    _log_core.Log.trace_method_result(
+                        'qt wrap', 'load form "PySide2"'
                     )
 
 if QT_LOAD_INDEX is None:
     raise ImportError(
-        log_core.Log.trace_error(
+        _log_core.Log.trace_error(
             'neither "PyQt5" or "PySide2" is found'
         )
     )
 
 
-log_directory_path = log_core.LogBase.get_user_debug_directory(
+_log_directory_path = _log_core.LogBase.get_user_debug_directory(
     tag='qt', create=True
 )
 
-cgitb.enable(
-    logdir=log_directory_path,
+_cgitb.enable(
+    logdir=_log_directory_path,
     format='text'
 )
 
-log_core.Log.trace_method_result(
-    'qt warp', 'register log at: {}'.format(log_directory_path)
+_log_core.Log.trace_method_result(
+    'qt wrap', 'register log at: {}'.format(_log_directory_path)
 )
 
 load_dic = {
@@ -122,7 +123,7 @@ misplaced_dic = {
 
 class __Loader(object):
     def __init__(self, module_name):
-        self.__module = importlib.import_module(module_name)
+        self.__module = _importlib.import_module(module_name)
 
     def get_method(self, key):
         return self.__module.__dict__[key]
@@ -130,17 +131,17 @@ class __Loader(object):
 
 def qt_signal(*args):
     # noinspection PyUnresolvedReferences
-    module_name, method_name = load_dic[sys._getframe().f_code.co_name][QT_LOAD_INDEX]
+    module_name, method_name = load_dic[_sys._getframe().f_code.co_name][QT_LOAD_INDEX]
     return __Loader(module_name).get_method(method_name)(*args)
 
 
 def qt_wrapinstance(*args):
     # noinspection PyUnresolvedReferences
-    module_name, method_name = load_dic[sys._getframe().f_code.co_name][QT_LOAD_INDEX]
+    module_name, method_name = load_dic[_sys._getframe().f_code.co_name][QT_LOAD_INDEX]
     return __Loader(module_name).get_method(method_name)(*args)
 
 
 def qt_is_deleted(*args):
     # noinspection PyUnresolvedReferences
-    module_name, method_name = load_dic[sys._getframe().f_code.co_name][QT_LOAD_INDEX]
+    module_name, method_name = load_dic[_sys._getframe().f_code.co_name][QT_LOAD_INDEX]
     return __Loader(module_name).get_method(method_name)(*args)

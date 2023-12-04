@@ -3,7 +3,7 @@ import six
 
 import collections
 
-from lxbasic import bsc_core
+import lxbasic.core as bsc_core
 
 from lxutil import utl_core
 
@@ -76,7 +76,7 @@ class PnlRenderSubmitter(smt_gui_abstracts.AbsPnlSubmitterForAssetRenderDcc):
         c = len(ns)
         with bsc_core.LogProcessContext.create(maximum=c, label='gui build render layer') as g_p:
             for i in ns:
-                g_p.set_update()
+                g_p.do_update()
                 i_opt = ktn_core.NGObjOpt(i)
                 self._gui_add_render_node_(i_opt)
 
@@ -86,19 +86,19 @@ class PnlRenderSubmitter(smt_gui_abstracts.AbsPnlSubmitterForAssetRenderDcc):
         for i_prx_item in prx_items:
             self._gui_refresh_render_node_(i_prx_item)
 
-    def _gui_refresh_render_node_(self, prx_item):
-        render_node_opt = prx_item.get_gui_dcc_obj(
+    def _gui_refresh_render_node_(self, prx_item_widget):
+        render_node_opt = prx_item_widget.get_gui_dcc_obj(
             namespace=self.DCC_NAMESPACE
         )
 
         if render_node_opt.get_is_bypassed(ancestors=True) is True:
-            prx_item.set_visible(False)
+            prx_item_widget.set_visible(False)
         else:
-            prx_item.set_visible(True)
+            prx_item_widget.set_visible(True)
 
-        prx_item.set_check_enable(True)
+        prx_item_widget.set_check_enable(True)
 
-        prx_item.set_image(
+        prx_item_widget.set_image(
             gui_core.GuiIcon.get('image_loading_failed_error')
         )
 
@@ -133,21 +133,22 @@ class PnlRenderSubmitter(smt_gui_abstracts.AbsPnlSubmitterForAssetRenderDcc):
                     image_file_path = image_file_paths[0]
                     thumbnail = bsc_core.ImgFileOpt(image_file_path).get_thumbnail()
                     if thumbnail:
-                        prx_item.set_image(thumbnail)
+                        prx_item_widget.set_image(thumbnail)
         else:
             name_dict['frames'] = default_render_frames
 
-        prx_item.set_name_dict(
+        prx_item_widget.set_name_dict(
             name_dict
         )
 
-        prx_item.set_tool_tip(
+        prx_item_widget.set_tool_tip(
             descriptions
         )
+        prx_item_widget.refresh_widget_force()
 
-    def _gui_add_menu_(self, prx_item):
+    def _gui_add_menu_(self, prx_item_widget):
         def open_fnc_():
-            _name_dict = prx_item.get_name_dict()
+            _name_dict = prx_item_widget.get_name_dict()
             if _name_dict:
                 if 'output-directory' in _name_dict:
                     _directory_path = _name_dict['output-directory']
@@ -156,7 +157,7 @@ class PnlRenderSubmitter(smt_gui_abstracts.AbsPnlSubmitterForAssetRenderDcc):
                     )
 
         def enable_fnc_():
-            _name_dict = prx_item.get_name_dict()
+            _name_dict = prx_item_widget.get_name_dict()
             if _name_dict:
                 if 'output-directory' in _name_dict:
                     _directory_path = _name_dict['output-directory']
@@ -169,7 +170,7 @@ class PnlRenderSubmitter(smt_gui_abstracts.AbsPnlSubmitterForAssetRenderDcc):
             ('open output directory (force)', 'file/open-folder', (True, open_fnc_, False))
         ]
 
-        prx_item.set_menu_data(
+        prx_item_widget.set_menu_data(
             menu_raw
         )
 
@@ -180,21 +181,21 @@ class PnlRenderSubmitter(smt_gui_abstracts.AbsPnlSubmitterForAssetRenderDcc):
 
         def build_fnc_(data):
             self._gui_refresh_render_node_(
-                prx_item
+                prx_item_widget
             )
             self._gui_add_menu_(
-                prx_item
+                prx_item_widget
             )
 
-        prx_item = self._result_list_view.create_item()
+        prx_item_widget = self._result_list_view.create_item()
         # print path, semantic_tag_filter_data
-        prx_item.set_gui_dcc_obj(
+        prx_item_widget.set_gui_dcc_obj(
             render_node_opt, namespace=self.DCC_NAMESPACE
         )
-        prx_item.set_keyword_filter_keys_tgt(
+        prx_item_widget.set_keyword_filter_keys_tgt(
             {render_node_opt.get_name()}
         )
-        prx_item.set_show_fnc(
+        prx_item_widget.set_show_fnc(
             cache_fnc_, build_fnc_
         )
 
@@ -247,7 +248,7 @@ class PnlRenderSubmitter(smt_gui_abstracts.AbsPnlSubmitterForAssetRenderDcc):
                     ).format(ddl_job_id)
                 )
 
-        from lxbasic import bsc_core
+        import lxbasic.core as bsc_core
 
         import lxsession.commands as ssn_commands
 

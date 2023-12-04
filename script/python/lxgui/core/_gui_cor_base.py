@@ -17,9 +17,17 @@ import lxresource.core as rsc_core
 
 import lxcontent.core as ctt_core
 
-import lxcontent.objects as ctt_objects
+from ..core import _gui_cor_configure
 
-import lxgui.configure as gui_configure
+
+class GuiState(object):
+    NORMAL = 'normal'
+    ENABLE = 'enable'
+    DISABLE = 'disable'
+    WARNING = 'warning'
+    ERROR = 'error'
+    LOCKED = 'locked'
+    LOST = 'lost'
 
 
 class GuiUtil(object):
@@ -82,8 +90,14 @@ class GuiUtil(object):
         raise SystemError()
 
     @classmethod
-    def get_user_history_file(cls):
+    def get_user_history_cache_file(cls):
         return '{}/history.yml'.format(
+            cls.get_user_directory()
+        )
+
+    @classmethod
+    def get_user_thumbnail_cache_file(cls):
+        return '{}/thumbnail.yml'.format(
             cls.get_user_directory()
         )
 
@@ -93,13 +107,13 @@ class GuiXml(object):
     def get_color(cls, *args):
         arg = args[0]
         if isinstance(arg, (float, int)):
-            return gui_configure.XmlColor.All[int(arg)]
+            return _gui_cor_configure.GuiXmlColor.All[int(arg)]
         elif isinstance(arg, six.string_types):
-            return gui_configure.XmlColor.Dict.get(arg, '#dfdfdf')
+            return _gui_cor_configure.GuiXmlColor.Dict.get(arg, '#dfdfdf')
         return '#dfdfdf'
 
     @classmethod
-    def get_text(cls, text, font_color=gui_configure.XmlColor.White, font_family='Arial', font_size=8):
+    def get_text(cls, text, font_color=_gui_cor_configure.GuiXmlColor.White, font_family='Arial', font_size=8):
         html_color = cls.get_color(font_color)
         #
         text = text.replace(' ', '&nbsp;')
@@ -202,23 +216,13 @@ class GuiEllipse2d(object):
         return xp, yp
 
 
-class State(object):
-    NORMAL = 'normal'
-    ENABLE = 'enable'
-    DISABLE = 'disable'
-    WARNING = 'warning'
-    ERROR = 'error'
-    LOCKED = 'locked'
-    LOST = 'lost'
-
-
 class GuiIcon(object):
     BRANCH = 'icons'
     ICON_KEY_PATTERN = r'[@](.*?)[@]'
 
     @classmethod
     def get(cls, key):
-        return rsc_core.Resource.get(
+        return rsc_core.ExtendResource.get(
             '{}/{}.*'.format(cls.BRANCH, key)
         )
 
@@ -245,7 +249,7 @@ class GuiIcon(object):
 
     @classmethod
     def find_all_keys_at(cls, group_branch):
-        return rsc_core.Resource.find_all_file_keys_at(
+        return rsc_core.ExtendResource.find_all_file_keys_at(
             cls.BRANCH, group_branch, ext_includes={'.png', '.svg'}
         )
 
@@ -256,7 +260,7 @@ class GuiIconDirectory(object):
 
     @classmethod
     def get(cls, key):
-        return rsc_core.Resource.get(
+        return rsc_core.ExtendResource.get(
             '{}/{}'.format(cls.BRANCH, key)
         )
 
@@ -266,20 +270,20 @@ class GuiQtFont(object):
 
     @classmethod
     def get(cls, key):
-        return rsc_core.Resource.get(
+        return rsc_core.ExtendResource.get(
             '{}/{}.*'.format(cls.BRANCH, key)
         )
 
     @classmethod
     def get_all(cls, sub_key='*'):
-        return rsc_core.Resource.get_all(
+        return rsc_core.ExtendResource.get_all(
             '{}/{}.*'.format(cls.BRANCH, sub_key)
         )
 
 
 class GuiModifier(object):
     @staticmethod
-    def debug_run(fnc):
+    def run_with_exception_catch(fnc):
         def fnc_(*args, **kwargs):
             # noinspection PyBroadException
             try:
@@ -292,7 +296,7 @@ class GuiModifier(object):
 
 
 class GuiDialog(object):
-    ValidationStatus = gui_configure.ValidationStatus
+    ValidationStatus = _gui_cor_configure.GuiValidationStatus
 
     @classmethod
     def create(
@@ -386,7 +390,7 @@ class GuiMonitorForDeadline(object):
     def set_create(cls, label, job_id, parent=None):
         import lxgui.proxy.widgets as prx_widgets
 
-        import lxdeadline.core as ddl_core
+        import lxwarp.deadline.core as ddl_core
 
         w = prx_widgets.PrxMonitorWindow(parent=parent)
         w.set_window_title(
@@ -418,116 +422,93 @@ class GuiHistory(object):
     KEY = 'gui history'
     MAXIMUM = 20
 
-    FILE_PATH = GuiUtil.get_user_history_file()
-    CACHE = None
+    FILE_PATH = GuiUtil.get_user_history_cache_file()
+    CONTENT_CACHE = ctt_core.ContentCache(FILE_PATH)
 
     @classmethod
-    def __pre_run(cls):
-        if os.path.isfile(cls.FILE_PATH) is False:
-            ctt_core.CttFile(cls.FILE_PATH).write({})
-
-    @classmethod
-    def __is_valid(cls):
-        return os.path.isfile(cls.FILE_PATH) is True
-
-    # @classmethod
-    # def __get_content(cls):
-    #     if cls.CACHE is not None:
-    #         return cls.CACHE
-    #
-    #     cls.CACHE = ctt_objects.Content(
-    #         value=cls.FILE_PATH
-    #     )
-    #     log_core.Log.trace_method_result(
-    #         cls.KEY, 'load history from "{}"'.format(cls.FILE_PATH)
-    #     )
-    #     return cls.CACHE
-
-    @classmethod
-    def __get_content(cls):
-        return ctt_objects.Content(
-            value=cls.FILE_PATH
-        )
+    def __generate_content_cache(cls):
+        return cls.CONTENT_CACHE.generate()
 
     @classmethod
     def set_one(cls, key, value):
-        cls.__pre_run()
-        if cls.__is_valid() is True:
-            c = cls.__get_content()
-            c.set(key, value)
-            c.save()
+        c = cls.__generate_content_cache()
+        c.set(key, value)
+        c.save()
 
     @classmethod
     def get_one(cls, key):
-        cls.__pre_run()
-        if cls.__is_valid() is True:
-            c = cls.__get_content()
-            return c.get(key)
+        c = cls.__generate_content_cache()
+        return c.get(key)
 
     @classmethod
     def set_array(cls, key, array):
-        cls.__pre_run()
-        if cls.__is_valid() is True:
-            c = cls.__get_content()
-            c.set(key, array)
-            c.save()
+        c = cls.__generate_content_cache()
+        c.set(key, array)
+        c.save()
 
     @classmethod
     def get_array(cls, key):
-        cls.__pre_run()
-        if cls.__is_valid() is True:
-            c = cls.__get_content()
-            return c.get(key)
-        return []
+        c = cls.__generate_content_cache()
+        return c.get(key) or []
 
     @classmethod
     def append(cls, key, value):
-        cls.__pre_run()
-        if cls.__is_valid() is True:
-            c = cls.__get_content()
-            values_exists = c.get(key) or []
-            # move end
-            if value in values_exists:
-                values_exists.remove(value)
-            values_exists.append(value)
-            #
-            values_exists = values_exists[-cls.MAXIMUM:]
-            c.set(key, values_exists)
-            c.save()
-            return True
-        return False
+        c = cls.__generate_content_cache()
+        values_exists = c.get(key) or []
+        # move end
+        if value in values_exists:
+            values_exists.remove(value)
+        values_exists.append(value)
+        #
+        values_exists = values_exists[-cls.MAXIMUM:]
+        c.set(key, values_exists)
+        c.save()
+        return True
 
     @classmethod
     def extend(cls, key, values):
-        cls.__pre_run()
+        c = cls.__generate_content_cache()
+        values_exists = c.get(key) or []
+        for i_value in values:
+            if i_value not in values_exists:
+                values_exists.append(i_value)
         #
-        if cls.__is_valid() is True:
-            c = cls.__get_content()
-            values_exists = c.get(key) or []
-            for i_value in values:
-                if i_value not in values_exists:
-                    values_exists.append(i_value)
-            #
-            values_exists = values_exists[-cls.MAXIMUM:]
-            c.set(key, values_exists)
-            c.save()
-            return True
-        return False
+        values_exists = values_exists[-cls.MAXIMUM:]
+        c.set(key, values_exists)
+        c.save()
+        return True
 
     @classmethod
     def get_all(cls, key):
-        cls.__pre_run()
-        c = cls.__get_content()
+        c = cls.__generate_content_cache()
         return copy.copy(c.get(key)) or []
 
     @classmethod
     def get_latest(cls, key):
-        cls.__pre_run()
-        if cls.__is_valid() is True:
-            c = cls.__get_content()
-            _ = c.get(key)
-            if _:
-                return _[-1]
+        c = cls.__generate_content_cache()
+        _ = c.get(key)
+        if _:
+            return _[-1]
+
+
+class GuiThumbnailCache(object):
+    KEY = 'gui history'
+    MAXIMUM = 20
+
+    FILE_PATH = GuiUtil.get_user_history_cache_file()
+    CONTENT_CACHE = ctt_core.ContentCache(FILE_PATH)
+
+    def __init__(self, file_path):
+        self.__content_cache = ctt_core.ContentCache(file_path)
+
+    def pull(self, key):
+        c = self.__content_cache.generate()
+        return c.get(key)
+
+    def push(self, key, value):
+        c = self.__content_cache.generate()
+        c.set(key, value)
+        c.save()
 
 
 if __name__ == '__main__':

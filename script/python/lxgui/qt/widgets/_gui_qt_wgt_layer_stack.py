@@ -1,5 +1,11 @@
 # coding=utf-8
-from lxgui.qt.core import *
+import math
+
+from lxgui.qt.wrap import *
+
+import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
 
 
 class QtLayer(QtWidgets.QWidget):
@@ -13,19 +19,19 @@ class QtLayer(QtWidgets.QWidget):
     def _refresh_widget_draw_geometry_(self):
         x, y = 0, 0
         w, h = self.width(), self.height()
-        x_, y_ = self.x(), self.y()
+        _x_, _y_ = self.x(), self.y()
         if self.__swap_flag is True:
             index = min(self.__anim_index, self.__anim_index_maximum)
             d = sum([(0.5/(2**i))*1 for i in range(index)])
             c_w, c_h = self.__swap_width_mark, self.__swap_height_mark
             if self.__swap_mode == 'hide':
                 c_h_d = c_h*d
-                c_h_ = c_h - c_h_d
+                _c_h_ = c_h - c_h_d
                 # self.setGeometry(x_, y_, w, c_h_)
                 if self.__anim_index == self.__anim_index_maximum:
                     self.hide()
             elif self.__swap_mode == 'show':
-                c_h_d = c_h*d
+                _c_h_d = c_h*d
                 if self.__anim_index == self.__anim_index_maximum:
                     pass
         else:
@@ -44,12 +50,12 @@ class QtLayer(QtWidgets.QWidget):
 
         self.__anim_cycle_msec = 1000/self.DELAY_TIME_FPS
         self.__anim_timer = QtCore.QTimer(self)
-        self.__anim_index_maximum = self.DELAY_TIME/self.__anim_cycle_msec
+        self.__anim_index_maximum = int(self.DELAY_TIME/self.__anim_cycle_msec)
         self.__anim_timer.timeout.connect(self.__do_swap_start)
         self.__anim_index = 0
 
         self.__swap_flag = False
-        self.__swap_switch_direction = gui_configure.Direction.TopToBottom
+        self.__swap_switch_direction = gui_core.GuiDirection.TopToBottom
 
         self.__swap_mode = 'hide'
         
@@ -153,7 +159,7 @@ class QtLayerStack(QtWidgets.QWidget):
 
         self.__anim_cycle_msec = 1000/self.DELAY_TIME_FPS
         self.__anim_timer = QtCore.QTimer(self)
-        self.__anim_index_maximum = self.DELAY_TIME/self.__anim_cycle_msec
+        self.__anim_index_maximum = int(self.DELAY_TIME/self.__anim_cycle_msec)
         self.__anim_timer.timeout.connect(self.__do_swap_start)
         self.__anim_index = 0
 
@@ -162,7 +168,7 @@ class QtLayerStack(QtWidgets.QWidget):
         self.__swap_rect_0, self.__swap_rect_1 = QtCore.QRect(), QtCore.QRect()
 
         self.__swap_flag = False
-        self.__swap_switch_direction = gui_configure.Direction.LeftToRight
+        self.__swap_switch_direction = gui_core.GuiDirection.LeftToRight
 
         self.__swap_mode = 'switch'
 
@@ -178,14 +184,14 @@ class QtLayerStack(QtWidgets.QWidget):
             d = sum([(0.5/(2**i))*1 for i in range(index)])
             if self.__swap_mode == 'switch':
                 w_d = w*d
-                if self.__swap_switch_direction == gui_configure.Direction.LeftToRight:
+                if self.__swap_switch_direction == gui_core.GuiDirection.LeftToRight:
                     self.__swap_rect_0.setRect(
                         x-w_d, y, w, h
                     )
                     self.__swap_rect_1.setRect(
                         w-w_d, y, w, h
                     )
-                elif self.__swap_switch_direction == gui_configure.Direction.RightToLeft:
+                elif self.__swap_switch_direction == gui_core.GuiDirection.RightToLeft:
                     self.__swap_rect_0.setRect(
                         x+w_d, y, w, h
                     )
@@ -249,7 +255,7 @@ class QtLayerStack(QtWidgets.QWidget):
 
     def paintEvent(self, event):
         if self.__swap_flag is True:
-            painter = QtPainter(self)
+            painter = gui_qt_core.QtPainter(self)
             if self.__swap_mode in {'add', 'new'}:
                 painter._draw_alternating_colors_by_rect_(
                     rect=self.__swap_rect_0,
@@ -259,8 +265,8 @@ class QtLayerStack(QtWidgets.QWidget):
                 )
                 painter._draw_frame_by_rect_(
                     rect=self.__swap_rect_1,
-                    border_color=QtBorderColors.Button,
-                    background_color=gui_configure.Rgba.LightOrange,
+                    border_color=gui_qt_core.QtBorderColors.Button,
+                    background_color=gui_core.GuiRgba.LightOrange,
                     border_radius=5,
                     border_width=2
                 )
@@ -274,6 +280,7 @@ class QtLayerStack(QtWidgets.QWidget):
                     self.__swap_pixmap_1
                 )
 
+    # noinspection PyUnusedLocal
     def _add_widget_(self, widget, *args, **kwargs):
         widget.setParent(self)
         index = len(self.__widgets)
@@ -331,9 +338,9 @@ class QtLayerStack(QtWidgets.QWidget):
 
     def _swap_current_between_(self, index_0, index_1, mode):
         if index_0 < index_1:
-            self.__swap_switch_direction = gui_configure.Direction.LeftToRight
+            self.__swap_switch_direction = gui_core.GuiDirection.LeftToRight
         else:
-            self.__swap_switch_direction = gui_configure.Direction.RightToLeft
+            self.__swap_switch_direction = gui_core.GuiDirection.RightToLeft
 
         self.__swap_mode = mode
         # x, y = 0, 0
@@ -341,9 +348,9 @@ class QtLayerStack(QtWidgets.QWidget):
         wgt_0, wgt_1 = self.__widgets[index_0], self.__widgets[index_1]
         # wgt_0.setGeometry(x, y, w, h)
         self.__swap_pixmap_0, self.__swap_pixmap_1 = QtGui.QPixmap(w, h), QtGui.QPixmap(w, h)
-        self.__swap_pixmap_0.fill(QtBackgroundColors.Basic)
+        self.__swap_pixmap_0.fill(gui_qt_core.QtBackgroundColors.Basic)
         wgt_0.render(self.__swap_pixmap_0)
-        self.__swap_pixmap_1.fill(QtBackgroundColors.Basic)
+        self.__swap_pixmap_1.fill(gui_qt_core.QtBackgroundColors.Basic)
         # wgt_1.setGeometry(x, y, w, h)
         wgt_1.render(self.__swap_pixmap_1)
         self.__swap_flag = True

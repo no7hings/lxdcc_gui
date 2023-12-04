@@ -1,11 +1,11 @@
 # coding=utf-8
-from lxgui.qt.core import *
+from lxgui.qt.wrap import *
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility
+import lxgui.qt.core as gui_qt_core
 
 import lxgui.qt.abstracts as gui_qt_abstracts
 
-import lxgui.qt.models as gui_qt_models
+from ..widgets import _gui_qt_wgt_utility
 
 
 class QtToolGridLayoutWidget(
@@ -20,7 +20,7 @@ class QtToolGridLayoutWidget(
 ):
     QT_MENU_CLS = _gui_qt_wgt_utility.QtMenu
 
-    LAYOUT_MODEL_CLS = gui_qt_models.GuiGridLayout
+    LAYOUT_MODEL_CLS = gui_qt_core.GuiGridLayoutModel
 
     def _refresh_widget_all_(self):
         self._refresh_widget_draw_geometry_()
@@ -45,7 +45,7 @@ class QtToolGridLayoutWidget(
         ) and self._index_drag_child_polish is not None:
             self._layout_model.set_count(self.__layout_item_stack.get_count())
             self._layout_model.update()
-            index_maximum = self.__layout_item_stack.get_index_maximum()
+            _index_maximum = self.__layout_item_stack.get_index_maximum()
             for i_index in self.__layout_item_stack.get_indices():
                 i_widget = self.__layout_item_stack.get_widget_at(i_index)
 
@@ -147,7 +147,7 @@ class QtToolGridLayoutWidget(
         self._widget = widget
 
         self._layout_model = self.LAYOUT_MODEL_CLS()
-        self.__layout_item_stack = gui_qt_models.GuiLayoutItemStack(self)
+        self.__layout_item_stack = gui_qt_core.GuiLayoutItemStackModel(self)
 
         self._layout_margins = 4, 4, 4, 4
 
@@ -220,27 +220,27 @@ class QtToolGridLayoutWidget(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         if self._frame_draw_is_enable is True:
             painter._draw_frame_by_rect_(
                 rect=self._rect_frame_draw,
-                border_color=QtBorderColors.Basic,
-                background_color=QtBackgroundColors.Dark,
+                border_color=gui_qt_core.QtBorderColors.Basic,
+                background_color=gui_qt_core.QtBackgroundColors.Dark,
                 border_radius=4
             )
 
         if self._get_action_flag_is_match_(self.ActionFlag.DragChildPolish):
             painter._draw_frame_by_rect_(
                 rect=self._drag_rect_child_polish,
-                border_color=QtBorderColors.Button,
-                background_color=QtBackgroundColors.BDragChildPolish,
+                border_color=gui_qt_core.QtBorderColors.Button,
+                background_color=gui_qt_core.QtBackgroundColors.BDragChildPolish,
                 border_width=1,
             )
         elif self._get_action_flag_is_match_(self.ActionFlag.DragChildAdd):
             painter._draw_frame_by_rect_(
                 rect=self._drag_rect_child_add,
-                border_color=QtBorderColors.Button,
-                background_color=QtBackgroundColors.BDragChildAdd,
+                border_color=gui_qt_core.QtBorderColors.Button,
+                background_color=gui_qt_core.QtBackgroundColors.BDragChildAdd,
                 border_width=1,
             )
 
@@ -354,6 +354,7 @@ class QtToolGridLayoutWidget(
     def _set_item_size_(self, w, h):
         self._layout_model.set_item_size(w, h)
 
+    # noinspection PyUnusedLocal
     def _add_widget_(self, widget, *args, **kwargs):
         widget.setParent(self)
         self.__layout_item_stack.create_item(widget)
@@ -369,7 +370,7 @@ class QtToolGroupVLayoutWidget(
     gui_qt_abstracts.AbsQtActionBaseDef,
     gui_qt_abstracts.AbsQtActionForDropDef,
 ):
-    LAYOUT_MODEL_CLS = gui_qt_models.GuiVLayout
+    LAYOUT_MODEL_CLS = gui_qt_core.GuiVLayoutModel
 
     def _refresh_widget_all_(self):
         self._refresh_widget_draw_geometry_()
@@ -378,6 +379,7 @@ class QtToolGroupVLayoutWidget(
     def _refresh_widget_draw_(self):
         self.update()
 
+    # noinspection PyUnusedLocal
     def _refresh_widget_draw_geometry_(self):
         x, y = 0, 0
         w, h = self.width(), self.height()
@@ -446,7 +448,7 @@ class QtToolGroupVLayoutWidget(
         self._init_action_for_drop_def_(self)
 
         self._layout_model = self.LAYOUT_MODEL_CLS()
-        self.__layout_item_stack = gui_qt_models.GuiLayoutItemStack(self)
+        self.__layout_item_stack = gui_qt_core.GuiLayoutItemStackModel(self)
 
         self._layout_margins = 0, 0, 0, 0
 
@@ -486,13 +488,13 @@ class QtToolGroupVLayoutWidget(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
 
         if self._get_action_flag_is_match_(self.ActionFlag.DragChildPolish):
             painter._draw_frame_by_rect_(
                 rect=self._drag_rect_child_polish,
-                border_color=QtBorderColors.Button,
-                background_color=QtBackgroundColors.BDragChildPolish,
+                border_color=gui_qt_core.QtBorderColors.Button,
+                background_color=gui_qt_core.QtBackgroundColors.BDragChildPolish,
                 border_width=1,
             )
 
@@ -549,6 +551,7 @@ class QtToolGroupVLayoutWidget(
         self._clear_all_action_flags_()
         self._refresh_widget_all_()
 
+    # noinspection PyUnusedLocal
     def _add_widget_(self, widget, *args, **kwargs):
         widget.setParent(self)
         widget.installEventFilter(self)

@@ -1,6 +1,4 @@
 # coding=utf-8
-from lxgui.qt.core import *
-
 import sys
 
 import functools
@@ -15,12 +13,23 @@ import platform
 
 import threading
 
+import os
+
+from lxgui.qt.wrap import *
+
+import lxbasic.core as bsc_core
+
 import lxlog.core as log_core
+
+import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
 
 import lxgui.qt.abstracts as gui_qt_abstracts
 
 
 class _Processing(object):
+    # noinspection PyUnusedLocal
     def __init__(self, processing_bar):
         self.__maximum = 1
         self.__value = 0
@@ -169,7 +178,7 @@ class _QtProcessingThread(QtCore.QThread):
 
     KEY = 'thread processing'
 
-    Status = gui_configure.Status
+    Status = gui_core.GuiStatus
 
     def __init__(self, *args, **kwargs):
         super(_QtProcessingThread, self).__init__(*args, **kwargs)
@@ -297,8 +306,8 @@ class QtProcessingBar(QtWidgets.QWidget):
     update_logging = qt_signal(str)
     update_status = qt_signal(int)
 
-    Status = gui_configure.Status
-    Rgba = gui_configure.Rgba
+    Status = gui_core.GuiStatus
+    Rgba = gui_core.GuiRgba
 
     def _refresh_widget_all_(self):
         self._refresh_widget_draw_geometry_()
@@ -460,11 +469,11 @@ class QtProcessingBar(QtWidgets.QWidget):
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         painter._draw_frame_by_rect_(
             rect=self.__rect_frame_draw,
             border_color=self.__processing_draw_color_hover,
-            background_color=QtBackgroundColors.Dim,
+            background_color=gui_qt_core.QtBackgroundColors.Dim,
         )
 
         painter._draw_alternating_colors_by_rect_(
@@ -476,8 +485,8 @@ class QtProcessingBar(QtWidgets.QWidget):
         painter._draw_text_by_rect_(
             rect=self.__text_draw_rect,
             text=self.__draw_percent_text,
-            font=GuiQtFont.generate(size=10, italic=True),
-            font_color=QtFontColors.Light,
+            font=gui_qt_core.GuiQtFont.generate(size=10, italic=True),
+            font_color=gui_qt_core.QtFontColors.Light,
             text_option=QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter,
         )
 
@@ -486,8 +495,8 @@ class QtProcessingBar(QtWidgets.QWidget):
         painter._draw_text_by_rect_(
             rect=self.__text_draw_rect,
             text=self.__draw_time_text,
-            font=GuiQtFont.generate(size=10, italic=True),
-            font_color=QtFontColors.Light,
+            font=gui_qt_core.GuiQtFont.generate(size=10, italic=True),
+            font_color=gui_qt_core.QtFontColors.Light,
             text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
         )
 

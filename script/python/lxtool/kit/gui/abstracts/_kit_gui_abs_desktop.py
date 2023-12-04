@@ -7,19 +7,19 @@ import functools
 
 import lxlog.core as log_core
 
-from lxbasic import bsc_core
+import lxcontent.core as ctt_core
+
+import lxbasic.core as bsc_core
 
 import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
 
 import lxgui.qt.widgets as qt_widgets
 
 import lxgui.proxy.widgets as prx_widgets
 
 import lxtool.kit.core as kit_core
-
-import lxbasic.session.fncs as bsc_ssn_fnc
-
-import lxsession.commands as ssn_commands
 
 
 class _GuiPageQuery(object):
@@ -127,14 +127,14 @@ class _GuiQuery(object):
 
     def delete_all_below(self, key):
         all_keys = self.__dict.keys()
-        keys = bsc_core.PtnFnmatch.filter(
+        keys = ctt_core.ContentUtil.filter(
             all_keys, '{}/*'.format(key)
         ) or []
         for i in keys:
             self.__dict.pop(i)
 
         all_keys = self.__tool_name_dict.keys()
-        keys = bsc_core.PtnFnmatch.filter(
+        keys = ctt_core.ContentUtil.filter(
             all_keys, '{}/*'.format(key)
         )
         for i in keys:
@@ -420,7 +420,7 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         ]
         with log_core.LogProcessContext.create(maximum=len(ms), label='build') as g_p:
             for i_m, i_as in ms:
-                g_p.set_update()
+                g_p.do_update()
                 if i_as:
                     i_m(*i_as)
                 else:
@@ -523,52 +523,10 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         return grid_layout_widget
 
     def gui_cache(self):
-        self.gui_cache_for_builtin()
+        pass
 
     def gui_cache_for_builtin(self):
-        c = self._session.get_configure()
-        # hooks
-        data = c.get('app.hooks') or []
-        for i_args in data:
-            if isinstance(i_args, six.string_types):
-                i_key = i_args
-                i_extend_kwargs = {}
-                i_hook_args = bsc_ssn_fnc.Hook.get_args(
-                    i_key
-                )
-            elif isinstance(i_args, dict):
-                i_key = i_args.keys()[0]
-                i_extend_kwargs = i_args.values()[0]
-                i_hook_args = bsc_ssn_fnc.Hook.get_args(
-                    i_key
-                )
-            else:
-                raise TypeError()
-
-            if i_hook_args is not None:
-                self.gui_cache_hook(i_hook_args, **i_extend_kwargs)
-        # option hooks
-        data = c.get('app.option-hooks') or []
-        for i_args in data:
-            if isinstance(i_args, six.string_types):
-                i_key = i_args
-                i_extend_kwargs = {}
-                i_hook_option = 'option_hook_key={}'.format(i_key)
-                i_hook_args = ssn_commands.get_option_hook_args(
-                    i_hook_option
-                )
-            elif isinstance(i_args, dict):
-                i_key = i_args.keys()[0]
-                i_extend_kwargs = i_args.values()[0]
-                i_hook_option = 'option_hook_key={}'.format(i_key)
-                i_hook_args = ssn_commands.get_option_hook_args(
-                    i_hook_option
-                )
-            else:
-                raise TypeError()
-            #
-            if i_hook_args is not None:
-                self.gui_cache_option_hook(i_hook_args, **i_extend_kwargs)
+        pass
 
     def gui_cache_hook(self, hook_args, **kwargs):
         session, _ = hook_args
@@ -633,7 +591,7 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
 
                 self.gui_add_customize_for_page(i_page_key)
 
-                g_p.set_update()
+                g_p.do_update()
 
     def gui_add_customize_for_page(self, page_name, switch_to=False):
         self.gui_get_group_args(
@@ -854,7 +812,7 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         with self.gui_bustling():
             fnc()
 
-    @gui_core.GuiModifier.debug_run
+    @gui_core.GuiModifier.run_with_exception_catch
     def __debug_run(self, fnc):
         fnc()
 

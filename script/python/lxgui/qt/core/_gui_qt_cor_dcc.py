@@ -1,13 +1,15 @@
 # coding:utf-8
-from lxgui.qt.warp import *
+import sys
+
+from lxgui.qt.wrap import *
 
 import lxlog.core as log_core
 
 import lxbasic.core as bsc_core
 
-import lxgui.abstracts as gui_abstracts
+import lxgui.core as gui_core
 
-from lxgui.qt.core import _gui_qt_cor_base
+from ..core import _gui_qt_cor_base
 
 
 class GuiQtMaya(object):
@@ -177,7 +179,7 @@ class GuiQtClarisse(object):
         return x, y, w, h
 
 
-class GuiQtDcc(gui_abstracts.AbsGuiDcc):
+class GuiQtDcc(gui_core.AbsGuiDcc):
     QT_MAIN_WINDOW = None
 
     @classmethod

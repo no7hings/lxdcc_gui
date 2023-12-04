@@ -106,8 +106,8 @@ class PrxTabView(gui_prx_abstracts.AbsPrxWidget):
     def set_menu_enable(self, boolean):
         self._qt_widget._set_tab_menu_enable_(boolean)
 
-    def set_menu_data_gain_fnc(self, fnc):
-        self._qt_widget._set_tab_menu_data_gain_fnc_(fnc)
+    def set_menu_data_generate_fnc(self, fnc):
+        self._qt_widget._set_tab_menu_data_generate_fnc_(fnc)
 
     def connect_delete_accepted_to(self, fnc):
         self._qt_widget.tab_delete_accepted.connect(fnc)

@@ -1,5 +1,11 @@
 # coding=utf-8
-from lxgui.qt.core import *
+from lxgui.qt.wrap import *
+
+import lxbasic.core as bsc_core
+
+import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
 
 import lxgui.qt.abstracts as gui_qt_abstracts
 
@@ -25,7 +31,7 @@ class AbsQtHead(
         #
         self._init_frame_base_def_(self)
         self._init_name_base_def_(self)
-        self._name_draw_font = QtFonts.ToolGroup
+        self._name_draw_font = gui_qt_core.QtFonts.ToolGroup
         #
         self._init_icon_base_def_(self)
         self._icon_name_is_enable = True
@@ -133,14 +139,14 @@ class AbsQtHead(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         #
         self._refresh_widget_draw_geometry_()
         #
         offset = self._get_action_offset_()
 
-        bdr_color = QtColors.HeadBorder
-        bkg_color = QtColors.HeadBackground
+        bdr_color = gui_qt_core.QtColors.HeadBorder
+        bkg_color = gui_qt_core.QtColors.HeadBackground
 
         painter._draw_frame_by_rect_(
             self._rect_frame_draw,
@@ -166,7 +172,7 @@ class AbsQtHead(
         )
         # text
         if self._name_text is not None:
-            color = [QtColors.HeadText, QtColors.HeadTextHover][self._is_hovered]
+            color = [gui_qt_core.QtColors.HeadText, gui_qt_core.QtColors.HeadTextHover][self._is_hovered]
             painter._draw_text_by_rect_(
                 self._name_draw_rect,
                 self._name_text,
@@ -260,13 +266,13 @@ class QtHeadAsLine(AbsQtHead):
             self._line_draw_points[1].setY(c_y+h/2)
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         #
         self._refresh_widget_draw_geometry_()
         #
         offset = self._get_action_offset_()
 
-        bkg_color = QtColors.HeadBackground
+        bkg_color = gui_qt_core.QtColors.HeadBackground
 
         painter._draw_line_by_points_(
             point_0=self._line_draw_points[0], point_1=self._line_draw_points[1],
@@ -290,7 +296,7 @@ class QtHeadAsLine(AbsQtHead):
         )
         # text
         if self._name_text is not None:
-            text_color = [QtColors.HeadText, QtColors.HeadTextHover][self._is_hovered]
+            text_color = [gui_qt_core.QtColors.HeadText, gui_qt_core.QtColors.HeadTextHover][self._is_hovered]
             painter._draw_text_by_rect_(
                 rect=self._name_draw_rect,
                 text=self._name_text,
@@ -354,20 +360,20 @@ class AbsQtHead1(
         #
         self._refresh_expand_()
         # font
-        self.setFont(QtFonts.NameNormal)
+        self.setFont(gui_qt_core.QtFonts.NameNormal)
 
     def _refresh_widget_draw_(self):
         self.update()
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
 
         self._refresh_widget_draw_geometry_()
 
         offset = self._get_action_offset_()
 
-        bdr_color = QtColors.HeadBorder
-        bkg_color = QtColors.HeadBackground
+        bdr_color = gui_qt_core.QtColors.HeadBorder
+        bkg_color = gui_qt_core.QtColors.HeadBackground
 
         painter._draw_frame_by_rect_(
             rect=self._rect_frame_draw,
@@ -485,7 +491,7 @@ class AbsQtHead2(
             QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
         )
         #
-        self._name_draw_font = QtFonts.ToolGroup
+        self._name_draw_font = gui_qt_core.QtFonts.ToolGroup
         #
         self._init_name_base_def_(self)
         self._init_icon_base_def_(self)
@@ -530,7 +536,7 @@ class AbsQtHead2(
         self._frame_background_color = color
         self._hovered_frame_background_color = hover_color
         # font
-        self.setFont(QtFonts.NameNormal)
+        self.setFont(gui_qt_core.QtFonts.NameNormal)
 
         self._icon_frame_draw_size = 12, 24
         self._icon_draw_percent = 1
@@ -585,7 +591,7 @@ class AbsQtHead2(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         #
         self._refresh_widget_draw_geometry_()
         #

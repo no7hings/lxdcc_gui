@@ -5,7 +5,7 @@ import lxgui.qt.widgets as qt_widgets
 
 import lxgui.proxy.widgets as prx_widgets
 
-import lxcontent.objects as ctt_objects
+import lxcontent.core as ctt_core
 
 import lxresolver.commands as rsv_commands
 
@@ -44,8 +44,8 @@ class AbsRenderSubmitterDef(object):
                 self._hook_option_opt.to_string()
             )
             #
-            self._hook_gui_configure = self._option_hook_configure.get_content('option.gui')
-            self._hook_build_configure = self._option_hook_configure.get_content('build')
+            self._hook_gui_configure = self._option_hook_configure.get_as_content('option.gui')
+            self._hook_build_configure = self._option_hook_configure.get_as_content('build')
             #
             raw = bsc_core.EnvironMtd.get('REZ_BETA')
             if raw:
@@ -233,7 +233,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
                 self._variable_variants_dic = self._hook_build_configure.get(
                     'variables.character'
                 )
-                self._variable_keys = self._hook_build_configure.get_branch_keys(
+                self._variable_keys = self._hook_build_configure.get_key_names_at(
                     'variables.character'
                 )
                 #
@@ -293,7 +293,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
     def set_scheme_save(self):
         filter_dict = self._prx_dcc_obj_tree_view_tag_filter_opt.get_filter_dict()
         # print filter_dict
-        ctt_objects.Configure(value=filter_dict).print_as_yaml_style()
+        ctt_core.Content(value=filter_dict).print_as_yaml_style()
 
     # options
     def set_options_refresh(self):
@@ -428,7 +428,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
         ]
         with bsc_core.LogProcessContext.create(maximum=len(methods), label='execute refresh method') as g_p:
             for i in methods:
-                g_p.set_update()
+                g_p.do_update()
                 result = i()
                 if result is False:
                     break
@@ -486,7 +486,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
                         i.replace('/', '.')
                     ).set_expanded(False)
 
-    def _set_gui_rsv_task_unit_show_deferred_(self, prx_item, variants):
+    def _set_gui_rsv_task_unit_show_deferred_(self, prx_item_widget, variants):
         hook_options = []
         pixmaps = []
         #
@@ -498,7 +498,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
             variants_extend=variants
         )
         if movie_file_path:
-            rsv_properties = self._render_movie_file_rsv_unit.get_properties_by_result(
+            rsv_properties = self._render_movie_file_rsv_unit.generate_properties_by_result(
                 movie_file_path
             )
             version = rsv_properties.get('version')
@@ -523,8 +523,8 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
                     show_info_dict['shot'] = render_info['shot']
             #
             image_file_path, image_sub_process_cmds = bsc_core.VdoFileOpt(movie_file_path).get_thumbnail_create_args()
-            prx_item.set_image(image_file_path)
-            prx_item.set_movie_enable(True)
+            prx_item_widget.set_image(image_file_path)
+            prx_item_widget.set_movie_enable(True)
             #
             session, execute_fnc = ssn_commands.get_option_hook_args(
                 bsc_core.ArgDictStringOpt(
@@ -537,7 +537,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
                 ).to_string()
             )
             #
-            prx_item.connect_press_db_clicked_to(
+            prx_item_widget.connect_press_db_clicked_to(
                 execute_fnc
             )
             #
@@ -568,16 +568,16 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
                 ]
             )
             if image_sub_process_cmds is not None:
-                prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
+                prx_item_widget.set_image_show_args(image_file_path, image_sub_process_cmds)
         else:
-            prx_item.set_image(
+            prx_item_widget.set_image(
                 gui_core.GuiIcon.get('image_loading_failed')
             )
         #
         for i_rsv_unit in self._check_rsv_units:
             i_file_path = i_rsv_unit.get_result(version='latest')
             if i_file_path:
-                i_rsv_properties = i_rsv_unit.get_properties_by_result(i_file_path)
+                i_rsv_properties = i_rsv_unit.generate_properties_by_result(i_file_path)
                 i_rsv_unit_file = utl_dcc_objects.OsFile(i_file_path)
                 i_pixmap = gui_qt_core.GuiQtPixmap.get_by_file_ext_with_tag(
                     i_rsv_unit_file.ext,
@@ -599,14 +599,14 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
                 )
         #
         menu_content = ssn_commands.get_menu_content_by_hook_options(hook_options)
-        prx_item.set_menu_content(menu_content)
+        prx_item_widget.set_menu_content(menu_content)
 
-        prx_item.set_name_dict(show_info_dict)
-        prx_item.set_icons_by_pixmap(pixmaps)
+        prx_item_widget.set_name_dict(show_info_dict)
+        prx_item_widget.set_icons_by_pixmap(pixmaps)
         r, g, b = bsc_core.RawTextOpt(variable_name).to_rgb()
-        prx_item.set_name_frame_background_color((r, g, b, 127))
+        prx_item_widget.set_name_frame_background_color((r, g, b, 127))
 
-        prx_item.set_tool_tip(
+        prx_item_widget.set_tool_tip(
             '\n'.join(['{} : {}'.format(k, v) for k, v in show_info_dict.items()])
         )
 
@@ -616,7 +616,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
 
         def cache_fnc_():
             return [
-                self._rsv_entity_set_usd_creator._get_asset_usd_set_dress_variant_cache_(rsv_asset)
+                self._rsv_entity_set_usd_creator._get_asset_usd_set_dress_variant_cache(rsv_asset)
             ]
 
         def build_fnc_(data_):
@@ -654,7 +654,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
 
         def cache_fnc_():
             return [
-                self._rsv_entity_set_usd_creator._get_shot_asset_cache_(
+                self._rsv_entity_set_usd_creator._get_shot_asset_cache(
                     rsv_asset, rsv_shot
                 )
             ]
@@ -841,7 +841,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
                     )
 
     def _get_usd_dict_(self):
-        c = ctt_objects.Configure(value={})
+        c = ctt_core.Content(value={})
         c.set('usd_reverse_face_vertex_enable', self._usd_prx_node.get('debuggers.reverse_face_vertex_enable'))
         return c.get_value()
 
@@ -895,7 +895,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
         #
         dic = {}
         filter_dic = self._prx_dcc_obj_tree_view_tag_filter_opt.get_filter_dict()
-        c = ctt_objects.Configure(value=filter_dic)
+        c = ctt_core.Content(value=filter_dic)
         for i in self._variable_keys:
             update_fnc(i)
         return dic
@@ -1086,7 +1086,7 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
                         i.replace('/', '.')
                     ).set_expanded(False)
 
-    def _set_gui_rsv_task_unit_show_deferred_(self, prx_item, variants):
+    def _set_gui_rsv_task_unit_show_deferred_(self, prx_item_widget, variants):
         hook_options = []
         pixmaps = []
         #
@@ -1098,7 +1098,7 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
             variants_extend=variants
         )
         if movie_file_path:
-            rsv_properties = self._render_movie_file_rsv_unit.get_properties_by_result(
+            rsv_properties = self._render_movie_file_rsv_unit.generate_properties_by_result(
                 movie_file_path
             )
             version = rsv_properties.get('version')
@@ -1111,8 +1111,8 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
             )
             #
             image_file_path, image_sub_process_cmds = bsc_core.VdoFileOpt(movie_file_path).get_thumbnail_create_args()
-            prx_item.set_image(image_file_path)
-            prx_item.set_movie_enable(True)
+            prx_item_widget.set_image(image_file_path)
+            prx_item_widget.set_movie_enable(True)
             #
             session, execute_fnc = ssn_commands.get_option_hook_args(
                 bsc_core.ArgDictStringOpt(
@@ -1125,7 +1125,7 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
                 ).to_string()
             )
             #
-            prx_item.connect_press_db_clicked_to(
+            prx_item_widget.connect_press_db_clicked_to(
                 execute_fnc
             )
             #
@@ -1150,16 +1150,16 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
                 ]
             )
             if image_sub_process_cmds is not None:
-                prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
+                prx_item_widget.set_image_show_args(image_file_path, image_sub_process_cmds)
         else:
-            prx_item.set_image(
+            prx_item_widget.set_image(
                 gui_core.GuiIcon.get('image_loading_failed')
             )
 
         for i_rsv_unit in self._check_rsv_units:
             i_file_path = i_rsv_unit.get_result(version='latest')
             if i_file_path:
-                i_rsv_properties = i_rsv_unit.get_properties_by_result(i_file_path)
+                i_rsv_properties = i_rsv_unit.generate_properties_by_result(i_file_path)
                 i_rsv_unit_file = utl_dcc_objects.OsFile(i_file_path)
                 i_pixmap = gui_qt_core.GuiQtPixmap.get_by_file_ext_with_tag(
                     i_rsv_unit_file.ext,
@@ -1181,16 +1181,18 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
                 )
 
         menu_content = ssn_commands.get_menu_content_by_hook_options(hook_options)
-        prx_item.set_menu_content(menu_content)
+        prx_item_widget.set_menu_content(menu_content)
 
-        prx_item.set_name_dict(variants)
-        prx_item.set_icons_by_pixmap(pixmaps)
+        prx_item_widget.set_name_dict(variants)
+        prx_item_widget.set_icons_by_pixmap(pixmaps)
         r, g, b = bsc_core.RawTextOpt(variable_name).to_rgb()
-        prx_item.set_name_frame_background_color((r, g, b, 127))
+        prx_item_widget.set_name_frame_background_color((r, g, b, 127))
 
-        prx_item.set_tool_tip(
+        prx_item_widget.set_tool_tip(
             '\n'.join(['{} = {}'.format(k, v) for k, v in variants.items()])
         )
+
+        prx_item_widget.refresh_widget_force()
 
     def set_all_refresh(self):
         if self._file_path:
@@ -1237,7 +1239,7 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
         ]
         with bsc_core.LogProcessContext.create(maximum=len(methods), label='execute refresh method') as g_p:
             for i in methods:
-                g_p.set_update()
+                g_p.do_update()
                 result = i()
                 if result is False:
                     break
@@ -1420,7 +1422,7 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
         self._prx_dcc_obj_tree_view_tag_filter_opt.restore_all()
         #
         self._variable_variants_dic = self._hook_build_configure.get('variables.character')
-        self._variable_keys = self._hook_build_configure.get_branch_keys(
+        self._variable_keys = self._hook_build_configure.get_key_names_at(
             'variables.character'
         )
         combinations = bsc_core.RawVariablesMtd.get_all_combinations(
@@ -1441,12 +1443,12 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
         pass
 
     def _get_usd_dict_(self):
-        c = ctt_objects.Configure(value={})
+        c = ctt_core.Content(value={})
         c.set('usd_effect_components', [i.name for i in self._usd_prx_node.get('components.effect')])
         return c.get_value()
 
     def _get_settings_dict_(self):
-        c = ctt_objects.Configure(value={})
+        c = ctt_core.Content(value={})
         #
         c.set('render_look', self._settings_prx_node.get('render.look'))
         frames = self._settings_prx_node.get('render.frames')

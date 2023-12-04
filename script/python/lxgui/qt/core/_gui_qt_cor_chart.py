@@ -1,14 +1,14 @@
 # coding:utf-8
-from lxgui.qt.warp import *
+from lxgui.qt.wrap import *
 
 import lxbasic.core as bsc_core
 
-import lxgui.configure as gui_configure
+import lxgui.core as gui_core
 
 import math
 
 
-class QtSectorChartDrawData(object):
+class GuiQtChartDrawDataForSector(object):
     def __init__(self, data, position, size, align, side_w, mode):
         """
         :param data: [
@@ -42,18 +42,18 @@ class QtSectorChartDrawData(object):
         else:
             if percent == 1:
                 r, g, b = 63, 255, 127
-                if mode is gui_configure.SectorChartMode.Error:
+                if mode is gui_core.GuiSectorChartMode.Error:
                     r, g, b = 255, 0, 63
             elif percent == 0:
                 r, g, b = 255, 0, 63
-                if mode is gui_configure.SectorChartMode.Error:
+                if mode is gui_core.GuiSectorChartMode.Error:
                     r, g, b = 63, 255, 127
             #
             elif percent > 1:
                 r, g, b = bsc_core.RawColorMtd.hsv2rgb(240-min(percent*15, 45), 1, 1)
             else:
                 r, g, b = bsc_core.RawColorMtd.hsv2rgb(45*color_percent, 1, 1)
-                if mode is gui_configure.SectorChartMode.Error:
+                if mode is gui_core.GuiSectorChartMode.Error:
                     r, g, b = bsc_core.RawColorMtd.hsv2rgb(45-45*color_percent, 1, 1)
             #
             background_rgba = r, g, b, 255
@@ -153,7 +153,7 @@ class QtSectorChartDrawData(object):
         return self._draw_data
 
 
-class QtProcessingChartDrawData(object):
+class GuiQtChartDrawDataForProcessing(object):
     @classmethod
     def _get_basic_data_(cls, rect, index, percent, percent_range, label, show_percent, tape_w=8, spacing=8):
         percent_start, percent_end = percent_range
@@ -224,7 +224,7 @@ class QtProcessingChartDrawData(object):
         )
 
 
-class QtRadarChartDrawData(object):
+class GuiQtChartDrawDataForRadar(object):
     fnc_angle = math.radians
     fnc_sin = math.sin
     fnc_cos = math.cos
@@ -456,7 +456,7 @@ class QtRadarChartDrawData(object):
         return self._draw_data
 
 
-class QtPieChartDrawData(object):
+class GuiQtChartDrawDataForPie(object):
     fnc_angle = math.radians
     fnc_sin = math.sin
     fnc_cos = math.cos
@@ -541,7 +541,7 @@ class QtPieChartDrawData(object):
         return self._draw_data
 
 
-class QtHistogramChartDrawData(object):
+class GuiQtChartDrawDataForHistogram(object):
     def __init__(self, data, position, size, align, side_w, mode):
         self._draw_data = self._get_data_(
             data, position, size, align, side_w, mode

@@ -1,11 +1,17 @@
 # coding=utf-8
-from lxgui.qt.core import *
+import six
+
+from lxgui.qt.wrap import *
+
+import lxbasic.core as bsc_core
+
+import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
 
 import lxgui.qt.abstracts as gui_qt_abstracts
 
-from lxgui.qt.widgets import _gui_qt_wgt_drag
-
-import lxgui.qt.core as gui_qt_core
+from ..widgets import _gui_qt_wgt_drag
 
 
 class QtTreeWidgetItem(
@@ -40,7 +46,7 @@ class QtTreeWidgetItem(
     def _refresh_widget_draw_(self):
         self._get_view_().update()
 
-    ValidationStatus = gui_configure.ValidationStatus
+    ValidationStatus = gui_core.GuiValidationStatus
 
     def __init__(self, *args, **kwargs):
         super(QtTreeWidgetItem, self).__init__(*args, **kwargs)
@@ -71,7 +77,7 @@ class QtTreeWidgetItem(
 
         self._init_action_for_drag_def_(self)
 
-        self._signals = QtItemSignals()
+        self._signals = gui_qt_core.QtItemSignals()
 
         self._status = self.ValidationStatus.Normal
 
@@ -81,7 +87,7 @@ class QtTreeWidgetItem(
 
     def _do_drag_move_(self, data):
         if self._drag_is_enable is True:
-            self._drag = _gui_qt_wgt_drag.QtTreeItemDrag(self.treeWidget())
+            self._drag = _gui_qt_wgt_drag.QtDragForTreeItem(self.treeWidget())
             self._drag.set_item(*data)
             self._drag.setMimeData(self._generate_drag_mime_data_())
             self._drag._do_drag_copy_(self._drag_point_offset)
@@ -152,7 +158,7 @@ class QtTreeWidgetItem(
     def _set_icon_name_text_(self, text, column=0):
         self._icon_text = text
         icon = QtGui.QIcon()
-        pixmap = GuiQtPixmap.get_by_name(
+        pixmap = gui_qt_core.GuiQtPixmap.get_by_name(
             self._icon_text,
             size=(14, 14)
         )
@@ -170,47 +176,47 @@ class QtTreeWidgetItem(
             if self._icon_file_path is not None:
                 pixmap = QtGui.QPixmap(self._icon_file_path)
             elif self._icon_text is not None:
-                pixmap = GuiQtPixmap.get_by_name(
+                pixmap = gui_qt_core.GuiQtPixmap.get_by_name(
                     self._icon_text,
                     size=(14, 14)
                 )
             #
             if pixmap:
                 if self._icon_state in [
-                    gui_core.State.ENABLE,
-                    gui_core.State.DISABLE,
-                    gui_core.State.WARNING,
-                    gui_core.State.ERROR,
-                    gui_core.State.LOCKED,
-                    gui_core.State.LOST
+                    gui_core.GuiState.ENABLE,
+                    gui_core.GuiState.DISABLE,
+                    gui_core.GuiState.WARNING,
+                    gui_core.GuiState.ERROR,
+                    gui_core.GuiState.LOCKED,
+                    gui_core.GuiState.LOST
                 ]:
-                    if self._icon_state == gui_core.State.ENABLE:
-                        background_color = QtColors.TextEnable
-                    elif self._icon_state == gui_core.State.DISABLE:
-                        background_color = QtColors.TextDisable
-                    elif self._icon_state == gui_core.State.WARNING:
-                        background_color = QtColors.TextWarning
-                    elif self._icon_state == gui_core.State.ERROR:
-                        background_color = QtColors.TextError
-                    elif self._icon_state == gui_core.State.LOCKED:
-                        background_color = QtColors.TextLock
-                    elif self._icon_state == gui_core.State.LOST:
-                        background_color = QtColors.TextTemporary
+                    if self._icon_state == gui_core.GuiState.ENABLE:
+                        background_color = gui_qt_core.QtColors.TextEnable
+                    elif self._icon_state == gui_core.GuiState.DISABLE:
+                        background_color = gui_qt_core.QtColors.TextDisable
+                    elif self._icon_state == gui_core.GuiState.WARNING:
+                        background_color = gui_qt_core.QtColors.TextWarning
+                    elif self._icon_state == gui_core.GuiState.ERROR:
+                        background_color = gui_qt_core.QtColors.TextError
+                    elif self._icon_state == gui_core.GuiState.LOCKED:
+                        background_color = gui_qt_core.QtColors.TextLock
+                    elif self._icon_state == gui_core.GuiState.LOST:
+                        background_color = gui_qt_core.QtColors.TextTemporary
                     else:
                         raise TypeError()
                     #
-                    painter = QtPainter(pixmap)
+                    painter = gui_qt_core.QtPainter(pixmap)
                     rect = pixmap.rect()
                     x, y = rect.x(), rect.y()
                     w, h = rect.width(), rect.height()
                     #
-                    border_color = QtBorderColors.Icon
+                    border_color = gui_qt_core.QtBorderColors.Icon
                     #
                     s_w, s_h = w*.5, h*.5
                     state_rect = QtCore.QRect(
                         x, y+h-s_h, s_w, s_h
                     )
-                    if self._icon_state == gui_core.State.LOCKED:
+                    if self._icon_state == gui_core.GuiState.LOCKED:
                         painter._draw_icon_file_by_rect_(
                             state_rect,
                             file_path=gui_core.GuiIcon.get(
@@ -218,7 +224,7 @@ class QtTreeWidgetItem(
                             )
                         )
                         painter.end()
-                    elif self._icon_state == gui_core.State.LOST:
+                    elif self._icon_state == gui_core.GuiState.LOST:
                         painter._draw_icon_file_by_rect_(
                             state_rect,
                             file_path=gui_core.GuiIcon.get(
@@ -259,33 +265,27 @@ class QtTreeWidgetItem(
         self._update_wgt_icon_(status=self._status)
 
     def _set_name_status_(self, status, column=0):
-        font = QtFonts.Default
+        font = gui_qt_core.QtFonts.Default
         if status == self.ValidationStatus.Normal:
-            color = QtColors.Text
-            self.setFont(column, font)
+            color = gui_qt_core.QtColors.Text
         elif status == self.ValidationStatus.Correct:
-            color = QtColors.TextCorrect
-            self.setFont(column, font)
+            color = gui_qt_core.QtColors.TextCorrect
         elif status == self.ValidationStatus.Warning:
-            color = QtColors.TextWarning
-            self.setFont(column, font)
-        elif status == self.ValidationStatus.Error:
-            color = QtColors.TextError
-            self.setFont(column, font)
+            color = gui_qt_core.QtColors.TextWarning
+        elif status in {self.ValidationStatus.Error, self.ValidationStatus.Unreadable}:
+            color = gui_qt_core.QtColors.TextError
         elif status == self.ValidationStatus.Active:
-            color = QtColors.TextActive
-            self.setFont(column, font)
-        elif status == self.ValidationStatus.Disable:
-            color = QtColors.TextDisable
+            color = gui_qt_core.QtColors.TextActive
+        elif status in {self.ValidationStatus.Disable, self.ValidationStatus.Lost}:
+            color = gui_qt_core.QtColors.TextDisable
             font.setItalic(True)
-            self.setFont(column, font)
-        elif status == self.ValidationStatus.Locked:
-            color = QtColors.TextLock
+        elif status in {self.ValidationStatus.Locked, self.ValidationStatus.Unwritable}:
+            color = gui_qt_core.QtColors.TextLock
             font.setItalic(True)
-            self.setFont(column, font)
         else:
             raise TypeError()
-        #
+
+        self.setFont(column, font)
         if column == 0:
             c = self.treeWidget().columnCount()
             for i in range(c):
@@ -301,13 +301,13 @@ class QtTreeWidgetItem(
             elif self._icon_file_path is not None:
                 pixmap = QtGui.QPixmap(self._icon_file_path)
             elif self._icon_text is not None:
-                pixmap = GuiQtPixmap.get_by_name(
+                pixmap = gui_qt_core.GuiQtPixmap.get_by_name(
                     self._icon_text,
                     size=(14, 14)
                 )
             #
             if pixmap:
-                painter = QtPainter(pixmap)
+                painter = gui_qt_core.QtPainter(pixmap)
                 rect = pixmap.rect()
                 x, y = rect.x(), rect.y()
                 w, h = rect.width(), rect.height()
@@ -316,42 +316,49 @@ class QtTreeWidgetItem(
                     draw_status = True
                     if status == self.ValidationStatus.Normal:
                         draw_status = False
-                        background_color = QtColors.Text
+                        background_color = gui_qt_core.QtColors.Text
                     elif status == self.ValidationStatus.Correct:
-                        background_color = QtColors.TextCorrect
+                        background_color = gui_qt_core.QtColors.TextCorrect
                     elif status == self.ValidationStatus.Warning:
-                        background_color = QtColors.TextWarning
-                    elif status == self.ValidationStatus.Error:
-                        background_color = QtColors.TextError
+                        background_color = gui_qt_core.QtColors.TextWarning
+                    elif status in {self.ValidationStatus.Error, self.ValidationStatus.Unreadable}:
+                        background_color = gui_qt_core.QtColors.TextError
                     elif status == self.ValidationStatus.Active:
-                        background_color = QtColors.TextActive
-                    elif status == self.ValidationStatus.Disable:
-                        background_color = QtColors.TextDisable
-                    elif status == self.ValidationStatus.Locked:
-                        background_color = QtColors.TextLock
+                        background_color = gui_qt_core.QtColors.TextActive
+                    elif status in {self.ValidationStatus.Disable, self.ValidationStatus.Lost}:
+                        background_color = gui_qt_core.QtColors.TextDisable
+                    elif status in {self.ValidationStatus.Locked, self.ValidationStatus.Unwritable}:
+                        background_color = gui_qt_core.QtColors.TextLock
                     else:
                         raise TypeError()
                     #
                     if draw_status is True:
-                        border_color = QtBorderColors.Icon
+                        border_color = gui_qt_core.QtBorderColors.Icon
                         #
                         s_w, s_h = w*.5, h*.5
                         status_rect = QtCore.QRect(
                             x+w-s_w, y+h-s_h, s_w, s_h
                         )
                         # draw status
-                        if status == self.ValidationStatus.Locked:
-                            painter._draw_icon_file_by_rect_(
-                                rect=status_rect,
-                                file_path=gui_core.GuiIcon.get(
-                                    'state-locked'
-                                )
-                            )
-                        elif status == self.ValidationStatus.Disable:
+                        if status in {self.ValidationStatus.Disable, self.ValidationStatus.Lost}:
                             painter._draw_icon_file_by_rect_(
                                 rect=status_rect,
                                 file_path=gui_core.GuiIcon.get(
                                     'state-disable'
+                                )
+                            )
+                        elif status in {self.ValidationStatus.Error, self.ValidationStatus.Unreadable}:
+                            painter._draw_icon_file_by_rect_(
+                                rect=status_rect,
+                                file_path=gui_core.GuiIcon.get(
+                                    'state-lost'
+                                )
+                            )
+                        elif status in {self.ValidationStatus.Locked, self.ValidationStatus.Unwritable}:
+                            painter._draw_icon_file_by_rect_(
+                                rect=status_rect,
+                                file_path=gui_core.GuiIcon.get(
+                                    'state-locked'
                                 )
                             )
                         else:
@@ -363,7 +370,7 @@ class QtTreeWidgetItem(
                                 border_radius=w/2
                             )
                 #
-                if self._menu_content is not None or self._menu_raw:
+                if self._menu_content is not None or self._menu_data:
                     m_w, m_h = w/2, h/4
                     menu_mark_rect = QtCore.QRect(
                         x+w-m_w, y, m_w, m_h
@@ -383,6 +390,7 @@ class QtTreeWidgetItem(
                 )
                 self.setIcon(column, icon)
 
+    # noinspection PyUnusedLocal
     def _get_status_(self, column=0):
         return self._status
 
@@ -470,7 +478,7 @@ class QtTreeWidgetItem(
             if self.isHidden():
                 return True
             qt_tree_widget, qt_tree_widget_item = self.treeWidget(), self
-            return GuiQtTreeWidget.get_item_is_ancestor_hidden(qt_tree_widget, qt_tree_widget_item)
+            return gui_qt_core.GuiQtTreeWidget.get_item_is_ancestor_hidden(qt_tree_widget, qt_tree_widget_item)
         else:
             return self.isHidden()
 

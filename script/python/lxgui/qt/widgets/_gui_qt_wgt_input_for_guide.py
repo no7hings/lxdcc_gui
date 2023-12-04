@@ -1,11 +1,23 @@
 # coding=utf-8
+import six
+
 import fnmatch
 
-from lxgui.qt.core import *
+from lxgui.qt.wrap import *
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_entry, _gui_qt_wgt_popup
+import lxbasic.core as bsc_core
+
+import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
 
 import lxgui.qt.abstracts as gui_qt_abstracts
+
+from ..widgets import \
+    _gui_qt_wgt_base,\
+    _gui_qt_wgt_button, \
+    _gui_qt_wgt_entry, \
+    _gui_qt_wgt_popup
 
 
 class QtGuideRect(
@@ -87,7 +99,7 @@ class QtEntryAsGuide(
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         #
-        self.setFont(QtFonts.Large)
+        self.setFont(gui_qt_core.QtFonts.Large)
         #
         self.setMaximumHeight(22)
         self.setMinimumHeight(22)
@@ -136,7 +148,7 @@ class QtEntryAsGuide(
             i_text_x = c_x
             i_text_w = 0
             if i_type_text:
-                i_type_w, _ = GuiQtFont.compute_size(self.TYPE_FONT_SIZE, i_type_text)
+                i_type_w, _ = gui_qt_core.GuiQtFont.compute_size(self.TYPE_FONT_SIZE, i_type_text)
                 i_type_w_ = i_type_w+spacing*2
                 i_text_w += i_type_w_
                 i_item._set_type_draw_rect_(
@@ -145,7 +157,7 @@ class QtEntryAsGuide(
             else:
                 i_type_w_ = 0
             #
-            i_name_w, _ = GuiQtFont.compute_size(self.NAME_FONT_SIZE, i_name_text)
+            i_name_w, _ = gui_qt_core.GuiQtFont.compute_size(self.NAME_FONT_SIZE, i_name_text)
             i_name_w_ = i_name_w+spacing*2
             i_text_w += i_name_w_
             #
@@ -263,7 +275,7 @@ class QtEntryAsGuide(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
 
         for i_index in self._get_guide_item_indices_():
             i_item = self._get_guide_item_at_(i_index)
@@ -280,7 +292,7 @@ class QtEntryAsGuide(
                 )
                 painter._draw_frame_by_rect_(
                     i_item._icon_frame_draw_rect,
-                    border_color=QtBackgroundColors.Transparent,
+                    border_color=gui_qt_core.QtBackgroundColors.Transparent,
                     background_color=background_color,
                     border_radius=3,
                     offset=i_icon_offset
@@ -294,7 +306,7 @@ class QtEntryAsGuide(
                 name_offset = [0, 2][self._get_action_flag_() is not None]
                 painter._draw_frame_by_rect_(
                     i_item._name_frame_draw_rect,
-                    border_color=QtBackgroundColors.Transparent,
+                    border_color=gui_qt_core.QtBackgroundColors.Transparent,
                     background_color=background_color,
                     border_radius=3,
                     offset=name_offset
@@ -312,7 +324,7 @@ class QtEntryAsGuide(
                 text=i_type_text,
                 text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
                 font_color=bsc_core.RawTextOpt(i_type_text).to_rgb_0(s_p=100, v_p=100),
-                font=GuiQtFont.generate(size=self.TYPE_FONT_SIZE, italic=True),
+                font=gui_qt_core.GuiQtFont.generate(size=self.TYPE_FONT_SIZE, italic=True),
                 offset=name_offset,
                 is_hovered=guide_is_hovered,
             )
@@ -322,7 +334,7 @@ class QtEntryAsGuide(
                 rect=i_item._name_draw_rect,
                 text=i_name_text,
                 text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
-                font=GuiQtFont.generate(size=self.NAME_FONT_SIZE),
+                font=gui_qt_core.GuiQtFont.generate(size=self.NAME_FONT_SIZE),
                 offset=name_offset,
                 is_hovered=guide_is_hovered,
             )
@@ -452,7 +464,7 @@ class QtInputAsGuide(
     def _build_input_entry_(self, value_type):
         self._value_type = value_type
 
-        qt_layout_0 = QtHLayout(self)
+        qt_layout_0 = _gui_qt_wgt_base.QtHBoxLayout(self)
         qt_layout_0.setContentsMargins(*[0]*4)
         qt_layout_0.setSpacing(0)
         qt_layout_0.setAlignment(QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter)
@@ -462,7 +474,7 @@ class QtInputAsGuide(
 
         self._entry_frame_widget.setFixedHeight(24)
 
-        self._input_layout = QtHLayout(self._entry_frame_widget)
+        self._input_layout = _gui_qt_wgt_base.QtHBoxLayout(self._entry_frame_widget)
         self._input_layout.setContentsMargins(2, 0, 2, 0)
         self._input_layout.setSpacing(2)
 
@@ -484,7 +496,7 @@ class QtInputAsGuide(
         self._entry_widget.focus_out.connect(self._set_guide_entry_finish_)
         self._entry_widget.setMinimumHeight(22)
         self._entry_widget.setMaximumHeight(22)
-        self._entry_widget.setFont(QtFonts.Medium)
+        self._entry_widget.setFont(gui_qt_core.QtFonts.Medium)
         #
         self._build_input_completion_()
 

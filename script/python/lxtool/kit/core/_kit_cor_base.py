@@ -1,13 +1,13 @@
 # coding:utf-8
 import functools
 
-from lxbasic import bsc_core
+import lxbasic.core as bsc_core
 
 import lxbasic.session.core as bsc_ssn_core
 
 import lxresource.core as rsc_core
 
-import lxcontent.objects as ctt_objects
+import lxcontent.core as ctt_core
 
 import lxgui.core as gui_core
 
@@ -24,7 +24,7 @@ class KitDesktopHook(object):
 
     @classmethod
     def get_args(cls, key):
-        _ = rsc_core.RscDesktopTool.get_args(
+        _ = rsc_core.ResourceDesktopTool.get_args(
                 key
             )
         if _:
@@ -46,11 +46,11 @@ class KitDesktopHook(object):
 
     @classmethod
     def find_all_tool_keys_at(cls, page_name):
-        return rsc_core.RscDesktopTool.find_all_tool_keys_at(page_name)
+        return rsc_core.ResourceDesktopTool.find_all_tool_keys_at(page_name)
 
     @classmethod
     def find_all_page_keys_at(cls, page_name):
-        return rsc_core.RscDesktopTool.find_all_page_keys_at(page_name)
+        return rsc_core.ResourceDesktopTool.find_all_page_keys_at(page_name)
 
     @classmethod
     def get_current_user_group_key(cls):
@@ -140,10 +140,10 @@ class KitDesktopHookAddOpt(object):
                 )
                 return
 
-        default_configue_file_path = bsc_core.RscConfigure.get(
+        default_configue_file_path = bsc_core.ResourceContent.get(
             'session/default-hook-configure.yml'
         )
-        c = ctt_objects.Content(value=default_configue_file_path)
+        c = ctt_core.Content(value=default_configue_file_path)
 
         type_ = self._options.get('type')
         c.set('option.type', type_)
@@ -227,7 +227,8 @@ class KitDesktop(object):
 
 
 if __name__ == '__main__':
-    import lxbasic.session.fncs as bsc_ssn_fnc
+    import lxbasic.session.core as bsc_ssn_core
+
     print KitDesktopHook.get_args(
         'Share/quixel_python'
     )
@@ -235,7 +236,7 @@ if __name__ == '__main__':
     #     'BUILTIN/main'
     # )
     # e()
-    s, e = bsc_ssn_fnc.Hook.get_args(
+    s, e = bsc_ssn_core.Hook.get_args(
         'rsv-panels/asset-loader'
     )
     e()

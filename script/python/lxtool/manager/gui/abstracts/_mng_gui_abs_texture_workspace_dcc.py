@@ -1,7 +1,7 @@
 # coding:utf-8
 import time
 
-from lxbasic import bsc_core
+import lxbasic.core as bsc_core
 
 import lxgui.proxy.widgets as prx_widgets
 
@@ -237,7 +237,7 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
                 ) as g_p:
                     for _i in unlocked_directory_paths:
                         bsc_core.StgPathPermissionMtd.lock(_i)
-                        g_p.set_update()
+                        g_p.do_update()
             #
             time.sleep(2)
             self._set_texture_workspace_update_()
@@ -249,7 +249,7 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
             self._dcc_objs
         )
 
-        unlocked_directory_paths = [i for i in directory_paths if bsc_core.StorageMtd.get_is_writeable(i) is True]
+        unlocked_directory_paths = [i for i in directory_paths if bsc_core.StorageMtd.get_is_writable(i) is True]
         if unlocked_directory_paths:
             w = utl_core.DccDialog.create(
                 self._session.gui_name,
@@ -310,7 +310,7 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
 
         with bsc_core.LogProcessContext.create(maximum=len(method_args), label='execute texture pull method') as g_p:
             for i_method, i_args in method_args:
-                g_p.set_update()
+                g_p.do_update()
                 i_method(*i_args)
 
     @classmethod
@@ -321,7 +321,7 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
         if file_paths_src:
             with bsc_core.LogProcessContext.create(maximum=len(file_paths_src), label='pull texture as link') as g_p:
                 for i_file_path in file_paths_src:
-                    g_p.set_update()
+                    g_p.do_update()
                     #
                     i_texture_src = utl_dcc_objects.OsTexture(
                         i_file_path
@@ -360,7 +360,7 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
                     i_directory_path_src, i_directory_path_tgt,
                     force_enable, ext_tgt,
                 )
-                g_p.set_update()
+                g_p.do_update()
 
     def _set_tx_create_data_update_at_(self, directory_path_src, directory_path_tgt, force_enable=False, ext_tgt='.tx'):
         file_paths_src = bsc_core.StgDirectoryMtd.get_file_paths__(
@@ -386,7 +386,7 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
                                     (i_texture_src.path, directory_path_tgt)
                                 )
                     #
-                    g_p.set_update()
+                    g_p.do_update()
 
     def _set_tx_create_by_data_(self, button, post_fnc=None):
         def finished_fnc_(index, status, results):
@@ -488,7 +488,7 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
             ]
             with bsc_core.LogProcessContext.create(maximum=len(method_args), label='texture-tx create processing') as g_p:
                 for i_fnc, i_args in method_args:
-                    g_p.set_update()
+                    g_p.do_update()
                     #
                     i_result = i_fnc(*i_args)
                     if i_result is False:

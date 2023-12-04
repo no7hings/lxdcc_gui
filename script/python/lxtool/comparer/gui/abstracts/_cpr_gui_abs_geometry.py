@@ -1,9 +1,7 @@
 # coding:utf-8
-from lxbasic import bsc_core
+import lxbasic.core as bsc_core
 #
 from lxutil import utl_configure
-
-import lxgui.configure as gui_configure
 
 import lxgui.core as gui_core
 
@@ -24,7 +22,7 @@ class AbsDccComparerOpt(object):
     def __init__(self, filter_tree_view, result_tree_view):
         self._filter_tree_view = filter_tree_view
         self._result_tree_view = result_tree_view
-        self._obj_add_dict = self._result_tree_view._item_dict
+        self._item_dict = self._result_tree_view._item_dict
 
         self._result_tree_view.connect_item_select_changed_to(
             self.set_select
@@ -42,8 +40,8 @@ class AbsDccComparerOpt(object):
         self._filter_opt.restore_all()
 
     def get_node(self, path_src, path_tgt, status, description):
-        if path_src in self._obj_add_dict:
-            return self._obj_add_dict[path_src]
+        if path_src in self._item_dict:
+            return self._item_dict[path_src]
         #
         dcc_path_dag_opt_src = bsc_core.DccPathDagOpt(path_src)
         dcc_path_dag_opt_tgt = bsc_core.DccPathDagOpt(path_tgt)
@@ -61,7 +59,7 @@ class AbsDccComparerOpt(object):
         prx_item_src.set_status(
             status
         )
-        self._obj_add_dict[path_src] = prx_item_src
+        self._item_dict[path_src] = prx_item_src
         prx_item_src.set_gui_dcc_obj(
             dcc_obj_src, self.DCC_NAMESPACE
         )
@@ -73,8 +71,8 @@ class AbsDccComparerOpt(object):
 
     def get_root(self, path_dag_opt):
         path = path_dag_opt.path
-        if path in self._obj_add_dict:
-            return self._obj_add_dict[path]
+        if path in self._item_dict:
+            return self._item_dict[path]
 
         prx_item = self._result_tree_view.create_item(
             name=path_dag_opt.name,
@@ -82,13 +80,13 @@ class AbsDccComparerOpt(object):
             tool_tip=path,
         )
         prx_item.set_expanded(True)
-        self._obj_add_dict[path] = prx_item
+        self._item_dict[path] = prx_item
         return prx_item
 
     def get_group(self, path_dag_opt):
         path = path_dag_opt.path
-        if path in self._obj_add_dict:
-            return self._obj_add_dict[path]
+        if path in self._item_dict:
+            return self._item_dict[path]
 
         parent_prx_item = self.get_root(path_dag_opt.get_root())
 
@@ -98,13 +96,13 @@ class AbsDccComparerOpt(object):
             tool_tip=path,
         )
         prx_item.set_expanded(True)
-        self._obj_add_dict[path] = prx_item
+        self._item_dict[path] = prx_item
         return prx_item
 
     def get_transform(self, path_dag_opt):
         path = path_dag_opt.path
-        if path in self._obj_add_dict:
-            return self._obj_add_dict[path]
+        if path in self._item_dict:
+            return self._item_dict[path]
 
         name = path_dag_opt.name
 
@@ -116,7 +114,7 @@ class AbsDccComparerOpt(object):
             tool_tip=path,
         )
         prx_item.set_expanded(True)
-        self._obj_add_dict[path] = prx_item
+        self._item_dict[path] = prx_item
         return prx_item
 
     def set_select(self):
@@ -290,7 +288,7 @@ class AbsPnlComparerForAssetGeometry(prx_widgets.PrxSessionWindow):
                     i_path_src, i_path_tgt, i_status, i_description
                 )
                 #
-                g_p.set_update()
+                g_p.do_update()
         #
         sector_chart_data = []
         for i_check_status in utl_configure.DccMeshCheckStatus.ALL:
@@ -306,7 +304,7 @@ class AbsPnlComparerForAssetGeometry(prx_widgets.PrxSessionWindow):
         #
         self._sector_chart.set_chart_data(
             sector_chart_data,
-            gui_configure.SectorChartMode.Error
+            gui_core.GuiSectorChartMode.Error
         )
 
         self._comparer_opt.set_accept()
@@ -331,5 +329,5 @@ class AbsPnlComparerForAssetGeometry(prx_widgets.PrxSessionWindow):
         ]
         with bsc_core.LogProcessContext.create(maximum=len(ms), label='execute gui-build method') as g_p:
             for i_method, i_args in ms:
-                g_p.set_update()
+                g_p.do_update()
                 i_method(*i_args)

@@ -1,5 +1,5 @@
 # coding=utf-8
-from lxgui.qt.core import *
+import os
 
 import collections
 
@@ -9,9 +9,19 @@ import fnmatch
 
 import urllib
 
+import six
+
 from contextlib import contextmanager
 
-import six
+from lxgui.qt.wrap import *
+
+import lxcontent.core as ctt_core
+
+import lxbasic.core as bsc_core
+
+import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
 
 
 class AbsQtWidgetBaseDef(object):
@@ -102,9 +112,10 @@ class AbsQtMenuBaseDef(object):
     def _init_menu_base_def_(self, widget):
         self._widget = widget
         self._menu_title_text = None
-        self._menu_raw = []
+        self._menu_data = []
+        self._menu_data_generate_fnc = None
         self._menu_content = None
-        self._menu_data_gain_fnc = None
+        self._menu_content_generate_fnc = None
 
     def _set_menu_title_text_(self, text):
         self._menu_title_text = text
@@ -122,61 +133,63 @@ class AbsQtMenuBaseDef(object):
         ]
         :return:
         """
-        self._menu_raw = data
+        self._menu_data = data
 
     def _add_menu_data_(self, data):
         if isinstance(data, list):
-            self._menu_raw.extend(data)
+            self._menu_data.extend(data)
         elif isinstance(data, tuple):
-            self._menu_raw.append(data)
+            self._menu_data.append(data)
 
     def _extend_menu_data_(self, raw):
-        self._menu_raw.extend(raw)
+        self._menu_data.extend(raw)
 
     def _get_menu_data_(self):
-        return self._menu_raw
+        return self._menu_data
 
-    def _set_menu_data_gain_fnc_(self, fnc):
-        self._menu_data_gain_fnc = fnc
+    def _set_menu_data_generate_fnc_(self, fnc):
+        self._menu_data_generate_fnc = fnc
+
+    def _set_menu_content_generate_fnc_(self, fnc):
+        self._menu_content_generate_fnc = fnc
+
+    def _auto_generate_menu_(self, qt_menu):
+        if qt_menu is None:
+            qt_menu = self.QT_MENU_CLS(self)
+            if self._menu_title_text is not None:
+                qt_menu._set_title_text_(self._menu_title_text)
+        return qt_menu
 
     def _popup_menu_(self):
-        menu_content = self._get_menu_content_()
-        menu_data = self._get_menu_data_()
-        #
-        menu = None
-        #
-        if menu_content:
-            if menu_content.get_is_empty() is False:
-                if menu is None:
-                    menu = self.QT_MENU_CLS(self)
-                    #
-                    if self._menu_title_text is not None:
-                        menu._set_title_text_(self._menu_title_text)
-                #
-                menu._set_menu_content_(menu_content)
-                menu._set_show_()
-        #
-        if menu_data:
-            if menu is None:
-                menu = self.QT_MENU_CLS(self)
-                #
-                if self._menu_title_text is not None:
-                    menu._set_title_text_(self._menu_title_text)
-            #
-            menu._set_menu_data_(menu_data)
-            menu._set_show_()
-        #
-        if self._menu_data_gain_fnc is not None:
-            if menu is None:
-                menu = self.QT_MENU_CLS(self)
-                #
-                if self._menu_title_text is not None:
-                    menu._set_title_text_(self._menu_title_text)
-            #
-            menu_data = self._menu_data_gain_fnc()
+        qt_menu = None
+        # add menu content first, menu content operate always clear all
+        # when generate function is defining, use generate data
+        if self._menu_content_generate_fnc is not None:
+            menu_content = self._menu_content_generate_fnc()
+            if menu_content:
+                if menu_content.get_is_empty() is False:
+                    qt_menu = self._auto_generate_menu_(qt_menu)
+                    qt_menu._set_menu_content_(menu_content)
+                    qt_menu._set_show_()
+        else:
+            menu_content = self._get_menu_content_()
+            if menu_content:
+                if menu_content.get_is_empty() is False:
+                    qt_menu = self._auto_generate_menu_(qt_menu)
+                    qt_menu._set_menu_content_(menu_content)
+                    qt_menu._set_show_()
+        if self._menu_data_generate_fnc is not None:
+            qt_menu = self._auto_generate_menu_(qt_menu)
+            menu_data = self._menu_data_generate_fnc()
             if menu_data:
-                menu._set_menu_data_(menu_data)
-                menu._set_show_()
+                qt_menu._set_menu_data_(menu_data)
+                qt_menu._set_show_()
+        else:
+            menu_data = self._get_menu_data_()
+            if menu_data:
+                qt_menu = self._auto_generate_menu_(qt_menu)
+                qt_menu._set_menu_data_(menu_data)
+                qt_menu._set_show_()
 
     def _set_menu_content_(self, content):
         self._menu_content = content
@@ -186,10 +199,10 @@ class AbsQtMenuBaseDef(object):
 
 
 class AbsQtStatusBaseDef(object):
-    Status = gui_configure.Status
-    ShowStatus = gui_configure.ShowStatus
-    ValidationStatus = gui_configure.ValidationStatus
-    Rgba = gui_configure.Rgba
+    Status = gui_core.GuiStatus
+    ShowStatus = gui_core.GuiShowStatus
+    ValidationStatus = gui_core.GuiValidationStatus
+    Rgba = gui_core.GuiRgba
 
     @classmethod
     def _get_rgb_args_(cls, r, g, b, a):
@@ -231,42 +244,32 @@ class AbsQtStatusBaseDef(object):
     def _get_text_rgba_args_by_validator_status_(cls, status):
         if status in {cls.ValidationStatus.Warning}:
             return cls._get_rgb_args_(*cls.Rgba.Yellow)
-        elif status in {cls.ValidationStatus.Error}:
+        elif status in {cls.ValidationStatus.Disable, cls.ValidationStatus.Lost}:
+            return cls._get_rgb_args_(*cls.Rgba.DarkGray)
+        elif status in {cls.ValidationStatus.Error, cls.ValidationStatus.Unreadable}:
             return cls._get_rgb_args_(*cls.Rgba.Red)
-        elif status in {cls.ValidationStatus.Correct}:
-            return cls._get_rgb_args_(*cls.Rgba.Green)
-        elif status in {cls.ValidationStatus.Locked}:
+        elif status in {cls.ValidationStatus.Locked, cls.ValidationStatus.Unwritable}:
             return cls._get_rgb_args_(*cls.Rgba.Purple)
         elif status in {cls.ValidationStatus.Active}:
             return cls._get_rgb_args_(*cls.Rgba.Blue)
+        elif status in {cls.ValidationStatus.Correct}:
+            return cls._get_rgb_args_(*cls.Rgba.Green)
         return cls._get_rgb_args_(*cls.Rgba.White)
 
     @classmethod
-    def _get_border_rgba_args_by_validator_status_(cls, status):
+    def _get_rgba_args_by_validator_status_(cls, status):
         if status in [cls.ValidationStatus.Warning]:
             return cls._get_rgb_args_(*cls.Rgba.Yellow)
-        elif status in [cls.ValidationStatus.Error]:
+        elif status in {cls.ValidationStatus.Disable, cls.ValidationStatus.Lost}:
+            return cls._get_rgb_args_(*cls.Rgba.DarkGray)
+        elif status in {cls.ValidationStatus.Error, cls.ValidationStatus.Unreadable}:
             return cls._get_rgb_args_(*cls.Rgba.Red)
-        elif status in [cls.ValidationStatus.Correct]:
-            return cls._get_rgb_args_(*cls.Rgba.Green)
-        elif status in [cls.ValidationStatus.Locked]:
+        elif status in {cls.ValidationStatus.Locked, cls.ValidationStatus.Unwritable}:
             return cls._get_rgb_args_(*cls.Rgba.Purple)
-        elif status in [cls.ValidationStatus.Active]:
+        elif status in {cls.ValidationStatus.Active}:
             return cls._get_rgb_args_(*cls.Rgba.Blue)
-        return cls._get_rgb_args_(*cls.Rgba.Transparent)
-
-    @classmethod
-    def _get_background_rgba_args_by_validator_status_(cls, status):
-        if status in [cls.ValidationStatus.Warning]:
-            return cls._get_rgb_args_(*cls.Rgba.Yellow)
-        elif status in [cls.ValidationStatus.Error]:
-            return cls._get_rgb_args_(*cls.Rgba.Red)
-        elif status in [cls.ValidationStatus.Correct]:
+        elif status in {cls.ValidationStatus.Correct}:
             return cls._get_rgb_args_(*cls.Rgba.Green)
-        elif status in [cls.ValidationStatus.Locked]:
-            return cls._get_rgb_args_(*cls.Rgba.Purple)
-        elif status in [cls.ValidationStatus.Active]:
-            return cls._get_rgb_args_(*cls.Rgba.Blue)
         return cls._get_rgb_args_(*cls.Rgba.Transparent)
 
     def _init_status_base_def_(self, widget):
@@ -274,10 +277,10 @@ class AbsQtStatusBaseDef(object):
         #
         self._is_status_enable = False
         #
-        self._status = gui_configure.Status.Stopped
+        self._status = gui_core.GuiStatus.Stopped
         #
-        self._status_color = QtBackgroundColors.Transparent
-        self._hover_status_color = QtBackgroundColors.Transparent
+        self._status_color = gui_qt_core.QtBackgroundColors.Transparent
+        self._hover_status_color = gui_qt_core.QtBackgroundColors.Transparent
         #
         self._status_rect = QtCore.QRect()
 
@@ -289,7 +292,7 @@ class AbsQtStatusBaseDef(object):
         #
         self._status = status
         #
-        if status in {gui_configure.Status.Running}:
+        if status in {gui_core.GuiStatus.Running}:
             self._widget.setCursor(QtCore.Qt.BusyCursor)
         else:
             self._widget.unsetCursor()
@@ -464,7 +467,7 @@ class AbsQtValidatorBaseDef(object):
 
     def _set_validator_status_at_(self, index, status):
         self._validator_statuses[index] = status
-        color, hover_color = AbsQtStatusBaseDef._get_background_rgba_args_by_validator_status_(status)
+        color, hover_color = AbsQtStatusBaseDef._get_rgba_args_by_validator_status_(status)
         self._validator_status_colors[index] = color
         self._hover_validator_status_colors[index] = hover_color
         #
@@ -483,7 +486,7 @@ class AbsQtValidatorBaseDef(object):
             self._validator_status_colors = []
             self._hover_validator_status_colors = []
             for i_status in statuses:
-                i_color, i_hover_color = AbsQtStatusBaseDef._get_background_rgba_args_by_validator_status_(
+                i_color, i_hover_color = AbsQtStatusBaseDef._get_rgba_args_by_validator_status_(
                     i_status
                     )
                 self._validator_status_colors.append(i_color)
@@ -507,15 +510,15 @@ class AbsQtFrameBaseDef(object):
 
     def _init_frame_base_def_(self, widget):
         self._widget = widget
-        self._frame_border_color = QtBackgroundColors.Transparent
-        self._hovered_frame_border_color = QtBackgroundColors.Transparent
-        self._selected_frame_border_color = QtBackgroundColors.Transparent
-        self._actioned_frame_border_color = QtBackgroundColors.Transparent
+        self._frame_border_color = gui_qt_core.QtBackgroundColors.Transparent
+        self._hovered_frame_border_color = gui_qt_core.QtBackgroundColors.Transparent
+        self._selected_frame_border_color = gui_qt_core.QtBackgroundColors.Transparent
+        self._actioned_frame_border_color = gui_qt_core.QtBackgroundColors.Transparent
         #
-        self._frame_background_color = QtBackgroundColors.Transparent
-        self._hovered_frame_background_color = QtBackgroundColors.Transparent
-        self._selected_frame_background_color = QtBackgroundColors.Transparent
-        self._actioned_frame_background_color = QtBackgroundColors.Transparent
+        self._frame_background_color = gui_qt_core.QtBackgroundColors.Transparent
+        self._hovered_frame_background_color = gui_qt_core.QtBackgroundColors.Transparent
+        self._selected_frame_background_color = gui_qt_core.QtBackgroundColors.Transparent
+        self._actioned_frame_background_color = gui_qt_core.QtBackgroundColors.Transparent
         #
         self._frame_border_radius = 0
         #
@@ -535,11 +538,11 @@ class AbsQtFrameBaseDef(object):
         self._refresh_widget_all_()
 
     def _set_border_color_(self, color):
-        self._frame_border_color = GuiQtColor.to_qt_color(color)
+        self._frame_border_color = gui_qt_core.GuiQtColor.to_qt_color(color)
         self._refresh_widget_draw_()
 
     def _set_background_color_(self, color):
-        self._frame_background_color = GuiQtColor.to_qt_color(color)
+        self._frame_background_color = gui_qt_core.GuiQtColor.to_qt_color(color)
         self._refresh_widget_draw_()
 
     def _get_border_color_(self):
@@ -568,8 +571,8 @@ class AbsQtFrameBaseDef(object):
 
 
 class AbsQtResizeBaseDef(object):
-    ResizeOrientation = gui_configure.Orientation
-    ResizeAlignment = gui_configure.Alignment
+    ResizeOrientation = gui_core.GuiOrientation
+    ResizeAlignment = gui_core.GuiAlignment
 
     def _init_resize_base_def_(self, widget):
         self._widget = widget
@@ -994,7 +997,7 @@ class AbsQtIconBaseDef(object):
         self._icon_color_draw_rect = QtCore.QRect()
         self._icon_text_draw_rect = QtCore.QRect()
         #
-        self._icon_hover_color = QtBackgroundColors.PressedHovered
+        self._icon_hover_color = gui_qt_core.QtBackgroundColors.PressedHovered
         #
         self._icon_frame_draw_size = 20, 20
         #
@@ -1248,8 +1251,8 @@ class AbsQtIndexBaseDef(object):
         self._index_draw_enable = False
         self._index = 0
         self._index_text = None
-        self._index_text_color = QtFontColors.Dark
-        self._index_text_font = QtFonts.Index
+        self._index_text_color = gui_qt_core.QtFontColors.Dark
+        self._index_text_font = gui_qt_core.QtFonts.Index
         self._index_text_option = QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter
         #
         self._index_frame_rect = QtCore.QRect()
@@ -1444,7 +1447,7 @@ class AbsQtValueHistoryExtraDef(object):
 
 
 class AbsQtNameBaseDef(object):
-    AlignRegion = gui_configure.AlignRegion
+    AlignRegion = gui_core.GuiAlignRegion
 
     def _init_name_base_def_(self, widget):
         self._widget = widget
@@ -1452,12 +1455,12 @@ class AbsQtNameBaseDef(object):
         self._name_enable = False
         self._name_text = None
         self._name_text_orig = None
-        self._name_draw_font = QtFonts.NameNormal
+        self._name_draw_font = gui_qt_core.QtFonts.NameNormal
         #
         self._name_align = self.AlignRegion.Center
         #
-        self._name_color = QtFontColors.Basic
-        self._hover_name_color = QtFontColors.Light
+        self._name_color = gui_qt_core.QtFontColors.Basic
+        self._hover_name_color = gui_qt_core.QtFontColors.Light
         self._name_text_option = QtCore.Qt.AlignLeft|QtCore.Qt.AlignVCenter
         #
         self._name_word_warp = True
@@ -1569,14 +1572,14 @@ class AbsQtNameBaseDef(object):
                 for i_text in texts:
                     i_text = bsc_core.auto_encode(i_text)
                     i_text = i_text.replace(' ', '&nbsp;').replace('<', '&lt;').replace('>', '&gt;')
-                    i_text = GuiQtUtil.generate_tool_tip_action_css(i_text)
+                    i_text = gui_qt_core.GuiQtUtil.generate_tool_tip_action_css(i_text)
                     css += '<p class="no_wrap">{}</p>\n'.format(i_text)
 
             if 'action_tip' in kwargs:
                 action_tip = kwargs['action_tip']
                 css += '<p><hr></p>\n'
                 action_tip = action_tip.replace(' ', '&nbsp;').replace('<', '&lt;').replace('>', '&gt;')
-                action_tip = GuiQtUtil.generate_tool_tip_action_css(action_tip)
+                action_tip = gui_qt_core.GuiQtUtil.generate_tool_tip_action_css(action_tip)
                 css += '<p class="no_wrap">{}</p>\n'.format(action_tip)
 
             css += '</body>\n</html>'
@@ -1754,7 +1757,7 @@ class AbsQtNamesBaseDef(AbsQtNameBaseDef):
                 for i_text in texts_extend:
                     i_text = bsc_core.auto_encode(i_text)
                     i_text = i_text.replace(' ', '&nbsp;').replace('<', '&lt;').replace('>', '&gt;')
-                    i_text = GuiQtUtil.generate_tool_tip_action_css(i_text)
+                    i_text = gui_qt_core.GuiQtUtil.generate_tool_tip_action_css(i_text)
                     css += '<p class="no_wrap">{}</p>\n'.format(i_text)
 
             css += '</body>\n</html>'
@@ -1974,7 +1977,7 @@ class AbsQtChartBaseDef(object):
         self._widget = widget
         self._chart_data = None
         self._chart_draw_data = None
-        self._chart_mode = gui_configure.SectorChartMode.Completion
+        self._chart_mode = gui_core.GuiSectorChartMode.Completion
         #
         self._hover_flag = False
         self._hover_point = QtCore.QPoint()
@@ -2066,7 +2069,7 @@ class AbsQtThreadBaseDef(object):
 
     def _run_build_use_thread_(self, cache_fnc, build_fnc, post_fnc):
         if self._qt_thread_enable is True:
-            t = QtBuildThreadExtra(self._widget)
+            t = gui_qt_core.QtBuildThreadExtra(self._widget)
             t.set_cache_fnc(cache_fnc)
             t.cache_value_accepted.connect(build_fnc)
             t.run_finished.connect(post_fnc)
@@ -2079,7 +2082,7 @@ class AbsQtThreadBaseDef(object):
 
     def _run_fnc_use_thread_(self, fnc):
         if self._qt_thread_enable is True:
-            t = QtMethodThread(self._widget)
+            t = gui_qt_core.QtMethodThread(self._widget)
             t.append_method(fnc)
             t.start_accepted.connect(self._thread_start_accept_fnc_)
             t.finish_accepted.connect(self._thread_finish_accept_fnc_)
@@ -2135,8 +2138,9 @@ class AbsQtChooseExtraDef(object):
     def _extend_choose_values_current_(self, values):
         pass
 
+    # noinspection PyUnusedLocal
     def _choose_value_completion_gain_fnc_(self, *args, **kwargs):
-        return bsc_core.PtnFnmatch.filter(
+        return ctt_core.ContentUtil.filter(
             self._choose_values, '*{}*'.format(
                 bsc_core.auto_encode((args[0]))
             )
@@ -2328,7 +2332,7 @@ class AbsQtGuideEntryDef(AbsQtGuideBaseDef):
 
     def _get_is_guide_choose_flag_(self):
         return self._get_action_flag_is_match_(
-            gui_configure.ActionFlag.ChoosePress
+            gui_core.GuiActionFlag.ChoosePress
         )
 
     def _restore_guide_(self):
@@ -2400,11 +2404,11 @@ class AbsQtItemWidgetExtra(object):
 
 
 class AbsQtBuildViewDef(object):
-    def _set_build_view_def_init_(self):
+    def _init_view_build_extra_def_(self):
         pass
 
-    def _set_build_view_setup_(self, view):
-        self._build_runnable_stack = QtBuildRunnableStack(
+    def _setup_view_build_(self, view):
+        self._build_runnable_stack = gui_qt_core.QtBuildRunnableStack(
             view
         )
 
@@ -2472,7 +2476,7 @@ class AbsQtViewScrollActionDef(object):
 
 
 class AbsQtItemFilterDef(object):
-    TagFilterMode = gui_configure.TagFilterMode
+    TagFilterMode = gui_core.GuiTagFilterMode
 
     def _init_item_filter_extra_def_(self, widget):
         self._widget = widget
@@ -2746,6 +2750,7 @@ class AbsQtViewFilterExtraDef(object):
             item_cur._set_selected_(True)
             self._widget._scroll_view_to_item_top_(item_cur)
 
+    # noinspection PyUnusedLocal
     def _do_keyword_filter_occurrence_to_previous_(self):
         items = self._view_keyword_filter_match_items
         if items:
@@ -2771,6 +2776,7 @@ class AbsQtViewFilterExtraDef(object):
                 self._view_keyword_filter_occurrence_index_current
             )
 
+    # noinspection PyUnusedLocal
     def _do_keyword_filter_occurrence_to_next_(self):
         items = self._view_keyword_filter_match_items
         if items:
@@ -2798,16 +2804,18 @@ class AbsQtViewFilterExtraDef(object):
 
 
 class AbsQtStateDef(object):
-    ActionState = gui_configure.ActionState
+    ActionState = gui_core.GuiActionState
 
     def _set_state_def_init_(self):
-        self._state = gui_core.State.NORMAL
+        self._state = gui_core.GuiState.NORMAL
         self._state_draw_is_enable = False
-        self._state_color = QtBrushes.Text
+        self._state_color = gui_qt_core.QtBrushes.Text
 
+    # noinspection PyUnusedLocal
     def _set_state_(self, *args, **kwargs):
         self._state = args[0]
 
+    # noinspection PyUnusedLocal
     def _get_state_(self, *args, **kwargs):
         return self._state
 
@@ -2945,7 +2953,8 @@ class AbsQtViewStateDef(object):
     def _set_view_state_def_init_(self):
         pass
 
-    def _get_view_item_states_(self, items=None):
+    @staticmethod
+    def _get_view_item_states_(items=None):
         if isinstance(items, (tuple, list)):
             lis = []
             for i_item in items:
@@ -2953,7 +2962,8 @@ class AbsQtViewStateDef(object):
             return lis
         return []
 
-    def _get_view_item_state_colors_(self, items=None):
+    @staticmethod
+    def _get_view_item_state_colors_(items=None):
         if isinstance(items, (tuple, list)):
             lis = []
             for i_item in items:
@@ -2972,8 +2982,8 @@ class AbsQtBuildBaseForItemDef(object):
     def _setup_item_show_runnable_stack_(self, view):
         self._build_runnable_stack = view._build_runnable_stack
 
-    def _create_item_show_runnable_(self, cache_fnc, build_fnc, post_fnc=None):
-        return self._build_runnable_stack.create_thread(
+    def _generate_item_show_runnable_(self, cache_fnc, build_fnc, post_fnc=None):
+        return self._build_runnable_stack.generate_thread(
             cache_fnc, build_fnc, post_fnc
         )
 
@@ -2983,7 +2993,7 @@ class AbsQtBuildBaseForItemDef(object):
 class AbsQtShowBaseForItemDef(
     AbsQtBuildBaseForItemDef
 ):
-    ShowStatus = gui_configure.ShowStatus
+    ShowStatus = gui_core.GuiShowStatus
 
     def _refresh_widget_all_(self, *args, **kwargs):
         raise NotImplementedError()
@@ -3020,6 +3030,15 @@ class AbsQtShowBaseForItemDef(
 
         self._init_build_base_for_item_def_()
 
+        self._item_show_flag = False
+        self._item_show_image_flag = False
+
+    def _set_item_show_flag_(self, boolean):
+        self._item_show_flag = boolean
+
+    def _get_item_show_flag_(self):
+        return self._item_show_flag
+
     def _setup_item_show_(self, view):
         self._setup_item_show_runnable_stack_(view)
 
@@ -3044,6 +3063,7 @@ class AbsQtShowBaseForItemDef(
         def cache_fnc_():
             return []
 
+        # noinspection PyUnusedLocal
         def build_fnc_(data):
             method()
 
@@ -3056,38 +3076,40 @@ class AbsQtShowBaseForItemDef(
             if self._item_show_cache_fnc is None and self._item_show_build_fnc is None:
                 self._item_show_cache_fnc = cache_fnc
                 self._item_show_build_fnc = build_fnc
-                #
                 self._item_show_status = self.ShowStatus.Waiting
+
+                self._item_show_flag = True
                 if self._get_item_is_viewport_showable_() is True:
                     self._checkout_item_show_()
 
-    def _checkout_item_show_(self, delay_time=10, force=False):
+    def _checkout_item_show_(self, delay_time=0):
         def run_fnc_():
             if self._item_show_cache_fnc is not None:
                 self._start_item_show_()
 
-        #
-        if self._item_show_status == self.ShowStatus.Waiting or force is True:
+        if self._item_show_flag is True:
             self._checkout_item_show_loading_()
-            self._item_show_timer.singleShot(delay_time, run_fnc_)
+            if delay_time > 0:
+                self._item_show_timer.singleShot(delay_time, run_fnc_)
+            else:
+                run_fnc_()
 
-    #
     def _checkout_item_show_loading_(self):
         if self._item_show_status == self.ShowStatus.Waiting:
             self._item_show_loading_timer.start(100)
 
     def _start_item_show_(self):
-        if self._item_show_status == self.ShowStatus.Waiting:
+        if self._item_show_flag is True:
+            # update flag first
+            self._item_show_flag = False
+            self._item_show_status = self.ShowStatus.Loading
             if self._item_show_use_thread is True:
-                self._item_show_status = self.ShowStatus.Loading
-                #
-                self._item_show_runnable = self._create_item_show_runnable_(
+                self._item_show_runnable = self._generate_item_show_runnable_(
                     self._item_show_cache_fnc,
                     self._item_show_build_fnc,
                     self._finish_item_show_
                 )
-                #
-                self._build_runnable_stack.start_runnable(self._item_show_runnable)
+                self._item_show_runnable.set_start()
             else:
                 self._item_show_build_fnc(
                     self._item_show_cache_fnc()
@@ -3114,7 +3136,7 @@ class AbsQtShowBaseForItemDef(
         # noinspection PyBroadException
         try:
             self._refresh_widget_draw_()
-        except:
+        except Exception:
             pass
 
     def _finish_item_show_loading_(self):
@@ -3122,7 +3144,7 @@ class AbsQtShowBaseForItemDef(
         try:
             self._item_show_loading_timer.stop()
             self._refresh_widget_draw_()
-        except:
+        except Exception:
             pass
 
     # image fnc
@@ -3133,10 +3155,11 @@ class AbsQtShowBaseForItemDef(
                 bsc_core.SubProcessMtd.execute_with_result(
                     cmd
                 )
-            except:
+            except Exception:
                 pass
             return []
 
+        # noinspection PyUnusedLocal
         def build_fnc_(data):
             pass
 
@@ -3149,37 +3172,40 @@ class AbsQtShowBaseForItemDef(
             if self._item_show_image_cache_fnc is None and self._item_show_image_build_fnc is None:
                 self._item_show_image_cache_fnc = cache_fnc
                 self._item_show_image_build_fnc = build_fnc
-                #
+
+                self._item_show_image_flag = True
+
                 self._item_show_image_status = self.ShowStatus.Waiting
                 if self._get_item_is_viewport_showable_() is True:
                     self._checkout_item_show_image_()
 
-    def _checkout_item_show_image_(self, delay_time=10, force=False):
+    def _checkout_item_show_image_(self, delay_time=0):
         def run_fnc():
-            if self._item_show_cache_fnc is not None:
+            if self._item_show_image_cache_fnc is not None:
                 self._start_item_show_image_()
 
-        #
-        if self._item_show_image_status == self.ShowStatus.Waiting or force is True:
+        if self._item_show_image_flag is True:
             self._checkout_item_show_image_loading_()
-            #
-            self._item_show_image_timer.singleShot(delay_time, run_fnc)
+            if delay_time > 0:
+                self._item_show_image_timer.singleShot(delay_time, run_fnc)
+            else:
+                run_fnc()
 
     def _checkout_item_show_image_loading_(self):
         if self._item_show_image_status == self.ShowStatus.Waiting:
             self._item_show_image_loading_timer.start(100)
 
     def _start_item_show_image_(self):
-        if self._item_show_image_status == self.ShowStatus.Waiting:
+        if self._item_show_image_flag is True:
             self._item_show_image_status = self.ShowStatus.Loading
+            self._item_show_image_flag = False
             if self._item_show_use_thread is True:
-                self._item_show_image_runnable = self._create_item_show_runnable_(
+                self._item_show_image_runnable = self._generate_item_show_runnable_(
                     self._item_show_image_cache_fnc,
                     self._item_show_image_build_fnc,
                     self._finish_item_show_image_
                 )
-                #
-                self._build_runnable_stack.start_runnable(self._item_show_image_runnable)
+                self._item_show_image_runnable.set_start()
             else:
                 self._item_show_image_build_fnc(
                     self._item_show_image_cache_fnc()
@@ -3212,7 +3238,7 @@ class AbsQtShowBaseForItemDef(
         # noinspection PyBroadException
         try:
             self._refresh_widget_draw_()
-        except:
+        except Exception:
             pass
 
     def _finish_item_show_image_loading_(self):
@@ -3220,12 +3246,12 @@ class AbsQtShowBaseForItemDef(
         try:
             self._item_show_image_loading_timer.stop()
             self._refresh_widget_draw_()
-        except:
+        except Exception:
             pass
 
-    def _checkout_item_show_all_(self, force=False):
-        self._checkout_item_show_(force=force)
-        self._checkout_item_show_image_(force=force)
+    def _checkout_item_show_all_(self):
+        self._checkout_item_show_()
+        self._checkout_item_show_image_()
 
     def _stop_item_show_all_(self):
         self._set_item_show_stop_(self.ShowStatus.Stopped)
@@ -3254,12 +3280,12 @@ class AbsQtShowBaseForItemDef(
         if self._get_item_is_viewport_showable_() is True:
             self._checkout_item_show_all_()
 
-    def _set_item_show_force_(self):
-        self._checkout_item_show_all_(force=True)
-
 
 # for view
 class AbsQtShowForViewDef(object):
+    def _get_all_items_(self):
+        raise NotImplementedError()
+
     def _init_show_for_view_def_(self, widget):
         self._widget = widget
 
@@ -3289,7 +3315,15 @@ class AbsQtShowForViewDef(object):
         self._widget.update()
 
     def _refresh_viewport_showable_auto_(self):
-        self._refresh_view_all_items_viewport_showable_()
+        self._refresh_view_all_items_viewport_showable_(
+            self._get_all_show_items_()
+        )
+
+    def _refresh_viewport_showable_by_scroll_(self):
+        self._refresh_viewport_showable_auto_()
+
+    def _get_all_show_items_(self):
+        return [i for i in self._get_all_items_() if i._get_item_show_flag_() is True]
 
 
 class ShowFnc(object):
@@ -3368,8 +3402,8 @@ class AbsQtDeleteBaseDef(object):
         return False
 
 
-class AbsQtHelpDef(object):
-    def _set_help_def_init_(self, widget):
+class AbsQtHelpBaseDef(object):
+    def _init_help_base_def_(self, widget):
         self._widget = widget
 
         self._help_text_is_enable = False
@@ -3383,14 +3417,14 @@ class AbsQtHelpDef(object):
         self._help_text = text
 
 
-class AbsQtScreenshotDef(object):
+class AbsQtScreenshotBaseDef(AbsQtHelpBaseDef):
     class Mode(enum.IntEnum):
         Started = 0
         New = 1
         Edit = 2
         Stopped = 3
 
-    RectRegion = gui_configure.RectRegion
+    RectRegion = gui_core.GuiRectRegion
 
     CURSOR_MAPPER = {
         RectRegion.Unknown: QtCore.Qt.ArrowCursor,
@@ -3410,8 +3444,9 @@ class AbsQtScreenshotDef(object):
     screenshot_accepted = qt_signal(list)
     CACHE = 0, 0, 0, 0
 
-    def _set_screenshot_def_init_(self, widget):
+    def _init_screenshot_base_def_(self, widget):
         self._widget = widget
+        self._init_help_base_def_(widget)
 
         self._screenshot_mode = self.Mode.Started
         self._screenshot_is_modify = False
@@ -3498,6 +3533,7 @@ class AbsQtScreenshotDef(object):
 
             self._widget.setCursor(QtGui.QCursor(cursor))
 
+    # noinspection PyUnusedLocal
     def _do_screenshot_press_release_(self, event):
         if self._screenshot_mode == self.Mode.New:
             if self._screenshot_rect_point_start != self._screenshot_rect_point_end:
@@ -3559,7 +3595,7 @@ class AbsQtScreenshotDef(object):
         self._screenshot_mode = self.Mode.Stopped
         self._widget.update()
 
-        AbsQtScreenshotDef.CACHE = self._get_screenshot_accept_geometry_args_()
+        AbsQtScreenshotBaseDef.CACHE = self._get_screenshot_accept_geometry_args_()
 
         self._timer = QtCore.QTimer(self._widget)
         self._timer.singleShot(100, fnc_)
@@ -3619,7 +3655,7 @@ class AbsQtScreenshotDef(object):
         rect = QtCore.QRect(*geometry)
 
         if bsc_core.ApplicationMtd.get_is_maya():
-            main_window = GuiQtMaya.get_qt_main_window()
+            main_window = gui_qt_core.GuiQtMaya.get_qt_main_window()
             s = QtGui.QPixmap.grabWindow(
                 long(main_window.winId())
             )

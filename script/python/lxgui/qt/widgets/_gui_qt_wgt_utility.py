@@ -1,19 +1,27 @@
 # coding=utf-8
-from lxgui.qt.core import *
+import six
 
 import functools
 
-import lxgui.qt.abstracts as gui_qt_abstracts
+import types
 
-import lxgui.configure as gui_configure
+from lxgui.qt.wrap import *
+
+import lxbasic.core as bsc_core
 
 import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
+
+import lxgui.qt.abstracts as gui_qt_abstracts
+
+from ..widgets import _gui_qt_wgt_base
 
 
 class QtItemDelegate(QtWidgets.QItemDelegate):
     def sizeHint(self, option, index):
         size = super(QtItemDelegate, self).sizeHint(option, index)
-        size.setHeight(gui_configure.Size.ItemDefaultHeight)
+        size.setHeight(gui_core.GuiSize.ItemDefaultHeight)
         return size
 
 
@@ -26,7 +34,7 @@ class QtWidget(
         super(QtWidget, self).__init__(*args, **kwargs)
         # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
-        qt_palette = GuiQtDcc.generate_qt_palette()
+        qt_palette = gui_qt_core.GuiQtDcc.generate_qt_palette()
         self.setPalette(qt_palette)
         #
         self.setAutoFillBackground(True)
@@ -38,9 +46,9 @@ class QtWidget(
 
     def paintEvent(self, event):
         if self._get_status_is_enable_() is True:
-            painter = QtPainter(self)
+            painter = gui_qt_core.QtPainter(self)
             #
-            color, hover_color = self._get_border_rgba_args_by_validator_status_(self._status)
+            color, hover_color = self._get_rgba_args_by_validator_status_(self._status)
             border_color = color
             pox_x, pos_y = 0, 0
             width, height = self.width(), self.height()
@@ -88,12 +96,12 @@ class QtButtonFrame(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
 
         painter._draw_frame_by_rect_(
             rect=self._rect_frame_draw,
-            border_color=QtBorderColors.Transparent,
-            background_color=QtBackgroundColors.Basic,
+            border_color=gui_qt_core.QtBorderColors.Transparent,
+            background_color=gui_qt_core.QtBackgroundColors.Basic,
         )
 
 
@@ -133,9 +141,9 @@ class QtLine(
         self._line_draw_offset_x = x
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
 
-        bdr_color = QtColors.HeadBorder
+        bdr_color = gui_qt_core.QtColors.HeadBorder
 
         offset = [0, 1][self._is_pressed]
         o_x, o_y = self._line_draw_offset_x, self._line_draw_offset_y
@@ -169,7 +177,7 @@ class QtLineWidget(QtWidgets.QWidget):
         # top, bottom, left, right
         self._line_styles = [self.Style.Null]*4
         self._lines = [QtCore.QLine(), QtCore.QLine(), QtCore.QLine(), QtCore.QLine()]
-        self._line_border_color = QtBorderColors.Basic
+        self._line_border_color = gui_qt_core.QtBorderColors.Basic
         self._line_border_width = 1
 
     def _set_line_styles_(self, line_styles):
@@ -201,7 +209,7 @@ class QtLineWidget(QtWidgets.QWidget):
         self._refresh_widget_draw_geometry_()
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         for seq, i in enumerate(self._line_styles):
             i_line = self._lines[seq]
             if i == self.Style.Solid:
@@ -221,7 +229,7 @@ class QtHLine(QtWidgets.QWidget):
         )
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         painter._set_border_color_(
             79, 79, 79, 255
         )
@@ -242,7 +250,7 @@ class QtHFrame(QtWidgets.QWidget):
         )
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         painter._set_border_color_(
             55, 55, 55, 255
         )
@@ -270,30 +278,30 @@ class QtMenuBar(QtWidgets.QMenuBar):
     def __init__(self, *args, **kwargs):
         super(QtMenuBar, self).__init__(*args, **kwargs)
         # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setPalette(GuiQtDcc.generate_qt_palette())
+        self.setPalette(gui_qt_core.GuiQtDcc.generate_qt_palette())
         self.setAutoFillBackground(True)
         #
-        self.setFont(QtFonts.NameNormal)
+        self.setFont(gui_qt_core.QtFonts.NameNormal)
         #
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum
         )
         #
         self.setStyleSheet(
-            GuiQtStyle.get('QMenuBar')
+            gui_qt_core.GuiQtStyle.get('QMenuBar')
         )
 
 
 class QtMenu(QtWidgets.QMenu):
     def __init__(self, *args, **kwargs):
         super(QtMenu, self).__init__(*args, **kwargs)
-        self.setPalette(GuiQtDcc.generate_qt_palette())
+        self.setPalette(gui_qt_core.GuiQtDcc.generate_qt_palette())
         self.setAutoFillBackground(True)
         #
-        self.setFont(QtFonts.NameNormal)
+        self.setFont(gui_qt_core.QtFonts.NameNormal)
         #
         self.setStyleSheet(
-            GuiQtStyle.get('QMenu')
+            gui_qt_core.GuiQtStyle.get('QMenu')
         )
 
     @classmethod
@@ -303,18 +311,18 @@ class QtMenu(QtWidgets.QMenu):
     @classmethod
     def _create_action_(cls, qt_menu, action_args):
         def set_disable_fnc_(qt_widget_action_):
-            qt_widget_action_.setFont(QtFonts.NameDisable)
+            qt_widget_action_.setFont(gui_qt_core.QtFonts.NameDisable)
             qt_widget_action_.setDisabled(True)
 
         if action_args:
             if len(action_args) == 1:
                 s = qt_menu.addSeparator()
-                s.setFont(QtFonts.MenuSeparator)
+                s.setFont(gui_qt_core.QtFonts.MenuSeparator)
                 s.setText(action_args[0])
             elif len(action_args) >= 3:
                 name, icon_name, args_extend = action_args[:3]
-                item = QtWidgetAction(qt_menu)
-                item.setFont(QtFonts.NameNormal)
+                item = gui_qt_core.QtWidgetAction(qt_menu)
+                item.setFont(gui_qt_core.QtFonts.NameNormal)
                 qt_menu.addAction(item)
                 #
                 item.setText(name)
@@ -371,34 +379,34 @@ class QtMenu(QtWidgets.QMenu):
                                 is_enable = enable_fnc()
                                 item.setEnabled(is_enable)
                                 if is_enable is False:
-                                    item.setFont(QtFonts.NameDisable)
+                                    item.setFont(gui_qt_core.QtFonts.NameDisable)
                                 else:
                                     item.setDisabled(False)
-                                    item.setFont(QtFonts.NameNormal)
+                                    item.setFont(gui_qt_core.QtFonts.NameNormal)
                 if icon_name is not None:
                     if isinstance(icon_name, six.string_types):
                         if icon_name:
                             if icon_name == 'box-check':
                                 icon = [
-                                    GuiQtIcon.create_by_icon_name('basic/box-check-off'),
-                                    GuiQtIcon.create_by_icon_name('basic/box-check-on')
+                                    gui_qt_core.GuiQtIcon.create_by_icon_name('basic/box-check-off'),
+                                    gui_qt_core.GuiQtIcon.create_by_icon_name('basic/box-check-on')
                                 ][is_checked]
                                 item.setIcon(icon)
                             elif icon_name == 'radio-check':
                                 icon = [
-                                    GuiQtIcon.create_by_icon_name('basic/radio-check-off'),
-                                    GuiQtIcon.create_by_icon_name('basic/radio-check-on')
+                                    gui_qt_core.GuiQtIcon.create_by_icon_name('basic/radio-check-off'),
+                                    gui_qt_core.GuiQtIcon.create_by_icon_name('basic/radio-check-on')
                                 ][is_checked]
                                 item.setIcon(icon)
                             else:
-                                item.setIcon(GuiQtIcon.generate_by_name(icon_name))
+                                item.setIcon(gui_qt_core.GuiQtIcon.generate_by_name(icon_name))
                         else:
                             item.setIcon(
-                                GuiQtIcon.generate_by_text(name, background_color=(64, 64, 64))
+                                gui_qt_core.GuiQtIcon.generate_by_text(name, background_color=(64, 64, 64))
                             )
                 else:
                     item.setIcon(
-                        GuiQtIcon.generate_by_text(name, background_color=(64, 64, 64))
+                        gui_qt_core.GuiQtIcon.generate_by_text(name, background_color=(64, 64, 64))
                     )
                 #
                 if len(action_args) >= 4:
@@ -414,7 +422,7 @@ class QtMenu(QtWidgets.QMenu):
         f_w, f_h = 13, 13
         c_w, c_h = 12, 12
         pixmap = QtGui.QPixmap(f_w, f_h)
-        painter = QtPainter(pixmap)
+        painter = gui_qt_core.QtPainter(pixmap)
         rect = pixmap.rect()
         pixmap.fill(
             QtCore.Qt.white
@@ -460,9 +468,9 @@ class QtMenu(QtWidgets.QMenu):
                     qt_action_item = self.addAction(i_name)
                     if i_icon_name is not None:
                         if isinstance(i_icon_name, six.string_types):
-                            qt_action_item.setIcon(GuiQtIcon.generate_by_name(i_icon_name))
+                            qt_action_item.setIcon(gui_qt_core.GuiQtIcon.generate_by_name(i_icon_name))
                     else:
-                        qt_action_item.setIcon(GuiQtIcon.generate_by_text(i_name, background_color=(64, 64, 64)))
+                        qt_action_item.setIcon(gui_qt_core.GuiQtIcon.generate_by_text(i_name, background_color=(64, 64, 64)))
                     #
                     sub_menu = self.__class__(self.parent())
                     qt_action_item.setMenu(sub_menu)
@@ -484,7 +492,7 @@ class QtMenu(QtWidgets.QMenu):
         )
 
     def _set_menu_content_(self, content):
-        GuiQtMenuOpt(self).create_by_content(content)
+        gui_qt_core.GuiQtMenuOpt(self).create_by_content(content)
 
     @classmethod
     def _set_action_create_by_menu_content_(cls, menu):
@@ -494,13 +502,13 @@ class QtMenu(QtWidgets.QMenu):
     def _add_menu_separator_(cls, menu, content):
         name = content.get('name')
         separator = menu.addSeparator()
-        separator.setFont(QtFonts.MenuSeparator)
+        separator.setFont(gui_qt_core.QtFonts.MenuSeparator)
         separator.setText(name)
 
     @classmethod
     def _add_menu_action_(cls, menu, content):
         def set_disable_fnc_(widget_action_):
-            widget_action_.setFont(QtFonts.NameDisable)
+            widget_action_.setFont(gui_qt_core.QtFonts.NameDisable)
             widget_action_.setDisabled(True)
 
         #
@@ -508,17 +516,17 @@ class QtMenu(QtWidgets.QMenu):
         icon_name = content.get('icon_name')
         executable_fnc = content.get('executable_fnc')
         execute_fnc = content.get('execute_fnc')
-        widget_action = QtWidgetAction(menu)
-        widget_action.setFont(QtFonts.NameNormal)
+        widget_action = gui_qt_core.QtWidgetAction(menu)
+        widget_action.setFont(gui_qt_core.QtFonts.NameNormal)
         widget_action.setText(name)
         menu.addAction(widget_action)
         if icon_name:
             widget_action.setIcon(
-                GuiQtIcon.create_by_icon_name(icon_name)
+                gui_qt_core.GuiQtIcon.create_by_icon_name(icon_name)
             )
         else:
             widget_action.setIcon(
-                GuiQtIcon.generate_by_text(name, background_color=(64, 64, 64))
+                gui_qt_core.GuiQtIcon.generate_by_text(name, background_color=(64, 64, 64))
             )
         #
         if isinstance(executable_fnc, (bool, int)):
@@ -554,7 +562,7 @@ class QtInfoBubble(QtWidgets.QWidget):
         #
         self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
 
-        self.setFont(GuiQtFont.generate(size=12, italic=True))
+        self.setFont(gui_qt_core.GuiQtFont.generate(size=12, italic=True))
 
         self._info_text = ''
 
@@ -579,21 +587,21 @@ class QtInfoBubble(QtWidgets.QWidget):
         self._set_info_text_('')
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         if self._info_text:
             rect = self.rect()
 
             painter._draw_frame_by_rect_(
                 rect=rect,
-                border_color=QtBorderColors.Transparent,
-                background_color=QtColors.ToolTipBackground,
+                border_color=gui_qt_core.QtBorderColors.Transparent,
+                background_color=gui_qt_core.QtColors.ToolTipBackground,
                 border_radius=4
             )
             painter._draw_text_by_rect_(
                 rect=self.rect(),
                 text=self._info_text,
                 font=self.font(),
-                font_color=QtColors.ToolTipText,
+                font_color=gui_qt_core.QtColors.ToolTipText,
                 text_option=QtCore.Qt.AlignHCenter|QtCore.Qt.AlignVCenter,
             )
 
@@ -601,19 +609,19 @@ class QtInfoBubble(QtWidgets.QWidget):
 class QtAction(QtWidgets.QAction):
     def __init__(self, *args, **kwargs):
         super(QtAction, self).__init__(*args, **kwargs)
-        qt_palette = GuiQtDcc.generate_qt_palette()
+        qt_palette = gui_qt_core.GuiQtDcc.generate_qt_palette()
         self.setPalette(qt_palette)
         self.setAutoFillBackground(True)
         #
-        self.setFont(QtFonts.NameNormal)
+        self.setFont(gui_qt_core.QtFonts.NameNormal)
 
 
 class QtLabel(QtWidgets.QLabel):
     def __init__(self, *args, **kwargs):
         super(QtLabel, self).__init__(*args, **kwargs)
-        self.setPalette(GuiQtDcc.generate_qt_palette())
+        self.setPalette(gui_qt_core.GuiQtDcc.generate_qt_palette())
         #
-        self.setFont(QtFonts.NameNormal)
+        self.setFont(gui_qt_core.QtFonts.NameNormal)
 
 
 class QtHScrollArea(QtWidgets.QScrollArea):
@@ -624,23 +632,23 @@ class QtHScrollArea(QtWidgets.QScrollArea):
         self.setWidgetResizable(True)
         widget = QtWidget()
         self.setWidget(widget)
-        self._layout = QtHLayout(widget)
+        self._layout = _gui_qt_wgt_base.QtHBoxLayout(widget)
         self._layout.setAlignment(QtCore.Qt.AlignTop)
         self._layout.setContentsMargins(*[0]*4)
-        self._layout.setSpacing(gui_configure.Size.LayoutDefaultSpacing)
+        self._layout.setSpacing(gui_core.GuiSize.LayoutDefaultSpacing)
         #
-        qt_palette = GuiQtDcc.generate_qt_palette()
+        qt_palette = gui_qt_core.GuiQtDcc.generate_qt_palette()
         self.setPalette(qt_palette)
         #
         self.setStyleSheet(
-            GuiQtStyle.get('QScrollArea')
+            gui_qt_core.GuiQtStyle.get('QScrollArea')
         )
         #
         self.verticalScrollBar().setStyleSheet(
-            GuiQtStyle.get('QScrollBar')
+            gui_qt_core.GuiQtStyle.get('QScrollBar')
         )
         self.horizontalScrollBar().setStyleSheet(
-            GuiQtStyle.get('QScrollBar')
+            gui_qt_core.GuiQtStyle.get('QScrollBar')
         )
 
     def keyPressEvent(self, event):
@@ -655,23 +663,23 @@ class QtVScrollArea(QtWidgets.QScrollArea):
         self.setWidgetResizable(True)
         widget = QtWidget()
         self.setWidget(widget)
-        self._layout = QtVBoxLayout(widget)
+        self._layout = _gui_qt_wgt_base.QtVBoxLayout(widget)
         self._layout.setAlignment(QtCore.Qt.AlignTop)
         self._layout.setContentsMargins(*[0]*4)
-        self._layout.setSpacing(gui_configure.Size.LayoutDefaultSpacing)
+        self._layout.setSpacing(gui_core.GuiSize.LayoutDefaultSpacing)
         #
-        qt_palette = GuiQtDcc.generate_qt_palette()
+        qt_palette = gui_qt_core.GuiQtDcc.generate_qt_palette()
         self.setPalette(qt_palette)
         #
         self.setStyleSheet(
-            GuiQtStyle.get('QScrollArea')
+            gui_qt_core.GuiQtStyle.get('QScrollArea')
         )
         #
         self.verticalScrollBar().setStyleSheet(
-            GuiQtStyle.get('QScrollBar')
+            gui_qt_core.GuiQtStyle.get('QScrollBar')
         )
         self.horizontalScrollBar().setStyleSheet(
-            GuiQtStyle.get('QScrollBar')
+            gui_qt_core.GuiQtStyle.get('QScrollBar')
         )
 
     def keyPressEvent(self, event):
@@ -683,7 +691,7 @@ class QtThreadDef(object):
         pass
 
     def _create_fnc_thread_(self):
-        return QtMethodThread(self)
+        return gui_qt_core.QtMethodThread(self)
 
 
 class QtTextLabel(
@@ -724,7 +732,7 @@ class QtTextItem(
 
         self._init_status_base_def_(self)
 
-        self._set_name_draw_font_(QtFonts.Label)
+        self._set_name_draw_font_(gui_qt_core.QtFonts.Label)
         self._name_text_option = QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter
 
     def _refresh_widget_draw_geometry_(self):
@@ -748,7 +756,7 @@ class QtTextItem(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         self._refresh_widget_draw_geometry_()
         # name
         if self._name_text is not None:
@@ -792,13 +800,13 @@ class QtMainWindow(
         # todo: do not use WA_TranslucentBackground mode, GL bug
         # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
-        self.setPalette(GuiQtDcc.generate_qt_palette())
+        self.setPalette(gui_qt_core.GuiQtDcc.generate_qt_palette())
         self.setAutoFillBackground(True)
         # self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         #
-        self.setFont(QtFonts.NameNormal)
+        self.setFont(gui_qt_core.QtFonts.NameNormal)
         #
-        GuiQtUtil.assign_qt_shadow(self, radius=2)
+        gui_qt_core.GuiQtUtil.assign_qt_shadow(self, radius=2)
         #
         self._init_icon_base_def_(self)
         self._window_system_tray_icon = None
@@ -807,10 +815,10 @@ class QtMainWindow(
         self._init_thread_base_def_(self)
         #
         self.setStyleSheet(
-            GuiQtStyle.get('QMainWindow')
+            gui_qt_core.GuiQtStyle.get('QMainWindow')
         )
         self.menuBar().setStyleSheet(
-            GuiQtStyle.get('QMenuBar')
+            gui_qt_core.GuiQtStyle.get('QMenuBar')
         )
         self._rect_frame_draw = QtCore.QRect()
         self._menu_frame_draw_rect = QtCore.QRect()
@@ -832,10 +840,10 @@ class QtMainWindow(
         )
 
     def _set_icon_name_text_(self, text):
-        self.setWindowIcon(GuiQtIcon.generate_by_text(text))
+        self.setWindowIcon(gui_qt_core.GuiQtIcon.generate_by_text(text))
 
     def _set_icon_name_(self, icon_name):
-        self.setWindowIcon(GuiQtIcon.create_by_icon_name(icon_name))
+        self.setWindowIcon(gui_qt_core.GuiQtIcon.create_by_icon_name(icon_name))
 
     def _set_window_system_tray_icon_(self, widget):
         self._window_system_tray_icon = widget
@@ -868,14 +876,14 @@ class QtMainWindow(
 
     def paintEvent(self, event):
         self._refresh_widget_draw_geometry_()
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         painter.fillRect(
             self._rect_frame_draw,
-            QtBackgroundColors.Basic
+            gui_qt_core.QtBackgroundColors.Basic
         )
         painter.fillRect(
             self._menu_frame_draw_rect,
-            QtBackgroundColors.Dark
+            gui_qt_core.QtBackgroundColors.Dark
         )
 
     def _set_size_changed_connect_to_(self, fnc):
@@ -923,13 +931,13 @@ class QtDialog(
         )
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         #
-        qt_palette = GuiQtDcc.generate_qt_palette()
+        qt_palette = gui_qt_core.GuiQtDcc.generate_qt_palette()
         self.setPalette(qt_palette)
         self.setAutoFillBackground(True)
         #
-        self.setFont(QtFonts.NameNormal)
+        self.setFont(gui_qt_core.QtFonts.NameNormal)
         #
-        GuiQtUtil.assign_qt_shadow(self, radius=2)
+        gui_qt_core.GuiQtUtil.assign_qt_shadow(self, radius=2)
         #
         self.installEventFilter(self)
         #
@@ -942,7 +950,7 @@ class QtDialog(
     #
     def _set_icon_name_text_(self, text):
         self.setWindowIcon(
-            GuiQtIcon.generate_by_text(text, background_color=(64, 64, 64))
+            gui_qt_core.GuiQtIcon.generate_by_text(text, background_color=(64, 64, 64))
         )
 
     def _set_yes_run_(self):
@@ -1025,7 +1033,8 @@ class QtStyledItemDelegate(QtWidgets.QStyledItemDelegate):
         super(QtStyledItemDelegate, self).__init__(parent)
         self._icon_draw_size = QtCore.QSize(20, 20)
 
-    def _draw_for_hover_(self, painter, option, index):
+    @staticmethod
+    def _draw_for_hover_(painter, option, index):
         if option.state&QtWidgets.QStyle.State_MouseOver:
             if index.column() == 0:
                 rect = option.rect
@@ -1035,7 +1044,7 @@ class QtStyledItemDelegate(QtWidgets.QStyledItemDelegate):
                     x, y, 4, h
                 )
                 painter.fillRect(
-                    hover_rect, QtBackgroundColors.Hovered
+                    hover_rect, gui_qt_core.QtBackgroundColors.Hovered
                 )
         elif option.state&QtWidgets.QStyle.State_Selected:
             if index.column() == 0:
@@ -1046,10 +1055,11 @@ class QtStyledItemDelegate(QtWidgets.QStyledItemDelegate):
                     x, y, 4, h
                 )
                 painter.fillRect(
-                    hover_rect, QtBackgroundColors.Selected
+                    hover_rect, gui_qt_core.QtBackgroundColors.Selected
                 )
 
-    def _draw_for_keyword_(self, painter, option, index):
+    @staticmethod
+    def _draw_for_keyword_(painter, option, index):
         _ = index.data(QtCore.Qt.DisplayRole)
         if _:
             user_data = index.data(QtCore.Qt.UserRole)
@@ -1068,9 +1078,9 @@ class QtStyledItemDelegate(QtWidgets.QStyledItemDelegate):
                                 x, y+h, x+w, y+h
                             )
                             if filter_occurrence is True:
-                                painter.setPen(QtColors.TextKeywordFilterOccurrence)
+                                painter.setPen(gui_qt_core.QtColors.TextKeywordFilterOccurrence)
                             else:
-                                painter.setPen(QtColors.TextKeywordFilter)
+                                painter.setPen(gui_qt_core.QtColors.TextKeywordFilter)
                             painter.drawLine(line)
 
     def paint(self, painter, option, index):
@@ -1083,7 +1093,7 @@ class QtStyledItemDelegate(QtWidgets.QStyledItemDelegate):
 
     def sizeHint(self, option, index):
         size = super(QtStyledItemDelegate, self).sizeHint(option, index)
-        size.setHeight(gui_configure.Size.ItemDefaultHeight)
+        size.setHeight(gui_core.GuiSize.ItemDefaultHeight)
         return size
 
 
@@ -1111,7 +1121,7 @@ class QtProgressBar(
         self.update()
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         if self._get_progress_is_enable_() is True:
             if self._progress_raw:
                 cur_rect = None
@@ -1139,15 +1149,15 @@ class QtProgressBar(
                         i_background_color = i_gradient_color
                     else:
                         i_gradient_color = QtGui.QLinearGradient(i_rect.topLeft(), i_rect.topRight())
-                        i_gradient_color.setColorAt(0, QtBackgroundColors.Transparent)
+                        i_gradient_color.setColorAt(0, gui_qt_core.QtBackgroundColors.Transparent)
                         i_gradient_color.setColorAt(.5, i_cur_color)
                         i_gradient_color.setColorAt(.975, i_cur_color)
-                        i_gradient_color.setColorAt(1, QtBackgroundColors.Transparent)
+                        i_gradient_color.setColorAt(1, gui_qt_core.QtBackgroundColors.Transparent)
                         i_background_color = i_gradient_color
                     #
                     painter._draw_frame_by_rect_(
                         i_rect,
-                        border_color=QtBorderColors.Transparent,
+                        border_color=gui_qt_core.QtBorderColors.Transparent,
                         background_color=i_background_color,
                         border_radius=1,
                     )
@@ -1161,7 +1171,7 @@ class QtProgressBar(
                     )
                     painter._draw_frame_by_rect_(
                         rect,
-                        border_color=QtBorderColors.Transparent,
+                        border_color=gui_qt_core.QtBorderColors.Transparent,
                         background_color=(255, 255, 255, 255),
                         border_radius=1,
                     )
@@ -1220,7 +1230,7 @@ class QtListWidgetItem(
         #
         self._set_item_visible_connection_def_init_()
 
-        self._signals = QtItemSignals()
+        self._signals = gui_qt_core.QtItemSignals()
 
         self._is_checked = False
 
@@ -1344,7 +1354,7 @@ class _QtHItem(
         #
         self._init_item_filter_extra_def_(self)
         #
-        self._frame_background_color = QtBackgroundColors.Light
+        self._frame_background_color = gui_qt_core.QtBackgroundColors.Light
 
     def _refresh_widget_all_(self, *args, **kwargs):
         self._refresh_widget_draw_geometry_()
@@ -1493,7 +1503,7 @@ class _QtHItem(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         # todo: refresh error
         self._refresh_widget_draw_geometry_()
         #
@@ -1510,7 +1520,7 @@ class _QtHItem(
         )
         painter._draw_frame_by_rect_(
             self._rect_frame_draw,
-            border_color=QtBorderColors.Transparent,
+            border_color=gui_qt_core.QtBorderColors.Transparent,
             background_color=bkg_color,
             border_radius=1
         )
@@ -1545,7 +1555,7 @@ class _QtHItem(
                 painter._draw_icon_file_by_rect_(
                     rect=self._icon_draw_rect,
                     file_path=self._icon_file_path,
-            )
+                )
         # image
         if self._image_draw_is_enable is True:
             painter._draw_image_data_by_rect_(
@@ -1624,9 +1634,8 @@ class _QtHItem(
 class _QtScreenshotFrame(
     QtWidgets.QWidget,
     gui_qt_abstracts.AbsQtFrameBaseDef,
-    gui_qt_abstracts.AbsQtScreenshotDef,
-    gui_qt_abstracts.AbsQtHelpDef,
-    #
+    gui_qt_abstracts.AbsQtScreenshotBaseDef,
+
     gui_qt_abstracts.AbsQtActionBaseDef,
     gui_qt_abstracts.AbsQtActionForHoverDef,
     gui_qt_abstracts.AbsQtActionForPressDef,
@@ -1656,8 +1665,7 @@ class _QtScreenshotFrame(
         )
 
         self._init_frame_base_def_(self)
-        self._set_screenshot_def_init_(self)
-        self._set_help_def_init_(self)
+        self._init_screenshot_base_def_(self)
 
         self._init_action_base_def_(self)
         self._init_action_for_hover_def_(self)
@@ -1697,7 +1705,7 @@ class _QtScreenshotFrame(
 
     def paintEvent(self, event):
         if self._screenshot_mode != self.Mode.Stopped:
-            painter = QtPainter(self)
+            painter = gui_qt_core.QtPainter(self)
 
             painter._set_screenshot_draw_by_rect_(
                 rect_0=self._rect_frame_draw,
@@ -1715,7 +1723,7 @@ class _QtScreenshotFrame(
                 painter._draw_text_by_rect_(
                     rect=self._help_draw_rect,
                     text=self._help_text,
-                    font=QtFonts.Large,
+                    font=gui_qt_core.QtFonts.Large,
                     text_option=QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop,
                     word_warp=True
                 )

@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxgui.qt.warp import *
+from lxgui.qt.wrap import *
 
 from lxgui.qt_for_opengl.warp import *
 

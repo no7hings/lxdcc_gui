@@ -801,6 +801,9 @@ class PrxListItemWidget(
     def set_image(self, file_path):
         self._qt_widget._set_image_file_path_(file_path)
 
+    def get_image(self):
+        return self._qt_widget._get_image_file_path_()
+
     def set_movie_enable(self, boolean):
         self._qt_widget._set_play_draw_enable_(boolean)
 
@@ -910,6 +913,9 @@ class PrxListItemWidget(
 
     def set_visible(self, boolean, **kwargs):
         self.get_item()._set_visible_(boolean)
+
+    def refresh_widget_force(self):
+        self._qt_widget._refresh_widget_force_()
 
     def __str__(self):
         return '{}(names={})'.format(

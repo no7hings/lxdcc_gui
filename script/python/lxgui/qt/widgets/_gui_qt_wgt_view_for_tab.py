@@ -1,15 +1,20 @@
 # coding=utf-8
-from lxgui.qt.core import *
-
 import functools
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_button, _gui_qt_wgt_layer_stack
+from lxgui.qt.wrap import *
+
+import lxbasic.core as bsc_core
+
+import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
 
 import lxgui.qt.abstracts as gui_qt_abstracts
 
-import lxgui.qt.models as gui_qt_models
-
-import lxgui.core as gui_core
+from ..widgets import \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_button, \
+    _gui_qt_wgt_layer_stack
 
 
 class AbsQtItemsDef(object):
@@ -19,7 +24,7 @@ class AbsQtItemsDef(object):
     def _init_items_base_def_(self, widget):
         self._widget = widget
 
-        self._tab_item_stack = gui_qt_models.GuiTabItemStack(self)
+        self._tab_item_stack = gui_qt_core.GuiTabItemStackModel(self)
         self._index_hover = None
         self._item_index_pressed = None
         self._item_index_dragged = None
@@ -288,12 +293,12 @@ class QtTabView(
         self._tab_w, self._tab_h = 48, 24
 
         self.setFont(
-            GuiQtFont.generate(size=10)
+            gui_qt_core.GuiQtFont.generate(size=10)
         )
 
-        self._gui_scroll = gui_qt_models.GuiScroll()
+        self._gui_scroll = gui_qt_core.GuiScrollModel()
         self._gui_scroll.set_step(64)
-        self._set_menu_data_gain_fnc_(
+        self._set_menu_data_generate_fnc_(
             self._tab_item_menu_gain_fnc_
         )
 
@@ -388,7 +393,7 @@ class QtTabView(
         return False
 
     def paintEvent(self, event):
-        painter = QtPainter(self)
+        painter = gui_qt_core.QtPainter(self)
         painter._draw_tab_buttons_by_rects_(
             self._tab_bar_draw_rect,
             virtual_items=self._tab_item_stack.get_all_items(),
@@ -435,7 +440,7 @@ class QtTabView(
         self._tab_add_button._set_menu_data_(data)
 
     def _set_tab_add_menu_gain_fnc_(self, fnc):
-        self._tab_add_button._set_menu_data_gain_fnc_(fnc)
+        self._tab_add_button._set_menu_data_generate_fnc_(fnc)
 
     def _set_tab_menu_enable_(self, boolean):
         self._tab_menu_is_enable = boolean
@@ -444,8 +449,8 @@ class QtTabView(
     def _set_tab_menu_data_(self, data):
         self._tab_menu_button._set_menu_data_(data)
 
-    def _set_tab_menu_data_gain_fnc_(self, fnc):
-        self._tab_menu_button._set_menu_data_gain_fnc_(fnc)
+    def _set_tab_menu_data_generate_fnc_(self, fnc):
+        self._tab_menu_button._set_menu_data_generate_fnc_(fnc)
 
     def _clear_item_hover_(self):
         self._index_hover = None
@@ -505,6 +510,7 @@ class QtTabView(
                 if i_rect.topLeft().x() <= x <= i_rect.topRight().x():
                     return i_index
 
+    # noinspection PyUnusedLocal
     def _do_show_tool_tip_(self, event):
         if self._index_hover is not None:
             key = self._get_page_key_at_(self._index_hover)
@@ -513,7 +519,7 @@ class QtTabView(
             else:
                 title = key
 
-            css = GuiQtUtil.generate_tool_tip_css(
+            css = gui_qt_core.GuiQtUtil.generate_tool_tip_css(
                 title,
                 [
                     '"LMB-click" to show this page',
@@ -525,6 +531,7 @@ class QtTabView(
                 QtGui.QCursor.pos(), css, self
             )
 
+    # noinspection PyUnusedLocal
     def _do_press_release_(self, event):
         if self._index_press is not None:
             self._switch_current_to_(
@@ -565,6 +572,7 @@ class QtTabView(
 
         self._refresh_widget_all_()
 
+    # noinspection PyUnusedLocal
     def _do_drop_(self, event):
         self._tab_item_stack.insert_item_between(
             self._index_drag_child_polish_start, self._index_drag_child_polish

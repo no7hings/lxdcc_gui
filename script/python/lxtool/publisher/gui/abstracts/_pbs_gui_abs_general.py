@@ -2,7 +2,7 @@
 import collections
 import copy
 
-from lxbasic import bsc_core
+import lxbasic.core as bsc_core
 
 import lxgui.proxy.widgets as prx_widgets
 
@@ -26,12 +26,11 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
         super(AbsPnlPublisherForGeneral, self).__init__(session, *args, **kwargs)
 
     def restore_variants(self):
-        self._task_data = {}
+        self.__task_data = {}
         #
-        self._stg_user = None
-        self._stg_task = None
+        self.__stg_user = None
+        self.__stg_task = None
         #
-        self._branch = None
         self._rsv_project = None
         self._rsv_task = None
         self._step_mapper = dict()
@@ -40,39 +39,26 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
     def set_all_setup(self):
         sa_1 = prx_widgets.PrxVScrollArea()
         self.add_widget(sa_1)
-        #
-        self._options_prx_node = prx_widgets.PrxNode('options')
-        sa_1.add_widget(self._options_prx_node)
-        self._options_prx_node.create_ports_by_data(
-            self._session.configure.get('build.node.options')
-        )
 
-        self._options_prx_node.get_port('resource_type').connect_input_changed_to(
-            self.refresh_resource_fnc
-        )
-        #
-        self._options_prx_node.get_port('shotgun.project').connect_input_changed_to(
-            self.refresh_resource_fnc
-        )
-        #
-        self._options_prx_node.get_port('shotgun.resource').connect_input_changed_to(
-            self.refresh_task_fnc
-        )
-        #
-        self._options_prx_node.get_port('shotgun.task').connect_input_changed_to(
-            self.refresh_next_enable_fnc
-        )
-        #
-        self._next_button = prx_widgets.PrxPressItem()
-        self._next_button.set_name('next')
-        self.add_button(
-            self._next_button
-        )
-        self._next_button.connect_press_clicked_to(self.execute_show_next)
+        self.__input = prx_widgets.PrxInputAsStgTask()
+        sa_1.add_widget(self.__input)
 
-        self._next_button.set_enable(
-            False
-        )
+        self.__input.set_focus_in()
+
+        self.__tip = prx_widgets.PrxTextBrowser()
+        sa_1.add_widget(self.__tip)
+        self.__tip.set_focus_enable(False)
+
+        self.__next_button = prx_widgets.PrxPressItem()
+        self.__next_button.set_name('next')
+        self.add_button(self.__next_button)
+        self.__next_button.connect_press_clicked_to(self.__do_next)
+        self.__next_button.set_enable(False)
+
+        self.__input.connect_result_to(self.__do_accept)
+        self.__input.connect_tip_trace_to(self.__do_tip_accept)
+
+        self.__input.setup()
         # publish
         layer_widget = self.create_layer_widget('publish', 'Publish')
         sa_2 = prx_widgets.PrxVScrollArea()
@@ -107,45 +93,51 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
 
         self.refresh_all_fnc()
 
-    def get_stg_project(self):
-        return self._options_prx_node.get_port('shotgun.project').get_stg_entity()
+    def __do_tip_accept(self, text):
+        if self.__input.get_is_valid():
+            self.__next_button.set_enable(True)
+        else:
+            self.__next_button.set_enable(False)
 
-    def get_stg_resource(self):
-        return self._options_prx_node.get_port('shotgun.resource').get_stg_entity()
+        self.__tip.set_content(text)
 
-    def get_stg_task(self):
-        return self._options_prx_node.get_port('shotgun.task').get_stg_entity()
-
-    def load_from_task_id(self, task_id):
-        self._task_data = self._stg_connector.get_data_from_task_id(task_id)
-        if self._task_data:
-            resource_type = self._task_data['branch']
-            self._options_prx_node.set(
-                'resource_type', resource_type
+    def __do_accept(self, dict_):
+        if dict_:
+            task_id = dict_['task_id']
+            self.__stg_task = self._stg_connector.get_stg_task(id=task_id)
+            self.__task_data = self._stg_connector.get_data_from_task_id(
+                str(dict_['task_id'])
             )
-            #
-            fncs = [
-                (self.refresh_project_fnc, (self._task_data,)),
-                (self.refresh_resource_fnc, (self._task_data,)),
-                (self.refresh_task_fnc, (self._task_data,)),
-                (self.refresh_next_enable_fnc, (self._task_data,)),
-            ]
-            #
-            with self.gui_progressing(maximum=len(fncs), label='load from task') as g_p:
-                for i_fnc, i_args in fncs:
-                    g_p.set_update()
-                    i_fnc(*i_args)
-            #
-            self.execute_show_next()
+            if self.validator_fnc() is True:
+                self.switch_current_layer_to('publish')
+                self.get_layer_widget('publish').set_name(
+                    'publish for [{project}.{resource}.{task}]'.format(
+                        **self.__task_data
+                    )
+                )
+                fncs = [
+                    self.refresh_publish_options,
+                    self.refresh_publish_version_directory,
+                    self.refresh_publish_notice,
+                    self.refresh_publish_scene,
+                    self.refresh_publish_process_settings,
+                ]
+                #
+                with self.gui_progressing(maximum=len(fncs), label='execute refresh process') as g_p:
+                    for i_fnc in fncs:
+                        g_p.do_update()
+                        i_fnc()
+
+    def __do_next(self):
+        self.__do_accept(self.__input.get_result())
 
     def refresh_all_fnc(self):
         import lxwarp.shotgun.core as wrp_stg_core
 
-        #
         self._stg_connector = wrp_stg_core.StgConnector()
         self._user_name = bsc_core.SystemMtd.get_user_name()
-        self._stg_user = self._stg_connector.get_stg_user(user=self._user_name)
-        if not self._stg_user:
+        self.__stg_user = self._stg_connector.get_stg_user(user=self._user_name)
+        if not self.__stg_user:
             utl_core.DccDialog.create(
                 self._session.gui_name,
                 content='user "{}" is not available'.format(self._user_name),
@@ -162,121 +154,10 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
             'PAPER_TASK_ID'
         )
         if task_id:
-            self.load_from_task_id(task_id)
+            self.__input.setup_from_task_id(task_id)
+            self.__do_accept(dict(task_id=task_id))
         else:
-            self.refresh_project_fnc()
-
-    def refresh_project_fnc(self, data=None):
-        p = self._options_prx_node.get_port('shotgun.project')
-        p.set_clear()
-        if data is not None:
-            project = data['project']
-            p.set(str(project).upper())
-        #
-        p.set_shotgun_entity_kwargs(
-            dict(
-                entity_type='Project',
-                filters=[
-                    ['users', 'in', [self._stg_user]],
-                    ['sg_status', 'in', ['Active', 'Accomplish']]
-                ],
-                fields=['name', 'sg_description']
-            ),
-            name_field='name',
-            keyword_filter_fields=['name', 'sg_description'],
-            tag_filter_fields=['sg_status']
-        )
-
-    def refresh_resource_fnc(self, data=None):
-        p = self._options_prx_node.get_port('shotgun.resource')
-        p.set_clear()
-        self._options_prx_node.get_port('shotgun.task').set_clear()
-        #
-        resource_type = self._options_prx_node.get('resource_type')
-        if resource_type not in ['asset', 'sequence', 'shot']:
-            return
-        p.set_name(resource_type)
-        #
-        if data is not None:
-            stg_project = self._stg_connector.get_stg_project(
-                **data
-            )
-            resource = data['resource']
-            p.set(resource)
-        else:
-            stg_project = self.get_stg_project()
-        #
-        if not stg_project:
-            return
-        stg_entity_type = self._stg_connector._get_stg_resource_type_(resource_type)
-        if resource_type == 'asset':
-            tag_filter_fields = ['sg_asset_type']
-            keyword_filter_fields = ['code', 'sg_chinese_name']
-        elif resource_type == 'sequence':
-            tag_filter_fields = ['tags']
-            keyword_filter_fields = ['code', 'description']
-        elif resource_type == 'shot':
-            tag_filter_fields = ['sg_sequence']
-            keyword_filter_fields = ['code', 'description']
-        else:
-            raise RuntimeError()
-
-        p.set_shotgun_entity_kwargs(
-            dict(
-                entity_type=stg_entity_type,
-                filters=[
-                    ['project', 'is', stg_project],
-                ],
-                fields=keyword_filter_fields
-            ),
-            name_field='code',
-            keyword_filter_fields=keyword_filter_fields,
-            tag_filter_fields=tag_filter_fields,
-        )
-
-    def refresh_task_fnc(self, data=None):
-        p = self._options_prx_node.get_port('shotgun.task')
-        p.set_clear()
-        if data is not None:
-            stg_resource = self._stg_connector.get_stg_resource(
-                **data
-            )
-            task = data['task']
-            p.set(task)
-        else:
-            stg_resource = self.get_stg_resource()
-        #
-        if not stg_resource:
-            return
-        #
-        p.set_shotgun_entity_kwargs(
-            {
-                'entity_type': 'Task',
-                'filters': [
-                    ['entity', 'is', stg_resource]
-                ],
-                'fields': ['content', 'sg_status_list'],
-            },
-            name_field='content',
-            keyword_filter_fields=['content', 'sg_status_list'],
-            tag_filter_fields=['step'],
-        )
-
-    def refresh_stg_task_fnc(self):
-        pass
-
-    def refresh_next_enable_fnc(self, data=None):
-        if data is not None:
-            self._stg_task = self._stg_connector.get_stg_task(
-                **data
-            )
-        else:
-            self._stg_task = self.get_stg_task()
-        #
-        if self._stg_task is not None:
-            self._next_button.set_enable(True)
-        else:
-            self._next_button.set_enable(False)
+            pass
 
     def refresh_publish_notice(self):
         def post_fnc_():
@@ -310,15 +191,15 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
             tag_filter_fields=['department']
         )
 
-        stg_task = self._stg_task
+        stg_task = self.__stg_task
 
         p.run_as_thread(
             cache_fnc_, built_fnc_, post_fnc_
         )
 
     def create_task_directory(self):
-        if self._task_data:
-            keyword = '{branch}-release-task-dir'.format(**self._task_data)
+        if self.__task_data:
+            keyword = '{branch}-release-task-dir'.format(**self.__task_data)
             task_directory_pattern = self._rsv_project.get_pattern(
                 keyword
             )
@@ -326,7 +207,7 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
             kwargs['workspace'] = self._rsv_project.to_workspace(
                 self._rsv_project.WorkspaceKeys.Release
             )
-            kwargs.update(self._task_data)
+            kwargs.update(self.__task_data)
             task_directory_path = task_directory_pattern.format(
                 **kwargs
             )
@@ -336,11 +217,10 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
                 )
 
     def validator_fnc(self):
-        if self._task_data:
-            self._branch = self._task_data.get('branch')
+        if self.__task_data:
             self._resolver = rsv_commands.get_resolver()
             self._rsv_project = self._resolver.get_rsv_project(
-                **self._task_data
+                **self.__task_data
             )
             if self._rsv_project is None:
                 utl_core.DccDialog.create(
@@ -355,11 +235,11 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
                 return False
             #
             self._step_mapper = self._rsv_project.properties.get(
-                '{}_steps'.format(self._task_data.get('branch'))
+                '{}_steps'.format(self.__task_data.get('branch'))
             )
             #
             self._rsv_task = self._resolver.get_rsv_task(
-                **self._task_data
+                **self.__task_data
             )
             if self._rsv_task is None:
                 w = utl_core.DccDialog.create(
@@ -373,7 +253,7 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
                 result = w.get_result()
                 if result is True:
                     self._rsv_task = self._resolver.get_rsv_task(
-                        **self._task_data
+                        **self.__task_data
                     )
                 return result
             return True
@@ -394,10 +274,10 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
         self._publish_options_prx_node.set(
             'version_directory', version_directory_path
         )
-        self._version_properties = version_directory_rsv_unit.get_properties_by_result(
+        self._version_properties = version_directory_rsv_unit.generate_properties_by_result(
             version_directory_path
         )
-        self._version_properties.set_update(self._task_data)
+        self._version_properties.update_from(self.__task_data)
         self._version_properties.set('user', self._user_name)
 
     def refresh_publish_options(self):
@@ -444,7 +324,7 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
                 )
 
     def refresh_publish_process_settings(self):
-        step = self._task_data['step']
+        step = self.__task_data['step']
         if self._step_mapper:
             if step in {self._step_mapper.get('surface')}:
                 self._publish_options_prx_node.set(
@@ -467,16 +347,16 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
                     'process.settings.with_camera_usd', True
                 )
 
-    def execute_show_next(self):
-        if self._next_button.get_is_enable() is True:
-            self._task_data = self._stg_connector.get_data_from_task_id(
-                str(self._stg_task['id'])
+    def __do_next_(self):
+        if self.__next_button.get_is_enable() is True:
+            self.__task_data = self._stg_connector.get_data_from_task_id(
+                str(self.__stg_task['id'])
             )
             if self.validator_fnc() is True:
                 self.switch_current_layer_to('publish')
                 self.get_layer_widget('publish').set_name(
                     'publish for [{project}.{resource}.{task}]'.format(
-                        **self._task_data
+                        **self.__task_data
                     )
                 )
                 fncs = [
@@ -489,7 +369,7 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
                 #
                 with self.gui_progressing(maximum=len(fncs), label='execute refresh process') as g_p:
                     for i_fnc in fncs:
-                        g_p.set_update()
+                        g_p.do_update()
                         i_fnc()
 
     def execute_publish(self):

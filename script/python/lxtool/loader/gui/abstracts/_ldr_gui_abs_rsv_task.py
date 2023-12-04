@@ -7,9 +7,9 @@ import collections
 
 import functools
 
-from lxbasic import bsc_core
+import lxbasic.core as bsc_core
 
-import lxcontent.objects as ctt_objects
+import lxcontent.core as ctt_core
 
 import lxbasic.extra.methods as bsc_etr_methods
 
@@ -198,7 +198,7 @@ class _GuiEntityOpt(
                 maximum=len(rsv_resource_groups), label='gui-add for resource'
             ) as g_p:
                 for i_rsv_resource_group in rsv_resource_groups:
-                    g_p.set_update()
+                    g_p.do_update()
                     self.gui_build_fnc_for_resources(
                         self.gui_cache_fnc_for_resources_by_group(i_rsv_resource_group)
                     )
@@ -323,6 +323,8 @@ class _GuiTaskOpt(
     _GuiBaseOpt,
     prx_abstracts.AbsGuiPrxListViewOpt
 ):
+    CACHE = dict()
+
     def __init__(self, window, session, resolver, prx_list_view):
         super(_GuiTaskOpt, self).__init__(window, session, resolver)
         self._init_list_view_opt_(
@@ -330,33 +332,9 @@ class _GuiTaskOpt(
         )
 
     def gui_add_one(self, rsv_task):
-        def cache_fnc_():
-            _list = []
-            _step = rsv_task.get('step')
-            _task = rsv_task.get('task')
-            _show_args = self._window._available_rsv_show_args
-            for _i_keyword, _i_hidden in _show_args:
-                if _i_hidden is False:
-                    _i_rsv_unit = rsv_task.get_rsv_unit(
-                        keyword=_i_keyword
-                    )
-                    _i_file_path = _i_rsv_unit.get_result(version='latest')
-                    if _i_file_path:
-                        _list.append(
-                            (_i_rsv_unit, _i_file_path)
-                        )
-
-            _tag_path = '/{}/{}'.format(_step, _task)
-            return [_list, _tag_path]
-
-        def build_fnc_(*args_):
-            _rsv_unit_data, _tag_path = args_[0]
-            _step = rsv_task.get('step')
-            _task = rsv_task.get('task')
-            self._window._gui_tag_opt.gui_register_tag_by_path(_tag_path, rsv_task.get_path())
-            prx_item_widget.get_item()._update_item_tag_filter_keys_tgt_([_tag_path])
-            self.__gui_show_deferred_fnc(
-                rsv_task, prx_item_widget, _rsv_unit_data
+        def build_fnc_(data_):
+            self.__gui_built_fnc(
+                rsv_task, prx_item_widget, data_
             )
 
         path = rsv_task.get_path()
@@ -365,22 +343,43 @@ class _GuiTaskOpt(
 
         valid = self.__get_is_valid(rsv_task)
         if valid is True:
+            project = rsv_task.get('project')
+            branch = rsv_task.get('branch')
+            name = rsv_task.get(branch)
+            step = rsv_task.get('step')
+            task = rsv_task.get('task')
+
+            name_dict = collections.OrderedDict(
+                [
+                    (branch, name),
+                    ('step', step),
+                    ('task', task)
+                ]
+            )
             path = rsv_task.get_path()
             prx_item_widget = self._prx_list_view.create_item_widget()
             self.gui_register(path, prx_item_widget)
+            prx_item_widget.set_index_draw_enable(True)
+            prx_item_widget.set_check_enable(True)
             prx_item_widget.set_gui_dcc_obj(
                 rsv_task, namespace=self.DCC_NAMESPACE
             )
             prx_item_widget.set_gui_attribute('path', rsv_task.get_path())
-            prx_item_widget.set_index_draw_enable(True)
-            prx_item_widget.set_check_enable(True)
+            prx_item_widget.set_name(rsv_task.get_path())
+            prx_item_widget.set_name_dict(name_dict)
+            prx_item_widget.set_icon_by_name(step)
+            prx_item_widget.set_tool_tip(rsv_task.description)
             prx_item_widget.set_sort_name_key(rsv_task.get_name())
-
-            keys = {rsv_task.properties.get(i) or 'unknown' for i in self._resolver.VariantTypes.Mains}
-            prx_item_widget.set_keyword_filter_keys_tgt(keys)
+            prx_item_widget.set_keyword_filter_keys_tgt(
+                {rsv_task.properties.get(i) or 'unknown' for i in self._resolver.VariantTypes.Mains}
+            )
+            tag_path = '/{}/{}'.format(step, task)
+            prx_item_widget.get_item()._update_item_tag_filter_keys_tgt_([tag_path])
+            self._window._gui_tag_opt.gui_register_tag_by_path(tag_path, rsv_task.get_path())
 
             prx_item_widget.set_show_fnc(
-                cache_fnc_, build_fnc_
+                functools.partial(self.__gui_cache_fnc, rsv_task),
+                build_fnc_
             )
             return prx_item_widget
 
@@ -394,35 +393,30 @@ class _GuiTaskOpt(
                 return True
         return False
 
-    def __gui_show_deferred_fnc(self, rsv_task, prx_item_widget, rsv_unit_data):
+    def __gui_cache_fnc(self, rsv_task):
+        key = rsv_task.get_path()
+
+        if key in self.__class__.CACHE:
+            return self.__class__.CACHE[key]
+
         project = rsv_task.get('project')
         branch = rsv_task.get('branch')
         name = rsv_task.get(branch)
         step = rsv_task.get('step')
         task = rsv_task.get('task')
         #
-        show_info_dict = collections.OrderedDict(
+        name_dict = collections.OrderedDict(
             [
                 (branch, name),
                 ('step', step),
                 ('task', task)
             ]
         )
-        pixmaps = []
-        for i_rsv_unit, i_file_path in rsv_unit_data:
-            i_file_path = i_rsv_unit.get_result()
-            i_rsv_properties = i_rsv_unit.get_properties_by_result(i_file_path)
-            i_rsv_unit_file = bsc_core.StgFileOpt(i_file_path)
-            i_pixmap = gui_qt_core.GuiQtPixmap.get_by_file_ext_with_tag(
-                i_rsv_unit_file.get_ext(),
-                tag=i_rsv_properties.get('workspace_key'),
-                frame_size=self._window.ITEM_ICON_SIZE
-            )
-            pixmaps.append(i_pixmap)
         #
         review_rsv_unit = rsv_task.get_rsv_unit(
             keyword='{branch}-review-file'
         )
+        image_args = None
         movie_file_path = review_rsv_unit.get_exists_result(
             version='latest'
         )
@@ -437,25 +431,33 @@ class _GuiTaskOpt(
                     )
                 ).to_string()
             )
-            #
+
             movie_file_opt = bsc_core.StgFileOpt(movie_file_path)
-            show_info_dict['update'] = bsc_core.TimePrettifyMtd.to_prettify_by_timestamp(
+            name_dict['update'] = bsc_core.TimePrettifyMtd.to_prettify_by_timestamp(
                 movie_file_opt.get_modify_timestamp(),
                 language=1
             )
-            show_info_dict['user'] = movie_file_opt.get_user()
-            #
-            prx_item_widget.connect_press_db_clicked_to(
-                execute_fnc
-            )
-            image_file_path, image_sub_process_cmds = bsc_core.VdoFileOpt(movie_file_path).get_thumbnail_create_args()
+            name_dict['user'] = movie_file_opt.get_user()
+            image_file_path, image_sp_cmd = bsc_core.VdoFileOpt(movie_file_path).get_thumbnail_create_args()
+            image_args = image_file_path, image_sp_cmd, movie_file_path, execute_fnc
+        else:
+            name_dict['update'] = 'N/a'
+            name_dict['user'] = 'N/a'
+
+        self.__class__.CACHE[key] = image_args, name_dict
+        return image_args, name_dict
+
+    def __gui_built_fnc(self, rsv_task, prx_item_widget, data):
+        image_args, name_dict = data
+        #
+        if image_args is not None:
+            image_file_path, image_sp_cmd, movie_file_path, execute_fnc = image_args
+            prx_item_widget.connect_press_db_clicked_to(execute_fnc)
             prx_item_widget.set_image(image_file_path)
             prx_item_widget.set_movie_enable(True)
-            if image_sub_process_cmds is not None:
-                prx_item_widget.set_image_show_args(image_file_path, image_sub_process_cmds)
+            if image_sp_cmd is not None:
+                prx_item_widget.set_image_show_args(image_file_path, image_sp_cmd)
         else:
-            show_info_dict['update'] = 'N/a'
-            show_info_dict['user'] = 'N/a'
             prx_item_widget.set_image(
                 gui_core.GuiIcon.get('image_loading_failed')
             )
@@ -464,15 +466,8 @@ class _GuiTaskOpt(
         if unit_menu_content:
             prx_item_widget.set_menu_content(unit_menu_content)
 
-        prx_item_widget.set_name(task)
-        prx_item_widget.set_name_dict(show_info_dict)
-        r, g, b = bsc_core.RawTextOpt(task).to_rgb_(s_p=25, v_p=35)
-        prx_item_widget.set_name_frame_background_color((r, g, b, 127))
-        prx_item_widget.set_icon_by_name(step)
-        prx_item_widget.set_icons_by_pixmap(pixmaps)
-        prx_item_widget.set_tool_tip(
-            rsv_task.description
-        )
+        prx_item_widget.set_name_dict(name_dict)
+        prx_item_widget.refresh_widget_force()
 
     def __generate_rsv_task_menu_content(self, rsv_task):
         hook_keys = self._window._hook_configure.get(
@@ -611,6 +606,7 @@ class _GuiFileOpt(
             prx_item_widget.set_tool_tip(
                 _location
             )
+            prx_item_widget.refresh_widget_force()
 
         path = file_path = file_opt.get_path()
         if self.gui_get_is_exists(path) is False:
@@ -713,12 +709,12 @@ class _GuiUsdStageViewOpt(_GuiBaseOpt):
         self._usd_stage_view.restore()
 
 
-class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
+class AbsPnlLoaderForRsvTask(prx_widgets.PrxSessionWindow):
     DCC_NAMESPACE = 'resolver'
     ITEM_ICON_FRAME_SIZE = 20, 20
     ITEM_ICON_SIZE = 20, 20
 
-    THREAD_STEP = 8
+    THREAD_STEP = 16
 
     LOADING_DELAY_TIME = 2000
 
@@ -742,7 +738,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         #
         h_qt_widget = qt_widgets.QtWidget()
         v_qt_layout.addWidget(h_qt_widget)
-        h_qt_layout = qt_widgets.QtHLayout(h_qt_widget)
+        h_qt_layout = qt_widgets.QtHBoxLayout(h_qt_widget)
         h_qt_layout.setContentsMargins(0, 0, 0, 0)
         #
         h_scroll_area = prx_widgets.PrxHScrollArea()
@@ -895,7 +891,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
         self.__resource_count = 0
 
     def __init__(self, session, *args, **kwargs):
-        super(AbsPnlRsvUnitLoader, self).__init__(session, *args, **kwargs)
+        super(AbsPnlLoaderForRsvTask, self).__init__(session, *args, **kwargs)
         self._hook_configure = self._session.configure
         self._hook_gui_configure = self._session.gui_configure
 
@@ -1205,7 +1201,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                 maximum=len(rsv_entities_map), label='gui-add for task unit'
             ) as g_p:
                 for i_rsv_entities in rsv_entities_map:
-                    g_p.set_update()
+                    g_p.do_update()
                     self.__gui_build_fnc_for_tasks_and_units_(
                         self.__gui_cache_fnc_for_tasks_and_units_by_entities_(i_rsv_entities, thread_stack_index)
                     )
@@ -1271,7 +1267,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
 
     @classmethod
     def _get_menu_content_by_hook_keys_(cls, session_dict, hooks, *args, **kwargs):
-        content = ctt_objects.Dict()
+        content = ctt_core.Dict()
         for i_hook in hooks:
             if isinstance(i_hook, six.string_types):
                 i_hook_key = i_hook
@@ -1368,7 +1364,7 @@ class AbsPnlRsvUnitLoader(prx_widgets.PrxSessionWindow):
                 python_file = bsc_core.StgFileOpt(python_file_path)
                 yaml_file = bsc_core.StgFileOpt(yaml_file_path)
                 if python_file.get_is_exists() is True and yaml_file.get_is_exists() is True:
-                    configure = ctt_objects.Configure(value=yaml_file.path)
+                    configure = ctt_core.Content(value=yaml_file.path)
                     type_name = configure.get('option.type')
                     if type_name is not None:
                         kwargs['configure'] = configure

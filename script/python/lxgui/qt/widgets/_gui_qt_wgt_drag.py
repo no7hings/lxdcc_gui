@@ -1,19 +1,22 @@
 # coding=utf-8
-from lxgui.qt.core import *
+from lxgui.qt.wrap import *
 
-import lxgui.configure as gui_configure
+import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
 
 
-class QtWidgetDrag(QtGui.QDrag):
+class QtDrag(QtGui.QDrag):
     released = qt_signal(tuple)
+
     ACTION_MAPPER = {
-        QtCore.Qt.IgnoreAction: gui_configure.DragFlag.Ignore,
-        QtCore.Qt.CopyAction: gui_configure.DragFlag.Copy,
-        QtCore.Qt.MoveAction: gui_configure.DragFlag.Move
+        QtCore.Qt.IgnoreAction: gui_core.GuiDragFlag.Ignore,
+        QtCore.Qt.CopyAction: gui_core.GuiDragFlag.Copy,
+        QtCore.Qt.MoveAction: gui_core.GuiDragFlag.Move
     }
 
     def __init__(self, *args, **kwargs):
-        super(QtWidgetDrag, self).__init__(*args, **kwargs)
+        super(QtDrag, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
         self._current_action = QtCore.Qt.IgnoreAction
         self.actionChanged.connect(self._update_action_)
@@ -41,13 +44,13 @@ class QtWidgetDrag(QtGui.QDrag):
         o_x, o_y = 0, 4
         c_w, c_h = w+(c-1)*o_x, h+(c-1)*o_y
         p = QtGui.QPixmap(c_w, c_h)
-        painter = QtPainter(p)
+        painter = gui_qt_core.QtPainter(p)
         rect = QtCore.QRect(0, 0, c_w, c_h)
-        painter.fillRect(rect, QtBorderColors.Button)
+        painter.fillRect(rect, gui_qt_core.QtBorderColors.Button)
         for i in range(c):
             i_p = QtGui.QPixmap(w, h)
             i_rect = QtCore.QRect(i*o_x, i*o_y, w, h)
-            i_p.fill(QtBorderColors.Button)
+            i_p.fill(gui_qt_core.QtBorderColors.Button)
             widget.render(i_p)
             painter.drawPixmap(i_rect, i_p)
 
@@ -66,13 +69,13 @@ class QtWidgetDrag(QtGui.QDrag):
         o_x, o_y = 0, 4
         c_w, c_h = w+(c-1)*o_x, h+(c-1)*o_y
         p = QtGui.QPixmap(c_w, c_h)
-        painter = QtPainter(p)
+        painter = gui_qt_core.QtPainter(p)
         rect = QtCore.QRect(0, 0, c_w, c_h)
-        painter.fillRect(rect, QtBorderColors.Button)
+        painter.fillRect(rect, gui_qt_core.QtBorderColors.Button)
         for i in range(c):
             i_p = QtGui.QPixmap(w, h)
             i_rect = QtCore.QRect(i*o_x, i*o_y, w, h)
-            i_p.fill(QtBorderColors.Button)
+            i_p.fill(gui_qt_core.QtBorderColors.Button)
             widget.render(i_p)
             painter.drawPixmap(i_rect, i_p)
 
@@ -82,6 +85,7 @@ class QtWidgetDrag(QtGui.QDrag):
         # drag.setDragCursor()
         drag.exec_(QtCore.Qt.MoveAction)
 
+    # noinspection PyUnusedLocal
     def _update_action_(self, *args, **kwargs):
         self._current_action = args[0]
 
@@ -99,9 +103,9 @@ class QtWidgetDrag(QtGui.QDrag):
         return False
 
 
-class QtTreeItemDrag(QtGui.QDrag):
+class QtDragForTreeItem(QtGui.QDrag):
     def __init__(self, *args, **kwargs):
-        super(QtTreeItemDrag, self).__init__(*args, **kwargs)
+        super(QtDragForTreeItem, self).__init__(*args, **kwargs)
         self.installEventFilter(self)
         self._item = None
         self._index = 0
@@ -121,9 +125,9 @@ class QtTreeItemDrag(QtGui.QDrag):
         name_w = widget.fontMetrics().width(name_text)
         w = 20+name_w+10
         p = QtGui.QPixmap(w, h)
-        pnt = QtPainter(p)
+        pnt = gui_qt_core.QtPainter(p)
         pnt.setFont(
-            QtFonts.Button
+            gui_qt_core.QtFonts.Button
         )
         icon = self._item.icon(self._index)
         i_f_w, i_f_h = 20, 20
@@ -131,8 +135,8 @@ class QtTreeItemDrag(QtGui.QDrag):
         frame_rect = QtCore.QRect(x, y, w, h)
         pnt._draw_frame_by_rect_(
             rect=frame_rect,
-            background_color=QtBackgroundColors.Basic,
-            border_color=QtBorderColors.Basic,
+            background_color=gui_qt_core.QtBackgroundColors.Basic,
+            border_color=gui_qt_core.QtBorderColors.Basic,
             border_width=2
         )
         icon_rect = QtCore.QRect(x+(i_f_w-i_w)/2, y+(i_f_h-i_h)/2, i_w, i_h)
@@ -142,7 +146,7 @@ class QtTreeItemDrag(QtGui.QDrag):
         pnt._draw_text_by_rect_(
             rect=text_rect,
             text=name_text,
-            font_color=QtFontColors.Basic
+            font_color=gui_qt_core.QtFontColors.Basic
         )
         #
         pnt.end()
@@ -162,5 +166,6 @@ class QtTreeItemDrag(QtGui.QDrag):
                 self._do_release_()
         return False
 
+    # noinspection PyUnusedLocal
     def set_item(self, item, point):
         self._item = item

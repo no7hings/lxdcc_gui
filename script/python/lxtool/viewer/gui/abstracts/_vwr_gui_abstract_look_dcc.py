@@ -1,7 +1,7 @@
 # coding:utf-8
 import lxgui.proxy.widgets as prx_widgets
 
-from lxbasic import bsc_core
+import lxbasic.core as bsc_core
 
 import lxgui.proxy.scripts as gui_prx_scripts
 
@@ -95,10 +95,10 @@ class AbsPnlViewerForShaderDcc(
         if materials:
             with bsc_core.LogProcessContext.create(maximum=len(materials), label='gui-add for material') as g_p:
                 for i_material in materials:
-                    g_p.set_update()
+                    g_p.do_update()
                     #
                     material_type_name = 'material'
-                    material_gui = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as(i_material, mode='list')
+                    material_gui = self._prx_dcc_obj_tree_view_add_opt.gui_add_as(i_material, mode='list')
                     #
                     tag_filter_key = 'material.{}'.format(material_type_name)
                     self._prx_dcc_obj_tree_view_tag_filter_opt.set_tgt_item_tag_update(
@@ -111,7 +111,7 @@ class AbsPnlViewerForShaderDcc(
                         shader = self.DCC_SHADER_CLS(shader_path)
                         shader_type_name = shader.get_shader_type_name()
                         if shader_type_name:
-                            shader_gui = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as(shader, mode='list')
+                            shader_gui = self._prx_dcc_obj_tree_view_add_opt.gui_add_as(shader, mode='list')
                             shader_gui.set_name(shader_type_name, 1)
                             shader_gui.set_icon_by_color(bsc_core.RawTextOpt(shader_type_name).to_rgb(), 1)
                             #

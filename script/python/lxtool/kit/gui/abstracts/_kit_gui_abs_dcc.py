@@ -1,7 +1,7 @@
 # coding:utf-8
 import six
 
-from lxbasic import bsc_core
+import lxbasic.core as bsc_core
 
 import lxgui.proxy.widgets as prx_widgets
 
@@ -96,7 +96,7 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
     def gui_get_view_args(self, group_name):
         group_path = '/{}'.format(group_name)
         if group_path not in self._view_dict:
-            tool_group = prx_widgets.PrxHToolGroup_()
+            tool_group = prx_widgets.PrxHToolGroupNew()
             self._scroll_bar.add_widget(tool_group)
             tool_group.set_expanded(True)
             tool_group.set_name(group_name)
@@ -113,7 +113,7 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
     def build_tool_by_hook_data(self, data):
         with bsc_core.LogProcessContext.create(maximum=len(data), label='gui-add for hook') as g_p:
             for i_args in data:
-                g_p.set_update()
+                g_p.do_update()
                 if isinstance(i_args, six.string_types):
                     i_key = i_args
                     i_extend_kwargs = {}
@@ -135,7 +135,7 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
     def build_tool_by_option_hook_data(self, data):
         with bsc_core.LogProcessContext.create(maximum=len(data), label='gui-add for hook') as g_p:
             for i_args in data:
-                g_p.set_update()
+                g_p.do_update()
                 if isinstance(i_args, six.string_types):
                     i_key = i_args
                     i_extend_kwargs = {}

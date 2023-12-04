@@ -1,14 +1,23 @@
 # coding=utf-8
-from lxgui.qt.core import *
-
 import os
 
-import lxgui.configure as gui_configure
+from lxgui.qt.wrap import *
 
-from lxgui.qt.widgets import _gui_qt_wgt_utility, _gui_qt_wgt_bubble, _gui_qt_wgt_button, _gui_qt_wgt_entry, \
-    _gui_qt_wgt_popup
+import lxbasic.core as bsc_core
+
+import lxgui.core as gui_core
+
+import lxgui.qt.core as gui_qt_core
 
 import lxgui.qt.abstracts as gui_qt_abstracts
+
+from ..widgets import \
+    _gui_qt_wgt_base, \
+    _gui_qt_wgt_utility, \
+    _gui_qt_wgt_bubble, \
+    _gui_qt_wgt_button, \
+    _gui_qt_wgt_entry, \
+    _gui_qt_wgt_popup
 
 
 class QtInputAsStorage(
@@ -61,7 +70,7 @@ class QtInputAsStorage(
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
         )
-        self.setFixedHeight(gui_configure.Size.InputHeight)
+        self.setFixedHeight(gui_core.GuiSize.InputHeight)
 
         self._storage_scheme = self.StorageScheme.FileOpen
 
@@ -89,7 +98,7 @@ class QtInputAsStorage(
         self._ext_filter = text
         self._input_info_bubble._set_text_(self._ext_filter)
         self._input_info_bubble.setToolTip(
-            GuiQtUtil.generate_tool_tip_css(
+            gui_qt_core.GuiQtUtil.generate_tool_tip_css(
                 'ext filter', self._ext_filter
             )
         )
@@ -203,12 +212,12 @@ class QtInputAsStorage(
         if p:
             if os.path.isdir(p):
                 self._head._set_icon_(
-                    GuiQtDcc.get_qt_folder_icon(use_system=True)
+                    gui_qt_core.GuiQtDcc.get_qt_folder_icon(use_system=True)
                 )
 
             elif os.path.isfile(p):
                 self._head._set_icon_(
-                    GuiQtDcc.get_qt_file_icon(p)
+                    gui_qt_core.GuiQtDcc.get_qt_file_icon(p)
                 )
             else:
                 self._head._set_icon_file_path_(
@@ -220,13 +229,13 @@ class QtInputAsStorage(
         #
         self._entry_frame_widget = self
         #
-        main_layout = QtVBoxLayout(self)
+        main_layout = _gui_qt_wgt_base.QtVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
         entry_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
         main_layout.addWidget(entry_widget)
         #
-        entry_layout = QtHLayout(entry_widget)
+        entry_layout = _gui_qt_wgt_base.QtHBoxLayout(entry_widget)
         entry_layout.setContentsMargins(2, 2, 2, 2)
         entry_layout.setSpacing(0)
         #
@@ -263,7 +272,7 @@ class QtInputAsStorage(
             ]
         )
         entry_layout.addWidget(self._input_button_widget)
-        self._input_button_layout = QtHLayout(self._input_button_widget)
+        self._input_button_layout = _gui_qt_wgt_base.QtHBoxLayout(self._input_button_widget)
         self._input_button_layout.setContentsMargins(2, 0, 0, 0)
         self._input_button_layout.setSpacing(2)
         #

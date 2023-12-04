@@ -1,31 +1,24 @@
 # coding:utf-8
-from lxgui.qt.warp import *
+from lxgui.qt.wrap import *
 
 import types
 
 import six
 
-import lxbasic.core as bsc_core
+import lxcontent.core as ctt_core
 
-import lxgui.configure as gui_configure
+import lxbasic.core as bsc_core
 
 import lxgui.core as gui_core
 
-from lxgui.qt.core import _gui_qt_cor_base
-
-import lxcontent.abstracts as ctt_abstracts
+from ..core import _gui_qt_cor_base
 
 
-class QtTimer(QtCore.QTimer):
+class QtHBoxLayout(QtWidgets.QHBoxLayout):
     def __init__(self, *args, **kwargs):
-        super(QtTimer, self).__init__(*args, **kwargs)
-
-
-class QtHLayout(QtWidgets.QHBoxLayout):
-    def __init__(self, *args, **kwargs):
-        super(QtHLayout, self).__init__(*args, **kwargs)
-        self.setContentsMargins(*gui_configure.Size.LayoutDefaultContentsMargins)
-        self.setSpacing(gui_configure.Size.LayoutDefaultSpacing)
+        super(QtHBoxLayout, self).__init__(*args, **kwargs)
+        self.setContentsMargins(*gui_core.GuiSize.LayoutDefaultContentsMargins)
+        self.setSpacing(gui_core.GuiSize.LayoutDefaultSpacing)
 
     def _set_align_top_(self):
         self.setAlignment(
@@ -74,8 +67,8 @@ class QtHLayout(QtWidgets.QHBoxLayout):
 class QtVBoxLayout(QtWidgets.QVBoxLayout):
     def __init__(self, *args, **kwargs):
         super(QtVBoxLayout, self).__init__(*args, **kwargs)
-        self.setContentsMargins(*gui_configure.Size.LayoutDefaultContentsMargins)
-        self.setSpacing(gui_configure.Size.LayoutDefaultSpacing)
+        self.setContentsMargins(*gui_core.GuiSize.LayoutDefaultContentsMargins)
+        self.setSpacing(gui_core.GuiSize.LayoutDefaultSpacing)
 
     def _set_align_top_(self):
         self.setAlignment(
@@ -97,8 +90,8 @@ class QtVBoxLayout(QtWidgets.QVBoxLayout):
 class QtGridLayout(QtWidgets.QGridLayout):
     def __init__(self, *args, **kwargs):
         super(QtGridLayout, self).__init__(*args, **kwargs)
-        self.setContentsMargins(*gui_configure.Size.LayoutDefaultContentsMargins)
-        self.setSpacing(gui_configure.Size.LayoutDefaultSpacing)
+        self.setContentsMargins(*gui_core.GuiSize.LayoutDefaultContentsMargins)
+        self.setSpacing(gui_core.GuiSize.LayoutDefaultSpacing)
 
     def _get_widget_count_(self):
         return self.count()
@@ -190,11 +183,11 @@ class GuiQtMenuOpt(object):
         else:
             raise RuntimeError()
 
-    @gui_core.GuiModifier.debug_run
+    @gui_core.GuiModifier.run_with_exception_catch
     def _set_cmd_debug_run_(self, cmd_str):
         exec cmd_str
 
-    @gui_core.GuiModifier.debug_run
+    @gui_core.GuiModifier.run_with_exception_catch
     def _set_fnc_debug_run_(self, fnc):
         fnc()
 
@@ -203,32 +196,32 @@ class GuiQtMenuOpt(object):
         self._item_dic = {
             '/': self._root_menu
         }
-        if isinstance(content, ctt_abstracts.AbsContent):
+        if isinstance(content, ctt_core.AbsContent):
             keys = content.get_keys(regex='*.properties')
             for i_key in keys:
                 i_atr_path_opt = bsc_core.DccAttrPathOpt(i_key)
                 i_obj_path = i_atr_path_opt.obj_path
                 i_obj_path_opt = bsc_core.DccPathDagOpt(i_obj_path)
-                i_content = content.get_content(i_key)
+                i_content = content.get_as_content(i_key)
                 i_type = i_content.get('type')
                 if i_obj_path_opt.get_is_root():
                     pass
                 else:
-                    menu = self.__get_menu_(i_obj_path_opt.get_parent())
+                    menu = self.__get_menu(i_obj_path_opt.get_parent())
                     if i_type == 'separator':
                         self.add_separator_fnc(menu, i_content)
                     elif i_type == 'action':
                         self.add_action_fnc(menu, i_content)
 
-    def __get_menu_(self, path_opt):
+    def __get_menu(self, path_opt):
         cur_menu = self._root_menu
         components = path_opt.get_components()
         components.reverse()
         for i_component in components:
-            cur_menu = self.__get_menu_force_(cur_menu, i_component)
+            cur_menu = self.__get_menu_force(cur_menu, i_component)
         return cur_menu
 
-    def __get_menu_force_(self, menu, path_opt):
+    def __get_menu_force(self, menu, path_opt):
         path = path_opt.path
         if path in self._item_dic:
             return self._item_dic[path]

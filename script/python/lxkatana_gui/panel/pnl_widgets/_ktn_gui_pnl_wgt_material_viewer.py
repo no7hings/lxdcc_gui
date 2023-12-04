@@ -1,7 +1,7 @@
 # coding:utf-8
 import lxtool.viewer.gui.abstracts as vwr_gui_abstracts
 
-from lxbasic import bsc_core
+import lxbasic.core as bsc_core
 
 from lxutil import utl_core
 
@@ -154,7 +154,7 @@ class PnlViewerForMaterialDcc(vwr_gui_abstracts.AbsPnlViewerForMaterialDcc):
                 ]
             )
             #
-            _geometry_obj_gui = self._prx_dcc_obj_tree_view_add_opt.set_prx_item_add_as(
+            _geometry_obj_gui = self._prx_dcc_obj_tree_view_add_opt.gui_add_as(
                 i_geometry_node, mode='list'
             )
             #
@@ -188,7 +188,7 @@ class PnlViewerForMaterialDcc(vwr_gui_abstracts.AbsPnlViewerForMaterialDcc):
         if methods:
             with bsc_core.LogProcessContext.create(maximum=len(methods), label='execute gui method') as g_p:
                 for i_method in methods:
-                    g_p.set_update()
+                    g_p.do_update()
                     i_method()
         #
         geometry_objs = self._scene_geometry_objs
@@ -198,5 +198,5 @@ class PnlViewerForMaterialDcc(vwr_gui_abstracts.AbsPnlViewerForMaterialDcc):
             nme_material_dict = ktn_dcc_objects.Materials.get_nme_material_dict()
             with bsc_core.LogProcessContext.create(maximum=len(geometry_objs), label='gui-add for geometry') as g_p:
                 for i_geometry_node in geometry_objs:
-                    g_p.set_update()
+                    g_p.do_update()
                     add_geometry_gui_fnc_(i_geometry_node)
