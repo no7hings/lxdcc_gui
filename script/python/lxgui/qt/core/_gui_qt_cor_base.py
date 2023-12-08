@@ -16,11 +16,11 @@ class GuiQtStyle(object):
     CONTENT = None
 
     @classmethod
-    def __generate_content(cls):
+    def _generate_content(cls):
         if cls.CONTENT is not None:
             return cls.CONTENT
         cls.CONTENT = ctt_core.Content(
-            value='{}/qt-style.yml'.format(gui_core.Data.DATA_ROOT)
+            value='{}/qt-style.yml'.format(gui_core.GuiBase.DATA_ROOT)
         )
         cls.CONTENT.set(
             'option.icon-dir', gui_core.GuiIconDirectory.get('qt-style')
@@ -30,14 +30,14 @@ class GuiQtStyle(object):
 
     @classmethod
     def get(cls, key):
-        c = cls.__generate_content()
+        c = cls._generate_content()
         return c.get(
             'widget.{}'.format(key)
         )
 
     @classmethod
     def get_border(cls, key):
-        c = cls.__generate_content()
+        c = cls._generate_content()
         return eval(
             c.get(
                 'option.border.{}'.format(key)
@@ -46,7 +46,7 @@ class GuiQtStyle(object):
 
     @classmethod
     def get_background(cls, key):
-        c = cls.__generate_content()
+        c = cls._generate_content()
         return eval(
             c.get(
                 'option.background.{}'.format(key)
@@ -55,7 +55,7 @@ class GuiQtStyle(object):
 
     @classmethod
     def get_font(cls, key):
-        c = cls.__generate_content()
+        c = cls._generate_content()
         return eval(
             c.get(
                 'option.font.{}'.format(key)
@@ -284,6 +284,10 @@ class GuiQtUtil(object):
     def copy_text_to_clipboard(text):
         clipboard = QtWidgets.QApplication.clipboard()
         clipboard.setText(text)
+
+    @staticmethod
+    def get_text_from_clipboard():
+        return QtWidgets.QApplication.clipboard().text()
 
     @staticmethod
     def show_qt_window(widget, pos=None, size=None, use_exec=False):

@@ -1,7 +1,7 @@
 # coding:utf-8
 import lxgui.proxy.widgets as prx_widgets
 
-from lxkatana import ktn_core
+import lxkatana.core as ktn_core
 
 
 class PnlDccWorkspaceLoader(prx_widgets.PrxSessionToolWindow):
@@ -160,6 +160,6 @@ class PnlDccWorkspaceLoader(prx_widgets.PrxSessionToolWindow):
         #
         if file_paths:
             # noinspection PyUnresolvedReferences
-            ktn_core.GuiNodeGraphOpt().import_nodes_from_file(
+            ktn_core.GuiNodeGraphOpt.import_nodes_from_file(
                 file_paths[0]
             )

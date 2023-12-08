@@ -11,7 +11,7 @@ import lxkatana.scripts as ktn_scripts
 
 import lxkatana.fnc.importers as ktn_fnc_importers
 
-from lxkatana import ktn_core
+import lxkatana.core as ktn_core
 
 
 class PnlViewerForMaterialDcc(vwr_gui_abstracts.AbsPnlViewerForMaterialDcc):

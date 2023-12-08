@@ -49,9 +49,8 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
                 self._hook_gui_configure.get('size')
             )
 
-            self.start_loading(
-                delay_time=1000,
-                method=self._set_tool_panel_setup_
+            self.start_window_loading(
+                self._set_tool_panel_setup_
             )
 
     def _set_tool_panel_setup_(self):

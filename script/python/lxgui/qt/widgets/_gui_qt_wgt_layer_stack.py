@@ -172,6 +172,11 @@ class QtLayerStack(QtWidgets.QWidget):
 
         self.__swap_mode = 'switch'
 
+        self.__anim_enable = True
+
+    def _set_animation_enable_(self, boolean):
+        self.__anim_enable = boolean
+
     def _refresh_widget_all_(self):
         self._refresh_widget_draw_geometry_()
         self.update()
@@ -179,7 +184,7 @@ class QtLayerStack(QtWidgets.QWidget):
     def _refresh_widget_draw_geometry_(self):
         x, y = 0, 0
         w, h = self.width(), self.height()
-        if self.__swap_flag is True:
+        if self.__swap_flag is True and self.__anim_enable is True:
             index = min(self.__anim_index, self.__anim_index_maximum)
             d = sum([(0.5/(2**i))*1 for i in range(index)])
             if self.__swap_mode == 'switch':
@@ -254,7 +259,7 @@ class QtLayerStack(QtWidgets.QWidget):
         return False
 
     def paintEvent(self, event):
-        if self.__swap_flag is True:
+        if self.__swap_flag is True and self.__anim_enable is True:
             painter = gui_qt_core.QtPainter(self)
             if self.__swap_mode in {'add', 'new'}:
                 painter._draw_alternating_colors_by_rect_(

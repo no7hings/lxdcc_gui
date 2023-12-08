@@ -23,7 +23,7 @@ import lxgui.qt_for_usd.core as gui_qt_usd_core
 
 import lxgui.qt.widgets as qt_widgets
 
-import lxgui.proxy.abstracts as prx_abstracts
+import lxgui.proxy.abstracts as gui_prx_abstracts
 
 import lxgui.proxy.widgets as prx_widgets
 
@@ -45,7 +45,7 @@ class _GuiBaseOpt(object):
 
 class _GuiEntityOpt(
     _GuiBaseOpt,
-    prx_abstracts.AbsGuiPrxTreeViewOpt
+    gui_prx_abstracts.AbsGuiPrxTreeViewOpt
 ):
     ROOT_NAME = 'All'
 
@@ -272,9 +272,9 @@ class _GuiEntityOpt(
 
 class _GuiTagOpt(
     _GuiBaseOpt,
-    prx_abstracts.AbsGuiTreeViewAsTagOpt
+    gui_prx_abstracts.AbsGuiTreeViewAsTagOpt
 ):
-    GROUP_SCHEME = prx_abstracts.AbsGuiTreeViewAsTagOpt.GroupScheme.Hide
+    GROUP_SCHEME = gui_prx_abstracts.AbsGuiTreeViewAsTagOpt.GroupScheme.Hide
 
     def __init__(self, window, session, resolver, prx_tree_view):
         super(_GuiTagOpt, self).__init__(window, session, resolver)
@@ -321,7 +321,7 @@ class _GuiTagOpt(
 
 class _GuiTaskOpt(
     _GuiBaseOpt,
-    prx_abstracts.AbsGuiPrxListViewOpt
+    gui_prx_abstracts.AbsGuiPrxListViewOpt
 ):
     CACHE = dict()
 
@@ -540,7 +540,7 @@ class _GuiGuideOpt(_GuiBaseOpt):
 
 class _GuiDirectoryOpt(
     _GuiBaseOpt,
-    prx_abstracts.AbsGuiPrxTreeViewAsDirectoryOpt
+    gui_prx_abstracts.AbsGuiPrxTreeViewAsDirectoryOpt
 ):
     ROOT_NAME = 'All'
     DCC_NAMESPACE = 'resolver'
@@ -556,7 +556,7 @@ class _GuiDirectoryOpt(
 
 class _GuiFileOpt(
     _GuiBaseOpt,
-    prx_abstracts.AbsGuiPrxListViewAsFileOpt
+    gui_prx_abstracts.AbsGuiPrxListViewAsFileOpt
 ):
     def __init__(self, window, session, resolver, prx_list_view):
         super(_GuiFileOpt, self).__init__(window, session, resolver)
@@ -719,6 +719,20 @@ class AbsPnlLoaderForRsvTask(prx_widgets.PrxSessionWindow):
     LOADING_DELAY_TIME = 2000
 
     def set_all_setup(self):
+        self._hook_configure = self._session.configure
+        self._hook_gui_configure = self._session.gui_configure
+
+        self._resolver = rsv_commands.get_resolver()
+
+        self._rsv_filter = self._hook_configure.get('resolver.filter')
+        #
+        self._item_frame_size = self._hook_gui_configure.get('item_frame_size')
+
+        self._session_dict = {}
+
+        self.__asset_keys = set()
+        self.__task_keys = set()
+
         v_qt_widget = qt_widgets.QtWidget()
         self.add_widget(v_qt_widget)
         v_qt_layout = qt_widgets.QtVBoxLayout(v_qt_widget)
@@ -892,19 +906,6 @@ class AbsPnlLoaderForRsvTask(prx_widgets.PrxSessionWindow):
 
     def __init__(self, session, *args, **kwargs):
         super(AbsPnlLoaderForRsvTask, self).__init__(session, *args, **kwargs)
-        self._hook_configure = self._session.configure
-        self._hook_gui_configure = self._session.gui_configure
-
-        self._resolver = rsv_commands.get_resolver()
-
-        self._rsv_filter = self._hook_configure.get('resolver.filter')
-        #
-        self._item_frame_size = self._hook_gui_configure.get('item_frame_size')
-
-        self._session_dict = {}
-
-        self.__asset_keys = set()
-        self.__task_keys = set()
 
     def refresh_all(self):
         if self._rsv_filters_dict:

@@ -9,7 +9,7 @@ from lxutil import utl_core
 
 import lxgui.core as gui_core
 
-from lxkatana import ktn_core
+import lxkatana.core as ktn_core
 
 import lxkatana.scripts as ktn_scripts
 
@@ -126,7 +126,7 @@ class PnlRenderSubmitter(smt_gui_abstracts.AbsPnlSubmitterForAssetRenderDcc):
             #
             latest_render_output_image_file_path = render_layer_scp.get_latest_render_output_image()
             if latest_render_output_image_file_path is not None:
-                image_file_paths = bsc_core.StgFileMultiplyMtd.get_exists_unit_paths(
+                image_file_paths = bsc_core.StgFileMtdForMultiply.get_exists_unit_paths(
                     latest_render_output_image_file_path
                 )
                 if image_file_paths:
@@ -223,7 +223,7 @@ class PnlRenderSubmitter(smt_gui_abstracts.AbsPnlSubmitterForAssetRenderDcc):
                     #
                     file=file_path,
                     #
-                    katana_version=ktn_core.get_katana_version(),
+                    katana_version=ktn_core.KtnUtil.get_katana_version(),
                     #
                     render_nodes=render_nodes,
                     default_render_version=default_render_version,

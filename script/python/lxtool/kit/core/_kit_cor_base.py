@@ -81,7 +81,6 @@ class KitPermissionQuery(object):
 
 
 class KitDesktopHookAddOpt(object):
-    # CUSTOMIZE_PATH = '/l/resource/td/user-resources'
     CUSTOMIZE_PATH = '/l/resource/td/tools/desktop'
 
     DEFAULT_GROUP_NAMES = [
@@ -119,6 +118,7 @@ class KitDesktopHookAddOpt(object):
         group_sub_name = self._options.get('gui.group_sub_name')
 
         directory_path = self.CUSTOMIZE_PATH
+        directory_path = bsc_core.StgPathMapper.map_to_current(directory_path)
 
         name = self._options.get('name')
         hook_key = '{}/{}'.format(page_name, name)
@@ -150,12 +150,12 @@ class KitDesktopHookAddOpt(object):
 
         gui_name = self._options.get('gui.name')
         if not gui_name:
-            gui_name = bsc_core.RawTextMtd.to_prettify(hook_key)
-        #
+            gui_name = bsc_core.RawTextMtd.to_prettify(name)
+
         c.set('option.gui.name', gui_name)
         if group_sub_name != 'None':
             c.set('option.gui.group_sub_name', group_sub_name)
-        #
+
         icon_name = self._options.get('gui.icon_name')
         if icon_name != 'None':
             c.set('option.gui.icon_name', icon_name)
@@ -170,7 +170,7 @@ class KitDesktopHookAddOpt(object):
         c.set('option.gui.icon_style', self._options.get('gui.icon_style'))
         c.set('option.gui.icon_color', self._options.get('gui.icon_color'))
         c.set('option.gui.tool_tip', self._options.get('gui.tool_tip'))
-        #
+
         python_script = self._options.get('script.python')
         windows_shell_script = self._options.get('script.windows')
         linux_shell_script = self._options.get('script.linux')

@@ -385,12 +385,104 @@ class GuiDialog(object):
         return w
 
 
+class GuiDialogAsBubbleChoose(object):
+    @classmethod
+    def create(cls, texts, tips):
+        import lxgui.qt.core as gui_qt_core
+
+        import lxgui.qt.widgets as qt_widgets
+
+        parent = gui_qt_core.GuiQtDcc.get_qt_main_window()
+        if parent is not None:
+            w = qt_widgets.QtBubbleAsChoose(parent)
+            w._set_texts_(texts)
+            w._set_tips_(tips)
+            w._do_popup_start_()
+            return w
+        return None
+
+
+class GuiFileDialog(object):
+    @classmethod
+    def open_file(cls, ext_filter='All File (*.*)', parent=None):
+        import lxgui.qt.core as gui_qt_core
+
+        dlg = gui_qt_core.QtWidgets.QFileDialog()
+        options = dlg.Options()
+        # options |= dlg.DontUseNativeDialog
+        r = dlg.getOpenFileName(
+            parent,
+            'Open File',
+            filter=ext_filter,
+            options=options,
+        )
+        if r:
+            _ = r[0]
+            if _:
+                return _
+        return None
+
+    @classmethod
+    def save_file(cls, ext_filter='All File (*.*)', parent=None):
+        import lxgui.qt.core as gui_qt_core
+
+        dlg = gui_qt_core.QtWidgets.QFileDialog()
+        options = dlg.Options()
+        # options |= dlg.DontUseNativeDialog
+        r = dlg.getSaveFileName(
+            parent,
+            'Save File',
+            '',
+            filter=ext_filter,
+            options=options,
+        )
+        if r:
+            _ = r[0]
+            if _:
+                return _
+        return None
+
+    @classmethod
+    def open_directory(cls, parent=None):
+        import lxgui.qt.core as gui_qt_core
+
+        dlg = gui_qt_core.QtWidgets.QFileDialog()
+        options = dlg.Options()
+        # options |= dlg.DontUseNativeDialog
+        r = dlg.getExistingDirectory(
+            parent,
+            'Open Directory',
+            '',
+            options=options,
+        )
+        if r:
+            return r
+        return None
+
+    @classmethod
+    def save_directory(cls, parent=None):
+        import lxgui.qt.core as gui_qt_core
+
+        dlg = gui_qt_core.QtWidgets.QFileDialog()
+        options = dlg.Options()
+        # options |= dlg.DontUseNativeDialog
+        r = dlg.getExistingDirectory(
+            parent,
+            'Save Directory',
+            '',
+            options=options,
+        )
+        if r:
+            return r
+        return None
+
+
 class GuiMonitorForDeadline(object):
     @classmethod
     def set_create(cls, label, job_id, parent=None):
         import lxgui.proxy.widgets as prx_widgets
 
-        import lxwarp.deadline.core as ddl_core
+        import lxwrap.deadline.core as ddl_core
 
         w = prx_widgets.PrxMonitorWindow(parent=parent)
         w.set_window_title(

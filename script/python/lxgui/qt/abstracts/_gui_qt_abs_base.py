@@ -997,7 +997,7 @@ class AbsQtIconBaseDef(object):
         self._icon_color_draw_rect = QtCore.QRect()
         self._icon_text_draw_rect = QtCore.QRect()
         #
-        self._icon_hover_color = gui_qt_core.QtBackgroundColors.PressedHovered
+        self._icon_hover_color = None
         #
         self._icon_frame_draw_size = 20, 20
         #

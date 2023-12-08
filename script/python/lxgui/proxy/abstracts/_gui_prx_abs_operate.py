@@ -20,6 +20,8 @@ class AbsGuiPrxCacheDef(object):
 
 
 class AbsGuiPrxTreeViewOpt(object):
+    ROOT_NAME = 'All'
+
     def _init_tree_view_opt_(self, prx_tree_view, namespace):
         self._prx_tree_view = prx_tree_view
         self._item_dict = self._prx_tree_view._item_dict

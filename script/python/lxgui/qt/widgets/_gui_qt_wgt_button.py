@@ -780,7 +780,8 @@ class QtIconPressButton(
                     file_path=self._icon_file_path,
                     offset=offset,
                     is_hovered=self._is_hovered,
-                    is_pressed=is_pressed
+                    hover_color=self._icon_hover_color,
+                    is_pressed=is_pressed,
                 )
             elif self._icon_text is not None:
                 if self.__icon_style is not None:

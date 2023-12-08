@@ -657,7 +657,7 @@ class AbsPnlPublisherForAsset(prx_widgets.PrxSessionWindow):
                 'notice', user_names
             )
 
-        import lxwarp.shotgun.core as wrp_stg_core
+        import lxwrap.shotgun.core as wrp_stg_core
 
         c = wrp_stg_core.StgConnector()
 

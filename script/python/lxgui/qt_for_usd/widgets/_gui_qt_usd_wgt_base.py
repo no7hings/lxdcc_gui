@@ -9,6 +9,8 @@ import lxbasic.core as bsc_core
 
 import lxusd.core as usd_core
 
+import lxwrap.texture.core as txr_core
+
 import lxgui.core as gui_core
 
 import lxgui.qt.core as gui_qt_core
@@ -97,6 +99,10 @@ if QT_USD_FLAG is True:
             self._init_action_base_def_(self)
             self._init_thread_base_def_(self)
 
+            m = txr_core.TxrMethodForBuild.generate_instance()
+            self._texture_types = m.get_usd_includes()
+            self._texture_type_mapper = m.get_usd_mapper()
+
         def _get_main_menu_data_(self):
             return [
                 ('Export to', 'file/file', self._usd_export_to_file_),
@@ -133,16 +139,21 @@ if QT_USD_FLAG is True:
                 )
             #
             if texture_preview_assigns:
-                for i_key in bsc_core.BscTextureTypes.UsdPreviews:
-                    i_usd_prim = self._usd_stage.GetPrimAtPath('/mtl_preview/txr_{}'.format(i_key))
-                    if i_usd_prim.IsValid() is True:
-                        if i_key in texture_preview_assigns:
-                            i_file_path = texture_preview_assigns[i_key]
-                            i_file_opt = bsc_core.StgFileOpt(i_file_path)
-                            if i_file_opt.get_is_file() is True:
-                                usd_core.UsdShaderOpt(i_usd_prim).set_file(i_file_opt.get_path())
-                        else:
-                            usd_core.UsdShaderOpt(i_usd_prim).set_file('')
+                for i_texture_type in self._texture_types:
+                    if i_texture_type in self._texture_type_mapper:
+                        i_node_key = self._texture_type_mapper[i_texture_type]
+                    else:
+                        i_node_key = i_texture_type
+
+                    i_usd_prim = self._usd_stage.GetPrimAtPath('/mtl_preview/txr_{}'.format(i_node_key))
+                    if i_usd_prim.IsValid() is False:
+                        continue
+
+                    if i_texture_type in texture_preview_assigns:
+                        i_texture_path = texture_preview_assigns[i_texture_type]
+                        usd_core.UsdShaderOpt(i_usd_prim).set_file(i_texture_path)
+                    else:
+                        usd_core.UsdShaderOpt(i_usd_prim).set_file('')
 
         def _refresh_usd_stage_for_texture_render_(
             self, texture_preview_assigns=None, use_acescg=False
@@ -184,17 +195,21 @@ if QT_USD_FLAG is True:
                 )
             #
             if texture_preview_assigns:
-                for i_key in ['albedo', 'ao', 'roughness', 'normal', 'displacement', 'opacity']:
-                    i_prim = self._usd_stage.GetPrimAtPath('/materials/mtl_arnold/txr_{}'.format(i_key))
+                for i_texture_type in self._texture_types:
+                    if i_texture_type in self._texture_type_mapper:
+                        i_node_key = self._texture_type_mapper[i_texture_type]
+                    else:
+                        i_node_key = i_texture_type
+
+                    i_prim = self._usd_stage.GetPrimAtPath('/materials/mtl_arnold/txr_{}'.format(i_node_key))
                     if i_prim.IsValid() is False:
                         continue
-                    if i_key in texture_preview_assigns:
-                        i_file_path = texture_preview_assigns[i_key]
-                        i_file_opt = bsc_core.StgFileOpt(i_file_path)
-                        if i_file_opt.get_is_file() is True:
-                            usd_core.UsdShaderOpt(i_prim).set_as_asset(
-                                'filename', i_file_opt.get_path()
-                            )
+
+                    if i_texture_type in texture_preview_assigns:
+                        i_texture_path = texture_preview_assigns[i_texture_type]
+                        usd_core.UsdShaderOpt(i_prim).set_as_asset(
+                            'filename', i_texture_path
+                        )
                     else:
                         usd_core.UsdShaderOpt(i_prim).set_as_asset('filename', '')
 
@@ -250,17 +265,22 @@ if QT_USD_FLAG is True:
                         self._usd_stage.GetPrimAtPath('/mtl_preview')
                     )
             #
-            texture_preview_assigns = texture_preview_assigns or {}
-            for i_key in bsc_core.BscTextureTypes.UsdPreviews:
-                i_usd_prim = self._usd_stage.GetPrimAtPath('/mtl_preview/txr_{}'.format(i_key))
-                if i_usd_prim.IsValid() is True:
-                    if i_key in texture_preview_assigns:
-                        i_file_path = texture_preview_assigns[i_key]
-                        i_file_opt = bsc_core.StgFileOpt(i_file_path)
-                        if i_file_opt.get_is_file() is True:
-                            usd_core.UsdShaderOpt(i_usd_prim).set_file(i_file_opt.get_path())
-                    else:
-                        usd_core.UsdShaderOpt(i_usd_prim).set_file('')
+            texture_assigns = texture_preview_assigns or {}
+            for i_texture_type in self._texture_types:
+                if i_texture_type in self._texture_type_mapper:
+                    i_node_key = self._texture_type_mapper[i_texture_type]
+                else:
+                    i_node_key = i_texture_type
+
+                i_usd_prim = self._usd_stage.GetPrimAtPath('/mtl_preview/txr_{}'.format(i_node_key))
+                if i_usd_prim.IsValid() is False:
+                    continue
+
+                if i_texture_type in texture_assigns:
+                    i_texture_path = texture_assigns[i_texture_type]
+                    usd_core.UsdShaderOpt(i_usd_prim).set_file(i_texture_path)
+                else:
+                    usd_core.UsdShaderOpt(i_usd_prim).set_file('')
             #
             if use_as_imperfection is True:
                 shader_opt = usd_core.UsdShaderOpt(
@@ -269,21 +289,21 @@ if QT_USD_FLAG is True:
                 shader_opt.set_as_float('ior', .470)
                 shader_opt.set_as_float('metallic', 1.0)
                 # no diffuse
-                if 'diffuse' not in texture_preview_assigns:
+                if 'diffuse_color' not in texture_preview_assigns:
                     diffuse_opt = usd_core.UsdShaderOpt(
-                        self._usd_stage.GetPrimAtPath('/mtl_preview/txr_diffuse')
+                        self._usd_stage.GetPrimAtPath('/mtl_preview/txr_diffuse_color')
                     )
-                    if 'roughness' in texture_preview_assigns:
-                        diffuse_opt.set_file(texture_preview_assigns['roughness'])
+                    if 'specular_roughness' in texture_preview_assigns:
+                        diffuse_opt.set_file(texture_preview_assigns['specular_roughness'])
                     elif 'glossiness' in texture_preview_assigns:
                         # todo: diffuse value error
                         diffuse_opt.set_as_float4('scale', (-1.0, -1.0, -1.0, 1.0))
                         diffuse_opt.set_as_float4('bias', (1.0, 1.0, 1.0, 1.0))
                         diffuse_opt.set_file(texture_preview_assigns['glossiness'])
                 # no roughness but hs glossiness
-                if 'roughness' not in texture_preview_assigns and 'glossiness' in texture_preview_assigns:
+                if 'specular_roughness' not in texture_preview_assigns and 'glossiness' in texture_preview_assigns:
                     roughness_opt = usd_core.UsdShaderOpt(
-                        self._usd_stage.GetPrimAtPath('/mtl_preview/txr_roughness')
+                        self._usd_stage.GetPrimAtPath('/mtl_preview/txr_specular_roughness')
                     )
                     roughness_opt.set_as_float4('scale', (-1.0, -1.0, -1.0, 1.0))
                     roughness_opt.set_as_float4('bias', (1.0, 1.0, 1.0, 1.0))
@@ -351,21 +371,21 @@ if QT_USD_FLAG is True:
                 )
             #
             if texture_preview_assigns:
-                for i_key in ['albedo', 'ao', 'roughness', 'normal', 'displacement', 'opacity']:
-                    i_prim = self._usd_stage.GetPrimAtPath('/materials/mtl_arnold/txr_{}'.format(i_key))
+                for i_texture_type in self._texture_types:
+                    if i_texture_type in self._texture_type_mapper:
+                        i_node_key = self._texture_type_mapper[i_texture_type]
+                    else:
+                        i_node_key = i_texture_type
+
+                    i_prim = self._usd_stage.GetPrimAtPath('/materials/mtl_arnold/txr_{}'.format(i_node_key))
                     if i_prim.IsValid() is False:
                         continue
-                    if i_key in texture_preview_assigns:
-                        i_file_path = texture_preview_assigns[i_key]
-                        i_file_opt = bsc_core.StgFileOpt(i_file_path)
-                        if i_file_opt.get_is_file() is True:
-                            usd_core.UsdShaderOpt(i_prim).set_as_asset(
-                                'filename', i_file_opt.get_path()
-                            )
-                        else:
-                            usd_core.UsdShaderOpt(i_prim).set_as_asset(
-                                'filename', ''
-                            )
+
+                    if i_texture_type in texture_preview_assigns:
+                        i_texture_path = texture_preview_assigns[i_texture_type]
+                        usd_core.UsdShaderOpt(i_prim).set_as_asset(
+                            'filename', i_texture_path
+                        )
                     else:
                         usd_core.UsdShaderOpt(i_prim).set_as_asset(
                             'filename', ''
@@ -1350,10 +1370,10 @@ if QT_USD_FLAG is True:
             tool_box._set_name_text_('hud-display and camera-mask')
             #
             for i_index, (i_key, i_value, i_enable_fnc, i_menu_data_gain_fnc) in enumerate(
-                    [
-                        ('hud-display', False, self._usd_set_hud_enable_, self._usd_get_hud_menu_data_),
-                        ('camera-mask', False, self._usd_set_camera_mask_enable_, self._usd_get_camera_mask_menu_data_)
-                    ]
+                [
+                    ('hud-display', False, self._usd_set_hud_enable_, self._usd_get_hud_menu_data_),
+                    ('camera-mask', False, self._usd_set_camera_mask_enable_, self._usd_get_camera_mask_menu_data_)
+                ]
             ):
                 i_button = _gui_qt_wgt_button.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
@@ -1405,10 +1425,10 @@ if QT_USD_FLAG is True:
             tool_box._set_name_text_('color space')
             #
             for i_index, (i_key, i_mode, i_value, i_enable_fnc, i_menu_data_gain_fnc) in enumerate(
-                    [
-                        ('color-manager', None, True, self._usd_model.set_color_space_enable,
-                         self._usd_get_color_space_menu_data_),
-                    ]
+                [
+                    ('color-manager', None, True, self._usd_model.set_color_space_enable,
+                     self._usd_get_color_space_menu_data_),
+                ]
             ):
                 i_button = _gui_qt_wgt_button.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
@@ -1436,11 +1456,11 @@ if QT_USD_FLAG is True:
             ]
             #
             for i_index, (i_key, i_menu_data_gain_fnc) in enumerate(
-                    [
-                        ('camera', self._usd_get_camera_menu_data_),
-                        ('renderer', self._usd_get_renderer_menu_data_),
-                        ('display-purpose', self._usd_get_display_purpose_menu_data_),
-                    ]
+                [
+                    ('camera', self._usd_get_camera_menu_data_),
+                    ('renderer', self._usd_get_renderer_menu_data_),
+                    ('display-purpose', self._usd_get_display_purpose_menu_data_),
+                ]
             ):
                 i_button = _gui_qt_wgt_button.QtIconPressButton()
                 i_button._set_name_text_(i_key)
@@ -1460,9 +1480,9 @@ if QT_USD_FLAG is True:
             tool_box._set_name_text_('display-purpose and environment')
             #
             for i_index, (i_key, i_menu_data_gain_fnc) in enumerate(
-                    [
-                        ('environment', self._usd_get_environment_menu_data_),
-                    ]
+                [
+                    ('environment', self._usd_get_environment_menu_data_),
+                ]
             ):
                 i_button = _gui_qt_wgt_button.QtIconPressButton()
                 i_button._set_name_text_(i_key)
@@ -1530,10 +1550,10 @@ if QT_USD_FLAG is True:
         def _usd_save_pre_geometry_snapshot_fnc_(self, file_p):
             for seq, i_prim in enumerate(self._usd_get_all_mesh_prims_()):
                 self._usd_isolate_select_geometry_to_(i_prim)
-                i_file_path = file_p.format(index=seq)
+                i_texture_path = file_p.format(index=seq)
                 # update GL before save fnc
                 self._stageView.updateView()
-                self._usd_save_snapshot_fnc(i_file_path)
+                self._usd_save_snapshot_fnc(i_texture_path)
             #
             self._usd_clear_session_visible_()
             self._stageView.updateView()

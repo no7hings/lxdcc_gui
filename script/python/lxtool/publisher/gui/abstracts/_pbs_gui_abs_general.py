@@ -132,7 +132,7 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
         self.__do_accept(self.__input.get_result())
 
     def refresh_all_fnc(self):
-        import lxwarp.shotgun.core as wrp_stg_core
+        import lxwrap.shotgun.core as wrp_stg_core
 
         self._stg_connector = wrp_stg_core.StgConnector()
         self._user_name = bsc_core.SystemMtd.get_user_name()
@@ -164,7 +164,7 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
             pass
 
         def cache_fnc_():
-            import lxwarp.shotgun.core as wrp_stg_core
+            import lxwrap.shotgun.core as wrp_stg_core
 
             t_o = wrp_stg_core.StgTaskOpt(self._stg_connector.to_query(stg_task))
             notice_stg_users = t_o.get_notice_stg_users()

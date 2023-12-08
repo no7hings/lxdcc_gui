@@ -23,7 +23,7 @@ import lxgui.proxy.core as gui_prx_core
 
 import lxsession.commands as ssn_commands
 
-import lxwarp.shotgun.core as wrp_stg_core
+import lxwrap.shotgun.core as wrp_stg_core
 
 import lxshotgun.rsv.scripts as stg_rsv_scripts
 
@@ -101,9 +101,8 @@ class AbsPnlSubmitterForRenderBase(
         self._set_panel_build_()
         # self.get_log_bar().set_expanded(True)
         #
-        self.start_loading(
-            delay_time=1000,
-            method=self._set_tool_panel_setup_
+        self.start_window_loading(
+            self._set_tool_panel_setup_
         )
 
     def _set_panel_build_(self):

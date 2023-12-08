@@ -231,6 +231,8 @@ class AbsPrxWaitingDef(object):
 
 
 class AbsPrxWindow(AbsPrx):
+    WINDOW_LOADING_SIZE = 480, 320
+
     def __init__(self, *args, **kwargs):
         super(AbsPrxWindow, self).__init__(*args, **kwargs)
         self._init_window_def_(*args, **kwargs)
@@ -251,7 +253,7 @@ class AbsPrxWindow(AbsPrx):
         #
         self._main_window_geometry = None
         #
-        self._definition_window_size = 480, 320
+        self._definition_window_size = self.WINDOW_LOADING_SIZE
         #
         self._qt_widget.setBaseSize(
             gui_qt_core.QtCore.QSize(*self._definition_window_size)

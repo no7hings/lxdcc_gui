@@ -207,13 +207,13 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         self.__tab_view.set_add_menu_data_gain_fnc(self.tab_add_menu_gain_fnc)
         self.__tab_view.connect_delete_accepted_to(self.gui_tab_page_delete_fnc)
 
-        self.__bubbles_filter = qt_widgets.QtChoiceBubbles(self._qt_widget)
+        self.__bubbles_filter = qt_widgets.QtBubbleAsChoice(self._qt_widget)
         self.__bubbles_filter._setup_()
         self.create_window_action_for(self.__bubbles_filter._start_, 'tab')
 
-        self.gui_build_create_layer()
-        self.gui_build_modify_layer()
-        self.gui_build_copy_layer()
+        self.__gui_build_create_layer()
+        self.__gui_build_modify_layer()
+        self.__gui_build_copy_layer()
         self.gui_build_filter()
 
         self.gui_refresh_all()
@@ -304,7 +304,7 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         )
         return list_
 
-    def gui_build_create_layer(self):
+    def __gui_build_create_layer(self):
         layer_widget = self.create_layer_widget('create_layer', 'Create')
         s = prx_widgets.PrxVScrollArea()
         layer_widget.add_widget(s)
@@ -328,10 +328,10 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         tool_bar.add_widget(button)
         button.set_name('Apply')
         button.connect_press_clicked_to(
-            self.create_apply_fnc
+            self.__create_layer_apply_fnc
         )
 
-    def gui_build_modify_layer(self):
+    def __gui_build_modify_layer(self):
         layer_widget = self.create_layer_widget('modify_layer', 'Modify')
         s = prx_widgets.PrxVScrollArea()
         layer_widget.add_widget(s)
@@ -355,10 +355,10 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         tool_bar.add_widget(button)
         button.set_name('Apply')
         button.connect_press_clicked_to(
-            self.modify_apply_fnc
+            self.__modify_layer_apply_fnc
         )
 
-    def gui_build_copy_layer(self):
+    def __gui_build_copy_layer(self):
         layer_widget = self.create_layer_widget('copy_layer', 'Copy')
         s = prx_widgets.PrxVScrollArea()
         layer_widget.add_widget(s)
@@ -382,10 +382,10 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         tool_bar.add_widget(button)
         button.set_name('Apply')
         button.connect_press_clicked_to(
-            self.copy_apply_fnc
+            self.__copy_layer_apply_fnc
         )
 
-    def create_apply_fnc(self):
+    def __create_layer_apply_fnc(self):
         options = self._create_option_prx_node.to_dict()
         kit_core.KitDesktopHookAddOpt(
             self,
@@ -393,7 +393,7 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
             options
         ).accept_create(mode='create')
 
-    def modify_apply_fnc(self):
+    def __modify_layer_apply_fnc(self):
         options = self._modify_option_prx_node.to_dict()
         kit_core.KitDesktopHookAddOpt(
             self,
@@ -401,7 +401,7 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
             options
         ).accept_create(mode='modify')
 
-    def copy_apply_fnc(self):
+    def __copy_layer_apply_fnc(self):
         options = self._copy_option_prx_node.to_dict()
         kit_core.KitDesktopHookAddOpt(
             self,
@@ -418,9 +418,8 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
             (self.gui_cache, ()),
             (self.gui_build, ()),
         ]
-        with log_core.LogProcessContext.create(maximum=len(ms), label='build') as g_p:
+        with self.gui_bustling():
             for i_m, i_as in ms:
-                g_p.do_update()
                 if i_as:
                     i_m(*i_as)
                 else:
@@ -585,13 +584,11 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         if history_tag_keys:
             page_keys = [i for i in history_tag_keys if i in self.__gui_page_query.get_all_keys()]
 
-        with log_core.LogProcessContext.create(maximum=len(page_keys), label='build for customize') as g_p:
+        with self.gui_bustling():
             for i_page_key in page_keys:
                 self.__gui_page_query.push_to_using(i_page_key)
 
                 self.gui_add_customize_for_page(i_page_key)
-
-                g_p.do_update()
 
     def gui_add_customize_for_page(self, page_name, switch_to=False):
         self.gui_get_group_args(
@@ -807,10 +804,6 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
 
     def refresh_current_group(self):
         self.gui_refresh_group(self.__tab_view.get_current_key())
-
-    def _execute_fnc_as_bustling_(self, fnc):
-        with self.gui_bustling():
-            fnc()
 
     @gui_core.GuiModifier.run_with_exception_catch
     def __debug_run(self, fnc):

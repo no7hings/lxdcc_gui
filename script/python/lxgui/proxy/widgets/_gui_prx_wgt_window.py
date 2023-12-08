@@ -139,7 +139,7 @@ class AbsPrxDialogWindow(
         # self._yes_button.set_visible(False)
         self._input_button_layout.addWidget(self._yes_button.widget)
         self._yes_button.set_name('Yes')
-        self._yes_button.set_icon_name('adopt')
+        self._yes_button.set_icon_name('dialog/yes')
         self._yes_button.set_width(self.BUTTON_WIDTH)
         self._yes_button.connect_press_clicked_to(self.do_yes)
         #
@@ -147,7 +147,7 @@ class AbsPrxDialogWindow(
         # self._no_button.set_visible(False)
         self._input_button_layout.addWidget(self._no_button.widget)
         self._no_button.set_name('No')
-        self._no_button.set_icon_name('warning')
+        self._no_button.set_icon_name('dialog/no')
         self._no_button.set_width(self.BUTTON_WIDTH)
         self._no_button.connect_press_clicked_to(self.do_no)
         #
@@ -155,7 +155,7 @@ class AbsPrxDialogWindow(
         # self._cancel_button.set_visible(False)
         self._input_button_layout.addWidget(self._cancel_button.widget)
         self._cancel_button.set_name('Cancel')
-        self._cancel_button.set_icon_name('cancel')
+        self._cancel_button.set_icon_name('dialog/cancel')
         self._cancel_button.set_width(self.BUTTON_WIDTH)
         self._cancel_button.connect_press_clicked_to(self.do_cancel)
         #

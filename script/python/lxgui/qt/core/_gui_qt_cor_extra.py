@@ -1,9 +1,11 @@
 # coding:utf-8
-from lxgui.qt.wrap import *
+import functools
 
 import types
 
 import six
+
+from lxgui.qt.wrap import *
 
 import lxcontent.core as ctt_core
 
@@ -275,12 +277,12 @@ class GuiQtMenuOpt(object):
             executable = executable_fnc
             if executable is False:
                 set_disable_fnc_(widget_action)
-        elif isinstance(executable_fnc, (types.FunctionType, types.MethodType)):
+        elif isinstance(executable_fnc, (types.FunctionType, types.MethodType, functools.partial, types.LambdaType)):
             executable = executable_fnc()
             if executable is False:
                 set_disable_fnc_(widget_action)
         #
-        if isinstance(execute_fnc, (types.FunctionType, types.MethodType)):
+        if isinstance(execute_fnc, (types.FunctionType, types.MethodType, functools.partial, types.LambdaType)):
             fnc = execute_fnc
             widget_action.triggered.connect(
                 fnc

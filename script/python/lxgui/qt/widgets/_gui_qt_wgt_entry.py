@@ -870,7 +870,7 @@ class QtEntryAsList(
                             values.append(i_value)
                     #
                     if self._entry_use_as_file_multiply is True:
-                        values = bsc_core.StgFileMultiplyMtd.merge_to(
+                        values = bsc_core.StgFileMtdForMultiply.merge_to(
                             values,
                             ['*.<udim>.####.*', '*.####.*']
                         )
@@ -1353,7 +1353,7 @@ class QtEntryAsCapsule(
     def _do_show_tool_tip_(self, event):
         if self.__index_hover is not None:
             value = self._get_value_options_()[self.__index_hover]
-            if not isinstance(value, six.text_type):
+            if not isinstance(value, six.string_types):
                 title = str(value)
             else:
                 title = value

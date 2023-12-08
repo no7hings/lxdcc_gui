@@ -733,7 +733,15 @@ class QtPainter(QtGui.QPainter):
                 p_over
             )
         elif is_hovered is True:
-            p_over = self._get_svg_rgba_over_(rect_, svg_render, gui_core.GuiRgba.LightOrange)
+            if hover_color is not None:
+                if len(hover_color) == 4:
+                    alpha = hover_color[3]
+                    p_over = self._get_svg_rgba_over_(rect_, svg_render, hover_color, alpha=alpha)
+                else:
+                    p_over = self._get_svg_rgba_over_(rect_, svg_render, hover_color)
+            else:
+                p_over = self._get_svg_rgba_over_(rect_, svg_render, gui_core.GuiRgba.LightOrange)
+
             self.drawPixmap(
                 rect_,
                 p_over
@@ -749,15 +757,16 @@ class QtPainter(QtGui.QPainter):
         )
         if mask_color is None:
             mask_color = QtCore.Qt.black
+
         i_new.fill(mask_color)
         painter = QtGui.QPainter(i_new)
         svg_render.render(painter, QtCore.QRectF(0, 0, w, h))
         painter.end()
-        #
+
         p_mask = QtGui.QPixmap(i_new).createMaskFromColor(mask_color)
         r, g, b, a = rgba
         c = QtGui.QColor(r, g, b, alpha)
-        #
+
         p_over = QtGui.QPixmap(i_new)
         p_over.fill(QtGui.QColor(c.red(), c.green(), c.blue(), alpha))
         p_over.setMask(p_mask)

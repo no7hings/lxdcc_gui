@@ -5,7 +5,7 @@ import lxkatana.dcc.dcc_objects as ktn_dcc_objects
 
 import lxkatana.fnc.comparers as ktn_fnc_comparers
 
-from lxkatana import ktn_core
+import lxkatana.core as ktn_core
 
 
 class PnlComparerForAssetGeometryDcc(cpr_gui_abstracts.AbsPnlComparerForAssetGeometryDcc):

@@ -793,6 +793,8 @@ class QtMainWindow(
     size_changed = qt_signal()
     window_activate_changed = qt_signal()
 
+    window_loading_finished = qt_signal()
+
     def __init__(self, *args, **kwargs):
         super(QtMainWindow, self).__init__(*args, **kwargs)
         self.setWindowFlags(QtCore.Qt.Window)

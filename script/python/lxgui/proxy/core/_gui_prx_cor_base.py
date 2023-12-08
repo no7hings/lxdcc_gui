@@ -245,7 +245,7 @@ class GuiProxyLogBridge(object):
             _log_cor_bridge.__dict__['BRG_FNC_LOG_GUI_TRACE_ERROR'] = GuiProxyLog.trace_error
 
             log_core.Log.trace_method_result(
-                cls.KEY, 'generate log trace bridge'
+                cls.KEY, 'generate log trace'
             )
 
     @classmethod
@@ -256,7 +256,7 @@ class GuiProxyLogBridge(object):
             _log_cor_bridge.__dict__['BRG_FNC_LOG_GUI_PROCESS_CREATE'] = GuiProxyProcess.create
 
             log_core.Log.trace_method_result(
-                cls.KEY, 'generate log progress bridge'
+                cls.KEY, 'generate log progress'
             )
 
     @classmethod
@@ -267,7 +267,7 @@ class GuiProxyLogBridge(object):
             _log_cor_bridge.__dict__['BRG_FNC_LOG_GUI_EXCEPTION_TRACE'] = GuiProxyException.trace
 
             log_core.Log.trace_method_result(
-                cls.KEY, 'generate log exception bridge'
+                cls.KEY, 'generate log exception'
             )
 
     @classmethod

@@ -75,10 +75,10 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
         h_s.set_fixed_size_at(0, 480)
         #
         self._options_prx_node.set(
-            'match_pattern', '*.<udim>.####.{ext}, *.<udim>.{ext}, *.{ext}'
+            'match_pattern', '*.<udim>.####.{format}, *.<udim>.{format}, *.{format}'
         )
         self._options_prx_node.set_default(
-            'match_pattern', '*.<udim>.####.{ext}, *.<udim>.{ext}, *.{ext}'
+            'match_pattern', '*.<udim>.####.{format}, *.<udim>.{format}, *.{format}'
         )
         self._options_prx_node.set(
             'by_format.execute', self.execute_create_by_format
@@ -114,9 +114,9 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
     def _set_file_args_update_0_(cls, file_dict, file_opt, include_patterns, ext_includes):
         name_patterns_ = []
         for i_name_pattern in include_patterns:
-            if i_name_pattern.endswith('{ext}'):
+            if i_name_pattern.endswith('{format}'):
                 for j_ext in ext_includes:
-                    j_name_pattern = i_name_pattern.replace('.{ext}', j_ext)
+                    j_name_pattern = i_name_pattern.replace('.{format}', j_ext)
                     name_patterns_.append(j_name_pattern)
             else:
                 name_patterns_.append(i_name_pattern)
@@ -129,7 +129,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
     @classmethod
     def _set_file_args_update_1_(cls, file_dict, file_opt, name_pattern):
         if bsc_core.PtnMultiplyFileMtd.get_is_valid(name_pattern):
-            match_args = bsc_core.StgFileMultiplyMtd.get_match_args(
+            match_args = bsc_core.StgFileMtdForMultiply.get_number_args(
                 file_opt.name, name_pattern
             )
             if match_args:
@@ -489,7 +489,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
                     i_texture_units_src = i_texture_src.get_exists_units()
                     #
                     i_color_space_src = i_texture_src.get_best_color_space()
-                    i_color_space_tgt = i_texture_src.generate_color_space_configure_for_aces().get_default_color_space()
+                    i_color_space_tgt = i_texture_src.get_method_for_color_space_as_aces().get_default_color_space()
                     for j_texture_unit_src in i_texture_units_src:
                         j_texture_unit_tgt = j_texture_unit_src.set_directory_repath_to(
                             directory_path_tgt
@@ -538,7 +538,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
                 bsc_core.StgFileOpt(i_directory_path_tgt).create_directory()
                 #
                 i_path_base, i_ext_src = os.path.splitext(i_file_path_src)
-                i_cmd = and_core.AndTextureOpt.get_format_convert_as_aces_command(
+                i_cmd = and_core.AndTextureOpt.generate_format_convert_as_aces_command(
                     i_file_path_src, i_directory_path_tgt, i_color_space_src, i_color_space_tgt
                 )
                 if button.get_is_stopped():

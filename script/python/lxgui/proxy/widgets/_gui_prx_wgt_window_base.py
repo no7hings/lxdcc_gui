@@ -72,7 +72,7 @@ class PrxBaseWindow(
         )
 
     def _gui_build_(self):
-        self._is_loading = False
+        self._window_loading_flag = False
         # menu bar
         self._qt_menu_bar_0 = _gui_qt_wgt_utility.QtMenuBar()
         self._qt_widget.setMenuBar(self._qt_menu_bar_0)
@@ -104,10 +104,10 @@ class PrxBaseWindow(
         #
         self._set_waiting_def_init_()
         #
-        self.set_current_layer('main_0')
+        self.set_current_layer('window_main_0')
 
     def switch_to_main_layer(self):
-        self.switch_current_layer_to('main_0')
+        self.switch_current_layer_to('window_main_0')
 
     def create_menu(self, name):
         menu = _gui_prx_wdt_utility.PrxMenu(self._qt_menu_bar_0)
@@ -125,7 +125,7 @@ class PrxBaseWindow(
 
     def create_layer_widget(self, key, label=None):
         def fnc_():
-            self.switch_current_layer_to('main_0')
+            self.switch_current_layer_to('window_main_0')
 
         layer = self.create_layer(key)
         layer_widget = layer.create_widget(key, label=label)
@@ -135,7 +135,7 @@ class PrxBaseWindow(
     # main
     def __build_main_layer(self):
         # content_widget_0
-        layer = self.create_layer('main_0')
+        layer = self.create_layer('window_main_0')
         qt_layout_0 = _gui_qt_wgt_base.QtVBoxLayout(layer._qt_widget)
         qt_layout_0.setContentsMargins(0, 0, 0, 0)
         qt_layout_0.setSpacing(0)
@@ -242,39 +242,41 @@ class PrxBaseWindow(
     def set_option_unit_clear(self):
         self.get_layer_widget('window_option_0').clear()
 
-    # loading
-    def set_window_loading_show(self):
-        gui_qt_core.GuiQtUtil.show_qt_window(
-            self.widget,
-            size=self.get_definition_window_size()
-        )
+    def start_window_loading(self, method, delay_time=100):
+        def pre_fnc_():
+            self.start_waiting()
+            self._window_loading_flag = True
+            # turn off animation
+            self._qt_layer_stack._set_animation_enable_(False)
+            self.set_current_layer('window_loading_0')
+            gui_qt_core.GuiQtUtil.show_qt_window(
+                self._qt_widget,
+                size=self.WINDOW_LOADING_SIZE
+            )
 
-    def start_loading(self, delay_time, method):
-        def method_fnc_():
-            self.set_window_loading_end()
+        def fnc_():
             method()
+            _post_fnc_timer = gui_qt_core.QtCore.QTimer(self.widget)
+            _post_fnc_timer.singleShot(delay_time, post_fnc_)
 
-        #
-        self._is_loading = True
-        self._loading_index = 0
-        self.set_current_layer('window_loading_0')
-        #
-        self.start_waiting(auto_stop_time=delay_time)
-        #
-        self._loading_timer_start = gui_qt_core.QtCore.QTimer(self.widget)
-        self._loading_timer_start.singleShot(delay_time, method_fnc_)
+        def post_fnc_():
+            self.stop_waiting()
+            gui_qt_core.GuiQtUtil.show_qt_window(
+                self._qt_widget, size=self.get_definition_window_size()
+            )
+            self.set_current_layer('window_main_0')
+            self._qt_widget.window_loading_finished.emit()
+            # turn on animation
+            self._qt_layer_stack._set_animation_enable_(True)
+            self._window_loading_flag = False
 
-        self._loading_show_timer = gui_qt_core.QtCore.QTimer(self.widget)
-        self._loading_show_timer.singleShot(int(delay_time*.8), self.set_window_loading_show)
+        pre_fnc_()
 
-    def set_window_loading_end(self):
-        gui_qt_core.GuiQtUtil.show_qt_window(
-            self.widget, size=self.get_definition_window_size()
-        )
-        #
-        self.set_current_layer('main_0')
-        #
-        self._is_loading = False
+        fnc_timer = gui_qt_core.QtCore.QTimer(self.widget)
+        fnc_timer.singleShot(100, fnc_)
+
+    def connect_window_loading_finished_to(self, fnc):
+        self._qt_widget.window_loading_finished.connect(fnc)
 
     # log
     def show_log_unit(self):
@@ -373,7 +375,7 @@ class PrxBaseWindow(
                         )
                         i.set_window_close()
         #
-        if self._is_loading is True:
+        if self._window_loading_flag is True:
             gui_qt_core.GuiQtUtil.show_qt_window(
                 self.widget, pos, size=(480, 240)
             )
@@ -448,6 +450,7 @@ class PrxSessionWindow(PrxBaseWindow):
 
     def _main_fnc_(self, *args, **kwargs):
         self._session = args[0]
+        self._session.set_prx_window(self)
         self._session.reload_configure()
         if self._session.get_is_td_enable() is True:
             self.set_window_title(
@@ -470,12 +473,12 @@ class PrxSessionWindow(PrxBaseWindow):
 
         if self._session.gui_configure.get('icon_name'):
             self.set_window_icon_by_name(self._session.gui_configure.get('icon_name'))
-        #
+
         self.set_definition_window_size(self._session.gui_configure.get('size'))
         self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
-        #
-        self.start_loading(
-            delay_time=self.LOADING_DELAY_TIME, method=self._setup_fnc_
+
+        self.start_window_loading(
+            self._setup_fnc_
         )
 
     def _setup_fnc_(self):

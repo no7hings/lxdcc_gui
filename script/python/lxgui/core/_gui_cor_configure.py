@@ -4,7 +4,7 @@ import os
 import enum
 
 
-class Data(object):
+class GuiBase(object):
     ROOT = os.path.dirname(__file__.replace('\\', '/'))
     DATA_ROOT = '{}/.data'.format(ROOT)
 

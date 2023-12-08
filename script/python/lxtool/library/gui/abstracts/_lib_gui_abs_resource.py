@@ -25,9 +25,11 @@ import lxgui.qt_for_usd.core as gui_qt_usd_core
 
 import lxgui.qt.widgets as qt_widgets
 
-import lxgui.proxy.abstracts as prx_abstracts
+import lxgui.proxy.abstracts as gui_prx_abstracts
 
 import lxgui.proxy.widgets as prx_widgets
+
+import lxwrap.texture.core as txr_core
 
 import lxsession.commands as ssn_commands
 
@@ -140,7 +142,7 @@ class _GuiBaseOpt(object):
 
 class _GuiTypeOpt(
     _GuiBaseOpt,
-    prx_abstracts.AbsGuiPrxTreeViewOpt
+    gui_prx_abstracts.AbsGuiPrxTreeViewOpt
 ):
     ROOT_NAME = 'All'
 
@@ -170,7 +172,9 @@ class _GuiTypeOpt(
                 ('kind', 'is', self._dtb_opt.Kinds.ResourceCategoryGroup)
             ]
         )
-        [self.gui_add_category_group(i) for i in dtb_category_groups]
+        with self._window.gui_bustling():
+            for i in dtb_category_groups:
+                self.gui_add_category_group(i)
 
     def gui_add_category_group(self, dtb_entity):
         path = dtb_entity.path
@@ -365,7 +369,7 @@ class _GuiTypeOpt(
 
 class _GuiTagOpt(
     _GuiBaseOpt,
-    prx_abstracts.AbsGuiTreeViewAsTagOpt
+    gui_prx_abstracts.AbsGuiTreeViewAsTagOpt
 ):
     # cache tag data
     CACHE = dict()
@@ -549,7 +553,7 @@ class _GuiTagOpt(
 
 class _GuiResourceOpt(
     _GuiBaseOpt,
-    prx_abstracts.AbsGuiPrxListViewOpt
+    gui_prx_abstracts.AbsGuiPrxListViewOpt
 ):
     CACHE = dict()
 
@@ -557,7 +561,10 @@ class _GuiResourceOpt(
         super(_GuiResourceOpt, self).__init__(window, session, database_opt)
         self._init_list_view_opt_(prx_list_view, self.DCC_NAMESPACE)
 
-    def get_texture_data(self, dtb_resource):
+        self._arnold_texture_types = txr_core.TxrMethodForBuild.generate_instance().get_arnold_includes()
+        self._arnold_texture_mapper = txr_core.TxrMethodForBuild.generate_instance().get_arnold_mapper()
+
+    def _get_texture_assign(self, dtb_resource):
         dtb_opt = self._dtb_opt
         dtb_resource_opt = dtb_objects.DtbNodeOpt(dtb_opt, dtb_resource)
         dtb_version = dtb_resource_opt.get_as_node('version')
@@ -571,26 +578,62 @@ class _GuiResourceOpt(
         )
         dtb_storage_opt = dtb_objects.DtbNodeOpt(dtb_opt, dtb_storage)
         directory_stg_path = dtb_storage_opt.get('location')
-        return dtb_scripts.ScpTextureResourceData(directory_stg_path).get_data()
+        return dtb_scripts.ScpTextureResourceData(directory_stg_path).get_texture_assign()
+
+    def _get_texture_path(self, dtb_resource):
+        dtb_opt = self._dtb_opt
+        dtb_resource_opt = dtb_objects.DtbNodeOpt(dtb_opt, dtb_resource)
+        dtb_version = dtb_resource_opt.get_as_node('version')
+        #
+        storage_dtb_path = '{}/{}'.format(dtb_version.path, 'texture_acescg_tx_directory')
+        dtb_storage = dtb_opt.get_entity(
+            entity_type=dtb_opt.EntityTypes.Storage,
+            filters=[
+                ('path', 'is', storage_dtb_path)
+            ]
+        )
+        dtb_storage_opt = dtb_objects.DtbNodeOpt(dtb_opt, dtb_storage)
+        directory_stg_path = dtb_storage_opt.get('location')
+        return dtb_scripts.ScpTextureResourceData(directory_stg_path).get_texture_path()
 
     def copy_to_clipboard_from(self, dtb_resource):
-        xml_file_path = bsc_core.ExtendResource.get('asset/library/katana/{}.xml'.format(self._window._copy_mode))
-        if xml_file_path:
-            xml_data = bsc_core.StgFileOpt(xml_file_path).set_read()
-            texture_data = self.get_texture_data(dtb_resource)
-            if texture_data:
-                replace_data = {}
-                for i_key in bsc_core.BscTextureTypes.Arnold.All:
-                    replace_data[i_key] = texture_data.get(i_key, '')
-                #
-                replace_data['resource_name'] = '_'.join(dtb_resource.gui_name.split(' ')).lower()
-                replace_data['time_tag'] = bsc_core.TimeExtraMtd.get_time_tag_36_(multiply=100)
-                for i_k, i_v in replace_data.items():
-                    xml_data = xml_data.replace('{{{}}}'.format(i_k), i_v)
-            #
+        texture_path = self._get_texture_path(dtb_resource)
+        if texture_path is not None:
             gui_qt_core.GuiQtUtil.set_text_to_clipboard(
-                xml_data
+                texture_path
             )
+        else:
+            gui_qt_core.GuiQtUtil.set_text_to_clipboard(
+                ''
+            )
+        # xml_file_path = bsc_core.ExtendResource.get('asset/library/katana/{}.xml'.format(self._window._copy_mode))
+        # if xml_file_path:
+        #     xml_data = bsc_core.StgFileOpt(xml_file_path).set_read()
+        #     texture_assign = self._get_texture_assign(dtb_resource)
+        #     if texture_assign:
+        #         replace_data = {}
+        #         for i_texture_type in self._arnold_texture_types:
+        #             if i_texture_type in self._arnold_texture_mapper:
+        #                 i_key = self._arnold_texture_mapper[i_texture_type]
+        #             else:
+        #                 i_key = i_texture_type
+        #
+        #             if i_texture_type in texture_assign:
+        #                 i_texture_path = texture_assign[i_texture_type]
+        #             else:
+        #                 i_texture_path = ''
+        #
+        #             replace_data[i_key] = i_texture_path
+        #
+        #         replace_data['texture_name'] = '_'.join(dtb_resource.gui_name.split(' ')).lower()
+        #         replace_data['time_tag'] = bsc_core.TimeExtraMtd.get_time_tag_36_(multiply=100)
+        #
+        #         for i_k, i_v in replace_data.items():
+        #             xml_data = xml_data.replace('{{{}}}'.format(i_k), i_v)
+        #     #
+        #     gui_qt_core.GuiQtUtil.set_text_to_clipboard(
+        #         xml_data
+        #     )
 
     def __gui_cache_fnc(self, dtb_resource, cache_image_enable):
         key = dtb_resource.path
@@ -818,7 +861,7 @@ class _GuiResourceOpt(
 
 class _GuiDirectoryOpt(
     _GuiBaseOpt,
-    prx_abstracts.AbsGuiPrxTreeViewOpt
+    gui_prx_abstracts.AbsGuiPrxTreeViewOpt
 ):
     ROOT_NAME = 'All'
     DCC_NAMESPACE = 'database'
@@ -1004,7 +1047,7 @@ class _GuiDirectoryOpt(
 
 class _GuiFileOpt(
     _GuiBaseOpt,
-    prx_abstracts.AbsGuiPrxListViewAsFileOpt
+    gui_prx_abstracts.AbsGuiPrxListViewAsFileOpt
 ):
     DCC_NAMESPACE = 'database'
 
@@ -1178,26 +1221,6 @@ class _GuiUsdStageViewOpt(_GuiBaseOpt):
         )
         return p_o.get_variants(version_stg_path)
 
-    def get_texture_preview_assigns(self, dtb_version):
-        dict_ = {}
-        for i_key in bsc_core.BscTextureTypes.All:
-            i_dtb_path = '{}/texture_{}_file'.format(dtb_version.path, i_key)
-            i_file_path = self._dtb_opt.get_property(
-                i_dtb_path, 'location'
-            )
-            if i_file_path is not None:
-                i_file_opt = bsc_core.StgFileOpt(i_file_path)
-                if i_file_opt.get_ext() == '.exr':
-                    i_file_opt = i_file_opt.set_ext_repath_to('.jpg')
-                #
-                if i_file_opt.get_is_file() is True:
-                    # map to usd key
-                    if i_key in bsc_core.BscTextureTypes.UsdPreviewMapper:
-                        i_key = bsc_core.BscTextureTypes.UsdPreviewMapper[i_key]
-                    #
-                    dict_[i_key] = i_file_opt.get_path()
-        return dict_
-
     def get_look_preview_usd_file(self, variants):
         p = self._dtb_opt.get_pattern(keyword='look-preview-usd-file')
         p_o = bsc_core.PtnParseOpt(p)
@@ -1258,8 +1281,14 @@ class _GuiUsdStageViewOpt(_GuiBaseOpt):
         )
 
     def refresh_textures(self, dtb_resource, dtb_version, use_as_imperfection=False):
-        self._usd_stage_view.refresh_usd_stage_for_texture_preview(
-            self.get_texture_preview_assigns(dtb_version)
+        geometry_usd_file_path, look_preview_usd_file_path, texture_preview_assigns = self.get_data(
+            dtb_version
+        )
+        self._usd_stage_view.refresh_usd_stage_for_asset_preview(
+            usd_file=geometry_usd_file_path,
+            look_preview_usd_file=look_preview_usd_file_path,
+            texture_preview_assigns=texture_preview_assigns,
+            use_as_imperfection=use_as_imperfection
         )
         self._usd_stage_view.refresh_usd_view_draw()
 

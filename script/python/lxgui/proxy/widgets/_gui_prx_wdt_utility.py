@@ -412,7 +412,8 @@ class PrxLayerWidget(gui_prx_abstracts.AbsPrxWidget):
         self._qt_label_0._set_name_font_size_(12)
         qt_top_layout_1.addWidget(self._qt_label_0)
         self._button_0 = PrxIconPressButton()
-        self._button_0.set_icon_name('close')
+        self._button_0.set_icon_name('window_base/close')
+        self._button_0.set_icon_hover_color((255, 0, 63, 127))
         qt_top_layout_1.addWidget(self._button_0.widget)
 
         self._qt_line = _gui_qt_wgt_utility.QtHLine()
@@ -607,6 +608,11 @@ class PrxIconPressButton(gui_prx_abstracts.AbsPrxWidget):
     def set_icon_sub_name(self, icon_name):
         self._qt_widget._set_icon_sub_file_path_(
             gui_core.GuiIcon.get(icon_name)
+        )
+
+    def set_icon_hover_color(self, color):
+        self._qt_widget._set_icon_hover_color_(
+            color
         )
 
     def set_icon_by_name(self, text):

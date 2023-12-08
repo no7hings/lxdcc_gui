@@ -48,7 +48,7 @@ class PrxInputAsStgTask(gui_prx_abstracts.AbsPrxWidget):
         self.__stg_task = None
         self.__result_dict = None
 
-        import lxwarp.shotgun.core as wrp_stg_core
+        import lxwrap.shotgun.core as wrp_stg_core
 
         self._stg_connector = wrp_stg_core.StgConnector()
 

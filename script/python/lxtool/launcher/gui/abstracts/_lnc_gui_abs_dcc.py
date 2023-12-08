@@ -92,7 +92,7 @@ class AbsPnlDccLauncher(prx_widgets.PrxSessionWindow):
                 raise RuntimeError()
 
             bsc_core.ExcExtra.execute_shell_script_use_terminal(
-                '"{}"'.format(cmd), **dict(title=self.__get_application())
+                '"{}"'.format(cmd), **dict(title='{}-{}'.format(self.__get_application(), bsc_core.SystemMtd.get_time_tag()))
             )
             self.close_window_later()
 

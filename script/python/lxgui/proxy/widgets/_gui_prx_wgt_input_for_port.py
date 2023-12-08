@@ -430,7 +430,7 @@ class PrxInputAsFilesOpen(PrxInputAsStorageArray):
             # s = files, filter
             values = s[0]
             if values:
-                values = bsc_core.StgFileMultiplyMtd.merge_to(
+                values = bsc_core.StgFileMtdForMultiply.merge_to(
                     values,
                     ['*.<udim>.####.*', '*.####.*']
                 )
@@ -443,7 +443,7 @@ class PrxInputAsFilesOpen(PrxInputAsStorageArray):
                 ext = os.path.splitext(value)[-1]
                 if ext not in self._ext_includes:
                     return False
-            return bsc_core.StgFileMultiplyMtd.get_is_exists(value)
+            return bsc_core.StgFileMtdForMultiply.get_is_exists(value)
         return False
 
 
@@ -625,7 +625,7 @@ class PrxInputAsShotgunEntityWithChoose(_AbsPrxInput):
             pass
 
         def cache_fnc_():
-            import lxwarp.shotgun.core as wrp_stg_core
+            import lxwrap.shotgun.core as wrp_stg_core
             return [
                 wrp_stg_core.StgConnector.generate_stg_gui_args(
                     shotgun_entity_kwargs, name_field, image_field, keyword_filter_fields, tag_filter_fields
@@ -735,7 +735,7 @@ class PrxInputAsShotgunEntitiesWithChoose(_AbsPrxInput):
             pass
 
         def cache_fnc_():
-            import lxwarp.shotgun.core as wrp_stg_core
+            import lxwrap.shotgun.core as wrp_stg_core
             return [
                 wrp_stg_core.StgConnector.generate_stg_gui_args(
                     shotgun_entity_kwargs, name_field, image_field, keyword_filter_fields, tag_filter_fields

@@ -9,7 +9,7 @@ import lxcontent.core as ctt_core
 
 import lxgui.core as gui_core
 
-import lxgui.proxy.abstracts as prx_abstracts
+import lxgui.proxy.abstracts as gui_prx_abstracts
 
 
 class GuiPrxScpForTreeSelection(object):
@@ -304,7 +304,7 @@ class GuiPrxScpForTreeTagFilter(object):
         return prx_item_src
 
 
-class GuiPrxScpForTreeAdd(prx_abstracts.AbsGuiPrxCacheDef):
+class GuiPrxScpForTreeAdd(gui_prx_abstracts.AbsGuiPrxCacheDef):
     def __init__(self, prx_tree_view, prx_tree_item_cls, dcc_namespace):
         self._prx_tree_view = prx_tree_view
         self._prx_tree_item_cls = prx_tree_item_cls
@@ -462,7 +462,7 @@ class GuiPrxScpForTreeAdd(prx_abstracts.AbsGuiPrxCacheDef):
         return list_
 
 
-class GuiPrxScpForStorageTreeAdd(prx_abstracts.AbsGuiPrxCacheDef):
+class GuiPrxScpForStorageTreeAdd(gui_prx_abstracts.AbsGuiPrxCacheDef):
     def __init__(self, prx_tree_view, prx_tree_item_cls):
         self._prx_tree_view = prx_tree_view
         self._prx_tree_item_cls = prx_tree_item_cls
