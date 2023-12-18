@@ -14,7 +14,7 @@ from lxgui.qt.widgets import \
 
 
 class PrxInputAsStgTask(gui_prx_abstracts.AbsPrxWidget):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     
     class Schemes(object):
         AssetTask = 'asset-task'
@@ -120,7 +120,7 @@ class PrxInputAsStgTask(gui_prx_abstracts.AbsPrxWidget):
     def __update_branch(self, text):
         if text != self.__scheme:
             path_text = self.__qt_task_input._get_value_()
-            path = bsc_core.DccPathDagOpt(path_text)
+            path = bsc_core.PthNodeOpt(path_text)
 
             self.__scheme = text
             self.__qt_task_input._restore_buffer_cache_()
@@ -278,7 +278,7 @@ class PrxInputAsStgTask(gui_prx_abstracts.AbsPrxWidget):
         self.__stg_task = None
         self.__result_dict = None
         if path_text:
-            path = bsc_core.DccPathDagOpt(path_text)
+            path = bsc_core.PthNodeOpt(path_text)
             cs = path.get_components()
             cs.reverse()
 

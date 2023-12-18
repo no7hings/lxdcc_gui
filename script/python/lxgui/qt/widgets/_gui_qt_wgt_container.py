@@ -1,5 +1,5 @@
 # coding=utf-8
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import lxgui.qt.core as gui_qt_core
 
@@ -46,7 +46,7 @@ class AbsQtToolGroup(
         self.__head.expand_toggled.connect(self._set_expanded_)
         self.__head._set_tool_tip_text_('"LMB-click" expand tool group')
 
-        self.__view = _gui_qt_wgt_utility._QtTranslucentWidget()
+        self.__view = _gui_qt_wgt_utility.QtTranslucentWidget()
         self.__base_layout.addWidget(self.__view)
         self.__layout = _gui_qt_wgt_base.QtVBoxLayout(self.__view)
         self.__layout.setContentsMargins(2, 0, 0, 0)
@@ -206,7 +206,7 @@ class AbsQtToolBox(QtWidgets.QWidget):
         self._head._set_tool_tip_text_('"LMB-click" to expand "on" / "off"')
         self._head.setFixedSize(self.QT_HEAD_W, self.QT_HEAD_H)
         #
-        self._container = _gui_qt_wgt_utility._QtTranslucentWidget()
+        self._container = _gui_qt_wgt_utility.QtTranslucentWidget()
         layout.addWidget(self._container)
         if self.QT_ORIENTATION == QtCore.Qt.Horizontal:
             self._qt_layout = _gui_qt_wgt_base.QtHBoxLayout(self._container)

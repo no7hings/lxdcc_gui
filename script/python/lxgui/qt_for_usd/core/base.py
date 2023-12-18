@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxgui.qt_for_usd.warp import *
+from lxgui.qt_for_usd.core.wrap import *
 
 
 class UsdModel(object):

@@ -3,7 +3,7 @@ import six
 
 import fnmatch
 
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import lxbasic.core as bsc_core
 
@@ -412,7 +412,7 @@ class QtEntryAsGuide(
     def _set_guide_path_text_(self, path):
         self._clear_all_guide_items_()
         #
-        path_opt = bsc_core.DccPathDagOpt(path)
+        path_opt = bsc_core.PthNodeOpt(path)
         components = path_opt.get_components()
         if components:
             components.reverse()

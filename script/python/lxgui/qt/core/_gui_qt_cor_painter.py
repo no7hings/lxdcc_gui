@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import math
 
@@ -956,7 +956,7 @@ class QtPainter(QtGui.QPainter):
         )
 
     def _set_exr_image_draw_by_rect_(self, rect, file_path, offset=0, is_hovered=False):
-        thumbnail_file_path = bsc_core.ImgFileOpt(file_path).get_thumbnail()
+        thumbnail_file_path = bsc_core.ImgOiioOptForThumbnail(file_path).generate_thumbnail()
         self._draw_image_by_rect_(
             rect=rect, file_path=thumbnail_file_path, offset=offset, is_hovered=is_hovered
         )
@@ -967,7 +967,7 @@ class QtPainter(QtGui.QPainter):
             rect.width()-offset, rect.height()-offset
         )
         #
-        thumbnail_file_path = bsc_core.VdoFileOpt(file_path).get_thumbnail()
+        thumbnail_file_path = bsc_core.VdoFileOpt(file_path).generate_thumbnail()
         rect_size = rect.size()
         image = QtGui.QImage(thumbnail_file_path)
         new_image = image.scaled(

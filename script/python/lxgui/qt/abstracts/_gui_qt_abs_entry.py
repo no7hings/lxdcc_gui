@@ -1,5 +1,5 @@
 # coding=utf-8
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 from ..abstracts import _gui_qt_abs_base
 

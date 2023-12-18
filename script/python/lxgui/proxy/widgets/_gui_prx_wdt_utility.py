@@ -275,7 +275,7 @@ class PrxHToolBox(gui_prx_abstracts.AbsPrxWidget):
         self._qt_head.expand_toggled.connect(self.set_expanded)
         self._qt_head._set_tool_tip_text_('"LMB-click" to expand "on" / "off"')
         #
-        qt_widget_1 = _gui_qt_wgt_utility._QtTranslucentWidget()
+        qt_widget_1 = _gui_qt_wgt_utility.QtTranslucentWidget()
         qt_layout_0.addWidget(qt_widget_1)
         qt_layout_1 = _gui_qt_wgt_base.QtHBoxLayout(qt_widget_1)
         qt_layout_1.setContentsMargins(*[0]*4)
@@ -387,7 +387,7 @@ class Window(gui_prx_abstracts.AbsPrxWindow):
 
 
 class PrxLayerWidget(gui_prx_abstracts.AbsPrxWidget):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
 
     def __init__(self, *args, **kwargs):
         super(PrxLayerWidget, self).__init__(*args, **kwargs)
@@ -460,7 +460,7 @@ class PrxLayerWidget(gui_prx_abstracts.AbsPrxWidget):
 
 
 class PrxLayer(gui_prx_abstracts.AbsPrxWidget):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     #
     PRX_LAYER_WIDGET_CLS = PrxLayerWidget
 
@@ -650,6 +650,9 @@ class PrxIconPressButton(gui_prx_abstracts.AbsPrxWidget):
 
     def set_drag_and_drop_scheme(self, text):
         self._qt_widget._set_drag_and_drop_scheme_(text)
+
+    def save_main_icon_to_file(self, file_path):
+        self._qt_widget._save_main_icon_to_file_(file_path)
 
 
 class PrxPressItem(gui_prx_abstracts.AbsPrxWidget):

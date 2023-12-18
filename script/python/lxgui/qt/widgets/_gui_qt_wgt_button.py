@@ -1,5 +1,7 @@
 # coding=utf-8
-from lxgui.qt.wrap import *
+import os
+
+from lxgui.qt.core.wrap import *
 
 import lxbasic.core as bsc_core
 
@@ -908,6 +910,72 @@ class QtIconPressButton(
         self._icon_state_draw_is_enable = True
         self._icon_state_file_path = gui_core.GuiIcon.get(
             'state/popup'
+        )
+
+    def _save_main_icon_to_file_(self, file_path, size=(128, 128)):
+        w, h = size
+        size = QtCore.QSize(w, h)
+        pixmap = QtGui.QPixmap(size)
+        painter = gui_qt_core.QtPainter(pixmap)
+        pixmap.fill(QtGui.QColor(64, 64, 64, 255))
+        rect = pixmap.rect()
+
+        offset = 0
+        is_pressed = False
+
+        if self._icon_is_enable is True:
+            if self._icon:
+                painter._draw_icon_by_rect_(
+                    icon=self._icon,
+                    rect=rect,
+                    offset=offset
+                )
+            elif self._icon_file_path is not None:
+                painter._draw_icon_file_by_rect_(
+                    rect=rect,
+                    file_path=self._icon_file_path,
+                    offset=offset,
+                    is_hovered=self._is_hovered,
+                    hover_color=self._icon_hover_color,
+                    is_pressed=is_pressed,
+                )
+            elif self._icon_text is not None:
+                if self.__icon_style is not None:
+                    painter._draw_styled_button_use_text_by_rect_(
+                        rect=rect,
+                        text=self._icon_text,
+                        icon_style=self.__icon_style,
+                        background_color=self._icon_name_rgba,
+                        offset=offset,
+                        is_hovered=self._is_hovered,
+                        is_pressed=is_pressed
+                    )
+                else:
+                    painter._draw_image_use_text_by_rect_(
+                        rect=rect,
+                        text=self._icon_text,
+                        background_color=self._icon_name_rgba,
+                        offset=offset,
+                        border_width='auto',
+                        border_radius=2,
+                        is_hovered=self._is_hovered,
+                        is_pressed=is_pressed
+                    )
+
+        painter.end()
+
+        ext = os.path.splitext(file_path)[-1]
+        if ext:
+            if ext.lower() not in ['.png', '.jpg', '.jpeg']:
+                format_ = 'PNG'
+            else:
+                format_ = str(ext[1:]).upper()
+        else:
+            format_ = 'PNG'
+
+        pixmap.save(
+            file_path,
+            format_
         )
 
 

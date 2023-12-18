@@ -1,5 +1,5 @@
 # coding=utf-8
-from lxgui.qt_for_usd.warp import *
+from lxgui.qt_for_usd.core.wrap import *
 
 import functools
 
@@ -238,7 +238,7 @@ if QT_USD_FLAG is True:
                 bsc_core.ExtendResource.get('asset/library/preview-light.usda')
             )
             #
-            (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).get_geometry_args('/')
+            (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).generate_geometry_args('/')
 
             usd_core.UsdXformOpt(
                 self._usd_stage.GetPrimAtPath('/lights/lgt_preview/lgt_key')
@@ -340,7 +340,7 @@ if QT_USD_FLAG is True:
                     bsc_core.ExtendResource.get('asset/library/arnold-light.usda')
                 )
             #
-            # (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).get_geometry_args('/')
+            # (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).generate_geometry_args('/')
             #
             # usd_core.UsdXformOpt(
             #     self._usd_stage.GetPrimAtPath('/lights/lgt_render/lgt_key')
@@ -417,9 +417,9 @@ if QT_USD_FLAG is True:
             session_layer.Clear()
 
         def _usd_update_camera_(self):
-            (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).get_geometry_args('/')
+            (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).generate_geometry_args('/')
             # side-x
-            (t_x, t_y, t_z), (r_x, r_y, r_z), (s_x, s_y, s_z) = bsc_core.CameraMtd.get_front_transformation(
+            (t_x, t_y, t_z), (r_x, r_y, r_z), (s_x, s_y, s_z) = bsc_core.CameraMtd.compute_front_transformation(
                 geometry_args=((z, y, x), (c_z, c_y, c_x), (d, h, w)),
                 angle=1,
                 bottom=True
@@ -430,7 +430,7 @@ if QT_USD_FLAG is True:
                 ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (t_x, t_y, t_z, 1))
             )
             # top-y
-            (t_x, t_y, t_z), (r_x, r_y, r_z), (s_x, s_y, s_z) = bsc_core.CameraMtd.get_front_transformation(
+            (t_x, t_y, t_z), (r_x, r_y, r_z), (s_x, s_y, s_z) = bsc_core.CameraMtd.compute_front_transformation(
                 geometry_args=((x, -z, y), (c_x, -c_z, c_y), (w, d, h)),
                 angle=1,
             )
@@ -440,7 +440,7 @@ if QT_USD_FLAG is True:
                 ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (t_x, t_y, t_z, 1))
             )
             # front-z
-            (t_x, t_y, t_z), (r_x, r_y, r_z), (s_x, s_y, s_z) = bsc_core.CameraMtd.get_front_transformation(
+            (t_x, t_y, t_z), (r_x, r_y, r_z), (s_x, s_y, s_z) = bsc_core.CameraMtd.compute_front_transformation(
                 geometry_args=((x, y, z), (c_x, c_y, c_z), (w, h, d)),
                 angle=1,
                 bottom=True
@@ -1520,7 +1520,7 @@ if QT_USD_FLAG is True:
             return []
 
         def _usd_do_snapshot_(self):
-            d = bsc_core.SystemMtd.get_home_directory()
+            d = bsc_core.SysBaseMtd.get_home_directory()
             file_path = six.u('{}/snapshot/untitled-{}.png').format(d, bsc_core.TimeExtraMtd.get_time_tag_36())
             bsc_core.StgFileOpt(file_path).create_directory()
             self._usd_save_snapshot_to_(file_path)

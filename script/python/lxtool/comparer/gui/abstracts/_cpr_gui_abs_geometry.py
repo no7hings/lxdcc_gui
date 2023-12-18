@@ -43,8 +43,8 @@ class AbsDccComparerOpt(object):
         if path_src in self._item_dict:
             return self._item_dict[path_src]
         #
-        dcc_path_dag_opt_src = bsc_core.DccPathDagOpt(path_src)
-        dcc_path_dag_opt_tgt = bsc_core.DccPathDagOpt(path_tgt)
+        dcc_path_dag_opt_src = bsc_core.PthNodeOpt(path_src)
+        dcc_path_dag_opt_tgt = bsc_core.PthNodeOpt(path_tgt)
         #
         dcc_obj_src = self.DCC_NODE_CLS(path_src)
 

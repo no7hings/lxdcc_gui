@@ -1,5 +1,5 @@
 # coding:utf-8
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import lxgui.core as gui_core
 
@@ -426,14 +426,14 @@ class AbsQtListWidget(
             i_item.setSelected(boolean)
             self.itemWidget(i_item)._set_selected_(boolean)
 
-    def _get_visible_items_(self):
+    def _get_all_visible_items_(self):
         return [i for i in self._get_all_items_() if i.isHidden() is False]
 
     def _get_all_visible_item_count_(self):
-        return len(self._get_visible_items_())
+        return len(self._get_all_visible_items_())
 
     def _get_visible_indices_(self):
-        return [self.indexFromItem(i) for i in self._get_visible_items_() if i.isHidden() is False]
+        return [self.indexFromItem(i) for i in self._get_all_visible_items_() if i.isHidden() is False]
 
     @staticmethod
     def _set_loading_update_():

@@ -5,7 +5,7 @@ import types
 
 import six
 
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import lxcontent.core as ctt_core
 
@@ -75,6 +75,11 @@ class QtVBoxLayout(QtWidgets.QVBoxLayout):
     def _set_align_top_(self):
         self.setAlignment(
             QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop
+        )
+
+    def _set_align_bottom_(self):
+        self.setAlignment(
+            QtCore.Qt.AlignHCenter|QtCore.Qt.AlignBottom
         )
 
     def _clear_all_widgets_(self):
@@ -201,9 +206,9 @@ class GuiQtMenuOpt(object):
         if isinstance(content, ctt_core.AbsContent):
             keys = content.get_keys(regex='*.properties')
             for i_key in keys:
-                i_atr_path_opt = bsc_core.DccAttrPathOpt(i_key)
+                i_atr_path_opt = bsc_core.PthAttributeOpt(i_key)
                 i_obj_path = i_atr_path_opt.obj_path
-                i_obj_path_opt = bsc_core.DccPathDagOpt(i_obj_path)
+                i_obj_path_opt = bsc_core.PthNodeOpt(i_obj_path)
                 i_content = content.get_as_content(i_key)
                 i_type = i_content.get('type')
                 if i_obj_path_opt.get_is_root():

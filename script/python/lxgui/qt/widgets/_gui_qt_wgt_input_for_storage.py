@@ -1,7 +1,7 @@
 # coding=utf-8
 import os
 
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import lxbasic.core as bsc_core
 
@@ -232,7 +232,7 @@ class QtInputAsStorage(
         main_layout = _gui_qt_wgt_base.QtVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
-        entry_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
+        entry_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
         main_layout.addWidget(entry_widget)
         #
         entry_layout = _gui_qt_wgt_base.QtHBoxLayout(entry_widget)

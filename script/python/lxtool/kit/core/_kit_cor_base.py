@@ -55,7 +55,7 @@ class KitDesktopHook(object):
     @classmethod
     def get_current_user_group_key(cls):
         return '{}/{}'.format(
-            cls.PageKey.User, bsc_core.SystemMtd.get_user_name()
+            cls.PageKey.User, bsc_core.SysBaseMtd.get_user_name()
         )
 
 
@@ -102,7 +102,7 @@ class KitDesktopHookAddOpt(object):
 
     @classmethod
     def get_user_directory(cls):
-        return cls.CUSTOMIZE_PATH+'/{}'.format(bsc_core.SystemMtd.get_user_name())
+        return cls.CUSTOMIZE_PATH+'/{}'.format(bsc_core.SysBaseMtd.get_user_name())
 
     @classmethod
     def get_all_hook_keys_from_fnc(cls, path):
@@ -140,7 +140,7 @@ class KitDesktopHookAddOpt(object):
                 )
                 return
 
-        default_configue_file_path = bsc_core.ResourceContent.get(
+        default_configue_file_path = bsc_core.ResourceConfigure.get(
             'session/default-hook-configure.yml'
         )
         c = ctt_core.Content(value=default_configue_file_path)

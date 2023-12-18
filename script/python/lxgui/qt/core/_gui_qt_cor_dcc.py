@@ -1,9 +1,9 @@
 # coding:utf-8
 import sys
 
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
-import lxlog.core as log_core
+import lxbasic.log as bsc_log
 
 import lxbasic.core as bsc_core
 
@@ -137,7 +137,7 @@ class GuiQtKatana(object):
     def get_menu_bar(cls):
         main_window = cls.get_qt_main_window()
         if main_window is None:
-            log_core.Log.trace_method_warning(
+            bsc_log.Log.trace_method_warning(
                 'qt-katana',
                 'main-window is non-exists'
             )
@@ -149,7 +149,7 @@ class GuiQtKatana(object):
     def get_menu(cls, name):
         menu_bar = cls.get_menu_bar()
         if menu_bar is None:
-            log_core.Log.trace_method_warning(
+            bsc_log.Log.trace_method_warning(
                 'qt-katana',
                 'menu-bar is non-exists'
             )

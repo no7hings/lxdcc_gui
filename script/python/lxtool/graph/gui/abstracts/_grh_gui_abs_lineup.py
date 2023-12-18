@@ -120,7 +120,7 @@ class AbsPnlAssetLineup(prx_widgets.PrxSessionWindow):
     #
     def _set_add_rsv_entities_(self, rsv_project):
         def post_fnc_():
-            self._end_timestamp = bsc_core.TimeMtd.get_timestamp()
+            self._end_timestamp = bsc_core.SysBaseMtd.get_timestamp()
             #
             bsc_core.Log.trace_method_result(
                 'load asset/shot from "{}"'.format(
@@ -135,7 +135,7 @@ class AbsPnlAssetLineup(prx_widgets.PrxSessionWindow):
             self._set_graph_reload_()
 
         self._count = 0
-        self._start_timestamp = bsc_core.TimeMtd.get_timestamp()
+        self._start_timestamp = bsc_core.SysBaseMtd.get_timestamp()
         #
         rsv_tags = rsv_project.get_rsv_resource_groups(**self._rsv_filter_opt.value)
         #
@@ -295,7 +295,7 @@ class AbsPnlAssetLineup(prx_widgets.PrxSessionWindow):
                         if 'gui_parent' in i_hook_option:
                             i_gui_parent_path = i_hook_option['gui_parent']
                     #
-                    i_gui_parent_path_opt = bsc_core.DccPathDagOpt(i_gui_parent_path)
+                    i_gui_parent_path_opt = bsc_core.PthNodeOpt(i_gui_parent_path)
                     #
                     if i_gui_parent_path_opt.get_is_root():
                         i_gui_path = '/{}'.format(i_gui_name)

@@ -3,7 +3,7 @@ import sys
 
 import re
 
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import lxbasic.core as bsc_core
 
@@ -563,7 +563,7 @@ class QtPathBubble(
     def _set_path_text_(self, text):
         if text != self.__path_text:
             self.__path_text = text
-            self.__path = bsc_core.DccPathDagOpt(self.__path_text)
+            self.__path = bsc_core.PthNodeOpt(self.__path_text)
             self.__components = self.__path.get_components()
             self.__components.reverse()
             c = len(self.__components)

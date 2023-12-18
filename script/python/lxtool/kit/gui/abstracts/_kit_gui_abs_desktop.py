@@ -5,7 +5,7 @@ import os
 
 import functools
 
-import lxlog.core as log_core
+import lxbasic.log as bsc_log
 
 import lxcontent.core as ctt_core
 
@@ -228,7 +228,7 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
 
         self.connect_window_close_to(self.__close_fnc)
 
-        log_core.Log.trace_method_result(
+        bsc_log.Log.trace_method_result(
             self.KEY, 'is ready'
         )
 
@@ -409,6 +409,16 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
             options
         ).accept_create(mode='create')
 
+    def __save_main_icon_to_file(self, page_name, group_sub_name, session):
+        tool_path = '/{}/{}/{}'.format(
+            page_name, group_sub_name, bsc_core.UuidMtd.generate_by_text(session.get_hook())
+        )
+        if self.__gui_query.get_is_exists(tool_path):
+            tool = self.__gui_query.get(tool_path)
+            f = gui_core.GuiFileDialog.save_file(ext_filter='All File (*.png)', parent=self._qt_widget)
+            if f:
+                tool.save_main_icon_to_file(f)
+
     def gui_refresh_all(self):
         self.__hook_dict = {}
         self.__option_hook_dict = {}
@@ -434,7 +444,7 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         group_sub_name = gui_configure.get('group_sub_name') or 'Tool'
         if 'gui_parent' in kwargs:
             gui_path = kwargs.get('gui_parent')
-            gui_path_opts = bsc_core.DccPathDagOpt(gui_path).get_components()
+            gui_path_opts = bsc_core.PthNodeOpt(gui_path).get_components()
             page_opt = gui_path_opts[1]
             page_name = page_opt.get_name()
             group_sub_opt = gui_path_opts[0]
@@ -622,6 +632,11 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
                     (),
                     ('open folder', 'file/open-folder', session.open_configure_directory),
                     (),
+                    (
+                        'save main icon to file', 'file/file', functools.partial(
+                            self.__save_main_icon_to_file, page_name, group_sub_name, session
+                        )
+                    )
                 ]
             )
 

@@ -1,7 +1,7 @@
 # coding:utf-8
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
-from lxgui.qt_for_opengl.warp import *
+from lxgui.qt_for_opengl.core.wrap import *
 
 import lxgui.qt_for_opengl.core as gui_qt_ogl_core
 

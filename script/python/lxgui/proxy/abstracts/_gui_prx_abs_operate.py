@@ -101,7 +101,7 @@ class AbsGuiPrxTreeViewAsDirectoryOpt(AbsGuiPrxTreeViewOpt):
 
         path = directory_path[len(self._root):]
         if self.gui_get_is_exists(path) is False:
-            path_opt = bsc_core.DccPathDagOpt(path)
+            path_opt = bsc_core.PthNodeOpt(path)
             prx_item = self._prx_tree_view.create_item(
                 path_opt.get_name(),
                 icon=gui_core.GuiIcon.get('database/all'),
@@ -127,7 +127,7 @@ class AbsGuiPrxTreeViewAsDirectoryOpt(AbsGuiPrxTreeViewOpt):
         directory_path = directory_opt.get_path()
         path = directory_path[len(self._root):]
         if self.gui_get_is_exists(path) is False:
-            path_opt = bsc_core.DccPathDagOpt(path)
+            path_opt = bsc_core.PthNodeOpt(path)
             #
             parent_gui = self.gui_get(path_opt.get_parent_path())
             #
@@ -289,7 +289,7 @@ class AbsGuiTreeViewAsTagOpt(AbsGuiPrxTreeViewOpt):
 
     def gui_add_group_by_path(self, path):
         if self.gui_get_group_is_exists(path) is False:
-            path_opt = bsc_core.DccPathDagOpt(path)
+            path_opt = bsc_core.PthNodeOpt(path)
             parent_gui = self.gui_get_group(path_opt.get_parent_path())
             gui_name = bsc_core.RawStrUnderlineOpt(path_opt.get_name()).to_prettify()
             prx_item = parent_gui.add_child(
@@ -313,7 +313,7 @@ class AbsGuiTreeViewAsTagOpt(AbsGuiPrxTreeViewOpt):
 
     def gui_add_tag_by_path(self, path):
         if self.gui_get_is_exists(path) is False:
-            path_opt = bsc_core.DccPathDagOpt(path)
+            path_opt = bsc_core.PthNodeOpt(path)
             parent_path = path_opt.get_parent_path()
             parent_prx_item = self.gui_get_group(parent_path)
             if self.GROUP_SCHEME == self.GroupScheme.Disable:
@@ -362,7 +362,7 @@ class AbsGuiTreeViewAsTagOpt(AbsGuiPrxTreeViewOpt):
         dict_ = {}
         for i_tag_path, i_prx_item in self._tag_item_dict.items():
             if i_prx_item.get_is_checked() is True:
-                i_group_path = bsc_core.DccPathDagOpt(i_tag_path).get_parent_path()
+                i_group_path = bsc_core.PthNodeOpt(i_tag_path).get_parent_path()
                 dict_.setdefault(i_group_path, set()).add(i_tag_path)
         return dict_
 

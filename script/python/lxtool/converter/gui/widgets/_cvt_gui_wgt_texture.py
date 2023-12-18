@@ -27,14 +27,14 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
     def do_startup(cls):
         from lxutil import utl_setup
         # utl_setup.OcioSetup(
-        #     bsc_core.StgBasePathMapper.map_to_current(
+        #     bsc_core.StgBasePathMapMtd.map_to_current(
         #         '/l/packages/pg/third_party/ocio/aces/1.2'
         #     )
         # ).set_run()
 
         # from lxarnold import and_setup
         # and_setup.MtoaSetup(
-        #     bsc_core.StgBasePathMapper.map_to_current(
+        #     bsc_core.StgBasePathMapMtd.map_to_current(
         #         '/l/packages/pg/prod/mtoa/4.2.1.1/platform-linux/maya-2019'
         #     )
         # ).set_run()
@@ -329,7 +329,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
             import lxutil.dcc.dcc_objects as utl_dcc_objects
 
             for i_index, (i_file_path_src, i_directory_path_tgt) in enumerate(self._target_format_create_data):
-                bsc_core.StorageMtd.create_directory(
+                bsc_core.StgBaseMtd.create_directory(
                     i_directory_path_tgt
                 )
                 i_path_base, i_ext_src = os.path.splitext(i_file_path_src)

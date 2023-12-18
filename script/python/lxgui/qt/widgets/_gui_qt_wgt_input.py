@@ -1,7 +1,7 @@
 # coding=utf-8
 import six
 
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import lxbasic.core as bsc_core
 
@@ -135,7 +135,7 @@ class QtInputAsConstantWithChoose(
         main_layout = _gui_qt_wgt_base.QtVBoxLayout(self)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
-        entry_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
+        entry_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
         main_layout.addWidget(entry_widget)
         #
         entry_layout = _gui_qt_wgt_base.QtHBoxLayout(entry_widget)
@@ -429,7 +429,7 @@ class QtInputAsContent(
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
         #
-        entry_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
+        entry_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
         main_layout.addWidget(entry_widget)
         #
         entry_layout = _gui_qt_wgt_base.QtHBoxLayout(entry_widget)
@@ -470,7 +470,7 @@ class QtInputAsContent(
 
     def _get_tmp_text_file_path_(self):
         return six.u('{}/editor/untitled-{}{}').format(
-            bsc_core.SystemMtd.get_home_directory(),
+            bsc_core.SysBaseMtd.get_home_directory(),
             bsc_core.TimeExtraMtd.get_time_tag_36(),
             self._external_editor_ext
         )
@@ -560,7 +560,7 @@ class QtInputAsList(
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
         #
-        entry_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
+        entry_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
         main_layout.addWidget(entry_widget)
         #
         entry_layout = _gui_qt_wgt_base.QtHBoxLayout(entry_widget)
@@ -712,7 +712,7 @@ class QtInputAsListWithChoose(
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
 
-        entry_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
+        entry_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
         main_layout.addWidget(entry_widget)
         #
         entry_layout = _gui_qt_wgt_base.QtHBoxLayout(entry_widget)

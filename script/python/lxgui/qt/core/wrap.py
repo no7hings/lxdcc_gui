@@ -7,7 +7,7 @@ import pkgutil as _pkgutil
 
 import importlib as _importlib
 
-import lxlog.core as _log_core
+import lxbasic.log as _log_core
 
 QT_LOAD_INDEX = None
 

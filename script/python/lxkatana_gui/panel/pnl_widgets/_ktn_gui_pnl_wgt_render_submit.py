@@ -131,7 +131,7 @@ class PnlRenderSubmitter(smt_gui_abstracts.AbsPnlSubmitterForAssetRenderDcc):
                 )
                 if image_file_paths:
                     image_file_path = image_file_paths[0]
-                    thumbnail = bsc_core.ImgFileOpt(image_file_path).get_thumbnail()
+                    thumbnail = bsc_core.ImgOiioOptForThumbnail(image_file_path).generate_thumbnail()
                     if thumbnail:
                         prx_item_widget.set_image(thumbnail)
         else:

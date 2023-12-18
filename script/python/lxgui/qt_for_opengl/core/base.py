@@ -1,9 +1,9 @@
 # coding:utf-8
-from lxgui.qt_for_opengl.warp import *
+from lxgui.qt_for_opengl.core.wrap import *
 
 import sys
 
-import lxlog.core as log_core
+import lxbasic.log as bsc_log
 
 import lxbasic.core as bsc_core
 
@@ -54,7 +54,7 @@ class GuiGLUsdData(object):
             (self._x, self._y, self._z),
             (self._c_x, self._c_y, self._c_z),
             (self._w, self._h, self._d)
-        ) = self._stage_opt.get_geometry_args('/')
+        ) = self._stage_opt.generate_geometry_args('/')
 
         s = max(self._w, self._h)
 
@@ -67,7 +67,7 @@ class GuiGLUsdData(object):
         self._vbos = []
         self._vbo_indices = []
         #
-        log_core.Log.test_start('build stage')
+        bsc_log.Log.test_start('build stage')
         prim = self._stage_opt.get_obj(self._location)
         if prim.GetTypeName() == 'Mesh':
             self.__build_mesh(prim)
@@ -78,7 +78,7 @@ class GuiGLUsdData(object):
                 include_types=['Mesh']
             ):
                 self.__build_mesh(i_prim)
-        log_core.Log.test_end('build stage')
+        bsc_log.Log.test_end('build stage')
 
         self._hash_key = bsc_core.HashMtd.get_hash_value(self._vertices, as_unique_id=True)
         self._image_file_path = '{}/{}.png'.format(self._cache_directory_path, self._hash_key)
@@ -88,7 +88,7 @@ class GuiGLUsdData(object):
     def __build_mesh(self, prim):
         mesh_opt = usd_core.UsdMeshOpt(usd_core.UsdGeom.Mesh(prim))
         path = mesh_opt.get_path()
-        r, g, b = bsc_core.DccPathDagOpt(path).get_plant_rgb(maximum=1.0)
+        r, g, b = bsc_core.PthNodeOpt(path).get_plant_rgb(maximum=1.0)
         r_p, g_p, b_p = r/1.0, g/1.0, b/1.0
         variants = self._p_o.get_variants(path)
         index = int(variants['index'])
@@ -143,7 +143,7 @@ class GuiGLUsdData(object):
         return self._result
 
     def paint_vbo(self):
-        log_core.Log.test_start('paint')
+        bsc_log.Log.test_start('paint')
         GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
         GL.glLoadIdentity()
@@ -171,7 +171,7 @@ class GuiGLUsdData(object):
         GL.glDisableClientState(GL.GL_COLOR_ARRAY)
 
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
-        log_core.Log.test_end('paint')
+        bsc_log.Log.test_end('paint')
 
 
 class GuiGLUsdBatchRender(object):
@@ -194,7 +194,7 @@ class GuiGLUsdBatchRender(object):
 
     def __do_paint(self, data):
         data.build_vbos()
-        log_core.Log.test_start('paint')
+        bsc_log.Log.test_start('paint')
         GL.glClear(GL.GL_COLOR_BUFFER_BIT|GL.GL_DEPTH_BUFFER_BIT)
 
         GL.glLoadIdentity()
@@ -222,7 +222,7 @@ class GuiGLUsdBatchRender(object):
         GL.glDisableClientState(GL.GL_COLOR_ARRAY)
 
         GL.glBindBuffer(GL.GL_ARRAY_BUFFER, 0)
-        log_core.Log.test_end('paint')
+        bsc_log.Log.test_end('paint')
 
         self.__do_export(data.get_image_path())
 

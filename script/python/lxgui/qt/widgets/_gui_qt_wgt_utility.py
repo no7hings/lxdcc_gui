@@ -5,7 +5,7 @@ import functools
 
 import types
 
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import lxbasic.core as bsc_core
 
@@ -264,9 +264,9 @@ class QtHFrame(QtWidgets.QWidget):
         )
 
 
-class _QtTranslucentWidget(QtWidgets.QWidget):
+class QtTranslucentWidget(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
-        super(_QtTranslucentWidget, self).__init__(*args, **kwargs)
+        super(QtTranslucentWidget, self).__init__(*args, **kwargs)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         # self.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
 
@@ -1248,7 +1248,7 @@ class QtListWidgetItem(
         self._signals.check_clicked.emit(self, 0)
         self._signals.check_toggled.emit(self, 0, boolean)
 
-    def _set_checked_for_user_(self, boolean):
+    def _update_checked_from_user_(self, boolean):
         self._set_checked_(boolean)
         self.listWidget().item_checked.emit(self, 0)
 

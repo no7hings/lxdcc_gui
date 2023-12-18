@@ -1,5 +1,5 @@
 # coding=utf-8
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 
 class _QtMenuBar(

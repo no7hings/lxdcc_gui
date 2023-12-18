@@ -160,7 +160,7 @@ class _GuiEntityOpt(
 
     def gui_add_for_all_resources(self, rsv_project):
         def post_fnc_():
-            self._end_timestamp = bsc_core.TimeMtd.get_timestamp()
+            self._end_timestamp = bsc_core.SysBaseMtd.get_timestamp()
             #
             bsc_core.Log.trace_method_result(
                 'load asset/shot from "{}"'.format(
@@ -177,7 +177,7 @@ class _GuiEntityOpt(
 
         #
         self.__resource_count = 0
-        self._start_timestamp = bsc_core.TimeMtd.get_timestamp()
+        self._start_timestamp = bsc_core.SysBaseMtd.get_timestamp()
         #
         rsv_resource_groups = rsv_project.get_rsv_resource_groups(**self._window._rsv_filter_opt.value)
         #
@@ -438,7 +438,7 @@ class _GuiTaskOpt(
                 language=1
             )
             name_dict['user'] = movie_file_opt.get_user()
-            image_file_path, image_sp_cmd = bsc_core.VdoFileOpt(movie_file_path).get_thumbnail_create_args()
+            image_file_path, image_sp_cmd = bsc_core.VdoFileOpt(movie_file_path).generate_thumbnail_create_args()
             image_args = image_file_path, image_sp_cmd, movie_file_path, execute_fnc
         else:
             name_dict['update'] = 'N/a'
@@ -584,7 +584,7 @@ class _GuiFileOpt(
         def build_fnc_(*args):
             _location, _menu_data = args[0]
             if file_opt.get_ext() in ['.jpg', '.png', '.exr', '.tx']:
-                image_file_path, image_sp_cmd = bsc_core.ImgFileOpt(file_path).get_thumbnail_create_args(
+                image_file_path, image_sp_cmd = bsc_core.ImgOiioOptForThumbnail(file_path).generate_thumbnail_create_args(
                     width=128, ext='.jpg'
                 )
                 prx_item_widget.set_image(image_file_path)
@@ -813,7 +813,7 @@ class AbsPnlLoaderForRsvTask(prx_widgets.PrxSessionWindow):
         #
         self._main_h_s.set_fixed_size_at(0, 320)
         self._main_h_s.set_fixed_size_at(2, 320)
-        if bsc_core.ApplicationMtd.get_is_dcc():
+        if bsc_core.SysApplicationMtd.get_is_dcc():
             self._main_h_s.set_contract_right_or_bottom_at(2)
 
         self._right_v_s.set_fixed_size_at(0, 320)
@@ -947,7 +947,7 @@ class AbsPnlLoaderForRsvTask(prx_widgets.PrxSessionWindow):
             )
             #
             if text in self._rsv_project_paths:
-                self._rsv_project_name_cur = bsc_core.DccPathDagOpt(text).get_name()
+                self._rsv_project_name_cur = bsc_core.PthNodeOpt(text).get_name()
                 self.refresh_all()
 
     def gui_tree_select_cbk_1(self, text):
@@ -1102,7 +1102,7 @@ class AbsPnlLoaderForRsvTask(prx_widgets.PrxSessionWindow):
 
         self._index_thread_batch += 1
 
-        self._start_timestamp = bsc_core.TimeMtd.get_timestamp()
+        self._start_timestamp = bsc_core.SysBaseMtd.get_timestamp()
 
         self._gui_task_opt.restore()
         self._gui_tag_opt.reset()
@@ -1245,7 +1245,7 @@ class AbsPnlLoaderForRsvTask(prx_widgets.PrxSessionWindow):
                     j_hidden = j_raw.get('hidden') or False
                     j_system_keys = j_raw.get('systems') or []
                     if j_system_keys:
-                        if bsc_core.SystemMtd.get_is_matched(j_system_keys):
+                        if bsc_core.SysBaseMtd.get_is_matched(j_system_keys):
                             list_.append((j_keyword, j_hidden))
                     else:
                         list_.append((j_keyword, j_hidden))
@@ -1253,7 +1253,7 @@ class AbsPnlLoaderForRsvTask(prx_widgets.PrxSessionWindow):
 
     @classmethod
     def _get_current_application_(cls):
-        return bsc_core.ApplicationMtd.get_current()
+        return bsc_core.SysApplicationMtd.get_current()
 
     @classmethod
     def _get_current_project_(cls):
@@ -1262,7 +1262,7 @@ class AbsPnlLoaderForRsvTask(prx_widgets.PrxSessionWindow):
     def _get_resolver_application_filter_(self):
         _ = self._hook_configure.get('resolver.application_filter') or {}
         for k, v in _.items():
-            if bsc_core.SystemMtd.get_is_matched(['*-{}'.format(k)]):
+            if bsc_core.SysBaseMtd.get_is_matched(['*-{}'.format(k)]):
                 return v
         return self._hook_configure.get('resolver.filter')
 
@@ -1297,7 +1297,7 @@ class AbsPnlLoaderForRsvTask(prx_widgets.PrxSessionWindow):
                         if 'gui_parent' in i_hook_option:
                             i_gui_parent_path = i_hook_option['gui_parent']
                     #
-                    i_gui_parent_path_opt = bsc_core.DccPathDagOpt(i_gui_parent_path)
+                    i_gui_parent_path_opt = bsc_core.PthNodeOpt(i_gui_parent_path)
                     #
                     if i_gui_parent_path_opt.get_is_root():
                         i_gui_path = '/{}'.format(i_gui_name)
@@ -1428,7 +1428,7 @@ class AbsPnlLoaderForRsvTask(prx_widgets.PrxSessionWindow):
             rsv_task = self._gui_task_opt.get_current_obj()
             if rsv_task is not None:
                 if workspace_key == self._rsv_project.WorkspaceKeys.User:
-                    variant_extend = dict(artist=bsc_core.SystemMtd.get_user_name())
+                    variant_extend = dict(artist=bsc_core.SysBaseMtd.get_user_name())
                 else:
                     variant_extend = dict()
 

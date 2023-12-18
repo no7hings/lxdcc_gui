@@ -1,7 +1,7 @@
 # coding=utf-8
 import math
 
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import lxgui.core as gui_core
 

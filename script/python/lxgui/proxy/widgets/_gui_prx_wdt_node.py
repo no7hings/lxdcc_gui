@@ -1,7 +1,7 @@
 # coding:utf-8
 import functools
 
-import lxlog.core as log_core
+import lxbasic.log as bsc_log
 
 import lxbasic.core as bsc_core
 
@@ -95,7 +95,7 @@ class AbsPrxPortBaseDef(object):
     port_path = property(get_port_path)
 
     def get_group_path(self):
-        return bsc_core.DccPortDagOpt(
+        return bsc_core.PthPortOpt(
             self.get_port_path()
         ).get_parent_path()
 
@@ -107,7 +107,7 @@ class AbsPrxPortBaseDef(object):
     label = property(get_label)
 
     def get_is_top_level(self):
-        return bsc_core.DccPortDagOpt(
+        return bsc_core.PthPortOpt(
             self._port_path
         ).get_is_top_level()
 
@@ -124,7 +124,7 @@ class AbsPrxPortBaseDef(object):
         if self.get_is_pseudo_root():
             _ = [i for i in port_paths if '.' not in i]
         else:
-            _ = bsc_core.DccPathDagMtd.find_dag_child_paths(
+            _ = bsc_core.PthNodeMtd.find_dag_child_paths(
                 port_path, port_paths, pathsep='.'
             )
         return node._get_ports_(_)
@@ -150,7 +150,7 @@ class AbsPrxPortBaseDef(object):
                 p.connect_input_changed_to(visible_fnc_)
                 visible_fnc_()
             else:
-                log_core.Log.trace_method_warning(
+                bsc_log.Log.trace_method_warning(
                     'visible condition connect',
                     'port="{}" is non-exists'.format(condition.get('port'))
                 )
@@ -394,7 +394,7 @@ class _AbsPrxPortBase(AbsPrxPortBaseDef):
         if self._custom_widget is not None:
             return self._custom_widget
         else:
-            widget = _gui_qt_wgt_utility._QtTranslucentWidget()
+            widget = _gui_qt_wgt_utility.QtTranslucentWidget()
             layout = _gui_qt_wgt_base.QtHBoxLayout(widget)
             label = self.label_widget
             label.set_width(label_width)
@@ -1010,6 +1010,9 @@ class PrxNodeListViewPort(_AbsPrxPortBase):
     def set_unchecked_by_include_paths(self, paths):
         self._prx_port_input.set_unchecked_by_include_paths(paths)
 
+    def set_all_items_checked(self, boolean):
+        self._prx_port_input.set_all_items_checked(boolean)
+
     def get_prx_tree(self):
         return self._prx_port_input._prx_input
 
@@ -1045,6 +1048,9 @@ class PrxPortAsFileList(_AbsPrxPortBase):
     def set_unchecked_by_include_paths(self, paths):
         self._prx_port_input.set_unchecked_by_include_paths(paths)
 
+    def set_all_items_checked(self, boolean):
+        self._prx_port_input.set_all_items_checked(boolean)
+
     def get_prx_tree(self):
         return self._prx_port_input._prx_input
 
@@ -1069,7 +1075,7 @@ class PrxPortStack(unr_abstracts.AbsObjStack):
 
 
 class PrxNodeOld(gui_prx_abstracts.AbsPrxWidget):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     PORT_STACK_CLS = PrxPortStack
     LABEL_WIDTH = 160
     PORT_CLS_DICT = dict(
@@ -1092,7 +1098,7 @@ class PrxNodeOld(gui_prx_abstracts.AbsPrxWidget):
         qt_splitter_0 = _gui_qt_wgt_split.QtHSplitterOld()
         qt_layout_0.addWidget(qt_splitter_0)
         #
-        self._qt_label_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
+        self._qt_label_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
         # self._qt_label_widget.setMaximumWidth(self.LABEL_WIDTH)
         self._name_width = 160
         self._qt_label_widget.setFixedWidth(self._name_width)
@@ -1101,7 +1107,7 @@ class PrxNodeOld(gui_prx_abstracts.AbsPrxWidget):
         self._qt_label_layout.setAlignment(gui_qt_core.QtCore.Qt.AlignTop)
         self._qt_label_layout.setContentsMargins(2, 0, 2, 0)
         #
-        qt_entry_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
+        qt_entry_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
         qt_splitter_0.addWidget(qt_entry_widget)
         self._qt_entry_layout = _gui_qt_wgt_base.QtVBoxLayout(qt_entry_widget)
         self._qt_entry_layout.setAlignment(gui_qt_core.QtCore.Qt.AlignTop)
@@ -1142,7 +1148,7 @@ class PrxNodeOld(gui_prx_abstracts.AbsPrxWidget):
                     cur_port.label_widget.widget
                 )
                 #
-                enter_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
+                enter_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
                 self._qt_entry_layout.addWidget(
                     enter_widget
                 )
@@ -1189,7 +1195,7 @@ class PrxNodeOld(gui_prx_abstracts.AbsPrxWidget):
 
 class PrxNodePortGroup(AbsPrxPortBaseDef):
     ENTRY_TYPE = 'group'
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     PORT_STACK_CLS = PrxPortStack
 
     def __init__(self, port_path, node, is_pseudo_root=False):
@@ -1243,7 +1249,7 @@ class PrxNodePortGroup(AbsPrxPortBaseDef):
         #
         condition = pre_port_is_join_next, cur_port_is_join_next
         if condition == (False, False):
-            port_main_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
+            port_main_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
             self._port_layout.addWidget(port_main_widget)
             cur_port.set_main_widget(port_main_widget)
             cur_port_layout = _gui_qt_wgt_base.QtHBoxLayout(port_main_widget)
@@ -1251,7 +1257,7 @@ class PrxNodePortGroup(AbsPrxPortBaseDef):
             cur_port_layout._set_align_top_()
             cur_port._set_layout_(cur_port_layout)
             #
-            cur_key_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
+            cur_key_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
             cur_key_widget.hide()
             cur_port._set_key_widget_(cur_key_widget)
             cur_port_layout.addWidget(cur_key_widget)
@@ -1270,14 +1276,14 @@ class PrxNodePortGroup(AbsPrxPortBaseDef):
                 cur_key_widget.show()
         # joint to next
         elif condition == (False, True):
-            port_main_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
+            port_main_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
             self._port_layout.addWidget(port_main_widget)
             cur_port.set_main_widget(port_main_widget)
             cur_port_layout = _gui_qt_wgt_base.QtHBoxLayout(port_main_widget)
             cur_port_layout.setContentsMargins(0, 0, 0, 0)
             cur_port_layout._set_align_top_()
             cur_port._set_layout_(cur_port_layout)
-            cur_key_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
+            cur_key_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
             # cur_key_widget.hide()
             cur_port._set_key_widget_(cur_key_widget)
             cur_port_layout.addWidget(cur_key_widget)
@@ -1290,7 +1296,7 @@ class PrxNodePortGroup(AbsPrxPortBaseDef):
             # + value
             cur_port_layout.addWidget(cur_port._prx_port_input._qt_widget)
             # value
-            next_port_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
+            next_port_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
             cur_port_layout.addWidget(next_port_widget)
             next_port_layout = _gui_qt_wgt_base.QtHBoxLayout(next_port_widget)
             next_port_layout.setContentsMargins(0, 0, 0, 0)
@@ -1421,7 +1427,7 @@ class PrxNodePortStack(unr_abstracts.AbsObjStack):
 
 
 class PrxNode(gui_prx_abstracts.AbsPrxWidget):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     PORT_STACK_CLS = PrxNodePortStack
     PORT_CLS_DICT = dict(
         string=PrxPortAsString,
@@ -1433,7 +1439,7 @@ class PrxNode(gui_prx_abstracts.AbsPrxWidget):
 
     def __init__(self, path, *args, **kwargs):
         super(PrxNode, self).__init__(*args, **kwargs)
-        self._path_dag_opt = bsc_core.DccPathDagOpt(path)
+        self._path_dag_opt = bsc_core.PthNodeOpt(path)
         # debug: do not set minimum height
         # self._qt_widget.setMinimumHeight(24)
         #
@@ -1485,7 +1491,7 @@ class PrxNode(gui_prx_abstracts.AbsPrxWidget):
     def _create_group_by_path(self, port_path):
         group_cur = self.get_pseudo_root()
         if port_path:
-            components = bsc_core.DccPortDagOpt(port_path).get_components()
+            components = bsc_core.PthPortOpt(port_path).get_components()
             components.reverse()
             for i in components:
                 i_path = i.to_string()
@@ -2031,7 +2037,7 @@ class PrxNode(gui_prx_abstracts.AbsPrxWidget):
         if port is not None:
             port.set(value)
         else:
-            log_core.Log.trace_method_warning(
+            bsc_log.Log.trace_method_warning(
                 'port set',
                 'port="{}" is non-exists'.format(key)
             )

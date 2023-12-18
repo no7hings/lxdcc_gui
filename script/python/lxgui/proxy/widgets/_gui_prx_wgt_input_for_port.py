@@ -7,7 +7,7 @@ import functools
 
 import types
 
-import lxlog.core as log_core
+import lxbasic.log as bsc_log
 
 import lxbasic.core as bsc_core
 
@@ -124,7 +124,7 @@ class _AbsPrxInput(gui_prx_abstracts.AbsPrxWidget):
 
 # storage
 class PrxInputAsStorage(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_input_for_storage.QtInputAsStorage
 
     def __init__(self, *args, **kwargs):
@@ -226,7 +226,7 @@ class PrxInputAsDirectorySave(PrxInputAsStorage):
 
 # storage array
 class PrxInputAsStorageArray(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_input.QtInputAsList
 
     def __init__(self, *args, **kwargs):
@@ -466,7 +466,7 @@ class PrxInputAsMediasOpen(PrxInputAsFilesOpen):
 
     @staticmethod
     def __get_screenshot_temporary_file_path():
-        d = bsc_core.SystemMtd.get_home_directory()
+        d = bsc_core.SysBaseMtd.get_home_directory()
         return six.u('{}/screenshot/untitled-{}.jpg').format(d, bsc_core.TimeExtraMtd.get_time_tag_36())
 
     def __do_screenshot_save(self, g):
@@ -488,7 +488,7 @@ class PrxInputAsMediasOpen(PrxInputAsFilesOpen):
 
 # any array
 class PrxInputAsArray(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_input.QtInputAsList
 
     def __init__(self, *args, **kwargs):
@@ -535,7 +535,7 @@ class PrxInputAsArray(_AbsPrxInput):
 
 # any array choose
 class PrxInputAsArrayWithChoose(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_input.QtInputAsListWithChoose
 
     def __init__(self, *args, **kwargs):
@@ -573,7 +573,7 @@ class PrxInputAsArrayWithChoose(_AbsPrxInput):
 
 #   entity
 class PrxInputAsShotgunEntityWithChoose(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_input.QtInputAsConstantWithChoose
 
     def __init__(self, *args, **kwargs):
@@ -676,7 +676,7 @@ class PrxInputAsShotgunEntityWithChoose(_AbsPrxInput):
 
 #   entities
 class PrxInputAsShotgunEntitiesWithChoose(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_input.QtInputAsList
 
     def __init__(self, *args, **kwargs):
@@ -763,7 +763,7 @@ class PrxInputAsShotgunEntitiesWithChoose(_AbsPrxInput):
 
 
 class PrxInputAsRsvProject(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_input.QtInputAsConstantWithChoose
     #
     HISTORY_KEY = 'gui.projects'
@@ -833,7 +833,7 @@ class PrxInputAsRsvProject(_AbsPrxInput):
 
 
 class PrxInputAsSchemeWithChoose(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_input.QtInputAsConstantWithChoose
     #
     HISTORY_KEY = 'gui.schemes'
@@ -916,7 +916,7 @@ class PrxInputAsSchemeWithChoose(_AbsPrxInput):
 
 # any constant choose, etc. enumerate
 class PrxInputAsConstantWithChoose(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_input.QtInputAsConstantWithChoose
 
     def __init__(self, *args, **kwargs):
@@ -973,7 +973,7 @@ class PrxInputAsConstantWithChoose(_AbsPrxInput):
 
 # icon choose
 class PrxInputAsIconWithChoose(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_input.QtInputAsIcon
 
     def __init__(self, *args, **kwargs):
@@ -1011,7 +1011,7 @@ class PrxInputAsIconWithChoose(_AbsPrxInput):
 
 # any
 class PrxInputAsConstant(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_input.QtInputAsConstant
 
     def __init__(self, *args, **kwargs):
@@ -1078,7 +1078,7 @@ class PrxInputAsText(PrxInputAsConstant):
 
 #   script
 class PrxInputAsScript(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_input.QtInputAsContent
 
     def __init__(self, *args, **kwargs):
@@ -1126,7 +1126,7 @@ class PrxInputAsInteger(PrxInputAsConstant):
 
 #   boolean as check box
 class PrxInputAsBoolean(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_button.QtCheckButton
 
     def __init__(self, *args, **kwargs):
@@ -1160,7 +1160,7 @@ class PrxInputAsFloat(PrxInputAsConstant):
 
 #   press button
 class PrxInputAsPressButton(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_button.QtPressButton
 
     def __init__(self, *args, **kwargs):
@@ -1197,7 +1197,7 @@ class PrxInputAsPressButton(_AbsPrxInput):
 
 #   sub process button
 class PrxInputAsSubProcessButton(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_button.QtPressButton
 
     def __init__(self, *args, **kwargs):
@@ -1238,7 +1238,7 @@ class PrxInputAsSubProcessButton(_AbsPrxInput):
 
 #   validation button
 class PrxInputAsValidationButton(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_button.QtPressButton
 
     def __init__(self, *args, **kwargs):
@@ -1263,7 +1263,7 @@ class PrxInputAsValidationButton(_AbsPrxInput):
 
 #   capsule
 class PrxInputAsCapsule(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_input.QtInputAsCapsule
 
     def __init__(self, *args, **kwargs):
@@ -1302,7 +1302,7 @@ class PrxInputAsCapsule(_AbsPrxInput):
 
 # any2, any3
 class PrxInputAsTuple(_AbsPrxInput):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     QT_INPUT_WIDGET_CLS = _gui_qt_wgt_input.QtInputAsTuple
 
     def __init__(self, *args, **kwargs):
@@ -1408,7 +1408,7 @@ class _AbsPrxInputExtra(gui_prx_abstracts.AbsPrxWidget):
 # resolver
 #   entity
 class PrxInputAsResolverEntity(_AbsPrxInputExtra):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     PRX_INPUT_CLS = _gui_prx_wgt_view_for_tree.PrxTreeView
     NAMESPACE = 'resolver'
 
@@ -1547,7 +1547,7 @@ class PrxInputAsResolverEntity(_AbsPrxInputExtra):
             self.__clear_items_()
             objs = raw
             if objs:
-                with log_core.LogProcessContext.create(maximum=len(objs), label='gui-add for resolver object') as g_p:
+                with bsc_log.LogProcessContext.create(maximum=len(objs), label='gui-add for resolver object') as g_p:
                     for i in objs:
                         g_p.do_update()
                         #
@@ -1573,7 +1573,7 @@ class PrxInputAsResolverEntity(_AbsPrxInputExtra):
 # array
 #   nodes
 class PrxInputAsNodes(_AbsPrxInputExtra):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     PRX_INPUT_CLS = _gui_prx_wgt_view_for_tree.PrxTreeView
     NAMESPACE = 'dcc'
 
@@ -1666,7 +1666,6 @@ class PrxInputAsNodes(_AbsPrxInputExtra):
         #
         # self._prx_input.set_loading_update()
 
-    #
     def __add_item_as_tree(self, obj):
         ancestors = obj.get_ancestors()
         if ancestors:
@@ -1677,7 +1676,7 @@ class PrxInputAsNodes(_AbsPrxInputExtra):
                     i_is_create, i_prx_item, _ = self.__add_item_comp_as_tree_(i_rsv_obj, use_show_thread=True)
                     if i_is_create is True:
                         i_prx_item.set_expanded(True)
-        #
+
         self.__add_item_comp_as_tree_(obj, use_show_thread=True)
 
     def __add_item_as_list(self, obj):
@@ -1724,7 +1723,7 @@ class PrxInputAsNodes(_AbsPrxInputExtra):
                         self.__add_item_as_list(i)
                     elif self._view_mode == 'tree':
                         self.__add_item_as_tree(i)
-                #
+
                 self.__set_item_selected(
                     objs[-1]
                 )
@@ -1736,14 +1735,17 @@ class PrxInputAsNodes(_AbsPrxInputExtra):
         if _:
             for i in _:
                 if i.get_gui_dcc_obj(namespace=self.NAMESPACE).path in paths:
-                    i.set_checked(True, extra=True)
+                    i.set_checked(True, extra=False)
 
     def set_unchecked_by_include_paths(self, paths):
         _ = self._prx_input.get_all_items()
         if _:
             for i in _:
                 if i.get_gui_dcc_obj(namespace=self.NAMESPACE).path not in paths:
-                    i.set_checked(False, extra=True)
+                    i.set_checked(False, extra=False)
+
+    def set_all_items_checked(self, boolean):
+        self._prx_input._qt_view._set_all_items_checked_(boolean)
 
     def get(self):
         _ = self._prx_input.get_all_items()
@@ -1765,7 +1767,7 @@ class PrxInputAsNodes(_AbsPrxInputExtra):
 
 #   files
 class PrxInputAsFiles(_AbsPrxInputExtra):
-    QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+    QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
     PRX_INPUT_CLS = _gui_prx_wgt_view_for_tree.PrxTreeView
     NAMESPACE = 'storage'
 
@@ -1840,7 +1842,7 @@ class PrxInputAsFiles(_AbsPrxInputExtra):
 
         def rpc_lock_files_fnc_():
             file_paths = bsc_core.StgDirectoryOpt(path).get_all_file_paths()
-            with log_core.LogProcessContext.create(maximum=len(file_paths), label='rpc unlock files (555)') as g_p:
+            with bsc_log.LogProcessContext.create(maximum=len(file_paths), label='rpc unlock files (555)') as g_p:
                 for i_file_path in file_paths:
                     bsc_core.StgPathPermissionMtd.change_mode(i_file_path, mode='555')
                     g_p.do_update()
@@ -1851,7 +1853,7 @@ class PrxInputAsFiles(_AbsPrxInputExtra):
 
         def rpc_unlock_files_fnc_():
             file_paths = bsc_core.StgDirectoryOpt(path).get_all_file_paths()
-            with log_core.LogProcessContext.create(maximum=len(file_paths), label='rpc unlock files (775)') as g_p:
+            with bsc_log.LogProcessContext.create(maximum=len(file_paths), label='rpc unlock files (775)') as g_p:
                 for i_file_path in file_paths:
                     i_file_opt = bsc_core.StgFileOpt(i_file_path)
                     bsc_core.StgPathPermissionMtd.change_mode(i_file_path, mode='775')
@@ -2045,14 +2047,17 @@ class PrxInputAsFiles(_AbsPrxInputExtra):
         if _:
             for i in _:
                 if i.get_gui_dcc_obj(namespace=self.NAMESPACE).path in paths:
-                    i.set_checked(True, extra=True)
+                    i.set_checked(True, extra=False)
 
     def set_unchecked_by_include_paths(self, paths):
         _ = self._prx_input.get_all_items()
         if _:
             for i in _:
                 if i.get_gui_dcc_obj(namespace=self.NAMESPACE).path not in paths:
-                    i.set_checked(False, extra=True)
+                    i.set_checked(False, extra=False)
+
+    def set_all_items_checked(self, boolean):
+        self._prx_input._qt_view._set_all_items_checked_(boolean)
 
     def get(self):
         _ = self._prx_input.get_all_items()

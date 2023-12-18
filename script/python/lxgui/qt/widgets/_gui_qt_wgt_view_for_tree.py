@@ -1,5 +1,5 @@
 # coding=utf-8
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import lxgui.core as gui_core
 
@@ -689,3 +689,6 @@ class QtTreeWidget(
         items = self._get_items_by_depth_(depth)
         for i_item in items:
             i_item.setExpanded(True)
+
+    def _set_all_items_checked_(self, boolean):
+        [i._set_checked_(boolean) for i in self._get_all_items_()]

@@ -1,7 +1,7 @@
 # coding:utf-8
 import platform
 
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import pkgutil
 

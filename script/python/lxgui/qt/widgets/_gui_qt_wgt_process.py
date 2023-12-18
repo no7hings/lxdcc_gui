@@ -15,11 +15,11 @@ import threading
 
 import os
 
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import lxbasic.core as bsc_core
 
-import lxlog.core as log_core
+import lxbasic.log as bsc_log
 
 import lxgui.core as gui_core
 
@@ -107,7 +107,7 @@ class _SubProcess(object):
         self.__master_fd, self.__slave_fd = self.M_PTY.openpty()
         clear_environ = kwargs.get('clear_environ', False)
         if clear_environ == 'auto':
-            clear_environ = bsc_core.SubProcessMtd.check_command_clear_environ(self.__cmd)
+            clear_environ = bsc_core.PrcBaseMtd.check_command_clear_environ(self.__cmd)
         if clear_environ is True:
             self.__proc = subprocess.Popen(
                 self.__cmd,
@@ -130,7 +130,7 @@ class _SubProcess(object):
         while True:
             retcode = process.poll()
             if retcode is not None:
-                log_core.Log.trace_method_result(
+                bsc_log.Log.trace_method_result(
                     self.KEY, 'is killed, return code is {}'.format(retcode)
                 )
                 self.__exit_flag.set()
@@ -157,7 +157,7 @@ class _SubProcess(object):
         if retcode:
             raise subprocess.CalledProcessError(retcode, self.__cmd)
 
-        log_core.Log.trace_method_result(
+        bsc_log.Log.trace_method_result(
             self.KEY, 'is finished, return code is {}'.format(retcode)
         )
 
@@ -208,16 +208,16 @@ class _QtProcessingThread(QtCore.QThread):
         self.__parent.update_logging.emit(text)
 
     def filter_logging(self, text):
-        process_start = log_core.Log.filter_process_start(text)
+        process_start = bsc_log.Log.filter_process_start(text)
         if process_start:
             _count = process_start[-1]
             self.start_processing(_count)
 
-        process = log_core.Log.filter_process(text)
+        process = bsc_log.Log.filter_process(text)
         if process:
             self.update_processing()
 
-        result = log_core.Log.filter_result(text)
+        result = bsc_log.Log.filter_result(text)
         if result:
             self.update_logging(text)
 
@@ -240,7 +240,7 @@ class _QtProcessingThread(QtCore.QThread):
 
     def run(self):
         self.update_logging(
-            log_core.Log.get_method_result(
+            bsc_log.Log.get_method_result(
                 self.KEY, 'is started'
             )
         )
@@ -263,7 +263,7 @@ class _QtProcessingThread(QtCore.QThread):
 
             if self.get_is_killed() is True:
                 self.update_logging(
-                    log_core.Log.get_method_result(
+                    bsc_log.Log.get_method_result(
                         self.KEY, 'is killed'
                     )
                 )
@@ -271,7 +271,7 @@ class _QtProcessingThread(QtCore.QThread):
                 self.killed.emit()
             else:
                 self.update_logging(
-                    log_core.Log.get_method_result(
+                    bsc_log.Log.get_method_result(
                         self.KEY, 'is completed'
                     )
                 )
@@ -281,7 +281,7 @@ class _QtProcessingThread(QtCore.QThread):
             import traceback
 
             self.update_logging(
-                log_core.Log.get_method_error(
+                bsc_log.Log.get_method_error(
                     self.KEY, 'is failed'
                 )
             )
@@ -392,13 +392,13 @@ class QtProcessingBar(QtWidgets.QWidget):
 
     def _generate_thread_(self):
         self.__trd = _QtProcessingThread(self)
-        self.__start_timestamp = bsc_core.TimeMtd.get_timestamp()
+        self.__start_timestamp = bsc_core.SysBaseMtd.get_timestamp()
         self.__process_timer.start(100)
         return self.__trd
 
     def _get_cost_timestamp_(self):
         if self.__finish_timestamp is None:
-            return bsc_core.TimeMtd.get_timestamp()-self.__start_timestamp
+            return bsc_core.SysBaseMtd.get_timestamp()-self.__start_timestamp
         return self.__finish_timestamp-self.__start_timestamp
 
     def _start_(self):
@@ -454,7 +454,7 @@ class QtProcessingBar(QtWidgets.QWidget):
         self.__is_finished = self._get_is_finished_()
 
         if self.__is_finished is True:
-            self.__finish_timestamp = bsc_core.TimeMtd.get_timestamp()
+            self.__finish_timestamp = bsc_core.SysBaseMtd.get_timestamp()
 
         self._refresh_widget_draw_()
 

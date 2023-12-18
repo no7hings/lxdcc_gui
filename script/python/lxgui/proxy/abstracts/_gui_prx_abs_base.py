@@ -5,7 +5,7 @@ import uuid
 
 from contextlib import contextmanager
 
-import lxlog.core as log_core
+import lxbasic.log as bsc_log
 
 import lxbasic.core as bsc_core
 
@@ -118,7 +118,7 @@ class AbsPrxWidget(AbsPrx):
     def __init__(self, *args, **kwargs):
         super(AbsPrxWidget, self).__init__(*args, **kwargs)
         #
-        self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
+        self._qt_thread_enable = bsc_core.EnvBaseMtd.get_qt_thread_enable()
         #
         self._gui_build_()
 
@@ -294,7 +294,7 @@ class AbsPrxWindow(AbsPrx):
             for i in gui_proxies:
                 if hasattr(i, '_window_unicode_id'):
                     if i._window_unicode_id != self._window_unicode_id:
-                        log_core.Log.trace_method_warning(
+                        bsc_log.Log.trace_method_warning(
                             'close exists window for "{}"'.format(
                                 self.__class__.__name__
                             )

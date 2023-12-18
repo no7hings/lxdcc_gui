@@ -3,7 +3,7 @@ import six
 
 import types
 
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import lxgui.qt.core as gui_qt_core
 

@@ -1,5 +1,7 @@
 # coding:utf-8
-from lxgui.qt.wrap import *
+import contextlib
+
+from lxgui.qt.core.wrap import *
 
 import six
 
@@ -269,8 +271,13 @@ class GuiQtUtil(object):
         return desktop.availableGeometry(desktop.primaryScreen())
 
     @staticmethod
-    def get_qt_cursor_point(*args):
-        return QtGui.QCursor.pos(*args)
+    def get_qt_desktop_current_rect(*args):
+        desktop = QtWidgets.QApplication.desktop(*args)
+        return desktop.availableGeometry(QtGui.QCursor.pos())
+
+    @staticmethod
+    def get_qt_cursor_point():
+        return QtGui.QCursor.pos()
 
     @staticmethod
     def assign_qt_shadow(qt_widget, radius):
@@ -296,7 +303,7 @@ class GuiQtUtil(object):
         else:
             q_size = widget.baseSize()
             w_0, h_0 = q_size.width(), q_size.height()
-        #
+
         q_margin = widget.contentsMargins()
         wl, wt, wr, wb = q_margin.left(), q_margin.top(), q_margin.right(), q_margin.bottom()
         vl, vt, vr, vb = 0, 0, 0, 0
@@ -304,21 +311,21 @@ class GuiQtUtil(object):
 
         p = widget.parent()
         if p:
-            p_w, p_h = p.width(), p.height()
-            o_x, o_y = p.pos().x(), p.pos().y()
+            w_p, w_h = p.width(), p.height()
+            x_p, y_p = p.pos().x(), p.pos().y()
         else:
-            desktop_rect = GuiQtUtil.get_qt_desktop_primary_rect()
-            p_w, p_h = desktop_rect.width(), desktop_rect.height()
-            o_x, o_y = 0, 0
+            desktop_rect = GuiQtUtil.get_qt_desktop_current_rect()
+            w_p, w_h = desktop_rect.width(), desktop_rect.height()
+            x_p, y_p = desktop_rect.x(), desktop_rect.y()
 
         if hasattr(widget, '_main_window_geometry'):
             if widget._main_window_geometry is not None:
-                o_x, o_y, p_w, p_h = widget._main_window_geometry
+                x_p, y_p, w_p, w_h = widget._main_window_geometry
 
         if pos is not None:
-            x, y = pos[0]+o_x, pos[1]+o_y
+            x, y = pos[0]+x_p, pos[1]+y_p
         else:
-            x, y = (p_w-w_1)/2+o_x, (p_h-h_1)/2+o_y
+            x, y = (w_p-w_1)/2+x_p, (w_h-h_1)/2+y_p
         #
         widget.setGeometry(
             max(x, 0), max(y, 0), w_1, h_1
@@ -397,6 +404,13 @@ class GuiQtUtil(object):
 
         css += '</body>\n</html>'
         return css
+
+    @classmethod
+    @contextlib.contextmanager
+    def gui_bustling(cls):
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.BusyCursor)
+        yield
+        QtWidgets.QApplication.restoreOverrideCursor()
 
 
 class GuiQtColor(object):
@@ -783,7 +797,22 @@ class GuiQtApplicationOpt(object):
             self._instance.processEvents()
 
 
+class _ClassProperty(property):
+    def __get__(self, cls, objtype=None):
+        return super(_ClassProperty, self).__get__(objtype)
+
+    def __set__(self, cls, value):
+        super(_ClassProperty, self).__set__(type(cls), value)
+
+    def __delete__(self, cls):
+        super(_ClassProperty, self).__delete__(type(cls))
+
+
 class QtFonts(object):
+    # @_ClassProperty
+    # def Default(cls):
+    #     return GuiQtFont.generate(size=8)
+
     Default = GuiQtFont.generate(size=8)
     DefaultItalic = GuiQtFont.generate(size=8, italic=True)
     Medium = GuiQtFont.generate(size=10)

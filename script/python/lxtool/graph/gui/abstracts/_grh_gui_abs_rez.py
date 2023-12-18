@@ -27,7 +27,7 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
             #
             self._hook_gui_configure = self._option_hook_configure.get_as_content('option.gui')
             #
-            raw = bsc_core.EnvironMtd.get('REZ_BETA')
+            raw = bsc_core.EnvBaseMtd.get('REZ_BETA')
             if raw:
                 self._rez_beta = True
             else:
@@ -85,7 +85,7 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
         r = r_c.ResolvedContext(
             packages,
             package_paths=[
-                bsc_core.StgBasePathMapper.map_to_current(i) for i in [
+                bsc_core.StgBasePathMapMtd.map_to_current(i) for i in [
                     "/l/packages/pg/prod",
                     "/l/packages/pg/dept",
                     "/l/packages/pg/third_party/app",

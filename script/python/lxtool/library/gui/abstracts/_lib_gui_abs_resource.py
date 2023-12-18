@@ -540,7 +540,7 @@ class _GuiTagOpt(
                 dtb_tag_args.append(i_dtb_tag)
             else:
                 i_tag_path = i_dtb_assign.value
-                i_tag_group = bsc_core.DccPathDagOpt(i_tag_path).get_parent_path()
+                i_tag_group = bsc_core.PthNodeOpt(i_tag_path).get_parent_path()
                 dtb_tag_args.append(i_tag_path)
 
             semantic_tag_filter_data.setdefault(
@@ -606,34 +606,6 @@ class _GuiResourceOpt(
             gui_qt_core.GuiQtUtil.set_text_to_clipboard(
                 ''
             )
-        # xml_file_path = bsc_core.ExtendResource.get('asset/library/katana/{}.xml'.format(self._window._copy_mode))
-        # if xml_file_path:
-        #     xml_data = bsc_core.StgFileOpt(xml_file_path).set_read()
-        #     texture_assign = self._get_texture_assign(dtb_resource)
-        #     if texture_assign:
-        #         replace_data = {}
-        #         for i_texture_type in self._arnold_texture_types:
-        #             if i_texture_type in self._arnold_texture_mapper:
-        #                 i_key = self._arnold_texture_mapper[i_texture_type]
-        #             else:
-        #                 i_key = i_texture_type
-        #
-        #             if i_texture_type in texture_assign:
-        #                 i_texture_path = texture_assign[i_texture_type]
-        #             else:
-        #                 i_texture_path = ''
-        #
-        #             replace_data[i_key] = i_texture_path
-        #
-        #         replace_data['texture_name'] = '_'.join(dtb_resource.gui_name.split(' ')).lower()
-        #         replace_data['time_tag'] = bsc_core.TimeExtraMtd.get_time_tag_36_(multiply=100)
-        #
-        #         for i_k, i_v in replace_data.items():
-        #             xml_data = xml_data.replace('{{{}}}'.format(i_k), i_v)
-        #     #
-        #     gui_qt_core.GuiQtUtil.set_text_to_clipboard(
-        #         xml_data
-        #     )
 
     def __gui_cache_fnc(self, dtb_resource, cache_image_enable):
         key = dtb_resource.path
@@ -664,7 +636,7 @@ class _GuiResourceOpt(
                 if image_path_src_opt.get_ext() in {'.png', '.jpg'}:
                     image_path_src_opt.map_to_current()
                     if image_path_src_opt.get_is_exists() is True:
-                        image_file_path, image_sp_cmd = bsc_core.ImgFileOpt(
+                        image_file_path, image_sp_cmd = bsc_core.ImgOiioOptForThumbnail(
                             image_path_src_opt.get_path()
                         ).get_thumbnail_jpg_create_args_with_background_over(
                             width=256, background_rgba=(71, 71, 71, 255)
@@ -766,7 +738,7 @@ class _GuiResourceOpt(
         prx_item_widget.set_name(dtb_resource.gui_name)
         prx_item_widget.set_sort_name_key(dtb_resource.gui_name)
         prx_item_widget.set_gui_attribute('path', dtb_type.path)
-        keys = {bsc_core.DccPathDagOpt(j).get_name() for i_k, i_v in semantic_tag_filter_data.items() for j in i_v}
+        keys = {bsc_core.PthNodeOpt(j).get_name() for i_k, i_v in semantic_tag_filter_data.items() for j in i_v}
         keys.add(str(dtb_resource.gui_name).lower())
         keys.add(str(dtb_resource.name).lower())
         keys.add(str(dtb_resource.ctime).lower())
@@ -795,7 +767,7 @@ class _GuiResourceOpt(
         image_file_path = self._window._gui_thumbnail_cache.pull(path)
         if image_file_path is not None:
             cache_image_enable = False
-            image_file_path = bsc_core.StgBasePathMapper.map_to_current(image_file_path)
+            image_file_path = bsc_core.StgBasePathMapMtd.map_to_current(image_file_path)
             prx_item_widget.set_image(image_file_path)
         else:
             cache_image_enable = True
@@ -899,7 +871,7 @@ class _GuiDirectoryOpt(
             pass
 
         version_dtb_path = dtb_version.path
-        version_path_opt = bsc_core.DccPathDagOpt(version_dtb_path)
+        version_path_opt = bsc_core.PthNodeOpt(version_dtb_path)
         self.gui_add_root(version_path_opt.name)
 
         self._index_thread_batch += 1
@@ -913,7 +885,7 @@ class _GuiDirectoryOpt(
 
     def gui_add_all(self, dtb_resource, dtb_version, path_cur=None):
         version_dtb_path = dtb_version.path
-        version_path_opt = bsc_core.DccPathDagOpt(version_dtb_path)
+        version_path_opt = bsc_core.PthNodeOpt(version_dtb_path)
         #
         self.gui_add_root(version_path_opt.name)
         dtb_directories = self._dtb_opt.get_entities(
@@ -932,7 +904,7 @@ class _GuiDirectoryOpt(
             self.gui_add_one(dtb_resource, i_dtb_storage, i_sub_path)
 
     def gui_add_one(self, dtb_resource, dtb_directory, file_type, is_current=False):
-        path_opt = bsc_core.DccPathDagOpt(file_type)
+        path_opt = bsc_core.PthNodeOpt(file_type)
         ancestors = path_opt.get_ancestors()
         if ancestors:
             ancestors.reverse()
@@ -957,7 +929,7 @@ class _GuiDirectoryOpt(
 
     def gui_add_group(self, file_type):
         if self.gui_get_is_exists(file_type) is False:
-            path_opt = bsc_core.DccPathDagOpt(file_type)
+            path_opt = bsc_core.PthNodeOpt(file_type)
             #
             parent_gui = self.gui_get(path_opt.get_parent_path())
             #
@@ -1010,7 +982,7 @@ class _GuiDirectoryOpt(
             prx_item_widget.set_tool_tip(_location)
 
         if self.gui_get_is_exists(file_type) is False:
-            path_opt = bsc_core.DccPathDagOpt(file_type)
+            path_opt = bsc_core.PthNodeOpt(file_type)
             #
             parent_gui = self.gui_get(path_opt.get_parent_path())
             #
@@ -1024,7 +996,7 @@ class _GuiDirectoryOpt(
             )
             prx_item_widget.set_checked(False)
             location = self._dtb_opt.get_property(dtb_directory.path, 'location')
-            if bsc_core.StorageMtd.get_is_exists(location) is True:
+            if bsc_core.StgBaseMtd.get_is_exists(location) is True:
                 prx_item_widget.set_status(prx_item_widget.ValidationStatus.Normal)
                 prx_item_widget.set_expanded(True, ancestors=True)
             else:
@@ -1122,7 +1094,7 @@ class _GuiFileOpt(
         def build_fnc_(*args):
             _prx_item_widget, _location, _menu_content, _menu_data = args[0]
             if file_opt.get_ext() in ['.jpg', '.png', '.exr', '.tx']:
-                image_file_path, image_sp_cmd = bsc_core.ImgFileOpt(file_path).get_thumbnail_create_args(
+                image_file_path, image_sp_cmd = bsc_core.ImgOiioOptForThumbnail(file_path).generate_thumbnail_create_args(
                     width=128, ext='.jpg'
                 )
                 prx_item_widget.set_image(image_file_path)
@@ -1433,7 +1405,7 @@ class AbsPnlLibraryForResource(prx_widgets.PrxSessionWindow):
         #
         self._main_h_s.set_fixed_size_at(0, 320)
         self._main_h_s.set_fixed_size_at(2, 320)
-        if bsc_core.ApplicationMtd.get_is_dcc():
+        if bsc_core.SysApplicationMtd.get_is_dcc():
             self._main_h_s.set_contract_right_or_bottom_at(2)
         #
         self._right_v_s.set_fixed_size_at(0, 320)
@@ -1441,7 +1413,7 @@ class AbsPnlLibraryForResource(prx_widgets.PrxSessionWindow):
         self._type_guide_bar.connect_user_text_choose_accepted_to(self.gui_guide_choose_cbk)
         self._type_guide_bar.connect_user_text_press_accepted_to(self.gui_guide_press_cbk)
 
-        self._dtb_cfg_file_path = bsc_core.ResourceContent.get_yaml('database/library/resource-basic')
+        self._dtb_cfg_file_path = bsc_core.ResourceConfigure.get_yaml('database/library/resource-basic')
         self._dtb_cfg = ctt_core.Content(value=self._dtb_cfg_file_path)
 
         self._dtb_superclass_paths = self._dtb_cfg.get('category_groups')
@@ -1452,11 +1424,11 @@ class AbsPnlLibraryForResource(prx_widgets.PrxSessionWindow):
         else:
             self._dtb_superclass_path_cur = self._dtb_superclass_paths[0]
         #
-        self._dtb_superclass_name_cur = bsc_core.DccPathDagOpt(self._dtb_superclass_path_cur).get_name()
+        self._dtb_superclass_name_cur = bsc_core.PthNodeOpt(self._dtb_superclass_path_cur).get_name()
 
         self.refresh_all()
 
-        self.__gui_add_resource_copy_tools()
+        # self.__gui_add_resource_copy_tools()
 
         self.setup_qt_menu()
 
@@ -1518,8 +1490,8 @@ class AbsPnlLibraryForResource(prx_widgets.PrxSessionWindow):
                 self.HISTORY_KEY, self._dtb_superclass_path_cur
             )
 
-        self._dtb_superclass_name_cur = bsc_core.DccPathDagOpt(self._dtb_superclass_path_cur).get_name()
-        self._dtb_cfg_file_path_extend = bsc_core.ResourceContent.get_yaml(
+        self._dtb_superclass_name_cur = bsc_core.PthNodeOpt(self._dtb_superclass_path_cur).get_name()
+        self._dtb_cfg_file_path_extend = bsc_core.ResourceConfigure.get_yaml(
             'database/library/resource-{}'.format(self._dtb_superclass_name_cur)
         )
         #
@@ -1669,7 +1641,7 @@ class AbsPnlLibraryForResource(prx_widgets.PrxSessionWindow):
     # build for types
     def __gui_add_for_all_types(self):
         def post_fnc_():
-            self._end_timestamp = bsc_core.TimeMtd.get_timestamp()
+            self._end_timestamp = bsc_core.SysBaseMtd.get_timestamp()
             #
             bsc_core.Log.trace_method_result(
                 'load all types',
@@ -1683,7 +1655,7 @@ class AbsPnlLibraryForResource(prx_widgets.PrxSessionWindow):
             ts.do_quit()
 
         #
-        self.__start_timestamp = bsc_core.TimeMtd.get_timestamp()
+        self.__start_timestamp = bsc_core.SysBaseMtd.get_timestamp()
         #
         dtb_categories = self._dtb_opt.get_entities(
             entity_type=self._dtb_opt.EntityTypes.Category,
@@ -1751,8 +1723,10 @@ class AbsPnlLibraryForResource(prx_widgets.PrxSessionWindow):
             if dtb_entity is not None:
                 dtb_types = []
                 if dtb_entity.entity_category == self._dtb_opt.EntityCategories.Type:
-                    if dtb_entity.entity_type in [self._dtb_opt.EntityTypes.CategoryGroup,
-                                                  self._dtb_opt.EntityTypes.Category]:
+                    if dtb_entity.entity_type in [
+                        self._dtb_opt.EntityTypes.CategoryGroup,
+                        self._dtb_opt.EntityTypes.Category
+                    ]:
                         dtb_types = self._dtb_opt.get_entities(
                             entity_type=self._dtb_opt.EntityTypes.Type,
                             filters=[

@@ -341,7 +341,7 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
 
         def run_fnc_():
             for i_index, (i_file_path, i_output_directory_path) in enumerate(self._create_data):
-                bsc_core.StorageMtd.create_directory(
+                bsc_core.StgBaseMtd.create_directory(
                     i_output_directory_path
                 )
 
@@ -569,7 +569,7 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
                         for j_dcc_obj_prx_item in i_dcc_obj_prx_items:
                             if j_dcc_obj_prx_item.get_is_checked() is True:
                                 j_dcc_obj = j_dcc_obj_prx_item.get_gui_dcc_obj(namespace=self.DCC_NAMESPACE)
-                                #
+
                                 self._dcc_texture_references.repath_fnc(
                                     j_dcc_obj, i_port_path, i_result
                                 )

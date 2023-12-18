@@ -1,11 +1,11 @@
 # coding:utf-8
-from lxlog.core import _log_cor_bridge
-
-import lxlog.core as log_core
+import lxbasic.log as bsc_log
 
 import lxgui.core as gui_core
 
 import lxgui.qt.core as gui_qt_core
+
+from lxbasic.log import bridge as log_bridge
 
 
 class GuiProxyUtil(object):
@@ -237,36 +237,36 @@ class GuiProxyLogBridge(object):
 
     @classmethod
     def generate_for_log(cls):
-        if _log_cor_bridge.__dict__['BRG_FNC_LOG_GUI_TRACE_ENABLE'] is False:
-            _log_cor_bridge.__dict__['BRG_FNC_LOG_GUI_TRACE_ENABLE'] = True
+        if log_bridge.__dict__['BRG_FNC_LOG_GUI_TRACE_ENABLE'] is False:
+            log_bridge.__dict__['BRG_FNC_LOG_GUI_TRACE_ENABLE'] = True
 
-            _log_cor_bridge.__dict__['BRG_FNC_LOG_GUI_TRACE_RESULT'] = GuiProxyLog.trace_result
-            _log_cor_bridge.__dict__['BRG_FNC_LOG_GUI_TRACE_WARNING'] = GuiProxyLog.trace_warning
-            _log_cor_bridge.__dict__['BRG_FNC_LOG_GUI_TRACE_ERROR'] = GuiProxyLog.trace_error
+            log_bridge.__dict__['BRG_FNC_LOG_GUI_TRACE_RESULT'] = GuiProxyLog.trace_result
+            log_bridge.__dict__['BRG_FNC_LOG_GUI_TRACE_WARNING'] = GuiProxyLog.trace_warning
+            log_bridge.__dict__['BRG_FNC_LOG_GUI_TRACE_ERROR'] = GuiProxyLog.trace_error
 
-            log_core.Log.trace_method_result(
+            bsc_log.Log.trace_method_result(
                 cls.KEY, 'generate log trace'
             )
 
     @classmethod
     def generate_for_process(cls):
-        if _log_cor_bridge.__dict__['BRG_FNC_LOG_GUI_PROCESS_ENABLE'] is False:
-            _log_cor_bridge.__dict__['BRG_FNC_LOG_GUI_PROCESS_ENABLE'] = True
+        if log_bridge.__dict__['BRG_FNC_LOG_GUI_PROCESS_ENABLE'] is False:
+            log_bridge.__dict__['BRG_FNC_LOG_GUI_PROCESS_ENABLE'] = True
 
-            _log_cor_bridge.__dict__['BRG_FNC_LOG_GUI_PROCESS_CREATE'] = GuiProxyProcess.create
+            log_bridge.__dict__['BRG_FNC_LOG_GUI_PROCESS_CREATE'] = GuiProxyProcess.create
 
-            log_core.Log.trace_method_result(
+            bsc_log.Log.trace_method_result(
                 cls.KEY, 'generate log progress'
             )
 
     @classmethod
     def generate_for_exception(cls):
-        if _log_cor_bridge.__dict__['BRG_FNC_LOG_GUI_EXCEPTION_ENABLE'] is False:
-            _log_cor_bridge.__dict__['BRG_FNC_LOG_GUI_EXCEPTION_ENABLE'] = True
+        if log_bridge.__dict__['BRG_FNC_LOG_GUI_EXCEPTION_ENABLE'] is False:
+            log_bridge.__dict__['BRG_FNC_LOG_GUI_EXCEPTION_ENABLE'] = True
 
-            _log_cor_bridge.__dict__['BRG_FNC_LOG_GUI_EXCEPTION_TRACE'] = GuiProxyException.trace
+            log_bridge.__dict__['BRG_FNC_LOG_GUI_EXCEPTION_TRACE'] = GuiProxyException.trace
 
-            log_core.Log.trace_method_result(
+            bsc_log.Log.trace_method_result(
                 cls.KEY, 'generate log exception'
             )
 

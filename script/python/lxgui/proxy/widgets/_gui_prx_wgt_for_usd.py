@@ -3,17 +3,17 @@ import lxgui.qt_for_usd.core as gui_qt_usd_core
 
 from lxgui.qt.widgets import _gui_qt_wgt_utility
 
-from lxgui.qt_for_usd.widgets import _gui_qt_usd_wgt_base
+from lxgui.qt_for_usd.widgets import stage_view as gui_qt_usd_wgt_stage_view
 
 import lxgui.proxy.abstracts as gui_prx_abstracts
 
 if gui_qt_usd_core.QT_USD_FLAG is True:
-    QT_WIDGET_CLS = _gui_qt_usd_wgt_base.QtUsdStageWidget
+    QT_WIDGET_CLS = gui_qt_usd_wgt_stage_view.QtUsdStageWidget
 
     class PrxUsdStageView(
         gui_prx_abstracts.AbsPrxWidget,
     ):
-        QT_WIDGET_CLS = _gui_qt_usd_wgt_base.QtUsdStageWidget
+        QT_WIDGET_CLS = gui_qt_usd_wgt_stage_view.QtUsdStageWidget
 
         def __init__(self, *args, **kwargs):
             super(PrxUsdStageView, self).__init__(*args, **kwargs)
@@ -62,7 +62,7 @@ else:
     class PrxUsdStageView(
         gui_prx_abstracts.AbsPrxWidget
     ):
-        QT_WIDGET_CLS = _gui_qt_wgt_utility._QtTranslucentWidget
+        QT_WIDGET_CLS = _gui_qt_wgt_utility.QtTranslucentWidget
 
         def __init__(self, *args, **kwargs):
             # noinspection PySuperArguments

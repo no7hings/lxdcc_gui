@@ -47,7 +47,7 @@ class AbsRenderSubmitterDef(object):
             self._hook_gui_configure = self._option_hook_configure.get_as_content('option.gui')
             self._hook_build_configure = self._option_hook_configure.get_as_content('build')
             #
-            raw = bsc_core.EnvironMtd.get('REZ_BETA')
+            raw = bsc_core.EnvBaseMtd.get('REZ_BETA')
             if raw:
                 self._rez_beta = True
             else:
@@ -76,7 +76,7 @@ class AbsPnlSubmitterForRenderBase(
 
     def __init__(self, hook_option=None, *args, **kwargs):
         super(AbsPnlSubmitterForRenderBase, self).__init__(*args, **kwargs)
-        self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
+        self._qt_thread_enable = bsc_core.EnvBaseMtd.get_qt_thread_enable()
         #
         if hook_option is not None:
             self._set_render_submitter_def_init_(hook_option)
@@ -225,7 +225,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
 
     def set_all_refresh(self):
         if self._file_path:
-            self._file_path = bsc_core.StgBasePathMapper.map_to_current(self._file_path)
+            self._file_path = bsc_core.StgBasePathMapMtd.map_to_current(self._file_path)
             self._resolver = rsv_commands.get_resolver()
             self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
             if self._rsv_scene_properties:
@@ -521,7 +521,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
                 if variants['camera'] == 'shot':
                     show_info_dict['shot'] = render_info['shot']
             #
-            image_file_path, image_sub_process_cmds = bsc_core.VdoFileOpt(movie_file_path).get_thumbnail_create_args()
+            image_file_path, image_sub_process_cmds = bsc_core.VdoFileOpt(movie_file_path).generate_thumbnail_create_args()
             prx_item_widget.set_image(image_file_path)
             prx_item_widget.set_movie_enable(True)
             #
@@ -880,7 +880,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
             _key = key_mapper[key_]
             for _i_k in _ks:
                 if c.get(_i_k) is True:
-                    _name = bsc_core.DccPathDagOpt(_i_k).get_name()
+                    _name = bsc_core.PthNodeOpt(_i_k).get_name()
                     dic.setdefault(_key, []).append(_name)
 
         #
@@ -962,7 +962,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
                     option_hook_key='rsv-task-batchers/asset/maya/camera-export',
                     #
                     file=camera_work_maya_scene_scr_file_path,
-                    user=bsc_core.SystemMtd.get_user_name(),
+                    user=bsc_core.SysBaseMtd.get_user_name(),
                     #
                     # td_enable=True,
                     rez_beta=True,
@@ -994,7 +994,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
             hook_option_dic = self._get_hook_option_dic_()
             if hook_option_dic:
                 if self.get_file_is_changed() is True:
-                    hook_option_dic['user'] = bsc_core.SystemMtd.get_user_name()
+                    hook_option_dic['user'] = bsc_core.SysBaseMtd.get_user_name()
                     hook_option_dic['option_hook_key'] = 'rsv-task-batchers/asset/gen-cmb-render-submit'
                     option_opt = bsc_core.ArgDictStringOpt(hook_option_dic)
                     #
@@ -1109,7 +1109,7 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
                 language=1
             )
             #
-            image_file_path, image_sub_process_cmds = bsc_core.VdoFileOpt(movie_file_path).get_thumbnail_create_args()
+            image_file_path, image_sub_process_cmds = bsc_core.VdoFileOpt(movie_file_path).generate_thumbnail_create_args()
             prx_item_widget.set_image(image_file_path)
             prx_item_widget.set_movie_enable(True)
             #
@@ -1195,7 +1195,7 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
 
     def set_all_refresh(self):
         if self._file_path:
-            self._file_path = bsc_core.StgBasePathMapper.map_to_current(self._file_path)
+            self._file_path = bsc_core.StgBasePathMapMtd.map_to_current(self._file_path)
             self._resolver = rsv_commands.get_resolver()
             self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
             if self._rsv_scene_properties:
@@ -1354,7 +1354,7 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
             post_fnc_()
 
     def set_usd_refresh(self):
-        if bsc_core.SystemMtd.get_is_linux():
+        if bsc_core.SysBaseMtd.get_is_linux():
             output_component_usd_file_path = self._output_component_usd_file_unit.get_result('latest')
             if output_component_usd_file_path:
                 paths = self._rsv_entity_set_usd_creator.get_effect_component_paths(output_component_usd_file_path)
@@ -1510,7 +1510,7 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
         hook_option_dic = self._get_hook_option_dic_()
         if hook_option_dic:
             if self.get_file_is_changed() is True:
-                hook_option_dic['user'] = bsc_core.SystemMtd.get_user_name()
+                hook_option_dic['user'] = bsc_core.SysBaseMtd.get_user_name()
                 hook_option_dic['option_hook_key'] = 'rsv-task-batchers/shot/tmp-render-submit'
                 #
                 option_opt = bsc_core.ArgDictStringOpt(hook_option_dic)

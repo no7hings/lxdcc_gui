@@ -1,5 +1,5 @@
 # coding=utf-8
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import lxbasic.core as bsc_core
 

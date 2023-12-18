@@ -135,7 +135,7 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
         import lxwrap.shotgun.core as wrp_stg_core
 
         self._stg_connector = wrp_stg_core.StgConnector()
-        self._user_name = bsc_core.SystemMtd.get_user_name()
+        self._user_name = bsc_core.SysBaseMtd.get_user_name()
         self.__stg_user = self._stg_connector.get_stg_user(user=self._user_name)
         if not self.__stg_user:
             utl_core.DccDialog.create(
@@ -150,7 +150,7 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
             self.close_window_later()
             return
 
-        task_id = bsc_core.EnvironMtd.get(
+        task_id = bsc_core.EnvBaseMtd.get(
             'PAPER_TASK_ID'
         )
         if task_id:
@@ -307,15 +307,15 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
         )
 
     def refresh_publish_scene(self):
-        if bsc_core.ApplicationMtd.get_is_dcc():
-            if bsc_core.ApplicationMtd.get_is_maya():
+        if bsc_core.SysApplicationMtd.get_is_dcc():
+            if bsc_core.SysApplicationMtd.get_is_maya():
                 import lxmaya.dcc.dcc_objects as mya_dcc_objects
 
                 self._publish_options_prx_node.set(
                     'extra.scene', [mya_dcc_objects.Scene.get_current_file_path()]
 
                 )
-            elif bsc_core.ApplicationMtd.get_is_katana():
+            elif bsc_core.SysApplicationMtd.get_is_katana():
                 import lxkatana.dcc.dcc_objects as ktn_dcc_objects
 
                 self._publish_options_prx_node.set(

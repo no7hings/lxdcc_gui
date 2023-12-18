@@ -13,7 +13,7 @@ import six
 
 from contextlib import contextmanager
 
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import lxcontent.core as ctt_core
 
@@ -350,7 +350,7 @@ class AbsQtSubProcessBaseDef(object):
             self._hover_sub_process_status_colors = [hover_color]*count
             self._sub_process_finished_results = [False]*count
             self._sub_process_finished_maximum = len(self._sub_process_finished_results)
-            self._sub_process_timestamp_started = bsc_core.TimeMtd.get_timestamp()
+            self._sub_process_timestamp_started = bsc_core.SysBaseMtd.get_timestamp()
         else:
             self._restore_sub_process_()
 
@@ -369,7 +369,7 @@ class AbsQtSubProcessBaseDef(object):
                 self._hover_sub_process_status_colors.append(i_hover_color)
 
             self._sub_process_finished_results = [False]*count
-            self._sub_process_timestamp_started = bsc_core.TimeMtd.get_timestamp()
+            self._sub_process_timestamp_started = bsc_core.SysBaseMtd.get_timestamp()
         else:
             self._restore_sub_process_()
         #
@@ -404,7 +404,7 @@ class AbsQtSubProcessBaseDef(object):
         self._sub_process_finished_value = sum(self._sub_process_finished_results)
         self._sub_process_finished_maximum = len(self._sub_process_finished_results)
         #
-        self._sub_process_timestamp_costed = bsc_core.TimeMtd.get_timestamp()-self._sub_process_timestamp_started
+        self._sub_process_timestamp_costed = bsc_core.SysBaseMtd.get_timestamp()-self._sub_process_timestamp_started
         if self._sub_process_finished_value > 1:
             self._sub_process_finished_timestamp_estimated = (
                 self._sub_process_timestamp_costed/self._sub_process_finished_value
@@ -413,7 +413,7 @@ class AbsQtSubProcessBaseDef(object):
             self._sub_process_finished_timestamp_estimated = 0
 
     def _refresh_sub_process_draw_(self):
-        self._sub_process_timestamp_costed = bsc_core.TimeMtd.get_timestamp()-self._sub_process_timestamp_started
+        self._sub_process_timestamp_costed = bsc_core.SysBaseMtd.get_timestamp()-self._sub_process_timestamp_started
         self._refresh_widget_draw_()
 
     def _get_sub_process_status_text_(self):
@@ -2020,7 +2020,7 @@ class AbsQtThreadBaseDef(object):
     def _init_thread_base_def_(self, widget):
         self._widget = widget
 
-        self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
+        self._qt_thread_enable = bsc_core.EnvBaseMtd.get_qt_thread_enable()
 
         self._thread_draw_flag = False
         self._thread_load_index = 0
@@ -2225,7 +2225,7 @@ class AbsQtGuideBaseDef(object):
     def _set_guide_name_text_at_(self, name_text, index=0):
         item = self._get_guide_item_at_(index)
         path_text = item._path_text
-        child_path_text = bsc_core.DccPathDagMtd.get_dag_child_path(path_text, name_text)
+        child_path_text = bsc_core.PthNodeMtd.get_dag_child_path(path_text, name_text)
         #
         self._set_guide_path_text_(child_path_text)
         return child_path_text
@@ -2294,12 +2294,12 @@ class AbsQtGuideEntryDef(AbsQtGuideBaseDef):
             return self._get_guide_sibling_name_texts_from_(item)
 
     def _get_guide_child_name_texts_from_(self, item):
-        return bsc_core.DccPathDagMtd.find_dag_child_names(
+        return bsc_core.PthNodeMtd.find_dag_child_names(
             item._path_text, self._get_guide_valid_path_texts_()
         )
 
     def _get_guide_sibling_name_texts_from_(self, item):
-        return bsc_core.DccPathDagMtd.find_dag_sibling_names(
+        return bsc_core.PthNodeMtd.find_dag_sibling_names(
             item._path_text, self._get_guide_valid_path_texts_()
         )
 
@@ -3010,7 +3010,7 @@ class AbsQtShowBaseForItemDef(
     def _init_show_base_for_item_def_(self, widget):
         self._widget = widget
         #
-        if bsc_core.ApplicationMtd.get_is_maya():
+        if bsc_core.SysApplicationMtd.get_is_maya():
             self._item_show_use_thread = False
         else:
             self._item_show_use_thread = True
@@ -3152,7 +3152,7 @@ class AbsQtShowBaseForItemDef(
         def cache_fnc_():
             # noinspection PyBroadException
             try:
-                bsc_core.SubProcessMtd.execute_with_result(
+                bsc_core.PrcBaseMtd.execute_with_result(
                     cmd
                 )
             except Exception:
@@ -3654,7 +3654,7 @@ class AbsQtScreenshotBaseDef(AbsQtHelpBaseDef):
         bsc_core.StgFileOpt(file_path).create_directory()
         rect = QtCore.QRect(*geometry)
 
-        if bsc_core.ApplicationMtd.get_is_maya():
+        if bsc_core.SysApplicationMtd.get_is_maya():
             main_window = gui_qt_core.GuiQtMaya.get_qt_main_window()
             s = QtGui.QPixmap.grabWindow(
                 long(main_window.winId())

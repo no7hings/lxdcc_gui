@@ -36,7 +36,7 @@ class _GuiTextureOpt(gui_prx_abstracts.AbsGuiPrxTreeViewOpt):
 
     def gui_add_group(self, path):
         if self.gui_get_is_exists(path) is False:
-            path_opt = bsc_core.DccPathDagOpt(path)
+            path_opt = bsc_core.PthNodeOpt(path)
             parent_gui = self.gui_get(path_opt.get_parent_path())
             gui_name = bsc_core.RawStrUnderlineOpt(path_opt.get_name()).to_prettify()
             prx_item = parent_gui.add_child(
@@ -58,7 +58,7 @@ class _GuiTextureOpt(gui_prx_abstracts.AbsGuiPrxTreeViewOpt):
 
     def gui_add_one(self, path, file_opt):
         if self.gui_get_is_exists(path) is False:
-            path_opt = bsc_core.DccPathDagOpt(path)
+            path_opt = bsc_core.PthNodeOpt(path)
             parent_gui = self.gui_get(path_opt.get_parent_path())
             prx_item = parent_gui.add_child(
                 path_opt.get_name(),
@@ -159,7 +159,7 @@ class AbsPnlBuilderForTexture(prx_widgets.PrxSessionWindow):
         if texture_assign:
             texture_name = self._texture_name
             node_path = self._options_prx_node.get('node')
-            if bsc_core.ApplicationMtd.get_is_katana():
+            if bsc_core.SysApplicationMtd.get_is_katana():
                 import lxkatana.scripts as ktn_scripts
 
                 ktn_scripts.ScpTextureBuildForCreate(

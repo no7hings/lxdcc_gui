@@ -1,7 +1,9 @@
 # coding=utf-8
+import copy
+
 import six
 
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import lxbasic.core as bsc_core
 
@@ -265,7 +267,7 @@ class QtTreeWidgetItem(
         self._update_wgt_icon_(status=self._status)
 
     def _set_name_status_(self, status, column=0):
-        font = gui_qt_core.QtFonts.Default
+        font = gui_qt_core.GuiQtFont.generate(size=8)
         if status == self.ValidationStatus.Normal:
             color = gui_qt_core.QtColors.Text
         elif status == self.ValidationStatus.Correct:
@@ -432,9 +434,14 @@ class QtTreeWidgetItem(
             descendants = self._get_descendants_()
             [i.setData(column, QtCore.Qt.CheckStateRole, check_state, emit_send_enable=False) for i in descendants]
             ancestors = self._get_ancestors_()
-            [i.setData(
-                column, QtCore.Qt.CheckStateRole, i._get_check_state_by_descendants(column), emit_send_enable=False
-                ) for i in ancestors]
+            [
+                i.setData(
+                    column, QtCore.Qt.CheckStateRole, i._get_check_state_by_descendants(column), emit_send_enable=False
+                ) for i in ancestors
+            ]
+
+    def _set_checked_(self, boolean, column=0):
+        self._set_check_state_(boolean, column)
 
     def _get_check_state_by_descendants(self, column):
         for i in self._get_descendants_():

@@ -213,7 +213,7 @@ class AbsValidatorOpt(object):
         return prx_item
 
     def _get_node_(self, scene_prx_item, rsv_scene_properties, group_prx_item, dcc_path, description, status):
-        dcc_path_dag_opt = bsc_core.DccPathDagOpt(dcc_path)
+        dcc_path_dag_opt = bsc_core.PthNodeOpt(dcc_path)
         pathsep = dcc_path_dag_opt.get_pathsep()
         pathsep_src = rsv_scene_properties.get('dcc.pathsep')
         if pathsep == pathsep_src:
@@ -234,7 +234,7 @@ class AbsValidatorOpt(object):
         return prx_item
 
     def _get_component_(self, scene_prx_item, node_prx_item, dcc_path, description, status):
-        dcc_path_dag_opt = bsc_core.DccPathDagOpt(dcc_path)
+        dcc_path_dag_opt = bsc_core.PthNodeOpt(dcc_path)
         pathsep = dcc_path_dag_opt.get_pathsep()
         if pathsep != self.DCC_PATHSEP:
             dcc_path = dcc_path_dag_opt.translate_to(self.DCC_PATHSEP).to_string()
@@ -480,9 +480,9 @@ class AbsPnlPublisherForAsset(prx_widgets.PrxSessionWindow):
 
     def set_refresh_all(self):
         contents = []
-        application = bsc_core.SystemMtd.get_application()
+        application = bsc_core.SysBaseMtd.get_application()
         #
-        if bsc_core.ApplicationMtd.get_is_dcc():
+        if bsc_core.SysApplicationMtd.get_is_dcc():
             self._scene_file_path = self._get_dcc_scene_file_path_()
             self._cfg_options_prx_node.set(
                 'resolver.scene_file', self._scene_file_path
@@ -552,10 +552,10 @@ class AbsPnlPublisherForAsset(prx_widgets.PrxSessionWindow):
         if self._rsv_scene_properties:
             self._validation_check_options = {v: not self._cfg_options_prx_node.get(k) for k, v in
                                               self._check_key_map.items()}
-            if bsc_core.ApplicationMtd.get_is_dcc():
-                if bsc_core.ApplicationMtd.get_is_katana():
+            if bsc_core.SysApplicationMtd.get_is_dcc():
+                if bsc_core.SysApplicationMtd.get_is_katana():
                     self._set_katana_validation_in_execute_()
-                elif bsc_core.ApplicationMtd.get_is_maya():
+                elif bsc_core.SysApplicationMtd.get_is_maya():
                     self._set_maya_validation_in_dcc_()
             else:
                 application = self._rsv_scene_properties.get('application')

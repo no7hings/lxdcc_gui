@@ -1,5 +1,5 @@
 # coding=utf-8
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import lxgui.qt.core as gui_qt_core
 
@@ -252,12 +252,6 @@ class QtListWidget(
     def _get_item_count_(self):
         return self.count()
 
-    def _get_all_items_(self):
-        return [self.item(i) for i in range(self.count())]
-
-    def _get_all_item_widgets_(self):
-        return [self.itemWidget(self.item(i)) for i in range(self.count())]
-
     def _set_all_item_widgets_update_(self):
         [
             (i._set_frame_size_(*self._item_frame_size), i._refresh_widget_draw_geometry_())
@@ -274,6 +268,9 @@ class QtListWidget(
             for i in self._get_all_items_()
         ]
         self.item_checked.emit(self, 0)
+
+    def _set_all_visible_item_widgets_checked_(self, boolean):
+        pass
 
     def _swap_view_mode_(self):
         if self._get_is_grid_mode_() is True:
@@ -304,7 +301,7 @@ class QtListWidget(
         item.gui_proxy = item_widget.gui_proxy
         #
         item_widget.user_check_toggled.connect(
-            item._set_checked_for_user_
+            item._update_checked_from_user_
         )
         item._connect_item_show_()
         item.setText(str(index_cur).zfill(4))

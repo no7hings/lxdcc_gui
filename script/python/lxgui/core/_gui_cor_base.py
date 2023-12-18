@@ -11,7 +11,7 @@ import copy
 
 import platform
 
-import lxlog.core as log_core
+import lxbasic.log as bsc_log
 
 import lxresource.core as rsc_core
 
@@ -290,7 +290,7 @@ class GuiModifier(object):
                 _fnc = fnc(*args, **kwargs)
                 return _fnc
             except Exception:
-                log_core.LogException.trace()
+                bsc_log.LogException.trace()
                 raise
         return fnc_
 

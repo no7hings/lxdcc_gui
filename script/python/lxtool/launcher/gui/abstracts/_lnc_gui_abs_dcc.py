@@ -68,7 +68,7 @@ class AbsPnlDccLauncher(prx_widgets.PrxSessionWindow):
             option_opt.set('application', self.__get_application())
             option = option_opt.to_string()
 
-            if bsc_core.SystemMtd.get_is_linux():
+            if bsc_core.SysBaseMtd.get_is_linux():
                 cmd = bsc_core.PkgContextNew(
                     ' '.join(['lxdcc'])
                 ).get_command(
@@ -78,21 +78,21 @@ class AbsPnlDccLauncher(prx_widgets.PrxSessionWindow):
                         )
                     ],
                 )
-            elif bsc_core.SystemMtd.get_is_windows():
+            elif bsc_core.SysBaseMtd.get_is_windows():
                 cmd = bsc_core.PkgContextNew(
                     ' '.join(['lxdcc'])
                 ).get_command(
                     args_execute=[
                         '-- lxapp -o "{}"'.format(
-                            bsc_core.SubProcessMtd.cmd_cleanup(option)
+                            bsc_core.PrcBaseMtd.cmd_cleanup(option)
                         )
                     ],
                 )
             else:
                 raise RuntimeError()
 
-            bsc_core.ExcExtra.execute_shell_script_use_terminal(
-                '"{}"'.format(cmd), **dict(title='{}-{}'.format(self.__get_application(), bsc_core.SystemMtd.get_time_tag()))
+            bsc_core.ExcExtraMtd.execute_shell_script_use_terminal(
+                '"{}"'.format(cmd), **dict(title='{}-{}'.format(self.__get_application(), bsc_core.SysBaseMtd.get_time_tag()))
             )
             self.close_window_later()
 

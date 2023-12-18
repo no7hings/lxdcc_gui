@@ -1,7 +1,7 @@
 # coding:utf-8
 import six
 
-import lxlog.core as log_core
+import lxbasic.log as bsc_log
 
 import lxbasic.core as bsc_core
 
@@ -84,7 +84,7 @@ class PrxBaseWindow(
         self.__debug_menu.set_name('debugger')
         self._qt_menu_bar_0.addMenu(self.__debug_menu.widget)
         #
-        self._qt_central_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
+        self._qt_central_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
         self._qt_widget.setCentralWidget(self._qt_central_widget)
         #
         self._set_progressing_def_init_()
@@ -142,7 +142,7 @@ class PrxBaseWindow(
         self._qt_main_line = _gui_qt_wgt_utility.QtHLine()
         qt_layout_0.addWidget(self._qt_main_line)
         # main widget
-        self._qt_main_widget = _gui_qt_wgt_utility._QtTranslucentWidget()
+        self._qt_main_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
         qt_layout_0.addWidget(self._qt_main_widget)
         self._qt_main_layout = _gui_qt_wgt_base.QtVBoxLayout(self._qt_main_widget)
         self._qt_main_layout.setContentsMargins(2, 2, 2, 2)
@@ -368,7 +368,7 @@ class PrxBaseWindow(
             for i in gui_proxies:
                 if hasattr(i, '_window_unicode_id'):
                     if i._window_unicode_id != self._window_unicode_id:
-                        log_core.Log.trace_method_warning(
+                        bsc_log.Log.trace_method_warning(
                             'close exists window for "{}"'.format(
                                 self.__class__.__name__
                             )
@@ -475,7 +475,7 @@ class PrxSessionWindow(PrxBaseWindow):
             self.set_window_icon_by_name(self._session.gui_configure.get('icon_name'))
 
         self.set_definition_window_size(self._session.gui_configure.get('size'))
-        self._qt_thread_enable = bsc_core.EnvironMtd.get_qt_thread_enable()
+        self._qt_thread_enable = bsc_core.EnvBaseMtd.get_qt_thread_enable()
 
         self.start_window_loading(
             self._setup_fnc_

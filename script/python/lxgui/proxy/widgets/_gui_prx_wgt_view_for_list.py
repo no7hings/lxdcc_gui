@@ -454,7 +454,7 @@ class PrxImageView(PrxListView):
         if texture_unit.get_is_readable():
             info = texture_unit.get_info()
             show_info_dict['size'] = '{width} x {height}'.format(**info)
-            image_file_path, image_sub_process_cmds = bsc_core.ImgFileOpt(texture_unit.path).get_thumbnail_create_args()
+            image_file_path, image_sub_process_cmds = bsc_core.ImgOiioOptForThumbnail(texture_unit.path).generate_thumbnail_create_args()
             prx_item.set_image(image_file_path)
             prx_item.set_image_show_args(image_file_path, image_sub_process_cmds)
 

@@ -3,7 +3,7 @@ import six
 
 import os
 
-from lxgui.qt.wrap import *
+from lxgui.qt.core.wrap import *
 
 import lxbasic.core as bsc_core
 
@@ -718,7 +718,7 @@ class _AbsQtPopupAsChoose(
         self._set_popup_activated_(False)
 
     def _execute_auto_resize_(self):
-        visible_items = self._popup_view._get_visible_items_()
+        visible_items = self._popup_view._get_all_visible_items_()
         press_pos = self._get_popup_pos_from_(self._entry_frame_widget)
         width, height = self._get_popup_size_from_(self._entry_frame_widget)
         height_max = self._popup_view._compute_height_maximum_(self._popup_item_row_maximum, includes=visible_items)
@@ -1391,7 +1391,7 @@ class QtPopupAsChooseForRgba(
         self._set_popup_activated_(False)
 
     def _save_chart_(self):
-        d = bsc_core.SystemMtd.get_home_directory()
+        d = bsc_core.SysBaseMtd.get_home_directory()
         file_path = six.u('{}/screenshot/untitled-{}.jpg').format(d, bsc_core.TimeExtraMtd.get_time_tag_36())
 
         w, h = self.width(), self.height()
