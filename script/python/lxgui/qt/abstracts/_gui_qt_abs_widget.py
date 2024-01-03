@@ -414,6 +414,15 @@ class AbsQtListWidget(
     def _get_all_item_widgets_(self):
         return [self.itemWidget(self.item(i)) for i in range(self.count())]
 
+    def _get_all_visible_items_(self):
+        return [i for i in self._get_all_items_() if i.isHidden() is False]
+
+    def _get_all_visible_item_count_(self):
+        return len(self._get_all_visible_items_())
+
+    def _get_all_visible_item_widgets_(self):
+        return [self.itemWidget(i) for i in self._get_all_visible_items_()]
+
     def _get_selected_visible_items_(self):
         return [i for i in self.selectedItems() if i.isHidden() is False]
 
@@ -425,12 +434,6 @@ class AbsQtListWidget(
             i_item = self.item(i)
             i_item.setSelected(boolean)
             self.itemWidget(i_item)._set_selected_(boolean)
-
-    def _get_all_visible_items_(self):
-        return [i for i in self._get_all_items_() if i.isHidden() is False]
-
-    def _get_all_visible_item_count_(self):
-        return len(self._get_all_visible_items_())
 
     def _get_visible_indices_(self):
         return [self.indexFromItem(i) for i in self._get_all_visible_items_() if i.isHidden() is False]

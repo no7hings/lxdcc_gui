@@ -120,8 +120,8 @@ class QtTabView(
 
                 scroll_abs_w += i_t_w
             # update scroll model
-            self._gui_scroll.set_w(scroll_w)
-            self._gui_scroll.set_abs_w(scroll_abs_w+btn_f_w*3)
+            self._gui_scroll.set_w_or_h(scroll_w)
+            self._gui_scroll.set_abs_w_or_h(scroll_abs_w+btn_f_w*3)
             self._gui_scroll.update()
             #
             # if self._tab_menu_is_enable is True:
@@ -146,15 +146,27 @@ class QtTabView(
                 self._tab_scroll_previous_button.setGeometry(
                     c_x_1+(btn_f_w-btn_w)/2, c_y_1+(btn_f_h-btn_h_1)/2, btn_w_1, btn_h_1
                 )
+
+                if self._gui_scroll.get_is_minimum():
+                    self._tab_scroll_previous_button._set_icon_file_path_(self._icons_0[1])
+                else:
+                    self._tab_scroll_previous_button._set_icon_file_path_(self._icons_0[0])
+
                 self._tab_scroll_next_button.show()
                 self._tab_scroll_next_button.setGeometry(
                     c_x_1+(btn_f_w-btn_w)/2+btn_w_1, c_y_1+(btn_f_h-btn_h_1)/2, btn_w_1, btn_h_1
                 )
+
+                if self._gui_scroll.get_is_maximum():
+                    self._tab_scroll_next_button._set_icon_file_path_(self._icons_1[1])
+                else:
+                    self._tab_scroll_next_button._set_icon_file_path_(self._icons_1[0])
+
                 self._tab_choose_button.show()
                 self._tab_choose_button.setGeometry(
                     c_x_1+btn_f_w+(btn_f_w-btn_w)/2, c_y_1+(btn_f_h-btn_h)/2, btn_w, btn_h
                 )
-                #
+
                 c_t_f_w -= btn_f_w_r
             else:
                 self._tab_scroll_previous_button.hide()
@@ -253,15 +265,22 @@ class QtTabView(
             gui_core.GuiIcon.get('tab/tab-add')
         )
 
+        self._icons_0 = [
+            gui_core.GuiIcon.get('window_base/scroll-left'),
+            gui_core.GuiIcon.get('window_base/scroll-left-disable')
+        ]
+        self._icons_1 = [
+            gui_core.GuiIcon.get('window_base/scroll-right'),
+            gui_core.GuiIcon.get('window_base/scroll-right-disable')
+        ]
+
         self._tab_scroll_previous_button = _gui_qt_wgt_button.QtIconPressButton(self)
         self._tab_scroll_previous_button.hide()
         self._tab_scroll_previous_button._set_icon_geometry_mode_(
             _gui_qt_wgt_button.QtIconPressButton.IconGeometryMode.Auto
         )
         self._tab_scroll_previous_button.setFixedSize(10, 20)
-        self._tab_scroll_previous_button._set_icon_file_path_(
-            gui_core.GuiIcon.get('scroll-left')
-        )
+        self._tab_scroll_previous_button._set_icon_file_path_(self._icons_0[0])
         self._tab_scroll_previous_button.press_clicked.connect(self._do_scroll_previous_)
 
         self._tab_scroll_next_button = _gui_qt_wgt_button.QtIconPressButton(self)
@@ -270,9 +289,7 @@ class QtTabView(
             _gui_qt_wgt_button.QtIconPressButton.IconGeometryMode.Auto
         )
         self._tab_scroll_next_button.setFixedSize(10, 20)
-        self._tab_scroll_next_button._set_icon_file_path_(
-            gui_core.GuiIcon.get('scroll-right')
-        )
+        self._tab_scroll_next_button._set_icon_file_path_(self._icons_1[0])
         self._tab_scroll_next_button.press_clicked.connect(self._do_scroll_next_)
 
         self._tab_choose_button = _gui_qt_wgt_button.QtIconMenuButton(self)

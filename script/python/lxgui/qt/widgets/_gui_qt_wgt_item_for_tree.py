@@ -270,7 +270,7 @@ class QtTreeWidgetItem(
         font = gui_qt_core.GuiQtFont.generate(size=8)
         if status == self.ValidationStatus.Normal:
             color = gui_qt_core.QtColors.Text
-        elif status == self.ValidationStatus.Correct:
+        elif status in {self.ValidationStatus.Correct, self.ValidationStatus.New}:
             color = gui_qt_core.QtColors.TextCorrect
         elif status == self.ValidationStatus.Warning:
             color = gui_qt_core.QtColors.TextWarning
@@ -319,7 +319,7 @@ class QtTreeWidgetItem(
                     if status == self.ValidationStatus.Normal:
                         draw_status = False
                         background_color = gui_qt_core.QtColors.Text
-                    elif status == self.ValidationStatus.Correct:
+                    elif status in {self.ValidationStatus.Correct, self.ValidationStatus.New}:
                         background_color = gui_qt_core.QtColors.TextCorrect
                     elif status == self.ValidationStatus.Warning:
                         background_color = gui_qt_core.QtColors.TextWarning

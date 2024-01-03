@@ -9,7 +9,7 @@ import lxbasic.core as bsc_core
 
 import lxusd.core as usd_core
 
-import lxwrap.texture.core as txr_core
+import lxbasic.texture.core as bsc_txr_core
 
 import lxgui.core as gui_core
 
@@ -24,6 +24,8 @@ from lxgui.qt.widgets import \
     _gui_qt_wgt_utility, \
     _gui_qt_wgt_button, \
     _gui_qt_wgt_container
+
+from lxgui.qt.widgets import _gui_qt_wgt_scroll as gui_qt_wgt_scroll
 
 
 if QT_USD_FLAG is True:
@@ -99,7 +101,7 @@ if QT_USD_FLAG is True:
             self._init_action_base_def_(self)
             self._init_thread_base_def_(self)
 
-            m = txr_core.TxrMethodForBuild.generate_instance()
+            m = bsc_txr_core.TxrMethodForBuild.generate_instance()
             self._texture_types = m.get_usd_includes()
             self._texture_type_mapper = m.get_usd_mapper()
 
@@ -238,7 +240,7 @@ if QT_USD_FLAG is True:
                 bsc_core.ExtendResource.get('asset/library/preview-light.usda')
             )
             #
-            (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).generate_geometry_args('/')
+            (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).compute_geometry_args('/')
 
             usd_core.UsdXformOpt(
                 self._usd_stage.GetPrimAtPath('/lights/lgt_preview/lgt_key')
@@ -340,7 +342,7 @@ if QT_USD_FLAG is True:
                     bsc_core.ExtendResource.get('asset/library/arnold-light.usda')
                 )
             #
-            # (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).generate_geometry_args('/')
+            # (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).compute_geometry_args('/')
             #
             # usd_core.UsdXformOpt(
             #     self._usd_stage.GetPrimAtPath('/lights/lgt_render/lgt_key')
@@ -417,7 +419,7 @@ if QT_USD_FLAG is True:
             session_layer.Clear()
 
         def _usd_update_camera_(self):
-            (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).generate_geometry_args('/')
+            (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).compute_geometry_args('/')
             # side-x
             (t_x, t_y, t_z), (r_x, r_y, r_z), (s_x, s_y, s_z) = bsc_core.CameraMtd.compute_front_transformation(
                 geometry_args=((z, y, x), (c_z, c_y, c_x), (d, h, w)),
@@ -1337,18 +1339,18 @@ if QT_USD_FLAG is True:
             self._usd_environment_cur = 'stinson-beach'
 
         def __build_top_tool_bar_(self, layout):
-            self._top_tool_widget = _gui_qt_wgt_utility.QtLineWidget(self)
-            layout.addWidget(self._top_tool_widget, 0, 1, 1, 1)
-            self._top_tool_widget.setFixedHeight(28)
-            self._top_tool_widget._set_line_styles_(
-                [self._top_tool_widget.Style.Null, self._top_tool_widget.Style.Solid, self._top_tool_widget.Style.Null,
-                 self._top_tool_widget.Style.Null]
+            self._top_tool_scroll_box = gui_qt_wgt_scroll.QtHScrollBox()
+            self._top_tool_scroll_box._set_layout_align_left_or_top_()
+            layout.addWidget(self._top_tool_scroll_box, 0, 1, 1, 1)
+            self._top_tool_scroll_box.setFixedHeight(28)
+            self._top_tool_scroll_box._set_line_styles_(
+                [
+                    self._top_tool_scroll_box.Style.Null,
+                    self._top_tool_scroll_box.Style.Solid,
+                    self._top_tool_scroll_box.Style.Null,
+                    self._top_tool_scroll_box.Style.Null
+                ]
             )
-
-            self._top_tool_layout = _gui_qt_wgt_base.QtHBoxLayout(self._top_tool_widget)
-            self._top_tool_layout.setContentsMargins(*[0]*4)
-            self._top_tool_layout.setSpacing(0)
-            self._top_tool_layout._set_align_left_()
 
         def __build_top_tools_(self):
 
@@ -1365,7 +1367,7 @@ if QT_USD_FLAG is True:
 
             #
             tool_box = _gui_qt_wgt_container.QtHToolBox()
-            self._top_tool_layout.addWidget(tool_box)
+            self._top_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('hud-display and camera-mask')
             #
@@ -1394,7 +1396,7 @@ if QT_USD_FLAG is True:
 
         def __add_material_and_light_switch_tools_(self):
             tool_box = _gui_qt_wgt_container.QtHToolBox()
-            self._top_tool_layout.addWidget(tool_box)
+            self._top_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('material and light')
             #
@@ -1420,7 +1422,7 @@ if QT_USD_FLAG is True:
 
         def __add_color_space_switch_tools_(self):
             tool_box = _gui_qt_wgt_container.QtHToolBox()
-            self._top_tool_layout.addWidget(tool_box)
+            self._top_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('color space')
             #
@@ -1444,7 +1446,7 @@ if QT_USD_FLAG is True:
 
         def __add_camera_and_renderer_switch_tools_(self):
             tool_box = _gui_qt_wgt_container.QtHToolBox()
-            self._top_tool_layout.addWidget(tool_box)
+            self._top_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('camera and renderer')
             self._camera_menu_data = [
@@ -1475,7 +1477,7 @@ if QT_USD_FLAG is True:
 
         def __add_environment_switch_tools_(self):
             tool_box = _gui_qt_wgt_container.QtHToolBox()
-            self._top_tool_layout.addWidget(tool_box)
+            self._top_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('display-purpose and environment')
             #
@@ -1496,7 +1498,7 @@ if QT_USD_FLAG is True:
 
         def __add_other_tools_(self):
             tool_box = _gui_qt_wgt_container.QtHToolBox()
-            self._top_tool_layout.addWidget(tool_box)
+            self._top_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('display-purpose and environment')
             #
@@ -1571,18 +1573,18 @@ if QT_USD_FLAG is True:
                 self._usd_save_pre_geometry_snapshot_fnc_(file_p)
 
         def __build_left_tool_bar_(self, layout):
-            self._left_tool_widget = _gui_qt_wgt_utility.QtLineWidget(self)
-            layout.addWidget(self._left_tool_widget, 1, 0, 1, 1)
-            self._left_tool_widget.setFixedWidth(28)
-            self._left_tool_widget._set_line_styles_(
-                [self._left_tool_widget.Style.Null, self._left_tool_widget.Style.Null,
-                 self._left_tool_widget.Style.Null, self._left_tool_widget.Style.Solid]
+            self._left_tool_scroll_box = gui_qt_wgt_scroll.QtVScrollBox()
+            self._left_tool_scroll_box._set_layout_align_left_or_top_()
+            layout.addWidget(self._left_tool_scroll_box, 1, 0, 1, 1)
+            self._left_tool_scroll_box.setFixedWidth(28)
+            self._left_tool_scroll_box._set_line_styles_(
+                [
+                    self._left_tool_scroll_box.Style.Null,
+                    self._left_tool_scroll_box.Style.Null,
+                    self._left_tool_scroll_box.Style.Null,
+                    self._left_tool_scroll_box.Style.Solid
+                ]
             )
-
-            self._left_tool_layout = _gui_qt_wgt_base.QtVBoxLayout(self._left_tool_widget)
-            self._left_tool_layout.setContentsMargins(*[0]*4)
-            self._left_tool_layout.setSpacing(0)
-            self._left_tool_layout._set_align_top_()
 
         def __build_left_tools_(self):
             self.__add_isolate_select_switch_tools_()
@@ -1598,7 +1600,7 @@ if QT_USD_FLAG is True:
 
             #
             tool_box = _gui_qt_wgt_container.QtVToolBox()
-            self._left_tool_layout.addWidget(tool_box)
+            self._left_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('isolate select')
             #
@@ -1626,7 +1628,7 @@ if QT_USD_FLAG is True:
 
             #
             tool_box = _gui_qt_wgt_container.QtVToolBox()
-            self._left_tool_layout.addWidget(tool_box)
+            self._left_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('render mode')
             #
@@ -1656,7 +1658,7 @@ if QT_USD_FLAG is True:
 
         def __add_other_switch_tools_(self):
             tool_box = _gui_qt_wgt_container.QtVToolBox()
-            self._left_tool_layout.addWidget(tool_box)
+            self._left_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('extend')
             #
@@ -1670,7 +1672,7 @@ if QT_USD_FLAG is True:
                 i_button = _gui_qt_wgt_button.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_(
-                    '"LMB-click" to toggle "{0}"\n"RMB-click" to switch "{0}" level'.format(i_key)
+                    '"LMB-click" to toggle "{0}"\n"RMB-click" to switch "{0}" mode'.format(i_key)
                 )
                 i_button._set_icon_file_path_(
                     gui_core.GuiIcon.get('tool/{}'.format(i_key))

@@ -5,7 +5,7 @@ from lxgui.qt.widgets import \
     _gui_qt_wgt_base, \
     _gui_qt_wgt_utility, \
     _gui_qt_wgt_head, \
-    _gui_qt_wgt_view_for_scroll
+    _gui_qt_wgt_scroll
 
 import lxgui.proxy.abstracts as gui_prx_abstracts
 
@@ -187,7 +187,7 @@ class PrxHToolBar(gui_prx_abstracts.AbsPrxWidget):
         self._qt_head.expand_toggled.connect(self.set_expanded)
         self._qt_head._set_tool_tip_text_('"LMB-click" to expand "on" / "off"')
         #
-        qt_widget_1 = _gui_qt_wgt_view_for_scroll.QtHScrollView()
+        qt_widget_1 = _gui_qt_wgt_scroll.QtHScrollBox()
         qt_layout_0.addWidget(qt_widget_1)
         # qt_layout_1.setAlignment(gui_qt_core.QtCore.Qt.AlignLeft)
         self._qt_view = qt_widget_1

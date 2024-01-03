@@ -149,63 +149,64 @@ class GuiScrollModel(object):
     def __init__(self):
         self._is_valid = False
         #
-        self.__w = 0
-        self.__abs_w = 0
-        self._maximum = 0
-        self._minimum = 0
-        self._value = 0
-        self._step = 0
+        self.__w_or_h = 0
+        self.__abs_w_or_h = 0
+        self.__maximum = 0
+        self.__minimum = 0
+        self.__value = 0
+        self.__value_step = 0
 
-    def set_w(self, v):
-        self.__w = v
+    def set_w_or_h(self, v):
+        self.__w_or_h = v
 
-    def set_abs_w(self, v):
-        self.__abs_w = v
+    def set_abs_w_or_h(self, v):
+        self.__abs_w_or_h = v
 
     def get_is_valid(self):
         return self._is_valid
 
     def set_step(self, v):
-        self._step = v
+        self.__value_step = v
 
     def step_to_previous(self):
-        return self.adjust_value(-self._step)
+        return self.adjust_value(-self.__value_step)
 
     def step_to_next(self):
-        return self.adjust_value(self._step)
+        return self.adjust_value(self.__value_step)
 
     def adjust_value(self, v):
-        return self.accept_value(self._value+v)
+        return self.accept_value(self.__value+v)
 
     def accept_value(self, v):
         if self._is_valid:
-            value_pre = self._value
-            self._value = int(max(min(v, self._maximum), self._minimum))
-            if self._value != value_pre:
+            value_pre = self.__value
+            self.__value = int(max(min(v, self.__maximum), self.__minimum))
+            # print self.__maximum, self.__minimum, v, self.__value
+            if self.__value != value_pre:
                 return True
             return False
         #
-        self._value = 0
+        self.__value = 0
         return False
 
     def get_value(self):
-        return self._value
+        return self.__value
 
     def update(self):
-        if self.__abs_w > self.__w:
-            self._maximum = self.__abs_w-self.__w
+        if self.__abs_w_or_h > self.__w_or_h:
+            self.__maximum = self.__abs_w_or_h-self.__w_or_h
             self._is_valid = True
-            self.accept_value(self._value)
+            self.accept_value(self.__value)
         else:
-            self._maximum = 0
-            self._value = 0
+            self.__maximum = 0
+            self.__value = 0
             self._is_valid = False
 
     def get_is_maximum(self):
-        return self._value == self._maximum
+        return self.__value == self.__maximum
 
     def get_is_minimum(self):
-        return self._value == self._minimum
+        return self.__value == self.__minimum
 
 
 class GuiGrid(object):

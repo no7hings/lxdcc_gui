@@ -13,7 +13,7 @@ import lxutil.dcc.dcc_objects as utl_dcc_objects
 
 import lxsession.commands as ssn_commands
 
-import lxresolver.commands as rsv_commands
+import lxresolver.core as rsv_core
 
 import lxgui.core as gui_core
 
@@ -360,7 +360,7 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
         self._set_dcc_scene_update_()
         #
         if self._file_path is not None:
-            self._resolver = rsv_commands.get_resolver()
+            self._resolver = rsv_core.RsvBase.generate_root()
             self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(
                 self._file_path
             )

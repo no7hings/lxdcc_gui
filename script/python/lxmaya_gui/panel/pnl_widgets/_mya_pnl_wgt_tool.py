@@ -46,7 +46,7 @@ class PnlGeometryExporter(prx_widgets.PrxSessionToolWindow):
     def post_setup_fnc(self):
         from lxutil import utl_core
 
-        import lxresolver.commands as rsv_commands
+        import lxresolver.core as rsv_core
 
         import lxresolver.scripts as rsv_scripts
 
@@ -54,7 +54,7 @@ class PnlGeometryExporter(prx_widgets.PrxSessionToolWindow):
 
         env_data = rsv_scripts.ScpEnvironment.get_as_dict()
 
-        self._resolver = rsv_commands.get_resolver()
+        self._resolver = rsv_core.RsvBase.generate_root()
 
         self._rsv_task = self._resolver.get_rsv_task(
             **env_data
@@ -187,7 +187,7 @@ class PnlGeometryBuilder(prx_widgets.PrxSessionToolWindow):
     def post_setup_fnc(self):
         from lxutil import utl_core
 
-        import lxresolver.commands as rsv_commands
+        import lxresolver.core as rsv_core
 
         import lxresolver.scripts as rsv_scripts
 
@@ -195,7 +195,7 @@ class PnlGeometryBuilder(prx_widgets.PrxSessionToolWindow):
 
         env_data = rsv_scripts.ScpEnvironment.get_as_dict()
 
-        self._resolver = rsv_commands.get_resolver()
+        self._resolver = rsv_core.RsvBase.generate_root()
 
         self._rsv_task = self._resolver.get_rsv_task(
             **env_data
@@ -317,7 +317,7 @@ class PnlLookBuilder(prx_widgets.PrxSessionToolWindow):
     def post_setup_fnc(self):
         from lxutil import utl_core
 
-        import lxresolver.commands as rsv_commands
+        import lxresolver.core as rsv_core
 
         import lxresolver.scripts as rsv_scripts
 
@@ -325,7 +325,7 @@ class PnlLookBuilder(prx_widgets.PrxSessionToolWindow):
 
         env_data = rsv_scripts.ScpEnvironment.get_as_dict()
 
-        self._resolver = rsv_commands.get_resolver()
+        self._resolver = rsv_core.RsvBase.generate_root()
 
         self._rsv_task = self._resolver.get_rsv_task(
             **env_data

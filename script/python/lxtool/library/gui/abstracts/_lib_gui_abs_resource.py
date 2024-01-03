@@ -1,4 +1,8 @@
 # coding:utf-8
+import time
+
+import datetime
+
 import six
 
 import fnmatch
@@ -29,13 +33,18 @@ import lxgui.proxy.abstracts as gui_prx_abstracts
 
 import lxgui.proxy.widgets as prx_widgets
 
-import lxwrap.texture.core as txr_core
+import lxbasic.texture.core as bsc_txr_core
 
 import lxsession.commands as ssn_commands
 
 
 class _GuiBaseOpt(object):
     DCC_NAMESPACE = 'database'
+
+    @staticmethod
+    def _generate_today_tag():
+        utc_now = datetime.datetime.utcnow()
+        return utc_now.strftime('%Y-%m-%d')
 
     def __init__(self, window, session, database_opt):
         self._window = window
@@ -152,6 +161,8 @@ class _GuiTypeOpt(
             prx_tree_view, self.DCC_NAMESPACE
         )
 
+        self._today_tag = self._generate_today_tag()
+
     def gui_add_root(self):
         path = '/'
         if self.gui_get_is_exists(path) is False:
@@ -214,18 +225,29 @@ class _GuiTypeOpt(
                     ('value', 'startswith', dtb_entity.path),
                 ]
             )
-            return [
-                len(set([_i.node for _i in _dtb_assigns]))
-            ]
+
+            _dtb_assigns = {i.node: i for i in _dtb_assigns}.values()
+
+            return [_dtb_assigns]
 
         def build_fnc_(data_):
-            _count = data_[0]
+            _dtb_assigns = data_[0]
+            _count = len(_dtb_assigns)
             prx_item.set_name(str(_count), 1)
             if _count > 0:
                 prx_item.set_enable(True)
-                prx_item.set_status(
-                    prx_item.ValidationStatus.Normal
-                )
+                _count_new = self._generate_today_count(_dtb_assigns)
+                if _count_new > 0:
+                    prx_item.set_name(
+                        '{}+{}'.format((_count-_count_new), _count_new), 1
+                    )
+                    prx_item.set_status(
+                        prx_item.ValidationStatus.New
+                    )
+                else:
+                    prx_item.set_status(
+                        prx_item.ValidationStatus.Normal
+                    )
             else:
                 prx_item.set_checked(False)
                 prx_item.set_enable(False)
@@ -233,7 +255,6 @@ class _GuiTypeOpt(
                     prx_item.ValidationStatus.Disable
                 )
 
-        #
         path = dtb_entity.path
         if self.gui_get_is_exists(path) is False:
             parent_gui = self.gui_get(dtb_entity.group)
@@ -285,9 +306,18 @@ class _GuiTypeOpt(
                     i_prx_item.set_name(str(i_count), 1)
                     if i_count > 0:
                         i_prx_item.set_enable(True)
-                        i_prx_item.set_status(
-                            i_prx_item.ValidationStatus.Normal
-                        )
+                        i_count_new = self._generate_today_count(i_dtb_assigns)
+                        if i_count_new > 0:
+                            i_prx_item.set_name(
+                                '{}+{}'.format((i_count-i_count_new), i_count_new), 1
+                            )
+                            i_prx_item.set_status(
+                                i_prx_item.ValidationStatus.New
+                            )
+                        else:
+                            i_prx_item.set_status(
+                                i_prx_item.ValidationStatus.Normal
+                            )
                     else:
                         i_prx_item.set_checked(False)
                         i_prx_item.set_enable(False)
@@ -295,19 +325,32 @@ class _GuiTypeOpt(
                             i_prx_item.ValidationStatus.Disable
                         )
         #
-        count = len(set([x.node for x in dtb_assigns]))
+        dtb_assigns = {i.node: i for i in dtb_assigns}.values()
+        count = len(dtb_assigns)
         prx_item.set_name(str(count), 1)
         if count > 0:
             prx_item.set_enable(True)
-            prx_item.set_status(
-                prx_item.ValidationStatus.Normal
-            )
+            count_new = self._generate_today_count(dtb_assigns)
+            if count_new > 0:
+                prx_item.set_name(
+                    '{}+{}'.format((count-count_new), count_new), 1
+                )
+                prx_item.set_status(
+                    prx_item.ValidationStatus.New
+                )
+            else:
+                prx_item.set_status(
+                    prx_item.ValidationStatus.Normal
+                )
         else:
             prx_item.set_checked(False)
             prx_item.set_enable(False)
             prx_item.set_status(
                 prx_item.ValidationStatus.Disable
             )
+
+    def _generate_today_count(self, dtb_assigns):
+        return len([i for i in dtb_assigns if i.ctime.startswith(self._today_tag)])
 
     def gui_add_one(self, dtb_entity):
         path = dtb_entity.path
@@ -561,8 +604,10 @@ class _GuiResourceOpt(
         super(_GuiResourceOpt, self).__init__(window, session, database_opt)
         self._init_list_view_opt_(prx_list_view, self.DCC_NAMESPACE)
 
-        self._arnold_texture_types = txr_core.TxrMethodForBuild.generate_instance().get_arnold_includes()
-        self._arnold_texture_mapper = txr_core.TxrMethodForBuild.generate_instance().get_arnold_mapper()
+        self._arnold_texture_types = bsc_txr_core.TxrMethodForBuild.generate_instance().get_arnold_includes()
+        self._arnold_texture_mapper = bsc_txr_core.TxrMethodForBuild.generate_instance().get_arnold_mapper()
+
+        self._today_tag = self._generate_today_tag()
 
     def _get_texture_assign(self, dtb_resource):
         dtb_opt = self._dtb_opt
@@ -688,6 +733,11 @@ class _GuiResourceOpt(
             )
             prx_item_widget.connect_drag_released_to(
                 self.drag_release_fnc
+            )
+
+        if dtb_resource.ctime.startswith(self._today_tag):
+            prx_item_widget.set_status(
+                prx_item_widget.ValidationStatus.New
             )
 
         prx_item_widget.refresh_widget_force()
@@ -1093,7 +1143,7 @@ class _GuiFileOpt(
 
         def build_fnc_(*args):
             _prx_item_widget, _location, _menu_content, _menu_data = args[0]
-            if file_opt.get_ext() in ['.jpg', '.png', '.exr', '.tx']:
+            if file_opt.get_ext() in ['.jpg', '.png', '.exr', '.hdr', '.tx']:
                 image_file_path, image_sp_cmd = bsc_core.ImgOiioOptForThumbnail(file_path).generate_thumbnail_create_args(
                     width=128, ext='.jpg'
                 )
@@ -1495,9 +1545,7 @@ class AbsPnlLibraryForResource(prx_widgets.PrxSessionWindow):
             'database/library/resource-{}'.format(self._dtb_superclass_name_cur)
         )
         #
-        self._dtb_opt = dtb_objects.DtbResourceLibraryOpt(
-            self._dtb_cfg_file_path, self._dtb_cfg_file_path_extend
-        )
+        self._dtb_opt = dtb_objects.DtbResourceLibraryOpt.generate(self._dtb_superclass_name_cur)
         #
         self._gui_guide_opt = _GuiGuideOpt(
             self, self._session, self._dtb_opt, self._type_guide_bar,
@@ -1654,9 +1702,8 @@ class AbsPnlLibraryForResource(prx_widgets.PrxSessionWindow):
         def quit_fnc_():
             ts.do_quit()
 
-        #
         self.__start_timestamp = bsc_core.SysBaseMtd.get_timestamp()
-        #
+
         dtb_categories = self._dtb_opt.get_entities(
             entity_type=self._dtb_opt.EntityTypes.Category,
             filters=[

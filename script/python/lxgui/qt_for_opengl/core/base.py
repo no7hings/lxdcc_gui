@@ -54,7 +54,7 @@ class GuiGLUsdData(object):
             (self._x, self._y, self._z),
             (self._c_x, self._c_y, self._c_z),
             (self._w, self._h, self._d)
-        ) = self._stage_opt.generate_geometry_args('/')
+        ) = self._stage_opt.compute_geometry_args('/')
 
         s = max(self._w, self._h)
 
@@ -75,7 +75,7 @@ class GuiGLUsdData(object):
             for i_prim in usd_core.UsdPrimOpt(
                 self._stage_opt.get_obj(self._location)
             ).get_descendants(
-                include_types=['Mesh']
+                type_includes=['Mesh']
             ):
                 self.__build_mesh(i_prim)
         bsc_log.Log.test_end('build stage')

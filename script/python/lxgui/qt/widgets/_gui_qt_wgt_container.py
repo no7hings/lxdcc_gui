@@ -1,8 +1,6 @@
 # coding=utf-8
 from lxgui.qt.core.wrap import *
 
-import lxgui.qt.core as gui_qt_core
-
 import lxgui.qt.abstracts as gui_qt_abstracts
 
 from ..widgets import \

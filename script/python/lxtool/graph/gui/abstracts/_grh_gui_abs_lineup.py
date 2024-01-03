@@ -17,7 +17,7 @@ import lxcontent.core as ctt_core
 
 import lxgui.proxy.scripts as gui_prx_scripts
 
-import lxresolver.commands as rsv_commands
+import lxresolver.core as rsv_core
 
 import lxsession.core as ssn_core
 
@@ -67,7 +67,7 @@ class AbsPnlAssetLineup(prx_widgets.PrxSessionWindow):
             [('name', 3)],
             self.get_definition_window_size()[0]*(1.0/4.0)-24
         )
-        self._resolver = rsv_commands.get_resolver()
+        self._resolver = rsv_core.RsvBase.generate_root()
         # self._rsv_obj_tree_view_0.set_selection_use_single()
         self._prx_dcc_obj_tree_view_add_opt = gui_prx_scripts.GuiPrxScpForResolver(
             self._resolver,

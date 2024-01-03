@@ -49,7 +49,7 @@ from ._gui_qt_wgt_view_for_tree import *
 
 from ._gui_qt_wgt_view_for_tab import *
 
-from ._gui_qt_wgt_view_for_scroll import *
+from ._gui_qt_wgt_scroll import *
 
 from ._gui_qt_wgt_chart import *
 

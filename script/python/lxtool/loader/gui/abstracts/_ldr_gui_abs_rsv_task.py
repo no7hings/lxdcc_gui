@@ -13,7 +13,7 @@ import lxcontent.core as ctt_core
 
 import lxbasic.extra.methods as bsc_etr_methods
 
-import lxresolver.commands as rsv_commands
+import lxresolver.core as rsv_core
 
 import lxgui.core as gui_core
 
@@ -722,7 +722,7 @@ class AbsPnlLoaderForRsvTask(prx_widgets.PrxSessionWindow):
         self._hook_configure = self._session.configure
         self._hook_gui_configure = self._session.gui_configure
 
-        self._resolver = rsv_commands.get_resolver()
+        self._resolver = rsv_core.RsvBase.generate_root()
 
         self._rsv_filter = self._hook_configure.get('resolver.filter')
         #

@@ -242,7 +242,7 @@ class PrxBaseWindow(
     def set_option_unit_clear(self):
         self.get_layer_widget('window_option_0').clear()
 
-    def start_window_loading(self, method, delay_time=100):
+    def start_window_loading(self, method, delay_time=250):
         def pre_fnc_():
             self.start_waiting()
             self._window_loading_flag = True

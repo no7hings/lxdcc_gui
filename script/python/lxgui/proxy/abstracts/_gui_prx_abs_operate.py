@@ -151,6 +151,14 @@ class AbsGuiPrxTreeViewAsDirectoryOpt(AbsGuiPrxTreeViewOpt):
                     ('open folder', 'file/open-folder', directory_opt.open_in_system)
                 ]
             )
+            if directory_opt.get_is_readable() is False:
+                prx_item.set_status(
+                    prx_item.ValidationStatus.Unreadable
+                )
+            elif directory_opt.get_is_writable() is False:
+                prx_item.set_status(
+                    prx_item.ValidationStatus.Unwritable
+                )
             return prx_item
         return self.gui_get(path)
 

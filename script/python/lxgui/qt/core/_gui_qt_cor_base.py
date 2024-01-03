@@ -1119,3 +1119,32 @@ class QtBrushes(object):
     TextError = QtGui.QBrush(QtColors.TextError)
     TextCorrect = QtGui.QBrush(QtColors.TextCorrect)
     TextActive = QtGui.QBrush(QtColors.TextActive)
+
+
+class GuiQtCache(object):
+    QT_IMAGE_CACHE = dict()
+
+    @classmethod
+    def generate_qt_image(cls, rect, file_path, cache_resize=False):
+        rect_size = rect.size()
+        w, h = rect_size.width(), rect_size.height()
+        key = '{}[{}x{}]'.format(file_path, w, h)
+        if key in cls.QT_IMAGE_CACHE:
+            return cls.QT_IMAGE_CACHE[key]
+
+        image = QtGui.QImage(file_path)
+        img_scaled = image.scaled(
+            rect_size,
+            QtCore.Qt.IgnoreAspectRatio,
+            QtCore.Qt.SmoothTransformation
+        )
+        if cache_resize is True:
+            if file_path.endswith('.png'):
+                path_tmp = bsc_core.StgTmpThumbnailMtd.generate_for_qt_resize(file_path, width=max(w, h), ext='.png')
+                if bsc_core.StgPathMtd.get_is_exists(path_tmp) is False:
+                    bsc_core.StgFileOpt(path_tmp).create_directory()
+                    img_scaled.save(path_tmp)
+                img_scaled = QtGui.QImage(path_tmp)
+
+        cls.QT_IMAGE_CACHE[key] = img_scaled
+        return img_scaled

@@ -270,7 +270,15 @@ class QtListWidget(
         self.item_checked.emit(self, 0)
 
     def _set_all_visible_item_widgets_checked_(self, boolean):
-        pass
+        [
+            i._set_checked_(boolean)
+            for i in self._get_all_visible_item_widgets_()
+        ]
+        [
+            i._set_checked_(boolean)
+            for i in self._get_all_visible_items_()
+        ]
+        self.item_checked.emit(self, 0)
 
     def _swap_view_mode_(self):
         if self._get_is_grid_mode_() is True:

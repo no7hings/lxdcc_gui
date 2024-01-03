@@ -295,6 +295,7 @@ class GuiValidationStatus(enum.IntEnum):
     Unreadable = 0x28
     Unwritable = 0x29
     Lost = 0x2A
+    New = 0x2B
 
 
 class GuiActionState(enum.IntEnum):

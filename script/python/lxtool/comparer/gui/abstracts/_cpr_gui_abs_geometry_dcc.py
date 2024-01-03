@@ -9,7 +9,7 @@ import lxgui.proxy.widgets as prx_widgets
 
 import lxgui.proxy.scripts as gui_prx_scripts
 
-import lxresolver.commands as rsv_commands
+import lxresolver.core as rsv_core
 
 
 class AbsPnlComparerForAssetGeometryDcc(prx_widgets.PrxSessionWindow):
@@ -224,7 +224,7 @@ class AbsPnlComparerForAssetGeometryDcc(prx_widgets.PrxSessionWindow):
         )
 
     def refresh_all_fnc(self):
-        self._resolver = rsv_commands.get_resolver()
+        self._resolver = rsv_core.RsvBase.generate_root()
         scene_file_path = self._options_prx_node.get('scene.file')
         self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(
             file_path=scene_file_path

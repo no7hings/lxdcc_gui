@@ -59,18 +59,18 @@ class PrxListView(
         self._check_all_button._set_name_text_('check all')
         self._check_all_button._set_icon_file_path_(gui_core.GuiIcon.get('all_checked'))
         self._prx_check_tool_box.add_widget(self._check_all_button)
-        self._check_all_button.press_clicked.connect(self.__check_all_items)
+        self._check_all_button.press_clicked.connect(self.__do_check_all_visible_items)
         self._check_all_button._set_tool_tip_text_(
-            '"LMB-click" for checked all items'
+            '"LMB-click" for checked all visible items'
         )
         #
         self._uncheck_all_button = _gui_qt_wgt_button.QtIconPressButton()
         self._uncheck_all_button._set_icon_file_path_(gui_core.GuiIcon.get('all_unchecked'))
         self._uncheck_all_button._set_name_text_('uncheck all')
         self._prx_check_tool_box.add_widget(self._uncheck_all_button)
-        self._uncheck_all_button.press_clicked.connect(self.__uncheck_all_items)
+        self._uncheck_all_button.press_clicked.connect(self.__do_uncheck_all_visible_items)
         self._uncheck_all_button._set_tool_tip_text_(
-            '"LMB-click" for unchecked all items'
+            '"LMB-click" for unchecked all visible items'
         )
         # mode switch
         self._prx_mode_switch_tool_box = self.create_top_tool_box('mode', True, True, 0)
@@ -115,7 +115,7 @@ class PrxListView(
         self.__add_scale_switch_tools()
         self.__add_sort_mode_switch_tools()
 
-        self._prx_filter_bar._qt_widget.user_input_value_changed.connect(self.__keyword_filter_cbk)
+        self._prx_filter_bar._qt_widget.input_value_changed.connect(self.__keyword_filter_cbk)
         self._prx_filter_bar._qt_widget.input_value_change_accepted.connect(
             self._qt_view._do_keyword_filter_occurrence_
         )
@@ -265,11 +265,11 @@ class PrxListView(
             gui_core.GuiIcon.get(['tool/list-mode', 'tool/icon-mode'][self.view._get_is_grid_mode_()])
         )
 
-    def __check_all_items(self):
-        self._qt_view._set_all_item_widgets_checked_(True)
+    def __do_check_all_visible_items(self):
+        self._qt_view._set_all_visible_item_widgets_checked_(True)
 
-    def __uncheck_all_items(self):
-        self._qt_view._set_all_item_widgets_checked_(False)
+    def __do_uncheck_all_visible_items(self):
+        self._qt_view._set_all_visible_item_widgets_checked_(False)
 
     def set_view_list_mode(self):
         self._qt_view._set_list_mode_()

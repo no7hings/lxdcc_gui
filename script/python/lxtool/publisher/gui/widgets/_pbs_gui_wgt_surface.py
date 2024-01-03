@@ -15,9 +15,9 @@ class ValidatorOpt(pbs_gui_abstracts.AbsValidatorOpt):
         super(ValidatorOpt, self).__init__(*args, **kwargs)
 
 
-class PnlPublisherForAsset(pbs_gui_abstracts.AbsPnlPublisherForAsset):
+class PnlPublisherForSurface(pbs_gui_abstracts.AbsPnlPublisherForSurface):
     DCC_NAMESPACE = 'python'
     DCC_VALIDATOR_OPT_CLS = ValidatorOpt
 
     def __init__(self, session, *args, **kwargs):
-        super(PnlPublisherForAsset, self).__init__(session, *args, **kwargs)
+        super(PnlPublisherForSurface, self).__init__(session, *args, **kwargs)

@@ -625,9 +625,9 @@ class PrxInputAsShotgunEntityWithChoose(_AbsPrxInput):
             pass
 
         def cache_fnc_():
-            import lxwrap.shotgun.core as wrp_stg_core
+            import lxbasic.shotgun.core as bsc_stg_core
             return [
-                wrp_stg_core.StgConnector.generate_stg_gui_args(
+                bsc_stg_core.StgConnector.generate_stg_gui_args(
                     shotgun_entity_kwargs, name_field, image_field, keyword_filter_fields, tag_filter_fields
                 )
             ]
@@ -735,9 +735,9 @@ class PrxInputAsShotgunEntitiesWithChoose(_AbsPrxInput):
             pass
 
         def cache_fnc_():
-            import lxwrap.shotgun.core as wrp_stg_core
+            import lxbasic.shotgun.core as bsc_stg_core
             return [
-                wrp_stg_core.StgConnector.generate_stg_gui_args(
+                bsc_stg_core.StgConnector.generate_stg_gui_args(
                     shotgun_entity_kwargs, name_field, image_field, keyword_filter_fields, tag_filter_fields
                 )
             ]
@@ -797,9 +797,9 @@ class PrxInputAsRsvProject(_AbsPrxInput):
     def update_history(self):
         project = self._qt_input_widget._get_value_()
         if project:
-            import lxresolver.commands as rsv_commands
+            import lxresolver.core as rsv_core
 
-            resolver = rsv_commands.get_resolver()
+            resolver = rsv_core.RsvBase.generate_root()
             #
             rsv_project = resolver.get_rsv_project(project=project)
             project_directory_path = rsv_project.get_directory_path()
@@ -938,6 +938,9 @@ class PrxInputAsConstantWithChoose(_AbsPrxInput):
             if _:
                 self.set(_[-1])
                 self.set_default(_[-1])
+            else:
+                self.set('')
+                self.set_default('')
         elif isinstance(_, six.string_types):
             self._qt_input_widget._set_value_(_)
         elif isinstance(_, (int, float)):
@@ -1940,7 +1943,6 @@ class PrxInputAsFiles(_AbsPrxInputExtra):
                 prx_item.ValidationStatus.Unwritable
             )
 
-    #
     def __add_item_as_tree(self, obj, scheme):
         if self._root_location is not None:
             i_is_create, i_prx_item, _ = self.__add_item_as_list(self._root_obj, scheme)

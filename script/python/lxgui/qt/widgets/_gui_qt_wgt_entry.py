@@ -1443,8 +1443,13 @@ class QtEntryAsCapsule(
             return
         p = event.pos()
         x, y = p.x(), p.y()
-        self.__index_hover = int(x/self._capsule_per_width)
-        self._refresh_widget_draw_()
+        self.__index_hover = None
+        c = len(self._value_options)
+        if c:
+            index = int(x/self._capsule_per_width)
+            if index < c:
+                self.__index_hover = index
+                self._refresh_widget_draw_()
 
     def _do_press_start_(self, event):
         if self._action_is_enable is False:

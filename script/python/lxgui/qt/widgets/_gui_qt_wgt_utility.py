@@ -346,8 +346,8 @@ class QtMenu(QtWidgets.QMenu):
                         if len(args_extend) == 2:
                             check_fnc, fnc = args_extend
                             if isinstance(
-                                    check_fnc,
-                                    (types.FunctionType, types.MethodType, functools.partial, types.LambdaType)
+                                check_fnc,
+                                (types.FunctionType, types.MethodType, functools.partial, types.LambdaType)
                             ):
                                 is_checked = check_fnc()
                             else:
@@ -364,8 +364,8 @@ class QtMenu(QtWidgets.QMenu):
                         elif len(args_extend) == 3:
                             check_fnc, fnc, enable_fnc = args_extend
                             if isinstance(
-                                    check_fnc,
-                                    (types.FunctionType, types.MethodType, functools.partial, types.LambdaType)
+                                check_fnc,
+                                (types.FunctionType, types.MethodType, functools.partial, types.LambdaType)
                             ):
                                 is_checked = check_fnc()
                             else:
@@ -373,8 +373,8 @@ class QtMenu(QtWidgets.QMenu):
                             #
                             item.triggered.connect(fnc)
                             if isinstance(
-                                    enable_fnc,
-                                    (types.FunctionType, types.MethodType, functools.partial, types.LambdaType)
+                                enable_fnc,
+                                (types.FunctionType, types.MethodType, functools.partial, types.LambdaType)
                             ):
                                 is_enable = enable_fnc()
                                 item.setEnabled(is_enable)

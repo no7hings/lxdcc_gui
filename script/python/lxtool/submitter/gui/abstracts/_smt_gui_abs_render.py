@@ -7,7 +7,7 @@ import lxgui.proxy.widgets as prx_widgets
 
 import lxcontent.core as ctt_core
 
-import lxresolver.commands as rsv_commands
+import lxresolver.core as rsv_core
 
 import lxuniverse.objects as unr_objects
 
@@ -23,7 +23,7 @@ import lxgui.proxy.core as gui_prx_core
 
 import lxsession.commands as ssn_commands
 
-import lxwrap.shotgun.core as wrp_stg_core
+import lxbasic.shotgun.core as bsc_stg_core
 
 import lxshotgun.rsv.scripts as stg_rsv_scripts
 
@@ -39,21 +39,21 @@ class AbsRenderSubmitterDef(object):
             self._hook_option_opt.set(
                 'option_hook_key', self.OPTION_HOOK_KEY
             )
-            #
+
             self._option_hook_configure = ssn_commands.get_option_hook_configure(
                 self._hook_option_opt.to_string()
             )
-            #
+
             self._hook_gui_configure = self._option_hook_configure.get_as_content('option.gui')
             self._hook_build_configure = self._option_hook_configure.get_as_content('build')
-            #
+
             raw = bsc_core.EnvBaseMtd.get('REZ_BETA')
             if raw:
                 self._rez_beta = True
             else:
                 self._rez_beta = False
-            #
-            self._stg_connector = wrp_stg_core.StgConnector()
+
+            self._stg_connector = bsc_stg_core.StgConnector()
         else:
             self._file_path = None
         #
@@ -226,7 +226,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
     def set_all_refresh(self):
         if self._file_path:
             self._file_path = bsc_core.StgBasePathMapMtd.map_to_current(self._file_path)
-            self._resolver = rsv_commands.get_resolver()
+            self._resolver = rsv_core.RsvBase.generate_root()
             self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
             if self._rsv_scene_properties:
                 self._variable_variants_dic = self._hook_build_configure.get(
@@ -1196,7 +1196,7 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
     def set_all_refresh(self):
         if self._file_path:
             self._file_path = bsc_core.StgBasePathMapMtd.map_to_current(self._file_path)
-            self._resolver = rsv_commands.get_resolver()
+            self._resolver = rsv_core.RsvBase.generate_root()
             self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
             if self._rsv_scene_properties:
                 self._rsv_task = self._resolver.get_rsv_task(

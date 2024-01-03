@@ -210,7 +210,7 @@ class _AbsPrxPortBase(AbsPrxPortBaseDef):
         #
         self._layout = None
         #
-        self._is_join_to_next = join_to_next
+        self._join_to_next_flag = join_to_next
         self._join_layout = None
         self._key_widget = None
         #
@@ -273,7 +273,7 @@ class _AbsPrxPortBase(AbsPrxPortBaseDef):
             self.set_name(text)
             self._label = text
 
-    def set_sub_name_update(self):
+    def _update_sub_name(self):
         if hasattr(self.get_input_widget(), '_set_name_text_'):
             self.get_input_widget()._set_name_text_(self.label)
 
@@ -372,16 +372,16 @@ class _AbsPrxPortBase(AbsPrxPortBaseDef):
         return self._layout
 
     # join to next
-    def set_join_to_next(self, boolean):
-        self._is_join_to_next = boolean
+    def _set_join_to_next_flag(self, boolean):
+        self._join_to_next_flag = boolean
 
-    def _get_is_join_next_(self):
-        return self._is_join_to_next
+    def _get_join_next_flag(self):
+        return self._join_to_next_flag
 
-    def _set_join_layout_(self, layout):
+    def _register_join_layout(self, layout):
         self._join_layout = layout
 
-    def _get_join_layout_(self):
+    def _get_join_layout(self):
         return self._join_layout
 
     def _set_key_widget_(self, widget):
@@ -1118,60 +1118,63 @@ class PrxNodeOld(gui_prx_abstracts.AbsPrxWidget):
     def set_folder_add(self, label):
         pass
 
-    def _get_pre_port_args_(self):
+    def _get_pre_args(self):
         ports = self._port_stack.get_objects()
         if ports:
-            pre_port = ports[-1]
-            return pre_port._get_is_join_next_(), pre_port
+            port_pre = ports[-1]
+            return port_pre._get_join_next_flag(), port_pre
         return False, None
 
     def add_port(self, port):
         if isinstance(port, _AbsPrxPortBase):
-            cur_port = port
-            pre_port_is_join_next, pre_port = self._get_pre_port_args_()
-            cur_port_is_join_next = cur_port._get_is_join_next_()
+            port_cur = port
+            join_next_pre, port_pre = self._get_pre_args()
+            join_next_cur = port_cur._get_join_next_flag()
             #
-            cur_port.set_node_widget(self.widget)
+            port_cur.set_node_widget(self.widget)
             #
-            condition = pre_port_is_join_next, cur_port_is_join_next
+            condition = join_next_pre, join_next_cur
             if condition == (False, False):
                 self._qt_label_layout.addWidget(
-                    cur_port.label_widget.widget
+                    port_cur.label_widget.widget
                 )
                 self._qt_entry_layout.addWidget(
-                    cur_port._prx_port_input.widget
+                    port_cur._prx_port_input.widget
                 )
-                if cur_port.LABEL_HIDED is False:
-                    cur_port._prx_port_label.set_show()
+                if port_cur.LABEL_HIDED is False:
+                    port_cur._prx_port_label.set_show()
+            # pre is not join and current join to next
             elif condition == (False, True):
                 self._qt_label_layout.addWidget(
-                    cur_port.label_widget.widget
+                    port_cur.label_widget.widget
                 )
                 #
-                enter_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
+                enter_widget_cur = _gui_qt_wgt_utility.QtTranslucentWidget()
                 self._qt_entry_layout.addWidget(
-                    enter_widget
+                    enter_widget_cur
                 )
-                enter_layout = _gui_qt_wgt_base.QtHBoxLayout(enter_widget)
-                enter_layout.setContentsMargins(0, 0, 0, 0)
-                enter_layout.setSpacing(2)
-                enter_layout.addWidget(
-                    cur_port._prx_port_input.widget
+                enter_layout_cur = _gui_qt_wgt_base.QtHBoxLayout(enter_widget_cur)
+                enter_layout_cur.setContentsMargins(0, 0, 0, 0)
+                enter_layout_cur.setSpacing(2)
+                enter_layout_cur.addWidget(
+                    port_cur._prx_port_input.widget
                 )
-                cur_port._set_join_layout_(enter_layout)
+                port_cur._register_join_layout(enter_layout_cur)
+            # pre is join and current also
             elif condition == (True, True):
-                enter_layout = pre_port._get_join_layout_()
-                enter_layout.addWidget(
-                    cur_port._prx_port_input.widget
+                enter_layout_pre = port_pre._get_join_layout()
+                enter_layout_pre.addWidget(
+                    port_cur._prx_port_input.widget
                 )
-                cur_port._set_join_layout_(enter_layout)
+                port_cur._register_join_layout(enter_layout_pre)
+            # pre is join but current is not
             elif condition == (True, False):
-                enter_layout = pre_port._get_join_layout_()
+                enter_layout = port_pre._get_join_layout()
                 enter_layout.addWidget(
-                    cur_port._prx_port_input.widget
+                    port_cur._prx_port_input.widget
                 )
             #
-            self._port_stack.set_object_add(cur_port)
+            self._port_stack.set_object_add(port_cur)
             return port
         elif isinstance(port, dict):
             pass
@@ -1243,97 +1246,96 @@ class PrxNodePortGroup(AbsPrxPortBaseDef):
         return group
 
     def add_child(self, port):
-        cur_port = port
-        pre_port_is_join_next, pre_port = self._get_pre_child_args_()
-        cur_port_is_join_next = cur_port._get_is_join_next_()
+        port_cur = port
+        join_next_pre, port_pre = self._get_pre_child_args_()
+        join_next_cur = port_cur._get_join_next_flag()
         #
-        condition = pre_port_is_join_next, cur_port_is_join_next
+        condition = join_next_pre, join_next_cur
         if condition == (False, False):
-            port_main_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
-            self._port_layout.addWidget(port_main_widget)
-            cur_port.set_main_widget(port_main_widget)
-            cur_port_layout = _gui_qt_wgt_base.QtHBoxLayout(port_main_widget)
-            cur_port_layout.setContentsMargins(0, 0, 0, 0)
-            cur_port_layout._set_align_top_()
-            cur_port._set_layout_(cur_port_layout)
+            widget_cur = _gui_qt_wgt_utility.QtTranslucentWidget()
+            self._port_layout.addWidget(widget_cur)
+            port_cur.set_main_widget(widget_cur)
+            layout_cur = _gui_qt_wgt_base.QtHBoxLayout(widget_cur)
+            layout_cur.setContentsMargins(0, 0, 0, 0)
+            layout_cur._set_align_as_top_()
+            port_cur._set_layout_(layout_cur)
             #
             cur_key_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
             cur_key_widget.hide()
-            cur_port._set_key_widget_(cur_key_widget)
-            cur_port_layout.addWidget(cur_key_widget)
+            port_cur._set_key_widget_(cur_key_widget)
+            layout_cur.addWidget(cur_key_widget)
             cur_key_layout = _gui_qt_wgt_base.QtHBoxLayout(cur_key_widget)
             cur_key_layout.setContentsMargins(0, 0, 0, 0)
-            cur_key_layout._set_align_top_()
+            cur_key_layout._set_align_as_top_()
             # + key
-            cur_key_layout.addWidget(cur_port._prx_port_enable._qt_widget)
-            cur_key_layout.addWidget(cur_port._prx_port_label._qt_widget)
+            cur_key_layout.addWidget(port_cur._prx_port_enable._qt_widget)
+            cur_key_layout.addWidget(port_cur._prx_port_label._qt_widget)
             # + value
-            cur_port_layout.addWidget(cur_port._prx_port_input._qt_widget)
-            if cur_port.KEY_HIDE is False:
+            layout_cur.addWidget(port_cur._prx_port_input._qt_widget)
+            if port_cur.KEY_HIDE is False:
                 cur_key_widget.show()
-            if cur_port.LABEL_HIDED is False:
-                cur_port._prx_port_label._qt_widget.show()
+            if port_cur.LABEL_HIDED is False:
+                port_cur._prx_port_label._qt_widget.show()
                 cur_key_widget.show()
-        # joint to next
+        # pre is not join and current join to next
         elif condition == (False, True):
-            port_main_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
-            self._port_layout.addWidget(port_main_widget)
-            cur_port.set_main_widget(port_main_widget)
-            cur_port_layout = _gui_qt_wgt_base.QtHBoxLayout(port_main_widget)
-            cur_port_layout.setContentsMargins(0, 0, 0, 0)
-            cur_port_layout._set_align_top_()
-            cur_port._set_layout_(cur_port_layout)
-            cur_key_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
-            # cur_key_widget.hide()
-            cur_port._set_key_widget_(cur_key_widget)
-            cur_port_layout.addWidget(cur_key_widget)
-            cur_key_layout = _gui_qt_wgt_base.QtHBoxLayout(cur_key_widget)
+            widget_cur = _gui_qt_wgt_utility.QtTranslucentWidget()
+            self._port_layout.addWidget(widget_cur)
+            port_cur.set_main_widget(widget_cur)
+            layout_cur = _gui_qt_wgt_base.QtHBoxLayout(widget_cur)
+            layout_cur.setContentsMargins(0, 0, 0, 0)
+            layout_cur.setSpacing(2)
+            layout_cur._set_align_as_top_()
+            port_cur._set_layout_(layout_cur)
+            key_widget_cur = _gui_qt_wgt_utility.QtTranslucentWidget()
+            # key_widget_cur.hide()
+            port_cur._set_key_widget_(key_widget_cur)
+            layout_cur.addWidget(key_widget_cur)
+            cur_key_layout = _gui_qt_wgt_base.QtHBoxLayout(key_widget_cur)
             cur_key_layout.setContentsMargins(0, 0, 0, 0)
-            cur_key_layout._set_align_top_()
+            cur_key_layout._set_align_as_top_()
             # + key
-            cur_key_layout.addWidget(cur_port._prx_port_enable._qt_widget)
-            cur_key_layout.addWidget(cur_port._prx_port_label._qt_widget)
+            #   + enable
+            cur_key_layout.addWidget(port_cur._prx_port_enable._qt_widget)
+            #   + label
+            cur_key_layout.addWidget(port_cur._prx_port_label._qt_widget)
             # + value
-            cur_port_layout.addWidget(cur_port._prx_port_input._qt_widget)
-            # value
-            next_port_widget = _gui_qt_wgt_utility.QtTranslucentWidget()
-            cur_port_layout.addWidget(next_port_widget)
-            next_port_layout = _gui_qt_wgt_base.QtHBoxLayout(next_port_widget)
-            next_port_layout.setContentsMargins(0, 0, 0, 0)
-            next_port_layout.setSpacing(2)
-
-            cur_port.set_sub_name_update()
-
-            cur_port._set_join_layout_(next_port_layout)
-            if cur_port.KEY_HIDE is False:
-                cur_key_widget.show()
-            if cur_port.LABEL_HIDED is False:
-                cur_port._prx_port_label._qt_widget.show()
-                cur_key_widget.show()
+            #   + input
+            layout_cur.addWidget(port_cur._prx_port_input._qt_widget)
+            port_cur._update_sub_name()
+            # join
+            port_cur._register_join_layout(layout_cur)
+            if port_cur.KEY_HIDE is False:
+                key_widget_cur.show()
+            if port_cur.LABEL_HIDED is False:
+                port_cur._prx_port_label._qt_widget.show()
+                key_widget_cur.show()
+        # pre is join and current also
         elif condition == (True, True):
             # hide status and label
-            pre_port_layout = pre_port._get_join_layout_()
-            pre_port_layout.addWidget(cur_port._prx_port_enable._qt_widget)
-            cur_port._prx_port_enable._qt_widget.hide()
-            pre_port_layout.addWidget(cur_port._prx_port_label._qt_widget)
-            cur_port._prx_port_label._qt_widget.hide()
-            cur_port.set_sub_name_update()
-            pre_port_layout.addWidget(cur_port._prx_port_input._qt_widget)
-            cur_port._set_join_layout_(pre_port_layout)
+            layout_pre = port_pre._get_join_layout()
+            layout_pre.addWidget(port_cur._prx_port_enable._qt_widget)
+            port_cur._prx_port_enable._qt_widget.hide()
+            layout_pre.addWidget(port_cur._prx_port_label._qt_widget)
+            port_cur._prx_port_label._qt_widget.hide()
+            port_cur._update_sub_name()
+            layout_pre.addWidget(port_cur._prx_port_input._qt_widget)
+            port_cur._register_join_layout(layout_pre)
+        # pre is join but current is not
         elif condition == (True, False):
             # hide status and label
-            pre_port_layout = pre_port._get_join_layout_()
-            pre_port_layout.addWidget(cur_port._prx_port_enable._qt_widget)
-            cur_port._prx_port_enable._qt_widget.hide()
-            pre_port_layout.addWidget(cur_port._prx_port_label._qt_widget)
-            cur_port._prx_port_label._qt_widget.hide()
-            cur_port.set_sub_name_update()
-            pre_port_layout.addWidget(cur_port._prx_port_input._qt_widget)
+            layout_pre = port_pre._get_join_layout()
+            layout_pre.addWidget(port_cur._prx_port_enable._qt_widget)
+            port_cur._prx_port_enable._qt_widget.hide()
+            layout_pre.addWidget(port_cur._prx_port_label._qt_widget)
+            port_cur._prx_port_label._qt_widget.hide()
+            port_cur._update_sub_name()
+            layout_pre.addWidget(port_cur._prx_port_input._qt_widget)
         #
-        cur_port._prx_port_input.set_show()
+        port_cur._prx_port_input.set_show()
         #
-        self._port_stack.set_object_add(cur_port)
-        cur_port.set_group(self)
+        self._port_stack.set_object_add(port_cur)
+        port_cur.set_group(self)
         #
         self.update_children_name_width()
         return port
@@ -1341,10 +1343,10 @@ class PrxNodePortGroup(AbsPrxPortBaseDef):
     def _get_pre_child_args_(self):
         ports = self._port_stack.get_objects()
         if ports:
-            pre_port = ports[-1]
-            if hasattr(pre_port, '_get_is_join_next_') is True:
-                return pre_port._get_is_join_next_(), pre_port
-            return False, pre_port
+            port_pre = ports[-1]
+            if hasattr(port_pre, '_get_join_next_flag') is True:
+                return port_pre._get_join_next_flag(), port_pre
+            return False, port_pre
         return False, None
 
     def get_child(self, name):
@@ -2006,7 +2008,7 @@ class PrxNode(gui_prx_abstracts.AbsPrxWidget):
         port.set_label(label_)
         port.set_use_enable(enable_)
         port.set_tool_tip(tool_tip_ or '...')
-        port.set_join_to_next(join_to_next_)
+        port._set_join_to_next_flag(join_to_next_)
         port.set_locked(lock_)
         #
         height = option.get('height')

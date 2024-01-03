@@ -273,8 +273,8 @@ class QtTextBubbles(
     QtWidgets.QWidget,
     gui_qt_abstracts.AbsQtWidgetBaseDef
 ):
-    bubble_text_change_accepted = qt_signal(str)
-    bubble_text_changed = qt_signal()
+    bubbles_value_change_accepted = qt_signal(list)
+    bubbles_value_changed = qt_signal()
 
     def __init__(self, *args, **kwargs):
         super(QtTextBubbles, self).__init__(*args, **kwargs)
@@ -303,19 +303,22 @@ class QtTextBubbles(
 
     def _append_value_(self, text):
         self._bubble_texts.append(text)
-        #
-        self.bubble_text_change_accepted.emit(text)
-        self.bubble_text_changed.emit()
+
+        self.bubbles_value_changed.emit()
+        self.bubbles_value_change_accepted.emit(self._bubble_texts)
 
     def _delete_value_(self, text):
         self._bubble_texts.remove(text)
-        #
-        self.bubble_text_change_accepted.emit(text)
-        self.bubble_text_changed.emit()
+
+        self.bubbles_value_changed.emit()
+        self.bubbles_value_change_accepted.emit(self._bubble_texts)
 
     def _execute_bubble_backspace_(self):
         # when bubble text widget delete, send emit do self._delete_value_(text)
         self.__lot._delete_latest_()
+
+        self.bubbles_value_changed.emit()
+        self.bubbles_value_change_accepted.emit(self._bubble_texts)
 
     def _get_all_bubble_texts_(self):
         return self._bubble_texts

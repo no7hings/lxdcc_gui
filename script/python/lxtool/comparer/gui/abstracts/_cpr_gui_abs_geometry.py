@@ -9,7 +9,7 @@ import lxgui.proxy.widgets as prx_widgets
 
 import lxgui.proxy.scripts as gui_prx_scripts
 
-import lxresolver.commands as rsv_commands
+import lxresolver.core as rsv_core
 
 
 class AbsDccComparerOpt(object):
@@ -20,7 +20,7 @@ class AbsDccComparerOpt(object):
     DCC_PATHSEP = None
 
     def __init__(self, filter_tree_view, result_tree_view):
-        self._filter_tree_view = filter_tree_view
+        self._prx_tree_view_for_filter = filter_tree_view
         self._result_tree_view = result_tree_view
         self._item_dict = self._result_tree_view._item_dict
 
@@ -29,13 +29,13 @@ class AbsDccComparerOpt(object):
         )
 
         self._filter_opt = gui_prx_scripts.GuiPrxScpForTreeTagFilter(
-            prx_tree_view_src=self._filter_tree_view,
+            prx_tree_view_src=self._prx_tree_view_for_filter,
             prx_tree_view_tgt=self._result_tree_view,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
         )
 
     def restore_all(self):
-        self._filter_tree_view.restore_all()
+        self._prx_tree_view_for_filter.restore_all()
         self._result_tree_view.restore_all()
         self._filter_opt.restore_all()
 
@@ -153,9 +153,9 @@ class AbsPnlComparerForAssetGeometry(prx_widgets.PrxSessionWindow):
         e_g.add_widget(h_s)
         v_s = prx_widgets.PrxVSplitter()
         h_s.add_widget(v_s)
-        self._filter_tree_view = prx_widgets.PrxTreeView()
-        v_s.add_widget(self._filter_tree_view)
-        self._filter_tree_view.set_header_view_create(
+        self._prx_tree_view_for_filter = prx_widgets.PrxTreeView()
+        v_s.add_widget(self._prx_tree_view_for_filter)
+        self._prx_tree_view_for_filter.set_header_view_create(
             [('name', 2), ('count', 1)],
             self.get_definition_window_size()[0]*(1.0/3.0)-48
         )
@@ -170,7 +170,7 @@ class AbsPnlComparerForAssetGeometry(prx_widgets.PrxSessionWindow):
         )
         #
         self._comparer_opt = self.DCC_COMPARER_OPT_CLS(
-            self._filter_tree_view, self._result_tree_view
+            self._prx_tree_view_for_filter, self._result_tree_view
         )
         #
         self._options_prx_node = prx_widgets.PrxNode('options')
@@ -192,7 +192,7 @@ class AbsPnlComparerForAssetGeometry(prx_widgets.PrxSessionWindow):
         v_s.set_stretches([1, 2])
         h_s.set_stretches([1, 2])
 
-        self._resolver = rsv_commands.get_resolver()
+        self._resolver = rsv_core.RsvBase.generate_root()
         self._rsv_project = self._resolver.get_rsv_project(
             project=self._session.option_opt.get('project')
         )

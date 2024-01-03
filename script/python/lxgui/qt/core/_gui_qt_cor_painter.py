@@ -692,10 +692,10 @@ class QtPainter(QtGui.QPainter):
                         rect, file_path, offset,
                         is_hovered=is_hovered, is_pressed=is_pressed
                     )
-                elif file_path.endswith('.exr'):
-                    self._set_exr_image_draw_by_rect_(rect, file_path, offset)
+                elif file_path.endswith('.exr') or file_path.endswith('.hdr'):
+                    self._draw_image_exr_by_rect_(rect, file_path, offset)
                 elif file_path.endswith('.mov'):
-                    self._set_mov_image_draw_by_rect_(rect, file_path, offset)
+                    self._draw_image_mov_by_rect_(rect, file_path, offset)
                 else:
                     self._draw_image_by_rect_(
                         rect, file_path, offset,
@@ -733,14 +733,14 @@ class QtPainter(QtGui.QPainter):
                 p_over
             )
         elif is_hovered is True:
+            p_over = self._get_svg_rgba_over_(rect_, svg_render, gui_core.GuiRgba.LightOrange)
             if hover_color is not None:
-                if len(hover_color) == 4:
-                    alpha = hover_color[3]
-                    p_over = self._get_svg_rgba_over_(rect_, svg_render, hover_color, alpha=alpha)
-                else:
-                    p_over = self._get_svg_rgba_over_(rect_, svg_render, hover_color)
-            else:
-                p_over = self._get_svg_rgba_over_(rect_, svg_render, gui_core.GuiRgba.LightOrange)
+                if isinstance(hover_color, (tuple, list)):
+                    if len(hover_color) == 4:
+                        alpha = hover_color[3]
+                        p_over = self._get_svg_rgba_over_(rect_, svg_render, hover_color, alpha=alpha)
+                    else:
+                        p_over = self._get_svg_rgba_over_(rect_, svg_render, hover_color)
 
             self.drawPixmap(
                 rect_,
@@ -823,30 +823,15 @@ class QtPainter(QtGui.QPainter):
             rect.x()+offset, rect.y()+offset,
             rect.width()-offset, rect.height()-offset
         )
-        #
-        rect_size = rect_.size()
-        w, h = rect_size.width(), rect_size.height()
-        image = QtGui.QImage(file_path)
-        img_scaled = image.scaled(
-            rect_size,
-            QtCore.Qt.IgnoreAspectRatio,
-            QtCore.Qt.SmoothTransformation
-        )
-        if cache_resize is True:
-            if file_path.endswith('.png'):
-                tmp_path = bsc_core.StgTmpThumbnailMtd.get_qt_file_path_(file_path, width=max(w, h), ext='.png')
-                if bsc_core.StgPathMtd.get_is_exists(tmp_path) is False:
-                    bsc_core.StgFileOpt(tmp_path).create_directory()
-                    img_scaled.save(tmp_path)
-                #
-                img_scaled = QtGui.QImage(tmp_path)
-        #
-        pixmap = QtGui.QPixmap(img_scaled)
+
+        image = _gui_qt_cor_base.GuiQtCache.generate_qt_image(rect_, file_path, cache_resize)
+
+        pixmap = QtGui.QPixmap(image)
         if is_pressed is True:
             pixmap = self._get_pixmap_with_rgba_over_(pixmap, gui_core.GuiRgba.LightBlue, alpha=63)
         elif is_hovered is True:
             pixmap = self._get_pixmap_with_rgba_over_(pixmap, gui_core.GuiRgba.LightOrange, alpha=63)
-        #
+
         self.drawPixmap(
             rect_,
             pixmap
@@ -873,7 +858,7 @@ class QtPainter(QtGui.QPainter):
                 self.drawRect(
                     rect_offset
                 )
-                #
+
                 frm_x, frm_y = rect_offset.x(), rect_offset.y()
                 frm_w, frm_h = rect_offset.width(), rect_offset.height()
                 img_w, img_h = image.width(), image.height()
@@ -955,27 +940,25 @@ class QtPainter(QtGui.QPainter):
             'loading .{}'.format('.'*int((loading_index/10)%3))
         )
 
-    def _set_exr_image_draw_by_rect_(self, rect, file_path, offset=0, is_hovered=False):
+    def _draw_image_exr_by_rect_(self, rect, file_path, offset=0, is_hovered=False):
         thumbnail_file_path = bsc_core.ImgOiioOptForThumbnail(file_path).generate_thumbnail()
         self._draw_image_by_rect_(
             rect=rect, file_path=thumbnail_file_path, offset=offset, is_hovered=is_hovered
         )
 
-    def _set_mov_image_draw_by_rect_(self, rect, file_path, offset=0):
+    def _draw_image_mov_by_rect_(self, rect, file_path, offset=0):
         rect_ = QtCore.QRect(
             rect.x()+offset, rect.y()+offset,
             rect.width()-offset, rect.height()-offset
         )
-        #
+
         thumbnail_file_path = bsc_core.VdoFileOpt(file_path).generate_thumbnail()
-        rect_size = rect.size()
-        image = QtGui.QImage(thumbnail_file_path)
-        new_image = image.scaled(
-            rect_size,
-            QtCore.Qt.IgnoreAspectRatio,
-            QtCore.Qt.SmoothTransformation
+
+        image = _gui_qt_cor_base.GuiQtCache.generate_qt_image(
+            rect_, thumbnail_file_path, cache_resize=True
         )
-        pixmap = QtGui.QPixmap(new_image)
+
+        pixmap = QtGui.QPixmap(image)
         self.drawPixmap(
             rect_,
             pixmap
@@ -1489,11 +1472,11 @@ class QtPainter(QtGui.QPainter):
         else:
             raise TypeError()
 
-        self._set_font_pixel_size_(12)
+        self._set_font_pixel_size_(20)
 
         w_t, h_t = self.fontMetrics().width(text), self.fontMetrics().height()/2
 
-        w_f, h_f = w_t+4, h_t+4
+        w_f, h_f = w_t+8, h_t+8
 
         self._set_antialiasing_(False)
 

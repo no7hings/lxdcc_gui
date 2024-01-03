@@ -156,10 +156,10 @@ class GuiScrollModel(object):
         self._value = 0
         self._step = 0
 
-    def set_w(self, v):
+    def set_w_or_h(self, v):
         self.__w = v
 
-    def set_abs_w(self, v):
+    def set_abs_w_or_h(self, v):
         self.__abs_w = v
 
     def get_is_valid(self):

@@ -190,8 +190,8 @@ class QtInputAsFilter(
         self._entry_widget.user_entry_text_accepted.connect(self._push_history_)
         self._entry_widget.key_backspace_extra_pressed.connect(self.__text_bubbles._execute_bubble_backspace_)
         #
-        self.__text_bubbles.bubble_text_changed.connect(self._do_refresh_filter_tip_)
-        self.__text_bubbles.bubble_text_changed.connect(self._do_input_change_)
+        self.__text_bubbles.bubbles_value_changed.connect(self._do_refresh_filter_tip_)
+        self.__text_bubbles.bubbles_value_changed.connect(self._do_input_change_)
         #
         self._entry_clear_button.press_clicked.connect(self._do_refresh_filter_tip_)
 

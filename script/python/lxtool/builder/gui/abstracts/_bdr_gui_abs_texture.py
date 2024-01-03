@@ -3,7 +3,7 @@ import lxbasic.core as bsc_core
 
 import lxgui.proxy.widgets as prx_widgets
 
-import lxwrap.texture.core as txr_core
+import lxbasic.texture.core as bsc_txr_core
 
 import lxgui.core as gui_core
 
@@ -184,8 +184,8 @@ class AbsPnlBuilderForTexture(prx_widgets.PrxSessionWindow):
         self._gui_texture_opt.restore()
         self._gui_texture_opt.gui_add_root()
         if bsc_core.StgPathMtd.get_is_file(f):
-            m = txr_core.TxrMethodForBuild.generate_instance()
-            texture_args = m.get_texture_args(f)
+            m = bsc_txr_core.TxrMethodForBuild.generate_instance()
+            texture_args = m.generate_all_texture_args(f)
             if texture_args:
                 self._texture_name, texture_data = texture_args
                 for i_type, i_file_paths in texture_data.items():

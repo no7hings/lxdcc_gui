@@ -523,12 +523,12 @@ class QtListItemWidget(
                 background_color=gui_qt_core.QtBackgroundColors.Shadow,
                 offset=4
             )
-        #
+        # base
         painter._draw_frame_by_rect_(
             rect=base_rect,
             border_color=bdr_color,
             background_color=bkg_color,
-            border_radius=1,
+            border_radius=0,
             offset=offset,
         )
         # icon frame

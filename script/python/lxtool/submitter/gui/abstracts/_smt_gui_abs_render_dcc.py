@@ -1,6 +1,29 @@
 # coding:utf-8
 import lxgui.proxy.widgets as prx_widgets
 
+import lxgui.proxy.abstracts as gui_prx_abstracts
+
+
+class _GuiBaseOpt(object):
+    DCC_NAMESPACE = 'render submitter'
+
+    def __init__(self, window, session):
+        self._window = window
+        self._session = session
+
+
+class _GuiTagOpt(
+    _GuiBaseOpt,
+    gui_prx_abstracts.AbsGuiTreeViewAsTagOpt
+):
+    GROUP_SCHEME = gui_prx_abstracts.AbsGuiTreeViewAsTagOpt.GroupScheme.Hide
+
+    def __init__(self, window, session, prx_tree_view):
+        super(_GuiTagOpt, self).__init__(window, session)
+        self._init_tree_view_as_tag_opt_(prx_tree_view, self.DCC_NAMESPACE)
+
+        self._index_thread_batch = 0
+
 
 class AbsPnlSubmitterForAssetRenderDcc(prx_widgets.PrxSessionWindow):
     DCC_NAMESPACE = None
@@ -24,13 +47,17 @@ class AbsPnlSubmitterForAssetRenderDcc(prx_widgets.PrxSessionWindow):
         h_s_0 = prx_widgets.PrxHSplitter()
         ep_0.add_widget(h_s_0)
 
-        self._filter_tree_view = prx_widgets.PrxTreeView()
-        h_s_0.add_widget(self._filter_tree_view)
-        self._filter_tree_view.set_header_view_create(
+        self._prx_tree_view_for_filter = prx_widgets.PrxTreeView()
+        h_s_0.add_widget(self._prx_tree_view_for_filter)
+        self._prx_tree_view_for_filter.set_header_view_create(
             [('name', 3)],
             self.get_definition_window_size()[0]*(1.0/3.0)-32
         )
-        #
+
+        self._gui_tag_opt = _GuiTagOpt(
+            self, self._session, self._prx_tree_view_for_filter
+        )
+
         self._result_list_view = prx_widgets.PrxListView()
         self._result_list_view.set_view_list_mode()
         h_s_0.add_widget(self._result_list_view)
@@ -85,6 +112,9 @@ class AbsPnlSubmitterForAssetRenderDcc(prx_widgets.PrxSessionWindow):
 
     def gui_refresh_all_render_nodes(self):
         raise NotImplementedError()
+
+    def gui_refresh_tags(self):
+        pass
 
     def submit_to_farm(self):
         raise NotImplementedError()

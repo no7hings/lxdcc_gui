@@ -7,17 +7,117 @@ import lxgui.proxy.widgets as prx_widgets
 
 from lxutil import utl_core
 
-import lxutil.scripts as utl_scripts
-
 import lxutil.dcc.dcc_objects as utl_dcc_objects
 
 import lxgui.proxy.scripts as gui_prx_scripts
 
-import lxresolver.commands as rsv_commands
+import lxresolver.core as rsv_core
 
 import lxsession.commands as ssn_commands
 
 import lxgui.core as gui_core
+
+import lxtool.publisher.core as pbs_core
+
+import lxsession.core as ssn_core
+
+
+class _PublishOptForSurface(object):
+    def __init__(self, window, session, scene_file_path, validation_info_file, rsv_task, rsv_scene_properties, options):
+        self._window = window
+        self._session = session
+        self._scene_file_path = scene_file_path
+        self._validation_info_file = validation_info_file
+        self._rsv_task = rsv_task
+        self._rsv_scene_properties = rsv_scene_properties
+        self._options = options
+
+    def collection_review_fnc(self):
+        self._review_mov_file_path = None
+        #
+        file_paths = self._options['review']
+        if file_paths:
+            movie_file_path = pbs_core.VideoComp.comp_movie(
+                file_paths
+            )
+            self._review_mov_file_path = movie_file_path
+
+    def farm_process_fnc(self):
+        version_type = self._options['version_type']
+        scene_file_path = self._scene_file_path
+
+        user = bsc_core.SysBaseMtd.get_user_name()
+
+        extra_data = dict(
+            user=user,
+            #
+            version_type=self._options['version_type'],
+            version_status='pub',
+            #
+            notice=self._options['notice'],
+            description=self._options['description'],
+        )
+
+        extra_key = ssn_core.SsnHookFileMtd.set_extra_data_save(extra_data)
+
+        application = self._rsv_scene_properties.get('application')
+        if application == 'katana':
+            choice_scheme = 'asset-katana-publish'
+        elif application == 'maya':
+            choice_scheme = 'asset-maya-publish'
+        else:
+            raise RuntimeError()
+
+        option_opt = bsc_core.ArgDictStringOpt(
+            option=dict(
+                option_hook_key='rsv-task-batchers/asset/gen-surface-export',
+                #
+                file=scene_file_path,
+                #
+                extra_key=extra_key,
+                #
+                choice_scheme=choice_scheme,
+                #
+                version_type=version_type,
+                movie_file=self._review_mov_file_path,
+                #
+                validation_info_file=self._validation_info_file,
+                #
+                with_workspace_texture_lock=self._options['process.settings.with_workspace_texture_lock'],
+                #
+                user=user,
+                #
+                td_enable=self._session.get_is_td_enable(),
+                rez_beta=self._session.get_is_beta_enable(),
+                #
+                localhost_enable=self._options['process.deadline.scheme'] == 'localhost'
+            )
+        )
+
+        if bsc_core.SysApplicationMtd.get_is_katana():
+            import lxkatana.core as ktn_core
+            option_opt.set('katana_version', ktn_core.KtnUtil.get_katana_version())
+
+        ssn_commands.set_option_hook_execute_by_deadline(
+            option=option_opt.to_string()
+        )
+
+    @bsc_core.MdfBaseMtd.run_with_exception_catch
+    def execute(self):
+        fncs = [
+            self.collection_review_fnc,
+            #
+            self.farm_process_fnc,
+        ]
+        with self._window.gui_progressing(maximum=len(fncs), label='execute publish process') as g_p:
+            for i_fnc in fncs:
+                g_p.do_update()
+                i_fnc()
+        #
+        self._window.show_message(
+            'publish process is complected',
+            self._window.ValidationStatus.Correct
+        )
 
 
 class AbsValidatorOpt(object):
@@ -28,7 +128,7 @@ class AbsValidatorOpt(object):
     DCC_PATHSEP = None
 
     def __init__(self, filter_tree_view, result_tree_view):
-        self._filter_tree_view = filter_tree_view
+        self._prx_tree_view_for_filter = filter_tree_view
         self._result_tree_view = result_tree_view
         self._item_dict = self._result_tree_view._item_dict
 
@@ -37,7 +137,7 @@ class AbsValidatorOpt(object):
         )
 
         self._filter_opt = gui_prx_scripts.GuiPrxScpForTreeTagFilter(
-            prx_tree_view_src=self._filter_tree_view,
+            prx_tree_view_src=self._prx_tree_view_for_filter,
             prx_tree_view_tgt=self._result_tree_view,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
         )
@@ -277,11 +377,11 @@ class AbsValidatorOpt(object):
         return prx_item
 
 
-class AbsPnlPublisherForAsset(prx_widgets.PrxSessionWindow):
+class AbsPnlPublisherForSurface(prx_widgets.PrxSessionWindow):
     DCC_VALIDATOR_OPT_CLS = None
 
     def __init__(self, session, *args, **kwargs):
-        super(AbsPnlPublisherForAsset, self).__init__(session, *args, **kwargs)
+        super(AbsPnlPublisherForSurface, self).__init__(session, *args, **kwargs)
 
     def restore_variants(self):
         self._scene_file_path = None
@@ -329,9 +429,9 @@ class AbsPnlPublisherForAsset(prx_widgets.PrxSessionWindow):
         h_s_0 = prx_widgets.PrxHSplitter()
         ep_0.add_widget(h_s_0)
 
-        self._filter_tree_view = prx_widgets.PrxTreeView()
-        h_s_0.add_widget(self._filter_tree_view)
-        self._filter_tree_view.set_header_view_create(
+        self._prx_tree_view_for_filter = prx_widgets.PrxTreeView()
+        h_s_0.add_widget(self._prx_tree_view_for_filter)
+        self._prx_tree_view_for_filter.set_header_view_create(
             [('name', 3)],
             self.get_definition_window_size()[0]*(1.0/3.0)-32
         )
@@ -346,7 +446,7 @@ class AbsPnlPublisherForAsset(prx_widgets.PrxSessionWindow):
         h_s_0.set_contract_left_or_top_at(0)
 
         self._tree_view_opt = self.DCC_VALIDATOR_OPT_CLS(
-            self._filter_tree_view, self._result_tree_view
+            self._prx_tree_view_for_filter, self._result_tree_view
         )
 
         self._cfg_options_prx_node = prx_widgets.PrxNode('options')
@@ -495,7 +595,7 @@ class AbsPnlPublisherForAsset(prx_widgets.PrxSessionWindow):
                 'resolver.scene_file'
             )
         #
-        r = rsv_commands.get_resolver()
+        r = rsv_core.RsvBase.generate_root()
         #
         self._result_tree_view.set_clear()
         if self._scene_file_path:
@@ -648,7 +748,7 @@ class AbsPnlPublisherForAsset(prx_widgets.PrxSessionWindow):
             pass
 
         def cache_fnc_():
-            t_o = wrp_stg_core.StgTaskOpt(c.to_query(stg_task))
+            t_o = bsc_stg_core.StgTaskOpt(c.to_query(stg_task))
             notice_stg_users = t_o.get_notice_stg_users()
             return list(set([c.to_query(i).get('name').decode('utf-8') for i in notice_stg_users]))
 
@@ -657,9 +757,9 @@ class AbsPnlPublisherForAsset(prx_widgets.PrxSessionWindow):
                 'notice', user_names
             )
 
-        import lxwrap.shotgun.core as wrp_stg_core
+        import lxbasic.shotgun.core as bsc_stg_core
 
-        c = wrp_stg_core.StgConnector()
+        c = bsc_stg_core.StgConnector()
 
         p = self._publish_options_prx_node.get_port('notice')
         p.set_clear()
@@ -695,7 +795,7 @@ class AbsPnlPublisherForAsset(prx_widgets.PrxSessionWindow):
             self.refresh_publish_notice()
 
     def execute_publish(self):
-        utl_scripts.ScpAssetSurfacePublish(
+        _PublishOptForSurface(
             self,
             self._session,
             self._scene_file_path,

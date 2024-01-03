@@ -46,13 +46,13 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
         e_p_0.set_name('textures')
         e_p_0.set_expanded(True)
         #
-        self._filter_tree_view = prx_widgets.PrxTreeView()
-        self._filter_tree_view.set_selection_use_single()
-        self._filter_tree_view.set_header_view_create(
+        self._prx_tree_view_for_filter = prx_widgets.PrxTreeView()
+        self._prx_tree_view_for_filter.set_selection_use_single()
+        self._prx_tree_view_for_filter.set_header_view_create(
             [('name', 3)],
             self.get_definition_window_size()[0]*(2.0/6.0)-32
         )
-        h_s_0.add_widget(self._filter_tree_view)
+        h_s_0.add_widget(self._prx_tree_view_for_filter)
         #
         self._tree_view = prx_widgets.PrxTreeView()
         h_s_0.add_widget(self._tree_view)
@@ -82,8 +82,8 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
             self._tree_view_selection_opt.set_select
         )
 
-        self._tree_view_filter_opt = gui_prx_scripts.GuiPrxScpForTreeTagFilter(
-            prx_tree_view_src=self._filter_tree_view,
+        self._gui_tag_filter_opt = gui_prx_scripts.GuiPrxScpForTreeTagFilter(
+            prx_tree_view_src=self._prx_tree_view_for_filter,
             prx_tree_view_tgt=self._tree_view,
             prx_tree_item_cls=prx_widgets.PrxObjTreeItem
         )
@@ -152,7 +152,7 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
 
     def _set_gui_textures_refresh_(self):
         self._texture_add_opt.restore_all()
-        self._tree_view_filter_opt.restore_all()
+        self._gui_tag_filter_opt.restore_all()
 
         if self._dcc_objs:
             with bsc_core.LogProcessContext.create(maximum=len(self._dcc_objs), label='gui texture showing') as g_p:
@@ -260,11 +260,11 @@ class AbsPnlManagerForAssetTextureDcc(prx_widgets.PrxSessionWindow):
                         j_color_space = j_dcc_obj.get_color_space()
                         j_dcc_obj_prx_item.set_name(j_color_space, 1)
                         if i_descriptions:
-                            self._tree_view_filter_opt.register(
+                            self._gui_tag_filter_opt.register(
                                 j_dcc_obj_prx_item, [bsc_core.SPathMtd.set_quote_to(i) for i in i_descriptions]
                             )
                         else:
-                            self._tree_view_filter_opt.register(
+                            self._gui_tag_filter_opt.register(
                                 j_dcc_obj_prx_item, [bsc_core.SPathMtd.set_quote_to(i) for i in ['N/a']]
                             )
 

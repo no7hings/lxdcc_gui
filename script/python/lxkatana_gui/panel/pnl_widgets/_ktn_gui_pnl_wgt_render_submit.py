@@ -32,7 +32,7 @@ class PnlRenderSubmitter(smt_gui_abstracts.AbsPnlSubmitterForAssetRenderDcc):
         super(PnlRenderSubmitter, self).__init__(*args, **kwargs)
 
     @classmethod
-    def _to_render_layer_(cls, opt_opt):
+    def _to_render_layer(cls, opt_opt):
         parent_opt = opt_opt.get_parent_opt()
         if parent_opt.get('type') == 'RenderLayer_Wsp':
             return parent_opt
@@ -54,7 +54,7 @@ class PnlRenderSubmitter(smt_gui_abstracts.AbsPnlSubmitterForAssetRenderDcc):
                 namespace=self.DCC_NAMESPACE
             )
             if i_render_node_opt is not None:
-                i_render_layer_opt = self._to_render_layer_(i_render_node_opt)
+                i_render_layer_opt = self._to_render_layer(i_render_node_opt)
                 if i_render_layer_opt is not None:
                     list_.append(i_render_layer_opt.get_path())
                 else:
@@ -108,7 +108,7 @@ class PnlRenderSubmitter(smt_gui_abstracts.AbsPnlSubmitterForAssetRenderDcc):
         name_dict = collections.OrderedDict()
         render_node_name = render_node_opt.get_name()
         name_dict['node'] = render_node_name
-        render_layer_opt = ktn_scripts.ScpRenderLayer._to_render_layer_(render_node_opt)
+        render_layer_opt = ktn_scripts.ScpRenderLayer._to_render_layer(render_node_opt)
         descriptions = []
         if render_layer_opt is not None:
             render_layer_scp = ktn_scripts.ScpRenderLayer(render_layer_opt)
@@ -126,14 +126,16 @@ class PnlRenderSubmitter(smt_gui_abstracts.AbsPnlSubmitterForAssetRenderDcc):
             #
             latest_render_output_image_file_path = render_layer_scp.get_latest_render_output_image()
             if latest_render_output_image_file_path is not None:
-                image_file_paths = bsc_core.StgFileMtdForMultiply.get_exists_unit_paths(
+                file_paths = bsc_core.StgFileMtdForMultiply.get_exists_unit_paths(
                     latest_render_output_image_file_path
                 )
-                if image_file_paths:
-                    image_file_path = image_file_paths[0]
-                    thumbnail = bsc_core.ImgOiioOptForThumbnail(image_file_path).generate_thumbnail()
-                    if thumbnail:
-                        prx_item_widget.set_image(thumbnail)
+                if file_paths:
+                    file_path = file_paths[0]
+                    image_file_path, image_sp_cmd = bsc_core.ImgOiioOptForThumbnail(file_path).generate_thumbnail_create_args()
+
+                    prx_item_widget.set_image(image_file_path)
+                    if image_sp_cmd is not None:
+                        prx_item_widget.set_image_show_args(image_file_path, image_sp_cmd)
         else:
             name_dict['frames'] = default_render_frames
 
@@ -152,7 +154,7 @@ class PnlRenderSubmitter(smt_gui_abstracts.AbsPnlSubmitterForAssetRenderDcc):
             if _name_dict:
                 if 'output-directory' in _name_dict:
                     _directory_path = _name_dict['output-directory']
-                    bsc_core.StgSystem.open_directory(
+                    bsc_core.StgSystem.open_directory_force(
                         _directory_path
                     )
 
@@ -166,8 +168,8 @@ class PnlRenderSubmitter(smt_gui_abstracts.AbsPnlSubmitterForAssetRenderDcc):
 
         menu_raw = [
             ('basic',),
-            ('open output directory', 'file/open-folder', (enable_fnc_, open_fnc_, False)),
-            ('open output directory (force)', 'file/open-folder', (True, open_fnc_, False))
+            ('open output directory', 'file/open-folder', (None, open_fnc_, enable_fnc_)),
+            ('open output directory (force)', 'file/open-folder', (None, open_fnc_, True))
         ]
 
         prx_item_widget.set_menu_data(

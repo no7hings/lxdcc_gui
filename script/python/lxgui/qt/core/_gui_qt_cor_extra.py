@@ -22,12 +22,12 @@ class QtHBoxLayout(QtWidgets.QHBoxLayout):
         self.setContentsMargins(*gui_core.GuiSize.LayoutDefaultContentsMargins)
         self.setSpacing(gui_core.GuiSize.LayoutDefaultSpacing)
 
-    def _set_align_top_(self):
+    def _set_align_as_top_(self):
         self.setAlignment(
             QtCore.Qt.AlignTop
         )
 
-    def _set_align_left_(self):
+    def _set_align_as_left_(self):
         self.setAlignment(
             QtCore.Qt.AlignLeft
         )
@@ -72,7 +72,7 @@ class QtVBoxLayout(QtWidgets.QVBoxLayout):
         self.setContentsMargins(*gui_core.GuiSize.LayoutDefaultContentsMargins)
         self.setSpacing(gui_core.GuiSize.LayoutDefaultSpacing)
 
-    def _set_align_top_(self):
+    def _set_align_as_top_(self):
         self.setAlignment(
             QtCore.Qt.AlignHCenter|QtCore.Qt.AlignTop
         )

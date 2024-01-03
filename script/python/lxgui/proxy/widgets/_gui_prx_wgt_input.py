@@ -48,13 +48,13 @@ class PrxInputAsStgTask(gui_prx_abstracts.AbsPrxWidget):
         self.__stg_task = None
         self.__result_dict = None
 
-        import lxwrap.shotgun.core as wrp_stg_core
+        import lxbasic.shotgun.core as bsc_stg_core
 
-        self._stg_connector = wrp_stg_core.StgConnector()
+        self._stg_connector = bsc_stg_core.StgConnector()
 
         l_0 = _gui_qt_wgt_base.QtHBoxLayout(self.get_widget())
         l_0.setContentsMargins(*[0]*4)
-        l_0._set_align_top_()
+        l_0._set_align_as_top_()
 
         self.__qt_scheme_input = _gui_qt_wgt_input.QtInputAsBubbleWithChoose()
         l_0.addWidget(self.__qt_scheme_input)
