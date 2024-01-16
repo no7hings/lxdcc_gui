@@ -1,31 +1,35 @@
 # coding=utf-8
-from lxgui.qt_for_usd.core.wrap import *
-
 import functools
 
 import six
 
+import lxresource as bsc_resource
+
+import lxbasic.log as bsc_log
+
 import lxbasic.core as bsc_core
 
+import lxbasic.storage as bsc_storage
+
+import lxbasic.texture as bsc_texture
+# usd
 import lxusd.core as usd_core
+# gui
+from ... import core as gui_core
+# qt
+from ...qt import core as gui_qt_core
 
-import lxbasic.texture.core as bsc_txr_core
+from ...qt import abstracts as gui_qt_abstracts
+# qt widgets
+from ...qt.widgets import button as gui_qt_wgt_button
 
-import lxgui.core as gui_core
+from ...qt.widgets import container as gui_qt_wgt_container
 
-import lxgui.qt.core as gui_qt_core
-
-import lxgui.qt.abstracts as gui_qt_abstracts
-
-import lxgui.qt_for_usd.core as gui_qt_usd_core
-
-from lxgui.qt.widgets import \
-    _gui_qt_wgt_base, \
-    _gui_qt_wgt_utility, \
-    _gui_qt_wgt_button, \
-    _gui_qt_wgt_container
-
-from lxgui.qt.widgets import _gui_qt_wgt_scroll as gui_qt_wgt_scroll
+from ...qt.widgets import scroll as gui_qt_wgt_scroll
+# qt for usd
+from ..core.wrap import *
+#
+from .. import core as gui_qt_usd_core
 
 
 if QT_USD_FLAG is True:
@@ -33,6 +37,7 @@ if QT_USD_FLAG is True:
         def __init__(self, *args, **kwargs):
             super(QtUsdStageView, self).__init__(*args, **kwargs)
 
+    # noinspection PyUnusedLocal,PyPep8Naming,PyMethodMayBeStatic
     class QtUsdStageWidget(
         QtWidgets.QWidget,
         #
@@ -80,7 +85,7 @@ if QT_USD_FLAG is True:
             layout_g.setContentsMargins(2, 2, 2, 2)
             layout_g.setSpacing(0)
 
-            self._main_button = _gui_qt_wgt_button.QtIconMenuButton()
+            self._main_button = gui_qt_wgt_button.QtIconMenuButton()
             layout_g.addWidget(self._main_button, 0, 0, 1, 1)
             self._main_button._set_icon_file_path_(
                 gui_core.GuiIcon.get('application/usd')
@@ -101,7 +106,7 @@ if QT_USD_FLAG is True:
             self._init_action_base_def_(self)
             self._init_thread_base_def_(self)
 
-            m = bsc_txr_core.TxrMethodForBuild.generate_instance()
+            m = bsc_texture.TxrMethodForBuild.generate_instance()
             self._texture_types = m.get_usd_includes()
             self._texture_type_mapper = m.get_usd_mapper()
 
@@ -116,21 +121,21 @@ if QT_USD_FLAG is True:
             self._usd_stage.Reload()
             root_layer = self._usd_stage.GetRootLayer()
             root_layer.subLayerPaths.append(
-                bsc_core.ExtendResource.get('asset/library/geo/sphere.usda')
+                bsc_resource.ExtendResource.get('asset/library/geo/sphere.usda')
             )
             if use_acescg is True:
                 root_layer.subLayerPaths.append(
-                    bsc_core.ExtendResource.get('asset/library/acescg-preview-material.usda')
+                    bsc_resource.ExtendResource.get('asset/library/acescg-preview-material.usda')
                 )
                 root_layer.subLayerPaths.append(
-                    bsc_core.ExtendResource.get('asset/library/acescg-preview-light.usda')
+                    bsc_resource.ExtendResource.get('asset/library/acescg-preview-light.usda')
                 )
             else:
                 root_layer.subLayerPaths.append(
-                    bsc_core.ExtendResource.get('asset/library/preview-material.usda')
+                    bsc_resource.ExtendResource.get('asset/library/preview-material.usda')
                 )
                 root_layer.subLayerPaths.append(
-                    bsc_core.ExtendResource.get('asset/library/preview-light.usda')
+                    bsc_resource.ExtendResource.get('asset/library/preview-light.usda')
                 )
             #
             for i_usd_prim in usd_core.UsdStageOpt(self._usd_stage).get_all_mesh_objs():
@@ -163,21 +168,21 @@ if QT_USD_FLAG is True:
             self._usd_stage.Reload()
             root_layer = self._usd_stage.GetRootLayer()
             root_layer.subLayerPaths.append(
-                bsc_core.ExtendResource.get('asset/library/geo/sphere.usda')
+                bsc_resource.ExtendResource.get('asset/library/geo/sphere.usda')
             )
             if use_acescg is True:
                 root_layer.subLayerPaths.append(
-                    bsc_core.ExtendResource.get('asset/library/acescg-arnold-material.usda')
+                    bsc_resource.ExtendResource.get('asset/library/acescg-arnold-material.usda')
                 )
                 root_layer.subLayerPaths.append(
-                    bsc_core.ExtendResource.get('asset/library/acescg-arnold-light.usda')
+                    bsc_resource.ExtendResource.get('asset/library/acescg-arnold-light.usda')
                 )
             else:
                 root_layer.subLayerPaths.append(
-                    bsc_core.ExtendResource.get('asset/library/arnold-material.usda')
+                    bsc_resource.ExtendResource.get('asset/library/arnold-material.usda')
                 )
                 root_layer.subLayerPaths.append(
-                    bsc_core.ExtendResource.get('asset/library/arnold-light.usda')
+                    bsc_resource.ExtendResource.get('asset/library/arnold-light.usda')
                 )
             #
             for i_usd_prim in usd_core.UsdStageOpt(self._usd_stage).get_all_mesh_objs():
@@ -220,7 +225,13 @@ if QT_USD_FLAG is True:
             # )
 
         def _refresh_usd_stage_for_asset_preview_(
-            self, usd_file, look_preview_usd_file=None, texture_preview_assigns=None, use_as_imperfection=False
+            self,
+            usd_file,
+            look_preview_usd_file=None,
+            texture_preview_assigns=None,
+            use_as_imperfection=False,
+            hdri_file=None,
+            use_as_hdri=False
         ):
             self._usd_stage.Reload()
             session_layer = self._usd_stage.GetSessionLayer()
@@ -229,7 +240,7 @@ if QT_USD_FLAG is True:
             root_layer = self._usd_stage.GetRootLayer()
             root_layer.subLayerPaths.append(usd_file)
             root_layer.subLayerPaths.append(
-                bsc_core.ExtendResource.get('asset/library/camera.usda')
+                bsc_resource.ExtendResource.get('asset/library/camera.usda')
             )
             self._usd_update_camera_()
 
@@ -237,22 +248,36 @@ if QT_USD_FLAG is True:
                 root_layer.subLayerPaths.append(look_preview_usd_file)
             #
             root_layer.subLayerPaths.append(
-                bsc_core.ExtendResource.get('asset/library/preview-light.usda')
+                bsc_resource.ExtendResource.get('asset/library/preview-light.usda')
             )
-            #
-            (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).compute_geometry_args('/')
+            if hdri_file is not None:
+                usd_core.UsdLightOpt(
+                    self._usd_stage.GetPrimAtPath('/lights/lgt_preview/lgt_env/lgt_env_shape')
+                ).set_texture_file(
+                    hdri_file
+                )
 
-            usd_core.UsdXformOpt(
-                self._usd_stage.GetPrimAtPath('/lights/lgt_preview/lgt_key')
-            ).set_matrix(
-                ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (w+25, h+25, d+25, 1))
-            )
+            if use_as_hdri is True:
+                usd_core.UsdXformOpt(
+                    self._usd_stage.GetPrimAtPath('/lights/lgt_preview/lgt_key')
+                ).set_visible(False)
+                usd_core.UsdXformOpt(
+                    self._usd_stage.GetPrimAtPath('/lights/lgt_preview/lgt_fill')
+                ).set_visible(False)
+            else:
+                (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).compute_geometry_args('/')
 
-            usd_core.UsdXformOpt(
-                self._usd_stage.GetPrimAtPath('/lights/lgt_preview/lgt_fill')
-            ).set_matrix(
-                ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (-w-50, h/2, -d-25, 1))
-            )
+                usd_core.UsdXformOpt(
+                    self._usd_stage.GetPrimAtPath('/lights/lgt_preview/lgt_key')
+                ).set_matrix(
+                    ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (w+25, h+25, d+25, 1))
+                )
+
+                usd_core.UsdXformOpt(
+                    self._usd_stage.GetPrimAtPath('/lights/lgt_preview/lgt_fill')
+                ).set_matrix(
+                    ((1, 0, 0, 0), (0, 1, 0, 0), (0, 0, 1, 0), (-w-50, h/2, -d-25, 1))
+                )
 
             # light_prim = self._usd_stage.GetPrimAtPath('/lights/lgt_preview/lgt_key/lgt_key_shape')
             # light_opt = usd_core.UsdLightOpt(light_prim)
@@ -315,6 +340,17 @@ if QT_USD_FLAG is True:
                 # has coat_roughness
                 if 'coat_roughness' in texture_preview_assigns:
                     shader_opt.set_as_float('clearcoat', 1.0)
+            #
+            if use_as_hdri is True:
+                shader_opt = usd_core.UsdShaderOpt(
+                    self._usd_stage.GetPrimAtPath('/mtl_preview/mtl_shader')
+                )
+                shader_opt.set_as_float('ior', .470)
+                shader_opt.set_as_float('metallic', 1.0)
+                shader_opt.disconnect_input_at('roughness')
+                shader_opt.set_as_float('roughness', 0.0)
+                shader_opt.disconnect_input_at('diffuseColor')
+                shader_opt.set_as_rgb('diffuseColor', (1, 1, 1))
 
         def _refresh_usd_stage_for_asset_render_(
             self, usd_file, texture_preview_assigns=None, use_acescg=False
@@ -323,23 +359,23 @@ if QT_USD_FLAG is True:
             root_layer = self._usd_stage.GetRootLayer()
             root_layer.subLayerPaths.append(usd_file)
             root_layer.subLayerPaths.append(
-                bsc_core.ExtendResource.get('asset/library/camera.usda')
+                bsc_resource.ExtendResource.get('asset/library/camera.usda')
             )
             self._usd_update_camera_()
             #
             if use_acescg is True:
                 root_layer.subLayerPaths.append(
-                    bsc_core.ExtendResource.get('asset/library/acescg-arnold-material.usda')
+                    bsc_resource.ExtendResource.get('asset/library/acescg-arnold-material.usda')
                 )
                 root_layer.subLayerPaths.append(
-                    bsc_core.ExtendResource.get('asset/library/acescg-arnold-light.usda')
+                    bsc_resource.ExtendResource.get('asset/library/acescg-arnold-light.usda')
                 )
             else:
                 root_layer.subLayerPaths.append(
-                    bsc_core.ExtendResource.get('asset/library/arnold-material.usda')
+                    bsc_resource.ExtendResource.get('asset/library/arnold-material.usda')
                 )
                 root_layer.subLayerPaths.append(
-                    bsc_core.ExtendResource.get('asset/library/arnold-light.usda')
+                    bsc_resource.ExtendResource.get('asset/library/arnold-light.usda')
                 )
             #
             # (x, y, z), (c_x, c_y, c_z), (w, h, d) = usd_core.UsdStageOpt(self._usd_stage).compute_geometry_args('/')
@@ -407,7 +443,7 @@ if QT_USD_FLAG is True:
             root_layer = self._usd_stage.GetRootLayer()
             root_layer.subLayerPaths.append(usd_file)
             root_layer.subLayerPaths.append(
-                bsc_core.ExtendResource.get('asset/library/camera.usda')
+                bsc_resource.ExtendResource.get('asset/library/camera.usda')
             )
             self._usd_update_camera_()
 
@@ -610,7 +646,7 @@ if QT_USD_FLAG is True:
                 childList = []
 
                 while parent != pseudoRoot \
-                        and not parent in self._primToItemMap:
+                        and parent not in self._primToItemMap:
                     childList.append(parent)
                     parent = parent.GetParent()
 
@@ -753,6 +789,8 @@ if QT_USD_FLAG is True:
             self._dataModel.viewSettings.showBBoxes = False
 
             self._dataModel.viewSettings.autoComputeClippingPlanes = True
+            # self._dataModel.viewSettings.freeCamera.overrideNear = 0.1
+            # self._dataModel.viewSettings.freeCamera.overrideFar = 10000
             self._dataModel.viewSettings.freeCameraFOV = 35
             #
             self._dataModel.viewSettings.ambientLightOnly = False
@@ -920,7 +958,7 @@ if QT_USD_FLAG is True:
                 '/lights/lgt_render/lgt_env/lgt_env_shape'
             )
             usd_core.UsdLightOpt(prim).set_texture_file(
-                bsc_core.ExtendResource.get('asset/library/lgt/acescg/tx/{}.tx'.format(key))
+                bsc_resource.ExtendResource.get('asset/library/lgt/acescg/tx/{}.tx'.format(key))
             )
 
         def _usd_get_environment_current_is_(self, key):
@@ -1366,7 +1404,7 @@ if QT_USD_FLAG is True:
                 self._dataModel.viewSettings.showHUD = boolean
 
             #
-            tool_box = _gui_qt_wgt_container.QtHToolBox()
+            tool_box = gui_qt_wgt_container.QtHToolBox()
             self._top_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('hud-display and camera-mask')
@@ -1377,7 +1415,7 @@ if QT_USD_FLAG is True:
                     ('camera-mask', False, self._usd_set_camera_mask_enable_, self._usd_get_camera_mask_menu_data_)
                 ]
             ):
-                i_button = _gui_qt_wgt_button.QtIconEnableButton()
+                i_button = gui_qt_wgt_button.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_(
                     '"LMB-click" to toggle "{0}"\n"RMB-click" for show more action'.format(i_key)
@@ -1395,7 +1433,7 @@ if QT_USD_FLAG is True:
                 tool_box._add_widget_(i_button)
 
         def __add_material_and_light_switch_tools_(self):
-            tool_box = _gui_qt_wgt_container.QtHToolBox()
+            tool_box = gui_qt_wgt_container.QtHToolBox()
             self._top_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('material and light')
@@ -1406,7 +1444,7 @@ if QT_USD_FLAG is True:
                     ('light', None, True, self._usd_model.set_lights_enable, self._usd_get_light_menu_data_),
                 ]
             ):
-                i_button = _gui_qt_wgt_button.QtIconEnableButton()
+                i_button = gui_qt_wgt_button.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_(
                     '"LMB-click" to toggle "{0}"\n"RMB-click" for show more action'.format(i_key)
@@ -1421,7 +1459,7 @@ if QT_USD_FLAG is True:
                 tool_box._add_widget_(i_button)
 
         def __add_color_space_switch_tools_(self):
-            tool_box = _gui_qt_wgt_container.QtHToolBox()
+            tool_box = gui_qt_wgt_container.QtHToolBox()
             self._top_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('color space')
@@ -1432,7 +1470,7 @@ if QT_USD_FLAG is True:
                      self._usd_get_color_space_menu_data_),
                 ]
             ):
-                i_button = _gui_qt_wgt_button.QtIconEnableButton()
+                i_button = gui_qt_wgt_button.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n"RMB-click" to switch "{0}"'.format(i_key))
                 i_button._set_icon_file_path_(
@@ -1445,7 +1483,7 @@ if QT_USD_FLAG is True:
                 tool_box._add_widget_(i_button)
 
         def __add_camera_and_renderer_switch_tools_(self):
-            tool_box = _gui_qt_wgt_container.QtHToolBox()
+            tool_box = gui_qt_wgt_container.QtHToolBox()
             self._top_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('camera and renderer')
@@ -1464,7 +1502,7 @@ if QT_USD_FLAG is True:
                     ('display-purpose', self._usd_get_display_purpose_menu_data_),
                 ]
             ):
-                i_button = _gui_qt_wgt_button.QtIconPressButton()
+                i_button = gui_qt_wgt_button.QtIconPressButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n"RMB-click" to switch "{0}"'.format(i_key))
                 i_button._set_icon_file_path_(
@@ -1476,7 +1514,7 @@ if QT_USD_FLAG is True:
                 tool_box._add_widget_(i_button)
 
         def __add_environment_switch_tools_(self):
-            tool_box = _gui_qt_wgt_container.QtHToolBox()
+            tool_box = gui_qt_wgt_container.QtHToolBox()
             self._top_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('display-purpose and environment')
@@ -1486,7 +1524,7 @@ if QT_USD_FLAG is True:
                     ('environment', self._usd_get_environment_menu_data_),
                 ]
             ):
-                i_button = _gui_qt_wgt_button.QtIconPressButton()
+                i_button = gui_qt_wgt_button.QtIconPressButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n"RMB-click" to switch "{0}"'.format(i_key))
                 i_button._set_icon_file_path_(
@@ -1497,7 +1535,7 @@ if QT_USD_FLAG is True:
                 tool_box._add_widget_(i_button)
 
         def __add_other_tools_(self):
-            tool_box = _gui_qt_wgt_container.QtHToolBox()
+            tool_box = gui_qt_wgt_container.QtHToolBox()
             self._top_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('display-purpose and environment')
@@ -1507,7 +1545,7 @@ if QT_USD_FLAG is True:
                     ('snapshot', self._usd_get_snapshot_menu_data_, self._usd_do_snapshot_),
                 ]
             ):
-                i_button = _gui_qt_wgt_button.QtIconPressButton()
+                i_button = gui_qt_wgt_button.QtIconPressButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_('"LMB-click" to toggle "{0}"\n"RMB-click" to switch "{0}"'.format(i_key))
                 i_button._set_icon_file_path_(
@@ -1523,8 +1561,8 @@ if QT_USD_FLAG is True:
 
         def _usd_do_snapshot_(self):
             d = bsc_core.SysBaseMtd.get_home_directory()
-            file_path = six.u('{}/snapshot/untitled-{}.png').format(d, bsc_core.TimeExtraMtd.get_time_tag_36())
-            bsc_core.StgFileOpt(file_path).create_directory()
+            file_path = six.u('{}/snapshot/untitled-{}.png').format(d, bsc_core.TimeExtraMtd.generate_time_tag_36())
+            bsc_storage.StgFileOpt(file_path).create_directory()
             self._usd_save_snapshot_to_(file_path)
 
         def _usd_wait_for_painting_(self):
@@ -1532,14 +1570,14 @@ if QT_USD_FLAG is True:
                 pass
 
         def _usd_save_snapshot_fnc(self, file_path):
-            bsc_core.StgFileOpt(file_path).create_directory()
+            bsc_storage.StgFileOpt(file_path).create_directory()
             img = self._stageView.grabFrameBuffer(withAlpha=True)
             img.save(file_path, 'PNG')
             self.snapshot_finished.emit()
-            bsc_core.Log.trace_result('usd snapshot finish: {}'.format(file_path))
+            bsc_log.Log.trace_result('usd snapshot finish: {}'.format(file_path))
 
         def _usd_save_snapshot_to_(self, file_path):
-            bsc_core.Log.trace_result('usd snapshot start')
+            bsc_log.Log.trace_result('usd snapshot start')
             t = gui_qt_core.QtMethodThread(self)
             # wait when render is stopped
             if self._stageView.IsRendererConverged() is False:
@@ -1562,7 +1600,7 @@ if QT_USD_FLAG is True:
             self.pre_geometry_snapshot_finished.emit()
 
         def _usd_save_per_geometry_snapshot_to_(self, file_p):
-            bsc_core.Log.trace_result('usd snapshot start')
+            bsc_log.Log.trace_result('usd snapshot start')
             t = gui_qt_core.QtMethodThread(self)
             # wait when render is stopped
             if self._stageView.IsRendererConverged() is False:
@@ -1599,7 +1637,7 @@ if QT_USD_FLAG is True:
                     self._usd_do_clear_geometry_isolate_selection_()
 
             #
-            tool_box = _gui_qt_wgt_container.QtVToolBox()
+            tool_box = gui_qt_wgt_container.QtVToolBox()
             self._left_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('isolate select')
@@ -1609,7 +1647,7 @@ if QT_USD_FLAG is True:
                         ('isolate-select', None),
                     ]
             ):
-                i_button = _gui_qt_wgt_button.QtIconEnableButton()
+                i_button = gui_qt_wgt_button.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_('"LMB-click" to "{}"'.format(i_key))
                 i_button._set_icon_file_path_(
@@ -1627,7 +1665,7 @@ if QT_USD_FLAG is True:
                 self._dataModel.viewSettings.renderMode = value_
 
             #
-            tool_box = _gui_qt_wgt_container.QtVToolBox()
+            tool_box = gui_qt_wgt_container.QtVToolBox()
             self._left_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('render mode')
@@ -1640,7 +1678,7 @@ if QT_USD_FLAG is True:
                 ('smooth-shaded', Usdviewq.common.RenderModes.SMOOTH_SHADED),
                 ('flat-shaded', Usdviewq.common.RenderModes.FLAT_SHADED)
             ]:
-                i_button = _gui_qt_wgt_button.QtIconEnableButton()
+                i_button = gui_qt_wgt_button.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_('"LMB-click" for switch render mode to "{}"'.format(i_key))
                 i_button._set_icon_file_path_(
@@ -1657,7 +1695,7 @@ if QT_USD_FLAG is True:
                 tool_box._add_widget_(i_button)
 
         def __add_other_switch_tools_(self):
-            tool_box = _gui_qt_wgt_container.QtVToolBox()
+            tool_box = gui_qt_wgt_container.QtVToolBox()
             self._left_tool_scroll_box.addWidget(tool_box)
             tool_box._set_expanded_(True)
             tool_box._set_name_text_('extend')
@@ -1669,7 +1707,7 @@ if QT_USD_FLAG is True:
                     ('cull-backfaces', 'enable', False, self._usd_set_cull_enable_, self._usd_get_cull_menu_data_),
                 ]
             ):
-                i_button = _gui_qt_wgt_button.QtIconEnableButton()
+                i_button = gui_qt_wgt_button.QtIconEnableButton()
                 i_button._set_name_text_(i_key)
                 i_button._set_tool_tip_text_(
                     '"LMB-click" to toggle "{0}"\n"RMB-click" to switch "{0}" mode'.format(i_key)
@@ -1712,4 +1750,3 @@ else:
     class QtUsdStageWidgetProxy(QtWidgets.QWidget):
         def __init__(self, *args, **kwargs):
             super(QtUsdStageWidgetProxy, self).__init__(*args, **kwargs)
-

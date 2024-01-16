@@ -1,16 +1,16 @@
 # coding:utf-8
-import platform
+import platform as _platform
 
-from lxgui.qt.core.wrap import *
-
-import pkgutil
+import pkgutil as _pkgutil
+# qt
+from ...qt.core.wrap import *
 
 QT_USD_FLAG = False
 
-__pypxr = pkgutil.find_loader('pxr')
+__pypxr = _pkgutil.find_loader('pxr')
 
 if __pypxr and QT_LOAD_INDEX == 1:
-    if platform.system() == 'Linux':
+    if _platform.system() == 'Linux':
         QT_USD_FLAG = True
 
         from pxr import Usd, Sdf, Vt, Gf, Glf, Tf, Kind, UsdShade, UsdGeom, UsdLux

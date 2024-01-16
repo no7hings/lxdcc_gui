@@ -1,15 +1,18 @@
 # coding:utf-8
-from lxgui.qt_for_opengl.core.wrap import *
-
 import sys
 
 import lxbasic.log as bsc_log
 
 import lxbasic.core as bsc_core
 
+import lxbasic.storage as bsc_storage
+# usd
 import lxusd.core as usd_core
+# qt
+from .wrap import *
 
 
+# noinspection PyUnusedLocal
 class GuiGLUsdData(object):
     INDEX_P = '/geometries/{tag}/mesh_001_{index}/mesh_001_{index}Shape'
     TEXTURE_P = '/'
@@ -83,7 +86,7 @@ class GuiGLUsdData(object):
         self._hash_key = bsc_core.HashMtd.get_hash_value(self._vertices, as_unique_id=True)
         self._image_file_path = '{}/{}.png'.format(self._cache_directory_path, self._hash_key)
 
-        return bsc_core.StgFileOpt(self._image_file_path).get_is_exists()
+        return bsc_storage.StgFileOpt(self._image_file_path).get_is_exists()
 
     def __build_mesh(self, prim):
         mesh_opt = usd_core.UsdMeshOpt(usd_core.UsdGeom.Mesh(prim))

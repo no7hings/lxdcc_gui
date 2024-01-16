@@ -1,30 +1,30 @@
 # coding:utf-8
-from ._gui_prx_wdt_utility import *
+from .utility import *
 
-from ._gui_prx_wgt_item import *
+from .item import *
 
-from ._gui_prx_wgt_input import *
+from .input import *
 
-from ._gui_prx_wgt_port import *
+from .port import *
 
-from ._gui_prx_wdt_node import *
+from .node import *
 
-from ._gui_prx_wgt_view import *
+from .view import *
 
-from ._gui_prx_wgt_contianer import *
+from .container import *
 
-from ._gui_prx_wgt_view_for_tree import *
+from .view_for_tree import *
 
-from ._gui_prx_wgt_view_for_list import *
+from .view_for_list import *
 
-from ._gui_prx_wgt_chart import *
+from .chart import *
 
-from ._gui_prx_wgt_node_graph import *
+from .node_graph import *
 
-from ._gui_prx_wgt_for_usd import *
+from .view_for_usd import *
 
-from ._gui_prx_wgt_window_base import *
+from .window_base import *
 
-from ._gui_prx_wgt_window import *
+from .window import *
 
 

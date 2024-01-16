@@ -3,7 +3,11 @@ import six
 
 import functools
 
+import lxbasic.log as bsc_log
+
 import lxbasic.core as bsc_core
+
+import lxbasic.storage as bsc_storage
 
 import lxgui.proxy.widgets as prx_widgets
 
@@ -122,7 +126,7 @@ class AbsPnlAssetLineup(prx_widgets.PrxSessionWindow):
         def post_fnc_():
             self._end_timestamp = bsc_core.SysBaseMtd.get_timestamp()
             #
-            bsc_core.Log.trace_method_result(
+            bsc_log.Log.trace_method_result(
                 'load asset/shot from "{}"'.format(
                     rsv_project.path
                 ),
@@ -152,7 +156,7 @@ class AbsPnlAssetLineup(prx_widgets.PrxSessionWindow):
                 )
             ts.set_start()
         else:
-            with bsc_core.LogProcessContext.create(maximum=len(rsv_tags), label='gui-add for entity') as g_p:
+            with bsc_log.LogProcessContext.create(maximum=len(rsv_tags), label='gui-add for entity') as g_p:
                 for i_rsv_tag in rsv_tags:
                     g_p.do_update()
                     self._set_gui_add_rsv_entities_(
@@ -356,8 +360,8 @@ class AbsPnlAssetLineup(prx_widgets.PrxSessionWindow):
             python_file_path = ssn_core.SsnHookFileMtd.get_python(key)
             yaml_file_path = ssn_core.SsnHookFileMtd.get_yaml(key)
             if python_file_path and yaml_file_path:
-                python_file = bsc_core.StgFileOpt(python_file_path)
-                yaml_file = bsc_core.StgFileOpt(yaml_file_path)
+                python_file = bsc_storage.StgFileOpt(python_file_path)
+                yaml_file = bsc_storage.StgFileOpt(yaml_file_path)
                 if python_file.get_is_exists() is True and yaml_file.get_is_exists() is True:
                     configure = ctt_core.Content(value=yaml_file.path)
                     type_name = configure.get('option.type')
@@ -396,7 +400,7 @@ class AbsPnlAssetLineup(prx_widgets.PrxSessionWindow):
                 content='"{}" save is completed'.format(file_path),
                 status=gui_core.GuiDialog.ValidationStatus.Correct,
                 #
-                yes_label='Open Folder', yes_method=bsc_core.StgPathOpt(file_path).open_in_system,
+                yes_label='Open Folder', yes_method=bsc_storage.StgPathOpt(file_path).open_in_system,
                 no_label='Close',
                 #
                 cancel_visible=False

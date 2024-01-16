@@ -1,7 +1,9 @@
 # coding:utf-8
+import lxbasic.log as bsc_log
+
 import lxbasic.core as bsc_core
-#
-from lxutil import utl_configure
+
+import lxbasic.dcc.core as bsc_dcc_core
 
 import lxgui.core as gui_core
 
@@ -17,7 +19,7 @@ class AbsPnlComparerForAssetGeometryDcc(prx_widgets.PrxSessionWindow):
     #
     DCC_NODE_CLS = None
     #
-    FNC_GEOMETRY_COMPARER = None
+    FNC_COMPARER_FOR_DCC_GEOMETRY = None
     #
     DESCRIPTION_INDEX = 2
     #
@@ -33,7 +35,7 @@ class AbsPnlComparerForAssetGeometryDcc(prx_widgets.PrxSessionWindow):
     DCC_LOCATION = None
     DCC_LOCATION_SOURCE = None
     #
-    DCC_GEOMETRY_LOCATION = None
+    DCC_LOCATION_FOR_GEOMETRY = None
 
     def __init__(self, session, *args, **kwargs):
         super(AbsPnlComparerForAssetGeometryDcc, self).__init__(session, *args, **kwargs)
@@ -99,14 +101,14 @@ class AbsPnlComparerForAssetGeometryDcc(prx_widgets.PrxSessionWindow):
             dcc_namespace=self.DCC_NAMESPACE,
             dcc_pathsep=self.DCC_PATHSEP,
             dcc_node_class=self.DCC_NODE_CLS,
-            dcc_geometry_location=self.DCC_GEOMETRY_LOCATION,
+            dcc_geometry_location=self.DCC_LOCATION_FOR_GEOMETRY,
         )
         #
         self._prx_dcc_obj_tree_view_selection_opt = gui_prx_scripts.GuiPrxScpForTreeSelection(
             prx_tree_view=self._obj_tree_viewer_0,
             dcc_selection_cls=self.DCC_SELECTION_CLS,
             dcc_namespace=self.DCC_NAMESPACE,
-            dcc_geometry_location=self.DCC_GEOMETRY_LOCATION,
+            dcc_geometry_location=self.DCC_LOCATION_FOR_GEOMETRY,
             dcc_pathsep=self.DCC_PATHSEP
         )
         self._obj_tree_viewer_0.connect_item_select_changed_to(
@@ -138,15 +140,19 @@ class AbsPnlComparerForAssetGeometryDcc(prx_widgets.PrxSessionWindow):
 
     def _set_comparer_result_update_(self):
         scene_file_path = self._options_prx_node.get('scene.file')
-        self._fnc_dcc_geometry_comparer = self.FNC_GEOMETRY_COMPARER(
-            scene_file_path, self.DCC_LOCATION, self.DCC_LOCATION_SOURCE
+        self._fnc_dcc_geometry_comparer = self.FNC_COMPARER_FOR_DCC_GEOMETRY(
+            option=dict(
+                file=scene_file_path,
+                location=self.DCC_LOCATION,
+                location_source=self.DCC_LOCATION_SOURCE
+            )
         )
         #
         self._fnc_dcc_geometry_comparer.set_source_file(
             self._options_prx_node.get('usd.source_file')
         )
         #
-        return self._fnc_dcc_geometry_comparer.get_results()
+        return self._fnc_dcc_geometry_comparer.generate_results()
 
     def _set_dcc_obj_guis_build_(self):
         self._prx_usd_mesh_tree_view_add_opt.restore_all()
@@ -157,7 +163,7 @@ class AbsPnlComparerForAssetGeometryDcc(prx_widgets.PrxSessionWindow):
         sector_chart_data_dict = {}
         count = len(comparer_results)
         if comparer_results:
-            with bsc_core.LogProcessContext.create(maximum=count, label='gui-add for geometry-comparer result') as g_p:
+            with bsc_log.LogProcessContext.create(maximum=count, label='gui-add for geometry-comparer result') as g_p:
                 for i_src_geometry_path, i_tgt_geometry_path, i_check_statuses in comparer_results:
                     g_p.do_update()
                     #
@@ -178,7 +184,7 @@ class AbsPnlComparerForAssetGeometryDcc(prx_widgets.PrxSessionWindow):
                         )
                         #
                         key = 'from-model'
-                        if i_check_statuses == utl_configure.DccMeshCheckStatus.NON_CHANGED:
+                        if i_check_statuses == bsc_dcc_core.DccMeshCheckStatus.NonChanged:
                             i_mesh_prx_item_src.set_adopt_state()
                         else:
                             if i_tgt_geometry_path is not None:
@@ -207,8 +213,8 @@ class AbsPnlComparerForAssetGeometryDcc(prx_widgets.PrxSessionWindow):
                             i_mesh_prx_item_src.set_tool_tip(i_tgt_geometry_path, self.DESCRIPTION_INDEX)
         #
         sector_chart_data = []
-        for i_check_status in utl_configure.DccMeshCheckStatus.ALL:
-            if i_check_status != utl_configure.DccMeshCheckStatus.NON_CHANGED:
+        for i_check_status in bsc_dcc_core.DccMeshCheckStatus.All:
+            if i_check_status != bsc_dcc_core.DccMeshCheckStatus.NonChanged:
                 if i_check_status in sector_chart_data_dict:
                     sector_chart_data.append(
                         (i_check_status, count, len(sector_chart_data_dict[i_check_status]))
@@ -274,7 +280,7 @@ class AbsPnlComparerForAssetGeometryDcc(prx_widgets.PrxSessionWindow):
     def import_fnc(self):
         checked_src_geometries = self._get_checked_geometry_objs_()
         if checked_src_geometries:
-            with bsc_core.LogProcessContext.create(maximum=len(checked_src_geometries), label='import geometry') as g_p:
+            with bsc_log.LogProcessContext.create(maximum=len(checked_src_geometries), label='import geometry') as g_p:
                 for i_src_geometry_item_prx, i_src_dcc_geometry in checked_src_geometries:
                     g_p.do_update()
                     if i_src_dcc_geometry.type_name in ['Mesh', 'mesh']:
@@ -282,7 +288,7 @@ class AbsPnlComparerForAssetGeometryDcc(prx_widgets.PrxSessionWindow):
                         if i_tgt_dcc_mesh_path is not None:
                             i_check_statuses = i_src_geometry_item_prx.get_gui_attribute('check_statuses')
                             i_src_mesh_dcc_path = i_src_dcc_geometry.path
-                            self._fnc_dcc_geometry_comparer.repair_mesh(
+                            self._fnc_dcc_geometry_comparer.do_repair_mesh(
                                 i_src_mesh_dcc_path, i_tgt_dcc_mesh_path, i_check_statuses
                             )
         #

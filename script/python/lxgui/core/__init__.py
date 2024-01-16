@@ -1,8 +1,8 @@
 # coding:utf-8
-from ._gui_cor_configure import *
+from .configure import *
 
-from ._gui_cor_base import *
+from .base import *
 
-from ._gui_cor_abstracts import *
+from .dialog import *
 
 

@@ -1,6 +1,8 @@
 # coding:utf-8
 import lxbasic.core as bsc_core
 
+import lxbasic.storage as bsc_storage
+
 import lxgui.proxy.widgets as prx_widgets
 
 import lxgui.qt.core as gui_qt_core
@@ -77,15 +79,10 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
 
         t = u.generate_type(u.Category.CONSTANT, u.Type.NODE)
 
-        # ps = utl_core.MayaLauncher(
-        #     project='cgm'
-        # ).get_rez_packages()
-
-        # ps = ['lxdcc']
         r = r_c.ResolvedContext(
             packages,
             package_paths=[
-                bsc_core.StgBasePathMapMtd.map_to_current(i) for i in [
+                bsc_storage.StgPathMapper.map_to_current(i) for i in [
                     "/l/packages/pg/prod",
                     "/l/packages/pg/dept",
                     "/l/packages/pg/third_party/app",
@@ -96,10 +93,10 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
         )
 
         root = u.get_root()
-        root.generate_input_port(
+        root.create_input_port(
             t, 'input'
         )
-        root.generate_output_port(
+        root.create_output_port(
             t, 'output'
         )
 
@@ -112,10 +109,10 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
                 i_n = i_type.create_obj(
                     i_path
                 )
-                i_n.generate_input_port(
+                i_n.create_input_port(
                     t, 'input'
                 )
-                i_n.generate_output_port(
+                i_n.create_output_port(
                     t, 'output'
                 )
                 root.get_input_port(
@@ -133,10 +130,10 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
                 i_p_n = i_type.create_obj(
                     i_path
                 )
-                i_p_n.generate_input_port(
+                i_p_n.create_input_port(
                     t, 'input'
                 )
-                i_p_n.generate_output_port(
+                i_p_n.create_output_port(
                     t, 'output'
                 )
                 root.get_input_port(
@@ -176,10 +173,10 @@ class AbsRezGraph(prx_widgets.PrxBaseWindow):
             i_n = i_type.create_obj(
                 i_path
             )
-            i_n.generate_input_port(
+            i_n.create_input_port(
                 t, 'input'
             )
-            i_n.generate_output_port(
+            i_n.create_output_port(
                 t, 'output'
             )
             path_dict[i] = i_path

@@ -1,9 +1,9 @@
 # coding:utf-8
-from lxgui.qt.core.wrap import *
+from ...qt.core.wrap import *
 
-from lxgui.qt_for_opengl.core.wrap import *
+from ..core.wrap import *
 
-import lxgui.qt_for_opengl.core as gui_qt_ogl_core
+from .. import core as gui_qt_ogl_core
 
 
 # if QT_OPENGL_FLAG is False:

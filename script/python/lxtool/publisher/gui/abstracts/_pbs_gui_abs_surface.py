@@ -1,13 +1,15 @@
 # coding:utf-8
 import collections
 
+import lxbasic.log as bsc_log
+
 import lxbasic.core as bsc_core
+
+import lxbasic.storage as bsc_storage
 
 import lxgui.proxy.widgets as prx_widgets
 
-from lxutil import utl_core
-
-import lxutil.dcc.dcc_objects as utl_dcc_objects
+import lxbasic.dcc.objects as bsc_dcc_objects
 
 import lxgui.proxy.scripts as gui_prx_scripts
 
@@ -158,7 +160,7 @@ class AbsValidatorOpt(object):
         scene_prx_item._child_dict = {}
         if not check_results:
             scene_prx_item.set_status(
-                utl_core.DccDialog.ValidationStatus.Correct
+                gui_core.GuiDialog.ValidationStatus.Correct
             )
             return True
         #
@@ -169,7 +171,7 @@ class AbsValidatorOpt(object):
         self._result_tree_view.expand_items_by_depth(1)
 
     def _set_sub_check_results_build_at_(self, scene_prx_item, rsv_scene_properties, results):
-        with bsc_core.LogProcessContext.create(maximum=len(results), label='gui-add for check result') as g_p:
+        with bsc_log.LogProcessContext.create(maximum=len(results), label='gui-add for check result') as g_p:
             for i_result in results:
                 g_p.do_update()
                 #
@@ -178,9 +180,9 @@ class AbsValidatorOpt(object):
                 i_group_name = i_result['group']
                 i_status = i_result['status']
                 if i_status == 'warning':
-                    i_validation_status = utl_core.DccDialog.ValidationStatus.Warning
+                    i_validation_status = gui_core.GuiDialog.ValidationStatus.Warning
                 elif i_status == 'error':
-                    i_validation_status = utl_core.DccDialog.ValidationStatus.Error
+                    i_validation_status = gui_core.GuiDialog.ValidationStatus.Error
                 else:
                     raise RuntimeError()
 
@@ -268,7 +270,7 @@ class AbsValidatorOpt(object):
         if file_path in self._item_dict:
             return self._item_dict[file_path]
         #
-        stg_file = utl_dcc_objects.OsFile(file_path)
+        stg_file = bsc_dcc_objects.StgFile(file_path)
         name = stg_file.get_path_prettify_()
         prx_item = self._result_tree_view.create_item(
             name=name,
@@ -353,7 +355,7 @@ class AbsValidatorOpt(object):
         return prx_item
 
     def _get_file_(self, scene_prx_item, node_prx_item, file_path, description, status):
-        stg_file = utl_dcc_objects.OsFile(file_path)
+        stg_file = bsc_dcc_objects.StgFile(file_path)
         prx_item = node_prx_item.add_child(
             name=[stg_file.get_path_prettify_(maximum=32), description],
             icon=stg_file.icon,
@@ -365,7 +367,7 @@ class AbsValidatorOpt(object):
         return prx_item
 
     def _get_directory_(self, scene_prx_item, node_prx_item, directory_path, description, status):
-        stg_directory = utl_dcc_objects.StgDirectory(directory_path)
+        stg_directory = bsc_dcc_objects.StgDirectory(directory_path)
         prx_item = node_prx_item.add_child(
             name=[stg_directory.get_path_prettify_(maximum=32), description],
             icon=stg_directory.icon,
@@ -541,10 +543,10 @@ class AbsPnlPublisherForSurface(prx_widgets.PrxSessionWindow):
 
     def _get_validation_info_file_path_(self):
         if self._rsv_scene_properties:
-            file_opt = bsc_core.StgFileOpt(
+            file_opt = bsc_storage.StgFileOpt(
                 self._scene_file_path
             )
-            return bsc_core.StgTmpInfoMtd.get_file_path(
+            return bsc_storage.StgTmpInfoMtd.get_file_path(
                 file_opt.get_path(), 'validation'
             )
 
@@ -569,7 +571,7 @@ class AbsPnlPublisherForSurface(prx_widgets.PrxSessionWindow):
         self._validation_info_file = self._get_validation_info_file_path_()
         if self._validation_info_file is not None:
             info = '\n'.join(map(bsc_core.auto_encode, self._get_validation_info_texts_()))
-            bsc_core.StgFileOpt(
+            bsc_storage.StgFileOpt(
                 self._validation_info_file
             ).set_write(
                 info
@@ -615,10 +617,10 @@ class AbsPnlPublisherForSurface(prx_widgets.PrxSessionWindow):
                 )
 
         if contents:
-            utl_core.DccDialog.create(
+            gui_core.GuiDialog.create(
                 label=self._session.gui_name,
                 content=u'\n'.join(contents),
-                status=utl_core.DccDialog.ValidationStatus.Error,
+                status=gui_core.GuiDialog.ValidationStatus.Error,
                 #
                 yes_label='Close', yes_method=self.set_window_close,
                 #
@@ -711,7 +713,7 @@ class AbsPnlPublisherForSurface(prx_widgets.PrxSessionWindow):
         )
         cmd = s.get_shell_script_command()
         #
-        q_c_s = utl_core.CommandMonitor.set_create(
+        q_c_s = gui_core.GuiMonitorForCommand.set_create(
             'Validation for {}'.format(self._rsv_task),
             cmd,
             parent=self.widget
@@ -748,7 +750,7 @@ class AbsPnlPublisherForSurface(prx_widgets.PrxSessionWindow):
             pass
 
         def cache_fnc_():
-            t_o = bsc_stg_core.StgTaskOpt(c.to_query(stg_task))
+            t_o = bsc_shotgun.StgTaskOpt(c.to_query(stg_task))
             notice_stg_users = t_o.get_notice_stg_users()
             return list(set([c.to_query(i).get('name').decode('utf-8') for i in notice_stg_users]))
 
@@ -757,9 +759,9 @@ class AbsPnlPublisherForSurface(prx_widgets.PrxSessionWindow):
                 'notice', user_names
             )
 
-        import lxbasic.shotgun.core as bsc_stg_core
+        import lxbasic.shotgun as bsc_shotgun
 
-        c = bsc_stg_core.StgConnector()
+        c = bsc_shotgun.StgConnector()
 
         p = self._publish_options_prx_node.get_port('notice')
         p.set_clear()

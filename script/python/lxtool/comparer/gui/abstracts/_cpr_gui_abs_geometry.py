@@ -1,7 +1,9 @@
 # coding:utf-8
+import lxbasic.log as bsc_log
+
 import lxbasic.core as bsc_core
-#
-from lxutil import utl_configure
+
+import lxbasic.dcc.core as bsc_dcc_core
 
 import lxgui.core as gui_core
 
@@ -126,17 +128,17 @@ class AbsDccComparerOpt(object):
 
 class AbsPnlComparerForAssetGeometry(prx_widgets.PrxSessionWindow):
     ERROR_STATUS = [
-        utl_configure.DccMeshCheckStatus.DELETION,
-        utl_configure.DccMeshCheckStatus.ADDITION,
+        bsc_dcc_core.DccMeshCheckStatus.Deletion,
+        bsc_dcc_core.DccMeshCheckStatus.Addition,
         #
-        utl_configure.DccMeshCheckStatus.NAME_CHANGED,
-        utl_configure.DccMeshCheckStatus.PATH_CHANGED,
-        utl_configure.DccMeshCheckStatus.PATH_EXCHANGED,
+        bsc_dcc_core.DccMeshCheckStatus.NameChanged,
+        bsc_dcc_core.DccMeshCheckStatus.PathChanged,
+        bsc_dcc_core.DccMeshCheckStatus.PathExchanged,
         #
-        utl_configure.DccMeshCheckStatus.FACE_VERTICES_CHANGED,
+        bsc_dcc_core.DccMeshCheckStatus.FaceVerticesChanged,
     ]
     WARNING_STATUS = [
-        utl_configure.DccMeshCheckStatus.POINTS_CHANGED,
+        bsc_dcc_core.DccMeshCheckStatus.PointsChanged,
     ]
     DCC_COMPARER_OPT_CLS = None
 
@@ -231,7 +233,7 @@ class AbsPnlComparerForAssetGeometry(prx_widgets.PrxSessionWindow):
         step = self._session.option_opt.get('step')
         task = self._session.option_opt.get('task')
 
-        keyword = 'asset-geometry-usd-var-file'
+        keyword = 'asset-geometry-usd-payload-file'
         rsv_task = self._rsv_asset.get_rsv_task(
             step=step, task=task
         )
@@ -240,23 +242,23 @@ class AbsPnlComparerForAssetGeometry(prx_widgets.PrxSessionWindow):
                 keyword=keyword
             )
             file_paths = file_rsv_unit.get_result(
-                version='all', variants_extend=dict(var='hi')
+                version='all'
             )
             self._options_prx_node.set(
                 'usd.target_file', file_paths
             )
 
     def __gain_data_fnc_(self, file_path_src, file_path_tgt, location):
-        import lxusd.fnc.comparers as usd_fnc_comparers
+        import lxusd.fnc.objects as usd_fnc_objects
 
-        self._comparer_results = usd_fnc_comparers.FncGeometryComparer(
+        self._comparer_results = usd_fnc_objects.FncComparerForGeometry(
             option=dict(
                 file_src=file_path_src,
                 file_tgt=file_path_tgt,
                 #
                 location=location
             )
-        ).get_results()
+        ).generate_results()
 
     def __build_data_fnc_(self):
         sector_chart_data_dict = {}
@@ -264,7 +266,7 @@ class AbsPnlComparerForAssetGeometry(prx_widgets.PrxSessionWindow):
 
         self._comparer_opt.restore_all()
 
-        with bsc_core.LogProcessContext.create(maximum=count, label='gui-add for geometry-comparer result') as g_p:
+        with bsc_log.LogProcessContext.create(maximum=count, label='gui-add for geometry-comparer result') as g_p:
             for i_path_src, i_path_tgt, i_description in self._comparer_results:
                 i_keys = i_description.split('+')
 
@@ -291,8 +293,8 @@ class AbsPnlComparerForAssetGeometry(prx_widgets.PrxSessionWindow):
                 g_p.do_update()
         #
         sector_chart_data = []
-        for i_check_status in utl_configure.DccMeshCheckStatus.ALL:
-            if i_check_status != utl_configure.DccMeshCheckStatus.NON_CHANGED:
+        for i_check_status in bsc_dcc_core.DccMeshCheckStatus.All:
+            if i_check_status != bsc_dcc_core.DccMeshCheckStatus.NonChanged:
                 if i_check_status in sector_chart_data_dict:
                     sector_chart_data.append(
                         (i_check_status, count, len(sector_chart_data_dict[i_check_status]))
@@ -327,7 +329,7 @@ class AbsPnlComparerForAssetGeometry(prx_widgets.PrxSessionWindow):
             # comparer
             (self.__build_data_fnc_, ())
         ]
-        with bsc_core.LogProcessContext.create(maximum=len(ms), label='execute gui-build method') as g_p:
+        with bsc_log.LogProcessContext.create(maximum=len(ms), label='execute gui-build method') as g_p:
             for i_method, i_args in ms:
                 g_p.do_update()
                 i_method(*i_args)

@@ -1,17 +1,18 @@
 # coding:utf-8
-from ._gui_qt_cor_base import *
+# do not import wrap here
+from .base import *
 
-from ._gui_qt_cor_painter import *
+from .painter import *
 
-from ._gui_qt_cor_extra import *
+from .extra import *
 
-from ._gui_qt_cor_thread import *
+from .thread import *
 
-from ._gui_qt_cor_chart import *
+from .chart import *
 
-from ._gui_qt_cor_dcc import *
+from .dcc import *
 
-from ._gui_qt_cor_model import *
+from .models import *
 
 
 

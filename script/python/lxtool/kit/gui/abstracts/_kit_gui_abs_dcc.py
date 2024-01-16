@@ -1,6 +1,8 @@
 # coding:utf-8
 import six
 
+import lxbasic.log as bsc_log
+
 import lxbasic.core as bsc_core
 
 import lxgui.proxy.widgets as prx_widgets
@@ -111,7 +113,7 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
         return grid_layout_widget
 
     def build_tool_by_hook_data(self, data):
-        with bsc_core.LogProcessContext.create(maximum=len(data), label='gui-add for hook') as g_p:
+        with bsc_log.LogProcessContext.create(maximum=len(data), label='gui-add for hook') as g_p:
             for i_args in data:
                 g_p.do_update()
                 if isinstance(i_args, six.string_types):
@@ -133,7 +135,7 @@ import lxsession.commands as ssn_commands; ssn_commands.set_hook_execute("dcc-to
                     self.add_tool(i_hook_args, i_extend_kwargs)
 
     def build_tool_by_option_hook_data(self, data):
-        with bsc_core.LogProcessContext.create(maximum=len(data), label='gui-add for hook') as g_p:
+        with bsc_log.LogProcessContext.create(maximum=len(data), label='gui-add for hook') as g_p:
             for i_args in data:
                 g_p.do_update()
                 if isinstance(i_args, six.string_types):

@@ -1,5 +1,9 @@
 # coding:utf-8
+import lxbasic.log as bsc_log
+
 import lxbasic.core as bsc_core
+
+import lxbasic.storage as bsc_storage
 
 import lxgui.qt.widgets as qt_widgets
 
@@ -13,7 +17,7 @@ import lxuniverse.objects as unr_objects
 
 import lxgui.proxy.scripts as gui_prx_scripts
 
-import lxutil.dcc.dcc_objects as utl_dcc_objects
+import lxbasic.dcc.objects as bsc_dcc_objects
 
 import lxgui.core as gui_core
 
@@ -23,7 +27,7 @@ import lxgui.proxy.core as gui_prx_core
 
 import lxsession.commands as ssn_commands
 
-import lxbasic.shotgun.core as bsc_stg_core
+import lxbasic.shotgun as bsc_shotgun
 
 import lxshotgun.rsv.scripts as stg_rsv_scripts
 
@@ -53,7 +57,7 @@ class AbsRenderSubmitterDef(object):
             else:
                 self._rez_beta = False
 
-            self._stg_connector = bsc_stg_core.StgConnector()
+            self._stg_connector = bsc_shotgun.StgConnector()
         else:
             self._file_path = None
         #
@@ -225,7 +229,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
 
     def set_all_refresh(self):
         if self._file_path:
-            self._file_path = bsc_core.StgBasePathMapMtd.map_to_current(self._file_path)
+            self._file_path = bsc_storage.StgPathMapper.map_to_current(self._file_path)
             self._resolver = rsv_core.RsvBase.generate_root()
             self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
             if self._rsv_scene_properties:
@@ -425,7 +429,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
             self.set_renderers_refresh,
             self.set_usd_refresh,
         ]
-        with bsc_core.LogProcessContext.create(maximum=len(methods), label='execute refresh method') as g_p:
+        with bsc_log.LogProcessContext.create(maximum=len(methods), label='execute refresh method') as g_p:
             for i in methods:
                 g_p.do_update()
                 result = i()
@@ -503,7 +507,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
             version = rsv_properties.get('version')
             show_info_dict['version'] = version
             show_info_dict['update'] = bsc_core.TimePrettifyMtd.to_prettify_by_timestamp(
-                bsc_core.StgFileOpt(
+                bsc_storage.StgFileOpt(
                     movie_file_path
                 ).get_modify_timestamp(),
                 language=1
@@ -512,7 +516,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
                 version=version
             )
             if render_info_file_path:
-                render_info = bsc_core.StgFileOpt(render_info_file_path).set_read()
+                render_info = bsc_storage.StgFileOpt(render_info_file_path).set_read()
                 show_info_dict['user'] = render_info['user']
                 # show_info_dict['submit_time'] = bsc_core.TimePrettifyMtd.to_prettify_by_time_tag(
                 #     render_info['time_tag'],
@@ -577,7 +581,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
             i_file_path = i_rsv_unit.get_result(version='latest')
             if i_file_path:
                 i_rsv_properties = i_rsv_unit.generate_properties_by_result(i_file_path)
-                i_rsv_unit_file = utl_dcc_objects.OsFile(i_file_path)
+                i_rsv_unit_file = bsc_dcc_objects.StgFile(i_file_path)
                 i_pixmap = gui_qt_core.GuiQtPixmap.get_by_file_ext_with_tag(
                     i_rsv_unit_file.ext,
                     tag=i_rsv_properties.get('workspace'),
@@ -948,7 +952,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
     def get_file_is_changed(self):
         # file_path_src = self._file_path
         # file_path_tgt = self._output_scene_file_rsv_unit.get_result('latest')
-        # return not bsc_core.StgFileOpt(file_path_src).get_timestamp_is_same_to(file_path_tgt)
+        # return not bsc_storage.StgFileOpt(file_path_src).get_timestamp_is_same_to(file_path_tgt)
         return True
 
     @gui_prx_core.GuiProxyModifier.window_proxy_waiting
@@ -1103,7 +1107,7 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
             version = rsv_properties.get('version')
             variants['version'] = version
             variants['update'] = bsc_core.TimePrettifyMtd.to_prettify_by_timestamp(
-                bsc_core.StgFileOpt(
+                bsc_storage.StgFileOpt(
                     movie_file_path
                 ).get_modify_timestamp(),
                 language=1
@@ -1159,7 +1163,7 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
             i_file_path = i_rsv_unit.get_result(version='latest')
             if i_file_path:
                 i_rsv_properties = i_rsv_unit.generate_properties_by_result(i_file_path)
-                i_rsv_unit_file = utl_dcc_objects.OsFile(i_file_path)
+                i_rsv_unit_file = bsc_dcc_objects.StgFile(i_file_path)
                 i_pixmap = gui_qt_core.GuiQtPixmap.get_by_file_ext_with_tag(
                     i_rsv_unit_file.ext,
                     tag=i_rsv_properties.get('workspace'),
@@ -1195,7 +1199,7 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
 
     def set_all_refresh(self):
         if self._file_path:
-            self._file_path = bsc_core.StgBasePathMapMtd.map_to_current(self._file_path)
+            self._file_path = bsc_storage.StgPathMapper.map_to_current(self._file_path)
             self._resolver = rsv_core.RsvBase.generate_root()
             self._rsv_scene_properties = self._resolver.get_rsv_scene_properties_by_any_scene_file_path(self._file_path)
             if self._rsv_scene_properties:
@@ -1236,7 +1240,7 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
             self.set_renderers_refresh,
             self.set_combinations_refresh,
         ]
-        with bsc_core.LogProcessContext.create(maximum=len(methods), label='execute refresh method') as g_p:
+        with bsc_log.LogProcessContext.create(maximum=len(methods), label='execute refresh method') as g_p:
             for i in methods:
                 g_p.do_update()
                 result = i()
@@ -1502,7 +1506,7 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
     def get_file_is_changed(self):
         file_path_src = self._file_path
         file_path_tgt = self._output_scene_file_rsv_unit.get_result('latest')
-        # return not bsc_core.StgFileOpt(file_path_src).get_timestamp_is_same_to(file_path_tgt)
+        # return not bsc_storage.StgFileOpt(file_path_src).get_timestamp_is_same_to(file_path_tgt)
         return True
 
     @gui_prx_core.GuiProxyModifier.window_proxy_waiting

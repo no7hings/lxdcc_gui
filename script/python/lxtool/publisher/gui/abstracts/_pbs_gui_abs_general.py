@@ -3,11 +3,13 @@ import copy
 
 import lxbasic.core as bsc_core
 
+import lxbasic.storage as bsc_storage
+
 import lxgui.proxy.widgets as prx_widgets
 
-from lxutil import utl_core
-
 import lxresolver.core as rsv_core
+
+import lxgui.core as gui_core
 
 import lxsession.commands as ssn_commands
 
@@ -36,8 +38,8 @@ class _PublishOptForGeneral(object):
 
     def create_or_unlock_version_directory_fnc(self):
         directory_path = self._options.get('version_directory')
-        if bsc_core.StgDirectoryOpt(directory_path).get_is_exists() is False:
-            bsc_core.StgPathPermissionMtd.create_directory(
+        if bsc_storage.StgDirectoryOpt(directory_path).get_is_exists() is False:
+            bsc_storage.StgPathPermissionMtd.create_directory(
                 directory_path
             )
 
@@ -72,7 +74,7 @@ class _PublishOptForGeneral(object):
                 version=version
             )
             #
-            bsc_core.StgPathPermissionMtd.copy_to_file(
+            bsc_storage.StgPathPermissionMtd.copy_to_file(
                 movie_file_path, review_file_path
             )
             self._review_mov_file_path = movie_file_path
@@ -88,7 +90,7 @@ class _PublishOptForGeneral(object):
             with self._window.gui_progressing(maximum=len(file_paths), label='export scene') as g_p:
                 for i_index, i_file_path in enumerate(file_paths):
                     g_p.do_update()
-                    i_file_opt = bsc_core.StgFileOpt(i_file_path)
+                    i_file_opt = bsc_storage.StgFileOpt(i_file_path)
                     if i_file_opt.get_is_file():
                         i_ext = i_file_opt.get_ext()
                         if i_ext in count_dict:
@@ -111,7 +113,7 @@ class _PublishOptForGeneral(object):
                             version=version
                         )
                         if i_c > 0:
-                            i_scene_src_file_path_opt_tgt = bsc_core.StgFileOpt(
+                            i_scene_src_file_path_opt_tgt = bsc_storage.StgFileOpt(
                                 i_scene_src_file_path_tgt
                             )
                             i_scene_src_file_path_tgt = '{}.{}{}'.format(
@@ -129,9 +131,9 @@ class _PublishOptForGeneral(object):
                             i_ext, []
                         ).append(i_file_path)
                         if i_file_opt.get_is_readable() is False:
-                            bsc_core.StgPathPermissionMtd.unlock(i_file_path)
+                            bsc_storage.StgPathPermissionMtd.unlock(i_file_path)
                         #
-                        i_file_opt.set_copy_to_file(
+                        i_file_opt.copy_to_file(
                             i_scene_src_file_path_tgt
                         )
 
@@ -148,16 +150,16 @@ class _PublishOptForGeneral(object):
             with self._window.gui_progressing(maximum=len(file_paths), label='export image') as g_p:
                 for i_index, i_file_path in enumerate(file_paths):
                     g_p.do_update()
-                    i_file_tile_paths = bsc_core.StgFileMtdForMultiply.get_exists_unit_paths(i_file_path)
+                    i_file_tile_paths = bsc_storage.StgFileMtdForMultiply.get_exists_unit_paths(i_file_path)
                     for j_file_path in i_file_tile_paths:
-                        j_file_opt = bsc_core.StgFileOpt(j_file_path)
+                        j_file_opt = bsc_storage.StgFileOpt(j_file_path)
                         j_file_path_tgt = '{}/{}'.format(
                             image_directory_path, j_file_opt.get_name()
                         )
                         if j_file_opt.get_is_readable() is False:
-                            bsc_core.StgPathPermissionMtd.unlock(j_file_path)
+                            bsc_storage.StgPathPermissionMtd.unlock(j_file_path)
                         #
-                        j_file_opt.set_copy_to_file(
+                        j_file_opt.copy_to_file(
                             j_file_path_tgt
                         )
 
@@ -339,16 +341,16 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
         self.__do_accept(self.__input.get_result())
 
     def refresh_all_fnc(self):
-        import lxbasic.shotgun.core as bsc_stg_core
+        import lxbasic.shotgun as bsc_shotgun
 
-        self._stg_connector = bsc_stg_core.StgConnector()
+        self._stg_connector = bsc_shotgun.StgConnector()
         self._user_name = bsc_core.SysBaseMtd.get_user_name()
         self.__stg_user = self._stg_connector.get_stg_user(user=self._user_name)
         if not self.__stg_user:
-            utl_core.DccDialog.create(
+            gui_core.GuiDialog.create(
                 self._session.gui_name,
                 content='user "{}" is not available'.format(self._user_name),
-                status=utl_core.DccDialog.ValidationStatus.Error,
+                status=gui_core.GuiDialog.ValidationStatus.Error,
                 #
                 yes_label='Close',
                 #
@@ -371,9 +373,9 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
             pass
 
         def cache_fnc_():
-            import lxbasic.shotgun.core as bsc_stg_core
+            import lxbasic.shotgun as bsc_shotgun
 
-            t_o = bsc_stg_core.StgTaskOpt(self._stg_connector.to_query(stg_task))
+            t_o = bsc_shotgun.StgTaskOpt(self._stg_connector.to_query(stg_task))
             notice_stg_users = t_o.get_notice_stg_users()
             return list(set([self._stg_connector.to_query(i).get('name').decode('utf-8') for i in notice_stg_users]))
 
@@ -418,8 +420,8 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
             task_directory_path = task_directory_pattern.format(
                 **kwargs
             )
-            if bsc_core.StgPathMtd.get_is_exists(task_directory_path) is False:
-                bsc_core.StgPathPermissionMtd.create_directory(
+            if bsc_storage.StgPathMtd.get_is_exists(task_directory_path) is False:
+                bsc_storage.StgPathPermissionMtd.create_directory(
                     task_directory_path
                 )
 
@@ -430,10 +432,10 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
                 **self.__task_data
             )
             if self._rsv_project is None:
-                utl_core.DccDialog.create(
+                gui_core.GuiDialog.create(
                     self.session.gui_name,
                     content='project is not available',
-                    status=utl_core.DccDialog.ValidationStatus.Warning,
+                    status=gui_core.GuiDialog.ValidationStatus.Warning,
                     #
                     yes_label='Close',
                     #
@@ -449,10 +451,10 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
                 **self.__task_data
             )
             if self._rsv_task is None:
-                w = utl_core.DccDialog.create(
+                w = gui_core.GuiDialog.create(
                     self.session.gui_name,
                     content='task directory is non-exists, press "Yes" to create and continue',
-                    status=utl_core.DccDialog.ValidationStatus.Warning,
+                    status=gui_core.GuiDialog.ValidationStatus.Warning,
                     yes_method=self.create_task_directory,
                     # do not use thread
                     # use_thread=False
@@ -516,14 +518,14 @@ class AbsPnlPublisherForGeneral(prx_widgets.PrxSessionWindow):
     def refresh_publish_scene(self):
         if bsc_core.SysApplicationMtd.get_is_dcc():
             if bsc_core.SysApplicationMtd.get_is_maya():
-                import lxmaya.dcc.dcc_objects as mya_dcc_objects
+                import lxmaya.dcc.objects as mya_dcc_objects
 
                 self._publish_options_prx_node.set(
                     'extra.scene', [mya_dcc_objects.Scene.get_current_file_path()]
 
                 )
             elif bsc_core.SysApplicationMtd.get_is_katana():
-                import lxkatana.dcc.dcc_objects as ktn_dcc_objects
+                import lxkatana.dcc.objects as ktn_dcc_objects
 
                 self._publish_options_prx_node.set(
                     'extra.scene', [ktn_dcc_objects.Scene.get_current_file_path()]

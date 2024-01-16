@@ -1,6 +1,4 @@
 # coding:utf-8
-import six
-
 import os
 
 import functools
@@ -11,9 +9,9 @@ import lxcontent.core as ctt_core
 
 import lxbasic.core as bsc_core
 
-import lxgui.core as gui_core
+import lxbasic.storage as bsc_storage
 
-import lxgui.qt.core as gui_qt_core
+import lxgui.core as gui_core
 
 import lxgui.qt.widgets as qt_widgets
 
@@ -415,7 +413,7 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         )
         if self.__gui_query.get_is_exists(tool_path):
             tool = self.__gui_query.get(tool_path)
-            f = gui_core.GuiFileDialog.save_file(ext_filter='All File (*.png)', parent=self._qt_widget)
+            f = gui_core.GuiDialogForFile.save_file(ext_filter='All File (*.png)', parent=self._qt_widget)
             if f:
                 tool.save_main_icon_to_file(f)
 
@@ -488,7 +486,7 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         top_tool_bar.set_left_alignment()
 
         if tool_data:
-            tool_box = prx_widgets.PrxHToolBox_()
+            tool_box = prx_widgets.PrxHToolBoxNew()
             top_tool_bar.add_widget(tool_box)
             tool_box.set_expanded(True)
             for i_data in tool_data:
@@ -691,7 +689,7 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         self.switch_current_layer_to('modify_layer')
 
         configure_file_path = session.get_configure_yaml_file()
-        configure_file_opt = bsc_core.StgFileOpt(configure_file_path)
+        configure_file_opt = bsc_storage.StgFileOpt(configure_file_path)
         self._modify_option_prx_node.set('type', session.get_type())
         self._modify_option_prx_node.set('name', session.get_name())
         self._modify_option_prx_node.set('gui.name', gui_configure.get('name'))
@@ -703,27 +701,27 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         self._modify_option_prx_node.set('gui.icon_color', gui_configure.get('icon_color') or (255, 255, 255, 255))
         self._modify_option_prx_node.set('gui.tool_tip', gui_configure.get('tool_tip'))
         python_file_path = '{}.py'.format(configure_file_opt.path_base)
-        if bsc_core.StgPathMtd.get_is_file(python_file_path):
+        if bsc_storage.StgPathMtd.get_is_file(python_file_path):
             self._modify_option_prx_node.set(
-                'script.python', bsc_core.StgFileOpt(python_file_path).set_read()
+                'script.python', bsc_storage.StgFileOpt(python_file_path).set_read()
             )
         else:
             self._modify_option_prx_node.set(
                 'script.python', ''
             )
         windows_shell_file_path = '{}.bat'.format(configure_file_opt.path_base)
-        if bsc_core.StgPathMtd.get_is_file(windows_shell_file_path):
+        if bsc_storage.StgPathMtd.get_is_file(windows_shell_file_path):
             self._modify_option_prx_node.set(
-                'script.windows', bsc_core.StgFileOpt(windows_shell_file_path).set_read()
+                'script.windows', bsc_storage.StgFileOpt(windows_shell_file_path).set_read()
             )
         else:
             self._modify_option_prx_node.set(
                 'script.windows', ''
             )
         linux_shell_file_path = '{}.sh'.format(configure_file_opt.path_base)
-        if bsc_core.StgPathMtd.get_is_file(linux_shell_file_path):
+        if bsc_storage.StgPathMtd.get_is_file(linux_shell_file_path):
             self._modify_option_prx_node.set(
-                'script.linux', bsc_core.StgFileOpt(linux_shell_file_path).set_read()
+                'script.linux', bsc_storage.StgFileOpt(linux_shell_file_path).set_read()
             )
         else:
             self._modify_option_prx_node.set(
@@ -736,7 +734,7 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         group_sub_name = gui_configure.get('group_sub_name')
 
         configure_file_path = session.get_configure_yaml_file()
-        configure_file_opt = bsc_core.StgFileOpt(configure_file_path)
+        configure_file_opt = bsc_storage.StgFileOpt(configure_file_path)
         self._copy_option_prx_node.set('type', session.get_type())
         self._copy_option_prx_node.set('name', session.get_name())
         self._copy_option_prx_node.set('gui.name', gui_configure.get('name'))
@@ -749,27 +747,27 @@ class AbsToolKitForDesktop(prx_widgets.PrxSessionWindow):
         self._copy_option_prx_node.set('gui.icon_color', gui_configure.get('icon_color') or (255, 255, 255, 255))
         self._copy_option_prx_node.set('gui.tool_tip', gui_configure.get('tool_tip'))
         python_file_path = '{}.py'.format(configure_file_opt.path_base)
-        if bsc_core.StgPathMtd.get_is_file(python_file_path):
+        if bsc_storage.StgPathMtd.get_is_file(python_file_path):
             self._copy_option_prx_node.set(
-                'script.python', bsc_core.StgFileOpt(python_file_path).set_read()
+                'script.python', bsc_storage.StgFileOpt(python_file_path).set_read()
             )
         else:
             self._copy_option_prx_node.set(
                 'script.python', ''
             )
         windows_shell_file_path = '{}.bat'.format(configure_file_opt.path_base)
-        if bsc_core.StgPathMtd.get_is_file(windows_shell_file_path):
+        if bsc_storage.StgPathMtd.get_is_file(windows_shell_file_path):
             self._copy_option_prx_node.set(
-                'script.windows', bsc_core.StgFileOpt(windows_shell_file_path).set_read()
+                'script.windows', bsc_storage.StgFileOpt(windows_shell_file_path).set_read()
             )
         else:
             self._copy_option_prx_node.set(
                 'script.windows', ''
             )
         linux_shell_file_path = '{}.sh'.format(configure_file_opt.path_base)
-        if bsc_core.StgPathMtd.get_is_file(linux_shell_file_path):
+        if bsc_storage.StgPathMtd.get_is_file(linux_shell_file_path):
             self._copy_option_prx_node.set(
-                'script.linux', bsc_core.StgFileOpt(linux_shell_file_path).set_read()
+                'script.linux', bsc_storage.StgFileOpt(linux_shell_file_path).set_read()
             )
         else:
             self._copy_option_prx_node.set(

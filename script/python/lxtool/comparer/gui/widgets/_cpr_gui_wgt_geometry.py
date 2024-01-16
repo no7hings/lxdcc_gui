@@ -1,13 +1,14 @@
 # coding:utf-8
-import lxutil.dcc.dcc_objects as utl_dcc_objects
+import lxbasic.dcc.objects as bsc_dcc_objects
+
 
 import lxtool.comparer.gui.abstracts as cpr_gui_abstracts
 
 
 class ComparerOpt(cpr_gui_abstracts.AbsDccComparerOpt):
     DCC_NAMESPACE = 'lynxi'
-    DCC_NODE_CLS = utl_dcc_objects.Obj
-    DCC_COMPONENT_CLS = utl_dcc_objects.Component
+    DCC_NODE_CLS = bsc_dcc_objects.Node
+    DCC_COMPONENT_CLS = bsc_dcc_objects.Component
     DCC_SELECTION_CLS = None
     DCC_PATHSEP = '/'
 

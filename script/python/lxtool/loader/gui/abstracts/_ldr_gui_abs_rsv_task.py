@@ -7,7 +7,11 @@ import collections
 
 import functools
 
+import lxbasic.log as bsc_log
+
 import lxbasic.core as bsc_core
+
+import lxbasic.storage as bsc_storage
 
 import lxcontent.core as ctt_core
 
@@ -162,7 +166,7 @@ class _GuiEntityOpt(
         def post_fnc_():
             self._end_timestamp = bsc_core.SysBaseMtd.get_timestamp()
             #
-            bsc_core.Log.trace_method_result(
+            bsc_log.Log.trace_method_result(
                 'load asset/shot from "{}"'.format(
                     rsv_project.path
                 ),
@@ -194,7 +198,7 @@ class _GuiEntityOpt(
             #
             self._window.connect_window_close_to(quit_fnc_)
         else:
-            with bsc_core.LogProcessContext.create(
+            with bsc_log.LogProcessContext.create(
                 maximum=len(rsv_resource_groups), label='gui-add for resource'
             ) as g_p:
                 for i_rsv_resource_group in rsv_resource_groups:
@@ -432,7 +436,7 @@ class _GuiTaskOpt(
                 ).to_string()
             )
 
-            movie_file_opt = bsc_core.StgFileOpt(movie_file_path)
+            movie_file_opt = bsc_storage.StgFileOpt(movie_file_path)
             name_dict['update'] = bsc_core.TimePrettifyMtd.to_prettify_by_timestamp(
                 movie_file_opt.get_modify_timestamp(),
                 language=1
@@ -568,7 +572,7 @@ class _GuiFileOpt(
                 gui_qt_core.GuiQtUtil.copy_text_to_clipboard(file_path)
 
             def open_folder_fnc():
-                bsc_core.StgFileOpt(file_path).open_in_system()
+                bsc_storage.StgFileOpt(file_path).open_in_system()
 
             _location = file_opt.get_path()
 
@@ -1198,7 +1202,7 @@ class AbsPnlLoaderForRsvTask(prx_widgets.PrxSessionWindow):
             #
             self.connect_window_close_to(quit_fnc_)
         else:
-            with bsc_core.LogProcessContext.create(
+            with bsc_log.LogProcessContext.create(
                 maximum=len(rsv_entities_map), label='gui-add for task unit'
             ) as g_p:
                 for i_rsv_entities in rsv_entities_map:
@@ -1362,8 +1366,8 @@ class AbsPnlLoaderForRsvTask(prx_widgets.PrxSessionWindow):
             python_file_path = ssn_core.SsnHookFileMtd.get_python(key)
             yaml_file_path = ssn_core.SsnHookFileMtd.get_yaml(key)
             if python_file_path and yaml_file_path:
-                python_file = bsc_core.StgFileOpt(python_file_path)
-                yaml_file = bsc_core.StgFileOpt(yaml_file_path)
+                python_file = bsc_storage.StgFileOpt(python_file_path)
+                yaml_file = bsc_storage.StgFileOpt(yaml_file_path)
                 if python_file.get_is_exists() is True and yaml_file.get_is_exists() is True:
                     configure = ctt_core.Content(value=yaml_file.path)
                     type_name = configure.get('option.type')

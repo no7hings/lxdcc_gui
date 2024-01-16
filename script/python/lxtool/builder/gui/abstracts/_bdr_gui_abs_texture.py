@@ -1,9 +1,11 @@
 # coding:utf-8
 import lxbasic.core as bsc_core
 
+import lxbasic.storage as bsc_storage
+
 import lxgui.proxy.widgets as prx_widgets
 
-import lxbasic.texture.core as bsc_txr_core
+import lxbasic.texture as bsc_texture
 
 import lxgui.core as gui_core
 
@@ -170,7 +172,7 @@ class AbsPnlBuilderForTexture(prx_widgets.PrxSessionWindow):
 
     def __gui_refresh_next_button(self):
         f = self._options_prx_node.get('file')
-        if bsc_core.StgPathMtd.get_is_file(f):
+        if bsc_storage.StgPathMtd.get_is_file(f):
             self.__next_button.set_enable(True)
         else:
             self.__next_button.set_enable(False)
@@ -183,8 +185,8 @@ class AbsPnlBuilderForTexture(prx_widgets.PrxSessionWindow):
         f = self._options_prx_node.get('file')
         self._gui_texture_opt.restore()
         self._gui_texture_opt.gui_add_root()
-        if bsc_core.StgPathMtd.get_is_file(f):
-            m = bsc_txr_core.TxrMethodForBuild.generate_instance()
+        if bsc_storage.StgPathMtd.get_is_file(f):
+            m = bsc_texture.TxrMethodForBuild.generate_instance()
             texture_args = m.generate_all_texture_args(f)
             if texture_args:
                 self._texture_name, texture_data = texture_args
@@ -192,7 +194,7 @@ class AbsPnlBuilderForTexture(prx_widgets.PrxSessionWindow):
                     i_group_path = '/{}'.format(i_type)
                     self._gui_texture_opt.gui_add_group(i_group_path)
                     for j_file_path in i_file_paths:
-                        j_file_opt = bsc_core.StgFileOpt(j_file_path)
+                        j_file_opt = bsc_storage.StgFileOpt(j_file_path)
                         j_path = '{}/{}'.format(i_group_path, j_file_opt.get_name())
                         self._gui_texture_opt.gui_add_one(j_path, j_file_opt)
 

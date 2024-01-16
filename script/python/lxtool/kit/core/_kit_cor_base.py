@@ -1,11 +1,13 @@
 # coding:utf-8
 import functools
 
+import lxresource as bsc_resource
+
 import lxbasic.core as bsc_core
 
-import lxbasic.session.core as bsc_ssn_core
+import lxbasic.storage as bsc_storage
 
-import lxresource.core as rsc_core
+import lxbasic.session as bsc_session
 
 import lxcontent.core as ctt_core
 
@@ -24,13 +26,13 @@ class KitDesktopHook(object):
 
     @classmethod
     def get_args(cls, key):
-        _ = rsc_core.ResourceDesktopTool.get_args(
+        _ = bsc_resource.RscExtendToolForDesktop.get_args(
                 key
             )
         if _:
             hook_type, hook_key, hook_configure, yaml_file_path, python_file_path, shell_file_path = _
 
-            session = bsc_ssn_core.CommandSession(
+            session = bsc_session.CommandSession(
                 type=hook_type,
                 hook=hook_key,
                 configure=hook_configure
@@ -46,11 +48,11 @@ class KitDesktopHook(object):
 
     @classmethod
     def find_all_tool_keys_at(cls, page_name):
-        return rsc_core.ResourceDesktopTool.find_all_tool_keys_at(page_name)
+        return bsc_resource.RscExtendToolForDesktop.find_all_tool_keys_at(page_name)
 
     @classmethod
     def find_all_page_keys_at(cls, page_name):
-        return rsc_core.ResourceDesktopTool.find_all_page_keys_at(page_name)
+        return bsc_resource.RscExtendToolForDesktop.find_all_page_keys_at(page_name)
 
     @classmethod
     def get_current_user_group_key(cls):
@@ -108,8 +110,8 @@ class KitDesktopHookAddOpt(object):
     def get_all_hook_keys_from_fnc(cls, path):
         list_ = []
         for i in [path+'/hooks']:
-            for j in bsc_core.StgDirectoryOpt(i).get_all_file_paths(ext_includes=['.yml']) or []:
-                j_name = bsc_core.StgFileOpt(j).get_path_base()[len(i)+1:]
+            for j in bsc_storage.StgDirectoryOpt(i).get_all_file_paths(ext_includes=['.yml']) or []:
+                j_name = bsc_storage.StgFileOpt(j).get_path_base()[len(i)+1:]
                 list_.append(j_name)
         return list_
 
@@ -118,7 +120,7 @@ class KitDesktopHookAddOpt(object):
         group_sub_name = self._options.get('gui.group_sub_name')
 
         directory_path = self.CUSTOMIZE_PATH
-        directory_path = bsc_core.StgPathMapper.map_to_current(directory_path)
+        directory_path = bsc_storage.StgPathMapper.map_to_current(directory_path)
 
         name = self._options.get('name')
         hook_key = '{}/{}'.format(page_name, name)
@@ -128,7 +130,7 @@ class KitDesktopHookAddOpt(object):
         python_file_path = '{}/{}.py'.format(directory_path, hook_key)
         linux_file_path = '{}/{}.sh'.format(directory_path, hook_key)
         windows_file_path = '{}/{}.bat'.format(directory_path, hook_key)
-        configure_file_opt = bsc_core.StgFileOpt(configure_file_path)
+        configure_file_opt = bsc_storage.StgFileOpt(configure_file_path)
         if mode is 'create':
             if configure_file_opt.get_is_file() is True:
                 gui_core.GuiDialog.create(
@@ -140,7 +142,7 @@ class KitDesktopHookAddOpt(object):
                 )
                 return
 
-        default_configue_file_path = bsc_core.ResourceConfigure.get(
+        default_configue_file_path = bsc_resource.RscExtendConfigure.get(
             'session/default-hook-configure.yml'
         )
         c = ctt_core.Content(value=default_configue_file_path)
@@ -175,8 +177,8 @@ class KitDesktopHookAddOpt(object):
         windows_shell_script = self._options.get('script.windows')
         linux_shell_script = self._options.get('script.linux')
 
-        bsc_core.StgPathPermissionMtd.create_directory(
-            bsc_core.StgFileMtd.get_directory(configure_file_path)
+        bsc_storage.StgPathPermissionMtd.create_directory(
+            bsc_storage.StgFileMtd.get_directory(configure_file_path)
         )
 
         if type_ == 'python-command':
@@ -190,7 +192,7 @@ class KitDesktopHookAddOpt(object):
                 )
                 return
             #
-            bsc_core.StgFileOpt(python_file_path).set_write(
+            bsc_storage.StgFileOpt(python_file_path).set_write(
                 python_script
             )
         elif type_ == 'shell-command':
@@ -204,11 +206,11 @@ class KitDesktopHookAddOpt(object):
                 )
                 return
             if windows_shell_script:
-                bsc_core.StgFileOpt(windows_file_path).set_write(
+                bsc_storage.StgFileOpt(windows_file_path).set_write(
                     windows_shell_script
                 )
             if linux_shell_script:
-                bsc_core.StgFileOpt(linux_file_path).set_write(
+                bsc_storage.StgFileOpt(linux_file_path).set_write(
                     linux_shell_script
                 )
         else:
@@ -227,16 +229,4 @@ class KitDesktop(object):
 
 
 if __name__ == '__main__':
-    import lxbasic.session.core as bsc_ssn_core
-
-    print KitDesktopHook.get_args(
-        'Share/quixel_python'
-    )
-    # s, e = KitDesktopHook.get_args(
-    #     'BUILTIN/main'
-    # )
-    # e()
-    s, e = bsc_ssn_core.Hook.get_args(
-        'rsv-panels/asset-loader'
-    )
-    e()
+    pass

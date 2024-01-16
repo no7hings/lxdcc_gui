@@ -1,15 +1,17 @@
 # coding:utf-8
 import time
 
+import lxbasic.log as bsc_log
+
 import lxbasic.core as bsc_core
+
+import lxbasic.storage as bsc_storage
 
 import lxgui.proxy.widgets as prx_widgets
 
-from lxutil import utl_core
-
 import lxgui.qt.core as gui_qt_core
 
-import lxutil.dcc.dcc_objects as utl_dcc_objects
+import lxbasic.dcc.objects as bsc_dcc_objects
 
 import lxsession.commands as ssn_commands
 
@@ -53,7 +55,7 @@ class _GuiCmdForNewVersion(object):
 
     @classmethod
     def _pull_texture_as_link(cls, w, directory_path_src, directory_path_tgt):
-        file_paths_src = bsc_core.StgDirectoryMtd.get_file_paths__(
+        file_paths_src = bsc_storage.StgDirectoryMtd.get_file_paths__(
             directory_path_src
         )
         if file_paths_src:
@@ -61,7 +63,7 @@ class _GuiCmdForNewVersion(object):
                 for i_file_path in file_paths_src:
                     g_p.do_update()
 
-                    i_texture_src = utl_dcc_objects.OsTexture(
+                    i_texture_src = bsc_dcc_objects.StgTexture(
                         i_file_path
                     )
 
@@ -80,7 +82,7 @@ class _GuiCmdForNewVersion(object):
                     for _i_directory_path in _directory_paths:
                         g_p.do_update()
                         if _i_directory_path in all_directory_paths:
-                            _i_directory_opt = bsc_core.StgDirectoryOpt(_i_directory_path)
+                            _i_directory_opt = bsc_storage.StgDirectoryOpt(_i_directory_path)
                             _i_variant = variant
                             _i_version_from = _i_directory_opt.get_name()
                             _i_version_to = next_version
@@ -100,7 +102,7 @@ class _GuiCmdForNewVersion(object):
         variant = self._window._options_prx_node.get('control.variant')
         next_version = self._workspace_opt.get_new_version_at(variant)
 
-        w = utl_core.DccDialog.create(
+        w = gui_core.GuiDialog.create(
             self._session.gui_name,
             content=(
                 'new version:\n'
@@ -111,7 +113,7 @@ class _GuiCmdForNewVersion(object):
             ).format(
                 next_version, variant
             ),
-            status=utl_core.DccDialog.ValidationStatus.Warning,
+            status=gui_core.GuiDialog.ValidationStatus.Warning,
             #
             options_configure=self._session.configure.get('build.node.new_version'),
             #
@@ -269,12 +271,12 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
         if directory_path:
             return True
         else:
-            w = utl_core.DccDialog.create(
+            w = gui_core.GuiDialog.create(
                 self._session.gui_name,
                 content='workspace is not install in variant "{}", press "Apply and Close" to continue'.format(
                     current_variant
                 ),
-                status=utl_core.DccDialog.ValidationStatus.Warning,
+                status=gui_core.GuiDialog.ValidationStatus.Warning,
                 #
                 yes_label='Apply and Close',
                 #
@@ -300,11 +302,11 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
     def _set_wsp_all_version_lock_(self):
         def yes_fnc_():
             if unlocked_directory_paths:
-                with bsc_core.LogProcessContext.create(
+                with bsc_log.LogProcessContext.create(
                     maximum=len(unlocked_directory_paths), label='lock version directory'
                 ) as g_p:
                     for _i in unlocked_directory_paths:
-                        bsc_core.StgPathPermissionMtd.lock(_i)
+                        bsc_storage.StgPathPermissionMtd.lock(_i)
                         g_p.do_update()
             #
             time.sleep(2)
@@ -317,13 +319,13 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
             self._dcc_objs
         )
 
-        unlocked_directory_paths = [i for i in directory_paths if bsc_core.StgBaseMtd.get_is_writable(i) is True]
+        unlocked_directory_paths = [i for i in directory_paths if bsc_storage.StgPathMtd.get_is_writable(i) is True]
         if unlocked_directory_paths:
-            w = utl_core.DccDialog.create(
+            w = gui_core.GuiDialog.create(
                 self._session.gui_name,
                 sub_label='Lock All Version',
                 content='lock all texture directories(used and matched "texture workspace" rule), press "Apply and Close" to continue',
-                status=utl_core.DccDialog.ValidationStatus.Warning,
+                status=gui_core.GuiDialog.ValidationStatus.Warning,
                 #
                 options_configure=self._session.configure.get('build.node.lock_all_version'),
                 #
@@ -344,10 +346,10 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
 
             w.set_window_show()
         else:
-            utl_core.DccDialog.create(
+            gui_core.GuiDialog.create(
                 self._session.gui_name,
                 content=u'all texture directories(used and matched "texture workspace" rule) is locked',
-                status=utl_core.DccDialog.ValidationStatus.Warning,
+                status=gui_core.GuiDialog.ValidationStatus.Warning,
                 #
                 yes_label='Close',
                 #
@@ -374,7 +376,7 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
 
     def _set_tx_create_data_update_(self, directory_paths, force_enable=False, ext_tgt='.tx'):
         self._create_data = []
-        with bsc_core.LogProcessContext.create(maximum=len(directory_paths), label='create texture-tx in directory') as g_p:
+        with bsc_log.LogProcessContext.create(maximum=len(directory_paths), label='create texture-tx in directory') as g_p:
             for i_directory_path in directory_paths:
                 i_directory_path_src = '{}/src'.format(i_directory_path)
                 i_directory_path_tgt = '{}/{}'.format(i_directory_path, ext_tgt[1:])
@@ -385,13 +387,13 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
                 g_p.do_update()
 
     def _set_tx_create_data_update_at_(self, directory_path_src, directory_path_tgt, force_enable=False, ext_tgt='.tx'):
-        file_paths_src = bsc_core.StgDirectoryMtd.get_file_paths__(
+        file_paths_src = bsc_storage.StgDirectoryMtd.get_file_paths__(
             directory_path_src
         )
         if file_paths_src:
-            with bsc_core.LogProcessContext.create(maximum=len(file_paths_src), label='texture-tx create running') as g_p:
+            with bsc_log.LogProcessContext.create(maximum=len(file_paths_src), label='texture-tx create running') as g_p:
                 for i_file_path in file_paths_src:
-                    i_texture_src = utl_dcc_objects.OsTexture(
+                    i_texture_src = bsc_dcc_objects.StgTexture(
                         i_file_path
                     )
                     if i_texture_src.ext != ext_tgt:
@@ -420,13 +422,13 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
 
         def run_fnc_():
             for i_index, (i_file_path, i_output_directory_path) in enumerate(self._create_data):
-                bsc_core.StgBaseMtd.create_directory(
+                bsc_storage.StgPathMtd.create_directory(
                     i_output_directory_path
                 )
 
                 # print i_file_path, i_output_directory_path
 
-                i_cmd = utl_dcc_objects.OsTexture._get_unit_tx_create_cmd_by_src_force_(
+                i_cmd = bsc_dcc_objects.StgTexture._get_unit_tx_create_cmd_by_src_force_(
                     i_file_path,
                     search_directory_path=i_output_directory_path,
                 )
@@ -483,10 +485,10 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
             ]
 
         if contents:
-            utl_core.DccDialog.create(
+            gui_core.GuiDialog.create(
                 self._session.gui_name,
                 content=u'\n'.join(contents),
-                status=utl_core.DccDialog.ValidationStatus.Warning,
+                status=gui_core.GuiDialog.ValidationStatus.Warning,
                 #
                 yes_label='Close',
                 #
@@ -508,7 +510,7 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
                 (self._set_tx_create_data_update_, (directory_paths, force_enable, ext_tgt)),
                 (self._set_tx_create_by_data_, (button,))
             ]
-            with bsc_core.LogProcessContext.create(maximum=len(method_args), label='texture-tx create processing') as g_p:
+            with bsc_log.LogProcessContext.create(maximum=len(method_args), label='texture-tx create processing') as g_p:
                 for i_fnc, i_args in method_args:
                     g_p.do_update()
                     #
@@ -516,10 +518,10 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
                     if i_result is False:
                         break
         else:
-            utl_core.DccDialog.create(
+            gui_core.GuiDialog.create(
                 self._session.gui_name,
                 content='non-directory(s) for create',
-                status=utl_core.DccDialog.ValidationStatus.Warning,
+                status=gui_core.GuiDialog.ValidationStatus.Warning,
                 #
                 yes_label='Close',
                 #
@@ -562,10 +564,10 @@ class AbsPnlManagerForTextureSpaceDcc(prx_widgets.PrxSessionWindow):
                 session.gui_name, ddl_job_id
             )
         else:
-            utl_core.DccDialog.create(
+            gui_core.GuiDialog.create(
                 self._session.gui_name,
                 content='non-directory(s) for create',
-                status=utl_core.DccDialog.ValidationStatus.Warning,
+                status=gui_core.GuiDialog.ValidationStatus.Warning,
                 #
                 yes_label='Close',
                 #

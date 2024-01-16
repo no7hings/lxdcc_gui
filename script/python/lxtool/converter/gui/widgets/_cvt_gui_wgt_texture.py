@@ -9,7 +9,11 @@ import time
 
 import functools
 
+import lxbasic.log as bsc_log
+
 import lxbasic.core as bsc_core
+
+import lxbasic.storage as bsc_storage
 
 import lxgui.core as gui_core
 
@@ -25,16 +29,17 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
 
     @classmethod
     def do_startup(cls):
-        from lxutil import utl_setup
-        # utl_setup.OcioSetup(
-        #     bsc_core.StgBasePathMapMtd.map_to_current(
+        import lxbasic.dcc.core as bsc_dcc_core
+
+        # bsc_dcc_core.OcioSetup(
+        #     bsc_storage.StgPathMapper.map_to_current(
         #         '/l/packages/pg/third_party/ocio/aces/1.2'
         #     )
         # ).set_run()
 
-        # from lxarnold import and_setup
-        # and_setup.MtoaSetup(
-        #     bsc_core.StgBasePathMapMtd.map_to_current(
+        # import lxarnold.startup as and_startup
+        # and_startup.MtoaSetup(
+        #     bsc_storage.StgPathMapper.map_to_current(
         #         '/l/packages/pg/prod/mtoa/4.2.1.1/platform-linux/maya-2019'
         #     )
         # ).set_run()
@@ -129,7 +134,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
     @classmethod
     def _set_file_args_update_1_(cls, file_dict, file_opt, name_pattern):
         if bsc_core.PtnMultiplyFileMtd.get_is_valid(name_pattern):
-            match_args = bsc_core.StgFileMtdForMultiply.get_number_args(
+            match_args = bsc_storage.StgFileMtdForMultiply.get_number_args(
                 file_opt.name, name_pattern
             )
             if match_args:
@@ -154,7 +159,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
             lis = [directory_path]
             if below_enable is True:
                 lis.extend(
-                    bsc_core.StgDirectoryMtd.get_all_directory_paths__(directory_path)
+                    bsc_storage.StgDirectoryMtd.get_all_directory_paths__(directory_path)
                 )
             return lis
         return []
@@ -191,20 +196,20 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
             ts.set_start()
 
     def __gui_cache_files(self, directory_path, include_patterns, ext_includes):
-        file_paths = bsc_core.StgDirectoryMtd.get_file_paths__(directory_path, ext_includes)
+        file_paths = bsc_storage.StgDirectoryMtd.get_file_paths__(directory_path, ext_includes)
         dict_ = collections.OrderedDict()
         for i_file_path in file_paths:
-            i_file_opt = bsc_core.StgFileOpt(i_file_path)
+            i_file_opt = bsc_storage.StgFileOpt(i_file_path)
             self._set_file_args_update_0_(
                 dict_, i_file_opt, include_patterns, ext_includes
             )
         return dict_.keys()
 
     def __gui_add_files(self, file_paths):
-        import lxutil.dcc.dcc_objects as utl_dcc_objects
+        import lxbasic.dcc.objects as bsc_dcc_objects
 
         for i_k in file_paths:
-            i_texture_src = utl_dcc_objects.OsTexture(i_k)
+            i_texture_src = bsc_dcc_objects.StgTexture(i_k)
 
             i_is_create, i_prx_item = self._tree_view_add_opt.gui_add_as(
                 i_texture_src,
@@ -268,7 +273,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
         contents = []
         textures = self._tree_view_add_opt.get_checked_files()
         if textures:
-            with bsc_core.LogProcessContext.create(maximum=len(textures), label='gain texture create-data') as g_p:
+            with bsc_log.LogProcessContext.create(maximum=len(textures), label='gain texture create-data') as g_p:
                 for i_texture_src in textures:
                     g_p.do_update()
                     #
@@ -326,14 +331,14 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
             button.set_status_at(index, status)
 
         def run_fnc_():
-            import lxutil.dcc.dcc_objects as utl_dcc_objects
+            import lxbasic.dcc.objects as bsc_dcc_objects
 
             for i_index, (i_file_path_src, i_directory_path_tgt) in enumerate(self._target_format_create_data):
-                bsc_core.StgBaseMtd.create_directory(
+                bsc_storage.StgPathMtd.create_directory(
                     i_directory_path_tgt
                 )
                 i_path_base, i_ext_src = os.path.splitext(i_file_path_src)
-                i_cmd = utl_dcc_objects.OsTexture._get_unit_create_cmd_as_ext_tgt_by_src_force_(
+                i_cmd = bsc_dcc_objects.StgTexture._get_unit_create_cmd_as_ext_tgt_by_src_force_(
                     i_file_path_src,
                     ext_tgt=ext_tgt,
                     search_directory_path=i_directory_path_tgt,
@@ -358,9 +363,9 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
                     if i_ext_src == ext_tgt:
                         # when ext is same do copy
                         if copy_same_ext is True:
-                            bsc_core.StgFileOpt(
+                            bsc_storage.StgFileOpt(
                                 i_file_path_src
-                            ).set_copy_to_directory(i_directory_path_tgt)
+                            ).copy_to_directory(i_directory_path_tgt)
 
         def quit_fnc_():
             button.set_stopped()
@@ -427,7 +432,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
             (self.format_gain_fnc, (ext_tgt, directory_path_tgt, force_enable)),
             (self.format_create_fnc, (button, ext_tgt, width, copy_same_ext))
         ]
-        with bsc_core.LogProcessContext.create(maximum=len(method_args), label='create texture by data') as g_p:
+        with bsc_log.LogProcessContext.create(maximum=len(method_args), label='create texture by data') as g_p:
             for i_fnc, i_args in method_args:
                 g_p.do_update()
                 i_result = i_fnc(*i_args)
@@ -474,7 +479,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
         contents = []
         textures = self._tree_view_add_opt.get_checked_files()
         if textures:
-            with bsc_core.LogProcessContext.create(maximum=len(textures), label='gain texture create-data') as g_p:
+            with bsc_log.LogProcessContext.create(maximum=len(textures), label='gain texture create-data') as g_p:
                 for i_texture_src in textures:
                     g_p.do_update()
                     #
@@ -535,7 +540,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
             for i_index, (i_file_path_src, i_directory_path_tgt, i_color_space_src, i_color_space_tgt) in enumerate(
                     self._target_color_space_create_data
                     ):
-                bsc_core.StgFileOpt(i_directory_path_tgt).create_directory()
+                bsc_storage.StgFileOpt(i_directory_path_tgt).create_directory()
                 #
                 i_path_base, i_ext_src = os.path.splitext(i_file_path_src)
                 i_cmd = and_core.AndTextureOpt.generate_format_convert_as_aces_command(
@@ -560,9 +565,9 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
                     if i_ext_src == ext_tgt:
                         # when ext is same do copy
                         if copy_same_ext is True:
-                            bsc_core.StgFileOpt(
+                            bsc_storage.StgFileOpt(
                                 i_file_path_src
-                            ).set_copy_to_directory(i_directory_path_tgt)
+                            ).copy_to_directory(i_directory_path_tgt)
 
         def quit_fnc_():
             button.set_stopped()
@@ -624,7 +629,7 @@ class PnlTextureConverter(prx_widgets.PrxSessionWindow):
             (self.color_space_gain_fnc, (ext_tgt, directory_path_tgt, force_enable)),
             (self.color_space_create_fnc, (button, ext_tgt, copy_same_ext))
         ]
-        with bsc_core.LogProcessContext.create(maximum=len(method_args), label='create texture by data') as g_p:
+        with bsc_log.LogProcessContext.create(maximum=len(method_args), label='create texture by data') as g_p:
             for i_fnc, i_args in method_args:
                 g_p.do_update()
                 i_result = i_fnc(*i_args)

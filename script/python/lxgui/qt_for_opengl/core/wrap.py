@@ -1,9 +1,9 @@
 # coding:utf-8
-import pkgutil
+import pkgutil as _pkgutil
 
 QT_OPENGL_FLAG = False
 
-__pyopengl = pkgutil.find_loader('pxr')
+__pyopengl = _pkgutil.find_loader('pxr')
 
 if __pyopengl:
     QT_OPENGL_FLAG = True

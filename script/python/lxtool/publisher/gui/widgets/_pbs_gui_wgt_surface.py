@@ -1,13 +1,13 @@
 # coding:utf-8
 import lxtool.publisher.gui.abstracts as pbs_gui_abstracts
 
-import lxutil.dcc.dcc_objects as utl_dcc_objects
+import lxbasic.dcc.objects as bsc_dcc_objects
 
 
 class ValidatorOpt(pbs_gui_abstracts.AbsValidatorOpt):
     DCC_NAMESPACE = 'lynxi'
-    DCC_NODE_CLS = utl_dcc_objects.Obj
-    DCC_COMPONENT_CLS = utl_dcc_objects.Component
+    DCC_NODE_CLS = bsc_dcc_objects.Node
+    DCC_COMPONENT_CLS = bsc_dcc_objects.Component
     DCC_SELECTION_CLS = None
     DCC_PATHSEP = '/'
 

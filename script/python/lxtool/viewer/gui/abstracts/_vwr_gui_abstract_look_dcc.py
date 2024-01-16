@@ -1,6 +1,8 @@
 # coding:utf-8
 import lxgui.proxy.widgets as prx_widgets
 
+import lxbasic.log as bsc_log
+
 import lxbasic.core as bsc_core
 
 import lxgui.proxy.scripts as gui_prx_scripts
@@ -93,7 +95,7 @@ class AbsPnlViewerForShaderDcc(
         #
         materials = self.DCC_MATERIALS_CLS().get_objs()
         if materials:
-            with bsc_core.LogProcessContext.create(maximum=len(materials), label='gui-add for material') as g_p:
+            with bsc_log.LogProcessContext.create(maximum=len(materials), label='gui-add for material') as g_p:
                 for i_material in materials:
                     g_p.do_update()
                     #
