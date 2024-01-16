@@ -3,7 +3,7 @@ import lxbasic.core as bsc_core
 
 import lxbasic.storage as bsc_storage
 
-import lxutil.extra.methods as utl_etr_methods
+import lxbasic.extra.methods as utl_etr_methods
 
 
 class VideoComp(object):
