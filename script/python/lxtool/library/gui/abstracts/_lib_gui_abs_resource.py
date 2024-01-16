@@ -716,7 +716,7 @@ class _GuiResourceOpt(
                 if image_path_src_opt.get_ext() in {'.png', '.jpg'}:
                     image_path_src_opt.map_to_current()
                     if image_path_src_opt.get_is_exists() is True:
-                        image_file_path, image_sp_cmd = bsc_core.ImgOiioOptForThumbnail(
+                        image_file_path, image_sp_cmd = bsc_storage.ImgOiioOptForThumbnail(
                             image_path_src_opt.get_path()
                         ).get_thumbnail_jpg_create_args_with_background_over(
                             width=256, background_rgba=(71, 71, 71, 255)
@@ -1193,7 +1193,7 @@ class _GuiFileOpt(
         def build_fnc_(*args):
             _prx_item_widget, _location, _menu_content, _menu_data = args[0]
             if file_opt.get_ext() in ['.jpg', '.png', '.exr', '.hdr', '.tx']:
-                image_file_path, image_sp_cmd = bsc_core.ImgOiioOptForThumbnail(file_path).generate_thumbnail_create_args(
+                image_file_path, image_sp_cmd = bsc_storage.ImgOiioOptForThumbnail(file_path).generate_thumbnail_create_args(
                     width=128, ext='.jpg'
                 )
                 prx_item_widget.set_image(image_file_path)

@@ -164,7 +164,7 @@ class ScpResourcesAddForSurface(object):
 
     @classmethod
     def stg_create_preview(cls, dtb_opt, file_path, pattern_kwargs):
-        preview_file_path_ = bsc_core.ImgOiioOptForThumbnail(file_path).generate_thumbnail(width=256, ext='.png')
+        preview_file_path_ = bsc_storage.ImgOiioOptForThumbnail(file_path).generate_thumbnail(width=256, ext='.png')
         preview_file_p_opt = dtb_opt.get_pattern_opt('image-preview-png-file')
         preview_file_path = preview_file_p_opt.update_variants_to(**pattern_kwargs).get_value()
         bsc_storage.StgFileOpt(preview_file_path_).copy_to_file(

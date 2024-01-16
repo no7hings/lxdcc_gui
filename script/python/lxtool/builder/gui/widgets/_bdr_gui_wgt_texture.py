@@ -1,5 +1,6 @@
 # coding:utf-8
-import lxtool.builder.gui.abstracts as bdr_gui_abstracts
+# builder
+from .. import abstracts as bdr_gui_abstracts
 
 
 class PnlBuilderForTexture(bdr_gui_abstracts.AbsPnlBuilderForTexture):

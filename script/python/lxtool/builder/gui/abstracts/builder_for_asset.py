@@ -1,9 +1,8 @@
 # coding:utf-8
+# gui
 import lxgui.proxy.core as gui_prx_core
 
 import lxgui.proxy.widgets as prx_widgets
-
-import lxresolver.core as rsv_core
 
 
 class AbsPnlBuilderForAsset(prx_widgets.PrxSessionToolWindow):
@@ -52,6 +51,8 @@ class AbsPnlBuilderForAsset(prx_widgets.PrxSessionToolWindow):
             return _.lower()
 
     def _set_assets_(self):
+        import lxresolver.core as rsv_core
+
         project = self._options_prx_node.get_port('project').get()
         resolver = rsv_core.RsvBase.generate_root()
         rsv_project = resolver.get_rsv_project(project=project)

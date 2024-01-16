@@ -1,6 +1,8 @@
 # coding:utf-8
 import lxbasic.core as bsc_core
 
+import lxbasic.storage as bsc_storage
+
 import lxgui.qt.core as gui_qt_core
 
 import lxgui.qt.widgets as qt_widgets
@@ -69,7 +71,7 @@ class AbsPnlDccLauncher(prx_widgets.PrxSessionWindow):
             option = option_opt.to_string()
 
             if bsc_core.SysBaseMtd.get_is_linux():
-                cmd = bsc_core.PkgContextNew(
+                cmd = bsc_storage.PkgContextNew(
                     ' '.join(['lxdcc'])
                 ).get_command(
                     args_execute=[
@@ -79,12 +81,12 @@ class AbsPnlDccLauncher(prx_widgets.PrxSessionWindow):
                     ],
                 )
             elif bsc_core.SysBaseMtd.get_is_windows():
-                cmd = bsc_core.PkgContextNew(
+                cmd = bsc_storage.PkgContextNew(
                     ' '.join(['lxdcc'])
                 ).get_command(
                     args_execute=[
                         '-- lxapp -o "{}"'.format(
-                            bsc_core.PrcBaseMtd.cmd_cleanup(option)
+                            bsc_core.PrcBaseMtd._cmd_cleanup(option)
                         )
                     ],
                 )

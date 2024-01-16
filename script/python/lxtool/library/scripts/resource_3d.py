@@ -77,7 +77,7 @@ class ScpResourcesAddFor3dPlant(object):
 
     @classmethod
     def stg_copy_preview(cls, dtb_opt, file_path_src, pattern_kwargs, replace=False):
-        file_path_png_src = bsc_core.ImgOiioOptForThumbnail(file_path_src).generate_thumbnail(width=256, ext='.png')
+        file_path_png_src = bsc_storage.ImgOiioOptForThumbnail(file_path_src).generate_thumbnail(width=256, ext='.png')
         file_path_opt = dtb_opt.get_pattern_opt('image-preview-png-file')
         file_path = file_path_opt.update_variants_to(**pattern_kwargs).get_value()
         bsc_storage.StgFileOpt(file_path_png_src).copy_to_file(

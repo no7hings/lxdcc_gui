@@ -4,6 +4,8 @@ import os
 import time
 
 import lxbasic.core as bsc_core
+
+import lxbasic.storage as bsc_storage
 # gui
 from ... import core as gui_core
 # qt
@@ -940,7 +942,7 @@ class QtPainter(QtGui.QPainter):
         )
 
     def _draw_image_exr_by_rect_(self, rect, file_path, offset=0, is_hovered=False):
-        thumbnail_file_path = bsc_core.ImgOiioOptForThumbnail(file_path).generate_thumbnail()
+        thumbnail_file_path = bsc_storage.ImgOiioOptForThumbnail(file_path).generate_thumbnail()
         self._draw_image_by_rect_(
             rect=rect, file_path=thumbnail_file_path, offset=offset, is_hovered=is_hovered
         )

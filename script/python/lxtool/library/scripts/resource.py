@@ -502,7 +502,7 @@ class ScpResourcesAddByQuixel(object):
             resource_dtb_path, texture_type_tag_dtb_path, kind=dtb_opt.Kinds.ResourceFileTag
         )
         # texture size tag
-        texture_size = bsc_core.ImgOiioOpt(file_stg_path).get_size()
+        texture_size = bsc_storage.ImgOiioOpt(file_stg_path).get_size()
         texture_size_tag = '{}x{}'.format(*texture_size)
         texture_size_tag_dtb_path = '/resolution/{}'.format(texture_size_tag)
         dtb_opt.create_tag_assign(
@@ -616,7 +616,7 @@ class ScpResourcesAddByQuixel(object):
             resource_dtb_path, texture_type_tag_dtb_path, kind=dtb_opt.Kinds.ResourceFileTag
         )
         # texture size tag
-        texture_size = bsc_core.ImgOiioOpt(file_stg_path).get_size()
+        texture_size = bsc_storage.ImgOiioOpt(file_stg_path).get_size()
         texture_size_tag = '{}x{}'.format(*texture_size)
         texture_size_tag_dtb_path = '/resolution/{}'.format(texture_size_tag)
         dtb_opt.create_tag_assign(

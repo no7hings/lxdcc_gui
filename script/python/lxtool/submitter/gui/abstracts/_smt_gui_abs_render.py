@@ -525,7 +525,7 @@ class AbsPnlRenderSubmitterForAsset(AbsPnlSubmitterForRenderBase):
                 if variants['camera'] == 'shot':
                     show_info_dict['shot'] = render_info['shot']
             #
-            image_file_path, image_sub_process_cmds = bsc_core.VdoFileOpt(movie_file_path).generate_thumbnail_create_args()
+            image_file_path, image_sub_process_cmds = bsc_storage.VdoFileOpt(movie_file_path).generate_thumbnail_create_args()
             prx_item_widget.set_image(image_file_path)
             prx_item_widget.set_movie_enable(True)
             #
@@ -1113,7 +1113,7 @@ class AbsPnlRenderSubmitterForShot(AbsPnlSubmitterForRenderBase):
                 language=1
             )
             #
-            image_file_path, image_sub_process_cmds = bsc_core.VdoFileOpt(movie_file_path).generate_thumbnail_create_args()
+            image_file_path, image_sub_process_cmds = bsc_storage.VdoFileOpt(movie_file_path).generate_thumbnail_create_args()
             prx_item_widget.set_image(image_file_path)
             prx_item_widget.set_movie_enable(True)
             #

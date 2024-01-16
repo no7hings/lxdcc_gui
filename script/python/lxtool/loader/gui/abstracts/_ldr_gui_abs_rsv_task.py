@@ -442,7 +442,7 @@ class _GuiTaskOpt(
                 language=1
             )
             name_dict['user'] = movie_file_opt.get_user()
-            image_file_path, image_sp_cmd = bsc_core.VdoFileOpt(movie_file_path).generate_thumbnail_create_args()
+            image_file_path, image_sp_cmd = bsc_storage.VdoFileOpt(movie_file_path).generate_thumbnail_create_args()
             image_args = image_file_path, image_sp_cmd, movie_file_path, execute_fnc
         else:
             name_dict['update'] = 'N/a'
@@ -588,7 +588,7 @@ class _GuiFileOpt(
         def build_fnc_(*args):
             _location, _menu_data = args[0]
             if file_opt.get_ext() in ['.jpg', '.png', '.exr', '.tx']:
-                image_file_path, image_sp_cmd = bsc_core.ImgOiioOptForThumbnail(file_path).generate_thumbnail_create_args(
+                image_file_path, image_sp_cmd = bsc_storage.ImgOiioOptForThumbnail(file_path).generate_thumbnail_create_args(
                     width=128, ext='.jpg'
                 )
                 prx_item_widget.set_image(image_file_path)

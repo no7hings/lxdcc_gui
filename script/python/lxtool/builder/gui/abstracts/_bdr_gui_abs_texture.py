@@ -3,13 +3,13 @@ import lxbasic.core as bsc_core
 
 import lxbasic.storage as bsc_storage
 
-import lxgui.proxy.widgets as prx_widgets
-
 import lxbasic.texture as bsc_texture
-
+# gui
 import lxgui.core as gui_core
 
 import lxgui.proxy.abstracts as gui_prx_abstracts
+
+import lxgui.proxy.widgets as prx_widgets
 
 
 class _GuiTextureOpt(gui_prx_abstracts.AbsGuiPrxTreeViewOpt):
