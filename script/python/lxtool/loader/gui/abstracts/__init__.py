@@ -1,3 +1,3 @@
 # coding:utf-8
-from ._ldr_gui_abs_rsv_task import *
+from .loader_for_resolver import *
 

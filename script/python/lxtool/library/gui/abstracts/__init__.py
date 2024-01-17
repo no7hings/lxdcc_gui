@@ -1,3 +1,3 @@
 # coding:utf-8
-from ._lib_gui_abs_resource import *
+from .library_for_resource import *
 

@@ -1,3 +1,3 @@
 # coding:utf-8
-from ._lnc_gui_wgt_dcc import *
+from .launcher_for_application import *
 

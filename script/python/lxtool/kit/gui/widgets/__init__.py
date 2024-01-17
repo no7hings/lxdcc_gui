@@ -1,5 +1,5 @@
 # coding:utf-8
-from ._kit_gui_wgt_desktop import *
+from .kit_for_desktop import *
 
-from ._kit_gui_wgt_dcc import *
+from .kit_for_dcc import *
 

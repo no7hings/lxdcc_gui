@@ -1,2 +1,2 @@
 # coding:utf-8
-from ._ldr_gui_wgt_rsv_task import *
+from .loader_for_resolver import *
